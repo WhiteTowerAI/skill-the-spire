@@ -1,14 +1,65 @@
 # CLAUDE.md
 
-Repo-specific rules for AI agents working in this repository. General Git/PR
-conventions live in [AGENTS.md](./AGENTS.md); read that too. This file only
-covers what is unique to **open-mod** and overrides AGENTS.md on conflict.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+Repo-specific rules for AI agents. General Git/PR conventions live in
+[AGENTS.md](./AGENTS.md); read that too. This file overrides AGENTS.md on conflict.
 
 ## Project
 
-open-mod is a free, open-source project: a skill that enables text-to-mod
-generation for supported games. It will eventually be published publicly, so
-keep the public-facing history clean and professional.
+open-mod is a free, open-source **skill** (for Claude Code, later Codex) that lets
+a non-programmer describe a game mod in one sentence and get back a mod that
+actually loads and runs in-game. First — and currently only — target: **Slay the
+Spire 2 (STS2)**. It will be published publicly, so keep `main` clean.
+
+Strategy is **one game deep, then a platform**: Phase 1 nails STS2 end to end;
+Phase 2 abstracts the game-specific knowledge into a reusable "game pack" template
+for more games. Full rationale, scope, and decisions are in `documents/` — read
+those before substantive work; do not restate them here.
+
+## Current status — no code yet, on purpose
+
+The repo is **planning-only right now**: five research docs in `documents/`,
+`LICENSE`, `README.md`, and this file. There is deliberately **no source tree, no
+`git init` of the skill skeleton** — IMPLEMENTATION_PLAN.md §6 gates that on
+passing the **M0 de-risk** step first, so we don't scaffold against unvalidated
+assumptions. Do not lay down the directory structure until M0's gate passes.
+
+**Immediate next step is M0** (IMPLEMENTATION_PLAN.md §7): on a machine with STS2
++ .NET 9, manually validate the two gating risks before building anything:
+- **R1** — one-command headless build produces `.dll`+`.pck` in the game's `mods/`.
+- **R2 tier 1** — an injected `[T2MOD-SELFTEST]` log marker is greppable from
+  `godot.log` after launching via `steam_appid.txt`.
+
+## Architecture (the intended shape, once M0 passes)
+
+The design is a **combination baseline**, not a fork (see BASELINE_RESEARCH.md):
+
+- **Pipeline** mirrors `htdt/godogen` (primary reference, Godot+C#): a single
+  orchestrator `SKILL.md` drives lazy-loaded stage files — interview → spec →
+  scaffold → author → build → verify → behavior-test → repair → finalize. **Files
+  are state** (`SPEC.md`/`PLAN.md`/`MEMORY.md`) so the pipeline resumes after
+  context compaction — resume-check first.
+- **Mod substrate** is `Alchyr/ModTemplate-StS2` + **BaseLib**: scaffolding is
+  `dotnet new` (pure CLI); each element is a `Custom*Model` subclass; behavior is a
+  sequence of `Cmd`s; a mod = `Mod.json` + `.dll` + `.pck`.
+- **The moat is the `sts2-api` "game pack"** — curated, on-demand knowledge
+  (content models, command catalog, `recipes/` per element type, `errors.md`
+  error→fix catalog) that pre-digests STS2's community-reverse-engineered
+  conventions so the LLM writes correct code without live-decompiling. `recipes/`
+  aims to make single-element mods ~90% templated; `errors.md` is append-only and
+  compounds over time.
+- **Verification is on observed reality, never "it compiled."** R2 has two tiers:
+  tier 1 = load proof via log marker (guaranteed); tier 2 = "the effect actually
+  fired" (best-effort, the headline differentiator) — candidate mechanisms are a
+  Godot `SceneTree` test script or reusing `STS2MCP` live state. Never claim an
+  effect was verified when only load was.
+- **Reuse at the edges:** `spire-codex` (queryable decompiled API) for grounding,
+  `STS2MCP`/`autoSpire` for live-state behavior checks — optional dependencies, not
+  the core loop.
+
+The full directory layout, pipeline diagram, and game-pack file table are in
+IMPLEMENTATION_PLAN.md §1–3. The proposed repo root is `t2mod/`.
 
 ## Branch model — READ THIS FIRST
 
@@ -59,3 +110,43 @@ which one you are on before doing anything.
 Planning and research live in `documents/` (PROJECT.md, IMPLEMENTATION_PLAN.md,
 BASELINE_RESEARCH.md, and the competitive-landscape notes). Read the relevant
 ones before starting substantive work; keep them updated when plans change.
+
+## Toolchain & commands (STS2 modding, for the M0 build/verify work)
+
+There is no build/test/lint for *this repo* yet (no code). The commands below are
+the STS2 mod toolchain M0 validates, sourced from ModTemplate-StS2 + BaseLib and
+**still to be confirmed on a real machine** — treat as the starting hypothesis,
+not verified fact. Details in R1_R2_FEASIBILITY.md.
+
+Environment required on the STS2 box:
+- **STS2 installed** (note install path; main vs beta branch).
+- **.NET SDK 9.0+** (`dotnet --version`).
+- **MegaDot 4.5.1 mono** (MegaCrit's Godot fork) — only if the PckPacker shortcut
+  doesn't cover our assets.
+- **BaseLib** — best via Steam Workshop subscribe (id `3737335127`).
+
+Scaffold, build, verify:
+```
+dotnet new install Alchyr.Sts2.Templates          # install templates (once)
+dotnet new <content-template> -n ProbeMod          # scaffold (no spaces in name)
+dotnet build                                       # fast: .dll only → mods/
+dotnet publish /p:GodotPath="<MegaDot exe>"        # full: .dll + .pck (headless) → mods/
+```
+- **`build` vs `publish`:** `build` compiles only the `.dll` (fine for code-only
+  changes). `publish` also generates the `.pck` via headless Godot — **required
+  for any localization/image/scene change to show up.**
+- **Try PckPacker first:** uncomment the `BSchneppe.StS2.PckPacker` package ref;
+  if `dotnet build` alone then emits the `.pck`, we avoid the MegaDot dependency.
+- Paths (game/Godot) auto-discover via `Sts2PathDiscovery.props`; override with
+  `/p:Sts2Path=...` / `/p:GodotPath=...`.
+
+Launch + log-assert (R2 tier 1):
+- Put `steam_appid.txt` containing `2868840` in the game dir → run
+  `SlayTheSpire2.exe` directly (no Steam needed, scriptable).
+- Log is `%appdata%/SlayTheSpire2/logs/godot.log` (Windows). Generated mods emit
+  markers via `MainFile.Logger.Info(...)`; the verify loop launches, waits, then
+  greps the log for the `[T2MOD-SELFTEST]` marker and for error lines naming the mod.
+
+Platform note: **Windows-first** (current dev environment). STS2/Steam are
+cross-platform, so mod paths and the game binary differ on macOS/Linux — handle
+later.
