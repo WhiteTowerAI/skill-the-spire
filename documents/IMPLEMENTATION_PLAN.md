@@ -3,7 +3,9 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: DRAFT for review. Written 2026-07-01.
+> Status: living plan. Written 2026-07-01. **M0 and M1 gates PASSED** (see
+> M0_RESULTS.md, M1_RESULTS.md); the `sts2-api` game pack is now being seeded
+> (`documents/sts2-api/`). Next: M2 (skill skeleton).
 
 ## 0. Design principles (inherited from the research)
 
@@ -133,7 +135,7 @@ What each file holds and where it's sourced from:
 | `recipes/*.md` | Copy-adaptable known-good pattern per element type, each a full working example | ModTemplate + base-game analogs |
 | `manifest.md` | `Mod.json` schema, id-immutability, `affects_gameplay`, version rules | ModTemplate wiki |
 | `localization.md` | `localization/eng/*.json` format; the analyzer auto-report/generate behavior | StS2ModAnalyzers |
-| `art.md` | Image paths + exact sizes (card 1000x760, etc.), placeholder-first workflow | ModTemplate wiki |
+| `art.md` | Image paths + exact sizes (card 1000x760, etc.); placeholder-first workflow AND the BYO-backend generate path (per-sprite placeholder-vs-generate choice, user-configured image-gen API/local model) — see PROJECT.md §7.1 | ModTemplate wiki |
 | `errors.md` | **Error signature → fix** catalog; grows every time repair succeeds | our own runs (compounding asset) |
 | `grounding.md` | When the pack lacks an answer: query spire-codex API / decompile sts2.dll | spire-codex, decompiling wiki |
 
@@ -184,16 +186,20 @@ Key design decisions:
 
 ## 5. Milestones (each ends in something demonstrable)
 
-**M0 — De-risk (do before committing to the full build).** On a machine with
+**M0 — De-risk (do before committing to the full build). ✅ DONE (2026-07-01, see M0_RESULTS.md).** On a machine with
 STS2 + .NET 9 (+ MegaDot). Run the R1 and R2-tier-1 prototypes from
 R1_R2_FEASIBILITY.md by hand (no skill yet): confirm one-command build produces
 `.dll`+`.pck` in `mods/`, and a hand-injected self-test marker is greppable from
 `godot.log` after launch. **Gate: if M0 fails, revisit the whole approach.**
 
-**M1 — Manual golden mod.** By hand, build ONE complete relic mod end to end
+**M1 — Manual golden mod. ✅ DONE (2026-07-01, see M1_RESULTS.md).** By hand, build ONE complete relic mod end to end
 (the "Gambler's Coin" example): scaffold → author → build → loads in-game →
 self-test passes → effect works. This becomes the reference the recipe is
-distilled from, and the acceptance target for the skill.
+distilled from, and the acceptance target for the skill. **Outcome:** both R2
+tiers passed — the effect fired in real combat (log-verified), not just loaded.
+`recipes/relic.md` + `errors.md` seeded from it. Notable finding: STS2's **dev
+console** (`relic add <id>`, auto-enabled when modded) is a cheap tier-2 lever,
+reshaping the M5 mechanism choice toward driving the console.
 
 **M2 — Skill skeleton, happy path.** Orchestrator `SKILL.md` + interview/spec/
 scaffold/author/build/verify stages + a first `recipes/relic.md`. Goal: the
@@ -203,8 +209,13 @@ skill reproduces M1's relic from one sentence, no repair needed.
 failures hit during M1/M2. Deliberately feed a few broken specs and confirm the
 loop diagnoses → fixes → re-verifies within the retry cap.
 
-**M4 — Breadth within STS2.** Add `recipes/card.md`, `recipes/potion.md`;
-handle 2-3 more element types. Harden the interview for ambiguous requests.
+**M4 — Breadth within STS2 + art pipeline.** Add `recipes/card.md`,
+`recipes/potion.md`; handle 2-3 more element types. Harden the interview for
+ambiguous requests. **Build the art/sprite pipeline (PROJECT.md §7.1, REQUIRED):**
+per needed sprite, the interview offers placeholder vs. generate; generation uses
+a **user-configured backend** (their own image-gen API or a local model — we ship
+the plumbing, not a bundled provider); output lands at the correct path/size for a
+PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
 
 **M5 — Behavior test (R2 tier 2) + Codex runtime + optional publish.** Pick the
 tier-2 mechanism from M0/M1 findings; add the Codex adapter; wire opt-in
@@ -224,10 +235,14 @@ Workshop publish. This is the full-fat version.
    directory structure (§1) only after M0's gate passes, so we don't scaffold
    against unvalidated assumptions.
 
-## 7. Immediate next step: M0 de-risk checklist
+## 7. M0 de-risk checklist ✅ COMPLETED
 
-No skill code yet — this is manual validation on the STS2 box. Success here
-unlocks M1+ and confirms §1's structure is worth building.
+> **This checklist is done** — M0 and M1 both passed on 2026-07-01 (M0_RESULTS.md,
+> M1_RESULTS.md). Kept as the historical record of what was validated and how.
+> The current next step is **M2** (skill skeleton driving `recipes/relic.md`).
+
+This was manual validation on the STS2 box (no skill code yet). Success here
+unlocked M1+ and confirmed §1's structure is worth building.
 
 **Prereqs to confirm on the machine:** STS2 installed (note the install path and
 whether it's the main or beta branch), .NET SDK 9.0+ (`dotnet --version`), and —

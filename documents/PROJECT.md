@@ -139,10 +139,36 @@ The skill is responsible for the entire pipeline (per §6):
 - Interpreting the natural-language request into a concrete mod spec.
 - Scaffolding the mod in the game's correct format / structure.
 - Generating the code, config, and manifest to the game's conventions.
-- Providing assets (placeholder art first; real art later — see §10 open items).
+- Providing assets via the **art pipeline** (see §7.1): per sprite, the user
+  chooses placeholder vs. generate; generation backend is user-configured.
 - Packaging the mod and placing it where the game loads mods from.
 - Launching the game to validate the mod loads and the behavior triggers.
 - Reading errors and auto-repairing, then re-validating — iterating until it works.
+
+### 7.1 Art / sprite pipeline (REQUIRED feature)
+
+Whenever a mod needs a new sprite (relic icon, card portrait, etc.), the skill
+must let the **user decide per sprite**, not silently pick one:
+
+- **Choice per sprite: placeholder OR generate.** For each needed sprite, offer
+  (a) use a **placeholder** for now (the template's default art — keeps the loop
+  fast and the mod immediately testable), or (b) **generate a new sprite**. The
+  user can mix: placeholder some, generate others.
+- **User-chosen generation backend.** If the user picks "generate," the *user*
+  decides how the image is produced — their **own image-gen API** (configurable:
+  provider + key + model) or a **local model**. We do NOT hardcode or bundle a
+  single provider; we provide the plumbing (prompt → backend → correctly-sized,
+  correctly-placed sprite) and let the user point it at whatever they want.
+- **Correct output regardless of source.** Whether placeholder or generated, the
+  asset must land at the right path and exact size the game expects (e.g. card
+  portrait 1000x760), so a `.pck` rebuild (Path A / PckPacker) picks it up.
+- **Why required:** closes the one concrete feature gap vs. AgentTheSpire (which
+  ships an art pipeline). Placeholder-first stays the default for speed; real
+  generation is opt-in and BYO-backend so users aren't locked to our choice.
+
+Design still open (implementation phase): exact config format for the backend,
+the prompt template per sprite type, and where "regenerate/tweak this sprite"
+fits in the loop.
 
 ## 8. Out of scope (for now)
 
@@ -151,8 +177,12 @@ The skill is responsible for the entire pipeline (per §6):
 - **Publishing to Steam Workshop** — Workshop IS live for STS2, but Phase 1
   ends at a mod that works locally. Auto-publishing to Workshop is a later,
   opt-in step (and should always ask first). The user installs/tests locally.
-- **High-quality original art/audio** — start with placeholder art; real asset
-  generation comes later.
+- **Bundling a specific image-gen provider / hosting inference** — the art
+  pipeline (§7.1) IS in scope, but generation is **bring-your-own-backend**
+  (user configures their own API or local model). We ship the plumbing, not a
+  chosen provider or hosted image generation. High-quality original audio, and
+  polished/curated original art beyond what the user's chosen backend produces,
+  remain later.
 - **Complex / total-conversion mods** — start with single-element mods (one
   relic, one card, one potion), not sweeping overhauls.
 
