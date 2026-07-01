@@ -8,38 +8,64 @@
 Text-to-game is now fairly mature and has commercial products. Modding shares
 most of its engineering with game-making, but far fewer people build *mod*
 tooling — so there's an open niche. STS2 is an especially good first target:
-it's built on **Godot** (same engine as our strongest architectural baseline),
-ships a **built-in mod loader**, has a **live Steam Workshop**, and mods are
+it's built on **Godot** (same engine + language as our strongest architectural
+baseline, godogen — Godot 4 / C#), ships a **built-in mod loader**, has a **live Steam Workshop**, and mods are
 **single-element granularity** (one relic/card/potion), which is more tractable
 than generating a whole game.
 
-## The three references
+## The references
 
-### 1. RandallLiuXin/GodotMaker — ARCHITECTURE + CLOSED-LOOP baseline ⭐
-- `Autonomous text-to-game pipeline for Godot, powered by Claude Code, Codex, Opencode`
-- Python, 407★, actively updated (commit today), source-available (BUSL 1.1).
+> Note: `htdt/godogen` was surfaced by the later competitive sweep
+> (COMPETITIVE_LANDSCAPE.md) and is now our **primary** architectural baseline,
+> ahead of GodotMaker — same engine family and closed loop, ~10× the traction,
+> and a permissive MIT license. GodotMaker remains a strong corroborating
+> reference (the two are near-identical in shape, so they validate each other).
+
+### 1. htdt/godogen — PRIMARY ARCHITECTURE + CLOSED-LOOP baseline ⭐⭐
+- `Autonomous game dev for Godot / Bevy / Babylon with Claude Code & Codex:
+  plan → code → assets → run engine → check screenshots → self-repair`
+- **4.2k★**, 371 forks, active (34 commits, recent changelog), **MIT license**.
+  72.5% Python (Godot output is C#/.NET 9).
 - **Why it's our primary architectural baseline:**
-  - **Same engine as STS2 (Godot 4.x).** Even ships `godot-api/csharp.md` — STS2
-    mods are C# on Godot, so this transfers directly.
-  - **Multi-runtime by design:** `agent-runtimes/{claude-code,codex,opencode}/`
-    with a `capability-contract.md` — exactly our "Claude Code first, Codex
-    later" need, already solved.
-  - **A skill pipeline we can mirror:** `skills/core/gm-*` =
+  - **Same engine + language as STS2 (Godot 4, C#/.NET 9).** Transfers directly.
+  - **~10× GodotMaker's traction and a permissive MIT license** (vs GodotMaker's
+    restrictive BUSL 1.1) — safer to learn from and adapt.
+  - **The exact loop we want, proven and popular:** describe → plan → write code →
+    generate assets → **run the engine → capture screenshots → self-repair visible
+    defects → playable output.** The agent iterates on **observed output, not
+    "it compiled"** — this "frame-grounded self-repair" is the principle behind
+    our R2 (for us the observed reality is the game log + live state, not frames).
+  - **Multi-runtime by *publish-time rendering*, not runtime adapters:** a
+    `publish.sh` renders agent-specific layouts — Claude Code → `.claude/skills/`,
+    Codex → `.agents/skills/`. Directly informs our "Claude Code first, Codex
+    later" plan (build once, render per runtime).
+  - **Concrete patterns to steal:**
+    - **Frame-grounded self-repair** — judge from observed output, iterate on
+      visible defects, never trust a green build.
+    - **Engine-docs lookup skill** (local reference access) — the model for our
+      swappable `sts2-api` game pack.
+    - **Lazy-loaded stage files / file-based state** enabling resume — the basis
+      for our SPEC.md/PLAN.md/MEMORY.md resume design.
+    - **Stop hooks** (optional push with final proof) — a completion-gate pattern.
+- **Caveat:** like GodotMaker it *generates whole games*; we *add a mod to an
+  existing game*. Pipeline shape transfers; "what gets built" differs.
+
+### 1b. RandallLiuXin/GodotMaker — corroborating architecture reference ⭐
+- `Autonomous text-to-game pipeline for Godot, powered by Claude Code, Codex, Opencode`
+- Python, 407★, actively updated, source-available (**BUSL 1.1** — restrictive).
+- **Why still useful (secondary):** near-identical closed loop to godogen, so it
+  independently validates the shape. Some pieces are spelled out more concretely
+  than godogen's docs and are worth borrowing:
+  - **A named skill pipeline we can mirror 1:1:** `skills/core/gm-*` =
     `gm-gdd` → `gm-scaffold` → `gm-build` → `gm-verify` → `gm-evaluate` →
-    `gm-fixgap`/`gm-rescue` → `gm-finalize`/`gm-accept`. Each is a
-    `SKILL.md` + `references/`.
-  - **The closed loop we want, proven:** Plan → Build (worker+verifier) →
-    Evaluate (launch game, E2E, screenshots vs design) → Fixgap → loop.
-  - **Concrete engineering patterns to steal:**
-    - `gm-verify` runs `godot --headless --quit` for build + gdUnit4 for tests,
-      emits a structured JSON report.
-    - Stage state tracked in `.godotmaker/stage.jsonl` for resume; each skill
-      declares strict read/write permissions.
-    - Visual QA as a first-class gate (screenshot → compare to design).
-  - Its README also pre-writes our "why not a closed commercial platform"
-    argument: code is local, real engine output, no platform lock-in.
-- **Caveat:** it *generates a whole game from scratch*; we *add a mod to an
-  existing game*. The pipeline shape transfers; the "what gets built" differs.
+    `gm-fixgap`/`gm-rescue` → `gm-finalize`/`gm-accept`. Each = `SKILL.md` +
+    `references/`. (Our stage mapping below is expressed against these names.)
+  - Ships `godot-api/csharp.md` — confirms C#-on-Godot knowledge transfers.
+  - `agent-runtimes/{claude-code,codex,opencode}/` + a `capability-contract.md`.
+  - `gm-verify` runs `godot --headless --quit` + gdUnit4, emits a structured JSON
+    report; stage state in `.godotmaker/stage.jsonl` for resume; each skill
+    declares strict read/write permissions; visual QA is a first-class gate.
+  - Its README pre-writes our "why not a closed commercial platform" argument.
 
 ### 2. Alchyr/ModTemplate-StS2 — ENGINEERING SUBSTRATE (game-pack raw material) ⭐
 - `Slay the Spire 2 mod project template`, C#, 243★, has a wiki, updated 2026-06-29.
@@ -80,23 +106,28 @@ than generating a whole game.
 
 There is no single repo to fork. The right baseline is:
 
-> **GodotMaker's architecture & closed-loop pipeline**, retargeted from
-> "generate a game" to "generate a mod", **sitting on top of
-> ModTemplate-StS2's mod anatomy + BaseLib + dotnet-new scaffolding**, borrowing
-> **Claude-Code-Game-Studios' patterns** for organizing skills/agents/hooks only
-> where useful.
+> **godogen's architecture & frame-grounded self-repair loop** (with GodotMaker's
+> named `gm-*` stages as the concrete blueprint), retargeted from "generate a
+> game" to "generate a mod", **sitting on top of ModTemplate-StS2's mod anatomy +
+> BaseLib + dotnet-new scaffolding**, borrowing **Claude-Code-Game-Studios'
+> patterns** for organizing skills/agents/hooks only where useful.
 
-Mapping GodotMaker's stages onto our text-to-mod flow:
+Mapping the closed-loop stages (GodotMaker's `gm-*` names; godogen has the same
+shape) onto our text-to-mod flow:
 
-| GodotMaker stage | Our text-to-mod equivalent |
+| Closed-loop stage | Our text-to-mod equivalent |
 |---|---|
 | `gm-gdd` (idea → design contract) | interview → **mod spec** (relic: rarity, tier, trigger, effect) |
 | `gm-scaffold` | `dotnet new` from ModTemplate-StS2 (+ BaseLib dep) |
 | `gm-build` (workers write code+tests) | write the C# element + `Mod.json` + localization + placeholder art |
-| `gm-verify` (`godot --headless`, tests) | build the `.dll`, produce the `.pck`, static checks |
-| `gm-evaluate` (launch, E2E, screenshots) | launch STS2 **"Load with mods"**, confirm element appears + effect triggers |
+| `gm-verify` (`godot --headless`, tests) | build the `.dll`, produce the `.pck` (PckPacker), static checks |
+| `gm-evaluate` (launch, E2E, screenshots) | launch STS2 **"Load with mods"**, confirm element loads (log marker) + effect triggers |
 | `gm-fixgap`/`gm-rescue` | read game logs → **auto-repair** → re-test (our headline differentiator) |
 | `gm-finalize` | package the mod; optional (opt-in) Workshop publish |
+
+Key adaptation: godogen/GodotMaker verify on **screenshots** (frame-grounded);
+STS2 has no documented headless test mode, so our observed reality is the
+**game log + live state**, not frames — same principle, different sensor.
 
 ## Open questions this raises (feed into PROJECT.md §12)
 - How far can we push a **headless / scripted** STS2 test vs. needing the real
@@ -110,6 +141,7 @@ Mapping GodotMaker's stages onto our text-to-mod flow:
   + auto-repair angle differs.
 
 ## Sources
+- https://github.com/htdt/godogen (primary architecture baseline)
 - https://github.com/RandallLiuXin/GodotMaker
 - https://github.com/Alchyr/ModTemplate-StS2 (+ /wiki)
 - https://github.com/Donchitos/Claude-Code-Game-Studios

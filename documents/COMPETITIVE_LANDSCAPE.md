@@ -6,13 +6,33 @@
 > Several items here change our technical picture — see "Impact" at the end.
 
 ## 1. Direct competitors — AI/text-to-mod (any game)
+- **cgxjdzz/AgentTheSpire** (formerly "SpireForge") —
+  https://github.com/cgxjdzz/AgentTheSpire — **⚠️⚠️ CLOSEST DIRECT COMPETITOR:
+  same game (STS2), same stack (.NET 9 / Godot Mono 4.5.1 / PCK), same NL→mod
+  promise, and shipped first.** A standalone **local web app** (Python FastAPI +
+  React/TS + C#/Godot mod template), launches at localhost:7860. NOT a Claude
+  Code skill, NOT an MCP ("does not use MCP"). 3-stage pipeline: code gen (Claude
+  Code CLI *or* API keys — Anthropic/Moonshot/DeepSeek/Qwen/Zhipu) → **art gen**
+  (FLUX.2/FAL/即梦/通义万相 + bg removal) → `dotnet publish` → PCK → deploy to
+  mods folder. Already has a **compile-error auto-repair loop** and optional
+  **game-DLL decompilation** for grounding. MIT, 51★/10 forks, but **very new /
+  barely maintained** (~4 commits, all ~2026-03-21).
+  **How we differ:** (1) **distribution/friction** — we are a Claude Code *skill*
+  (near-zero install) vs. their clone-repo + Python/Node/.NET/Godot + edit-JSON-
+  keys + web-UI toolchain; (2) **grounding** — our curated `sts2-api` game pack +
+  BaseLib recipes vs. their ad-hoc decompilation; (3) **true non-programmer, one-
+  sentence UX** vs. their AI-tinkerer bar; (4) we make **tier-2 behavior
+  verification** the headline. **Two gaps we must own:** they HAVE an art pipeline
+  and we don't yet; and our "no setup" claim must be genuinely true. MIT = their
+  mod_template/PCK flow, auto-repair design, decompiler, and multi-provider art
+  pipeline are all borrow/study references.
 - **lebek/modmixer** — https://github.com/lebek/modmixer (modmixer.com) —
   Desktop app: decompiles/indexes a game, gives an AI LLM (Claude/Codex/Kimi/
   Deepseek) tools to build AND test mods, "without writing code." TypeScript.
   Non-programmers via AI assistant. Active (2026-06-28), 12★.
-  **⚠️ Closest analog to our entire loop — game-agnostic. Biggest conceptual
-  competitor.** Differentiator vs us: it's a general desktop app, not a
-  non-programmer one-sentence *skill* + STS2-specific game pack.
+  **⚠️ Closest game-AGNOSTIC analog to our loop.** Differentiator vs us: it's a
+  general desktop app, not a non-programmer one-sentence *skill* + STS2-specific
+  game pack. (Deep-dive: COMPETITOR_MODMIXER.md.)
 - **Minecraft no-code AI SaaS cluster** — modlyai.com, player.games,
   orcaclient.com, enderdevelopment.com, creativemode.net, codexe.eu,
   stacknests.com, Modder AI, Blink — "describe a mod → working Minecraft mod,
@@ -95,11 +115,16 @@
   built").
 
 ## Biggest threats
+- **cgxjdzz/AgentTheSpire** — the ONLY direct STS2 text-to-mod competitor found:
+  same game, same stack, working auto-repair loop AND art pipeline, shipped first.
+  Threat tempered by being an early, barely-maintained heavyweight app (not a
+  frictionless skill) — but it proves the concept and beats us to market.
 - **lebek/modmixer** — same decompile→index→LLM-tools→build+test-no-code
   concept, game-agnostic; small now, could add STS2 trivially.
 - **htdt/godogen** (4,191★) — the autonomous generate→run→observe→self-repair
   loop for Godot+C# is already built and popular; a pivot to mod output = our
-  architecture with a head start.
+  architecture with a head start. (Also our primary architecture baseline —
+  BASELINE_RESEARCH.md.)
 - **STS2MCP author / STS2 community** — whoever first pairs live-state MCP with
   generation owns the STS2 niche.
 
