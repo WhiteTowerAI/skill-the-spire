@@ -17,21 +17,26 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — no code yet, on purpose
+## Current status — M0 + M1 passed; seeding the game pack
 
-The repo is **planning-only right now**: five research docs in `documents/`,
-`LICENSE`, `README.md`, and this file. There is deliberately **no source tree, no
-`git init` of the skill skeleton** — IMPLEMENTATION_PLAN.md §6 gates that on
-passing the **M0 de-risk** step first, so we don't scaffold against unvalidated
-assumptions. Do not lay down the directory structure until M0's gate passes.
+**M0 and M1 gates PASSED (2026-07-01).** See `documents/M0_RESULTS.md` and
+`documents/M1_RESULTS.md`. What exists now:
+- The research docs in `documents/`, `LICENSE`, `README.md`, this file.
+- **The `sts2-api` game pack is being seeded** at `documents/sts2-api/`:
+  `recipes/relic.md` (the first recipe, distilled from the golden mod) and
+  `errors.md` (error→fix catalog).
+- The **skill skeleton is still deliberately not scaffolded** — that's M2.
+  IMPLEMENTATION_PLAN.md §1 is the target layout; `t2mod/` is the proposed root.
 
-**Immediate next step is M0** (IMPLEMENTATION_PLAN.md §7): on a machine with STS2
-+ .NET 9, manually validate the two gating risks before building anything:
-- **R1** — one-command headless build produces `.dll`+`.pck` in the game's `mods/`.
-- **R2 tier 1** — an injected `[T2MOD-SELFTEST]` log marker is greppable from
-  `godot.log` after launching via `steam_appid.txt`.
+The hand-built golden mod ("Gambler's Coin" relic) lives **outside this repo** at
+`D:\26summer_intern\m1-gamblers-coin` (like the M0 probe) — it's a reference, not
+part of the published skill. It loads AND its effect fires in-game (both R2 tiers).
 
-## Architecture (the intended shape, once M0 passes)
+**Immediate next step is M2** (IMPLEMENTATION_PLAN.md §5): build the orchestrator
+`SKILL.md` + interview/spec/scaffold/author/build/verify stages driving
+`recipes/relic.md`, and reproduce the golden relic from one sentence.
+
+## Architecture (the intended shape; substrate validated by M0/M1)
 
 The design is a **combination baseline**, not a fork (see BASELINE_RESEARCH.md):
 
