@@ -102,6 +102,24 @@ than generating a whole game.
   and its human-in-the-loop story workflow. NOT a technical baseline for the
   closed loop.
 
+### 4. cgxjdzz/AgentTheSpire — CLOSEST DIRECT COMPETITOR, also a borrow reference ⭐
+- STS2 text-to-mod generator (formerly "SpireForge"). Standalone local web app
+  (Python FastAPI + React/TS + C#/Godot template), MIT, 51★, very new/thinly
+  maintained (~4 commits ~2026-03-21). Full competitive analysis:
+  COMPETITIVE_LANDSCAPE.md §1 (it is our closest rival — same game, same stack,
+  shipped first).
+- **Why it's also a reference (MIT-licensed, so borrowable):**
+  - **It has an art-generation pipeline and we don't yet** — the one concrete
+    feature gap. Study its multi-provider image-gen approach (FLUX.2 / FAL / 即梦
+    / 通义万相 + background removal) as prior art for our required, BYO-backend
+    art pipeline (PROJECT.md §7.1).
+  - Its **compile-error auto-repair loop**, **mod_template → `dotnet publish` →
+    PCK → deploy** flow, and optional **game-DLL decompilation for grounding** are
+    all working references for our build/verify/repair stages and `grounding.md`.
+- **How we differ (don't just copy):** it's a heavyweight app for AI-tinkerers;
+  we are a low-friction Claude Code *skill* for true non-programmers, with a
+  curated game pack (vs. ad-hoc decompilation) and tier-2 behavior verification.
+
 ## Conclusion: our baseline is a COMBINATION
 
 There is no single repo to fork. The right baseline is:
@@ -145,6 +163,7 @@ STS2 has no documented headless test mode, so our observed reality is the
 - https://github.com/RandallLiuXin/GodotMaker
 - https://github.com/Alchyr/ModTemplate-StS2 (+ /wiki)
 - https://github.com/Donchitos/Claude-Code-Game-Studios
+- https://github.com/cgxjdzz/AgentTheSpire (closest competitor + art-pipeline reference)
 
 ---
 

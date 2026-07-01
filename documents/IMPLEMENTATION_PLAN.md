@@ -133,7 +133,7 @@ What each file holds and where it's sourced from:
 | `recipes/*.md` | Copy-adaptable known-good pattern per element type, each a full working example | ModTemplate + base-game analogs |
 | `manifest.md` | `Mod.json` schema, id-immutability, `affects_gameplay`, version rules | ModTemplate wiki |
 | `localization.md` | `localization/eng/*.json` format; the analyzer auto-report/generate behavior | StS2ModAnalyzers |
-| `art.md` | Image paths + exact sizes (card 1000x760, etc.), placeholder-first workflow | ModTemplate wiki |
+| `art.md` | Image paths + exact sizes (card 1000x760, etc.); placeholder-first workflow AND the BYO-backend generate path (per-sprite placeholder-vs-generate choice, user-configured image-gen API/local model) — see PROJECT.md §7.1 | ModTemplate wiki |
 | `errors.md` | **Error signature → fix** catalog; grows every time repair succeeds | our own runs (compounding asset) |
 | `grounding.md` | When the pack lacks an answer: query spire-codex API / decompile sts2.dll | spire-codex, decompiling wiki |
 
@@ -203,8 +203,13 @@ skill reproduces M1's relic from one sentence, no repair needed.
 failures hit during M1/M2. Deliberately feed a few broken specs and confirm the
 loop diagnoses → fixes → re-verifies within the retry cap.
 
-**M4 — Breadth within STS2.** Add `recipes/card.md`, `recipes/potion.md`;
-handle 2-3 more element types. Harden the interview for ambiguous requests.
+**M4 — Breadth within STS2 + art pipeline.** Add `recipes/card.md`,
+`recipes/potion.md`; handle 2-3 more element types. Harden the interview for
+ambiguous requests. **Build the art/sprite pipeline (PROJECT.md §7.1, REQUIRED):**
+per needed sprite, the interview offers placeholder vs. generate; generation uses
+a **user-configured backend** (their own image-gen API or a local model — we ship
+the plumbing, not a bundled provider); output lands at the correct path/size for a
+PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
 
 **M5 — Behavior test (R2 tier 2) + Codex runtime + optional publish.** Pick the
 tier-2 mechanism from M0/M1 findings; add the Codex adapter; wire opt-in
