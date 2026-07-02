@@ -27,6 +27,24 @@
 - **Cause:** the `/p:Name=Value` form gets mangled by shell quoting on this setup.
 - **Fix:** use `--property:Name=Value` instead.
 
+### Unknown type / member: CS0103, CS0246, CS0117, CS1061 (a guessed API)
+- **Signature:** `CS0103: The name '<X>' does not exist in the current context`
+  (a bare fabricated name, e.g. `EnergyCmd` — confirmed in M3 testing),
+  `CS0246: The type or namespace name '<X>' could not be found`,
+  `CS0117: '<Type>' does not contain a definition for '<member>'`, or
+  `CS1061: '<Type>' does not contain a definition for '<method>'` — on an STS2 /
+  BaseLib symbol you wrote (a Cmd, model, enum, or hook).
+- **Cause:** the API name was **guessed from memory**, not confirmed. STS2's Cmd
+  and model names don't always match intuition (e.g. energy is `PlayerCmd.GainEnergy`,
+  not `EnergyCmd.Add`), and BaseLib wraps some of them.
+- **Fix:** do **not** guess a second name — that's how the repair loop burns its
+  attempts. Ground the real symbol: query the **sts2-api** skill ("commands for
+  <effect>" / "<Type>: real member for <X>"), check `recipes/relic.md`'s "Effect
+  building blocks", or look it up in the decompiled `sts2.dll`
+  (`D:\26summer_intern\decomp\sts2_full`) / BaseLib decompile. Then use the exact
+  name + namespace. Missing `using` for a confirmed type → add the namespace from
+  the recipe's import block, not a new guess.
+
 ### Nullable warning CS8602 on `Owner.PlayerCombatState`
 - **Signature:** `warning CS8602: Dereference of a possibly null reference` on
   `Owner.PlayerCombatState.Energy` (template has `<Nullable>enable</Nullable>`).
@@ -107,6 +125,20 @@
 - **Cause:** the id doesn't match any `Id.Entry` (matching is `Contains`, uppercased).
 - **Fix:** use the derived entry, e.g. `relic add GAMBLERSCOIN-GAMBLERS_COIN` (or a
   unique substring like `GAMBLERS`). Confirm the mod loaded first (grep log).
+
+### Tier-1 verify: marker NOT FOUND but `RUNNING MODDED` = YES (mod loaded, logged nothing)
+- **Signature:** `grep_log.ps1` reports `RUNNING MODDED flag : YES` and no
+  mod-named errors, yet `Tier-1 load marker : NOT FOUND`. The mod loaded fine — it
+  simply never logged `[T2MOD-SELFTEST] <ModName> loaded ok`.
+- **Cause:** the load marker was **not injected** into `MainFile.Initialize()`. The
+  Alchyr template's `MainFile.cs` logs nothing by default (this bit M2 — it was a
+  doc bug in author.md). A second cause: the marker WAS added in source but the code
+  change **wasn't rebuilt**, so the stale `.dll` in `mods/` has no marker.
+- **Fix:** add `Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");` at the end of
+  `MainFile.Initialize()` (right after `harmony.PatchAll();`), per author.md step 2,
+  then **rebuild** (`build.md`) so the fresh `.dll`/`.pck` reach `mods/`, and
+  re-verify. Distinct from the log-rotation false-FAIL below: there the marker is
+  present in the log but the grep sliced past it; here the marker was never written.
 
 ### Tier-1 verify reports [FAIL] "load marker missing" but the mod actually loaded
 - **Signature:** `grep_log.ps1` says the `[T2MOD-SELFTEST] ... loaded ok` marker is

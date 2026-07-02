@@ -17,18 +17,23 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M2 PASSED (skill reproduces the golden relic from one sentence)
+## Current status — M3 PASSED (bounded automated repair loop works end to end)
 
-**M0, M1, and M2 gates all PASSED.** See `documents/M0_RESULTS.md`,
-`M1_RESULTS.md`, `M2_RESULTS.md`. **M2 acceptance passed 2026-07-02**: driving the
-modmaker stage files, one sentence produced a fresh relic ("LuckyCoin") that built
-clean, loaded (tier-1), and fired in combat (tier-2, energy 3→6 HEADS) with **zero
-repair to the generated mod**. What exists now:
+**M0, M1, M2, and M3 gates all PASSED.** See `documents/M0_RESULTS.md`,
+`M1_RESULTS.md`, `M2_RESULTS.md`, `M3_RESULTS.md`. **M3 passed 2026-07-02**: the
+`repair.md` bounded loop diagnosed → fixed → re-verified two deliberately-broken
+relic specs within the retry cap (1 attempt each) — a build-time guessed-API error
+(`CS0103` → ground to the real Cmd) and the headline "green build ≠ loads" case
+(missing `[Pool]`, compiles clean, throws at registration, caught by tier-1's
+error-line check). M2 acceptance (2026-07-02) had already produced a fresh relic
+("LuckyCoin") from one sentence that built clean, loaded, and fired in combat with
+zero repair. What exists now:
 - The research docs in `documents/`, `LICENSE`, `README.md`, this file.
 - **The skill source tree** under `games/sts2/` (decided: use the existing repo
   root, not a `t2mod/` wrapper). Layout:
   - `games/sts2/skills/modmaker/` — orchestrator `SKILL.md` + stage files
-    (`interview`, `spec`, `scaffold`, `author`, `build`, `verify`, `quirks`).
+    (`interview`, `spec`, `scaffold`, `author`, `build`, `verify`, `repair`,
+    `quirks`).
   - `games/sts2/skills/sts2-api/` — the game pack (`SKILL.md`, `recipes/relic.md`,
     `errors.md`), moved here from `documents/sts2-api/` via `git mv`.
   - `games/sts2/tools/` — `build.ps1` / `launch.ps1` / `grep_log.ps1` (PowerShell,
@@ -43,11 +48,15 @@ The hand-built golden mod ("Gambler's Coin" relic) lives **outside this repo** a
 `D:\26summer_intern\m1-gamblers-coin` (like the M0 probe) — it's a reference, not
 part of the published skill. It loads AND its effect fires in-game (both R2 tiers).
 
-**Immediate next step is M3** (automated repair loop + growing `errors.md`). M2
-acceptance is done. Note the M2 run fixed two verify-tool bugs (`grep_log.ps1` log
-rotation; `build.ps1` localized-output path regex) and one doc bug (`author.md`
-now says to inject the load marker — the Alchyr template's `MainFile.cs` does not
-log one by default). Automated behavior testing (M5) and art (M4) remain out of scope.
+**Immediate next step is M4** (breadth within STS2: card/potion recipes, harder
+interview, + the art/sprite pipeline). M3 is done: `repair.md` (the bounded
+diagnose → fix → re-verify loop) is wired into `build.md`/`verify.md`, `errors.md`
+grew a guessed-API entry (now incl. `CS0103`, found by running the acceptance) and
+a tier-1 "loaded but no marker" entry, and both broken-spec tests converged in one
+attempt. A notable M3 finding: tier-1's error-line check is load-bearing — a
+missing `[Pool]` still logs the load marker (MainFile ran), so marker-alone would
+false-PASS; only the "no mod-named errors" half caught it. Automated behavior
+testing (M5) and art (M4) remain the frontier.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 

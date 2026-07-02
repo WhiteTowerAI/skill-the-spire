@@ -25,9 +25,18 @@ pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
   place in the new file and makes a working mod look like it failed to load. This
   was a real bug; read the whole current log instead.
 
-**PASS** = marker found, no mod-named errors. **FAIL** → consult sts2-api
-`errors.md` (registration/load section) — e.g. missing `[Pool]` throws at
-registration; a raw-key title means the loc keys don't match `Id.Entry`. Fix, rebuild, re-verify once.
+**PASS** = marker found, no mod-named errors. **FAIL** → go to `repair.md`. It
+distinguishes the two tier-1 failure modes and fixes accordingly:
+
+- **marker NOT FOUND but `RUNNING MODDED` = YES** → the mod loaded but logged no
+  marker: it wasn't injected into `MainFile.Initialize()` (author.md step 2), or
+  the code change never rebuilt. (Distinct from the log-rotation false-FAIL, which
+  errors.md already retired.)
+- **error/exception lines naming the mod** → it threw at registration/load — e.g.
+  missing `[Pool]` throws; a raw-key title means the loc keys don't match `Id.Entry`.
+
+A code/csproj fix only reaches the game through a fresh build, so repair **rebuilds
+first**, then re-runs tier-1 — bounded to 3 attempts.
 
 This is the guaranteed check: it proves "installs + loads + registered".
 
@@ -50,8 +59,11 @@ pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
 ```
 
 If the console won't open or `relic add` says "Unable to create relic", see
-errors.md "Verification harness". Report the tier-2 result as **observed** only if
-the marker fired and the user saw the change; otherwise report tier-1 only.
+errors.md "Verification harness". If the effect is **wrong or absent** once the
+relic is granted (e.g. energy doesn't change, or fires every turn), that's a tier-2
+behavior failure → go to `repair.md` ("verify tier-2" signal: "no effect" and
+"wrong effect" are different signatures). Report the tier-2 result as **observed**
+only if the marker fired and the user saw the change; otherwise report tier-1 only.
 
 ## Finalize
 

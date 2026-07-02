@@ -16,12 +16,13 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now (M2 — happy path)
+## Scope right now (M3 — relic, with a bounded repair loop)
 
-This skeleton targets the **relic** happy path: reproduce a known-good relic from
-one sentence with no repair. Card/potion recipes, the automated repair loop,
-automated behavior testing, and the art-generation pipeline are later milestones.
-If a request needs those, say so plainly rather than half-doing it.
+This skeleton targets the **relic** path end to end: turn one sentence into a
+known-good relic, and when a stage fails, run the **bounded automated repair loop**
+(`repair.md`) to diagnose → fix → re-verify within a hard retry cap. Card/potion
+recipes, automated tier-2 behavior testing, and the art-generation pipeline are
+later milestones. If a request needs those, say so plainly rather than half-doing it.
 
 ## Stage files
 
@@ -35,6 +36,7 @@ Read each from `${MODMAKER_SKILL_DIR}/` only when you reach that stage.
 | `author.md` | Write the C# element + localization + marker | After scaffold |
 | `build.md` | `dotnet build` → .dll/.pck/.json into mods/ | After author |
 | `verify.md` | Launch + log-assert load (tier-1) + tier-2 guide | After build |
+| `repair.md` | Bounded diagnose → fix → re-verify sub-loop | Whenever build/verify fails |
 | `quirks.md` | STS2/BaseLib gotchas | Before writing any C# |
 | *(sts2-api skill)* | Recipes, command APIs, error fixes | Whenever you need a concrete STS2 answer |
 
@@ -60,14 +62,20 @@ User: one sentence ("a relic that ...")
     inject the [T2MOD-SELFTEST] marker.
     |
  5. BUILD (build.md) — tools/build.ps1 → .dll/.pck/.json into mods/. On failure:
-    report the error clearly (automated repair is M3; do not loop blindly).
+    go to REPAIR (repair.md).
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
     and mod-named errors (tier-1). Then guide the user through the dev-console
-    tier-2 check. Never claim the effect is verified when only load was.
+    tier-2 check. Never claim the effect is verified when only load was. On failure:
+    go to REPAIR (repair.md).
     |
  7. FINALIZE — summarize what was built, where the artifacts are, and which tier
     of verification was reached.
+    |
+ 8. REPAIR (repair.md) — shared sub-loop invoked by 5/6: read the real error,
+    consult sts2-api errors.md, apply ONE fix, re-run only the failed stage.
+    Bounded (max 3 attempts; stop if the same signature survives a fix). On
+    convergence, resume the pipeline; on exhaustion, hand back a clear failure.
 ```
 
 ## Files are state (resume after compaction)

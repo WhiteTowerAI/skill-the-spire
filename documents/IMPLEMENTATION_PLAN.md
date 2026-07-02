@@ -3,10 +3,11 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01. **M0, M1, and M2 gates all PASSED**
-> (see M0_RESULTS.md, M1_RESULTS.md, M2_RESULTS.md). The skill skeleton under
-> `games/sts2/` reproduces the golden relic from one sentence, both R2 tiers, zero
-> repair. Next: M3 (automated repair loop + growing errors.md).
+> Status: living plan. Written 2026-07-01. **M0, M1, M2, and M3 gates all PASSED**
+> (see M0_RESULTS.md, M1_RESULTS.md, M2_RESULTS.md, M3_RESULTS.md). The skill under
+> `games/sts2/` reproduces the golden relic from one sentence, and the bounded
+> `repair.md` loop fixes broken specs within the retry cap. Next: M4 (breadth within
+> STS2 — card/potion recipes — + the art/sprite pipeline).
 
 ## 0. Design principles (inherited from the research)
 
@@ -213,9 +214,16 @@ energy 3→6 HEADS) with **zero repair to the generated mod**. Source lives unde
 (`grep_log.ps1` godot.log rotation; `build.ps1` localized dotnet-output path regex)
 and one doc bug (`author.md` now injects the load marker — the template doesn't).
 
-**M3 — Repair loop + errors.md.** Add `repair.md` and seed `errors.md` from the
-failures hit during M1/M2. Deliberately feed a few broken specs and confirm the
-loop diagnoses → fixes → re-verifies within the retry cap.
+**M3 — Repair loop + errors.md. ✅ DONE (2026-07-02, see M3_RESULTS.md).** Added
+`repair.md` (bounded diagnose → fix → re-verify sub-loop: max 3 attempts, stop if a
+signature survives a fix, one change per attempt, never fake success), wired it into
+`build.md`/`verify.md`, and grew `errors.md`. **Outcome:** two deliberately-broken
+relic specs each repaired in 1 attempt driving the real tools — a build-time
+guessed-API error (`CS0103` → ground to the real Cmd) and the headline "green build ≠
+loads" case (missing `[Pool]`: compiles clean, throws at registration). Notable
+finding: tier-1's error-line check is load-bearing — the load marker still fires when
+`[Pool]` is missing (MainFile ran), so marker-alone would false-PASS. errors.md grew
+from the run itself (CS0103 added to the guessed-API signature).
 
 **M4 — Breadth within STS2 + art pipeline.** Add `recipes/card.md`,
 `recipes/potion.md`; handle 2-3 more element types. Harden the interview for
