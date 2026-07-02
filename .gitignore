@@ -1,2 +1,10 @@
 # AI agent session handoff notes — local working memory, not a project artifact.
 AGENT_MEMORY.md
+baselines/
+
+# Published skill output — rendered from games/*/skills/ by publish.sh. Generated,
+# not source; regenerate with ./publish.sh --agent claude.
+.claude/
+
+# Python cache from scripts/publish
+__pycache__/
