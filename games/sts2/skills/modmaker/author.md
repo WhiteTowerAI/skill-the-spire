@@ -26,18 +26,25 @@ Add `<ModName>Code/Relics/<RelicName>.cs`. Use the recipe skeleton verbatim, the
   "Effect building blocks". `await` every Cmd. Use `Rng`, never `System.Random`.
 - Call `Flash()` when the relic visibly triggers.
 
-## 2. Inject the self-test marker
+## 2. Inject the self-test markers
 
-The scaffold's `MainFile.cs` already logs `[T2MOD-SELFTEST] <Mod> loaded ok` at
-init (load proof). For **effect** proof, log a marker inside the trigger showing
-observed before → after state:
+**Two markers.** The Alchyr template's `MainFile.cs` does NOT log anything by
+default — you must add the **load** marker yourself, or tier-1 verify silently
+finds nothing. In `MainFile.Initialize()`, right after `harmony.PatchAll();`:
+
+```csharp
+Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
+```
+
+Then, for **effect** proof, log a marker inside the trigger showing observed
+before → after state:
 
 ```csharp
 MainFile.Logger.Info($"[T2MOD-SELFTEST] <RelicName> fired: {outcome} <metric> {before} -> {after}");
 ```
 
-This is what verify.md's tier-2 greps for. Keep it during M1/M2 while verification
-is manual.
+verify.md greps the first for tier-1 and the second for tier-2. Keep both during
+M1/M2 while verification is manual.
 
 ## 3. Write localization
 

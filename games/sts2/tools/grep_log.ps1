@@ -36,8 +36,12 @@ if (-not (Test-Path $LogPath)) {
 
 # Read only the lines from this run.
 $stream = [System.IO.File]::OpenRead($LogPath)
+# STS2 recreates/rotates godot.log on each launch, so a pre-launch offset can
+# exceed the new file's length — that means rotation happened; read from 0.
 if ($SinceOffset -gt 0 -and $SinceOffset -lt $stream.Length) {
     $stream.Seek($SinceOffset, 'Begin') | Out-Null
+} elseif ($SinceOffset -ge $stream.Length -and $SinceOffset -gt 0) {
+    Write-Host "[grep] log shorter than offset ($($stream.Length) < $SinceOffset) -- log rotated; reading from start."
 }
 $reader  = [System.IO.StreamReader]::new($stream)
 $content = $reader.ReadToEnd()
@@ -62,7 +66,7 @@ Write-Host "=== [T2MOD] Verify: $ModName ==="
 Write-Host "Log range: offset $SinceOffset -> end of file"
 Write-Host ""
 Write-Host "RUNNING MODDED flag : $(if($modded){'YES'}else{'NOT SEEN (mod may not have loaded)'})"
-Write-Host "Tier-1 load marker  : $(if($loadLine){"FOUND => $loadLine"}else{"NOT FOUND — mod did not log its init marker"})"
+Write-Host "Tier-1 load marker  : $(if($loadLine){"FOUND => $loadLine"}else{"NOT FOUND -- mod did not log its init marker"})"
 Write-Host ""
 
 if ($errorLines) {

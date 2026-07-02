@@ -50,12 +50,21 @@ if ($code -ne 0) {
     exit $code
 }
 
-# Locate the mods/<ModName>/ folder the build copied into (from the log's Copy lines).
-$modsLine = $log | Select-String -Pattern 'mods[\\/](?<name>[^\\/]+)[\\/]' | Select-Object -First 1
+# Locate the mods/<ModName>/ folder the build copied into. Try, in order:
+#  1. any log line containing a path ending in ...\mods\<ModName> (locale-agnostic;
+#     the copy-confirmation wording is localized, so match the PATH not the words),
+#  2. ask MSBuild for the resolved $(ModsPath) property (authoritative fallback).
 $modsDir = $null
-if ($modsLine) {
-    $full = ($log | Select-String -Pattern "(?<p>.*[\\/]mods[\\/]$([regex]::Escape($ModName)))[\\/]" | Select-Object -First 1)
-    if ($full) { $modsDir = $full.Matches[0].Groups['p'].Value }
+$escaped = [regex]::Escape($ModName)
+$pathHit = $log | Select-String -Pattern "(?<p>[A-Za-z]:[\\/].*?[\\/]mods[\\/]$escaped)(?=[\\/'`" ]|$)" | Select-Object -First 1
+if ($pathHit) { $modsDir = $pathHit.Matches[0].Groups['p'].Value }
+
+if (-not $modsDir) {
+    $mp = & dotnet msbuild $csproj.FullName -getProperty:ModsPath -nologo 2>$null
+    if ($LASTEXITCODE -eq 0 -and $mp) {
+        $candidate = Join-Path ($mp.Trim()) $ModName
+        if (Test-Path $candidate) { $modsDir = $candidate }
+    }
 }
 
 Write-Host ""

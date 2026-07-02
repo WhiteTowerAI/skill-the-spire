@@ -17,11 +17,13 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M2 skeleton built; awaiting end-to-end acceptance
+## Current status — M2 PASSED (skill reproduces the golden relic from one sentence)
 
-**M0 and M1 gates PASSED (2026-07-01).** See `documents/M0_RESULTS.md` and
-`documents/M1_RESULTS.md`. **The M2 skill skeleton is now scaffolded (happy path).**
-What exists now:
+**M0, M1, and M2 gates all PASSED.** See `documents/M0_RESULTS.md`,
+`M1_RESULTS.md`, `M2_RESULTS.md`. **M2 acceptance passed 2026-07-02**: driving the
+modmaker stage files, one sentence produced a fresh relic ("LuckyCoin") that built
+clean, loaded (tier-1), and fired in combat (tier-2, energy 3→6 HEADS) with **zero
+repair to the generated mod**. What exists now:
 - The research docs in `documents/`, `LICENSE`, `README.md`, this file.
 - **The skill source tree** under `games/sts2/` (decided: use the existing repo
   root, not a `t2mod/` wrapper). Layout:
@@ -41,10 +43,11 @@ The hand-built golden mod ("Gambler's Coin" relic) lives **outside this repo** a
 `D:\26summer_intern\m1-gamblers-coin` (like the M0 probe) — it's a reference, not
 part of the published skill. It loads AND its effect fires in-game (both R2 tiers).
 
-**Immediate next step is M2 acceptance**: on the STS2 box, run `publish.sh`, then
-`/modmaker` with the golden-relic sentence and confirm it reproduces a loading
-(tier-1) + effect-firing (tier-2, dev-console) relic with no repair. Automated
-repair (M3), behavior automation (M5), and art (M4) are explicitly out of scope here.
+**Immediate next step is M3** (automated repair loop + growing `errors.md`). M2
+acceptance is done. Note the M2 run fixed two verify-tool bugs (`grep_log.ps1` log
+rotation; `build.ps1` localized-output path regex) and one doc bug (`author.md`
+now says to inject the load marker — the Alchyr template's `MainFile.cs` does not
+log one by default). Automated behavior testing (M5) and art (M4) remain out of scope.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 

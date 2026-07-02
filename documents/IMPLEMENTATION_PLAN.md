@@ -3,10 +3,10 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01. **M0 and M1 gates PASSED** (see
-> M0_RESULTS.md, M1_RESULTS.md); the **M2 skill skeleton is built** (2026-07-02)
-> under `games/sts2/` and awaits end-to-end acceptance. Next: run `/modmaker` on
-> the STS2 box to reproduce the golden relic from one sentence.
+> Status: living plan. Written 2026-07-01. **M0, M1, and M2 gates all PASSED**
+> (see M0_RESULTS.md, M1_RESULTS.md, M2_RESULTS.md). The skill skeleton under
+> `games/sts2/` reproduces the golden relic from one sentence, both R2 tiers, zero
+> repair. Next: M3 (automated repair loop + growing errors.md).
 
 ## 0. Design principles (inherited from the research)
 
@@ -202,15 +202,16 @@ tiers passed — the effect fired in real combat (log-verified), not just loaded
 console** (`relic add <id>`, auto-enabled when modded) is a cheap tier-2 lever,
 reshaping the M5 mechanism choice toward driving the console.
 
-**M2 — Skill skeleton, happy path. 🚧 SKELETON BUILT (2026-07-02), awaiting E2E acceptance.**
+**M2 — Skill skeleton, happy path. ✅ DONE (2026-07-02, see M2_RESULTS.md).**
 Orchestrator `SKILL.md` + interview/spec/scaffold/author/build/verify stages +
-the seeded `recipes/relic.md`. Goal: the skill reproduces M1's relic from one
-sentence, no repair needed. **Built so far:** the source tree under `games/sts2/`
-(decided: existing repo root, no `t2mod/` wrapper), the `sts2-api` pack moved in
-via `git mv`, PowerShell tools (`build`/`launch`/`grep_log`), and the godogen-style
-`publish.sh` (renders `${VAR}` source → `.claude/skills/`; codex branch stubbed for
-M5). **Still to do:** run `/modmaker` on the STS2 box with the golden-relic sentence
-and confirm tier-1 load + tier-2 (dev-console) effect with no repair.
+the seeded `recipes/relic.md`. **Outcome:** driving the stage files, one sentence
+produced a fresh relic ("LuckyCoin", deliberately not the golden name) that built
+clean (0/0), loaded (tier-1 marker), and fired in combat (tier-2, dev console,
+energy 3→6 HEADS) with **zero repair to the generated mod**. Source lives under
+`games/sts2/` (no `t2mod/` wrapper); `publish.sh` renders `${VAR}` source →
+`.claude/skills/` (codex branch stubbed for M5). The run fixed two verify-tool bugs
+(`grep_log.ps1` godot.log rotation; `build.ps1` localized dotnet-output path regex)
+and one doc bug (`author.md` now injects the load marker — the template doesn't).
 
 **M3 — Repair loop + errors.md.** Add `repair.md` and seed `errors.md` from the
 failures hit during M1/M2. Deliberately feed a few broken specs and confirm the
