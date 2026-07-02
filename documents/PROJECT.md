@@ -49,6 +49,23 @@ follows. The user installs it once, then invokes it by describing what they want
      (their skill = one markdown file that drives an interview → brief → build
      → deploy pipeline). We build/validate on Claude Code first (decision). -->
 
+### 3.1 Distribution goal: one-command install from a skill registry
+
+**The end-state install experience is a single command**, the way a user adds any
+published skill — e.g. `npx skills add open-mod` (or the equivalent for whatever
+registry we publish to, such as skills.sh). Assuming their game/toolchain
+prerequisites are met, that one command should place the skill where their agent
+finds it, with **no repo clone, no manual `publish.sh`, no "open Claude Code in
+this specific folder"**. Invoke, describe, done.
+
+This is a **committed target**, not just a nicety — frictionless distribution is
+one of our differentiators vs. competitors that make you clone a repo and wire up
+tooling ([[competitor-agentthespire]]). Today (M2) install is still the developer
+flow (clone → `./publish.sh --agent claude` → open the repo in Claude Code), which
+is fine for building/testing but is NOT the shipping experience. Closing that gap —
+packaging open-mod so a registry's `add` command deploys it in one step — is
+required before we can honestly call the "no setup" claim true. Track as a late-phase
+deliverable (around M5, alongside the Codex runtime and opt-in Workshop publish).
 ## 4. The user and the problem
 
 **Who:** a Slay the Spire 2 player who enjoys the game but cannot program at all.

@@ -225,9 +225,12 @@ a **user-configured backend** (their own image-gen API or a local model — we s
 the plumbing, not a bundled provider); output lands at the correct path/size for a
 PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
 
-**M5 — Behavior test (R2 tier 2) + Codex runtime + optional publish.** Pick the
-tier-2 mechanism from M0/M1 findings; add the Codex adapter; wire opt-in
-Workshop publish. This is the full-fat version.
+**M5 — Behavior test (R2 tier 2) + Codex runtime + one-command install + optional publish.**
+Pick the tier-2 mechanism from M0/M1 findings; add the Codex adapter; **package
+open-mod for one-command install from a skill registry** (e.g. `npx skills add
+open-mod` / skills.sh — the committed distribution goal, PROJECT.md §3.1: no clone,
+no manual `publish.sh`, no fixed working dir); wire opt-in Workshop publish. This is
+the full-fat version.
 
 ## 6. Decisions (locked 2026-07-01)
 
