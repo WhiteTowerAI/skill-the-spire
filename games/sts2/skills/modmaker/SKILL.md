@@ -16,13 +16,13 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now (M3 — relic, with a bounded repair loop)
+## Scope right now (M4 — relic + potion, with a bounded repair loop)
 
-This skeleton targets the **relic** path end to end: turn one sentence into a
-known-good relic, and when a stage fails, run the **bounded automated repair loop**
-(`repair.md`) to diagnose → fix → re-verify within a hard retry cap. Card/potion
-recipes, automated tier-2 behavior testing, and the art-generation pipeline are
-later milestones. If a request needs those, say so plainly rather than half-doing it.
+This skill turns one sentence into a known-good **relic or potion** end to end, and
+when a stage fails, runs the **bounded automated repair loop** (`repair.md`) to
+diagnose → fix → re-verify within a hard retry cap. Card recipes and the
+art-generation pipeline are later milestones. If a request needs those, say so
+plainly rather than half-doing it.
 
 ## Stage files
 

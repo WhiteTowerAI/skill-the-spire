@@ -34,7 +34,8 @@ The template lays out (confirmed from the M1 golden mod):
 - `<ModName>Code/` — C# source, with `MainFile.cs` and per-type folders
   (`Relics/`, `Cards/`, `Powers/`, ...). `<ModName>Code/Relics/<ModName>Relic.cs`
   is the mod's relic base class (resolves image paths); your concrete relic
-  extends it.
+  extends it. **Note:** there is **no `Potions/` folder or base class** — a potion
+  mod creates both in `author.md` (see `recipes/potion.md` "Scaffold difference").
 - `<ModName>/` — resources: `localization/eng/*.json`, `images/...`.
 
 ## 2. Enable the `.pck` (PckPacker)

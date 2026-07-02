@@ -3,11 +3,12 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01. **M0, M1, M2, and M3 gates all PASSED**
-> (see M0_RESULTS.md, M1_RESULTS.md, M2_RESULTS.md, M3_RESULTS.md). The skill under
-> `games/sts2/` reproduces the golden relic from one sentence, and the bounded
-> `repair.md` loop fixes broken specs within the retry cap. Next: M4 (breadth within
-> STS2 — card/potion recipes — + the art/sprite pipeline).
+> Status: living plan. Written 2026-07-01. **M0, M1, M2, M3, and M4 round 1 gates
+> all PASSED** (see M0_RESULTS.md … M4_RESULTS.md). The skill under `games/sts2/`
+> reproduces the golden relic from one sentence, the bounded `repair.md` loop fixes
+> broken specs within the retry cap, and the potion recipe now produces a loading,
+> firing potion end to end. Next: rest of M4 (card recipe, harder interview, art
+> pipeline).
 
 ## 0. Design principles (inherited from the research)
 
@@ -232,6 +233,11 @@ per needed sprite, the interview offers placeholder vs. generate; generation use
 a **user-configured backend** (their own image-gen API or a local model — we ship
 the plumbing, not a bundled provider); output lands at the correct path/size for a
 PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
+> **Round 1 PASSED 2026-07-02 (M4_RESULTS.md):** `recipes/potion.md` +
+> `grounding.md` + a vanilla potion snapshot landed, and the "Firebomb" potion
+> (20 dmg, single target) scaffolded → built (.pck emitted) → tier-1 loaded → tier-2
+> effect observed, zero repair. Confirmed a no-art potion loads cleanly (default
+> icon). Remaining: card recipe, harder interview, art/sprite pipeline.
 
 **M5 — Behavior test (R2 tier 2) + Codex runtime + one-command install + optional publish.**
 Pick the tier-2 mechanism from M0/M1 findings; add the Codex adapter; **package

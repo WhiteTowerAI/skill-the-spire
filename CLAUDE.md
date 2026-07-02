@@ -17,17 +17,23 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M3 PASSED (bounded automated repair loop works end to end)
+## Current status — M4 round 1 PASSED (potion recipe works end to end)
 
-**M0, M1, M2, and M3 gates all PASSED.** See `documents/M0_RESULTS.md`,
-`M1_RESULTS.md`, `M2_RESULTS.md`, `M3_RESULTS.md`. **M3 passed 2026-07-02**: the
-`repair.md` bounded loop diagnosed → fixed → re-verified two deliberately-broken
-relic specs within the retry cap (1 attempt each) — a build-time guessed-API error
-(`CS0103` → ground to the real Cmd) and the headline "green build ≠ loads" case
-(missing `[Pool]`, compiles clean, throws at registration, caught by tier-1's
-error-line check). M2 acceptance (2026-07-02) had already produced a fresh relic
-("LuckyCoin") from one sentence that built clean, loaded, and fired in combat with
-zero repair. What exists now:
+**M0–M3 gates all PASSED; M4 round 1 (potion) PASSED 2026-07-02.** See
+`documents/M0_RESULTS.md` … `M4_RESULTS.md`. **M4 round 1**: the pipeline now
+handles a second element type — `recipes/potion.md` + spire-codex `grounding.md` +
+a 63-potion vanilla snapshot landed, and a one-sentence damage potion ("Firebomb",
+20 dmg single-target) scaffolded → built (`.pck` emitted via PckPacker) → tier-1
+loaded → tier-2 effect observed in combat, **zero repair**. Two findings worth
+carrying: (1) a potion with **no custom `.tres` atlas loads cleanly** (default icon;
+`CustomPackedImagePath` is virtual→null) — the flagged art risk did not block
+functional potions; (2) the dev console command is **`potion <id>`**, exact-match,
+**no `add` subcommand** (unlike `relic [add|remove] <id>`, substring match) — recipe
++ `verify.md` corrected. Honest caveat: tier-2 was user-observed but its log marker
+rotated out before capture (separate Steam launch) — the direct motivation for M5
+headless behavior testing. M3 (earlier, 2026-07-02): the `repair.md` bounded loop
+diagnosed → fixed → re-verified two deliberately-broken relic specs within the retry
+cap. What exists now:
 - The research docs in `documents/`, `LICENSE`, `README.md`, this file.
 - **The skill source tree** under `games/sts2/` (decided: use the existing repo
   root, not a `t2mod/` wrapper). Layout:
@@ -35,6 +41,7 @@ zero repair. What exists now:
     (`interview`, `spec`, `scaffold`, `author`, `build`, `verify`, `repair`,
     `quirks`).
   - `games/sts2/skills/sts2-api/` — the game pack (`SKILL.md`, `recipes/relic.md`,
+    `recipes/potion.md`, `grounding.md`, `reference/potions-snapshot.md`,
     `errors.md`), moved here from `documents/sts2-api/` via `git mv`.
   - `games/sts2/tools/` — `build.ps1` / `launch.ps1` / `grep_log.ps1` (PowerShell,
     Windows dev box).
@@ -48,15 +55,16 @@ The hand-built golden mod ("Gambler's Coin" relic) lives **outside this repo** a
 `D:\26summer_intern\m1-gamblers-coin` (like the M0 probe) — it's a reference, not
 part of the published skill. It loads AND its effect fires in-game (both R2 tiers).
 
-**Immediate next step is M4** (breadth within STS2: card/potion recipes, harder
-interview, + the art/sprite pipeline). M3 is done: `repair.md` (the bounded
-diagnose → fix → re-verify loop) is wired into `build.md`/`verify.md`, `errors.md`
-grew a guessed-API entry (now incl. `CS0103`, found by running the acceptance) and
-a tier-1 "loaded but no marker" entry, and both broken-spec tests converged in one
-attempt. A notable M3 finding: tier-1's error-line check is load-bearing — a
-missing `[Pool]` still logs the load marker (MainFile ran), so marker-alone would
-false-PASS; only the "no mod-named errors" half caught it. Automated behavior
-testing (M5) and art (M4) remain the frontier.
+**Immediate next step is the rest of M4**: the **card recipe** (577 vanilla cards,
+more fields than a potion) and a harder multi-element interview, then the
+**art/sprite pipeline** (custom `.tres` potion atlas / relic png beyond the
+placeholder default icons). After that, **M5** automates tier-2 so the effect check
+no longer needs the user's eyes — the decompile confirms the entry points exist
+(`fight`/`potion`/`block` console commands + `TestMode`, which skips VFX/waits under
+`--headless`). M4 round 1 (potion) is done end to end (see status above); before the
+card recipe, ground `PlayerCmd.Draw`'s signature (still a marked guess in
+`recipes/potion.md`). Art (custom sprites) and automated behavior testing remain the
+frontier.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 

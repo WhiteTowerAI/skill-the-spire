@@ -42,28 +42,35 @@ This is the guaranteed check: it proves "installs + loads + registered".
 
 ## Tier-2 — does the effect fire? (best-effort, the headline)
 
-**M2: user-guided via the dev console** (automation is M5). Tell the user, plainly:
+**Tier-2: user-guided via the dev console** (automation is M5). Tell the user, plainly:
 
 1. Start a run in STS2 (with the mod loaded — the tier-1 launch confirmed it loads).
 2. Open the **dev console** with the **`` ` `` (backtick)** key (also `'`, `*`, `^`,
    or `Shift+8`); close with `Esc`. Debug commands are auto-enabled because the game
    is running modded.
-3. Grant the relic: `relic add <PREFIX>-<SLUG>` (e.g. `relic add GAMBLERSCOIN-GAMBLERS_COIN`;
-   a unique substring like `GAMBLERS` also works — matching is `Contains`, uppercased).
-4. Trigger the effect (for a combat-start relic: enter a combat).
-5. Confirm the observed change matches intent (e.g. energy 3 → 0), and re-grep the
-   log for the `fired:` marker:
+3. Grant the element by its `<PREFIX>-<SLUG>` id (a unique substring also works —
+   matching is `Contains`, uppercased):
+   - **relic:** `relic add <PREFIX>-<SLUG>` (e.g. `relic add GAMBLERSCOIN-GAMBLERS_COIN`;
+     `add` is default and matching is substring `Contains`).
+   - **potion:** `potion <PREFIX>-<SLUG>` (e.g. `potion FIREBOMB-FIREBOMB`). **No
+     `add` subcommand** and matching is **exact** — pass the full id, not a substring.
+     A run must be in progress.
+4. Trigger the effect:
+   - **relic:** enter a combat (for a combat-start relic).
+   - **potion:** in a combat, **use** the potion (choose a target if it's targeted).
+5. Confirm the observed change matches intent (e.g. energy 3 → 0, +12 block, 20
+   damage), and re-grep the log for the `fired:`/`used:` marker:
 
 ```powershell
 pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
 ```
 
-If the console won't open or `relic add` says "Unable to create relic", see
-errors.md "Verification harness". If the effect is **wrong or absent** once the
-relic is granted (e.g. energy doesn't change, or fires every turn), that's a tier-2
-behavior failure → go to `repair.md` ("verify tier-2" signal: "no effect" and
-"wrong effect" are different signatures). Report the tier-2 result as **observed**
-only if the marker fired and the user saw the change; otherwise report tier-1 only.
+If the console won't open or `add` says "Unable to create", see errors.md
+"Verification harness". If the effect is **wrong or absent** once granted/used (e.g.
+energy doesn't change, block not gained), that's a tier-2 behavior failure → go to
+`repair.md` ("verify tier-2" signal: "no effect" and "wrong effect" are different
+signatures). Report the tier-2 result as **observed** only if the marker fired and
+the user saw the change; otherwise report tier-1 only.
 
 ## Finalize
 
