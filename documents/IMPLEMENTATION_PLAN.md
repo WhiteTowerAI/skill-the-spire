@@ -3,9 +3,10 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01. **M0 and M1 gates PASSED** (see
-> M0_RESULTS.md, M1_RESULTS.md); the `sts2-api` game pack is now being seeded
-> (`documents/sts2-api/`). Next: M2 (skill skeleton).
+> Status: living plan. Written 2026-07-01. **M0, M1, and M2 gates all PASSED**
+> (see M0_RESULTS.md, M1_RESULTS.md, M2_RESULTS.md). The skill skeleton under
+> `games/sts2/` reproduces the golden relic from one sentence, both R2 tiers, zero
+> repair. Next: M3 (automated repair loop + growing errors.md).
 
 ## 0. Design principles (inherited from the research)
 
@@ -201,9 +202,16 @@ tiers passed — the effect fired in real combat (log-verified), not just loaded
 console** (`relic add <id>`, auto-enabled when modded) is a cheap tier-2 lever,
 reshaping the M5 mechanism choice toward driving the console.
 
-**M2 — Skill skeleton, happy path.** Orchestrator `SKILL.md` + interview/spec/
-scaffold/author/build/verify stages + a first `recipes/relic.md`. Goal: the
-skill reproduces M1's relic from one sentence, no repair needed.
+**M2 — Skill skeleton, happy path. ✅ DONE (2026-07-02, see M2_RESULTS.md).**
+Orchestrator `SKILL.md` + interview/spec/scaffold/author/build/verify stages +
+the seeded `recipes/relic.md`. **Outcome:** driving the stage files, one sentence
+produced a fresh relic ("LuckyCoin", deliberately not the golden name) that built
+clean (0/0), loaded (tier-1 marker), and fired in combat (tier-2, dev console,
+energy 3→6 HEADS) with **zero repair to the generated mod**. Source lives under
+`games/sts2/` (no `t2mod/` wrapper); `publish.sh` renders `${VAR}` source →
+`.claude/skills/` (codex branch stubbed for M5). The run fixed two verify-tool bugs
+(`grep_log.ps1` godot.log rotation; `build.ps1` localized dotnet-output path regex)
+and one doc bug (`author.md` now injects the load marker — the template doesn't).
 
 **M3 — Repair loop + errors.md.** Add `repair.md` and seed `errors.md` from the
 failures hit during M1/M2. Deliberately feed a few broken specs and confirm the
@@ -217,9 +225,12 @@ a **user-configured backend** (their own image-gen API or a local model — we s
 the plumbing, not a bundled provider); output lands at the correct path/size for a
 PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
 
-**M5 — Behavior test (R2 tier 2) + Codex runtime + optional publish.** Pick the
-tier-2 mechanism from M0/M1 findings; add the Codex adapter; wire opt-in
-Workshop publish. This is the full-fat version.
+**M5 — Behavior test (R2 tier 2) + Codex runtime + one-command install + optional publish.**
+Pick the tier-2 mechanism from M0/M1 findings; add the Codex adapter; **package
+open-mod for one-command install from a skill registry** (e.g. `npx skills add
+open-mod` / skills.sh — the committed distribution goal, PROJECT.md §3.1: no clone,
+no manual `publish.sh`, no fixed working dir); wire opt-in Workshop publish. This is
+the full-fat version.
 
 ## 6. Decisions (locked 2026-07-01)
 

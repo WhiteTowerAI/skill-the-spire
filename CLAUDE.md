@@ -17,24 +17,37 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M0 + M1 passed; seeding the game pack
+## Current status — M2 PASSED (skill reproduces the golden relic from one sentence)
 
-**M0 and M1 gates PASSED (2026-07-01).** See `documents/M0_RESULTS.md` and
-`documents/M1_RESULTS.md`. What exists now:
+**M0, M1, and M2 gates all PASSED.** See `documents/M0_RESULTS.md`,
+`M1_RESULTS.md`, `M2_RESULTS.md`. **M2 acceptance passed 2026-07-02**: driving the
+modmaker stage files, one sentence produced a fresh relic ("LuckyCoin") that built
+clean, loaded (tier-1), and fired in combat (tier-2, energy 3→6 HEADS) with **zero
+repair to the generated mod**. What exists now:
 - The research docs in `documents/`, `LICENSE`, `README.md`, this file.
-- **The `sts2-api` game pack is being seeded** at `documents/sts2-api/`:
-  `recipes/relic.md` (the first recipe, distilled from the golden mod) and
-  `errors.md` (error→fix catalog).
-- The **skill skeleton is still deliberately not scaffolded** — that's M2.
-  IMPLEMENTATION_PLAN.md §1 is the target layout; `t2mod/` is the proposed root.
+- **The skill source tree** under `games/sts2/` (decided: use the existing repo
+  root, not a `t2mod/` wrapper). Layout:
+  - `games/sts2/skills/modmaker/` — orchestrator `SKILL.md` + stage files
+    (`interview`, `spec`, `scaffold`, `author`, `build`, `verify`, `quirks`).
+  - `games/sts2/skills/sts2-api/` — the game pack (`SKILL.md`, `recipes/relic.md`,
+    `errors.md`), moved here from `documents/sts2-api/` via `git mv`.
+  - `games/sts2/tools/` — `build.ps1` / `launch.ps1` / `grep_log.ps1` (PowerShell,
+    Windows dev box).
+- **Publish layer** (godogen pattern): source files use `${VAR}` placeholders;
+  `publish.sh --agent claude` renders them via `scripts/publish/*.py` into
+  `.claude/skills/` (git-ignored — regenerate, don't commit). Codex branch is
+  stubbed (M5). Note: on Windows the bare `python3` may be the Store shim;
+  `publish.sh` probes `python3`/`python`/`py` for a working Python 3.
 
 The hand-built golden mod ("Gambler's Coin" relic) lives **outside this repo** at
 `D:\26summer_intern\m1-gamblers-coin` (like the M0 probe) — it's a reference, not
 part of the published skill. It loads AND its effect fires in-game (both R2 tiers).
 
-**Immediate next step is M2** (IMPLEMENTATION_PLAN.md §5): build the orchestrator
-`SKILL.md` + interview/spec/scaffold/author/build/verify stages driving
-`recipes/relic.md`, and reproduce the golden relic from one sentence.
+**Immediate next step is M3** (automated repair loop + growing `errors.md`). M2
+acceptance is done. Note the M2 run fixed two verify-tool bugs (`grep_log.ps1` log
+rotation; `build.ps1` localized-output path regex) and one doc bug (`author.md`
+now says to inject the load marker — the Alchyr template's `MainFile.cs` does not
+log one by default). Automated behavior testing (M5) and art (M4) remain out of scope.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 
@@ -64,7 +77,9 @@ The design is a **combination baseline**, not a fork (see BASELINE_RESEARCH.md):
   the core loop.
 
 The full directory layout, pipeline diagram, and game-pack file table are in
-IMPLEMENTATION_PLAN.md §1–3. The proposed repo root is `t2mod/`.
+IMPLEMENTATION_PLAN.md §1–3. Decided during M2: the skill source lives under
+`games/sts2/` in this repo root (the `t2mod/` wrapper from the plan was dropped),
+and `publish.sh` renders it into `.claude/skills/`.
 
 ## Branch model — READ THIS FIRST
 
