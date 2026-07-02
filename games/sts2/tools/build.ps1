@@ -43,10 +43,20 @@ if (-not $ModName) { $ModName = $csproj.BaseName }
 Write-Host "[build] dotnet build -c Release  ($($csproj.Name))"
 $log = & dotnet build $csproj.FullName -c Release 2>&1
 $code = $LASTEXITCODE
-$log | ForEach-Object { Write-Host $_ }
+
+# Keep the console quiet: full output goes to a file, not the transcript.
+$buildLog = Join-Path $ProjectDir '.build.log'
+$log | Out-File -FilePath $buildLog -Encoding utf8
+Write-Host "[build] full output -> $buildLog"
 
 if ($code -ne 0) {
-    Write-Error "[build] dotnet build FAILED (exit $code). See output above."
+    Write-Host "[build] FAILED (exit $code). Error/warning lines:"
+    # Show only diagnostic lines (localized 'error'/'warning' + the MSBuild codes),
+    # capped, so a failure is actionable without dumping the whole build.
+    $diag = $log | Where-Object { $_ -match '(?i)error|warning|错误|警告|: error|: warning|CS\d|MSB\d' }
+    if ($diag) { $diag | Select-Object -First 25 | ForEach-Object { Write-Host "  $_" } }
+    else { $log | Select-Object -Last 15 | ForEach-Object { Write-Host "  $_" } }
+    Write-Error "[build] dotnet build FAILED (exit $code). Full log: $buildLog"
     exit $code
 }
 
