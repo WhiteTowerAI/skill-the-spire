@@ -107,3 +107,17 @@
 - **Cause:** the id doesn't match any `Id.Entry` (matching is `Contains`, uppercased).
 - **Fix:** use the derived entry, e.g. `relic add GAMBLERSCOIN-GAMBLERS_COIN` (or a
   unique substring like `GAMBLERS`). Confirm the mod loaded first (grep log).
+
+### Tier-1 verify reports [FAIL] "load marker missing" but the mod actually loaded
+- **Signature:** `grep_log.ps1` says the `[T2MOD-SELFTEST] ... loaded ok` marker is
+  missing, yet reading the raw `godot.log` shows the marker near the top and the mod
+  works in-game. A non-programmer would wrongly conclude their mod is broken.
+- **Cause:** slicing the log by a pre-launch **byte offset**. STS2 archives the
+  previous log to `godot<timestamp>.log` and starts a **fresh** `godot.log` on every
+  launch. An offset captured from the old file lands in the middle of the new file
+  (past the startup lines where the marker is), so the grep reads only the tail.
+  This bit us in two flavors: new file shorter than the offset (caught by a rotation
+  guard) AND new file longer (the guard missed it → false FAIL).
+- **Fix:** do NOT offset-slice. STS2's rotation guarantees the current `godot.log`
+  holds exactly one run, so read the **whole current file**. `grep_log.ps1` now takes
+  only `-ModName` (no `-SinceOffset`); `launch.ps1` no longer emits an offset.

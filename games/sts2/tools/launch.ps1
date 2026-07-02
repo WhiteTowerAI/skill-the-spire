@@ -38,12 +38,8 @@ if (-not (Test-Path $appid)) {
     Write-Host "[launch] created steam_appid.txt (2868840) for no-Steam launch"
 }
 
-# Snapshot current log length so the grep step reads only this run's lines.
-$log = Join-Path $env:APPDATA 'SlayTheSpire2\logs\godot.log'
-$offset = 0
-if (Test-Path $log) { $offset = (Get-Item $log).Length }
-Write-Host "[launch] log offset before launch: $offset bytes ($log)"
-
+# STS2 archives the old log and starts a fresh godot.log on launch, so grep_log.ps1
+# just reads the whole current file afterward — no offset bookkeeping needed here.
 Write-Host "[launch] starting SlayTheSpire2.exe ..."
 $proc = Start-Process -FilePath $exe -WorkingDirectory $GameDir -PassThru
 Write-Host "[launch] pid $($proc.Id); waiting $WaitSeconds s for load"
@@ -56,5 +52,4 @@ if (-not $proc.HasExited) {
     if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
 }
 
-# Emit the byte offset so the caller can pass it to grep_log.ps1 -SinceOffset.
-Write-Output $offset
+Write-Host "[launch] done. Now run grep_log.ps1 -ModName <ModName> to check the fresh log."

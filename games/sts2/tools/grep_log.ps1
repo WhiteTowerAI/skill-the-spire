@@ -3,28 +3,27 @@
   Grep godot.log for the [T2MOD-SELFTEST] load marker and any mod-related errors.
 
 .DESCRIPTION
-  R2 tier-1 verify step (modmaker's verify.md). Reads %APPDATA%\SlayTheSpire2\logs\godot.log
-  from a given byte offset (output of launch.ps1) to isolate the current run.
-  Exits 0 if the mod's load marker is found AND no error lines name the mod.
-  Exits 1 otherwise — builds a human-readable verdict the caller can relay.
+  R2 tier-1 verify step (modmaker's verify.md). Reads the CURRENT
+  %APPDATA%\SlayTheSpire2\logs\godot.log in full. STS2 archives the previous log
+  (renaming it to godot<timestamp>.log) and starts a fresh godot.log on every
+  launch, so the current file already contains exactly one run — no byte-offset
+  slicing is needed, and offsets from a prior file are meaningless against the new
+  one (that was the tier-1 false-FAIL bug). Exits 0 if the mod's load marker is
+  found AND no error lines name the mod; exits 1 otherwise, with a readable verdict.
 
 .PARAMETER ModName
   Mod name (the 'id' field in Mod.json, also the mods/<ModName> folder name).
-
-.PARAMETER SinceOffset
-  Byte offset from launch.ps1. Defaults to 0 (read entire log).
 
 .PARAMETER LogPath
   Full path to godot.log. Defaults to the standard Windows location.
 
 .EXAMPLE
-  $offset = pwsh tools/launch.ps1
-  pwsh tools/grep_log.ps1 -ModName GamblersCoin -SinceOffset $offset
+  pwsh tools/launch.ps1                          # launch, wait, close
+  pwsh tools/grep_log.ps1 -ModName GamblersCoin  # then check the fresh log
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string] $ModName,
-    [long]   $SinceOffset = 0,
     [string] $LogPath = "$env:APPDATA\SlayTheSpire2\logs\godot.log"
 )
 
@@ -34,18 +33,8 @@ if (-not (Test-Path $LogPath)) {
     Write-Error "godot.log not found: $LogPath"; exit 2
 }
 
-# Read only the lines from this run.
-$stream = [System.IO.File]::OpenRead($LogPath)
-# STS2 recreates/rotates godot.log on each launch, so a pre-launch offset can
-# exceed the new file's length — that means rotation happened; read from 0.
-if ($SinceOffset -gt 0 -and $SinceOffset -lt $stream.Length) {
-    $stream.Seek($SinceOffset, 'Begin') | Out-Null
-} elseif ($SinceOffset -ge $stream.Length -and $SinceOffset -gt 0) {
-    Write-Host "[grep] log shorter than offset ($($stream.Length) < $SinceOffset) -- log rotated; reading from start."
-}
-$reader  = [System.IO.StreamReader]::new($stream)
-$content = $reader.ReadToEnd()
-$reader.Close(); $stream.Close()
+# Read the whole current log. STS2 rotates on launch, so this file == this run.
+$content = [System.IO.File]::ReadAllText($LogPath)
 
 $lines = $content -split "`n"
 
@@ -63,7 +52,7 @@ $modded = ($lines | Where-Object { $_ -match 'RUNNING MODDED' } | Measure-Object
 
 Write-Host ""
 Write-Host "=== [T2MOD] Verify: $ModName ==="
-Write-Host "Log range: offset $SinceOffset -> end of file"
+Write-Host "Log: $LogPath (current run; STS2 rotates on launch)"
 Write-Host ""
 Write-Host "RUNNING MODDED flag : $(if($modded){'YES'}else{'NOT SEEN (mod may not have loaded)'})"
 Write-Host "Tier-1 load marker  : $(if($loadLine){"FOUND => $loadLine"}else{"NOT FOUND -- mod did not log its init marker"})"

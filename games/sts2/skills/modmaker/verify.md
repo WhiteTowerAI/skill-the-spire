@@ -9,15 +9,21 @@ Launch STS2 without Steam, wait, then grep the log for the load marker and any
 mod-named errors.
 
 ```powershell
-$offset = pwsh ${GAME_TOOLS_DIR}/launch.ps1
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName> -SinceOffset $offset
+pwsh ${GAME_TOOLS_DIR}/launch.ps1
+pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
 ```
 
-- `launch.ps1` ensures `steam_appid.txt` (=2868840) exists, snapshots the log
-  size, launches `SlayTheSpire2.exe`, waits ~25s, closes it, and prints the byte
-  offset so the grep reads only this run.
-- `grep_log.ps1` passes if it finds `[T2MOD-SELFTEST] <ModName> loaded ok` **and**
-  no error/exception lines naming the mod. It also reports the `RUNNING MODDED` flag.
+- `launch.ps1` ensures `steam_appid.txt` (=2868840) exists, launches
+  `SlayTheSpire2.exe`, waits ~25s, and closes it.
+- `grep_log.ps1` reads the **current** `godot.log` in full and passes if it finds
+  `[T2MOD-SELFTEST] <ModName> loaded ok` **and** no error/exception lines naming the
+  mod. It also reports the `RUNNING MODDED` flag.
+- **Why no byte offset:** STS2 archives the previous log (to
+  `godot<timestamp>.log`) and starts a fresh `godot.log` on every launch, so the
+  current file already holds exactly this run. Do NOT try to slice the log by a
+  pre-launch byte offset — a stale offset from the old file points into the wrong
+  place in the new file and makes a working mod look like it failed to load. This
+  was a real bug; read the whole current log instead.
 
 **PASS** = marker found, no mod-named errors. **FAIL** → consult sts2-api
 `errors.md` (registration/load section) — e.g. missing `[Pool]` throws at
@@ -40,7 +46,7 @@ This is the guaranteed check: it proves "installs + loads + registered".
    log for the `fired:` marker:
 
 ```powershell
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName> -SinceOffset 0
+pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
 ```
 
 If the console won't open or `relic add` says "Unable to create relic", see
