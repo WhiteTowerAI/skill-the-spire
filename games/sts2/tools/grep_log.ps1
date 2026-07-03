@@ -24,7 +24,11 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string] $ModName,
-    [string] $LogPath = "$env:APPDATA\SlayTheSpire2\logs\godot.log"
+    [string] $LogPath = "$env:APPDATA\SlayTheSpire2\logs\godot.log",
+    # Tier-2: also report [T2MOD-SELFTEST] lines whose text matches this regex
+    # (e.g. 'played|fired|used'). The game is typically still running for tier-2 —
+    # the shared-read open below handles that. Empty = tier-1 only (load marker).
+    [string] $Tier2Pattern = ""
 )
 
 $ErrorActionPreference = 'Stop'
@@ -34,13 +38,34 @@ if (-not (Test-Path $LogPath)) {
 }
 
 # Read the whole current log. STS2 rotates on launch, so this file == this run.
-$content = [System.IO.File]::ReadAllText($LogPath)
+# Open with FileShare.ReadWrite so this works even while the game is STILL RUNNING
+# (the tier-2 case) — the game holds the log open, and File.ReadAllText's exclusive
+# open would throw "file in use". A shared read-only handle avoids that.
+$content = $null
+try {
+    $fs = [System.IO.File]::Open($LogPath, [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+    try {
+        $sr = New-Object System.IO.StreamReader($fs)
+        try { $content = $sr.ReadToEnd() } finally { $sr.Dispose() }
+    } finally { $fs.Dispose() }
+} catch {
+    Write-Error "Could not read ${LogPath}: $($_.Exception.Message)"; exit 2
+}
 
 $lines = $content -split "`n"
 
 # --- Tier-1: load marker ---
 $marker   = "[T2MOD-SELFTEST]"
 $loadLine = $lines | Where-Object { $_ -match [regex]::Escape($marker) -and $_ -match [regex]::Escape($ModName) } | Select-Object -First 1
+
+# --- Tier-2: effect marker (only when a pattern is requested) ---
+$tier2Lines = @()
+if ($Tier2Pattern -ne "") {
+    $tier2Lines = $lines | Where-Object {
+        $_ -match [regex]::Escape($marker) -and $_ -match [regex]::Escape($ModName) -and $_ -match $Tier2Pattern
+    }
+}
 
 # --- Error lines naming the mod ---
 $errorLines = $lines | Where-Object {
@@ -56,6 +81,13 @@ Write-Host "Log: $LogPath (current run; STS2 rotates on launch)"
 Write-Host ""
 Write-Host "RUNNING MODDED flag : $(if($modded){'YES'}else{'NOT SEEN (mod may not have loaded)'})"
 Write-Host "Tier-1 load marker  : $(if($loadLine){"FOUND => $loadLine"}else{"NOT FOUND -- mod did not log its init marker"})"
+if ($Tier2Pattern -ne "") {
+    if ($tier2Lines) {
+        Write-Host "Tier-2 effect marker: FOUND ($($tier2Lines.Count)) => $($tier2Lines | Select-Object -First 1)"
+    } else {
+        Write-Host "Tier-2 effect marker: NOT FOUND (pattern '$Tier2Pattern') -- effect not observed in this log yet"
+    }
+}
 Write-Host ""
 
 if ($errorLines) {
@@ -66,8 +98,15 @@ if ($errorLines) {
 }
 Write-Host ""
 
-if ($loadLine -and -not $errorLines) {
-    Write-Host "[PASS] Tier-1 verified: $ModName loaded ok."
+$tier2Requested = ($Tier2Pattern -ne "")
+$tier2Ok        = (-not $tier2Requested) -or ($tier2Lines.Count -gt 0)
+
+if ($loadLine -and -not $errorLines -and $tier2Ok) {
+    if ($tier2Requested) {
+        Write-Host "[PASS] Tier-2 verified: $ModName loaded AND effect marker fired."
+    } else {
+        Write-Host "[PASS] Tier-1 verified: $ModName loaded ok."
+    }
     exit 0
 } else {
     if (-not $loadLine) {
@@ -75,6 +114,9 @@ if ($loadLine -and -not $errorLines) {
     }
     if ($errorLines) {
         Write-Host "[FAIL] Error lines found. See errors.md for known fixes."
+    }
+    if ($tier2Requested -and -not $tier2Lines) {
+        Write-Host "[FAIL] Tier-2 effect marker not found (pattern '$Tier2Pattern'). Was the effect triggered before this grep? Don't close the game first."
     }
     exit 1
 }

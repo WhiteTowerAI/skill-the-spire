@@ -17,7 +17,9 @@ not dump entire files into the response.
 
 ## How to answer
 
-1. Check `${STS2_API_SKILL_DIR}/recipes/` for the element type (relic, potion; card is M4+).
+1. Check `${STS2_API_SKILL_DIR}/recipes/` for the element type (relic, potion, card,
+   power). Cards/powers also read `${STS2_API_SKILL_DIR}/reference/mechanics.md` first
+   (scaling numbers, SmartFormat descriptions, shared enums).
 2. For error signatures → fix, read `${STS2_API_SKILL_DIR}/errors.md`.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a
    symbol the recipe lacks, read `${STS2_API_SKILL_DIR}/grounding.md` and, for
@@ -32,17 +34,22 @@ not dump entire files into the response.
 |------|---------|--------------|
 | `recipes/relic.md` | Full known-good relic pattern (skeleton, hooks, energy Cmds, RNG, loc-key derivation, checklist, golden example) | Authoring a relic |
 | `recipes/potion.md` | Full known-good potion pattern (OnUse trigger, Rarity/Usage/TargetType, effect Cmds, loc table `potions`, checklist, worked examples) | Authoring a potion |
+| `recipes/card.md` | Full known-good card pattern (OnPlay, CardType/rarity/target, DamageCmd fluent builder + GainBlock + PowerCmd.Apply, DynamicVars/upgrade, loc table `cards`, `card <id>` console cmd, worked examples) | Authoring a card |
+| `recipes/power.md` | Full known-good custom-power pattern (Type/StackType, trigger hooks, PowerCmd.Apply, loc table `powers`) — usually a dependency of a card/relic | Authoring a custom buff/debuff |
+| `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `grounding.md` | Where facts come from: spire-codex (content) vs the local decompile (C# signatures); how to query each without guessing | An answer the recipe lacks |
 | `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |
 | `errors.md` | Error signature → cause → fix catalog; append-only | Build or load failure; repair loop |
 
-More recipes (card) will be added later in M4.
+*Editing existing* vanilla content (relics/cards/potions) is not a recipe — it needs
+Harmony patching and is deferred. The recipes make **new** elements.
 
 ## Key rules to remember (recite these when relevant)
 
-- **`[Pool]` is required** on every `CustomRelicModel` / `CustomPotionModel` subclass or BaseLib throws at registration.
-- **Loc-key derivation** (same for relics and potions): `Id.Entry = "<NS_UPPER>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split + UPPER_SNAKE). Keys are **flat strings**, not nested JSON. Table is `relics` for relics, `potions` for potions.
+- **`[Pool]` is required** on every `CustomRelicModel` / `CustomPotionModel` / `CustomCardModel` subclass or BaseLib throws at registration. (A **power** is the exception — auto-discovered, NO `[Pool]`.)
+- **Loc-key derivation** (same for relics, potions, cards, powers): `Id.Entry = "<NS_UPPER>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split + UPPER_SNAKE). Keys are **flat strings**, not nested JSON. Table is `relics` / `potions` / `cards` / `powers` per type.
 - **Relic combat-start energy**: use `AfterSideTurnStart` + `TurnNumber <= 1` guard. `BeforeCombatStart()` is wrong — energy reset wipes it.
 - **Potions fire in `OnUse`** (they're actively used) — no combat hook. Self-buff potions target `AnyPlayer`, not `Self`. Damage/block use `ValueProp.Unpowered`.
+- **Cards fire in `OnPlay`**; a card targeting the player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions). Numbers come from `DynamicVars` (scaling), not literals; attacks use the `DamageCmd.Attack(...)` fluent builder. Loc table `cards`, no separate upgrade key (SmartFormat `:diff()` handles it).
 - **Never `System.Random`** for in-game RNG — use `MegaCrit.Sts2.Core.Random.Rng`.
 - **Don't guess an API** — if the recipe lacks it, use `grounding.md` (content → spire-codex; code → the decompile).

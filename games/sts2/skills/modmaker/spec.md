@@ -54,6 +54,35 @@ optional `selectionScreenPrompt`; no relic icon slug — art is a `.tres` atlas)
   - loc keys (table `potions`): `<NS_UPPER>-<SLUG>.{title,description}`
 ```
 
+**Card** (cost/type/target + upgrade replace trigger; loc table is `cards`, no flavor,
+plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
+
+```markdown
+# SPEC — <Mod Name>
+
+- **element**: card
+- **class name**: <PascalCase, no spaces>   e.g. BladeDance
+- **mod name**: <PascalCase = csproj/assembly/manifest id>
+- **author**: <author>
+- **cost**: <energy int, default 1>
+- **type**: Attack | Skill | Power
+- **rarity**: Basic | Common | Uncommon | Rare
+- **pool**: ColorlessCardPool | Ironclad/Silent/Defect/Regent/Necrobinder
+- **target**: AnyEnemy (one enemy) | AllEnemies | Self (block / self-buff)
+- **effect**: <precise game-terms description, with numbers>
+- **vars**: <the DynamicVars, e.g. DamageVar 6; BlockVar 5; PowerVar<StrengthPower> 2>
+- **upgrade**: <what OnUpgrade bumps, e.g. Damage +3>
+- **needs custom power?**: <no | name of the buff/debuff to author via recipes/power.md>
+- **display**:
+  - title: <shown name>
+  - description: <hover text; use {Damage:diff()} style placeholders for scaling numbers>
+  - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
+- **art**: placeholder (scaffolded card portrait; custom art is M4)
+- **derived ids** (compute now, using the recipe's loc-key rule):
+  - Id.Entry: `<NS_UPPER>-<SLUG>`
+  - loc keys (table `cards`): `<NS_UPPER>-<SLUG>.{title,description}`
+```
+
 **Derive the ids now**, not later — the loc-key derivation is the #1 silent
 failure, and it's identical for relics and potions. Query the sts2-api skill
 ("relic/potion loc-key derivation rule") or read the recipe if unsure. Worked
@@ -94,5 +123,9 @@ Show a **plain-language** summary and get a yes before scaffolding:
 >
 > (potion) I'll build **<Title>**, a Common potion you can use <in combat / any
 > time>. When used it <effect in plain words>. Placeholder art for now. Sound right?
+>
+> (card) I'll build **<Title>**, a Common <Attack/Skill/Power> card that costs
+> <N> energy. When played it <effect in plain words>; upgrading it <upgrade in plain
+> words>. It'll appear for any character, placeholder art for now. Sound right?
 
 If they change something, update `SPEC.md` before moving on. Then go to `scaffold.md`.

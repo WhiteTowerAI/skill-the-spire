@@ -8,12 +8,15 @@ localization JSON, and inject the self-test marker. Everything structural
 
 - Read `quirks.md` before writing any C#.
 - Query the **sts2-api** skill for the recipe matching SPEC's **element**:
-  `recipes/relic.md` for a relic, `recipes/potion.md` for a potion. Pull the
-  skeleton, the trigger/usage rules, the effect building blocks, and the loc-key
-  derivation rule. Do **not** guess API names — if the effect needs a Cmd not in the
-  recipe, follow `grounding.md` (content facts → spire-codex /
-  `reference/potions-snapshot.md`; code signatures → the decompiled API). Never
-  invent a Cmd name — that's the #1 way the repair loop burns its attempts.
+  `recipes/relic.md` for a relic, `recipes/potion.md` for a potion, `recipes/card.md`
+  for a card. For a **card or power**, also read `reference/mechanics.md` first
+  (DynamicVars, SmartFormat descriptions, shared enums). If the effect needs a
+  buff/debuff no vanilla power covers, read `recipes/power.md` and author the custom
+  power as a dependency. Pull the skeleton, the trigger/usage rules, the effect
+  building blocks, and the loc-key derivation rule. Do **not** guess API names — if
+  the effect needs a Cmd not in the recipe, follow `grounding.md` (content facts →
+  spire-codex / `reference/potions-snapshot.md`; code signatures → the decompiled
+  API). Never invent a Cmd name — that's the #1 way the repair loop burns its attempts.
 
 ## 1. Write the element class
 
@@ -38,6 +41,20 @@ class, so first create `<ModName>Code/Potions/` and the `<ModName>Potion` base c
   GainBlock/Heal`, `PowerCmd.Apply<T>`, `PlayerCmd.*`), using `ValueProp.Unpowered`
   for damage/block. `await` every Cmd; call `AssertValidForTargetedPotion(target)` first.
 
+**Card** — the template **does** scaffold `Cards/` and the `<ModName>Card` base class,
+so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
+
+- Pass `cost, CardType, CardRarity, TargetType` to `base(...)`. A card that targets the
+  player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions).
+- Keep `[Pool(typeof(ColorlessCardPool))]` — required, same as relics/potions.
+- Declare scaling numbers in `CanonicalVars` (`DamageVar`/`BlockVar`/`PowerVar<T>`),
+  never literals; bump them in `OnUpgrade()`.
+- Fill **only** the `OnPlay` effect block with the recipe's confirmed Cmds
+  (`DamageCmd.Attack(...).FromCard(this).Targeting(...).Execute(...)`, `CreatureCmd.GainBlock`
+  with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
+  targeted card. `await` every Cmd. If a custom power is needed, author it first
+  (`recipes/power.md`) — no `[Pool]` on the power.
+
 ## 2. Inject the self-test markers
 
 **Two markers.** The Alchyr template's `MainFile.cs` does NOT log anything by
@@ -49,7 +66,7 @@ Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 
 Then, for **effect** proof, log a marker inside the trigger showing what happened
-(a relic's combat-start hook, or a potion's `OnUse`):
+(a relic's combat-start hook, a potion's `OnUse`, or a card's `OnPlay`):
 
 ```csharp
 MainFile.Logger.Info($"[T2MOD-SELFTEST] <ElementName> fired/used: <outcome> <metric> {before} -> {after}");
@@ -61,8 +78,9 @@ verification is manual.
 ## 3. Write localization
 
 Add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
-relic, **`potions.json`** for a potion. **Keys are FLAT and prefixed** (recipe's
-loc-key rule + errors.md "raw-key title"):
+relic, **`potions.json`** for a potion, **`cards.json`** for a card, **`powers.json`**
+for a custom power. **Keys are FLAT and prefixed** (recipe's loc-key rule + errors.md
+"raw-key title"):
 
 ```json
 {
@@ -73,16 +91,21 @@ loc-key rule + errors.md "raw-key title"):
 ```
 
 Relics take `.title/.description/.flavor`; potions take `.title/.description` (plus
-`.selectionScreenPrompt` only if the effect prompts a choice — no `.flavor`). Use the
-exact `<PREFIX>-<SLUG>` you derived in SPEC. Not nested JSON — a flat
-`Dictionary<string,string>`.
+`.selectionScreenPrompt` only if the effect prompts a choice — no `.flavor`); cards take
+`.title/.description` (plus `.selectionScreenPrompt` if it prompts a choice — no
+`.flavor`, no separate upgrade key). A **card description uses SmartFormat placeholders**
+for scaling numbers — `"Deal {Damage:diff()} damage."` not `"Deal 6 damage."` — so the
+upgraded value renders automatically (`reference/mechanics.md` §2). A **power** takes
+`.title/.description` with `{Amount}` for the stack count. Use the exact `<PREFIX>-<SLUG>`
+you derived in SPEC. Not nested JSON — a flat `Dictionary<string,string>`.
 
 ## 4. Art (M4: placeholder)
 
 Leave the default art. A **relic** falls back to `relic.png` if `images/relics/<slug>.png`
 is absent. A **potion** uses a `.tres` sprite atlas; leaving the mod potion base's
-`CustomPackedImagePath` null falls back to the default potion icon. Custom/generated
-art is the M4 art pipeline — don't block on it.
+`CustomPackedImagePath` null falls back to the default potion icon. A **card** renders
+with a blank/placeholder portrait when its art file is absent — it still loads and
+plays. Custom/generated art is the M4 art pipeline — don't block on it.
 
 ## 5. Update state
 

@@ -55,15 +55,28 @@ This is the guaranteed check: it proves "installs + loads + registered".
    - **potion:** `potion <PREFIX>-<SLUG>` (e.g. `potion FIREBOMB-FIREBOMB`). **No
      `add` subcommand** and matching is **exact** — pass the full id, not a substring.
      A run must be in progress.
+   - **card:** `card <PREFIX>-<SLUG>` (e.g. `card QUICKJAB-QUICK_JAB`) spawns it into
+     your **hand**. **No `add` subcommand**; matching is **exact** (uppercase,
+     screaming-snake) — pass the full id, not a substring. A run must be in progress
+     and your hand must not be full.
 4. Trigger the effect:
    - **relic:** enter a combat (for a combat-start relic).
    - **potion:** in a combat, **use** the potion (choose a target if it's targeted).
+   - **card:** in a combat, **play** the card from hand (target an enemy if it's an
+     attack). It costs energy — make sure you have enough, or grant energy first
+     (`energy 3`).
 5. Confirm the observed change matches intent (e.g. energy 3 → 0, +12 block, 20
-   damage), and re-grep the log for the `fired:`/`used:` marker:
+   damage dealt to the enemy), and grep the log for the effect marker with the
+   tier-2 pattern — **do NOT close the game first**; the tool reads the log while the
+   game is still running (shared-read), and closing it rotates the log away:
 
 ```powershell
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
+pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName> -Tier2Pattern "played|fired|used"
 ```
+
+This passes only if the load marker AND the effect marker are both present with no
+mod-named errors — it prints `[PASS] Tier-2 verified`. (Without `-Tier2Pattern` it's a
+tier-1-only check.)
 
 If the console won't open or `add` says "Unable to create", see errors.md
 "Verification harness". If the effect is **wrong or absent** once granted/used (e.g.

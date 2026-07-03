@@ -16,13 +16,15 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now (M4 — relic + potion, with a bounded repair loop)
+## Scope right now (M4 — relic + potion + card, with a bounded repair loop)
 
-This skill turns one sentence into a known-good **relic or potion** end to end, and
-when a stage fails, runs the **bounded automated repair loop** (`repair.md`) to
-diagnose → fix → re-verify within a hard retry cap. Card recipes and the
-art-generation pipeline are later milestones. If a request needs those, say so
-plainly rather than half-doing it.
+This skill turns one sentence into a known-good **relic, potion, or card** end to end,
+and when a stage fails, runs the **bounded automated repair loop** (`repair.md`) to
+diagnose → fix → re-verify within a hard retry cap. A **custom power** (buff/debuff) is
+supported too, usually as the dependency of a card/relic that applies it. The
+art-generation pipeline (custom card/potion sprites) is a later milestone, as is
+*editing existing* vanilla content (that needs Harmony patching, not a recipe). If a
+request needs those, say so plainly rather than half-doing it.
 
 ## Stage files
 
@@ -57,9 +59,10 @@ User: one sentence ("a relic that ...")
  3. SCAFFOLD (scaffold.md) — dotnet new from the Alchyr template (once), set the
     manifest, uncomment PckPacker.
     |
- 4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe, write the
-    Custom*Model subclass filling ONLY the effect logic, add localization JSON,
-    inject the [T2MOD-SELFTEST] marker.
+ 4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
+    plus power.md if the effect needs a custom buff/debuff), write the Custom*Model
+    subclass filling ONLY the effect logic, add localization JSON, inject the
+    [T2MOD-SELFTEST] marker.
     |
  5. BUILD (build.md) — tools/build.ps1 → .dll/.pck/.json into mods/. On failure:
     go to REPAIR (repair.md).
