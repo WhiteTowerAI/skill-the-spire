@@ -158,12 +158,19 @@ custom vars by their `CanonicalVars` name (`{DamageIncrease}`). Formatters like
 
 Table is **`powers`**. Add to `<ModName>/localization/eng/powers.json`. **Flat,
 prefixed keys**, same ID derivation as relic/potion (`<PREFIX>-<SLUG>`, see
-`recipes/relic.md`):
+`recipes/relic.md`). ⚠️ **Powers need THREE keys, not two** — the Alchyr
+`ModAnalyzers` package hard-fails the build (`STS001 ... .smartDescription not
+found`) unless a power ships `.title` **and** `.description` **and**
+`.smartDescription`. (Cards/potions need only `.title/.description`; relics add
+`.flavor`.) At runtime `SmartDescription` falls back to `Description`, but the
+build-time analyzer does not — so include it. Simplest: make `.smartDescription`
+identical to `.description`:
 
 ```json
 {
-  "<PREFIX>-<SLUG>.title":       "Display Name",
-  "<PREFIX>-<SLUG>.description":  "At the start of your turn, lose {Amount} HP. Decrease by 1 each turn."
+  "<PREFIX>-<SLUG>.title":            "Display Name",
+  "<PREFIX>-<SLUG>.description":      "At the start of your turn, lose {Amount} HP. Decrease by 1 each turn.",
+  "<PREFIX>-<SLUG>.smartDescription": "At the start of your turn, lose {Amount} HP. Decrease by 1 each turn."
 }
 ```
 
@@ -181,8 +188,9 @@ atlas). Override `CustomPackedIconPath` only when you have real art.
 - [ ] Modify-* hooks **return** a value and guard `props.IsPoweredAttack()` + owner/target.
 - [ ] Turn hooks `await` all Cmds and consume a stack (`Decrement`/`TickDownDuration`)
       if the effect is per-stack / duration.
-- [ ] `powers.json` has `<PREFIX>-<SLUG>.{title,description}` — **flat, prefixed keys**,
-      table `powers`; `{Amount}` in the text if it scales.
+- [ ] `powers.json` has `<PREFIX>-<SLUG>.{title,description,smartDescription}` — **all
+      THREE** (the analyzer `STS001`-fails without `.smartDescription`), **flat,
+      prefixed keys**, table `powers`; `{Amount}` in the text if it scales.
 - [ ] The card/relic that applies it uses `PowerCmd.Apply<<PowerName>>(...)`.
 - [ ] `[T2MOD-SELFTEST]` marker logged on trigger (for tier-2 verify).
 

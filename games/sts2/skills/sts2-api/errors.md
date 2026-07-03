@@ -53,6 +53,29 @@
 - **Fix:** capture once with the null-forgiving operator:
   `var combat = Owner.PlayerCombatState!;` then use `combat.Energy`, `combat.TurnNumber`.
 
+### STS001: Localization `<ID>.smartDescription` not found (a custom power)
+- **Signature:** build fails with `error STS001: Localization <PREFIX>-<SLUG>.smartDescription
+  not found for symbol '<PowerClass>'` — fires on `CustomPowerModel` subclasses, not
+  on cards/potions/relics. (Confirmed M4 card round: two powers, both hit this; the
+  two cards in the same mod did not.)
+- **Cause:** the Alchyr `Sts2ModAnalyzers` package enforces a **required loc-key set
+  per model type**, and **powers require three keys** — `.title`, `.description`,
+  **and `.smartDescription`**. Writing only `.title/.description` (correct for a card)
+  leaves a power short one key. At runtime `PowerModel.SmartDescription` falls back to
+  `.description`, but the *build-time* analyzer does not — it hard-fails. Required
+  keys by table (read from the analyzer DLL, v0.1.9):
+
+  | table | required keys |
+  |-------|---------------|
+  | `cards` | `.title`, `.description` |
+  | `potions` | `.title`, `.description` |
+  | `relics` | `.title`, `.description`, `.flavor` |
+  | **`powers`** | `.title`, `.description`, **`.smartDescription`** |
+
+- **Fix:** add `<PREFIX>-<SLUG>.smartDescription` to `powers.json` for each custom
+  power (same text as `.description` is fine), then rebuild. See recipes/power.md
+  "Localization".
+
 ## Registration / load-time (godot.log)
 
 ### Exception at registration: model must be marked with a PoolAttribute
