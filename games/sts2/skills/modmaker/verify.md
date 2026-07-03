@@ -25,33 +25,65 @@ pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
   place in the new file and makes a working mod look like it failed to load. This
   was a real bug; read the whole current log instead.
 
-**PASS** = marker found, no mod-named errors. **FAIL** → consult sts2-api
-`errors.md` (registration/load section) — e.g. missing `[Pool]` throws at
-registration; a raw-key title means the loc keys don't match `Id.Entry`. Fix, rebuild, re-verify once.
+**PASS** = marker found, no mod-named errors. **FAIL** → go to `repair.md`. It
+distinguishes the two tier-1 failure modes and fixes accordingly:
+
+- **marker NOT FOUND but `RUNNING MODDED` = YES** → the mod loaded but logged no
+  marker: it wasn't injected into `MainFile.Initialize()` (author.md step 2), or
+  the code change never rebuilt. (Distinct from the log-rotation false-FAIL, which
+  errors.md already retired.)
+- **error/exception lines naming the mod** → it threw at registration/load — e.g.
+  missing `[Pool]` throws; a raw-key title means the loc keys don't match `Id.Entry`.
+
+A code/csproj fix only reaches the game through a fresh build, so repair **rebuilds
+first**, then re-runs tier-1 — bounded to 3 attempts.
 
 This is the guaranteed check: it proves "installs + loads + registered".
 
 ## Tier-2 — does the effect fire? (best-effort, the headline)
 
-**M2: user-guided via the dev console** (automation is M5). Tell the user, plainly:
+**Tier-2: user-guided via the dev console** (automation is M5). Tell the user, plainly:
 
 1. Start a run in STS2 (with the mod loaded — the tier-1 launch confirmed it loads).
 2. Open the **dev console** with the **`` ` `` (backtick)** key (also `'`, `*`, `^`,
    or `Shift+8`); close with `Esc`. Debug commands are auto-enabled because the game
    is running modded.
-3. Grant the relic: `relic add <PREFIX>-<SLUG>` (e.g. `relic add GAMBLERSCOIN-GAMBLERS_COIN`;
-   a unique substring like `GAMBLERS` also works — matching is `Contains`, uppercased).
-4. Trigger the effect (for a combat-start relic: enter a combat).
-5. Confirm the observed change matches intent (e.g. energy 3 → 0), and re-grep the
-   log for the `fired:` marker:
+3. Grant the element by its `<PREFIX>-<SLUG>` id (a unique substring also works —
+   matching is `Contains`, uppercased):
+   - **relic:** `relic add <PREFIX>-<SLUG>` (e.g. `relic add GAMBLERSCOIN-GAMBLERS_COIN`;
+     `add` is default and matching is substring `Contains`).
+   - **potion:** `potion <PREFIX>-<SLUG>` (e.g. `potion FIREBOMB-FIREBOMB`). **No
+     `add` subcommand** and matching is **exact** — pass the full id, not a substring.
+     A run must be in progress.
+   - **card:** `card <PREFIX>-<SLUG>` (e.g. `card QUICKJAB-QUICK_JAB`) spawns it into
+     your **hand**. **No `add` subcommand**; matching is **exact** (uppercase,
+     screaming-snake) — pass the full id, not a substring. A run must be in progress
+     and your hand must not be full.
+4. Trigger the effect:
+   - **relic:** enter a combat (for a combat-start relic).
+   - **potion:** in a combat, **use** the potion (choose a target if it's targeted).
+   - **card:** in a combat, **play** the card from hand (target an enemy if it's an
+     attack). It costs energy — make sure you have enough, or grant energy first
+     (`energy 3`).
+5. Confirm the observed change matches intent (e.g. energy 3 → 0, +12 block, 20
+   damage dealt to the enemy), and grep the log for the effect marker with the
+   tier-2 pattern — **do NOT close the game first**; the tool reads the log while the
+   game is still running (shared-read), and closing it rotates the log away:
 
 ```powershell
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
+pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName> -Tier2Pattern "played|fired|used"
 ```
 
-If the console won't open or `relic add` says "Unable to create relic", see
-errors.md "Verification harness". Report the tier-2 result as **observed** only if
-the marker fired and the user saw the change; otherwise report tier-1 only.
+This passes only if the load marker AND the effect marker are both present with no
+mod-named errors — it prints `[PASS] Tier-2 verified`. (Without `-Tier2Pattern` it's a
+tier-1-only check.)
+
+If the console won't open or `add` says "Unable to create", see errors.md
+"Verification harness". If the effect is **wrong or absent** once granted/used (e.g.
+energy doesn't change, block not gained), that's a tier-2 behavior failure → go to
+`repair.md` ("verify tier-2" signal: "no effect" and "wrong effect" are different
+signatures). Report the tier-2 result as **observed** only if the marker fired and
+the user saw the change; otherwise report tier-1 only.
 
 ## Finalize
 

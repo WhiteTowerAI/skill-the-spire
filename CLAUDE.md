@@ -17,19 +17,34 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M2 PASSED (skill reproduces the golden relic from one sentence)
+## Current status — M4 round 2 PASSED (card recipe works end to end, both tiers log-verified)
 
-**M0, M1, and M2 gates all PASSED.** See `documents/M0_RESULTS.md`,
-`M1_RESULTS.md`, `M2_RESULTS.md`. **M2 acceptance passed 2026-07-02**: driving the
-modmaker stage files, one sentence produced a fresh relic ("LuckyCoin") that built
-clean, loaded (tier-1), and fired in combat (tier-2, energy 3→6 HEADS) with **zero
-repair to the generated mod**. What exists now:
+**M0–M3 gates all PASSED; M4 round 1 (potion) PASSED 2026-07-02; M4 round 2 (card)
+PASSED 2026-07-03.** See `documents/M0_RESULTS.md` … `M4_RESULTS.md`. **M4 round 2**:
+the pipeline now handles a third element type — `recipes/card.md` (new cards: attack/
+block/power/combine) landed on top of the card foundations `reference/mechanics.md` +
+`recipes/power.md`, and a one-sentence attack card ("Firebolt", 8 dmg, upgrade +3)
+scaffolded → built (`.pck` via PckPacker) → tier-1 loaded → **tier-2 LOG-VERIFIED**
+(`card FIREBOLT-FIREBOLT` into hand, played, marker grepped from the live log with the
+game kept open), **zero repair**. This **closes round 1's tier-2 capture gap**. Two
+findings: (1) the card console command is **`card <id> [pile]`** — spawns into hand,
+no `add` subcommand, exact match (a third distinct grammar vs relic/potion); (2)
+`grep_log.ps1` had a file-lock bug (exclusive `File.ReadAllText` threw while the game
+was open) — fixed to `FileShare.ReadWrite` + a `-Tier2Pattern` arg that verifies both
+tiers in one call. *Editing existing* vanilla content is deferred (needs raw Harmony
+patching; no BaseLib wrapper). **M4 round 1** (potion, 2026-07-02): `recipes/potion.md`
++ `grounding.md` + a 63-potion snapshot; "Firebomb" scaffolded → built → tier-1 →
+tier-2 observed, zero repair; console command `potion <id>` (exact, no `add`). What
+exists now:
 - The research docs in `documents/`, `LICENSE`, `README.md`, this file.
 - **The skill source tree** under `games/sts2/` (decided: use the existing repo
   root, not a `t2mod/` wrapper). Layout:
   - `games/sts2/skills/modmaker/` — orchestrator `SKILL.md` + stage files
-    (`interview`, `spec`, `scaffold`, `author`, `build`, `verify`, `quirks`).
+    (`interview`, `spec`, `scaffold`, `author`, `build`, `verify`, `repair`,
+    `quirks`).
   - `games/sts2/skills/sts2-api/` — the game pack (`SKILL.md`, `recipes/relic.md`,
+    `recipes/potion.md`, `recipes/card.md`, `recipes/power.md`,
+    `reference/mechanics.md`, `grounding.md`, `reference/potions-snapshot.md`,
     `errors.md`), moved here from `documents/sts2-api/` via `git mv`.
   - `games/sts2/tools/` — `build.ps1` / `launch.ps1` / `grep_log.ps1` (PowerShell,
     Windows dev box).
@@ -43,11 +58,15 @@ The hand-built golden mod ("Gambler's Coin" relic) lives **outside this repo** a
 `D:\26summer_intern\m1-gamblers-coin` (like the M0 probe) — it's a reference, not
 part of the published skill. It loads AND its effect fires in-game (both R2 tiers).
 
-**Immediate next step is M3** (automated repair loop + growing `errors.md`). M2
-acceptance is done. Note the M2 run fixed two verify-tool bugs (`grep_log.ps1` log
-rotation; `build.ps1` localized-output path regex) and one doc bug (`author.md`
-now says to inject the load marker — the Alchyr template's `MainFile.cs` does not
-log one by default). Automated behavior testing (M5) and art (M4) remain out of scope.
+**Immediate next step**: relic/potion/card recipes are all done end to end, so what
+remains is the **art/sprite pipeline** (custom card portraits / `.tres` potion atlas /
+relic png beyond placeholder default icons; user-configured image-gen backend) and
+then **M5** — automate tier-2 so the effect check no longer needs the user's eyes. The
+decompile confirms the entry points exist (`fight`/`card`/`potion`/`block` console
+commands + `TestMode`, which skips VFX/waits under `--headless`); the `grep_log.ps1`
+fix this round (shared-read + `-Tier2Pattern`) is a step toward it. A harder
+multi-element interview (one sentence → several elements) is also still open. Art
+(custom sprites) and automated behavior testing remain the frontier.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 
