@@ -17,7 +17,24 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M4 round 2 PASSED (card recipe works end to end, both tiers log-verified)
+## Current status — M4.5 COMPLETE (toolchain pre-mined ①②③④; canary matrix green under BaseLib v3.3.5)
+
+**M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
+never live-decompiles: ① analyzer mined whole → new pack page
+`reference/build-constraints.md` (diagnostic set is exactly STS001–004 + the full
+required-loc-key table); ② canary matrix (`games/sts2/tests/`, one minimal
+pipeline-produced mod per element type — the NEW golden set, dev-only/not shipped);
+③ `grounding.md` rewritten to three sources + runtime-vs-maintainer split, all
+dev-box path fallbacks stripped from the shipped pack; ④ BaseLib load-time
+registration throws swept into `build-constraints.md` §3 (the 3 `AddModel` throws;
+no dup-id throw exists — `RegisterType` is a `HashSet.Add` no-op). Also this session:
+verified the canary matrix still loads green under **BaseLib v3.3.5** (was 3.3.3; the
+game itself is unchanged at stable **v0.107.1** — the v0.108.0 in Steam news is the
+beta branch, which we don't target). Planning: added milestone **M6** (content-type
+breadth beyond pooled combat elements — event/character/monster/orb/…, scoped from
+the BaseLib decompile) to IMPLEMENTATION_PLAN.md, with anti-bloat as a hard design
+constraint. Next execution milestone is still **M5** (tier-2 automation + one-command
+install).
 
 **M0–M3 gates all PASSED; M4 round 1 (potion) PASSED 2026-07-02; M4 round 2 (card)
 PASSED 2026-07-03.** See `documents/M0_RESULTS.md` … `M4_RESULTS.md`. **M4 round 2**:
@@ -54,19 +71,26 @@ exists now:
   stubbed (M5). Note: on Windows the bare `python3` may be the Store shim;
   `publish.sh` probes `python3`/`python`/`py` for a working Python 3.
 
-The hand-built golden mod ("Gambler's Coin" relic) lives **outside this repo** at
-`D:\26summer_intern\m1-gamblers-coin` (like the M0 probe) — it's a reference, not
-part of the published skill. It loads AND its effect fires in-game (both R2 tiers).
+The hand-built "Gambler's Coin" relic mod lives **outside this repo** at
+`D:\26summer_intern\m1-gamblers-coin` (like the M0 probe) — it's a **substrate proof**
+(the one artifact the pipeline can't reproduce, hand-built pre-pipeline), not part of
+the published skill and no longer the "golden" reference for correct output. It loads
+AND its effect fires in-game (both R2 tiers). The current **golden set** is the
+**canary matrix** (`games/sts2/tests/canary.md`, M4.5 ②): one minimal
+pipeline-produced mod per element type (relic/potion/card/power/combo), each build +
+tier-1 verified — the live reference for "what correct current output looks like."
 
-**Immediate next step**: relic/potion/card recipes are all done end to end, so what
-remains is the **art/sprite pipeline** (custom card portraits / `.tres` potion atlas /
-relic png beyond placeholder default icons; user-configured image-gen backend) and
-then **M5** — automate tier-2 so the effect check no longer needs the user's eyes. The
-decompile confirms the entry points exist (`fight`/`card`/`potion`/`block` console
-commands + `TestMode`, which skips VFX/waits under `--headless`); the `grep_log.ps1`
-fix this round (shared-read + `-Tier2Pattern`) is a step toward it. A harder
-multi-element interview (one sentence → several elements) is also still open. Art
-(custom sprites) and automated behavior testing remain the frontier.
+**Immediate next step**: M4.5 is done, so the next execution milestone is **M5** —
+automate tier-2 so the effect check no longer needs the user's eyes. The decompile
+confirms the entry points exist (`fight`/`card`/`potion`/`block` console commands +
+`TestMode`, which skips VFX/waits under `--headless`); the `grep_log.ps1` fix
+(shared-read + `-Tier2Pattern`) is a step toward it. After M5 the roadmap is
+**M5.5 — art/sprite pipeline** (custom card portraits / `.tres` potion atlas / relic
+png beyond placeholder default icons; user-configured image-gen backend — deferred out
+of M4 since a no-art element loads fine on the default icon), then **M6 — content-type
+breadth** (event/character/monster/orb/…, beyond the four pooled combat elements). A
+harder multi-element interview (one sentence → several elements) is also still open.
+Automated behavior testing (M5) and custom art (M5.5) remain the frontier.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 

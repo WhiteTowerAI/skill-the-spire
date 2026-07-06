@@ -3,12 +3,16 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01. **M0, M1, M2, M3, and M4 round 1 gates
-> all PASSED** (see M0_RESULTS.md … M4_RESULTS.md). The skill under `games/sts2/`
-> reproduces the golden relic from one sentence, the bounded `repair.md` loop fixes
-> broken specs within the retry cap, and the potion recipe now produces a loading,
-> firing potion end to end. Next: rest of M4 (card recipe, harder interview, art
-> pipeline).
+> Status: living plan. Written 2026-07-01. **M0–M3 + M4 (potion R1, card R2, and the
+> BloodAndFury two-card/two-power R3) gates all PASSED** (see M0_RESULTS.md …
+> M4_RESULTS.md). The skill under `games/sts2/` reproduces the golden relic from one
+> sentence, the bounded `repair.md` loop fixes broken specs within the retry cap, and
+> the potion/card/power recipes now produce loading, firing elements end to end.
+> **NEXT = M4.5 (pre-mine the toolchain to kill runtime decompilation), NOT M5** —
+> the BloodAndFury run showed spire-codex + baselib grounding misses build/load-time
+> validator rules (analyzer STS001, baselib throws) that are offline-minable. Art
+> pipeline + harder interview still open from M4. See M4.5 in §5 and memory
+> `[[premine-offline-no-runtime-decompile]]`.
 
 ## 0. Design principles (inherited from the research)
 
@@ -27,6 +31,16 @@
   cap retries, then hand back a clear "couldn't fix, here's the error."
 - **Non-programmer UX is the wedge** (vs modmixer/the MCP tools): one sentence
   in, plain-language progress, no file/tooling knowledge required.
+- **Zero runtime decompilation (pre-mine, don't live-dig).** A `/modmaker` run must
+  never make the user wait on a live dig through the 3425-file `decomp/` tree — that
+  "online-slow" cost belongs to *pack maintenance*, done once, not to every run.
+  Decompiling is a maintainer's tool for *building the pack*; at runtime the skill
+  only *reads the pack* (recipes, an API index, a constraints page, errors.md). The
+  key enabler: **build-time and load-time constraints are enforced by finite,
+  decompilable code, so they can be enumerated offline to near-completeness** — the
+  analyzer's rules, the csproj/MSBuild targets, and BaseLib's registration-time
+  `throw`s. Only *behavior* correctness (tier-2: effect fired but wrong) genuinely
+  needs execution and cannot be mined offline. See milestone **M4.5**.
 
 ## 1. Repository layout
 
@@ -226,18 +240,93 @@ finding: tier-1's error-line check is load-bearing — the load marker still fir
 `[Pool]` is missing (MainFile ran), so marker-alone would false-PASS. errors.md grew
 from the run itself (CS0103 added to the guessed-API signature).
 
-**M4 — Breadth within STS2 + art pipeline.** Add `recipes/card.md`,
-`recipes/potion.md`; handle 2-3 more element types. Harden the interview for
-ambiguous requests. **Build the art/sprite pipeline (PROJECT.md §7.1, REQUIRED):**
-per needed sprite, the interview offers placeholder vs. generate; generation uses
-a **user-configured backend** (their own image-gen API or a local model — we ship
-the plumbing, not a bundled provider); output lands at the correct path/size for a
-PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
+**M4 — Breadth within STS2.** Add `recipes/card.md`, `recipes/potion.md`; handle
+2-3 more element types (all pooled/combat: card, potion, power). Harden the interview
+for ambiguous requests. **The art/sprite pipeline was originally scoped here but is
+now its own milestone, M5.5** (below, after M5) — a no-art element loads cleanly with
+the default placeholder icon, so custom art is not on the critical path to a working
+mod and was deferred.
 > **Round 1 PASSED 2026-07-02 (M4_RESULTS.md):** `recipes/potion.md` +
 > `grounding.md` + a vanilla potion snapshot landed, and the "Firebomb" potion
 > (20 dmg, single target) scaffolded → built (.pck emitted) → tier-1 loaded → tier-2
 > effect observed, zero repair. Confirmed a no-art potion loads cleanly (default
 > icon). Remaining: card recipe, harder interview, art/sprite pipeline.
+> **Round 2 PASSED 2026-07-03:** card recipe (Firebolt) end to end, both tiers.
+> **Round 3 (BloodAndFury, 2026-07-03):** two Ironclad Power cards + two custom
+> powers, both tiers passed — but the run surfaced a recipe bug (power.md omitted
+> the analyzer-required `.smartDescription` loc key → build STS001) and a scaffold
+> footgun (template writes to CWD; outer dir must not equal `<ModName>`). Both fixed
+> + published. That this slipped past full spire-codex + baselib grounding is what
+> motivates **M4.5** below.
+>
+> **Scope note:** M4's "2-3 more element types" was *consumed* by card + potion +
+> power — all **pooled/combat elements** sharing relic's foundation. The larger,
+> structurally different content types (event, character, monster, orb, …) are **not**
+> covered here; they are their own milestone line, **M6** below.
+
+**M4.5 — Pre-mine the toolchain: kill runtime decompilation. ← NEXT (do before M5).**
+Motivation: the BloodAndFury run proved that grounding on spire-codex (content) +
+baselib decompile (runtime API) leaves a whole third category unmined — the
+**toolchain's own validators** (Roslyn analyzer, csproj/MSBuild targets, BaseLib
+registration `throw`s) — because those are enforced at *build/load* time and are
+*stricter than runtime* (e.g. `SmartDescription` falls back to `.description` at
+runtime, so baselib alone says "optional"; the analyzer hard-fails without it). These
+constraints are finite, decompilable code → **enumerable offline once**, so the user
+never triggers a live dig. The four suggestions, **in priority order (①=cheapest,
+highest-leverage first)**:
+
+**① Mine the analyzer whole, once (highest leverage, cheapest).** Decompile
+`Sts2ModAnalyzers.dll` (NuGet cache: `alchyr.sts2.modanalyzers/0.1.9/analyzers/
+dotnet/cs/`) and enumerate **STS001–00N — the FULL diagnostic set** (a `strings` grep
+only *glimpsed* STS001–004; confirm the real count, don't assume 4) plus the complete
+`RequiredLocalization` table (which loc keys each model type requires). Write it into a
+pack **"build constraints" reference page** + `errors.md`. This isn't patching one
+instance — it closes an entire *class* of bug. The `RequiredLocalization` table was
+already partly dumped this run, so it's mostly ready to transcribe.
+
+**② Self-test canary matrix — the skill verifies itself, no human.** The pipeline
+already automates scaffold→build→verify. Build one minimal mod per element type
+(relic / potion / card / power / combo), run build + tier-1, as a repeatable
+regression suite. The `.smartDescription` bug hits *anyone* the first time they build a
+power mod — a "one canary per element type" matrix exposes it with **zero user tests**.
+Sharper point: this bug landed on the *one recipe written from grounding but never
+actually built* — card had Firebolt, potion had Firebomb, but `power.md` (commit
+5536eee) was pure documentation, an unexecuted code path. **Hard rule to adopt: any
+recipe is PROVISIONAL until it has one green build behind it.** This run treated a
+provisional `power.md` as verified.
+
+**③ Fix `grounding.md`'s doctrine (cheap but important).** Add the third source
+explicitly: "content → codex; runtime code → decompile; **build/load constraints →
+analyzer + csproj targets + baselib registration `throw`s**." And spell out the
+asymmetry that hid this bug from a perfect decompile read: **"decompile shows it RUNS"
+≠ "it BUILDS."**
+
+**④ Ongoing: grep every `throw` in baselib's registration path.** The missing-`[Pool]`
+exception is one load-time constraint; `CustomContentDictionary.AddModel` and neighbors
+surely enforce more (required overrides, dup ids, …). Finite and enumerable — sweep
+them into the constraints page + `errors.md`.
+
+**Plus — API index (separate from the four above; user-approved 2026-07-03).** The four
+suggestions close *build/load constraints*; this closes the *runtime-API* leak (layer ②
+of the runtime model): an effect that needs a `Cmd`/hook/enum **not yet in a recipe**
+today still leaks to a live dig. Generate a lookup table of all `Cmd` signatures, hooks,
+and enums from `sts2.dll` + baselib so that case becomes a **table lookup, not a dig**.
+Keep it strictly LOOKUP-shaped (fork + grep a local file), **never dumped into main
+context** — sts2-api is already lookup-shaped, so it fits. This is the biggest of the
+tasks; sequence it after ①–④ (which are smaller and higher-leverage per token).
+Two local references make this cheaper than a from-scratch dig (both gitignored,
+dev-only — memory `[[baselines-local-reference]]`): `baselines/spire-codex/data/*.json`
+is the offline **content** half of the index (eng-only parsed cards/powers/relics/…,
+so content lookups stop hitting the live API), and `baselines/spire-codex/backend/`'s
+regex parsers are a working model for "generate a structured table FROM the decompile"
+as a **re-runnable generator** (the M4.5 deliverable), not a one-time dump.
+
+Honest scope: the four suggestions + the API index mine *build/load + runtime-API* gaps
+to ~near-completeness (finite code); *behavior* gaps (tier-2 effect fired but wrong) still
+need execution and are NOT mined here — that's M5. And the analyzer/baselib/API gain
+members on version bumps, so the deliverable is a **re-runnable generator + a
+diff-on-upgrade habit**, not a one-time dump. Full rationale + the "three sources of
+truth" diagnosis: memory `[[premine-offline-no-runtime-decompile]]`.
 
 **M5 — Behavior test (R2 tier 2) + Codex runtime + one-command install + optional publish.**
 Pick the tier-2 mechanism from M0/M1 findings; add the Codex adapter; **package
@@ -245,6 +334,58 @@ open-mod for one-command install from a skill registry** (e.g. `npx skills add
 open-mod` / skills.sh — the committed distribution goal, PROJECT.md §3.1: no clone,
 no manual `publish.sh`, no fixed working dir); wire opt-in Workshop publish. This is
 the full-fat version.
+
+**M5.5 — Art/sprite pipeline (REQUIRED; PROJECT.md §7.1).** Deferred out of M4 to
+here (after M5): a no-art element loads cleanly with the default placeholder icon, so
+custom art is a quality/parity feature, not on the critical path to a working mod.
+Per needed sprite, the interview offers **placeholder vs. generate**; generation uses
+a **user-configured backend** (their own image-gen API or a local model — we ship the
+plumbing, not a bundled provider); output lands at the correct path/size for a
+PckPacker rebuild (card 1000x760, etc. — see `art.md`). Closes the one concrete
+feature gap vs. AgentTheSpire (memory `[[competitor-agentthespire]]`). Reference when
+we build this: `baselines/spire-codex/spine-renderer/` (gitignored, dev-only — memory
+`[[baselines-local-reference]]`) is a working Node.js STS2 Spine-skeleton→PNG/WebP/GIF
+renderer — a solved implementation of "STS2 asset → image" to study or adapt for the
+generate path. **Sequence: after M5, before M6** — M6's heavier content types
+(characters especially) want real art, so the art path should exist first.
+
+**M6 — Content-type breadth: beyond pooled combat elements.** Today the pipeline
+covers the **four pooled/combat elements** (relic, potion, card, power). The authoritative
+scope of "what else STS2 mods can be" is BaseLib's own registration surface, mined from
+the decompile: `CustomContentDictionary` has a `PoolTypes` dict with **exactly 3 pooled
+model families** (`CardModel`/`RelicModel`/`PotionModel` — these need `[Pool]`, are what
+STS004 guards; power shares the `Custom*Model`+flat-loc base but is auto-discovered, no
+pool), **plus 5 parallel non-pooled registration entry points** (`AddEncounter`,
+`AddAncient`, `AddEvent`, `AddAct`, `AddCharacter`), **plus the full `Custom*Model` set
+in `Abstracts/`** (also `CustomOrbModel`, `CustomEnchantmentModel`/`CustomModifierModel`,
+`CustomMonsterModel`, `CustomPetModel`, `CustomRestSiteOption`, `CustomReward`, …). These
+are structurally *different* from pooled elements (own registration path, nested loc
+trees like `AncientEventModel`'s `.talk.*`, or ~14 loc keys + a select-screen for
+characters) — each is a recipe-sized (or larger) unit of work, **not** a new field on an
+existing recipe. Sequence by structural weight:
+- **Tier A (medium, do first):** event, keyword (`CardKeyword`), enchantment/modifier, orb.
+- **Tier B (medium-heavy):** monster **+** encounter (two layers), pet, rest-site option, reward.
+- **Tier C (heaviest, defer):** character, act.
+
+Each type follows the proven cadence: **scout the decompile structure → write
+`recipes/<type>.md` → wire the interview/author dispatch → add one canary cell**.
+
+**Anti-bloat is a hard design constraint of M6** (raised 2026-07-06): more types must
+not fatten the pipeline. What the architecture already protects: recipes are
+**lazy-loaded** (a run reads only the one matching SPEC's element — 4 recipes = 1115
+lines total but any run pulls ~200–380), and the canary/golden set is **dev-only, never
+shipped** (`publish.sh` excludes `tests/`), so neither grows per-run context. What *does*
+grow and must be contained: the **always-loaded** triage in `interview.md` + the
+`SKILL.md` routing table, and the **maintenance surface** (each type = recipe + canary +
+errors entries to re-mine on version bump). M6 rules: (1) keep type triage as a compact
+decision **table**, O(one row/type), never a paragraph per type; (2) recipes stay
+lazy-loaded and `tests/` stays unshipped (don't regress the current architecture);
+(3) shared foundations (pooling, loc derivation, hooks) live once in `mechanics.md` /
+`build-constraints.md` — a new recipe states only what's **unique** to its type, never
+restates the base. **Depends on M5**: tier-2 behavior automation must land first, or
+verifying each new type's effect falls back on the user's eyes and the cost explodes.
+Full type inventory + the "3 pooled vs 5 parallel entry points vs full Abstracts set"
+structural finding: memory `[[sts2-content-type-inventory]]`.
 
 ## 6. Decisions (locked 2026-07-01)
 

@@ -3,6 +3,12 @@
 Goal: freeze the intake into `SPEC.md` in the work dir. This is the contract every
 later stage reads. Also seed `PLAN.md` (stage checklist) and `MEMORY.md`.
 
+> **Work dir = a dedicated empty outer folder whose name is NOT `<ModName>`** (e.g.
+> `<modname>-mod`). Create it now and write these three files there; `scaffold.md`
+> then `cd`s into it and runs `dotnet new` (the template scatters into CWD and makes
+> a `<ModName>/` resource subdir, so the outer name must differ — see scaffold.md
+> step 1). Do **not** name the work dir `<ModName>`.
+
 ## Write `SPEC.md`
 
 Use the block for the element type. **Relic:**

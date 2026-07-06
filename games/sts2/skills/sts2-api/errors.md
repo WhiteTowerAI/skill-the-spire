@@ -38,12 +38,13 @@
   and model names don't always match intuition (e.g. energy is `PlayerCmd.GainEnergy`,
   not `EnergyCmd.Add`), and BaseLib wraps some of them.
 - **Fix:** do **not** guess a second name — that's how the repair loop burns its
-  attempts. Ground the real symbol: query the **sts2-api** skill ("commands for
-  <effect>" / "<Type>: real member for <X>"), check `recipes/relic.md`'s "Effect
-  building blocks", or look it up in the decompiled `sts2.dll`
-  (`D:\26summer_intern\decomp\sts2_full`) / BaseLib decompile. Then use the exact
-  name + namespace. Missing `using` for a confirmed type → add the namespace from
-  the recipe's import block, not a new guess.
+  attempts. Ground the real symbol **in the pack**: query the **sts2-api** skill
+  ("commands for <effect>" / "<Type>: real member for <X>"), check `recipes/relic.md`'s
+  "Effect building blocks", `reference/mechanics.md`, and `reference/build-constraints.md`.
+  Then use the exact name + namespace. Missing `using` for a confirmed type → add the
+  namespace from the recipe's import block, not a new guess. If the symbol is genuinely
+  absent from the pack, that's a **pack gap** — report it (the maintainer grounds new
+  symbols offline per `grounding.md`); don't invent one at runtime.
 
 ### Nullable warning CS8602 on `Owner.PlayerCombatState`
 - **Signature:** `warning CS8602: Dereference of a possibly null reference` on
@@ -53,17 +54,72 @@
 - **Fix:** capture once with the null-forgiving operator:
   `var combat = Owner.PlayerCombatState!;` then use `combat.Energy`, `combat.TurnNumber`.
 
+### STS001: Localization `<ID>.smartDescription` not found (a custom power)
+- **Signature:** build fails with `error STS001: Localization <PREFIX>-<SLUG>.smartDescription
+  not found for symbol '<PowerClass>'` — fires on `CustomPowerModel` subclasses, not
+  on cards/potions/relics. (Confirmed M4 card round: two powers, both hit this; the
+  two cards in the same mod did not.)
+- **Cause:** the Alchyr `Sts2ModAnalyzers` package enforces a **required loc-key set
+  per model type**, and **powers require three keys** — `.title`, `.description`,
+  **and `.smartDescription`**. Writing only `.title/.description` (correct for a card)
+  leaves a power short one key. At runtime `PowerModel.SmartDescription` falls back to
+  `.description`, but the *build-time* analyzer does not — it hard-fails. Required
+  keys by table (read from the analyzer DLL, v0.1.9):
+
+  | table | required keys |
+  |-------|---------------|
+  | `cards` | `.title`, `.description` |
+  | `potions` | `.title`, `.description` |
+  | `relics` | `.title`, `.description`, `.flavor` |
+  | **`powers`** | `.title`, `.description`, **`.smartDescription`** |
+
+- **Fix:** add `<PREFIX>-<SLUG>.smartDescription` to `powers.json` for each custom
+  power (same text as `.description` is fine), then rebuild. See recipes/power.md
+  "Localization".
+- **Master reference:** the complete required-loc table (incl. characters/keywords)
+  and the full analyzer diagnostic set live in `reference/build-constraints.md`. The
+  analyzer defines exactly **STS001–STS004** (mined from `Sts2ModAnalyzers.dll` 0.1.9
+  — no STS005+): STS001 missing required loc key (this entry, the only *error* of the
+  loc rules), STS002 loc files not registered as analyzer additional files, STS003
+  model doesn't inherit a `CustomModel`, STS004 poolable model (card/potion/relic,
+  **not power**) missing `[Pool]` (see the PoolAttribute entry below).
+
 ## Registration / load-time (godot.log)
 
+> These are the load-time twins of build §1. A card/potion/relic model
+> **self-registers in its constructor** (`CustomContentDictionary.AddModel(GetType())`),
+> so BaseLib throws the moment the element is instantiated during load, aborting that
+> mod's init. The complete throw set + the STS004-vs-throw relationship is in
+> `reference/build-constraints.md` §3.
+
 ### Exception at registration: model must be marked with a PoolAttribute
-- **Signature:** startup exception mentioning `... must be marked with a
+- **Signature:** startup exception mentioning `Model <FullName> must be marked with a
   PoolAttribute to determine which pool to add it to` (thrown from
   `CustomContentDictionary.AddModel`).
-- **Cause:** a `CustomRelicModel` subclass has no `[Pool(...)]` attribute. BaseLib
-  auto-registers custom models in their ctor and requires the pool to be declared.
-- **Fix:** add `[Pool(typeof(SharedRelicPool))]` (or a character pool) to the class.
-  `using BaseLib.Utils;` for the attribute, `using MegaCrit.Sts2.Core.Models.RelicPools;`
-  for the pool types.
+- **Cause:** a `CustomCardModel` / `CustomPotionModel` / `CustomRelicModel` subclass
+  has no `[Pool(...)]` attribute. BaseLib auto-registers these three poolable models in
+  their ctor and requires the pool to be declared. (Build warning **STS004** flags this
+  too but does not fail the build, so it can reach load — treat STS004 as load-bearing.
+  **Powers are exempt**: `CustomPowerModel` doesn't self-register, so it never throws
+  here.)
+- **Fix:** add the `[Pool(typeof(<XPool>))]` matching the element type — relic →
+  `[Pool(typeof(SharedRelicPool))]`, potion → `[Pool(typeof(SharedPotionPool))]`, card
+  → `[Pool(typeof(ColorlessCardPool))]` (or a character card pool). `using BaseLib.Utils;`
+  for the attribute; import the pool type from its namespace (e.g.
+  `using MegaCrit.Sts2.Core.Models.RelicPools;`).
+
+### Exception at registration: model assigned to incorrect / invalid pool type
+- **Signature:** startup exception `Model <FullName> is assigned to incorrect type of
+  pool <PoolFullName>.` **or** `... is assigned to <PoolFullName> which is not a valid
+  pool type.` (both from `CustomContentDictionary.AddModel` / its `IsValidPool` check).
+- **Cause:** the `[Pool]` attribute is present but wrong. "Incorrect type" = the pool
+  belongs to a real family but the wrong one for this element (e.g. a card given a relic
+  pool). "Not a valid pool type" = the `[Pool]` points at a type that isn't a pool at
+  all (its base chain never reaches `CardPoolModel` / `RelicPoolModel` / `PotionPoolModel`).
+- **Fix:** point `[Pool]` at a pool class that (a) actually derives from a `*PoolModel`
+  base and (b) matches the element: cards → a `CardPoolModel` subclass, potions → a
+  `PotionPoolModel` subclass, relics → a `RelicPoolModel` subclass. Don't pass an
+  arbitrary type. See `reference/build-constraints.md` §3.
 
 ## Localization
 

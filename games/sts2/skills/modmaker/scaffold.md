@@ -19,9 +19,25 @@ dotnet new install Alchyr.Sts2.Templates
 ## 1. Scaffold
 
 Pick a work location OUTSIDE this skill repo (the mod is the user's artifact, not
-part of the published skill). Then:
+part of the published skill). **Three hard rules — skip any and you get a split,
+polluted layout that costs several tool calls to untangle (real M4 rework):**
+
+1. **The template outputs into the CURRENT directory, not a subfolder.** So `cd`
+   into a dedicated **empty** outer folder first, then run `dotnet new` there. Never
+   run it from a directory that already holds other projects (it scatters the csproj,
+   `<ModName>Code/`, manifest, `project.godot` across that directory).
+2. **The outer folder name must NOT equal `<ModName>`.** The template creates a
+   *resource* subdir also named `<ModName>` (holding `localization/`, `images/`), so
+   an outer folder of the same name collides on case-insensitive filesystems
+   (Windows/macOS). Use a distinct name like `<modname>-mod` (M1's `m1-gamblers-coin`
+   ≠ `GamblersCoin` is why it worked).
+3. **If SPEC/PLAN/MEMORY were written in step 2, put them in that outer folder** and
+   `cd` in before scaffolding — don't create a `<ModName>/` dir for them (it clashes
+   with rule 2 and the template's resource subdir).
 
 ```powershell
+mkdir <modname>-mod            # dedicated, empty, name != <ModName>
+cd <modname>-mod               # template writes into CWD
 dotnet new alchyrsts2contentmod -n <ModName> -M <Author>
 ```
 

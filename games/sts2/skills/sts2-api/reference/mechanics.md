@@ -7,9 +7,9 @@
 > must show the *current* number. This file grounds the three mechanisms that make
 > that work, so each recipe can reference it instead of re-deriving it.
 >
-> Every signature below was confirmed against the local decompile
-> (`D:\26summer_intern\decomp\{sts2_full,baselib}`), not guessed. When a recipe needs
-> a number/description/enum concept, it points here.
+> Every signature below was confirmed against the STS2 + BaseLib decompile by the
+> maintainer, not guessed. When a recipe needs a number/description/enum concept, it
+> points here.
 
 ## 1. DynamicVars — the numbers that scale
 
@@ -124,5 +124,7 @@ sets read from the decompile (STS2 v0.107.1 — a game update could add members)
 - **relics/potions** — mostly literal amounts + plain descriptions; they only need §3
   (enums). They reach here only for a scaling effect.
 
-When this file lacks a specific value or formatter, follow `grounding.md`: content
-question → spire-codex; code question → the decompile. Never a third guess.
+When this file lacks a specific value or formatter, follow `grounding.md`: at runtime
+that means the rest of the pack (recipes, `build-constraints.md`, snapshots,
+`errors.md`); if it's genuinely not in the pack, report a pack gap rather than
+guessing. Never a third guess.
