@@ -64,10 +64,13 @@ since M1 — repo stays clean; trust regenerate over hoarding). The steps per ce
 
 All five **build green (0/0, `.pck` emitted)** and **tier-1 PASS** (load marker +
 zero mod-named errors, one launch) — see `canary-results.md` for the run record and
-the two recipe fixes this suite surfaced. **Tier-2 harness (M5): cells specified above
-(DRIVER + marker per cell); the live tier-2 run is pending on the dev box** — record it
-in `canary-results.md` when done (the four cells that drive an effect: relic/potion/card/
-combo; power is asserted through combo).
+the two recipe fixes this suite surfaced. **Tier-2 harness (M5): ALL FOUR driving cells
+PASS on the dev box (2026-07-06)** — relic/card/potion each drove their effect and combo
+proved the interaction chain (card applies power → `EndTurn` → power fires), all with zero
+interaction; power is asserted through combo. See `canary-results.md` for the per-cell
+markers and the four harness bugs the live run fixed. **Run one cell at a time** —
+`--t2selftest` arms every loaded harness mod, so parking all but the cell under test avoids
+a main-menu collision.
 
 ## Future
 

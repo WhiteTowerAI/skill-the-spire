@@ -40,6 +40,34 @@ that each console command wraps (all confirmed `public static`, shipped in `sts2
 | (play the card) | `CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target)` |
 | (use the potion) | `potion.EnqueueManualUse(target)` *(not a Cmd — a method on the model)* |
 
+## Two timing gates that are load-bearing (proven on the dev box, do NOT regress)
+
+The first live end-to-end run (CanaryCard, tier-2 PASS) exposed two race conditions that
+crashed the harness before it reached combat. Both are now baked into the scaffold above —
+keep them:
+
+1. **FTUE-disable must be best-effort.** `SaveManager.Instance` (and its FTUE state) is
+   **not reliably up** when `Initialize()` runs `Arm()` — even `WaitHelper.Until(() =>
+   SaveManager.Instance != null)` does not make `SetFtuesEnabled` safe. Calling it unguarded
+   throws `NullReferenceException` and kills the whole self-test. It is **non-essential**
+   (worst case: a tutorial popup that nav dismisses), so wrap it:
+   `try { SaveManager.Instance?.SetFtuesEnabled(false); } catch { }`. Never let it abort.
+
+2. **`IsInProgress` is NOT enough to call `EnterRoomDebug`.** `RunManager.Instance.
+   IsInProgress` flips at the **run-state** level, but `EnterRoomDebug` reaches into the run
+   **UI node** (`NRun.Instance.GlobalUi.TopBar.RoomIcon…`, and its `?.` only guards
+   `NRun.Instance`, not `GlobalUi`). `GlobalUi` is wired in `NRun._Ready`, which runs
+   **after** `IsInProgress` is already true. Entering a room in that window NREs *inside*
+   `EnterRoomDebug`. Gate on the UI node before entering:
+   `await WaitHelper.Until(() => NRun.Instance?.GlobalUi != null, …, "run UI not ready");`.
+   (The `fight` console command never hits this because a human types it only once the map
+   is visible — i.e. long after `_Ready`.)
+
+> Debugging tip proven useful: async PDB line numbers are unreliable across state-machine
+> resumes (the stack top can point at a `try/catch` line that cannot throw). If a harness
+> fails mid-flight, add a `Stage(string)` breadcrumb (`MainFile.Logger.Info` per step) and
+> read the trail — it tells you the exact step, which the stack trace won't.
+
 ## Marker vocabulary (three-way signal for verify/repair)
 
 The harness logs one of three terminal lines so `verify.md`/`repair.md` can tell setup
@@ -106,11 +134,20 @@ internal static class SelfTest
         try
         {
             await WaitHelper.Until(() => NGame.Instance != null, ct, TimeSpan.FromSeconds(30), "no NGame");
-            // Kill FTUE popups / speed things up so nav isn't blocked.
-            SaveManager.Instance.SetFtuesEnabled(false);
+            // Kill FTUE popups so they can't block nav. BEST-EFFORT ONLY: SaveManager (and
+            // its FTUE state) is NOT reliably up at Initialize time — calling it unguarded
+            // NREs and kills the whole run. Skipping it is harmless (a stray tutorial popup
+            // at worst, which nav dismisses). Never let it abort the self-test.
+            try { SaveManager.Instance?.SetFtuesEnabled(false); } catch { /* FTUE not ready — ignore */ }
 
             await NavigateToRunAsync(ct);
             await WaitHelper.Until(() => RunManager.Instance.IsInProgress, ct, TimeSpan.FromSeconds(30), "run not in progress");
+
+            // IsInProgress flips at the RUN-STATE level, but EnterRoomDebug (below) touches
+            // the run UI node (NRun.Instance.GlobalUi.TopBar…), which is only wired in
+            // NRun._Ready — AFTER IsInProgress. Racing in here NREs inside EnterRoomDebug.
+            // Gate on the run UI node being ready before entering a room.
+            await WaitHelper.Until(() => NRun.Instance?.GlobalUi != null, ct, TimeSpan.FromSeconds(30), "run UI not ready");
 
             // RELIC ONLY: grant before combat so AfterSideTurnStart fires at TurnNumber 1.
             await BeforeCombat(ct);
@@ -119,17 +156,17 @@ internal static class SelfTest
             await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MegaCrit.Sts2.Core.Map.MapPointType.Unassigned, encounter);
             await WaitHelper.Until(() => CombatManager.Instance.IsInProgress, ct, TimeSpan.FromSeconds(30), "combat not started");
 
-            var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState());
-            var me = player.Creature;
+            var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!);
+            var me = player!.Creature;
             // Survivability so a slug can't kill us mid-test (AutoSlay does the same).
             await PowerCmd.Apply<PlatingPower>(new ThrowingPlayerChoiceContext(), me, 999m, me, null);
 
             // Wait until we're actually allowed to act.
             await WaitHelper.Until(
-                () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play || !CombatManager.Instance.IsInProgress,
+                () => player!.PlayerCombatState?.Phase == PlayerTurnPhase.Play || !CombatManager.Instance.IsInProgress,
                 ct, TimeSpan.FromSeconds(30), "play phase not reached");
 
-            await InCombat(player, ct);
+            await InCombat(player!, ct);
 
             MainFile.Logger.Info("[T2MOD-SELFTEST] <ModName> selftest done");
         }
@@ -151,7 +188,7 @@ internal static class SelfTest
         {
             await UiHelper.Click(abandon);
             await WaitHelper.Until(() => NModalContainer.Instance?.OpenModal != null, ct, TimeSpan.FromSeconds(10), "no abandon modal");
-            var modal = (Node)NModalContainer.Instance.OpenModal;
+            var modal = (Node)NModalContainer.Instance!.OpenModal!;
             await UiHelper.Click(modal.GetNode<NButton>("VerticalPopup/YesButton"));
             await WaitHelper.Until(() => NModalContainer.Instance.OpenModal == null, ct, TimeSpan.FromSeconds(10), "abandon modal stuck");
         }
@@ -159,8 +196,8 @@ internal static class SelfTest
         await UiHelper.Click(mainMenu.GetNode<NButton>("MainMenuTextButtons/SingleplayerButton"));
 
         // Either the submenu ("Standard") or the character screen shows next.
-        Control charSelect = null;
-        NButton standard = null;
+        Control? charSelect = null;
+        NButton? standard = null;
         await WaitHelper.Until(() =>
         {
             charSelect = mainMenu.GetNodeOrNull<Control>("Submenus/CharacterSelectScreen");
@@ -176,7 +213,7 @@ internal static class SelfTest
             charSelect = mainMenu.GetNode<Control>("Submenus/CharacterSelectScreen");
         }
 
-        var buttonContainer = charSelect.GetNode("CharSelectButtons/ButtonContainer");
+        var buttonContainer = charSelect!.GetNode("CharSelectButtons/ButtonContainer");
         var chars = UiHelper.FindAll<NCharacterSelectButton>(buttonContainer);
         foreach (var b in chars) b.UnlockIfPossible();
         var pick = chars.First(b => !b.IsLocked);   // deterministic: first unlocked
@@ -222,9 +259,9 @@ private static async Task InCombat(Player player, CancellationToken ct)
 {
     await PlayerCmd.GainEnergy(3m, player);                       // headroom for cost
     var model = ModelDb.AllCards.First(c => c.Id.Entry == "<PREFIX>-<SLUG>");
-    var card  = CombatManager.Instance.DebugOnlyGetState().CreateCard(model, player);
+    var card  = CombatManager.Instance.DebugOnlyGetState()!.CreateCard(model, player);
     await CardPileCmd.Add(card, PileType.Hand);
-    Creature target = card.TargetType == TargetType.AnyEnemy
+    Creature? target = card.TargetType == TargetType.AnyEnemy
         ? card.CombatState?.HittableEnemies.FirstOrDefault()
         : null;                                                   // Self/AllEnemies → null
     await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
@@ -242,8 +279,8 @@ private static async Task InCombat(Player player, CancellationToken ct)
     var model  = ModelDb.AllPotions.First(p => p.Id.Entry == "<PREFIX>-<SLUG>");
     var potion = model.ToMutable();
     await PotionCmd.TryToProcure(potion, player);
-    var cs = player.Creature.CombatState;
-    Creature target = potion.TargetType switch
+    var cs = player.Creature!.CombatState;
+    Creature? target = potion.TargetType switch
     {
         TargetType.AnyEnemy  => cs?.HittableEnemies.FirstOrDefault(),
         TargetType.AnyAlly   => cs?.PlayerCreatures.FirstOrDefault(c => c.IsAlive),
@@ -270,17 +307,26 @@ private static async Task InCombat(Player player, CancellationToken ct)
     // Link 1 (source): play the card that applies the custom power (as `card` above).
     await PlayerCmd.GainEnergy(3m, player);
     var model = ModelDb.AllCards.First(c => c.Id.Entry == "<CARD_PREFIX>-<CARD_SLUG>");
-    var card  = CombatManager.Instance.DebugOnlyGetState().CreateCard(model, player);
+    var card  = CombatManager.Instance.DebugOnlyGetState()!.CreateCard(model, player);
     await CardPileCmd.Add(card, PileType.Hand);
     var target = card.CombatState?.HittableEnemies.FirstOrDefault();
     await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
     // Link 2 (dependent): the applied power logs its OWN [T2MOD-SELFTEST] <Power> fired:
-    // marker from its hook — give the turn a moment / end turn if it fires start-of-turn.
+    // marker from its hook. If the power fires at a SIDE's turn start (AfterSideTurnStart),
+    // it won't fire on OUR turn — end the turn so the enemy's turn starts and triggers it.
     await Task.Delay(500, ct);
-    // If the dependent fires at the NEXT turn start, end the turn to trigger it:
-    // if (player.PlayerCombatState?.Phase == PlayerTurnPhase.Play) PlayerCmd.EndTurn(player, canBackOut: false);
+    if (player.PlayerCombatState?.Phase == PlayerTurnPhase.Play)
+        PlayerCmd.EndTurn(player, canBackOut: false);   // returns void — do NOT await it
+    await Task.Delay(1500, ct);                         // let the enemy turn start + power fire
 }
 ```
+
+> **Proven on the dev box (CanaryCombo, tier-2 PASS):** a debuff power whose hook is
+> `AfterSideTurnStart` fires at the **enemy's** turn start, so the `EndTurn` above is
+> **required**, not optional — without it `Charge played:` appears but `Signal fired:` never
+> does. `PlayerCmd.EndTurn` returns `void` (awaiting it is a CS4008 compile error). If instead
+> the dependent power fires immediately on apply (not at a turn start), drop the `EndTurn` and
+> the second delay — the first `Task.Delay(500)` is enough.
 
 `verify.md` greps for **both** markers (`-Tier2Pattern "fired|used|selftest done"`); a
 missing dependent marker after `selftest done` = the interaction link is broken (the exact

@@ -18,14 +18,37 @@
 One launch loaded all five (`RUNNING MODDED = YES`); each load marker
 `[T2MOD-SELFTEST] Canary<X> loaded ok` found, zero errors/exceptions naming any mod.
 
-## Tier-2 (M5 self-test harness) — run record: PENDING
+## Tier-2 (M5 self-test harness) — run record: ALL FOUR DRIVING CELLS PASS (2026-07-06)
+
+Live on the dev box (STS2 v0.107.1, BaseLib v3.3.5, .NET 9.0.300). Each cell regenerated
+outside the repo with the fixed harness, built 0/0 with PckPacker, then
+`tools/launch.ps1 -SelfTest -ModName Canary<X>` (zero interaction) + `grep_log.ps1
+-Tier2Pattern`. **Test ONE mod at a time** — `--t2selftest` arms every loaded harness mod,
+so multiple in `mods/` collide on the main menu (`ObjectDisposedException: NMainMenu`); park
+all but the cell under test (memory `sts2-m5-selftest-single-mod-constraint`).
+
+| Cell | Harness outcome | Effect marker fired | Verdict |
+|------|-----------------|---------------------|---------|
+| CanaryCard | selftest done | `Jolt played: 6 dmg to target` | **PASS** |
+| CanaryRelic | selftest done | `Bauble fired: +1 energy` | **PASS** |
+| CanaryPotion | selftest done | `Fizz used: 10 dmg` | **PASS** |
+| CanaryCombo | selftest done | `Charge played: applied Signal` **+** `Signal fired: 3 dmg` | **PASS** (both links) |
+
+The full ForceClick nav (menu → run → combat) drove itself with zero keystrokes on all four.
+CanaryCombo proves the interaction chain: the card applies the custom power, then `EndTurn`
+starts the enemy turn so the power's `AfterSideTurnStart` fires — both markers observed.
+
+**Bugs the live run surfaced (all fixed in `reference/selftest-harness.md`):** (1)
+`SaveManager.SetFtuesEnabled` NREs at Arm() time → best-effort try/catch; (2) `IsInProgress`
+races ahead of the run UI node (`NRun.GlobalUi`) → added a wait gate before `EnterRoomDebug`;
+(3) harness template emitted 9 nullable warnings → cleaned to 0/0; (4) combo `PlayerCmd.EndTurn`
+returns void (awaiting = CS4008) and is *required* for enemy-turn-start powers.
+
+### Historical (pre-fix) note
 
 The per-cell DRIVER body + asserted marker are specified in `canary.md`'s table; the
 minimal element bodies below already emit each `fired/used/played:` marker, so the
-harness only has to *trigger* it. **The live tier-2 run is still pending on the dev box.**
-When it runs (`tools/launch.ps1 -SelfTest -ModName Canary<X>` per cell, then
-`tools/grep_log.ps1 -ModName Canary<X> -Tier2Pattern "fired|used|played|selftest done"`),
-record here: per cell, which marker fired and the `selftest done`/`FAILED` outcome.
+harness only has to *trigger* it.
 
 - **relic/potion/card** drive their effect within the harness's turn-1 Play phase.
 - **combo** (`CanaryCombo`): `Charge` applies `Signal` to the **enemy**, and `Signal`
