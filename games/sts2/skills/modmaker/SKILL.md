@@ -16,15 +16,18 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now (M4 — relic + potion + card, with a bounded repair loop)
+## Scope right now (M5 — relic + potion + card + combo, automated two-tier verify)
 
 This skill turns one sentence into a known-good **relic, potion, or card** end to end,
-and when a stage fails, runs the **bounded automated repair loop** (`repair.md`) to
-diagnose → fix → re-verify within a hard retry cap. A **custom power** (buff/debuff) is
-supported too, usually as the dependency of a card/relic that applies it. The
-art-generation pipeline (custom card/potion sprites) is a later milestone, as is
-*editing existing* vanilla content (that needs Harmony patching, not a recipe). If a
-request needs those, say so plainly rather than half-doing it.
+verifies it **loads** (tier-1) AND that its **effect actually fires** (tier-2, now
+automated by an in-process self-test harness — no dev-console typing), and when a stage
+fails runs the **bounded automated repair loop** (`repair.md`) to diagnose → fix →
+re-verify within a hard retry cap. A **custom power** (buff/debuff) is supported too,
+usually as the dependency of a card/relic that applies it — and that card→power link is
+checked as a **combo** by the tier-2 harness. The art-generation pipeline (custom
+card/potion sprites) is a later milestone (M5.5), as is *editing existing* vanilla
+content (needs Harmony patching, not a recipe). If a request needs those, say so plainly
+rather than half-doing it.
 
 ## Stage files
 
@@ -37,7 +40,7 @@ Read each from `${MODMAKER_SKILL_DIR}/` only when you reach that stage.
 | `scaffold.md` | `dotnet new` + manifest + PckPacker wiring | After spec |
 | `author.md` | Write the C# element + localization + marker | After scaffold |
 | `build.md` | `dotnet build` → .dll/.pck/.json into mods/ | After author |
-| `verify.md` | Launch + log-assert load (tier-1) + tier-2 guide | After build |
+| `verify.md` | Launch + log-assert load (tier-1) + automated tier-2 self-test (manual fallback) | After build |
 | `repair.md` | Bounded diagnose → fix → re-verify sub-loop | Whenever build/verify fails |
 | `quirks.md` | STS2/BaseLib gotchas | Before writing any C# |
 | *(sts2-api skill)* | Recipes, command APIs, error fixes | Whenever you need a concrete STS2 answer |
@@ -61,16 +64,19 @@ User: one sentence ("a relic that ...")
     |
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
     plus power.md if the effect needs a custom buff/debuff), write the Custom*Model
-    subclass filling ONLY the effect logic, add localization JSON, inject the
-    [T2MOD-SELFTEST] marker.
+    subclass filling ONLY the effect logic, add localization JSON, inject both
+    [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
+    (SelfTest.cs, step 2.5 — reference/selftest-harness.md).
     |
  5. BUILD (build.md) — tools/build.ps1 → .dll/.pck/.json into mods/. On failure:
     go to REPAIR (repair.md).
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
-    and mod-named errors (tier-1). Then guide the user through the dev-console
-    tier-2 check. Never claim the effect is verified when only load was. On failure:
-    go to REPAIR (repair.md).
+    and mod-named errors (tier-1). Then run the tier-2 self-test unattended
+    (launch.ps1 -SelfTest → the harness drives itself into combat and fires the
+    effect → grep the fired/used marker). Fall back to the manual dev-console guide
+    only if the harness can't reach combat. Never claim the effect is verified when
+    only load was. On failure: go to REPAIR (repair.md).
     |
  7. FINALIZE — summarize what was built, where the artifacts are, and which tier
     of verification was reached.
@@ -96,8 +102,10 @@ conversational memory.
 ## Verify on observed reality, never "it compiled"
 
 A green build is not success. The mod must **load** (tier-1: log marker greppable,
-no mod-named errors) and, ideally, its **effect must fire** (tier-2: observed via
-the dev console). Report exactly which tier was reached. See `verify.md`.
+no mod-named errors) and its **effect must fire** (tier-2: driven automatically by the
+in-process self-test harness and grepped from the log — no human triggering). Report
+exactly which tier was reached; a harness that couldn't reach combat is tier-1, not a
+tier-2 failure of the mod. See `verify.md`.
 
 ## When you need a concrete STS2 answer
 

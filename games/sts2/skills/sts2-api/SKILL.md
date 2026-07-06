@@ -24,7 +24,9 @@ not dump entire files into the response.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a
    symbol the recipe lacks, read `${STS2_API_SKILL_DIR}/grounding.md` and, for
    potions, `${STS2_API_SKILL_DIR}/reference/potions-snapshot.md`.
-4. Return only the relevant snippet (hook, Cmd, loc-key rule, error fix, one analog).
+4. For the **tier-2 self-test harness** (`SelfTest.cs`, the automated effect check), read
+   `${STS2_API_SKILL_DIR}/reference/selftest-harness.md`.
+5. Return only the relevant snippet (hook, Cmd, loc-key rule, error fix, one analog).
 
 **Never read all files at once.** Each file is loaded on demand.
 
@@ -38,6 +40,7 @@ not dump entire files into the response.
 | `recipes/power.md` | Full known-good custom-power pattern (Type/StackType, trigger hooks, PowerCmd.Apply, loc table `powers`) — usually a dependency of a card/relic | Authoring a custom buff/debuff |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/build-constraints.md` | What the toolchain refuses to BUILD/LOAD: full analyzer diagnostic set STS001–004 + the exact required-loc-key table per model type (cards/potions/relics/powers/…) + `[Pool]` rule | Before writing any element's loc keys + attributes; on any STS0NN build error |
+| `reference/selftest-harness.md` | The tier-2 self-test harness: full `SelfTest.cs` template (arg-gated, drives menu→combat with zero interaction) + per-element DRIVER bodies (relic/card/potion/combo) + marker vocabulary. Public Cmds only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `grounding.md` | Where facts come from (three sources: content→spire-codex, C# signatures→decompile, build/load→validators) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine miss is a pack gap to report, not a dig | An answer the recipe lacks |
 | `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |
 | `errors.md` | Error signature → cause → fix catalog; append-only | Build or load failure; repair loop |

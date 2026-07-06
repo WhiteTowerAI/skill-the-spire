@@ -18,6 +18,27 @@
 One launch loaded all five (`RUNNING MODDED = YES`); each load marker
 `[T2MOD-SELFTEST] Canary<X> loaded ok` found, zero errors/exceptions naming any mod.
 
+## Tier-2 (M5 self-test harness) — run record: PENDING
+
+The per-cell DRIVER body + asserted marker are specified in `canary.md`'s table; the
+minimal element bodies below already emit each `fired/used/played:` marker, so the
+harness only has to *trigger* it. **The live tier-2 run is still pending on the dev box.**
+When it runs (`tools/launch.ps1 -SelfTest -ModName Canary<X>` per cell, then
+`tools/grep_log.ps1 -ModName Canary<X> -Tier2Pattern "fired|used|played|selftest done"`),
+record here: per cell, which marker fired and the `selftest done`/`FAILED` outcome.
+
+- **relic/potion/card** drive their effect within the harness's turn-1 Play phase.
+- **combo** (`CanaryCombo`): `Charge` applies `Signal` to the **enemy**, and `Signal`
+  fires on `AfterSideTurnStart` — i.e. at the **enemy's** turn start. So the combo DRIVER
+  must `PlayerCmd.EndTurn` after playing `Charge` for the dependent `Signal fired:` marker
+  to appear (the harness page's combo body has this `EndTurn` line — uncomment it for this
+  cell). Assert **both** `Charge played: applied Signal` and `Signal fired:`.
+- **power** (`CanaryPower`/`Smolder`) has no standalone tier-2 cell — a power ships applied
+  by something else, so its marker is covered by the combo shape.
+
+Until this section is filled, tier-2 for the matrix is **specified-but-unverified** — do
+not claim it passed.
+
 ## Findings this suite surfaced (its whole point)
 
 1. **`power.md` worked-example `powers.json` was missing `.smartDescription`** — the
