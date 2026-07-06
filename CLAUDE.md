@@ -80,15 +80,17 @@ AND its effect fires in-game (both R2 tiers). The current **golden set** is the
 pipeline-produced mod per element type (relic/potion/card/power/combo), each build +
 tier-1 verified — the live reference for "what correct current output looks like."
 
-**Immediate next step**: relic/potion/card recipes are all done end to end, so what
-remains is the **art/sprite pipeline** (custom card portraits / `.tres` potion atlas /
-relic png beyond placeholder default icons; user-configured image-gen backend) and
-then **M5** — automate tier-2 so the effect check no longer needs the user's eyes. The
-decompile confirms the entry points exist (`fight`/`card`/`potion`/`block` console
-commands + `TestMode`, which skips VFX/waits under `--headless`); the `grep_log.ps1`
-fix this round (shared-read + `-Tier2Pattern`) is a step toward it. A harder
-multi-element interview (one sentence → several elements) is also still open. Art
-(custom sprites) and automated behavior testing remain the frontier.
+**Immediate next step**: M4.5 is done, so the next execution milestone is **M5** —
+automate tier-2 so the effect check no longer needs the user's eyes. The decompile
+confirms the entry points exist (`fight`/`card`/`potion`/`block` console commands +
+`TestMode`, which skips VFX/waits under `--headless`); the `grep_log.ps1` fix
+(shared-read + `-Tier2Pattern`) is a step toward it. After M5 the roadmap is
+**M5.5 — art/sprite pipeline** (custom card portraits / `.tres` potion atlas / relic
+png beyond placeholder default icons; user-configured image-gen backend — deferred out
+of M4 since a no-art element loads fine on the default icon), then **M6 — content-type
+breadth** (event/character/monster/orb/…, beyond the four pooled combat elements). A
+harder multi-element interview (one sentence → several elements) is also still open.
+Automated behavior testing (M5) and custom art (M5.5) remain the frontier.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 

@@ -240,17 +240,12 @@ finding: tier-1's error-line check is load-bearing — the load marker still fir
 `[Pool]` is missing (MainFile ran), so marker-alone would false-PASS. errors.md grew
 from the run itself (CS0103 added to the guessed-API signature).
 
-**M4 — Breadth within STS2 + art pipeline.** Add `recipes/card.md`,
-`recipes/potion.md`; handle 2-3 more element types. Harden the interview for
-ambiguous requests. **Build the art/sprite pipeline (PROJECT.md §7.1, REQUIRED):**
-per needed sprite, the interview offers placeholder vs. generate; generation uses
-a **user-configured backend** (their own image-gen API or a local model — we ship
-the plumbing, not a bundled provider); output lands at the correct path/size for a
-PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
-Reference when we build this: `baselines/spire-codex/spine-renderer/` (gitignored,
-dev-only — memory `[[baselines-local-reference]]`) is a working Node.js STS2
-Spine-skeleton→PNG/WebP/GIF renderer — a solved implementation of "STS2 asset →
-image" to study or adapt for the generate path.
+**M4 — Breadth within STS2.** Add `recipes/card.md`, `recipes/potion.md`; handle
+2-3 more element types (all pooled/combat: card, potion, power). Harden the interview
+for ambiguous requests. **The art/sprite pipeline was originally scoped here but is
+now its own milestone, M5.5** (below, after M5) — a no-art element loads cleanly with
+the default placeholder icon, so custom art is not on the critical path to a working
+mod and was deferred.
 > **Round 1 PASSED 2026-07-02 (M4_RESULTS.md):** `recipes/potion.md` +
 > `grounding.md` + a vanilla potion snapshot landed, and the "Firebomb" potion
 > (20 dmg, single target) scaffolded → built (.pck emitted) → tier-1 loaded → tier-2
@@ -339,6 +334,20 @@ open-mod for one-command install from a skill registry** (e.g. `npx skills add
 open-mod` / skills.sh — the committed distribution goal, PROJECT.md §3.1: no clone,
 no manual `publish.sh`, no fixed working dir); wire opt-in Workshop publish. This is
 the full-fat version.
+
+**M5.5 — Art/sprite pipeline (REQUIRED; PROJECT.md §7.1).** Deferred out of M4 to
+here (after M5): a no-art element loads cleanly with the default placeholder icon, so
+custom art is a quality/parity feature, not on the critical path to a working mod.
+Per needed sprite, the interview offers **placeholder vs. generate**; generation uses
+a **user-configured backend** (their own image-gen API or a local model — we ship the
+plumbing, not a bundled provider); output lands at the correct path/size for a
+PckPacker rebuild (card 1000x760, etc. — see `art.md`). Closes the one concrete
+feature gap vs. AgentTheSpire (memory `[[competitor-agentthespire]]`). Reference when
+we build this: `baselines/spire-codex/spine-renderer/` (gitignored, dev-only — memory
+`[[baselines-local-reference]]`) is a working Node.js STS2 Spine-skeleton→PNG/WebP/GIF
+renderer — a solved implementation of "STS2 asset → image" to study or adapt for the
+generate path. **Sequence: after M5, before M6** — M6's heavier content types
+(characters especially) want real art, so the art path should exist first.
 
 **M6 — Content-type breadth: beyond pooled combat elements.** Today the pipeline
 covers the **four pooled/combat elements** (relic, potion, card, power). The authoritative
