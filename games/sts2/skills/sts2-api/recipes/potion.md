@@ -126,12 +126,14 @@ await PowerCmd.Apply<StrengthPower>(choiceContext, target, 2m, base.Owner.Creatu
 
 // ENERGY / DRAW (player-level; good for AnyTime utility potions):
 await PlayerCmd.GainEnergy(2m, base.Owner);
-await PlayerCmd.Draw(3, base.Owner);   // confirm Draw's exact signature via the decompile
+await PlayerCmd.Draw(3, base.Owner);   // Draw's signature: maintainer to confirm + fold in (not yet canary-verified)
 ```
 
 For an effect not listed, follow `grounding.md`: match the closest vanilla row in
-`reference/potions-snapshot.md` for realistic numbers, then grep the decompile for
-that vanilla potion's `OnUse` body to copy the exact Cmd — **do not guess a Cmd name.**
+`reference/potions-snapshot.md` for realistic numbers and check the rest of the pack
+(`reference/mechanics.md`, `errors.md`) for the Cmd. If it's genuinely not in the
+pack, report a pack gap — **do not guess a Cmd name** (the maintainer grounds new
+Cmds offline).
 
 ## Localization (ships in the .pck)
 

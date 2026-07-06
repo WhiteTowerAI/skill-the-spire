@@ -31,7 +31,9 @@ attempts, stopping if the same signature survives. Common M2/M3 hits it knows:
 - **`CS8602` null deref on `Owner.PlayerCombatState`** → capture once with the
   null-forgiving operator: `var combat = Owner.PlayerCombatState!;`.
 - **`CS0246`/`CS0117`/`CS1061` unknown type/member** → a guessed API. Do NOT guess
-  again — ground against sts2-api / the decompiled dll for the real symbol.
+  again — find the real symbol in the sts2-api pack (the recipe's "Effect building
+  blocks", `errors.md`, `reference/mechanics.md`). If the pack genuinely doesn't
+  carry it, that's a **pack gap** — report it, don't invent a name.
 - **`Slay the Spire 2 data not found`** → the game path didn't resolve; pass it or
   check `Sts2PathDiscovery.props`.
 

@@ -233,11 +233,13 @@ public sealed class Smolder : CustomPowerModel        // id EMBERMOD-SMOLDER
 }
 ```
 
-`powers.json`:
+`powers.json` (**all THREE keys** — `.smartDescription` is what the STS001 analyzer
+requires; omitting it fails the build even though it runs fine):
 ```json
 {
   "EMBERMOD-SMOLDER.title": "Smolder",
-  "EMBERMOD-SMOLDER.description": "At the start of its turn, this creature loses {Amount} HP, then Smolder is reduced by 1."
+  "EMBERMOD-SMOLDER.description": "At the start of its turn, this creature loses {Amount} HP, then Smolder is reduced by 1.",
+  "EMBERMOD-SMOLDER.smartDescription": "At the start of its turn, this creature loses {Amount} HP, then Smolder is reduced by 1."
 }
 ```
 

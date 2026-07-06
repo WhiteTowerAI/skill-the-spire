@@ -195,8 +195,9 @@ await PowerCmd.Apply<VulnerablePower>(choiceContext, cardPlay.Target,
 ```
 
 > For any effect not covered here (draw, energy, card generation), follow
-> `grounding.md`: match a vanilla card in spire-codex for realistic numbers, then grep
-> that card's `OnPlay` in the decompile for the exact Cmd — **do not guess a Cmd name.**
+> `grounding.md`: check the rest of the pack (`reference/mechanics.md`, snapshots,
+> `errors.md`) for the Cmd. If it's genuinely not in the pack, report a pack gap —
+> **do not guess a Cmd name** (the maintainer grounds new Cmds offline).
 
 ## DynamicVars, upgrade & description (see `reference/mechanics.md` §1–2)
 

@@ -69,8 +69,9 @@ Don't invent an API. In order:
 1. Re-read `quirks.md` and the element recipe (`recipes/relic.md`) — most misses
    are a known footgun stated there but not yet in errors.md as a *signature*.
 2. If it's an unknown symbol / signature (`CS0246`, `CS0117`, `CS1061`), you
-   guessed an API. **Ground it**: query sts2-api for the real Cmd/type, or check
-   the decompiled `sts2.dll` — do not try another guess.
+   guessed an API. **Ground it in the pack**: query sts2-api for the real Cmd/type
+   (the recipe's "Effect building blocks", `errors.md`, `reference/mechanics.md`).
+   If the pack doesn't carry it, stop and report a pack gap — do not try another guess.
 3. Only then form the single most-likely fix and apply it.
 
 ## Which stage to re-run

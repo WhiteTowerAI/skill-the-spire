@@ -1,77 +1,101 @@
-# grounding.md — where facts come from (spire-codex + our decompile)
+# grounding.md — where facts come from (and who does the digging)
 
 > When the pack doesn't already answer a question, **ground it — don't guess.**
-> IMPLEMENTATION_PLAN.md §3: "Reuse, don't rebuild grounding." Two sources, two
-> different jobs. Know which one answers your question before you reach for it.
+> IMPLEMENTATION_PLAN.md §3: "Reuse, don't rebuild grounding."
+>
+> **Read this first — who is asking matters:**
+> - **At runtime (a `/modmaker` run), you read the PACK and nothing else.** The
+>   recipes, `reference/*` pages (incl. `build-constraints.md` + snapshots), and
+>   `errors.md` are the whole world. You do **not** live-decompile, hit the network,
+>   or open any path outside the pack — those files don't exist on the user's machine.
+>   If the pack genuinely lacks something the request needs, that's a **pack gap**:
+>   say so plainly and stop, don't dig. (IMPLEMENTATION_PLAN.md §0: "zero runtime
+>   decompilation".) The rest of this page is what the *maintainer* did to build the
+>   pack — context, not a runtime instruction.
+> - **As a maintainer (extending the pack, offline, not during a user run)** you use
+>   the three sources below to distill new recipe/reference/errors content. The result
+>   ships; the source paths never do (`[[audience-split-pack-vs-maintainer]]`).
 
-## The two sources (they answer different questions)
+## The three sources (they answer three DIFFERENT questions)
 
-| Source | Answers | Use it for |
-|--------|---------|------------|
-| **spire-codex** (queryable decompiled DB + REST API) | *What content exists and what it does* — the game-content facts | Which effects/keywords exist, a vanilla analog for the request, rarity/target/pool values as **content**, exact numbers a vanilla element uses |
-| **our decompile** (`sts2.dll` + BaseLib, local) | *How to model it in C#* — the code signatures | The real `Cmd` name + signature, the hook/override method, enum definitions, `Custom*Model` base-class shape |
+| Source | Answers | Reach for it when… |
+|--------|---------|--------------------|
+| **spire-codex** (content DB + REST API) | *What content exists and what it does* — game-content facts | you need which effects/keywords exist, a vanilla analog, rarity/target/pool as **content**, the exact numbers a vanilla element uses |
+| **the decompile** (`sts2.dll` + BaseLib) | *How to model it in C#* — code signatures | you need the real `Cmd` name + signature, the hook/override method, an enum's members, a `Custom*Model` base shape |
+| **the toolchain validators** (analyzer + csproj/MSBuild targets + BaseLib registration `throw`s) | *What will BUILD and LOAD* — build/load constraints | you need the required loc keys, `[Pool]` rules, or any "why won't it compile / why did it throw at load" answer |
 
-They are complementary. spire-codex tells you **"a Fire Potion deals 20 damage to
-one enemy, Common, shared pool"**; the decompile tells you **"that's
-`CreatureCmd.Damage(...)` in an `OnUse` override with `TargetType.AnyEnemy`"**. The
-recipe already fuses both for the common cases — only reach past it when the recipe
-lacks the specific effect.
+Complementary, and the split matters:
+- spire-codex says **"a Fire Potion deals 20 damage to one enemy, Common, shared pool."**
+- the decompile says **"that's `CreatureCmd.Damage(...)` in an `OnUse` override, `TargetType.AnyEnemy`."**
+- the validators say **"and it will NOT build unless `potions.json` has `.title` + `.description`, and the class carries `[Pool]`."**
 
-## spire-codex — the content source (prefer the pack snapshot first)
+> **The asymmetry that hides bugs: "the decompile shows it RUNS" ≠ "it BUILDS."** A
+> power runs fine without `.smartDescription` (runtime falls back to `.description`),
+> but the analyzer **hard-fails the build** without it (STS001). A perfect read of the
+> runtime code will still miss this — build/load constraints are a *separate* source
+> (the third row), enforced by the analyzer/targets/registration code, and they are
+> pre-mined into **`reference/build-constraints.md`**. Check that page for anything
+> loc-key / `[Pool]` / "won't compile" shaped.
+
+The recipe already fuses all three for the common cases — only reach past it when the
+recipe lacks the specific effect, and even then the answer is usually already in
+`build-constraints.md` or a snapshot.
+
+---
+
+# Maintainer digging (offline pack-building — NOT a runtime step)
+
+> Everything below runs on a maintainer's dev box while *building* the pack. A
+> `/modmaker` run never does any of it. Paths here are dev-box paths; they must never
+> be copied into a shipped pack file (`[[audience-split-pack-vs-maintainer]]`).
+
+## spire-codex — the content source
 
 Reverse-engineered STS2 database with a REST API and web frontend
-(`https://spire-codex.com`). STS2-specific, 14 languages. **PolyForm Noncommercial**
-license on the code; game data is © Mega Crit (served fair-use). open-mod is a free
-noncommercial tool, so querying it for grounding is fine — **attribute it** wherever
-its facts land in the pack (see `reference/potions-snapshot.md`).
+(`https://spire-codex.com`), STS2-specific, 14 languages. **PolyForm Noncommercial**
+on the code; game data © Mega Crit (fair-use). open-mod is free/noncommercial, so
+querying it for grounding is fine — **attribute it** wherever its facts land in the
+pack (see `reference/potions-snapshot.md`).
 
-**Query order — cheapest first:**
-
-1. **The pack snapshot.** `reference/*-snapshot.md` already distills the content
-   facts for the element types we support (e.g. every potion's name/rarity/effect/
-   target). Offline, instant, no rate limit. **Look here before hitting the network.**
-2. **The live REST API** — only when the snapshot lacks it (a field the snapshot
-   didn't capture, a newly added element, a language other than eng):
+Query order — cheapest first:
+1. **The pack snapshot** (`reference/*-snapshot.md`) — already distills content facts
+   for supported element types. Offline, instant. Look here first even as maintainer.
+2. **A local data dump**, if you have one (a maintainer clone of the codex `data/`
+   JSONs) — offline grep, no rate limit; parse with a script, don't dump 600 KB into
+   the transcript.
+3. **The live REST API** — only when neither has it (a field they didn't capture, a
+   new element, a non-eng language):
 
    ```
    https://spire-codex.com/api/{cards,potions,powers,keywords}?lang=eng
    https://spire-codex.com/api/{monsters,relics}/{id}?lang=eng
    ```
+   - **Browser User-Agent required** (`-A "Mozilla/5.0 ..."`), else `403`.
+   - **Save to a file, inspect with a script** (`[[keep-tool-output-quiet]]`; `/cards`
+     is ~600 KB). Reading a UTF-8 file back on Windows may hit a `gbk` decode error —
+     pass `encoding='utf-8'`. Rate limit **60 req/min**, cached 5 min — fetch once.
 
-   Rules when you call it:
-   - **Browser User-Agent is required** — a bare request returns `403`. Use
-     `-A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"`.
-   - **Save to a file, inspect with a script — do NOT dump JSON into the transcript**
-     (`[[keep-tool-output-quiet]]`; `/cards` is ~600 KB). Pattern:
-     ```bash
-     curl -sS -A "Mozilla/5.0" "https://spire-codex.com/api/potions?lang=eng" -o /tmp/p.json
-     python -c "import json;d=json.load(open('/tmp/p.json',encoding='utf-8'));print(d[0].keys());print(d[0])"
-     ```
-     (On this Windows box, reading a UTF-8 file back may hit a `gbk` decode error —
-     pass `encoding='utf-8'` explicitly.)
-   - Rate limit **60 req/min per IP**, responses GZip + cached 5 min. Fetch once,
-     inspect locally; don't loop the endpoint.
-   - Or run it **locally** (`docker compose up --build` in the spire-codex repo →
-     `http://localhost:8000`) if you're doing heavy offline work.
+## the decompile — the C# signature source
 
-## our decompile — the C# modeling source
+Local decompile of `sts2.dll` + BaseLib (via `ilspycmd`). Grep it for the exact `Cmd`
+signature, an override method, an enum's members, or a vanilla element's class to copy
+its `OnUse`/hook body. This is where `recipes/*.md` and the api-reference notes were
+sourced. **When you confirm a new signature here, it's a recipe / `errors.md`
+candidate** — fold it into the pack + note it in the maintainer `MEMORY.md` (same
+compounding-moat rule as `errors.md`).
 
-The code signatures live in the local decompile, not spire-codex:
+## the validators — the build/load-constraint source
 
-- **Game:** `D:\26summer_intern\decomp\sts2_full` (3425 files via `ilspycmd`).
-- **BaseLib:** `D:\26summer_intern\decomp\baselib\BaseLib.decompiled.cs`.
-
-Grep these for the exact `Cmd` signature, the override method, an enum's members, or
-a vanilla element's class to copy its `OnUse`/hook body. This is where
-`recipes/*.md` and `sts2-relic-api-reference` were sourced — the recipe should
-already carry the answer; go here only for an effect the recipe doesn't cover.
-
-**When you confirm a new signature here, it's an errors.md / recipe candidate** —
-note it in the project `MEMORY.md` so the maintainer can fold it into the pack (same
-compounding-moat rule as `errors.md` and `quirks.md`).
+The analyzer (`Sts2ModAnalyzers.dll`), the csproj/MSBuild targets, and BaseLib's
+registration `throw`s. Already mined into `reference/build-constraints.md` (full
+STS001–004 set + required-loc table + `[Pool]` rule). These gain rows on version
+bumps → **re-mine on upgrade** (that page's "Re-mining" section), don't assume the
+last dump is current.
 
 ## The rule
 
-Guessing an API name is the #1 way the repair loop burns its attempts
-(`errors.md` "Unknown type / member"). If the recipe doesn't have it: **content
-question → spire-codex; code question → the decompile.** Never a third guess.
+Guessing an API name is the #1 way the repair loop burns its attempts (`errors.md`
+"Unknown type / member"). If the pack doesn't have it: **content → spire-codex; C#
+signature → the decompile; won't-build / won't-load → the validators
+(`build-constraints.md`).** Never a fourth guess — and at runtime, a pack gap is a
+gap to report, not a dig to start.

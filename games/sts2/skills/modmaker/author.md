@@ -14,9 +14,10 @@ localization JSON, and inject the self-test marker. Everything structural
   buff/debuff no vanilla power covers, read `recipes/power.md` and author the custom
   power as a dependency. Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. Do **not** guess API names — if
-  the effect needs a Cmd not in the recipe, follow `grounding.md` (content facts →
-  spire-codex / `reference/potions-snapshot.md`; code signatures → the decompiled
-  API). Never invent a Cmd name — that's the #1 way the repair loop burns its attempts.
+  the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
+  means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
+  snapshots, `errors.md`), and if it's genuinely not there, report a pack gap. Never
+  invent a Cmd name — that's the #1 way the repair loop burns its attempts.
 
 ## 1. Write the element class
 

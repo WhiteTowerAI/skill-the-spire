@@ -247,6 +247,10 @@ per needed sprite, the interview offers placeholder vs. generate; generation use
 a **user-configured backend** (their own image-gen API or a local model — we ship
 the plumbing, not a bundled provider); output lands at the correct path/size for a
 PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
+Reference when we build this: `baselines/spire-codex/spine-renderer/` (gitignored,
+dev-only — memory `[[baselines-local-reference]]`) is a working Node.js STS2
+Spine-skeleton→PNG/WebP/GIF renderer — a solved implementation of "STS2 asset →
+image" to study or adapt for the generate path.
 > **Round 1 PASSED 2026-07-02 (M4_RESULTS.md):** `recipes/potion.md` +
 > `grounding.md` + a vanilla potion snapshot landed, and the "Firebomb" potion
 > (20 dmg, single target) scaffolded → built (.pck emitted) → tier-1 loaded → tier-2
@@ -259,6 +263,11 @@ PckPacker rebuild. Closes the one concrete feature gap vs. AgentTheSpire.
 > footgun (template writes to CWD; outer dir must not equal `<ModName>`). Both fixed
 > + published. That this slipped past full spire-codex + baselib grounding is what
 > motivates **M4.5** below.
+>
+> **Scope note:** M4's "2-3 more element types" was *consumed* by card + potion +
+> power — all **pooled/combat elements** sharing relic's foundation. The larger,
+> structurally different content types (event, character, monster, orb, …) are **not**
+> covered here; they are their own milestone line, **M6** below.
 
 **M4.5 — Pre-mine the toolchain: kill runtime decompilation. ← NEXT (do before M5).**
 Motivation: the BloodAndFury run proved that grounding on spire-codex (content) +
@@ -310,6 +319,12 @@ and enums from `sts2.dll` + baselib so that case becomes a **table lookup, not a
 Keep it strictly LOOKUP-shaped (fork + grep a local file), **never dumped into main
 context** — sts2-api is already lookup-shaped, so it fits. This is the biggest of the
 tasks; sequence it after ①–④ (which are smaller and higher-leverage per token).
+Two local references make this cheaper than a from-scratch dig (both gitignored,
+dev-only — memory `[[baselines-local-reference]]`): `baselines/spire-codex/data/*.json`
+is the offline **content** half of the index (eng-only parsed cards/powers/relics/…,
+so content lookups stop hitting the live API), and `baselines/spire-codex/backend/`'s
+regex parsers are a working model for "generate a structured table FROM the decompile"
+as a **re-runnable generator** (the M4.5 deliverable), not a one-time dump.
 
 Honest scope: the four suggestions + the API index mine *build/load + runtime-API* gaps
 to ~near-completeness (finite code); *behavior* gaps (tier-2 effect fired but wrong) still
@@ -324,6 +339,44 @@ open-mod for one-command install from a skill registry** (e.g. `npx skills add
 open-mod` / skills.sh — the committed distribution goal, PROJECT.md §3.1: no clone,
 no manual `publish.sh`, no fixed working dir); wire opt-in Workshop publish. This is
 the full-fat version.
+
+**M6 — Content-type breadth: beyond pooled combat elements.** Today the pipeline
+covers the **four pooled/combat elements** (relic, potion, card, power). The authoritative
+scope of "what else STS2 mods can be" is BaseLib's own registration surface, mined from
+the decompile: `CustomContentDictionary` has a `PoolTypes` dict with **exactly 3 pooled
+model families** (`CardModel`/`RelicModel`/`PotionModel` — these need `[Pool]`, are what
+STS004 guards; power shares the `Custom*Model`+flat-loc base but is auto-discovered, no
+pool), **plus 5 parallel non-pooled registration entry points** (`AddEncounter`,
+`AddAncient`, `AddEvent`, `AddAct`, `AddCharacter`), **plus the full `Custom*Model` set
+in `Abstracts/`** (also `CustomOrbModel`, `CustomEnchantmentModel`/`CustomModifierModel`,
+`CustomMonsterModel`, `CustomPetModel`, `CustomRestSiteOption`, `CustomReward`, …). These
+are structurally *different* from pooled elements (own registration path, nested loc
+trees like `AncientEventModel`'s `.talk.*`, or ~14 loc keys + a select-screen for
+characters) — each is a recipe-sized (or larger) unit of work, **not** a new field on an
+existing recipe. Sequence by structural weight:
+- **Tier A (medium, do first):** event, keyword (`CardKeyword`), enchantment/modifier, orb.
+- **Tier B (medium-heavy):** monster **+** encounter (two layers), pet, rest-site option, reward.
+- **Tier C (heaviest, defer):** character, act.
+
+Each type follows the proven cadence: **scout the decompile structure → write
+`recipes/<type>.md` → wire the interview/author dispatch → add one canary cell**.
+
+**Anti-bloat is a hard design constraint of M6** (raised 2026-07-06): more types must
+not fatten the pipeline. What the architecture already protects: recipes are
+**lazy-loaded** (a run reads only the one matching SPEC's element — 4 recipes = 1115
+lines total but any run pulls ~200–380), and the canary/golden set is **dev-only, never
+shipped** (`publish.sh` excludes `tests/`), so neither grows per-run context. What *does*
+grow and must be contained: the **always-loaded** triage in `interview.md` + the
+`SKILL.md` routing table, and the **maintenance surface** (each type = recipe + canary +
+errors entries to re-mine on version bump). M6 rules: (1) keep type triage as a compact
+decision **table**, O(one row/type), never a paragraph per type; (2) recipes stay
+lazy-loaded and `tests/` stays unshipped (don't regress the current architecture);
+(3) shared foundations (pooling, loc derivation, hooks) live once in `mechanics.md` /
+`build-constraints.md` — a new recipe states only what's **unique** to its type, never
+restates the base. **Depends on M5**: tier-2 behavior automation must land first, or
+verifying each new type's effect falls back on the user's eyes and the cost explodes.
+Full type inventory + the "3 pooled vs 5 parallel entry points vs full Abstracts set"
+structural finding: memory `[[sts2-content-type-inventory]]`.
 
 ## 6. Decisions (locked 2026-07-01)
 
