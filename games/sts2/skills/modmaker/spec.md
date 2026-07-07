@@ -89,6 +89,25 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - loc keys (table `cards`): `<NS_UPPER>-<SLUG>.{title,description}`
 ```
 
+**Interaction block** (add ONLY for a multi-element / combo mod — omit it for a single
+element). This is what the tier-2 harness walks to prove elements *link*, not just load.
+List each dependency pair **source → dependent**, and the dependent's own marker that
+must fire when the source is driven. Order matters: the harness drives the source, then
+asserts the dependent's marker.
+
+```markdown
+- **interaction** (combos only; omit for single elements):
+  - <SourceElement> (<type>, id `<NS_UPPER>-<SRC_SLUG>`) → <DependentElement> (<type>,
+    id `<NS_UPPER>-<DEP_SLUG>`): driving the source makes the dependent fire.
+    - assert marker: `[T2MOD-SELFTEST] <DependentName> fired: <what>`
+  - (one line per link; e.g. card "Emberstrike" applies custom power "Kindled" →
+    the Kindled power's start-of-turn hook logs its own fired: marker)
+```
+
+A single element with a **custom power dependency** (a card that applies a power you
+authored) IS a combo for tier-2 purposes — record it here so the harness asserts the
+power's marker, not just the card's.
+
 **Derive the ids now**, not later — the loc-key derivation is the #1 silent
 failure, and it's identical for relics and potions. Query the sts2-api skill
 ("relic/potion loc-key derivation rule") or read the recipe if unsure. Worked
@@ -104,7 +123,7 @@ example: class `GamblersCoin` in namespace `GamblersCoin.*` → `GAMBLERSCOIN-GA
 - [ ] author
 - [ ] build
 - [ ] verify (tier-1 load)
-- [ ] verify (tier-2 effect, best-effort via dev console)
+- [ ] verify (tier-2 effect, automated via the self-test harness)
 ```
 
 Update the checkboxes as you finish each stage — this is what resume-check reads.

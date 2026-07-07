@@ -51,16 +51,30 @@ stage failed
 
 Read the artifact, not your memory of what you wrote.
 
-- **build (R1):** the diagnostic lines `build.ps1` prints on failure, and the full
+- **build (R1):** the diagnostic lines `build.py` prints on failure, and the full
   `<ProjectDir>/.build.log` if you need context. Key on the **compiler code +
   symbol** (`CS0246: type 'PlayerCmd' not found`), not the prose.
-- **verify tier-1 (load):** `grep_log.ps1`'s verdict plus the `godot.log` lines it
+- **verify tier-1 (load):** `grep_log.py`'s verdict plus the `godot.log` lines it
   surfaces. Two distinct failures: **marker NOT FOUND** (did it even load / did we
   inject the marker?) vs **error/exception lines naming the mod** (it loaded but
   threw). The `RUNNING MODDED` flag disambiguates — see errors.md.
-- **verify tier-2 (effect):** the observed in-game behavior vs SPEC, plus the
-  `fired:` marker (present? values wrong?). "No effect" and "wrong effect" are
-  different signatures with different fixes.
+- **verify tier-2 (effect):** the harness's terminal marker plus the element's
+  `fired/used:` marker. **Three distinct signatures — do not conflate them:**
+  1. **`selftest FAILED: <stage>` or launch timeout** → the harness never reached/drove
+     combat (menu navigation, node path, or timing). This is a **harness/setup** problem,
+     **not an effect bug** — do not "fix" the element for it. Causes: a game version bump
+     shifted the scene-tree paths in `NavigateToRunAsync` (re-mine them from the decompile
+     per `reference/selftest-harness.md`), or a slow load blew the timeout (raise
+     `launch.py --wait-seconds`). If it can't be made to reach combat, fall back to the
+     manual dev-console check (verify.md) and report **tier-1 only** — never a tier-2 fail.
+  2. **`selftest done` but the `fired/used:` marker is absent** → combat was reached and
+     the element triggered, but the effect didn't fire → the **real tier-2 behavior bug**
+     (e.g. a Cmd awaited wrong, a guard that never passes). Fix the effect logic.
+  3. **`fired/used:` marker present but the value is wrong** (e.g. `6 dmg` not `9` after
+     upgrade, energy unchanged) → effect fired but computes wrong → fix the numbers/vars.
+  Signatures 2 and 3 are effect fixes; signature 1 is not. For a **combo**, a missing
+  *dependent* marker after `selftest done` (source fired, dependent didn't) localizes the
+  break to that interaction link.
 
 ## Forming a hypothesis on a miss (no errors.md entry yet)
 
@@ -81,7 +95,9 @@ Re-run the **failed** stage, not the whole pipeline:
 - build fix → `build.md` (rebuild once).
 - load/tier-1 fix that touches code or the csproj → **rebuild first** (the fix only
   reaches the game through a fresh `.dll`/`.pck`), then re-run `verify.md` tier-1.
-- tier-2 fix → rebuild, re-launch, re-grant, re-observe.
+- tier-2 fix → rebuild, then re-run the self-test (`launch.py --self-test --mod-name <M>`)
+  and re-grep the marker. (Only fall back to manual re-grant/observe if the harness can't
+  reach combat — signature 1 above.)
 
 A code change never reaches the running game without a rebuild — don't re-launch
 against a stale build and conclude the fix failed.

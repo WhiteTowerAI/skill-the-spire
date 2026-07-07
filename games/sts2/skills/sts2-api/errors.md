@@ -183,7 +183,7 @@
   unique substring like `GAMBLERS`). Confirm the mod loaded first (grep log).
 
 ### Tier-1 verify: marker NOT FOUND but `RUNNING MODDED` = YES (mod loaded, logged nothing)
-- **Signature:** `grep_log.ps1` reports `RUNNING MODDED flag : YES` and no
+- **Signature:** `grep_log.py` reports `RUNNING MODDED flag : YES` and no
   mod-named errors, yet `Tier-1 load marker : NOT FOUND`. The mod loaded fine — it
   simply never logged `[T2MOD-SELFTEST] <ModName> loaded ok`.
 - **Cause:** the load marker was **not injected** into `MainFile.Initialize()`. The
@@ -197,7 +197,7 @@
   present in the log but the grep sliced past it; here the marker was never written.
 
 ### Tier-1 verify reports [FAIL] "load marker missing" but the mod actually loaded
-- **Signature:** `grep_log.ps1` says the `[T2MOD-SELFTEST] ... loaded ok` marker is
+- **Signature:** `grep_log.py` says the `[T2MOD-SELFTEST] ... loaded ok` marker is
   missing, yet reading the raw `godot.log` shows the marker near the top and the mod
   works in-game. A non-programmer would wrongly conclude their mod is broken.
 - **Cause:** slicing the log by a pre-launch **byte offset**. STS2 archives the
@@ -207,5 +207,5 @@
   This bit us in two flavors: new file shorter than the offset (caught by a rotation
   guard) AND new file longer (the guard missed it → false FAIL).
 - **Fix:** do NOT offset-slice. STS2's rotation guarantees the current `godot.log`
-  holds exactly one run, so read the **whole current file**. `grep_log.ps1` now takes
-  only `-ModName` (no `-SinceOffset`); `launch.ps1` no longer emits an offset.
+  holds exactly one run, so read the **whole current file**. `grep_log.py` now takes
+  only `--mod-name` (no offset); `launch.py` no longer emits an offset.

@@ -8,14 +8,14 @@ which tier you reached; never claim the effect is verified when only load was.
 Launch STS2 without Steam, wait, then grep the log for the load marker and any
 mod-named errors.
 
-```powershell
-pwsh ${GAME_TOOLS_DIR}/launch.ps1
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
+```bash
+python ${GAME_TOOLS_DIR}/launch.py
+python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName>
 ```
 
-- `launch.ps1` ensures `steam_appid.txt` (=2868840) exists, launches
-  `SlayTheSpire2.exe`, waits ~25s, and closes it.
-- `grep_log.ps1` reads the **current** `godot.log` in full and passes if it finds
+- `launch.py` ensures `steam_appid.txt` (=2868840) exists, launches the game,
+  waits ~25s, and closes it.
+- `grep_log.py` reads the **current** `godot.log` in full and passes if it finds
   `[T2MOD-SELFTEST] <ModName> loaded ok` **and** no error/exception lines naming the
   mod. It also reports the `RUNNING MODDED` flag.
 - **Why no byte offset:** STS2 archives the previous log (to
@@ -40,50 +40,61 @@ first**, then re-runs tier-1 — bounded to 3 attempts.
 
 This is the guaranteed check: it proves "installs + loads + registered".
 
-## Tier-2 — does the effect fire? (best-effort, the headline)
+## Tier-2 — does the effect fire? (automated harness, the headline)
 
-**Tier-2: user-guided via the dev console** (automation is M5). Tell the user, plainly:
+**Tier-2 is now unattended** (M5). The mod ships an arg-gated in-process harness
+(`SelfTest.cs`, author.md step 2.5). Launched with `--self-test`, it drives itself from the
+main menu into a minimal combat and fires the effect — **no dev-console typing, no human
+triggering**. You then grep the same effect marker.
 
-1. Start a run in STS2 (with the mod loaded — the tier-1 launch confirmed it loads).
-2. Open the **dev console** with the **`` ` `` (backtick)** key (also `'`, `*`, `^`,
-   or `Shift+8`); close with `Esc`. Debug commands are auto-enabled because the game
-   is running modded.
-3. Grant the element by its `<PREFIX>-<SLUG>` id (a unique substring also works —
-   matching is `Contains`, uppercased):
-   - **relic:** `relic add <PREFIX>-<SLUG>` (e.g. `relic add GAMBLERSCOIN-GAMBLERS_COIN`;
-     `add` is default and matching is substring `Contains`).
-   - **potion:** `potion <PREFIX>-<SLUG>` (e.g. `potion FIREBOMB-FIREBOMB`). **No
-     `add` subcommand** and matching is **exact** — pass the full id, not a substring.
-     A run must be in progress.
-   - **card:** `card <PREFIX>-<SLUG>` (e.g. `card QUICKJAB-QUICK_JAB`) spawns it into
-     your **hand**. **No `add` subcommand**; matching is **exact** (uppercase,
-     screaming-snake) — pass the full id, not a substring. A run must be in progress
-     and your hand must not be full.
-4. Trigger the effect:
-   - **relic:** enter a combat (for a combat-start relic).
-   - **potion:** in a combat, **use** the potion (choose a target if it's targeted).
-   - **card:** in a combat, **play** the card from hand (target an enemy if it's an
-     attack). It costs energy — make sure you have enough, or grant energy first
-     (`energy 3`).
-5. Confirm the observed change matches intent (e.g. energy 3 → 0, +12 block, 20
-   damage dealt to the enemy), and grep the log for the effect marker with the
-   tier-2 pattern — **do NOT close the game first**; the tool reads the log while the
-   game is still running (shared-read), and closing it rotates the log away:
-
-```powershell
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName> -Tier2Pattern "played|fired|used"
+```bash
+python ${GAME_TOOLS_DIR}/launch.py --self-test --mod-name <ModName>
+python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|selftest done"
 ```
 
-This passes only if the load marker AND the effect marker are both present with no
-mod-named errors — it prints `[PASS] Tier-2 verified`. (Without `-Tier2Pattern` it's a
-tier-1-only check.)
+- `launch.py --self-test` passes `--t2selftest` (which arms the harness — a normal launch
+  never does), then **polls the log** until the harness prints its terminal marker
+  (`[T2MOD-SELFTEST] <ModName> selftest done` or `… selftest FAILED`), bounded by a
+  timeout. It leaves the game running so the grep can read the fresh log (shared-read).
+- `grep_log.py --tier2-pattern` passes only if the load marker AND an effect marker are
+  both present with no mod-named errors → `[PASS] Tier-2 verified`.
 
-If the console won't open or `add` says "Unable to create", see errors.md
-"Verification harness". If the effect is **wrong or absent** once granted/used (e.g.
-energy doesn't change, block not gained), that's a tier-2 behavior failure → go to
-`repair.md` ("verify tier-2" signal: "no effect" and "wrong effect" are different
-signatures). Report the tier-2 result as **observed** only if the marker fired and
-the user saw the change; otherwise report tier-1 only.
+**Read the harness's terminal marker first — it tells you which failure you have:**
+
+- `selftest done` **and** the element's own `fired/used` marker present → **tier-2 PASS**.
+  The effect actually fired, driven end-to-end with zero interaction.
+- `selftest done` but the `fired/used` marker is **absent** → the harness reached combat
+  and triggered, but the effect didn't fire → a **real tier-2 behavior bug** → `repair.md`
+  (signal: "no effect").
+- `selftest FAILED: <stage>` or timeout → the **harness couldn't reach/drive combat**
+  (navigation/timing — a setup problem, not your effect). Do **not** report a tier-2
+  failure of the mod. Fall back to the **manual guide below**, and if that's not feasible,
+  report **tier-1 only** honestly.
+
+### Manual fallback (only if the harness reported FAILED / timed out)
+
+Ask the user to drive it by hand via the dev console — the pre-M5 path:
+
+1. Start a run in STS2 (the mod is loaded — tier-1 confirmed it).
+2. Open the **dev console** with **`` ` `` (backtick)** (also `'`, `*`, `^`, `Shift+8`);
+   close with `Esc`. Debug commands are auto-enabled because the game is running modded.
+3. Grant the element by its `<PREFIX>-<SLUG>` id:
+   - **relic:** `relic add <PREFIX>-<SLUG>` (`add` is default; matching is substring `Contains`).
+   - **potion:** `potion <PREFIX>-<SLUG>` (**no `add`**, **exact** match; run in progress).
+   - **card:** `card <PREFIX>-<SLUG>` spawns into **hand** (**no `add`**, **exact** match;
+     run in progress, hand not full).
+4. Trigger it: **relic** → enter a combat; **potion** → use it (pick a target if targeted);
+   **card** → play it (target an enemy for an attack; `energy 3` first for headroom).
+5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
+   game** (closing rotates the log away):
+
+```bash
+python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|selftest done"
+```
+
+If the console won't open or `add` says "Unable to create", see errors.md "Verification
+harness". Report tier-2 as **observed** only if the marker fired (harness or manual);
+otherwise report tier-1 only.
 
 ## Finalize
 
@@ -91,7 +102,9 @@ Update `PLAN.md` (check the verify boxes for the tiers actually reached). Then
 summarize for the user in plain language:
 
 > Built **<Title>** (Common relic). It **loads in-game** (verified) and its effect
-> **<fired / is written but not yet observed>**. Artifacts are in
-> `mods/<ModName>/`. <If tier-2 not observed: how they can check it themselves.>
+> **<fired automatically in a self-test combat / is written but not yet observed —
+> the harness couldn't reach combat>**. Artifacts are in `mods/<ModName>/`.
+> <If tier-2 not observed: the harness marker it stopped on, and the manual check.>
 
-Be honest about the tier. A loaded-but-effect-unobserved mod is tier-1, not tier-2.
+Be honest about the tier. A loaded-but-effect-unobserved mod is tier-1, not tier-2 —
+and a `selftest FAILED` is a harness miss, not proof the effect is broken.

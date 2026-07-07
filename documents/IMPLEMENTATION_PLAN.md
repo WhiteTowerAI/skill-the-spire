@@ -329,11 +329,32 @@ diff-on-upgrade habit**, not a one-time dump. Full rationale + the "three source
 truth" diagnosis: memory `[[premine-offline-no-runtime-decompile]]`.
 
 **M5 — Behavior test (R2 tier 2) + Codex runtime + one-command install + optional publish.**
-Pick the tier-2 mechanism from M0/M1 findings; add the Codex adapter; **package
-open-mod for one-command install from a skill registry** (e.g. `npx skills add
-open-mod` / skills.sh — the committed distribution goal, PROJECT.md §3.1: no clone,
-no manual `publish.sh`, no fixed working dir); wire opt-in Workshop publish. This is
-the full-fat version.
+- ✅ **Tier-2 behavior automation — DONE (2026-07-06).** In-process self-test harness;
+  all four driving cells (card/relic/potion/combo) PASS live. See `games/sts2/tests/`.
+- ✅ **One-command install (Claude Code) — DONE (2026-07-06).** Shipped as a native
+  Claude Code plugin: repo root is the marketplace (`.claude-plugin/marketplace.json`),
+  plugin at `plugins/open-mod/` (committed payload rendered by `publish.sh --plugin`),
+  tool paths via `${CLAUDE_PLUGIN_ROOT}`. Install = `/plugin marketplace add
+  WhiteTowerAI/open-mod` + `/plugin install open-mod@open-mod` — no clone, no manual
+  `publish.sh`, no fixed cwd (the committed distribution goal, PROJECT.md §3.1). Real
+  registry command is live once the files reach `main`; test locally via `/plugin
+  marketplace add <repo path>`.
+- ✅ **Cross-agent install + cross-platform tools — DONE (2026-07-07).** Added
+  `publish.sh --portable`: renders the committed top-level `skills/` in the layout
+  skills.sh (`npx skills add WhiteTowerAI/open-mod`) auto-discovers, installable into
+  Codex / Cursor / OpenClaw / etc. The agent-neutral tool-path problem (no
+  `${CLAUDE_PLUGIN_ROOT}` off Claude) is solved per the AgentSkills spec: tools live in
+  `skills/modmaker/scripts/` and are referenced by **relative** path. The three tools
+  were rewritten from Windows PowerShell to **cross-platform Python** (`build.py` /
+  `launch.py` / `grep_log.py`) — regression-verified on Windows by re-running the
+  CanaryCard tier-2 self-test (build 0/0 → self-drive → `Jolt played` marker → PASS).
+  Also fixed a latent Git-Bash MSYS bug that had mangled `/modmaker` → `D:/Git/modmaker`
+  in every rendered SKILL.md. **Not verified:** the mac/Linux tool paths (game/log dirs
+  follow Steam/Godot conventions, best-effort — no non-Windows box), and the live
+  `npx skills add` install into a non-Claude agent (needs that agent's env).
+- ⏳ **Registry listing (later).** A lobehub / skills.sh directory entry so users can
+  discover it, not just install by repo slug.
+- ⏳ **Opt-in Steam Workshop publish** — still to wire.
 
 **M5.5 — Art/sprite pipeline (REQUIRED; PROJECT.md §7.1).** Deferred out of M4 to
 here (after M5): a no-art element loads cleanly with the default placeholder icon, so

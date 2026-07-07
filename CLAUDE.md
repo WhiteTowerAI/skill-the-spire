@@ -17,7 +17,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M4.5 COMPLETE (toolchain pre-mined ①②③④; canary matrix green under BaseLib v3.3.5)
+## Current status — M5 IN PROGRESS (tier-2 behavior automation: in-process self-test harness)
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -80,17 +80,83 @@ AND its effect fires in-game (both R2 tiers). The current **golden set** is the
 pipeline-produced mod per element type (relic/potion/card/power/combo), each build +
 tier-1 verified — the live reference for "what correct current output looks like."
 
-**Immediate next step**: M4.5 is done, so the next execution milestone is **M5** —
-automate tier-2 so the effect check no longer needs the user's eyes. The decompile
-confirms the entry points exist (`fight`/`card`/`potion`/`block` console commands +
-`TestMode`, which skips VFX/waits under `--headless`); the `grep_log.ps1` fix
-(shared-read + `-Tier2Pattern`) is a step toward it. After M5 the roadmap is
-**M5.5 — art/sprite pipeline** (custom card portraits / `.tres` potion atlas / relic
-png beyond placeholder default icons; user-configured image-gen backend — deferred out
-of M4 since a no-art element loads fine on the default icon), then **M6 — content-type
-breadth** (event/character/monster/orb/…, beyond the four pooled combat elements). A
-harder multi-element interview (one sentence → several elements) is also still open.
-Automated behavior testing (M5) and custom art (M5.5) remain the frontier.
+**M5 IN PROGRESS 2026-07-06 — tier-2 behavior automation (docs+harness landed; live
+end-to-end run pending the dev box).** Goal (user's words): make mod authors need as
+little rework/debug as possible — so tier-2 ("the effect actually fires") is now driven by
+an **in-process self-test harness** the pipeline emits into every mod, instead of the
+user hand-typing dev-console commands. Design (locked with user): **Route A** — the mod
+drives its own tier-2 check in-process (no keystroke injection, no external MCP); start
+**headed but keystroke-free**; **zero-interaction** combat entry via `ForceClick`
+navigation. Scope is **tier-2 only** (Codex adapter / one-command install / Workshop split
+to later milestones), covering **runtime effect automation + combo/multi-element
+interaction**. What landed this session (all from a fresh decompile grounding at
+`D:\26summer_intern\decomp\sts2_full`): a new pack page
+`reference/selftest-harness.md` (full arg-gated `SelfTest.cs` template + per-element
+DRIVER bodies for relic/card/potion/combo + 3-way marker vocabulary); `author.md` step
+2.5 (emit the harness + the gated `SelfTest.Arm()` line); `verify.md` rewritten to the
+unattended `launch.ps1 -SelfTest` flow with an honest manual fallback; `spec.md` gained
+an interaction/dependency block for combos; `launch.ps1` gained `-SelfTest` (passes
+`--t2selftest`, polls for the `selftest done`/`FAILED` marker); `repair.md` gained the
+3-way tier-2 signal split (harness-setup-miss vs no-effect vs wrong-value); `SKILL.md`
+scope+pipeline updated. **Key grounding correction:** the string-in
+`DevConsole.ProcessCommand(string)` is **NOT reachable** from a mod (the inner
+`DevConsole` is a private field on `NDevConsole`), so the harness calls the **public
+Cmds** the console commands wrap (`RunManager.EnterRoomDebug`, `RelicCmd.Obtain`,
+`CardCmd.AutoPlay`, `PotionModel.EnqueueManualUse`, …) — see the M5 harness memory.
+**Correction to the old plan:** `TestMode` does **NOT** give us usable `--headless`
+VFX/wait-skipping — `TestMode.TurnOnInternal` is documented internal-CI-only ("NEVER CALL
+THIS"), and `AutoSlayer`'s entry is gated by `IsReleaseGame()` (hardcoded `true` on the
+Steam build). The reachable entry points are the console-command-wrapped public Cmds +
+the subscribable `CombatManager.CombatSetUp`; the harness uses MegaCrit's own
+`CombatRoomHandler` poll pattern (`WaitHelper.Until(IsInProgress)` → wait `Play` phase)
+since it drives its own navigation.
+
+**M5 tier-2 automation is DONE — all four driving cells (card/relic/potion/combo) PASS
+live on the dev box 2026-07-06** (see `games/sts2/tests/canary-results.md`).
+
+**M5 one-command install — LANDED 2026-07-06 (Claude Code shape; headless-verified).**
+open-mod now ships as a **native Claude Code plugin**, so the install UX is two REPL
+commands — `/plugin marketplace add WhiteTowerAI/open-mod` then `/plugin install
+open-mod@open-mod` — with no clone, no manual `publish.sh`, and no fixed cwd (the
+committed distribution goal). Mechanism: repo root is the marketplace
+(`.claude-plugin/marketplace.json`), the plugin lives at `plugins/open-mod/`
+(`.claude-plugin/plugin.json` + generated `skills/` + `tools/`), and the tool-path
+coupling that forced a fixed cwd is solved by `${CLAUDE_PLUGIN_ROOT}` — the plugin's
+absolute install dir, substituted by Claude Code at load time. `publish.sh` gained a
+`--plugin` mode that renders the source `${VAR}` skills into the committed payload with
+paths pointing at `${CLAUDE_PLUGIN_ROOT}/…` and bundles the three PowerShell tools
+alongside. **The plugin payload under `plugins/open-mod/` IS committed** (unlike
+git-ignored `.claude/skills/`) because the marketplace fetches it from git — don't
+hand-edit it; edit the source under `games/sts2/` and re-run `./publish.sh --plugin`.
+**Left:** the real `/plugin marketplace add WhiteTowerAI/open-mod` command only works
+once these files reach `main` (it fetches the default branch); until then test with the
+local path `/plugin marketplace add <repo path>`.
+
+**M5 cross-agent install + cross-platform tools — LANDED 2026-07-07.** open-mod now
+also installs into non-Claude agents (Codex, Cursor, OpenClaw, …) via
+`npx skills add WhiteTowerAI/open-mod`. Mechanism: `publish.sh` gained a third mode
+`--portable` that renders a **committed top-level `skills/`** tree in the layout
+skills.sh auto-discovers (`skills/<name>/SKILL.md`, depth 2). The agent-neutral
+tool-path problem (no `${CLAUDE_PLUGIN_ROOT}` off Claude) is solved the AgentSkills-spec
+way: tools live in `skills/modmaker/scripts/` and are referenced by **relative** path.
+The three tools were **rewritten from Windows PowerShell to cross-platform Python**
+(`build.py`/`launch.py`/`grep_log.py`) — this also killed the `pwsh` dependency the dev
+box never had (it only has Windows PowerShell 5.1). Regression-verified on Windows:
+re-ran CanaryCard tier-2 end to end (`build.py` 0/0 → `launch.py --self-test` self-drive
+→ `Jolt played` marker → `[PASS]`). Also fixed a latent Git-Bash MSYS bug that mangled
+`/modmaker` → `D:/Git/modmaker` in every rendered SKILL.md `default_prompt` (fix: store
+the command name slash-less, template writes the `/`). **Two committed payloads now:**
+`plugins/open-mod/` (Claude, `${CLAUDE_PLUGIN_ROOT}` paths, `--plugin`) and top-level
+`skills/` (cross-agent, relative paths, `--portable`) — both generated, both re-run +
+commit after editing `games/sts2/` source; see their `GENERATED.md`. **Not verified:**
+mac/Linux tool paths (best-effort, no non-Windows box) and the live `npx skills add`
+into a real non-Claude agent. **Registry directory listing (lobehub/skills.sh) is still
+open** — that's discoverability, separate from the install mechanism which now works.
+
+**Next:** the live `/plugin` install verification (interactive — needs the user's REPL,
+ideally a clean env), then optionally extend the canary matrix cells' recorded tier-2
+runs. After M5: **M5.5 — art/sprite pipeline**, then **M6 — content-type breadth**
+(event/character/monster/orb/…). A harder multi-element interview is also still open.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 

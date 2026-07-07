@@ -73,8 +73,37 @@ Then, for **effect** proof, log a marker inside the trigger showing what happene
 MainFile.Logger.Info($"[T2MOD-SELFTEST] <ElementName> fired/used: <outcome> <metric> {before} -> {after}");
 ```
 
-verify.md greps the first for tier-1 and the second for tier-2. Keep both while
-verification is manual.
+verify.md greps the first for tier-1 and the second for tier-2. **Both markers stay in
+every mod** — the load marker proves it loads, the effect marker is what the tier-2
+harness (next step) makes fire automatically.
+
+## 2.5 Emit the tier-2 self-test harness
+
+This is what makes tier-2 automatic — the effect fires and is grepped with **no human at
+the keyboard, no dev-console typing**. Query the **sts2-api** skill for
+`reference/selftest-harness.md` and follow it. In short:
+
+1. Emit `<ModName>Code/SelfTest.cs` — the fixed scaffold from that page (menu→combat
+   navigation is identical for every mod; do not hand-edit it), in the **same namespace
+   as `MainFile.cs`** (`<ModName>.<ModName>Code`) so it reaches `MainFile.Logger`.
+2. Fill **exactly one** DRIVER body per SPEC's element: **relic** → `BeforeCombat`
+   (grant it, its `AfterSideTurnStart` fires on its own); **card** → `InCombat`
+   (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`); **potion** → `InCombat`
+   (`TryToProcure` → `EnqueueManualUse`); **combo** → `InCombat`, walking SPEC's
+   interaction block source-first (drive the source element; the dependent logs its own
+   marker). The page has the exact body for each.
+3. Add the **gated arm line** to `MainFile.Initialize()`, right after the load marker:
+
+```csharp
+if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();   // verification-only; dormant for end users
+```
+`using MegaCrit.Sts2.Core.Helpers;` for `CommandLineHelper`. The arg gate means a normal
+user launch never arms it — no menu driving, fully inert. It ships dormant inside the mod.
+
+**Grounding rule still holds:** the harness uses only the confirmed public Cmds in
+`selftest-harness.md` (`CardCmd.AutoPlay`, `PowerCmd.Apply`, `RelicCmd.Obtain`, potion
+`EnqueueManualUse`, …). Do **not** invent an API or try `NDevConsole…ProcessCommand(string)`
+— that path is unreachable (private field); the page explains why.
 
 ## 3. Write localization
 
@@ -111,4 +140,5 @@ plays. Custom/generated art is the M4 art pipeline — don't block on it.
 ## 5. Update state
 
 Record in `MEMORY.md`: the class name, the hook used, the exact loc keys written,
-and any Cmd choices. Mark `author` done in `PLAN.md`. Then go to `build.md`.
+any Cmd choices, and which DRIVER body the harness uses. Mark `author` done in
+`PLAN.md`. Then go to `build.md`.

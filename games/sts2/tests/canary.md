@@ -26,13 +26,13 @@ considered done.
 
 ## The five cells
 
-| Cell | Mod | Element(s) | What it proves in the recipe |
-|------|-----|-----------|------------------------------|
-| relic | `CanaryRelic` | relic `Bauble` (CANARYRELIC-BAUBLE) | `[Pool(SharedRelicPool)]`, template base class, `AfterSideTurnStart` + turn-1 guard, `PlayerCmd.GainEnergy`, 3-key `relics.json` (title/description/**flavor**) |
-| potion | `CanaryPotion` | potion `Fizz` (CANARYPOTION-FIZZ) | the **hand-made `Potions/` + base class** (template scaffolds none), `[Pool(SharedPotionPool)]`, the three abstract props, `OnUse`, `CreatureCmd.Damage`, 2-key `potions.json` |
-| card | `CanaryCard` | card `Jolt` (CANARYCARD-JOLT) | `[Pool(ColorlessCardPool)]`, template card base, `OnPlay`, `DamageCmd.Attack(...)` fluent builder, `DamageVar`/`OnUpgrade`, 2-key `cards.json`, **the `ArgumentNullException.ThrowIfNull(cardPlay.Target)` guard** (without it → CS8604) |
-| power | `CanaryPower` | power `Smolder` (CANARYPOWER-SMOLDER) | **NO `[Pool]`** (auto-discovered), `Type`+`StackType`, `AfterSideTurnStart` hook, `PowerCmd.Decrement`, and the **3-key `powers.json` incl. `.smartDescription`** — the STS001 case |
-| combo | `CanaryCombo` | card `Charge` + custom power `Signal` | the **card → `PowerCmd.Apply<CustomPower>`** dependency path (the BloodAndFury multi-element shape) in one mod: `PowerVar<Signal>`, `DynamicVars["Signal"]`, both loc tables |
+| Cell | Mod | Element(s) | What it proves in the recipe | Tier-2 harness DRIVER + marker |
+|------|-----|-----------|------------------------------|--------------------------------|
+| relic | `CanaryRelic` | relic `Bauble` (CANARYRELIC-BAUBLE) | `[Pool(SharedRelicPool)]`, template base class, `AfterSideTurnStart` + turn-1 guard, `PlayerCmd.GainEnergy`, 3-key `relics.json` (title/description/**flavor**) | `BeforeCombat`: `RelicCmd.Obtain` → auto-fires at combat start → `Bauble fired: +1 energy` |
+| potion | `CanaryPotion` | potion `Fizz` (CANARYPOTION-FIZZ) | the **hand-made `Potions/` + base class** (template scaffolds none), `[Pool(SharedPotionPool)]`, the three abstract props, `OnUse`, `CreatureCmd.Damage`, 2-key `potions.json` | `InCombat`: `TryToProcure` → `EnqueueManualUse(enemy)` → `Fizz used: 10 dmg` |
+| card | `CanaryCard` | card `Jolt` (CANARYCARD-JOLT) | `[Pool(ColorlessCardPool)]`, template card base, `OnPlay`, `DamageCmd.Attack(...)` fluent builder, `DamageVar`/`OnUpgrade`, 2-key `cards.json`, **the `ArgumentNullException.ThrowIfNull(cardPlay.Target)` guard** (without it → CS8604) | `InCombat`: `GainEnergy` → spawn to hand → `CardCmd.AutoPlay(_, _, enemy)` → `Jolt played: 6 dmg to target` |
+| power | `CanaryPower` | power `Smolder` (CANARYPOWER-SMOLDER) | **NO `[Pool]`** (auto-discovered), `Type`+`StackType`, `AfterSideTurnStart` hook, `PowerCmd.Decrement`, and the **3-key `powers.json` incl. `.smartDescription`** — the STS001 case | a power isn't a top-level element — its marker is asserted via the **combo** cell (a card applies it), matching how powers actually ship |
+| combo | `CanaryCombo` | card `Charge` + custom power `Signal` | the **card → `PowerCmd.Apply<CustomPower>`** dependency path (the BloodAndFury multi-element shape) in one mod: `PowerVar<Signal>`, `DynamicVars["Signal"]`, both loc tables | `InCombat` walks SPEC interaction: play `Charge` (`Charge played: applied Signal`) → assert the **dependent** `Signal fired:` marker — the interaction-link proof |
 
 ## How to run (maintainer, on the STS2 dev box)
 
@@ -45,23 +45,39 @@ since M1 — repo stays clean; trust regenerate over hoarding). The steps per ce
    `canary-results.md` for the exact minimal bodies used — copy-paste ready).
 4. Add `Logger.Info("[T2MOD-SELFTEST] Canary<X> loaded ok")` at the end of
    `MainFile.Initialize()`.
-5. `dotnet build Canary<X>.csproj -c Release` → expect **0 warnings, 0 errors** + a
+5. **(M5) Emit the tier-2 harness** per `reference/selftest-harness.md`: add
+   `Canary<X>Code/SelfTest.cs`, fill the DRIVER body from the table above, and append
+   `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();` after the load marker.
+   Each element already logs its `fired:`/`played:`/`used:` marker (see the bodies in
+   `canary-results.md`), so the harness only has to *trigger* it.
+6. `dotnet build Canary<X>.csproj -c Release` → expect **0 warnings, 0 errors** + a
    `.pck` copied to `mods/Canary<X>/`.
-6. Once all five are built: `tools/launch.ps1 -WaitSeconds 35` (one launch loads all
-   five), then `tools/grep_log.ps1 -ModName Canary<X>` per cell → expect
-   `[PASS] Tier-1 verified`.
+7. **Tier-1** (load): `tools/launch.ps1 -WaitSeconds 35` (one launch loads all five),
+   then `tools/grep_log.ps1 -ModName Canary<X>` per cell → expect `[PASS] Tier-1 verified`.
+8. **Tier-2** (effect fires, per cell — each self-drives its own combat):
+   `tools/launch.ps1 -SelfTest -ModName Canary<X>` then
+   `tools/grep_log.ps1 -ModName Canary<X> -Tier2Pattern "fired|used|played|selftest done"`
+   → expect `[PASS] Tier-2 verified`. For `CanaryCombo`, confirm **both** the `Charge
+   played:` and the dependent `Signal fired:` markers.
 
 ## Status
 
 All five **build green (0/0, `.pck` emitted)** and **tier-1 PASS** (load marker +
 zero mod-named errors, one launch) — see `canary-results.md` for the run record and
-the two recipe fixes this suite surfaced. Tier-2 (effect fired) is out of scope here
-— that's M5 (headless behavior test).
+the two recipe fixes this suite surfaced. **Tier-2 harness (M5): ALL FOUR driving cells
+PASS on the dev box (2026-07-06)** — relic/card/potion each drove their effect and combo
+proved the interaction chain (card applies power → `EndTurn` → power fires), all with zero
+interaction; power is asserted through combo. See `canary-results.md` for the per-cell
+markers and the four harness bugs the live run fixed. **Run one cell at a time** —
+`--t2selftest` arms every loaded harness mod, so parking all but the cell under test avoids
+a main-menu collision.
 
 ## Future
 
-- When M5 automates tier-2, extend each cell to assert its `fired:`/`played:` marker.
-- Add a cell for any new element type or recipe before calling that recipe done.
+- **(in progress, M5)** Run the tier-2 harness for each cell and record the markers in
+  `canary-results.md`.
+- Add a cell for any new element type or recipe before calling that recipe done — now
+  including its tier-2 DRIVER body + asserted marker, not just the build.
 - Consider a single driver script (`run-canaries.ps1`) that regenerates + builds all
-  five and greps once; deferred until it earns its keep (the manual steps are cheap
-  and the per-cell authoring is the point).
+  five, runs tier-1 once, then `-SelfTest` per cell and greps; deferred until it earns
+  its keep (the manual steps are cheap and the per-cell authoring is the point).
