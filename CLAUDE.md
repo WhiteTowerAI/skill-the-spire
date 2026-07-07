@@ -109,10 +109,53 @@ THIS"), and `AutoSlayer`'s entry is gated by `IsReleaseGame()` (hardcoded `true`
 Steam build). The reachable entry points are the console-command-wrapped public Cmds +
 the subscribable `CombatManager.CombatSetUp`; the harness uses MegaCrit's own
 `CombatRoomHandler` poll pattern (`WaitHelper.Until(IsInProgress)` → wait `Play` phase)
-since it drives its own navigation. **Next:** the live end-to-end verification on the STS2
-dev box (regenerate a card + relic + a combo cell, `launch.ps1 -SelfTest`, confirm the
-fired markers with zero manual triggering), then extend the canary matrix cells to assert
-tier-2. After M5: **M5.5 — art/sprite pipeline**, then **M6 — content-type breadth**
+since it drives its own navigation.
+
+**M5 tier-2 automation is DONE — all four driving cells (card/relic/potion/combo) PASS
+live on the dev box 2026-07-06** (see `games/sts2/tests/canary-results.md`).
+
+**M5 one-command install — LANDED 2026-07-06 (Claude Code shape; headless-verified).**
+open-mod now ships as a **native Claude Code plugin**, so the install UX is two REPL
+commands — `/plugin marketplace add WhiteTowerAI/open-mod` then `/plugin install
+open-mod@open-mod` — with no clone, no manual `publish.sh`, and no fixed cwd (the
+committed distribution goal). Mechanism: repo root is the marketplace
+(`.claude-plugin/marketplace.json`), the plugin lives at `plugins/open-mod/`
+(`.claude-plugin/plugin.json` + generated `skills/` + `tools/`), and the tool-path
+coupling that forced a fixed cwd is solved by `${CLAUDE_PLUGIN_ROOT}` — the plugin's
+absolute install dir, substituted by Claude Code at load time. `publish.sh` gained a
+`--plugin` mode that renders the source `${VAR}` skills into the committed payload with
+paths pointing at `${CLAUDE_PLUGIN_ROOT}/…` and bundles the three PowerShell tools
+alongside. **The plugin payload under `plugins/open-mod/` IS committed** (unlike
+git-ignored `.claude/skills/`) because the marketplace fetches it from git — don't
+hand-edit it; edit the source under `games/sts2/` and re-run `./publish.sh --plugin`.
+**Left:** the real `/plugin marketplace add WhiteTowerAI/open-mod` command only works
+once these files reach `main` (it fetches the default branch); until then test with the
+local path `/plugin marketplace add <repo path>`.
+
+**M5 cross-agent install + cross-platform tools — LANDED 2026-07-07.** open-mod now
+also installs into non-Claude agents (Codex, Cursor, OpenClaw, …) via
+`npx skills add WhiteTowerAI/open-mod`. Mechanism: `publish.sh` gained a third mode
+`--portable` that renders a **committed top-level `skills/`** tree in the layout
+skills.sh auto-discovers (`skills/<name>/SKILL.md`, depth 2). The agent-neutral
+tool-path problem (no `${CLAUDE_PLUGIN_ROOT}` off Claude) is solved the AgentSkills-spec
+way: tools live in `skills/modmaker/scripts/` and are referenced by **relative** path.
+The three tools were **rewritten from Windows PowerShell to cross-platform Python**
+(`build.py`/`launch.py`/`grep_log.py`) — this also killed the `pwsh` dependency the dev
+box never had (it only has Windows PowerShell 5.1). Regression-verified on Windows:
+re-ran CanaryCard tier-2 end to end (`build.py` 0/0 → `launch.py --self-test` self-drive
+→ `Jolt played` marker → `[PASS]`). Also fixed a latent Git-Bash MSYS bug that mangled
+`/modmaker` → `D:/Git/modmaker` in every rendered SKILL.md `default_prompt` (fix: store
+the command name slash-less, template writes the `/`). **Two committed payloads now:**
+`plugins/open-mod/` (Claude, `${CLAUDE_PLUGIN_ROOT}` paths, `--plugin`) and top-level
+`skills/` (cross-agent, relative paths, `--portable`) — both generated, both re-run +
+commit after editing `games/sts2/` source; see their `GENERATED.md`. **Not verified:**
+mac/Linux tool paths (best-effort, no non-Windows box) and the live `npx skills add`
+into a real non-Claude agent. **Registry directory listing (lobehub/skills.sh) is still
+open** — that's discoverability, separate from the install mechanism which now works.
+
+**Next:** the live `/plugin` install verification (interactive — needs the user's REPL,
+ideally a clean env), then optionally extend the canary matrix cells' recorded tier-2
+runs. After M5: **M5.5 — art/sprite pipeline**, then **M6 — content-type breadth**
 (event/character/monster/orb/…). A harder multi-element interview is also still open.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)

@@ -328,7 +328,7 @@ private static async Task InCombat(Player player, CancellationToken ct)
 > the dependent power fires immediately on apply (not at a turn start), drop the `EndTurn` and
 > the second delay — the first `Task.Delay(500)` is enough.
 
-`verify.md` greps for **both** markers (`-Tier2Pattern "fired|used|selftest done"`); a
+`verify.md` greps for **both** markers (`--tier2-pattern "fired|used|selftest done"`); a
 missing dependent marker after `selftest done` = the interaction link is broken (the exact
 place raw-AI multi-element mods fail).
 

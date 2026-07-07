@@ -7,9 +7,11 @@ and runs in-game.
 
 First supported game: **Slay the Spire 2 (STS2)**.
 
-> **Status: M2 (early).** Right now open-mod reliably makes **relics** (passive or
-> triggered items the player owns). Cards, potions, custom art, and one-click
-> Steam Workshop publishing are on the roadmap. See [Current limits](#current-limits).
+> **Status: M5 (in progress).** open-mod reliably makes **relics, potions, cards,
+> and custom powers** (including a card that applies its own power), verifies both
+> that the mod **loads** and that its **effect actually fires** in-game, and repairs
+> common build errors automatically. Custom/generated art and one-click Steam
+> Workshop publishing are still on the roadmap. See [Current limits](#current-limits).
 
 ---
 
@@ -36,39 +38,47 @@ template (`dotnet new install Alchyr.Sts2.Templates`) if it isn't already presen
 
 ## Install (one time)
 
-1. **Get the code.** Clone this repository:
+No clone, no build step, no fixed working directory — install once and `/modmaker`
+is available from anywhere.
 
-   ```bash
-   git clone https://github.com/WhiteTowerAI/open-mod.git
-   cd open-mod
-   ```
+**Claude Code** (native plugin) — run these two commands:
 
-2. **Publish the skill** so Claude Code can see it. From the repo root, in Git Bash:
+```
+/plugin marketplace add WhiteTowerAI/open-mod
+/plugin install open-mod@open-mod
+```
 
-   ```bash
-   ./publish.sh --agent claude
-   ```
+The first registers this repository as a plugin marketplace; the second installs
+the `open-mod` plugin (the mod-maker skill, the STS2 knowledge pack, and the build
+tools). To update later, run `/plugin marketplace update open-mod`.
 
-   This renders the skill into `.claude/skills/` inside the repo. You should see:
+**Other agents** (Codex, Cursor, OpenClaw, …) — use the cross-agent installer:
 
-   ```
-   Published STS2 skill for Claude -> .../.claude/skills
-     modmaker:  8 files
-     sts2-api:  3 files
-   ```
+```
+npx skills add WhiteTowerAI/open-mod
+```
 
-3. **Open this repo in Claude Code.** Start Claude Code with the `open-mod` folder
-   as the working directory. The skill is project-scoped, so `/modmaker` becomes
-   available whenever Claude Code is opened here.
+This drops the skill into wherever your agent looks for skills. Both paths pull
+straight from GitHub.
 
-That's it. You don't need to re-run `publish.sh` unless you pull new changes.
+That's it. `/modmaker` now works in any project.
+
+> **A note on other agents:** the STS2 *knowledge* (recipes, mechanics, error
+> fixes) works the same everywhere. The build/verify **tools** are cross-platform
+> Python, but the full one-command build → self-test loop is currently proven on
+> **Windows + Claude Code**; on other setups you may need to run the build/launch
+> steps yourself. See [Current limits](#current-limits).
+
+> **Prefer the dev flow?** Contributors who want to edit the skill in-place can
+> still clone the repo and run `./publish.sh --agent claude` (see
+> [For contributors](#for-contributors)).
 
 ---
 
 ## Make a mod
 
-In Claude Code (opened in this repo), run the skill and describe your mod in one
-sentence:
+In Claude Code (any project, once the plugin is installed), run the skill and
+describe your mod in one sentence:
 
 ```
 /modmaker
@@ -122,22 +132,29 @@ If it loaded and fired, you're done — you made a working mod from one sentence
 
 ## Current limits
 
-open-mod is early. Today it does the following well, and is honest about the rest:
+open-mod is still young. Today it does the following well, and is honest about the rest:
 
-- ✅ **Relics** — passive/triggered items (start of combat, start of turn, etc.).
+- ✅ **Relics, potions, cards, and custom powers** — including a card that applies
+  its own custom power (the multi-element "combo" case).
 - ✅ **Load verification** — it proves the mod loads in-game, not just "it compiled".
-- 🚧 **Effect verification is guided, not automated** — the skill walks you through
-  the dev-console check; it doesn't yet drive the game itself.
-- ⏳ **Not yet:** cards, potions, custom/generated art (relics use a placeholder
-  icon for now), automatic error-repair, and one-click Steam Workshop publishing.
+- ✅ **Effect verification (automated)** — the mod carries an in-process self-test
+  that drives itself into a combat and confirms the effect fires, with no dev-console
+  typing. It falls back to a guided manual check and reports load-only if the
+  self-test can't reach combat.
+- ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
+  failures, then re-verifies.
+- ⏳ **Not yet:** custom/generated art (elements use a placeholder icon for now),
+  editing existing vanilla content, and one-click Steam Workshop publishing.
 
 If you ask for something outside this, the skill will tell you plainly rather than
 half-build it.
 
 ## Troubleshooting
 
-- **`/modmaker` doesn't appear** — make sure you ran `./publish.sh --agent claude`
-  and opened Claude Code with the `open-mod` repo as the working directory.
+- **`/modmaker` doesn't appear** — confirm the plugin installed: run `/plugin` and
+  check `open-mod` is listed and enabled. If you installed from a local clone
+  instead, make sure you ran `./publish.sh --agent claude` and opened Claude Code
+  with the `open-mod` repo as the working directory.
 - **`publish.sh` says no working Python** — the Windows Store `python3` is a
   placeholder. Install real Python 3 from python.org and reopen your shell.
 - **The relic shows a plain coin/placeholder icon** — expected for now; custom art
@@ -147,10 +164,32 @@ half-build it.
 
 The skill source lives under `games/sts2/` (orchestrator in
 `games/sts2/skills/modmaker/`, the STS2 knowledge pack in
-`games/sts2/skills/sts2-api/`, helper scripts in `games/sts2/tools/`). `publish.sh`
-renders it into `.claude/skills/` (git-ignored — regenerate, don't commit).
-Planning and research docs are in `documents/`. See `CLAUDE.md` and `AGENTS.md`
-before contributing.
+`games/sts2/skills/sts2-api/`, cross-platform Python tools in `games/sts2/tools/`).
+Source files use `${VAR}` placeholders; `publish.sh` renders them three ways:
+
+- **`./publish.sh --agent claude`** — the dev flow. Renders into `.claude/skills/`
+  (git-ignored, regenerate don't commit) with tool paths pointing at
+  `games/sts2/tools/`. Testable in-place when Claude Code is opened here.
+- **`./publish.sh --plugin`** — the Claude ship flow. Renders the committed plugin
+  payload into `plugins/open-mod/{skills,tools}/` with paths pointing at
+  `${CLAUDE_PLUGIN_ROOT}`, so the installed plugin works from any cwd.
+- **`./publish.sh --portable`** — the cross-agent ship flow. Renders the committed
+  top-level `skills/` (the layout `npx skills add` discovers) with tools bundled in
+  `skills/modmaker/scripts/` and referenced by **relative** path (no
+  `${CLAUDE_PLUGIN_ROOT}` off Claude).
+
+Both ship payloads **are committed** (the marketplaces fetch them from git) — re-run
+the relevant publish after any source change and commit the result. Don't hand-edit
+the generated trees; see `plugins/open-mod/GENERATED.md` and `skills/GENERATED.md`.
+
+The tools are **Python** (`build.py` / `launch.py` / `grep_log.py`), so they run on
+Windows/macOS/Linux; invoke with `python` (on Windows the bare `python3` is often the
+Store shim). The legacy `.ps1` versions remain in `games/sts2/tools/` as source but
+are not shipped.
+
+The marketplace manifest is `.claude-plugin/marketplace.json`; the plugin manifest
+is `plugins/open-mod/.claude-plugin/plugin.json`. Planning and research docs are in
+`documents/`. See `CLAUDE.md` and `AGENTS.md` before contributing.
 
 ## License
 

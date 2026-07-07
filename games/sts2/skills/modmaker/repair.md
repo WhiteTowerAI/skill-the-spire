@@ -51,10 +51,10 @@ stage failed
 
 Read the artifact, not your memory of what you wrote.
 
-- **build (R1):** the diagnostic lines `build.ps1` prints on failure, and the full
+- **build (R1):** the diagnostic lines `build.py` prints on failure, and the full
   `<ProjectDir>/.build.log` if you need context. Key on the **compiler code +
   symbol** (`CS0246: type 'PlayerCmd' not found`), not the prose.
-- **verify tier-1 (load):** `grep_log.ps1`'s verdict plus the `godot.log` lines it
+- **verify tier-1 (load):** `grep_log.py`'s verdict plus the `godot.log` lines it
   surfaces. Two distinct failures: **marker NOT FOUND** (did it even load / did we
   inject the marker?) vs **error/exception lines naming the mod** (it loaded but
   threw). The `RUNNING MODDED` flag disambiguates — see errors.md.
@@ -65,7 +65,7 @@ Read the artifact, not your memory of what you wrote.
      **not an effect bug** — do not "fix" the element for it. Causes: a game version bump
      shifted the scene-tree paths in `NavigateToRunAsync` (re-mine them from the decompile
      per `reference/selftest-harness.md`), or a slow load blew the timeout (raise
-     `launch.ps1 -WaitSeconds`). If it can't be made to reach combat, fall back to the
+     `launch.py --wait-seconds`). If it can't be made to reach combat, fall back to the
      manual dev-console check (verify.md) and report **tier-1 only** — never a tier-2 fail.
   2. **`selftest done` but the `fired/used:` marker is absent** → combat was reached and
      the element triggered, but the effect didn't fire → the **real tier-2 behavior bug**
@@ -95,7 +95,7 @@ Re-run the **failed** stage, not the whole pipeline:
 - build fix → `build.md` (rebuild once).
 - load/tier-1 fix that touches code or the csproj → **rebuild first** (the fix only
   reaches the game through a fresh `.dll`/`.pck`), then re-run `verify.md` tier-1.
-- tier-2 fix → rebuild, then re-run the self-test (`launch.ps1 -SelfTest -ModName <M>`)
+- tier-2 fix → rebuild, then re-run the self-test (`launch.py --self-test --mod-name <M>`)
   and re-grep the marker. (Only fall back to manual re-grant/observe if the harness can't
   reach combat — signature 1 above.)
 

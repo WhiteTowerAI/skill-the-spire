@@ -2,7 +2,7 @@
 name: modmaker
 display_name: STS2 Mod Maker
 short_description: Turn one sentence into a working Slay the Spire 2 mod
-default_prompt: "Use ${MODMAKER_COMMAND} to build a Slay the Spire 2 mod from a natural-language description."
+default_prompt: "Use /${MODMAKER_COMMAND} to build a Slay the Spire 2 mod from a natural-language description."
 description: |
   Build a working Slay the Spire 2 mod from a one-sentence natural-language
   description. Use when the user wants ${AGENT_NAME} to create, generate, or
@@ -68,12 +68,12 @@ User: one sentence ("a relic that ...")
     [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
     (SelfTest.cs, step 2.5 — reference/selftest-harness.md).
     |
- 5. BUILD (build.md) — tools/build.ps1 → .dll/.pck/.json into mods/. On failure:
+ 5. BUILD (build.md) — tools/build.py → .dll/.pck/.json into mods/. On failure:
     go to REPAIR (repair.md).
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
     and mod-named errors (tier-1). Then run the tier-2 self-test unattended
-    (launch.ps1 -SelfTest → the harness drives itself into combat and fires the
+    (launch.py --self-test → the harness drives itself into combat and fires the
     effect → grep the fired/used marker). Fall back to the manual dev-console guide
     only if the harness can't reach combat. Never claim the effect is verified when
     only load was. On failure: go to REPAIR (repair.md).

@@ -8,14 +8,14 @@ which tier you reached; never claim the effect is verified when only load was.
 Launch STS2 without Steam, wait, then grep the log for the load marker and any
 mod-named errors.
 
-```powershell
-pwsh ${GAME_TOOLS_DIR}/launch.ps1
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName>
+```bash
+python ${GAME_TOOLS_DIR}/launch.py
+python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName>
 ```
 
-- `launch.ps1` ensures `steam_appid.txt` (=2868840) exists, launches
-  `SlayTheSpire2.exe`, waits ~25s, and closes it.
-- `grep_log.ps1` reads the **current** `godot.log` in full and passes if it finds
+- `launch.py` ensures `steam_appid.txt` (=2868840) exists, launches the game,
+  waits ~25s, and closes it.
+- `grep_log.py` reads the **current** `godot.log` in full and passes if it finds
   `[T2MOD-SELFTEST] <ModName> loaded ok` **and** no error/exception lines naming the
   mod. It also reports the `RUNNING MODDED` flag.
 - **Why no byte offset:** STS2 archives the previous log (to
@@ -43,20 +43,20 @@ This is the guaranteed check: it proves "installs + loads + registered".
 ## Tier-2 — does the effect fire? (automated harness, the headline)
 
 **Tier-2 is now unattended** (M5). The mod ships an arg-gated in-process harness
-(`SelfTest.cs`, author.md step 2.5). Launched with `-SelfTest`, it drives itself from the
+(`SelfTest.cs`, author.md step 2.5). Launched with `--self-test`, it drives itself from the
 main menu into a minimal combat and fires the effect — **no dev-console typing, no human
 triggering**. You then grep the same effect marker.
 
-```powershell
-pwsh ${GAME_TOOLS_DIR}/launch.ps1 -SelfTest -ModName <ModName>
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName> -Tier2Pattern "fired|used|selftest done"
+```bash
+python ${GAME_TOOLS_DIR}/launch.py --self-test --mod-name <ModName>
+python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|selftest done"
 ```
 
-- `launch.ps1 -SelfTest` passes `--t2selftest` (which arms the harness — a normal launch
+- `launch.py --self-test` passes `--t2selftest` (which arms the harness — a normal launch
   never does), then **polls the log** until the harness prints its terminal marker
   (`[T2MOD-SELFTEST] <ModName> selftest done` or `… selftest FAILED`), bounded by a
   timeout. It leaves the game running so the grep can read the fresh log (shared-read).
-- `grep_log.ps1 -Tier2Pattern` passes only if the load marker AND an effect marker are
+- `grep_log.py --tier2-pattern` passes only if the load marker AND an effect marker are
   both present with no mod-named errors → `[PASS] Tier-2 verified`.
 
 **Read the harness's terminal marker first — it tells you which failure you have:**
@@ -88,8 +88,8 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
    game** (closing rotates the log away):
 
-```powershell
-pwsh ${GAME_TOOLS_DIR}/grep_log.ps1 -ModName <ModName> -Tier2Pattern "fired|used|selftest done"
+```bash
+python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|selftest done"
 ```
 
 If the console won't open or `add` says "Unable to create", see errors.md "Verification

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "open-mod",
+  "owner": {
+    "name": "WhiteTowerAI",
+    "url": "https://github.com/WhiteTowerAI"
+  },
+  "metadata": {
+    "description": "open-mod — turn one sentence into a working game mod. First game: Slay the Spire 2."
+  },
+  "plugins": [
+    {
+      "name": "open-mod",
+      "source": "./plugins/open-mod",
+      "description": "Turn one plain-English sentence into a real, working Slay the Spire 2 mod — scaffold, author, build, and two-tier verify (loads + effect fires), no coding required."
+    }
+  ]
+}
