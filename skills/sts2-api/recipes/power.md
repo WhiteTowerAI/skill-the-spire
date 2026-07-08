@@ -177,9 +177,11 @@ identical to `.description`:
 }
 ```
 
-Icon: power atlas is a `.tres` (like potions); with no custom art it falls back to
-`missing_power.png` — expected in M4, not a load failure (same finding as the potion
-atlas). Override `CustomPackedIconPath` only when you have real art.
+Icon: the template base wires the power icon to a loose PNG under `images/powers/`
+(`Exists()` + fallback to `missing_power.png`), so with no custom art it loads on the
+default — not a failure. To ship art, drop a 256×256 PNG at `powers/<slug>.png` **and**
+`powers/big/<slug>.png` (status icon + apply/expire notification) via
+`gen_sprite.py --spec power`; see `reference/art-contract.md`.
 
 ## Pre-flight checklist (catches the common silent failures)
 

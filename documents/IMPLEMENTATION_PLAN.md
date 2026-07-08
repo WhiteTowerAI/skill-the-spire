@@ -367,10 +367,10 @@ uses a **user-configured backend** (their own OpenAI-compatible image endpoint �
 or local; we ship the plumbing, not a bundled provider) via a provider-agnostic
 `art-backend.json`. What landed this session:
 - **Contract page** `sts2-api/reference/art-contract.md` — exact `res://` path + pixel
-  size per sprite type (a normal card has one portrait the game loads, `1000×760`,
-  **source-verified**; 606×852 full art is Ancient-rarity only and out of scope;
-  relic/power sizes unverified; potion is a `.tres` atlas, separate pipeline) + the
-  placeholder-fallback mechanism + the card-portrait prompt template.
+  size per sprite type (a normal card has one portrait the game loads, `1000×760`;
+  606×852 full art is Ancient-rarity only and out of scope; relic/power/potion icons are
+  256×256 loose PNGs — all four types now live-verified, see the M5.5 sub-steps below) +
+  the placeholder-fallback mechanism + the card-portrait prompt template.
 - **New tool** `tools/gen_sprite.py` (Python + Pillow; `publish.sh` auto-bundles it into
   both payloads alongside build/launch/grep). Subcommands `generate` (BYO OpenAI-compat
   HTTP), `import` (local file), `list-specs`. Normalizes any source → magenta chroma-key
@@ -403,11 +403,18 @@ chroma-key/fit logic reused in `gen_sprite.py`) and `baselines/spire-codex/spine
   (fixed in `recipes/power.md`). relic's `<slug>_outline.png` hover outline is left to the
   template fallback (looks fine live); we don't generate it. Also: `art-samples/` split into
   `card/relic/power/` subdirs, `--reference` auto-picks by `--spec`.
-- **② potion (`.tres` atlas) — NEXT.** The icon PNG is also 256×256 (63 extracted potions confirm),
-  but BaseLib loads potion art via `CustomPackedImagePath` → a Godot `.tres` sprite-atlas
-  resource (a small text manifest pointing at the PNG), NOT a loose `.png` like relics. So
-  this needs a `.tres` emitter (generate the 256×256 icon → wrap it in the atlas manifest →
-  point `CustomPackedImagePath` at it) + a live check that BaseLib accepts it.
+- **② potion — DONE & live-verified (2026-07-08).** The icon is 256×256 (63 extracted
+  potions confirm). **This overturned the planned `.tres` emitter: potion takes a loose PNG,
+  same as relic/power — no atlas.** BaseLib's `CustomPotionModel` Harmony-patches
+  `PotionModel.ImagePath` to `CustomPackedImagePath`, whose docstring says a PNG path is a
+  valid `Texture2D`; the "must be a `.tres`" belief was just because the un-overridden getter
+  defaults to the atlas path (which a mod doesn't ship). Wiring mirrors relic/power: a
+  `PotionImagePath` helper (`Exists()`+fallback) + the mod's `<ModName>Potion` base overrides
+  `CustomPackedImagePath`. Two potion-specific facts: (a) **ONE file only** — potion exposes a
+  single `Image` texture (bar/hover/use all reuse it), no `big/` variant (unlike relic/power);
+  (b) art direction — potions are drawn **tilted ~45° right**, baked into the prompt. Generated
+  "Fizz" via Poe/nano-banana, built, confirmed in-game. `gen_sprite.py` gained the `potion`
+  spec; `art-samples/potion/` added (6 refs).
 - **③ Ancient full art (606×852) stays out of scope** — we don't make Ancient cards.
 
 **Sequence: after M5, before M6** — M6's heavier content types (characters especially)

@@ -42,10 +42,9 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    implies a custom visual. This is a **single mod-level decision**: placeholder or
    generate for the mod, asked **once** no matter how many cards/sprites it has. Do NOT
    ask per sprite. If they want custom art:
-   - **Card portraits, relic icons, and power icons** can all be generated (all three
-     live-verified). Only **potion** art stays placeholder this round (it's a `.tres`
-     atlas, a separate pipeline). If they want custom potion art, say it's not wired yet
-     and offer placeholder.
+   - **All four element types — card portraits, relic icons, power icons, and potion
+     icons** can be generated (all live-verified; each is a loose PNG the game loads
+     directly, no `.tres` authoring).
    - Custom generation is **bring-your-own-backend** (their own OpenAI-compatible image
      endpoint, configured later in an `art-backend.json`). If they don't have one,
      record `art: placeholder` and move on — never block on art.
@@ -71,8 +70,8 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Art**: **placeholder** (the template's fallback icon). This is the default — do NOT
   proactively ask about art. Only switch to `generate` if the user's sentence asks for a
-  custom look (e.g. "a card showing a red phoenix", "make it look like…"). Card / relic /
-  power sprites can all be generated (potion stays placeholder — see step 4). It is a
+  custom look (e.g. "a card showing a red phoenix", "make it look like…"). All four types —
+  card / relic / power / potion sprites — can be generated (see step 4). It is a
   **single mod-level choice**, asked at most once regardless of sprite count. Custom
   generation is BYO-backend.
 - **Author**: reuse the project's configured author, else "OpenMod".

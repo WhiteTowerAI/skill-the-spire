@@ -56,10 +56,12 @@ except ImportError:
 # size = exact (w, h) the game expects. A size of None means we have no measurement at
 # all → generate/import refuses without an explicit --size (grounding doctrine: don't
 # guess a size as if measured). "verified" = the size + all icon paths have been confirmed
-# correct IN-GAME (a live run), not merely source-known. All three specs are now
-# live-verified: card 1000×760 (2026-07-08); relic + power 256×256 (2026-07-08, canary-relic
-# "Bauble" + canary-power "Smolder" — bar/status icon, big detail-popup, and power's
-# apply/expire notification all render correctly).
+# correct IN-GAME (a live run), not merely source-known. card/relic/power are live-verified:
+# card 1000×760 (2026-07-08); relic + power 256×256 (2026-07-08, canary-relic "Bauble" +
+# canary-power "Smolder" — bar/status icon, big detail-popup, and power's apply/expire
+# notification all render correctly). potion 256×256 also live-verified (2026-07-08,
+# canary-potion "Fizz") — BaseLib DOES accept a loose PNG via CustomPackedImagePath (no
+# .tres atlas needed); potion has ONE image texture (no big/), drawn tilted ~45° right.
 # fit: "cover"   = fill the whole rect, crop overflow (a full-bleed illustration the
 #                  game frames itself, e.g. a card portrait). Opaque.
 #      "contain" = fit inside with transparent padding (a cut-out object on a keyed
@@ -75,16 +77,17 @@ except ImportError:
 # emit it. A normal card is 1000×760 landscape; 606×852 "full art" is Ancient-rarity only
 # and we don't make Ancient cards (see reference/art-contract.md).
 #
-# relic/power: vanilla STS2 loads these icons from Godot `.tres` sprite-atlases
-# (atlases/relic_atlas.sprites/<id>.tres, power_atlas, relic_outline_atlas — see
-# RelicModel/PowerModel in the decompile). BUT the Alchyr template OVERRIDES those getters
-# to point at loose PNGs under images/relics|powers/ with an Exists()+fallback check — so
-# a mod feeds a plain 256×256 PNG, no atlas needed. (Potion is NOT overridden this way; it
-# still wants a `.tres` — that's why potion is a separate, later sub-step.) A relic also
-# has a `<slug>_outline.png` (the hover/selection white outline, its own RelicModel getter);
-# a missing outline falls back to the template's relic_outline.png. Whether we auto-emit
-# the outline is pending a live look at how off the default outline looks (M5.5 ①).
-# power has NO outline.
+# relic/power/potion: vanilla STS2 loads these icons from Godot `.tres` sprite-atlases
+# (atlases/relic_atlas.sprites/<id>.tres, power_atlas, relic_outline_atlas, potion_atlas —
+# see RelicModel/PowerModel/PotionModel + CustomPotionModel in the decompile). BUT the icon
+# getters accept a loose PNG too: for relic/power the Alchyr template OVERRIDES the getters
+# to point at loose PNGs under images/relics|powers/ (Exists()+fallback); for potion BaseLib
+# itself patches PotionModel's image getter to CustomPotionModel.CustomPackedImagePath and
+# its docstring says "You may pass the path to a png" — so we hand-add a PotionImagePath
+# helper to the potion base and feed a plain 256×256 PNG, no atlas authoring. A relic also
+# has a `<slug>_outline.png` (hover/selection white outline); a missing outline falls back to
+# the template's relic_outline.png (confirmed fine live). power has NO outline; potion has an
+# optional CustomPackedOutlinePath we leave null (same fallback logic).
 #
 # extra_sub_paths: relic AND power are each drawn from TWO loose-PNG getters the Alchyr
 # template overrides (both confirmed live + in the decompile — RelicModel/PowerModel patched
@@ -95,6 +98,8 @@ except ImportError:
 # They're separate files (the template ships both <x>.png and big/<x>.png), so writing only
 # the small icon leaves the big popup on the placeholder. We write the same normalized image
 # to both. `card` writes only big/ (the outer bar path is dead code under BaseLib).
+# potion has only ONE image getter (CustomPackedImagePath); the detail/inspect view scales
+# that same texture up — there is no separate big/ file — so potion's extra_sub_paths is [].
 # (A relic also has PackedIconOutlinePath → relics/<slug>_outline.png, the hover outline; we
 # don't emit it yet — missing falls back to the template's relic_outline.png, which the user
 # confirmed looks fine. power has no outline. beta icon paths default null — ignore.)
@@ -102,6 +107,7 @@ SPECS: dict[str, dict] = {
     "card":       {"sub_path": "card_portraits/big",   "extra_sub_paths": [],             "size": (1000, 760), "verified": True,  "fit": "cover",   "chroma": False},
     "relic":      {"sub_path": "relics",               "extra_sub_paths": ["relics/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "power":      {"sub_path": "powers",               "extra_sub_paths": ["powers/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
+    "potion":     {"sub_path": "potions",              "extra_sub_paths": [],             "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
 }
 
 

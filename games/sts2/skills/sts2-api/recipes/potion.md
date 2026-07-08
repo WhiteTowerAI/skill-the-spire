@@ -25,20 +25,45 @@ The Alchyr content template scaffolds `Cards/`, `Powers/`, `Relics/` folders and
 mod base class for each — **but NOT `Potions/`**. So before authoring:
 
 1. Create the folder `<ModName>Code/Potions/`.
-2. Add a mod potion **base class** (mirrors the generated `<ModName>Relic` base — it
-   resolves the packed image path). Potion art is a **`.tres` sprite atlas**, not a
-   loose `.png` like relics, so during early milestones just let it fall back to the
-   default icon (override `CustomPackedImagePath` only when you have real art — M4+):
+2. Add a mod potion **base class** (mirrors the generated `<ModName>Relic`/`<ModName>Power`
+   bases — it resolves the icon path to a loose PNG). **Custom potions extend THIS base, not
+   `CustomPotionModel` directly** — the base is what wires the icon getter; a direct subclass
+   leaves it null and the icon silently falls back to the default even with a PNG present
+   (same footgun as powers — see `recipes/power.md`).
+
+   Potion art is a **loose 256×256 `.png`**, same as relics/powers — *not* a `.tres` atlas.
+   (BaseLib patches `PotionModel`'s image getter to `CustomPackedImagePath` and its docstring
+   says a png path is a valid `Texture2D`; live-verified 2026-07-08.) The template does **not**
+   scaffold a `PotionImagePath` helper (it has no `Potions/` folder), so add one to
+   `<ModName>Code/Extensions/StringExtensions.cs`, mirroring the generated `RelicImagePath`:
+
+```csharp
+// in StringExtensions.cs — mirrors the generated RelicImagePath/PowerImagePath
+public static string PotionImagePath(this string path)
+{
+    path = Path.Join(MainFile.ResPath, "images", "potions", path);
+    if (ResourceLoader.Exists(path)) return path;
+    MainFile.Logger.Info("Could not find potion image path: " + path);
+    return Path.Join(MainFile.ResPath, "images", "potions", "potion.png");  // template default
+}
+```
 
 ```csharp
 using BaseLib.Abstracts;      // CustomPotionModel
+using BaseLib.Extensions;     // RemovePrefix
+using <ModName>.<ModName>Code.Extensions;   // PotionImagePath
 
 namespace <ModName>.<ModName>Code.Potions;
 
-/// Base class for this mod's potions. Custom art (a .tres atlas) is an M4 concern;
-/// leaving CustomPackedImagePath null falls back to the default potion icon.
+/// Base class for this mod's potions — wires the icon to images/potions/<slug>.png.
+/// Potion has ONE image getter (bar icon, hover, and use all reuse the same texture — there
+/// is NO separate big/ file, unlike relic/power). CustomPackedOutlinePath is left null →
+/// falls back to the vanilla outline (harmless, same as relic's outline).
 public abstract class <ModName>Potion : CustomPotionModel
 {
+    //Loads from <ModName>/images/potions/<slug>.png
+    public override string CustomPackedImagePath =>
+        $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".PotionImagePath();
 }
 ```
 
@@ -172,8 +197,8 @@ same registration exception relics do (errors.md). Pools
 
 ## Pre-flight checklist (catches the common silent failures)
 
-- [ ] Created `<ModName>Code/Potions/` and the `<ModName>Potion` base class (template omits them).
-- [ ] Class is `public sealed`, extends the mod potion base.
+- [ ] Created `<ModName>Code/Potions/` + the `<ModName>Potion` base class + the `PotionImagePath` helper (template omits all three).
+- [ ] Class is `public sealed`, extends the mod potion base (NOT `CustomPotionModel` directly — else the custom icon silently falls back to default).
 - [ ] `[Pool(typeof(SharedPotionPool))]` present (else BaseLib throws at registration).
 - [ ] All three abstract props overridden: `Rarity`, `Usage`, `TargetType`.
 - [ ] `TargetType` matches the effect (self-buff = `AnyPlayer`, not `Self`).
@@ -230,9 +255,11 @@ public sealed class Firebomb : <ModName>Potion
 ## Verify (tier-1 + tier-2)
 
 1. Build: PckPacker uncommented, `dotnet build -c Release` → `.dll`+`.pck` into
-   `mods/<ModName>/`. (Details: `build.md`.) **Note:** potion art is a `.tres` atlas;
-   without custom art the potion loads with the default icon — expected in M4, not a
-   failure. If load *errors* on a missing atlas, that's a repair signal (`repair.md`).
+   `mods/<ModName>/`. (Details: `build.md`.) **Note:** without a custom sprite the potion
+   loads on the template's default icon (the `PotionImagePath` `Exists()` fallback) — that's
+   expected placeholder behavior, not a failure. To ship custom art, drop a 256×256 PNG at
+   `images/potions/<slug>.png` (via `gen_sprite.py --spec potion`) and rebuild the `.pck`
+   (see `reference/art-contract.md`).
 2. Launch, grep `godot.log` for the load marker (tier-1).
 3. Tier-2: dev console (backtick, auto-enabled when modded) → **`potion <PREFIX>-<SLUG>`**
    → in a combat, use the potion (target if needed) → confirm the effect and grep the

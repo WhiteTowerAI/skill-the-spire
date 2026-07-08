@@ -37,7 +37,7 @@ Use the block for the element type. **Relic:**
 ```
 
 **Potion** (usage/target replace trigger; loc table is `potions`, no flavor, plus an
-optional `selectionScreenPrompt`; no relic icon slug — art is a `.tres` atlas):
+optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/power):
 
 ```markdown
 # SPEC — <Mod Name>
@@ -55,8 +55,8 @@ optional `selectionScreenPrompt`; no relic icon slug — art is a `.tres` atlas)
   - title: <shown name>
   - description: <hover text the player reads>
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
-- **art**: placeholder (default potion icon; potion art is a `.tres` atlas — a separate
-  pipeline, not covered by the M5.5 sprite tool, so keep placeholder)
+- **art**: placeholder | generate (a `potion` icon is a loose 256×256 PNG, generate-wired
+  and live-verified — same as relic/power; see `reference/art-contract.md`)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `potions`): `<NS_UPPER>-<SLUG>.{title,description}`
@@ -86,7 +86,7 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - description: <hover text; use {Damage:diff()} style placeholders for scaling numbers>
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below;
-  generate is wired for `card` / `relic` / `power`; potion stays placeholder)
+  generate is wired for all four types: `card` / `relic` / `power` / `potion`)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `cards`): `<NS_UPPER>-<SLUG>.{title,description}`
@@ -132,9 +132,9 @@ Rules for this round:
 - **Placeholder is the default and needs no backend, no key, no dev box.** If the user
   didn't ask for custom art, leave it placeholder — this is exactly the current,
   already-verified behavior (no regression).
-- **`generate` is wired for `card`, `relic`, and `power`** (all live-verified —
-  card 1000×760, relic/power 256×256; `reference/art-contract.md`). Potion art is a
-  `.tres` atlas (a separate pipeline) — always placeholder here.
+- **`generate` is wired for all four element types — `card`, `relic`, `power`, `potion`**
+  (all live-verified — card 1000×760; relic/power/potion 256×256 loose PNGs;
+  `reference/art-contract.md`).
 - **`generate` needs a user-supplied backend** (an OpenAI-compatible image endpoint) via
   an `art-backend.json` the user configures. If they chose generate but have no backend,
   fall back to placeholder and say so — never block the pipeline on art.

@@ -139,10 +139,10 @@ generate, apply it to every card portrait in the mod using each card's own SPEC 
 
 Leaving the art file absent makes the scaffolded base class fall back to the template
 default, and the mod loads fine on it: a **relic** falls back to `relic.png` if
-`images/relics/<slug>.png` is absent; a **potion** uses a `.tres` sprite atlas and falls
-back to the default icon when the base's `CustomPackedImagePath` is null; a **card**
-renders on the default portrait when `images/card_portraits/<slug>.png` is absent. This
-is the fast path — nothing to build, no backend, no dev box. Skip to §5.
+`images/relics/<slug>.png` is absent; a **potion** falls back to `potion.png` when
+`images/potions/<slug>.png` is absent (the base's `PotionImagePath` `Exists()` check); a
+**card** renders on the default portrait when `images/card_portraits/big/<slug>.png` is
+absent. This is the fast path — nothing to build, no backend, no dev box. Skip to §5.
 
 ### Generate (custom sprite via `tools/gen_sprite.py`)
 
@@ -163,7 +163,14 @@ contract):
   `<ModName>Power`), NOT `CustomRelicModel`/`CustomPowerModel` directly — the template base
   is what wires the loose-PNG icon paths, so a direct subclass shows the default icon even
   with the PNG present (see `recipes/power.md`).
-- **potion** — a `.tres` sprite atlas, a separate pipeline; placeholder only for now.
+- **`--spec potion`** — a **256×256** cut-out icon, `fit: contain`, magenta chroma-key ON
+  (prompt asks for a solid flat `#FF00FF` background), a loose PNG like relic/power — **not**
+  a `.tres` atlas. **Live-verified in-game.** Writes **ONE file**, `potions/<slug>.png` (the
+  bar icon, hover tooltip, and use VFX all reuse that single texture — no `big/`). Art
+  direction: draw the bottle **tilted ~45° leaning right** (STS2's potion display angle; see
+  `art-contract.md`). **Prereq:** the potion subclass must extend the template base
+  (`<ModName>Potion`), which the template does NOT scaffold — add it + a `PotionImagePath`
+  helper per `recipes/potion.md`; a direct `CustomPotionModel` subclass shows the default icon.
 
 1. **Build the prompt (three segments — see `art-contract.md`).** ① the fixed STS2 style
    descriptor (verbatim, incl. the "reference images = STYLE ONLY, don't reuse their

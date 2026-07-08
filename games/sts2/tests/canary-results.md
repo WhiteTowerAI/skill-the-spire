@@ -70,9 +70,10 @@ each in-game. All render correctly.
 
 | Cell | Spec | Icon(s) written | In-game surfaces checked | Verdict |
 |------|------|-----------------|--------------------------|---------|
-| CanaryCard  | `card`  | `card_portraits/big/jolt.png` (1000×760) | card portrait | **PASS** (verified 2026-07-08, earlier) |
-| CanaryRelic | `relic` | `relics/bauble.png` + `relics/big/bauble.png` (256×256) | relic-bar icon **+ detail/inspect popup** | **PASS** |
-| CanaryPower | `power` | `powers/smolder.png` + `powers/big/smolder.png` (256×256) | combat status icon **+ apply/expire notification popup** | **PASS** |
+| CanaryCard   | `card`   | `card_portraits/big/jolt.png` (1000×760) | card portrait | **PASS** (verified 2026-07-08, earlier) |
+| CanaryRelic  | `relic`  | `relics/bauble.png` + `relics/big/bauble.png` (256×256) | relic-bar icon **+ detail/inspect popup** | **PASS** |
+| CanaryPower  | `power`  | `powers/smolder.png` + `powers/big/smolder.png` (256×256) | combat status icon **+ apply/expire notification popup** | **PASS** |
+| CanaryPotion | `potion` | `potions/fizz.png` (256×256) — **ONE file** | potion-bar icon **+ hover tooltip + use** | **PASS** |
 
 **Two findings that changed the pipeline (both fixed + re-verified live):**
 1. **relic and power each need TWO icon files, not one.** The bar/status icon
@@ -90,6 +91,18 @@ each in-game. All render correctly.
 **relic outline:** `<slug>_outline.png` (the hover/selection white outline) is intentionally
 NOT generated — a missing one falls back to the template's generic `relic_outline.png`,
 which looks fine in-game (confirmed). power has no outline.
+
+**potion finding — it is NOT a `.tres` atlas (overturned the plan).** The M5.5 ② plan
+assumed potion needed a Godot `.tres` sprite-atlas emitter. It does not: BaseLib's
+`CustomPotionModel` Harmony-patches `PotionModel.ImagePath` to `CustomPackedImagePath`, whose
+docstring says a PNG path is a valid `Texture2D`. Wiring mirrors relic/power — a
+`PotionImagePath` helper (`Exists()`+fallback) + the `<ModName>Potion` base overrides the
+getter (the template scaffolds neither, so both are hand-added). **Unlike relic/power, potion
+writes ONE file** — `PotionModel` exposes a single `Image` texture reused by the bar icon,
+hover tooltip, and throw/use VFX; there is no separate `big/` variant (`extra_sub_paths: []`).
+Also new: potions are drawn **tilted ~45° right** (STS2's display angle), baked into the
+prompt. "Fizz" (a fizzing damage flask) generated → built → all three surfaces show the custom
+icon, not placeholder.
 
 ## Findings this suite surfaced (its whole point)
 

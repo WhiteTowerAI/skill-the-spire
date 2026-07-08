@@ -190,8 +190,8 @@ template** per sprite type lives in `sts2-api/reference/art-contract.md` (card p
 done: subject-centered, no text/border, full-bleed); **regenerate/tweak** is an art
 sub-step after AUTHOR and before BUILD — re-run `gen_sprite.py` with an adjusted prompt,
 then rebuild the `.pck`. The exact sprite **path + size contract** (a normal card's one
-portrait is `1000×760`, source-verified; 606×852 full art is Ancient-only, out of scope;
-relic/power sizes still unverified; potion is a `.tres` atlas) is recorded in
+portrait is `1000×760`; 606×852 full art is Ancient-only, out of scope;
+relic/power/potion icons are 256×256 loose PNGs, all four types live-verified) is recorded in
 `art-contract.md`. `gen_sprite.py` also has an `import` mode for a
 user-supplied local image. Placeholder stays the default (a missing sprite falls back to
 the template art), so art never blocks the pipeline.

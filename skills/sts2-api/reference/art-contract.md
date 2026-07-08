@@ -56,34 +56,44 @@ Source-verified against the decompile after a live in-game run (do not re-derive
 | `card` | `card_portraits/big/<slug>.png` | **1000×760 landscape** (verified live) | **the only card portrait to make** — normal-rarity cards |
 | `relic` | `relics/<slug>.png` **+** `relics/big/<slug>.png` | **256×256** (verified live) | cut-out icon; **two files** — see below. Also has `<slug>_outline.png` (optional, we skip it) |
 | `power` | `powers/<slug>.png` **+** `powers/big/<slug>.png` | **256×256** (verified live) | cut-out icon; **two files** — see below. No outline file |
-| `potion` | *(a `.tres` sprite atlas, NOT a loose `.png`)* | n/a | separate pipeline; placeholder only |
+| `potion` | `potions/<slug>.png` | **256×256** (verified live) | cut-out icon; **ONE file** — bar/hover/use all reuse the same texture, no `big/`. Tilt ~45° right (see below) |
 
-**A relic and a power each need TWO files (`gen_sprite.py` writes both automatically).**
-This was confirmed live (canary-relic "Bauble" + canary-power "Smolder", 2026-07-08) — the
-game reads the icon from two separate loose-PNG getters, and writing only the first leaves
-the other on the placeholder:
+**A relic and a power each need TWO files; a potion needs ONE (`gen_sprite.py` handles the
+count automatically).** Confirmed live (canary-relic "Bauble" + canary-power "Smolder" +
+canary-potion "Fizz", 2026-07-08). relic/power read the icon from two separate loose-PNG
+getters — writing only the first leaves the other on the placeholder:
 - **relic**: `relics/<slug>.png` = the relic-bar icon; `relics/big/<slug>.png` = the
   **detail/inspect popup** (click a relic you own). Both patched by BaseLib to the template's
   `PackedIconPath` / `BigIconPath`.
 - **power**: `powers/<slug>.png` = the combat **status icon**; `powers/big/<slug>.png` = the
   big **apply/expire notification** that jumps out for a few seconds. Patched to
   `CustomPackedIconPath` / `CustomBigIconPath`.
-`gen_sprite.py` writes the same normalized image to both paths, so you don't manage them by
-hand. (`card`'s outer `card_portraits/<slug>.png` is dead code under BaseLib — only `big/`
-is written.)
+- **potion**: `potions/<slug>.png` **only**. `PotionModel` exposes a single image texture
+  (`Image` ← `PackedImagePath`); the potion bar, the hover tooltip, and the throw/use VFX all
+  reuse that one texture — there is **no separate `big/` file**. (Confirmed by enumerating
+  `PotionModel.cs`: its only other image getter is the outline, which self-guards with
+  `Exists()` and we leave to the vanilla fallback.)
+`gen_sprite.py` writes the same normalized image to every path a spec needs, so you don't
+manage them by hand. (`card`'s outer `card_portraits/<slug>.png` is dead code under BaseLib —
+only `big/` is written.)
 
-**Why relic/power take a loose `.png` but potion doesn't.** Vanilla STS2 loads all three
-icon families from Godot `.tres` sprite-atlases (`atlases/relic_atlas.sprites/…`,
-`power_atlas`, `relic_outline_atlas` — see `RelicModel`/`PowerModel` in the decompile).
-The Alchyr template **overrides the relic and power icon getters** to point at loose PNGs
-under `images/relics|powers/` with an `Exists()`-check + fallback, so a mod just drops a
-256×256 PNG in — no atlas authoring. It does **not** override potion that way, so potion
-still needs the `.tres` atlas (why it's a separate, later sub-step).
+**Why all three take a loose `.png` (no `.tres` authoring).** Vanilla STS2 loads every icon
+family from Godot `.tres` sprite-atlases (`atlases/relic_atlas.sprites/…`, `power_atlas`,
+`potion_atlas`, `relic_outline_atlas` — see `RelicModel`/`PowerModel`/`PotionModel` in the
+decompile). But the icon getters accept a plain `Texture2D` path, so a loose PNG works too:
+for **relic/power** the Alchyr template overrides the getters to `images/relics|powers/`
+(`Exists()`-check + fallback); for **potion**, BaseLib's `CustomPotionModel` itself patches
+`PotionModel.ImagePath` to `CustomPackedImagePath` (docstring: *"You may pass the path to a
+png"*), so we hand-add a `PotionImagePath` helper + override that getter in the mod's potion
+base (see `recipes/potion.md`). Either way a mod just drops a 256×256 PNG in — no atlas.
+**This overturned an earlier belief that potion needed a `.tres` emitter** — it does not
+(live-verified 2026-07-08). The only reason vanilla potions *appear* to require an atlas is
+that the default (un-overridden) getter points at the atlas path, which a mod doesn't ship.
 
-**Sizes.** All 324 vanilla relic + 271 power icons extracted from the game are a uniform
-**256×256**; live canary runs confirmed that size + all icon paths render correctly, so
-relic/power are `verified: True` (no longer flagged in `list-specs`). `card` is 1000×760,
-also live-verified (2026-07-08).
+**Sizes.** All 324 vanilla relic + 271 power + 63 potion icons extracted from the game are a
+uniform **256×256**; live canary runs confirmed that size + all icon paths render correctly,
+so relic/power/potion are all `verified: True`. `card` is 1000×760, also live-verified
+(2026-07-08).
 
 **A power subclass must extend the template base class (not `CustomPowerModel` directly).**
 The template's `<ModName>Power` base is what overrides `CustomPackedIconPath` /
@@ -134,9 +144,9 @@ border, card frame, UI, or watermark.
 **Layer 2 — few-shot reference images (when the backend supports them, much stronger).**
 Pass `--reference <sts2-api>/reference/art-samples` to `gen_sprite.py generate` — always
 the **root** samples dir, not a subdir. That dir is split into `card/` (18 portraits),
-`relic/` (6 icons), and `power/` (6 icons), and the tool **auto-selects the subdir
-matching `--spec`** so a relic run never gets card portraits (they look nothing alike —
-mixing them poisons the style). It sends up to `--max-refs` (default 3, even stride to
+`relic/` (6 icons), `power/` (6 icons), and `potion/` (6 icons), and the tool
+**auto-selects the subdir matching `--spec`** so a relic run never gets card portraits
+(they look nothing alike — mixing them poisons the style). It sends up to `--max-refs` (default 3, even stride to
 span styles) to the backend's `/images/edits` endpoint so the model imitates the game's
 look directly. This needs a backend that accepts reference images (e.g. gpt-image-1 edits,
 Gemini / nano-banana, ComfyUI IPAdapter). Plain text-to-image backends ignore references —
@@ -193,12 +203,24 @@ Rules that make the output usable (they mirror the fit logic in `gen_sprite.py`)
 - **Full-bleed illustration, not a cut-out object.** A card portrait *fills* the frame
   window (`fit: cover`, opaque) — a scene, not an object on transparency. So `card`
   defaults to **chroma-key OFF** (no magenta background needed). The `#FF00FF`
-  magenta trick is for the cut-out specs (`relic` / `power`, `fit: contain`, chroma ON)
-  that sit transparent on the relic bar — for those, add "solid flat magenta (#FF00FF)
-  background, no gradient" to the prompt. Force keying on a card with `--chroma` only if
-  you deliberately want to cut a magenta-backed portrait out.
+  magenta trick is for the cut-out specs (`relic` / `power` / `potion`, `fit: contain`,
+  chroma ON) that sit transparent on the relic/potion bar — for those, add "solid flat
+  magenta (#FF00FF) background, no gradient" to the prompt. Force keying on a card with
+  `--chroma` only if you deliberately want to cut a magenta-backed portrait out.
 - **Subject centered, generous margin**, so the `cover` crop keeps the subject in frame.
 - **Ask for more than one** if the backend supports `n` — generate a few, keep the best.
+
+**Icon-spec subject shape (relic / power / potion).** These are a single cut-out object,
+not a scene. Name one object, center it, put it on flat magenta. Spec-specific art
+direction, distilled from the vanilla references:
+
+- **potion** — draw the bottle **tilted ~45° leaning to the right** (shown diagonally).
+  That is how STS2 displays potions; only some big square-ish potions stand upright. We
+  tilt *all* generated potions right for consistency (a deliberate, accepted simplification —
+  no upright/tilt branching). Pick the bottle silhouette + liquid colour from the potion's
+  name/effect (a red fizzing flask for a damage potion, a blue calm vial for block, …).
+- **relic / power** — a single emblem/object centered upright; match the material and
+  symbol language of the `relic/` / `power/` references.
 
 ## Confirm the prompt before spending, and the regenerate loop
 

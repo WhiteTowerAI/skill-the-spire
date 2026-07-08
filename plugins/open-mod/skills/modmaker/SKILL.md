@@ -25,10 +25,10 @@ fails runs the **bounded automated repair loop** (`repair.md`) to diagnose → f
 re-verify within a hard retry cap. A **custom power** (buff/debuff) is supported too,
 usually as the dependency of a card/relic that applies it — and that card→power link is
 checked as a **combo** by the tier-2 harness. **Custom art (M5.5)** is now wired and
-live-verified for **card portraits, relic icons, and power icons** — the user picks
-placeholder (default, fast) or generate via a bring-your-own image backend
+live-verified for **all four element types — card portraits, relic icons, power icons, and
+potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
+user picks placeholder (default, fast) or generate via a bring-your-own image backend
 (`tools/gen_sprite.py`; see `author.md` §4 and `sts2-api` → `reference/art-contract.md`).
-Only potion art (a `.tres` atlas) is a separate pipeline, so it stays placeholder.
 *Editing existing* vanilla content (needs Harmony patching, not a recipe) is still out.
 If a request needs what isn't wired, say so plainly rather than half-doing it.
 
