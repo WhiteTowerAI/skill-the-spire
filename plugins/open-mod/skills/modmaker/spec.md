@@ -28,7 +28,8 @@ Use the block for the element type. **Relic:**
   - title: <shown name>
   - description: <hover text the player reads>
   - flavor: <flavor line>
-- **art**: placeholder
+- **art**: placeholder | generate  (one mod-level choice — see "Art plan" below; `relic`
+  icons are wired for generate, 256×256, live-verified)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys: `<NS_UPPER>-<SLUG>.{title,description,flavor}`
@@ -36,7 +37,7 @@ Use the block for the element type. **Relic:**
 ```
 
 **Potion** (usage/target replace trigger; loc table is `potions`, no flavor, plus an
-optional `selectionScreenPrompt`; no relic icon slug — art is a `.tres` atlas):
+optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/power):
 
 ```markdown
 # SPEC — <Mod Name>
@@ -54,7 +55,8 @@ optional `selectionScreenPrompt`; no relic icon slug — art is a `.tres` atlas)
   - title: <shown name>
   - description: <hover text the player reads>
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
-- **art**: placeholder (default potion icon; custom .tres atlas is M4)
+- **art**: placeholder | generate (a `potion` icon is a loose 256×256 PNG, generate-wired
+  and live-verified — same as relic/power; see `reference/art-contract.md`)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `potions`): `<NS_UPPER>-<SLUG>.{title,description}`
@@ -83,7 +85,8 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - title: <shown name>
   - description: <hover text; use {Damage:diff()} style placeholders for scaling numbers>
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
-- **art**: placeholder (scaffolded card portrait; custom art is M4)
+- **art**: placeholder | generate  (one mod-level choice — see "Art plan" below;
+  generate is wired for all four types: `card` / `relic` / `power` / `potion`)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `cards`): `<NS_UPPER>-<SLUG>.{title,description}`
@@ -113,6 +116,29 @@ failure, and it's identical for relics and potions. Query the sts2-api skill
 ("relic/potion loc-key derivation rule") or read the recipe if unsure. Worked
 example: class `GamblersCoin` in namespace `GamblersCoin.*` → `GAMBLERSCOIN-GAMBLERS_COIN`.
 
+## Art plan (one mod-level choice — the §7.1 decision)
+
+The mod gets **one** art decision, taken from the interview (asked at most once, never
+per sprite): **placeholder** (the default — do nothing, the template's built-in art
+shows; keeps the loop fast and the mod immediately testable) or **generate** (produce
+custom sprites via `author.md`'s art step + `tools/gen_sprite.py`). Record it in
+`SPEC.md`'s `**art**` line, plus one overall subject/style note if `generate`, so
+`author.md` can build each prompt. When the mod has several cards, `author.md` fills the
+per-card subject from each card's SPEC at generate time — but the placeholder-vs-generate
+choice was made once, for the whole mod.
+
+Rules for this round:
+
+- **Placeholder is the default and needs no backend, no key, no dev box.** If the user
+  didn't ask for custom art, leave it placeholder — this is exactly the current,
+  already-verified behavior (no regression).
+- **`generate` is wired for all four element types — `card`, `relic`, `power`, `potion`**
+  (all live-verified — card 1000×760; relic/power/potion 256×256 loose PNGs;
+  `reference/art-contract.md`).
+- **`generate` needs a user-supplied backend** (an OpenAI-compatible image endpoint) via
+  an `art-backend.json` the user configures. If they chose generate but have no backend,
+  fall back to placeholder and say so — never block the pipeline on art.
+
 ## Seed `PLAN.md`
 
 ```markdown
@@ -121,6 +147,7 @@ example: class `GamblersCoin` in namespace `GamblersCoin.*` → `GAMBLERSCOIN-GA
 - [x] spec
 - [ ] scaffold
 - [ ] author
+- [ ] art (per SPEC art plan: placeholder = nothing to do; generate = gen_sprite.py)
 - [ ] build
 - [ ] verify (tier-1 load)
 - [ ] verify (tier-2 effect, automated via the self-test harness)
@@ -151,6 +178,11 @@ Show a **plain-language** summary and get a yes before scaffolding:
 >
 > (card) I'll build **<Title>**, a Common <Attack/Skill/Power> card that costs
 > <N> energy. When played it <effect in plain words>; upgrading it <upgrade in plain
-> words>. It'll appear for any character, placeholder art for now. Sound right?
+> words>. It'll appear for any character. <art line>. Sound right?
+
+For the **<art line>**, reflect the SPEC art plan: "with placeholder art for now" (the
+fast default), or "with custom art I'll generate for the portrait" if they chose
+generate for a card. Keep it one clause — don't turn the confirmation into an art
+interview (that already happened in `interview.md` / this stage's art plan).
 
 If they change something, update `SPEC.md` before moving on. Then go to `scaffold.md`.

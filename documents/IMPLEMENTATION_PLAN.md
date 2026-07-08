@@ -356,19 +356,83 @@ truth" diagnosis: memory `[[premine-offline-no-runtime-decompile]]`.
   discover it, not just install by repo slug.
 - ⏳ **Opt-in Steam Workshop publish** — still to wire.
 
-**M5.5 — Art/sprite pipeline (REQUIRED; PROJECT.md §7.1).** Deferred out of M4 to
-here (after M5): a no-art element loads cleanly with the default placeholder icon, so
-custom art is a quality/parity feature, not on the critical path to a working mod.
-Per needed sprite, the interview offers **placeholder vs. generate**; generation uses
-a **user-configured backend** (their own image-gen API or a local model — we ship the
-plumbing, not a bundled provider); output lands at the correct path/size for a
-PckPacker rebuild (card 1000x760, etc. — see `art.md`). Closes the one concrete
-feature gap vs. AgentTheSpire (memory `[[competitor-agentthespire]]`). Reference when
-we build this: `baselines/spire-codex/spine-renderer/` (gitignored, dev-only — memory
-`[[baselines-local-reference]]`) is a working Node.js STS2 Spine-skeleton→PNG/WebP/GIF
-renderer — a solved implementation of "STS2 asset → image" to study or adapt for the
-generate path. **Sequence: after M5, before M6** — M6's heavier content types
-(characters especially) want real art, so the art path should exist first.
+**M5.5 — Art/sprite pipeline (REQUIRED; PROJECT.md §7.1). Card portrait DONE &
+LIVE-VERIFIED in-game 2026-07-08; relic/power/potion sprites are the remaining sub-steps.**
+Deferred out of M4 to here (after M5): a no-art element loads cleanly with the default
+placeholder icon, so custom art is a quality/parity feature, not on the critical path to
+a working mod.
+Per needed sprite the pipeline offers **placeholder vs. generate** (placeholder = the
+default, a missing sprite falls back to the template art so art never blocks). Generate
+uses a **user-configured backend** (their own OpenAI-compatible image endpoint — cloud
+or local; we ship the plumbing, not a bundled provider) via a provider-agnostic
+`art-backend.json`. What landed this session:
+- **Contract page** `sts2-api/reference/art-contract.md` — exact `res://` path + pixel
+  size per sprite type (a normal card has one portrait the game loads, `1000×760`;
+  606×852 full art is Ancient-rarity only and out of scope; relic/power/potion icons are
+  256×256 loose PNGs — all four types now live-verified, see the M5.5 sub-steps below) +
+  the placeholder-fallback mechanism + the card-portrait prompt template.
+- **New tool** `tools/gen_sprite.py` (Python + Pillow; `publish.sh` auto-bundles it into
+  both payloads alongside build/launch/grep). Subcommands `generate` (BYO OpenAI-compat
+  HTTP), `import` (local file), `list-specs`. Normalizes any source → magenta chroma-key
+  (per-spec: on for cut-out icons, off for full-bleed card portraits) → fit/resize to the
+  exact contract size → place the single `big/<slug>.png` portrait at the exact sub-path.
+  Verified offline: card→1000×760 (the one portrait the game loads), unverified specs
+  refuse without `--size`.
+- **Pipeline wiring** — `interview.md` (art only when the user signals a custom look),
+  `spec.md` (per-sprite art plan + PLAN.md art step + confirmation art clause),
+  `author.md` §4 (rewritten placeholder→choice, generate branch calls `gen_sprite.py`,
+  falls back to placeholder on no-backend/failure), `SKILL.md` (scope + pipeline art
+  sub-step), `sts2-api/SKILL.md` (indexes art-contract.md).
+
+Closes the one concrete feature gap vs. AgentTheSpire (memory `[[competitor-agentthespire]]`).
+Reference studied: `baselines/agent-sprite-forge/` (Codex sprite-gen skill — the
+agent-writes-prompt + deterministic-Python-processes-pixels split, and the magenta
+chroma-key/fit logic reused in `gen_sprite.py`) and `baselines/spire-codex/spine-renderer/`
+(STS2 Spine-skeleton→PNG, the *reverse* direction — asset processing reference only).
+**Card portrait is DONE** — live end-to-end on the dev box (BYO backend → real portrait →
+`.pck` rebuild → confirmed in-game, 1000×760, 2026-07-08). **Sprite sub-steps:**
+- **① relic + power — DONE & live-verified (2026-07-08).** Both are 256×256 cut-out icons
+  (`fit: contain`, magenta chroma-key); size confirmed from the uniform 324 relic + 271
+  power extracted PNGs and verified in-game (canary-relic "Bauble", canary-power "Smolder" —
+  `verified: True`). Two findings that changed the pipeline, both fixed + re-verified:
+  (a) **each needs TWO icon files** — `<slug>.png` (bar/status) + `big/<slug>.png` (relic
+  detail popup / power apply-expire notification); `gen_sprite.py` now writes both via
+  `extra_sub_paths`. (b) **a power/relic subclass must extend the template base**
+  (`<ModName>Power`/`<ModName>Relic`), not `CustomPowerModel`/`CustomRelicModel` directly, or
+  the loose-PNG icon getter stays null and the custom icon silently falls back to default
+  (fixed in `recipes/power.md`). relic's `<slug>_outline.png` hover outline is left to the
+  template fallback (looks fine live); we don't generate it. Also: `art-samples/` split into
+  `card/relic/power/` subdirs, `--reference` auto-picks by `--spec`.
+- **② potion — DONE & live-verified (2026-07-08).** The icon is 256×256 (63 extracted
+  potions confirm). **This overturned the planned `.tres` emitter: potion takes a loose PNG,
+  same as relic/power — no atlas.** BaseLib's `CustomPotionModel` Harmony-patches
+  `PotionModel.ImagePath` to `CustomPackedImagePath`, whose docstring says a PNG path is a
+  valid `Texture2D`; the "must be a `.tres`" belief was just because the un-overridden getter
+  defaults to the atlas path (which a mod doesn't ship). Wiring mirrors relic/power: a
+  `PotionImagePath` helper (`Exists()`+fallback) + the mod's `<ModName>Potion` base overrides
+  `CustomPackedImagePath`. Two potion-specific facts: (a) **ONE file only** — potion exposes a
+  single `Image` texture (bar/hover/use all reuse it), no `big/` variant (unlike relic/power);
+  (b) art direction — potions are drawn **tilted ~45° right**, baked into the prompt. Generated
+  "Fizz" via Poe/nano-banana, built, confirmed in-game. `gen_sprite.py` gained the `potion`
+  spec; `art-samples/potion/` added (6 refs).
+- **③ Ancient full art (606×852) stays out of scope** — we don't make Ancient cards.
+
+**Sequence: after M5, before M6** — M6's heavier content types (characters especially)
+want real art. orb (100×100) / enchantment (64×64) sprite sizes are also now known from
+the same extracted set, but those content *types* are M6, so their art rides along there.
+
+**M5.7 — Harder interview (multi-element intake). NEW milestone, sequenced after M5.5,
+before M6 (locked 2026-07-08).** Today's interview handles a one-sentence, single-element
+ask well; it's weakest when the user describes a **multi-element / combo mod** (e.g. "a
+relic that buffs a custom card, plus a potion that triggers it") — the intake has to
+decompose that into several elements, surface their **dependencies/interactions**, and
+feed the combo interaction block that `spec.md` and the tier-2 harness already consume.
+This was flagged "still open" since M4 but never owned by a milestone; M5.7 owns it.
+Scope: strengthen `interview.md`'s decomposition + dependency elicitation for multi-element
+requests, keep the single-element fast path unchanged (no regression), and prove it on a
+multi-element canary. Deliberately **before M6** so the breadth work inherits a stronger
+intake rather than bolting element types onto a single-element interview. Depends on M5
+(the tier-2 combo harness it targets is already live).
 
 **M6 — Content-type breadth: beyond pooled combat elements.** Today the pipeline
 covers the **four pooled/combat elements** (relic, potion, card, power). The authoritative

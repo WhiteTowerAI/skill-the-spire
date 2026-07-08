@@ -48,8 +48,9 @@ public abstract class <ModName>Card(int cost, CardType type, CardRarity rarity, 
 ```
 
 With no custom art the card renders with a blank/placeholder portrait — it still loads
-and plays. Custom card art is an M4+ art-pipeline task, not a blocker (same posture as
-the potion atlas). Art sizes, when you get there: normal `1000×760`, full `606×852`.
+and plays. Custom art is optional and never blocks the pipeline (same posture as every
+element type). Art size, when you get there: the one portrait the game loads is
+`1000×760` (606×852 full art is Ancient-only, out of scope). See `reference/art-contract.md`.
 
 ## The skeleton (fill only the marked spots)
 

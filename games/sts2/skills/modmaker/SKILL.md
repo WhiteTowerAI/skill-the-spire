@@ -24,10 +24,13 @@ automated by an in-process self-test harness — no dev-console typing), and whe
 fails runs the **bounded automated repair loop** (`repair.md`) to diagnose → fix →
 re-verify within a hard retry cap. A **custom power** (buff/debuff) is supported too,
 usually as the dependency of a card/relic that applies it — and that card→power link is
-checked as a **combo** by the tier-2 harness. The art-generation pipeline (custom
-card/potion sprites) is a later milestone (M5.5), as is *editing existing* vanilla
-content (needs Harmony patching, not a recipe). If a request needs those, say so plainly
-rather than half-doing it.
+checked as a **combo** by the tier-2 harness. **Custom art (M5.5)** is now wired and
+live-verified for **all four element types — card portraits, relic icons, power icons, and
+potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
+user picks placeholder (default, fast) or generate via a bring-your-own image backend
+(`tools/gen_sprite.py`; see `author.md` §4 and `sts2-api` → `reference/art-contract.md`).
+*Editing existing* vanilla content (needs Harmony patching, not a recipe) is still out.
+If a request needs what isn't wired, say so plainly rather than half-doing it.
 
 ## Stage files
 
@@ -66,10 +69,13 @@ User: one sentence ("a relic that ...")
     plus power.md if the effect needs a custom buff/debuff), write the Custom*Model
     subclass filling ONLY the effect logic, add localization JSON, inject both
     [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
-    (SelfTest.cs, step 2.5 — reference/selftest-harness.md).
+    (SelfTest.cs, step 2.5 — reference/selftest-harness.md). Then the ART sub-step
+    (author.md §4): per SPEC's art plan, leave placeholder (default) or generate a
+    custom card portrait via tools/gen_sprite.py (BYO backend). Art never blocks —
+    a missing sprite falls back to the template default. Regenerate = re-run + rebuild.
     |
- 5. BUILD (build.md) — tools/build.py → .dll/.pck/.json into mods/. On failure:
-    go to REPAIR (repair.md).
+ 5. BUILD (build.md) — tools/build.py → .dll/.pck/.json into mods/ (the .pck rebuild is
+    what makes any custom art reach the game). On failure: go to REPAIR (repair.md).
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
     and mod-named errors (tier-1). Then run the tier-2 self-test unattended

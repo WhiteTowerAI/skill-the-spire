@@ -48,7 +48,6 @@ Create `<ModName>Code/Powers/` if the template didn't (it scaffolds `Cards/`,
 ```csharp
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using BaseLib.Abstracts;                              // CustomPowerModel
 using MegaCrit.Sts2.Core.Combat;                      // CombatSide, ICombatState
 using MegaCrit.Sts2.Core.Commands;                    // CreatureCmd, PowerCmd
 using MegaCrit.Sts2.Core.Entities.Creatures;          // Creature
@@ -58,7 +57,11 @@ using MegaCrit.Sts2.Core.ValueProps;                  // ValueProp
 
 namespace <ModName>.<ModName>Code.Powers;
 
-public sealed class <PowerName> : CustomPowerModel        // NO [Pool] attribute
+// Extend the TEMPLATE base <ModName>Power, NOT CustomPowerModel directly. The template
+// base overrides CustomPackedIconPath / CustomBigIconPath to the mod's loose-PNG icon
+// paths; a direct CustomPowerModel subclass leaves them null, so a custom icon silently
+// shows the default (verified live, 2026-07-08). No [Pool] attribute either way.
+public sealed class <PowerName> : <ModName>Power
 {
     public override PowerType Type => PowerType.Buff;      // or Debuff  (REQUIRED)
     public override PowerStackType StackType => PowerStackType.Counter;  // REQUIRED
@@ -174,14 +177,16 @@ identical to `.description`:
 }
 ```
 
-Icon: power atlas is a `.tres` (like potions); with no custom art it falls back to
-`missing_power.png` — expected in M4, not a load failure (same finding as the potion
-atlas). Override `CustomPackedIconPath` only when you have real art.
+Icon: the template base wires the power icon to a loose PNG under `images/powers/`
+(`Exists()` + fallback to `missing_power.png`), so with no custom art it loads on the
+default — not a failure. To ship art, drop a 256×256 PNG at `powers/<slug>.png` **and**
+`powers/big/<slug>.png` (status icon + apply/expire notification) via
+`gen_sprite.py --spec power`; see `reference/art-contract.md`.
 
 ## Pre-flight checklist (catches the common silent failures)
 
-- [ ] Class is `public sealed`, extends `CustomPowerModel` (or a vanilla power +
-      `ICustomPower`).
+- [ ] Class is `public sealed`, extends the template base **`<ModName>Power`** (NOT
+      `CustomPowerModel` directly — that breaks the custom icon; see the skeleton note).
 - [ ] **NO `[Pool]` attribute** (powers aren't pooled — auto-discovered).
 - [ ] Both abstract props overridden: `Type`, `StackType`.
 - [ ] Correct hook overridden; turn hooks guard `participants.Contains(base.Owner)`.
@@ -209,7 +214,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 
 namespace EmberMod.EmberModCode.Powers;
 
-public sealed class Smolder : CustomPowerModel        // id EMBERMOD-SMOLDER
+public sealed class Smolder : EmberModPower        // extends the template base; id EMBERMOD-SMOLDER
 {
     public override PowerType Type => PowerType.Debuff;
     public override PowerStackType StackType => PowerStackType.Counter;

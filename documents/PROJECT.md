@@ -183,9 +183,18 @@ must let the **user decide per sprite**, not silently pick one:
   ships an art pipeline). Placeholder-first stays the default for speed; real
   generation is opt-in and BYO-backend so users aren't locked to our choice.
 
-Design still open (implementation phase): exact config format for the backend,
-the prompt template per sprite type, and where "regenerate/tweak this sprite"
-fits in the loop.
+Design resolved (M5.5, card portrait first): the **backend config** is a
+provider-agnostic `art-backend.json` (`{base_url, api_key, model}`, OpenAI-images
+-compatible — no provider bundled, BYO) read by `tools/gen_sprite.py`; the **prompt
+template** per sprite type lives in `sts2-api/reference/art-contract.md` (card portrait
+done: subject-centered, no text/border, full-bleed); **regenerate/tweak** is an art
+sub-step after AUTHOR and before BUILD — re-run `gen_sprite.py` with an adjusted prompt,
+then rebuild the `.pck`. The exact sprite **path + size contract** (a normal card's one
+portrait is `1000×760`; 606×852 full art is Ancient-only, out of scope;
+relic/power/potion icons are 256×256 loose PNGs, all four types live-verified) is recorded in
+`art-contract.md`. `gen_sprite.py` also has an `import` mode for a
+user-supplied local image. Placeholder stays the default (a missing sprite falls back to
+the template art), so art never blocks the pipeline.
 
 ## 8. Out of scope (for now)
 
