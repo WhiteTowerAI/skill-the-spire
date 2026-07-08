@@ -62,6 +62,35 @@ harness only has to *trigger* it.
 Until this section is filled, tier-2 for the matrix is **specified-but-unverified** — do
 not claim it passed.
 
+## M5.5 art pipeline — sprite verification (2026-07-08)
+
+Live on the dev box (STS2 stable, BaseLib active). Generated real icons via the BYO backend
+(Poe / nano-banana-2, chat mode) with `gen_sprite.py`, rebuilt the `.pck`, and eyeballed
+each in-game. All render correctly.
+
+| Cell | Spec | Icon(s) written | In-game surfaces checked | Verdict |
+|------|------|-----------------|--------------------------|---------|
+| CanaryCard  | `card`  | `card_portraits/big/jolt.png` (1000×760) | card portrait | **PASS** (verified 2026-07-08, earlier) |
+| CanaryRelic | `relic` | `relics/bauble.png` + `relics/big/bauble.png` (256×256) | relic-bar icon **+ detail/inspect popup** | **PASS** |
+| CanaryPower | `power` | `powers/smolder.png` + `powers/big/smolder.png` (256×256) | combat status icon **+ apply/expire notification popup** | **PASS** |
+
+**Two findings that changed the pipeline (both fixed + re-verified live):**
+1. **relic and power each need TWO icon files, not one.** The bar/status icon
+   (`<slug>.png`) and the big popup (`big/<slug>.png`) are separate loose-PNG getters; writing
+   only the first leaves the popup on the placeholder. `gen_sprite.py` now writes both
+   (`extra_sub_paths`). Confirmed by seeing the relic detail popup and the power
+   apply/expire notification both go from placeholder → custom.
+2. **a power (or relic) subclass must extend the template base `<ModName>Power` /
+   `<ModName>Relic`, not `CustomPowerModel`/`CustomRelicModel` directly.** The template base
+   is what overrides the loose-PNG icon getters; a direct BaseLib subclass leaves them null
+   and the icon silently falls back to default even with the PNG present. This is exactly
+   what the historical minimal `Smolder : CustomPowerModel` body below did — fixed in
+   `recipes/power.md` (skeleton + checklist + example now extend `<ModName>Power`).
+
+**relic outline:** `<slug>_outline.png` (the hover/selection white outline) is intentionally
+NOT generated — a missing one falls back to the template's generic `relic_outline.png`,
+which looks fine in-game (confirmed). power has no outline.
+
 ## Findings this suite surfaced (its whole point)
 
 1. **`power.md` worked-example `powers.json` was missing `.smartDescription`** — the
@@ -155,6 +184,11 @@ public sealed class Smolder : CustomPowerModel {           // NO [Pool]
 }
 ```
 `powers.json`: `CANARYPOWER-SMOLDER.{title,description,smartDescription}`.
+
+> **Icon note (M5.5):** this minimal body extends `CustomPowerModel` directly, which was
+> fine for the tier-2 *effect* test but leaves the custom icon null. For the M5.5 art run
+> `Smolder` was changed to extend the template base `CanaryPowerPower` so the loose-PNG icon
+> resolves (see the M5.5 section above + `recipes/power.md`).
 
 ### combo — `Powers/Signal.cs` (as power above) + `Cards/Charge.cs` + both loc tables
 ```csharp

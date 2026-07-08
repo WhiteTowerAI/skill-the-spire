@@ -37,6 +37,22 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    heal, a power/status). Get numbers if they matter ("double", "gain 2", "20 damage").
    For a card, also ask what **upgrading** it should improve if not obvious (default:
    bump the main number).
+4. **Art — ONE question for the whole mod (only if the user signalled they care about
+   the look).** Default is placeholder — skip this entirely unless their sentence
+   implies a custom visual. This is a **single mod-level decision**: placeholder or
+   generate for the mod, asked **once** no matter how many cards/sprites it has. Do NOT
+   ask per sprite. If they want custom art:
+   - **Card portraits, relic icons, and power icons** can all be generated (all three
+     live-verified). Only **potion** art stays placeholder this round (it's a `.tres`
+     atlas, a separate pipeline). If they want custom potion art, say it's not wired yet
+     and offer placeholder.
+   - Custom generation is **bring-your-own-backend** (their own OpenAI-compatible image
+     endpoint, configured later in an `art-backend.json`). If they don't have one,
+     record `art: placeholder` and move on — never block on art.
+   - Capture the intended **subject/style** in plain words (e.g. "a burning arrow, comic
+     style") once, for the mod. If the mod has several cards and the user wants distinct
+     art per card, take one overall style note here; `author.md` fills the per-card
+     subject from each card's SPEC when it generates — but you still only *ask* once.
 
 ## Defaults (apply silently unless the user specified otherwise)
 
@@ -53,7 +69,12 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
   ask if genuinely unclear.
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
-- **Art**: placeholder (the template's fallback icon). Custom art is M4.
+- **Art**: **placeholder** (the template's fallback icon). This is the default — do NOT
+  proactively ask about art. Only switch to `generate` if the user's sentence asks for a
+  custom look (e.g. "a card showing a red phoenix", "make it look like…"). Card / relic /
+  power sprites can all be generated (potion stays placeholder — see step 4). It is a
+  **single mod-level choice**, asked at most once regardless of sprite count. Custom
+  generation is BYO-backend.
 - **Author**: reuse the project's configured author, else "OpenMod".
 
 ## Output
@@ -92,7 +113,7 @@ type: Attack | Skill | Power
 target: one enemy | all enemies | self
 effect: <plain-language, with numbers>
 upgrade: <what improves, e.g. "damage 6 -> 9">
-art: placeholder
+art: placeholder | generate: <subject/style, if the user asked for custom art>
 ```
 
 Do not write files here — `spec.md` does that. If nothing was ambiguous, skip

@@ -236,7 +236,8 @@ affect. **⚠️ = a technical risk we must validate.**
 3. Localization: `localization/eng/cards.json`; analyzer flags missing entries
    and generates placeholders (Alt+Enter "Generate localization").
 4. Art: `<Mod>/images/card_portraits/big/<class_name_lower>.png`,
-   **1000x760 PNG** (or 606x852 full-art). Template ships a default `card.png`
+   **1000x760 PNG** — the one portrait the game loads for a normal card (606x852
+   full-art is Ancient-rarity only, out of scope). Template ships a default `card.png`
    placeholder — so **placeholder-first art is already the native workflow.**
 5. Effect logic: copy the command sequence from a similar decompiled base card.
 6. Build/Publish → appears in Settings → Mod Settings → test via dev console.

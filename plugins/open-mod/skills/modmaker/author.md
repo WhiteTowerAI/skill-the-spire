@@ -129,16 +129,94 @@ upgraded value renders automatically (`reference/mechanics.md` §2). A **power**
 `.title/.description` with `{Amount}` for the stack count. Use the exact `<PREFIX>-<SLUG>`
 you derived in SPEC. Not nested JSON — a flat `Dictionary<string,string>`.
 
-## 4. Art (M4: placeholder)
+## 4. Art (per SPEC's art plan — placeholder or generate)
 
-Leave the default art. A **relic** falls back to `relic.png` if `images/relics/<slug>.png`
-is absent. A **potion** uses a `.tres` sprite atlas; leaving the mod potion base's
-`CustomPackedImagePath` null falls back to the default potion icon. A **card** renders
-with a blank/placeholder portrait when its art file is absent — it still loads and
-plays. Custom/generated art is the M4 art pipeline — don't block on it.
+Read `SPEC.md`'s `**art**` line — it holds the **one mod-level** art choice made at
+interview time (placeholder or generate). Do NOT re-ask here. Two branches follow. If
+generate, apply it to every card portrait in the mod using each card's own SPEC subject.
+
+### Placeholder (the default — do nothing)
+
+Leaving the art file absent makes the scaffolded base class fall back to the template
+default, and the mod loads fine on it: a **relic** falls back to `relic.png` if
+`images/relics/<slug>.png` is absent; a **potion** uses a `.tres` sprite atlas and falls
+back to the default icon when the base's `CustomPackedImagePath` is null; a **card**
+renders on the default portrait when `images/card_portraits/<slug>.png` is absent. This
+is the fast path — nothing to build, no backend, no dev box. Skip to §5.
+
+### Generate (custom sprite via `tools/gen_sprite.py`)
+
+Supported sprite specs (see `sts2-api` → `reference/art-contract.md` for the full
+contract):
+- **`--spec card`** — the one portrait a normal card loads, **1000×760 landscape**, full-
+  bleed (chroma OFF), written to `card_portraits/big/<slug>.png`. **Live-verified in-game.**
+  The 606×852 "full art" size is **Ancient-rarity only and out of scope — we never make it**.
+- **`--spec relic` / `--spec power`** — a **256×256** cut-out icon, `fit: contain`, magenta
+  chroma-key ON (so the prompt must ask for a solid flat `#FF00FF` background — see the
+  contract). **Live-verified in-game.** Each writes **two files** (the tool does both
+  automatically): `relics/<slug>.png` + `relics/big/<slug>.png` for a relic (bar icon +
+  detail popup), `powers/<slug>.png` + `powers/big/<slug>.png` for a power (status icon +
+  the big apply/expire notification). A **relic** also has an optional `<slug>_outline.png`
+  hover outline — we don't generate it; a missing one harmlessly falls back to the
+  template's default outline (looks fine). **power** has no outline.
+  **Prereq:** the relic/power subclass must extend the template base (`<ModName>Relic` /
+  `<ModName>Power`), NOT `CustomRelicModel`/`CustomPowerModel` directly — the template base
+  is what wires the loose-PNG icon paths, so a direct subclass shows the default icon even
+  with the PNG present (see `recipes/power.md`).
+- **potion** — a `.tres` sprite atlas, a separate pipeline; placeholder only for now.
+
+1. **Build the prompt (three segments — see `art-contract.md`).** ① the fixed STS2 style
+   descriptor (verbatim, incl. the "reference images = STYLE ONLY, don't reuse their
+   objects" guard), ② the visual subject you *translate* from the card's **name**
+   (flavor secondary) — NOT its damage/keyword numbers; mechanics have no picture, and
+   painting them ("two blood drops" for "lose 2 HP") looks literal and awkward. Write ②
+   as **two-to-four sentences describing one dramatic, centered, frozen-mid-motion
+   subject with a warm rim light** (e.g. "Firebolt" → *a blazing arrow of living fire
+   streaking diagonally mid-flight, trailing embers, orange-to-yellow rim light on its
+   edge*), not a keyword list. ③ the fixed structural/negative constraints. You write
+   it — don't make the user do it. Only ② differs per element; ①③ are shared guardrails.
+   **For a `relic`/`power` icon** the same name→subject translation applies, but since it's
+   a cut-out (chroma ON), ③ must also ask for a **solid flat `#FF00FF` magenta background,
+   no gradient** so the tool can key it out cleanly (the contract's cut-out rule).
+1a. **Confirm before spending.** Generating calls the user's paid API, so show the
+   assembled prompt + the subject you derived and get a one-line yes before the first
+   generate. If unhappy with the result, adjust ② and re-run (the regenerate loop) —
+   don't silently keep spending.
+2. **Locate the mod's images dir**: `<work dir>/<ModName>/images` (the resource subdir
+   the template made; `<slug>` = lowercased prefix-stripped id, same as the loc keys).
+3. **Run the tool** (`${CLAUDE_PLUGIN_ROOT}/tools` resolves per install — same as `build.py`).
+   Use the `--spec` matching SPEC's element (`card` / `relic` / `power`):
+   ```
+   python ${CLAUDE_PLUGIN_ROOT}/tools/gen_sprite.py generate \
+     --spec <card|relic|power> --slug <slug> --prompt "<the prompt>" \
+     --out <work dir>/<ModName>/images --config <path to art-backend.json> \
+     --reference ${CLAUDE_PLUGIN_ROOT}/skills/sts2-api/reference/art-samples
+   ```
+   `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
+   point it at the **root** `art-samples` dir (as shown): the tool auto-picks the `card/`,
+   `relic/`, or `power/` subdir matching `--spec`, so a relic never gets card refs. Backends
+   that accept reference images (gpt-image-1 edits, Gemini/nano-banana, ComfyUI) imitate the
+   game style far better, and plain text-to-image backends just ignore it.
+   The tool POSTs to the user's backend, then chroma-keys (per spec — OFF for a full-bleed
+   `card`, ON for a cut-out `relic`/`power` icon) / fits / resizes to the exact contract
+   size and writes `<slug>.png` at the spec's sub-path. Each spec makes exactly one file
+   (a relic's optional `_outline.png` is not generated — see above).
+   Local file instead of a backend? Use `gen_sprite.py import --input <file> …`.
+4. **No backend / failure → fall back to placeholder, don't block.** If the user chose
+   generate but has no `art-backend.json`, or the tool exits non-zero (it prints a clear
+   reason and writes `.gen_sprite.log`), record that in `MEMORY.md`, tell the user the
+   mod will use placeholder art, and continue. Art never blocks the pipeline.
+5. **Regenerate/tweak** is just re-running step 3 with an adjusted prompt (or a different
+   `--input`), then rebuilding. The `.pck` rebuild in `build.md` picks up whatever PNG is
+   at the path — placeholder if none, the custom one if present.
+
+Whether placeholder or generated, the `.pck` build (`build.md`) is what makes the art
+reach the game — a code-only `dotnet build` won't (same rule as localization).
 
 ## 5. Update state
 
 Record in `MEMORY.md`: the class name, the hook used, the exact loc keys written,
-any Cmd choices, and which DRIVER body the harness uses. Mark `author` done in
-`PLAN.md`. Then go to `build.md`.
+any Cmd choices, which DRIVER body the harness uses, and the **art outcome**
+(placeholder, or generated `<slug>.png`/`big/<slug>.png` — and if generate was chosen
+but fell back to placeholder, why). Mark `author` and `art` done in `PLAN.md`. Then go
+to `build.md`.
