@@ -208,12 +208,25 @@ Rules that make the output usable (they mirror the fit logic in `gen_sprite.py`)
   magenta (#FF00FF) background, no gradient" to the prompt. Force keying on a card with
   `--chroma` only if you deliberately want to cut a magenta-backed portrait out.
 - **Subject centered, generous margin**, so the `cover` crop keeps the subject in frame.
-- **Ask for more than one** if the backend supports `n` — generate a few, keep the best.
+- **One image per call.** `gen_sprite.py` requests `n=1` and keeps that single result —
+  there is no batch-and-pick. If it's not right, *regenerate*: tweak segment ② and re-run
+  (the regenerate loop below). One at a time, judged by eye.
 
 **Icon-spec subject shape (relic / power / potion).** These are a single cut-out object,
 not a scene. Name one object, center it, put it on flat magenta. Spec-specific art
 direction, distilled from the vanilla references:
 
+- **Scale — make the object BIG.** Unlike a card portrait (which wants a generous margin so
+  the `cover` crop stays safe), an icon should nearly fill its frame. `gen_sprite.py` crops
+  to the subject's bounding box and scales it up (`fit: contain`, `fill=1.0`), so the *only*
+  thing that makes a relic look small in-game is the model drawing it small on a big empty
+  background (that empty space either survives as padding, or a soft/gradient background
+  defeats the chroma-key and gets counted into the bbox). Fight this in the prompt: say the
+  object is **large and fills ~90% of the frame, tightly framed, matching the scale and
+  framing of the reference images** (the references define proportion, not just style), and
+  demand a **solid flat pure #FF00FF magenta background — no gradient, no shadow, no vignette**
+  so the cut-out is clean. If a generated icon still reads small, this scale/tight-framing
+  line in segment ② is the first thing to strengthen (then regenerate).
 - **potion** — draw the bottle **tilted ~45° leaning to the right** (shown diagonally).
   That is how STS2 displays potions; only some big square-ish potions stand upright. We
   tilt *all* generated potions right for consistency (a deliberate, accepted simplification —
