@@ -421,19 +421,6 @@ chroma-key/fit logic reused in `gen_sprite.py`) and `baselines/spire-codex/spine
 want real art. orb (100×100) / enchantment (64×64) sprite sizes are also now known from
 the same extracted set, but those content *types* are M6, so their art rides along there.
 
-**M5.7 — Harder interview (multi-element intake). NEW milestone, sequenced after M5.5,
-before M6 (locked 2026-07-08).** Today's interview handles a one-sentence, single-element
-ask well; it's weakest when the user describes a **multi-element / combo mod** (e.g. "a
-relic that buffs a custom card, plus a potion that triggers it") — the intake has to
-decompose that into several elements, surface their **dependencies/interactions**, and
-feed the combo interaction block that `spec.md` and the tier-2 harness already consume.
-This was flagged "still open" since M4 but never owned by a milestone; M5.7 owns it.
-Scope: strengthen `interview.md`'s decomposition + dependency elicitation for multi-element
-requests, keep the single-element fast path unchanged (no regression), and prove it on a
-multi-element canary. Deliberately **before M6** so the breadth work inherits a stronger
-intake rather than bolting element types onto a single-element interview. Depends on M5
-(the tier-2 combo harness it targets is already live).
-
 **M6 — Content-type breadth: beyond pooled combat elements.** Today the pipeline
 covers the **four pooled/combat elements** (relic, potion, card, power). The authoritative
 scope of "what else STS2 mods can be" is BaseLib's own registration surface, mined from
@@ -471,6 +458,127 @@ restates the base. **Depends on M5**: tier-2 behavior automation must land first
 verifying each new type's effect falls back on the user's eyes and the cost explodes.
 Full type inventory + the "3 pooled vs 5 parallel entry points vs full Abstracts set"
 structural finding: memory `[[sts2-content-type-inventory]]`.
+
+**M7 — Interactive, proactive interview for non-programmers.** NEW major milestone
+(promoted 2026-07-09 from the former "M5.7 harder interview" — that 0.x scope was only the
+L1 decomposition slice; the real target is far bigger). **The headline is the user's
+experience, not the design theory.** Our audience is complete beginners with **no
+programming experience**; eventually the skill should feel like a knowledgeable
+collaborator that *proactively interviews* the author about the details of what they're
+making — not a passive transcriber that scaffolds whatever one sentence it's handed. It
+should help them not only *design* the mod but also think through everything they wouldn't
+know to consider on their own: **edge cases, balance, interplay/联动, and extensibility.**
+
+Today the interview is a transcriber: one sentence → one element, no push-back, no "did you
+think about X?". M7 turns it into an active partner that asks the right follow-up questions
+at the right moments and surfaces the concerns below **so the author doesn't have to already
+know them**:
+
+- **Edge cases** — what happens on 0 targets, empty hand/draw pile, at 1 HP, when a value
+  goes negative, when the effect stacks with itself, when combat ends mid-effect? A beginner
+  won't anticipate these; the interview should raise the ones that apply to their element.
+- **Balance** — is this trivially overpowered or dead-on-arrival? (grounded in the MegaCrit
+  design language below — risk-vs-reward, "a card too weak to pick is basically not a card").
+- **Interplay (联动)** — how this element interacts with itself, with other elements in the
+  same mod, and with the base game. This is the ladder that used to *be* M7; it's now one of
+  several proactive concerns (see the L1–L4 ladder below).
+- **Extensibility** — is this a one-off, or the seed of something bigger (a set, an
+  archetype, a character)? Shape the SPEC so growing it later doesn't mean a rewrite.
+
+The **design-knowledge** that powers the balance + interplay questions is grounded in
+MegaCrit's stated design language (research 2026-07-09, sources in BASELINE_RESEARCH.md):
+*"The core design of Slay the Spire is risk versus reward"* (Giovannetti); cards are
+tactical, **relics/mechanics are the strategic frame**; changing one card *"has ramifications
+on the cards in that strategy"* — the unit of design is the **archetype**, not the card; a
+run pivots from front-loaded power into an **exponential scaling engine**, never flat "the
+math just gets bigger." STS2's own content is designed this way — a character's pool is 2-3
+**archetypes** ("machines"), each built from cards that play distinct roles.
+
+The **interplay (联动)** concern specifically is a **ladder of four levels**, not one thing:
+
+- **L1 — technical dependency** (A triggers B; e.g. a card applies a custom power that
+  fires on the enemy's turn). ✅ Already shipped: `spec.md`'s interaction block + the
+  tier-2 combo harness (`CanaryCombo`). M7 folds the old M5.7 multi-element **intake
+  decomposition** in here: interview must split a multi-element sentence into elements,
+  surface their dependency pairs (source → dependent + the dependent's own marker), keep
+  the single-element fast path un-regressed, and feed the block spec/harness already
+  consume.
+- **L2 — resource loop** (an **enabler** produces a resource, a **payoff** spends it; e.g.
+  Necrobinder "Gain X Souls" skills ↔ "Consume all Souls" attacks). The interview gains
+  the vocabulary to ask: what's your resource, who produces it, who spends it, is the loop
+  closed?
+- **L3 — archetype identity** (a shared resource/keyword vocabulary + a play-feel that ties
+  a *set* of elements into one coherent theme — Silent = poison/discard/Sly, Ironclad =
+  Strength/Exhaust). Requires designing a small **content pack**, not one element — so it
+  depends on M6 delivering the heavier types (keyword, character, orb) those archetypes are
+  built from.
+- **L4 — run rhythm & risk-reward advisor** (the highest rung, closest to "think like
+  MegaCrit"): does the design scale into act 3, or does the payoff never come online in a
+  normal fight? where's the meaningful trade-off / commit moment? is it degenerate (needs a
+  rarity/cost/scope constraint the way Dual Wield was limited to Skills)? The interview
+  points out a design flaw *before* code is written.
+
+**Sequenced AFTER M6 (locked 2026-07-09):** the full L3/L4 advice ("help me design a
+character's three archetypes") is only meaningful once M6 has shipped the content types
+(keyword/character/orb) those archetypes are made of — so the complete vision **depends on
+M6**. The L1 decomposition slice depends only on the already-live combo harness and MAY be
+pulled forward if a concrete multi-element need arises before M6; the rest waits.
+
+**The central tension: proactive, but not exhausting.** The whole point is that the
+interview *proactively* raises edge cases / balance / interplay / extensibility a beginner
+wouldn't think of — but a complete beginner is also the person most easily overwhelmed by a
+wall of questions. So M7 is NOT "ask everything every time." The proactive concerns are
+injected as **judgment** (a new pack page, likely `reference/design-principles.md`,
+distilling the 9 MegaCrit principles + an edge-case checklist per element type), and the
+interview raises **only the few that actually apply** to what this author is making,
+**one or two at a time, in plain non-technical language**, with a sensible default offered
+(the beginner can always say "you decide"). A one-line single-element ask must still finish
+fast — proactive means "catches the important thing they'd have missed", not "interrogates".
+
+**Reference baseline for the interview mode: CCGS's Collaborative Design Principle**
+(`baselines/Claude-Code-Game-Studios-main/docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` — the user
+found CCGS's interview UX good and asked us to model M7 on it). It's a mature, worked-out
+version of exactly the proactive-collaborator interview M7 wants; borrow these patterns
+(adapting them to *our* one-shot, non-programmer, single-mod scope — CCGS is a multi-agent
+studio for full games, so we take the interaction shape, not its gate/agent machinery):
+- **Question → Options → Decision → Draft → Approval** loop at every decision point — the
+  agent is a *collaborative consultant*, never an autonomous generator or a passive
+  order-taker. Maps onto our interview → spec → (approve) → scaffold flow.
+- **Explain → Capture** two-step: write the full expert reasoning (pros/cons, trade-offs,
+  comparable STS2 content) in conversation *first*, then present the decision as a compact
+  selectable UI via **`AskUserQuestion`** (concise labels + one-line trade-off each). We
+  already have this tool; M7 should use it for the constrained choices instead of walls of
+  markdown.
+- **Good vs bad question patterns** (their §"How Agents Should Ask Questions"): multiple-
+  choice-with-reasoning / constrained-options-with-trade-offs / open-ended-with-context are
+  good; too-open ("what should it be like?"), leading/assuming, and context-free binaries are
+  bad. This is a ready-made rubric for `interview.md`'s question style.
+- **Always recommend, but defer the decision** — mark a "(Recommended)" option and give the
+  reasoning, but the author picks (they can always say "you decide"). Fits our beginner
+  audience: never blocks, never bulldozes.
+- **Scope-based depth routing** (their `/quick-design` vs `/design-system` split): a small,
+  clearly-scoped ask gets a lightweight fast path; only a larger/ambiguous one escalates to
+  the deeper design conversation. This is CCGS's own answer to our "proactive but not
+  exhausting" tension — the depth of the interview scales with the request.
+- **Incremental section writing** (skeleton first, write each section as approved) — matches
+  our "files are state" architecture (SPEC.md/PLAN.md), keeps live context small, and lets a
+  compacted/crashed session resume from the file.
+
+**Acceptance bar** (how M7 stays testable despite being experience/judgment-driven):
+1. **Edge case** — given a request with an obvious unhandled edge case (e.g. a card that
+   targets an enemy with no "what if there's no valid target" story), the interview raises
+   it rather than silently scaffolding a crash.
+2. **Balance** — given a trivially overpowered or dead-on-arrival design, the interview
+   flags it and offers a saner default.
+3. **Interplay** — a multi-element / archetype request is decomposed into a coherent element
+   set with its interaction block (the old M5.7 bar, now one of four).
+4. **Extensibility** — a request that's clearly the seed of a set/character is shaped so it
+   can grow without a rewrite.
+5. **Not exhausting** — a clear one-line single-element ask still completes without a
+   design interrogation (no regression to the fast path).
+
+**Anti-bloat** (same constraint as M6): the always-loaded interview triage must not fatten —
+the design/edge-case pages are lazy-loaded and consulted, not prepended to every run.
 
 ## 6. Decisions (locked 2026-07-01)
 

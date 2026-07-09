@@ -17,7 +17,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M5 IN PROGRESS (tier-2 behavior automation: in-process self-test harness)
+## Current status — M5.5 COMPLETE (art/sprite pipeline live-verified for all 4 element types); next major milestone M7 (interactive proactive interview for non-programmers) after M6 (content-type breadth)
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -153,10 +153,32 @@ mac/Linux tool paths (best-effort, no non-Windows box) and the live `npx skills 
 into a real non-Claude agent. **Registry directory listing (lobehub/skills.sh) is still
 open** — that's discoverability, separate from the install mechanism which now works.
 
-**Next:** the live `/plugin` install verification (interactive — needs the user's REPL,
-ideally a clean env), then optionally extend the canary matrix cells' recorded tier-2
-runs. After M5: **M5.5 — art/sprite pipeline**, then **M6 — content-type breadth**
-(event/character/monster/orb/…). A harder multi-element interview is also still open.
+**M5.5 — Art/sprite pipeline COMPLETE 2026-07-08.** All four element types live-verified
+in-game (card portrait 1000×760 via `card_portraits/big/<slug>.png`; relic + power each
+need TWO icons `<slug>.png` + `big/<slug>.png` 256×256; potion = one 256×256 loose PNG,
+no .tres atlas). Gen tool: `tools/gen_sprite.py` (BYO OpenAI-compat backend, chat-mode
+support for Poe/Gemini-native, magenta chroma-key for cut-out icons). Art samples shipped
+in `reference/art-samples/` (card/relic/power/potion subdirs; 36 MegaCrit reference PNGs
++ ATTRIBUTION.md). Two pipeline corrections fixed + re-verified: relic/power must extend
+the template base (not CustomPowerModel/CustomRelicModel directly), and both need the
+`big/` variant. See `games/sts2/tests/canary-results.md` §M5.5 for the full run record.
+
+**Next: M6 — content-type breadth** (event/character/monster/orb/enchantment/…), then
+**M7 — interactive, proactive interview for non-programmers** (the former "M5.7 harder
+interview" promoted to a major milestone 2026-07-09). **The headline is the user's
+experience, not design theory:** our audience is complete beginners with no programming
+experience, so the interview should feel like a knowledgeable collaborator that
+*proactively* asks about the details of what they're making — helping them think through
+what they wouldn't know to consider: **edge cases, balance, interplay/联动, and
+extensibility** — not passively transcribe one sentence into one element. The hard part is
+being proactive *without* being exhausting (beginners overwhelm easily): raise only the few
+concerns that apply, one or two at a time, plain language, with a default offered; keep the
+one-line fast path un-regressed. The interplay concern is itself a four-level ladder (L1
+technical dependency — already shipped via the combo harness; L2 resource loop; L3 archetype
+identity; L4 run-rhythm & risk-reward), grounded in MegaCrit's design language. Sequenced
+AFTER M6 because L3/L4 + real balance advice need M6's content types (keyword/character/orb)
+to design around. See `documents/BASELINE_RESEARCH.md` ("MegaCrit design language") +
+IMPLEMENTATION_PLAN.md §5 M7 + memory `[[sts2-m7-design-advisor]]`.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 
