@@ -101,6 +101,15 @@ than generating a whole game.
 - Useful as a reference for how to *organize* skills/agents/hooks/rules at scale,
   and its human-in-the-loop story workflow. NOT a technical baseline for the
   closed loop.
+- **NEW USE (2026-07-09): the reference baseline for M7's interview mode.** The user
+  tried CCGS and found its interview UX good, so M7's proactive interview is modeled on
+  its `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` — the Question→Options→Decision→Draft→
+  Approval loop, the Explain→Capture two-step (full reasoning in chat, then an
+  `AskUserQuestion` selectable UI), the good-vs-bad question rubric, always-recommend-but-
+  defer, scope-based depth routing (`/quick-design` vs `/design-system` — their answer to
+  "proactive but not exhausting"), and incremental section writing. Take the interaction
+  *shape*, not the multi-agent gate/director machinery (out of scope for our one-shot,
+  non-programmer, single-mod tool). See IMPLEMENTATION_PLAN.md §5 M7.
 
 ### 4. cgxjdzz/AgentTheSpire — CLOSEST DIRECT COMPETITOR, also a borrow reference ⭐
 - STS2 text-to-mod generator (formerly "SpireForge"). Standalone local web app
@@ -293,3 +302,64 @@ which is off-the-shelf. **This is our #1 technical risk to prototype early.**
   1. **Headless/CLI publish** of `.dll`+`.pck` (no Rider).
   2. **Automated in-game verification** (launch via `steam_appid.txt`, then
      assert via logs / dev-console scripting / in-mod self-test markers).
+
+# MegaCrit design language (research 2026-07-09 — feeds M7's proactive interview)
+
+Gathered to answer: *what does "designing like MegaCrit" actually mean*, so M7's
+interview can guide a mod author instead of just transcribing one sentence into one
+element. Nine principles distilled from developer interviews + deckbuilder design
+analysis. These are the raw material for the planned pack page
+`reference/design-principles.md` (see IMPLEMENTATION_PLAN.md §5, M7).
+
+1. **Risk vs reward is the spine.** Anthony Giovannetti (co-designer): *"The core design
+   of Slay the Spire is risk versus reward."* Every card / relic / choice should be a
+   meaningful trade-off. An effect with no opportunity cost is boring.
+2. **Cards are tactical; relics/mechanics are strategic.** The game's beating heart is the
+   *"synergistic relationship between a player's deck and their collection of relics"* —
+   cards give in-combat options, relics/character mechanics set the long-term route the
+   whole run builds toward. The strategic frame is the "整体 (overall thing)", not any
+   single power.
+3. **The unit of design is the ARCHETYPE, not the card.** A character's pool is 2-3
+   distinct "machines". Giovannetti: *"If I change one card and it's part of a particular
+   strategy, that's going to have other ramifications on the cards in that strategy."*
+   Cards don't exist in isolation.
+4. **Each card plays a ROLE in its machine:** *enabler* (produces a resource:
+   energy/Strength/poison/draw/Souls), *payoff* (converts the resource into a win
+   condition), *engine/glue* (draw, deck-thinning, tutor — keeps it running), *standalone*
+   (flexible support any archetype uses). STS2 example: Necrobinder's Souls loop —
+   "Gain X Souls" Block skills (enabler) ↔ "Consume all Souls" attacks (payoff).
+5. **Scale, don't flat-line.** A run pivots from front-loaded power into an *exponential
+   scaling engine* before front-loading stops working (Ironclad: early aggression →
+   Strength/Exhaust/Block engine). Bad design just makes *"the math bigger"* — good design
+   asks "how does this reach act 3?"
+6. **Character identity = a shared resource/keyword vocabulary + a play-feel**, spread
+   across the whole pool — Silent = poison/discard/Sly, Defect = orbs/Focus,
+   Necrobinder = Souls. Identity is the *language the pool speaks*, not one signature power.
+7. **A "commit moment" rewards betting on a build.** A build-defining rare or a key relic
+   is a signpost that makes the player go all-in on an archetype. A card you *want to build
+   around* is build-defining.
+8. **Constraints tame degenerate combos** — not just number nerfs. When Dual Wield went
+   infinite, they restricted it to copy *Skill* cards only. Rarity / cost / scope / target
+   are design levers.
+9. **Data finds problems; intuition shapes fixes.** Pick rate too low = *"basically not a
+   card in our game"*; but changes are judged on *fun*, not pure math. (Single-player, so
+   decks needn't be balanced against each other — they can be tuned for entertainment.)
+
+**The "联动性 (interplay)" ladder these imply** (M7 scope): L1 technical dependency
+(A triggers B — already shipped via the combo harness), L2 resource loop (enabler↔payoff,
+principle 4), L3 archetype identity (principles 3+6, needs M6's content types), L4 run
+rhythm & risk-reward advisor (principles 1+5+7+8, the highest rung). See IMPLEMENTATION_PLAN.md
+§5 M7 for how each rung maps to interview/spec work.
+
+**Sources (2026-07-09):**
+- Anthony Giovannetti interview — Justin Gary, *Crafting Slay the Spire* (2024):
+  https://justingarydesign.substack.com/p/anthony-giovannetti-crafting-slay
+- *How Slay the Spire's devs use data to balance their roguelike deck-builder* — Game
+  Developer (2018):
+  https://www.gamedeveloper.com/design/how-i-slay-the-spire-i-s-devs-use-data-to-balance-their-roguelike-deck-builder
+- *Slay the Spire designer discusses new characters and card game inspirations* — PC Gamer
+  (2018): https://www.pcgamer.com/slay-the-spire-designer-discusses-new-characters-and-card-game-inspirations/
+- *What Makes a Deckbuilder Replayable?* — GlyphShuffle:
+  https://glyphshuffle.com/blog/what-makes-a-deckbuilder-replayable
+- STS2 character archetype summaries (Ironclad/Silent/Necrobinder pools) — community guides
+  surveyed via search 2026-07-09.

@@ -1,5 +1,9 @@
 # Canary matrix — run record (M4.5 ②)
 
+> **Historical command note:** this run record preserves the PowerShell commands used on
+> 2026-07-06. The tools were later replaced by cross-platform Python; use the current
+> commands in `canary.md` when rerunning the matrix.
+>
 > Companion to `canary.md`. Records the first full run (2026-07-03, STS2 v0.107.1,
 > .NET 9.0.300, BaseLib active) and the exact minimal element bodies used, so the
 > suite is reproducible. All projects live **outside the repo** at

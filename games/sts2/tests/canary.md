@@ -52,13 +52,14 @@ since M1 — repo stays clean; trust regenerate over hoarding). The steps per ce
    `canary-results.md`), so the harness only has to *trigger* it.
 6. `dotnet build Canary<X>.csproj -c Release` → expect **0 warnings, 0 errors** + a
    `.pck` copied to `mods/Canary<X>/`.
-7. **Tier-1** (load): `tools/launch.ps1 -WaitSeconds 35` (one launch loads all five),
-   then `tools/grep_log.ps1 -ModName Canary<X>` per cell → expect `[PASS] Tier-1 verified`.
-8. **Tier-2** (effect fires, per cell — each self-drives its own combat):
-   `tools/launch.ps1 -SelfTest -ModName Canary<X>` then
-   `tools/grep_log.ps1 -ModName Canary<X> -Tier2Pattern "fired|used|played|selftest done"`
-   → expect `[PASS] Tier-2 verified`. For `CanaryCombo`, confirm **both** the `Charge
-   played:` and the dependent `Signal fired:` markers.
+7. **Tier-1** (load): `python <open-mod>/games/sts2/tools/launch.py --wait-seconds 35`
+   (one launch loads all five), then `python <open-mod>/games/sts2/tools/grep_log.py
+   --mod-name Canary<X>` per cell → expect `[PASS] Tier-1 verified`.
+8. **Tier-2** (effect fires, per driving cell — each self-drives its own combat):
+   `python <open-mod>/games/sts2/tools/launch.py --self-test --mod-name Canary<X>` then
+   `python <open-mod>/games/sts2/tools/grep_log.py --mod-name Canary<X> --tier2-pattern
+   "fired|used|played|selftest done"` → expect `[PASS] Tier-2 verified`. For
+   `CanaryCombo`, confirm both the `Charge played:` and dependent `Signal fired:` markers.
 
 ## Status
 
@@ -72,12 +73,14 @@ markers and the four harness bugs the live run fixed. **Run one cell at a time**
 `--t2selftest` arms every loaded harness mod, so parking all but the cell under test avoids
 a main-menu collision.
 
-## Future
+## Future (M6+)
 
-- **(in progress, M5)** Run the tier-2 harness for each cell and record the markers in
-  `canary-results.md`.
-- Add a cell for any new element type or recipe before calling that recipe done — now
-  including its tier-2 DRIVER body + asserted marker, not just the build.
-- Consider a single driver script (`run-canaries.ps1`) that regenerates + builds all
-  five, runs tier-1 once, then `-SelfTest` per cell and greps; deferred until it earns
-  its keep (the manual steps are cheap and the per-cell authoring is the point).
+- New content support requires **two proofs** before it is advertised:
+  1. **Type Canary** — registration, clean build/package, and tier-1 load.
+  2. **Scenario Canary** — real behavior through the content's host and reusable scenario
+     adapter, with an observable state/marker assertion.
+- A vertical-slice canary may prove several inseparable types together (for example,
+  monster + encounter) instead of creating meaningless isolated cells.
+- Consider a single Python driver that regenerates/builds the matrix, runs tier-1 once,
+  then parks/arms one self-test mod at a time for tier-2. Defer until M6's second scenario
+  shape proves the abstraction earns its maintenance cost.

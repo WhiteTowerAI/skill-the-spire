@@ -17,7 +17,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M5 IN PROGRESS (tier-2 behavior automation: in-process self-test harness)
+## Current status — M5.5 COMPLETE; next M6 Core (playable content-breadth slices), then M7 (proactive beginner interview)
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -30,11 +30,11 @@ registration throws swept into `build-constraints.md` §3 (the 3 `AddModel` thro
 no dup-id throw exists — `RegisterType` is a `HashSet.Add` no-op). Also this session:
 verified the canary matrix still loads green under **BaseLib v3.3.5** (was 3.3.3; the
 game itself is unchanged at stable **v0.107.1** — the v0.108.0 in Steam news is the
-beta branch, which we don't target). Planning: added milestone **M6** (content-type
-breadth beyond pooled combat elements — event/character/monster/orb/…, scoped from
-the BaseLib decompile) to IMPLEMENTATION_PLAN.md, with anti-bloat as a hard design
-constraint. Next execution milestone is still **M5** (tier-2 automation + one-command
-install).
+beta branch, which we don't target). Planning first identified **M6** from BaseLib's
+full registration surface (beyond the current 3 pooled families + auto-discovered power),
+with anti-bloat as a hard constraint. The M6 execution model was redesigned 2026-07-10
+around playable vertical slices and real hosted-scenario proofs; see the current M6
+section below and `IMPLEMENTATION_PLAN.md`.
 
 **M0–M3 gates all PASSED; M4 round 1 (potion) PASSED 2026-07-02; M4 round 2 (card)
 PASSED 2026-07-03.** See `documents/M0_RESULTS.md` … `M4_RESULTS.md`. **M4 round 2**:
@@ -153,10 +153,52 @@ mac/Linux tool paths (best-effort, no non-Windows box) and the live `npx skills 
 into a real non-Claude agent. **Registry directory listing (lobehub/skills.sh) is still
 open** — that's discoverability, separate from the install mechanism which now works.
 
-**Next:** the live `/plugin` install verification (interactive — needs the user's REPL,
-ideally a clean env), then optionally extend the canary matrix cells' recorded tier-2
-runs. After M5: **M5.5 — art/sprite pipeline**, then **M6 — content-type breadth**
-(event/character/monster/orb/…). A harder multi-element interview is also still open.
+**M5.5 — Art/sprite pipeline COMPLETE 2026-07-08.** All four element types live-verified
+in-game (card portrait 1000×760 via `card_portraits/big/<slug>.png`; relic + power each
+need TWO icons `<slug>.png` + `big/<slug>.png` 256×256; potion = one 256×256 loose PNG,
+no .tres atlas). Gen tool: `tools/gen_sprite.py` (BYO OpenAI-compat backend, chat-mode
+support for Poe/Gemini-native, magenta chroma-key for cut-out icons). Art samples shipped
+in `reference/art-samples/` (card/relic/power/potion subdirs; 36 MegaCrit reference PNGs
++ ATTRIBUTION.md). Two pipeline corrections fixed + re-verified: relic/power must extend
+the template base (not CustomPowerModel/CustomRelicModel directly), and both need the
+`big/` variant. See `games/sts2/tests/canary-results.md` §M5.5 for the full run record.
+
+**Next: M6 Core — playable content-breadth slices (plan redesigned 2026-07-10).** Do
+not execute M6 as a flat "one BaseLib class → one recipe → one canary" checklist: many
+new types only matter through a host relationship (monster→encounter, keyword→card,
+reward→post-combat). Start with **M6.0**, a lightweight maintainer-only Content Capability
+Graph recording registration mode, host/dependency, verification scenario, observable
+proof, art, composition, and support level. Support advances
+`inventoried → grounded → build-verified → scenario-verified → pipeline-supported`; only
+the last is user-facing support. Tier-2 grows through reusable scenario adapters
+(`CombatPlayer`, `CombatEnemy`, `MapNode`, `PostCombat`, `RunStart`) and dual proof:
+Type Canary for build/load plus Scenario Canary for real hosted behavior.
+
+M6 Core ships vertical slices in this order: ① Mechanic Vocabulary (keyword +
+enchantment/modifier + orb), ② Enemy Encounter (monster + encounter), ③ World Node
+(event), ④ Minimal Character (selectable, starts a run, valid starter content + one small
+mechanic combination). All four must be `pipeline-supported` to close M6 Core. Reward,
+rest-site option, and pet are **M6 Extras** and do not block M7; Act is outside the M6
+completion gate. Anti-bloat applies to every stage: evolve toward a common SPEC envelope +
+lazy type/scenario contracts instead of adding full per-type prose branches to
+`interview/spec/author/scaffold/verify`. Full plan: `IMPLEMENTATION_PLAN.md` §5 M6.
+
+Then **M7 — interactive, proactive interview for non-programmers** (the former "M5.7 harder
+interview" promoted to a major milestone 2026-07-09). **The headline is the user's
+experience, not design theory:** our audience is complete beginners with no programming
+experience, so the interview should feel like a knowledgeable collaborator that
+*proactively* asks about the details of what they're making — helping them think through
+what they wouldn't know to consider: **edge cases, balance, interplay/联动, and
+extensibility** — not passively transcribe one sentence into one element. The hard part is
+being proactive *without* being exhausting (beginners overwhelm easily): raise only the few
+concerns that apply, one or two at a time, plain language, with a default offered; keep the
+one-line fast path un-regressed. The interplay concern is itself a four-level ladder (L1
+technical dependency — already shipped via the combo harness; L2 resource loop; L3 archetype
+identity; L4 run-rhythm & risk-reward), grounded in MegaCrit's design language. M7 L3/L4
+wait specifically for the **M6 Core gate** (Mechanic Vocabulary + Minimal Character provide
+the keyword/orb vocabulary and real buildable character target); they do not wait for M6
+Extras or Act. See `documents/BASELINE_RESEARCH.md` ("MegaCrit design language") +
+IMPLEMENTATION_PLAN.md §5 M7 + memory `[[sts2-m7-design-advisor]]`.
 
 ## Architecture (the intended shape; substrate validated by M0/M1)
 
@@ -164,31 +206,29 @@ The design is a **combination baseline**, not a fork (see BASELINE_RESEARCH.md):
 
 - **Pipeline** mirrors `htdt/godogen` (primary reference, Godot+C#): a single
   orchestrator `SKILL.md` drives lazy-loaded stage files — interview → spec →
-  scaffold → author → build → verify → behavior-test → repair → finalize. **Files
+  scaffold → author → build → verify (tier 1 + tier 2) → repair → finalize. **Files
   are state** (`SPEC.md`/`PLAN.md`/`MEMORY.md`) so the pipeline resumes after
   context compaction — resume-check first.
 - **Mod substrate** is `Alchyr/ModTemplate-StS2` + **BaseLib**: scaffolding is
   `dotnet new` (pure CLI); each element is a `Custom*Model` subclass; behavior is a
   sequence of `Cmd`s; a mod = `Mod.json` + `.dll` + `.pck`.
 - **The moat is the `sts2-api` "game pack"** — curated, on-demand knowledge
-  (content models, command catalog, `recipes/` per element type, `errors.md`
-  error→fix catalog) that pre-digests STS2's community-reverse-engineered
-  conventions so the LLM writes correct code without live-decompiling. `recipes/`
-  aims to make single-element mods ~90% templated; `errors.md` is append-only and
-  compounds over time.
-- **Verification is on observed reality, never "it compiled."** R2 has two tiers:
-  tier 1 = load proof via log marker (guaranteed); tier 2 = "the effect actually
-  fired" (best-effort, the headline differentiator) — candidate mechanisms are a
-  Godot `SceneTree` test script or reusing `STS2MCP` live state. Never claim an
-  effect was verified when only load was.
+  (`recipes/`, shared mechanics/build constraints, the self-test/art contracts, and
+  append-only `errors.md`) that pre-digests STS2's community-reverse-engineered
+  conventions so the LLM writes correct code without live-decompiling.
+- **Verification is on observed reality, never "it compiled."** Tier 1 proves load
+  via the real game log. Tier 2 is the live-verified, arg-gated in-process self-test:
+  the headed game navigates with `ForceClick`, calls public Cmds, and logs the actual
+  effect marker; all four driving cells pass. Manual dev-console steps are fallback
+  only when navigation misses. Never claim an effect was verified when only load was.
 - **Reuse at the edges:** `spire-codex` (queryable decompiled API) for grounding,
   `STS2MCP`/`autoSpire` for live-state behavior checks — optional dependencies, not
   the core loop.
 
-The full directory layout, pipeline diagram, and game-pack file table are in
-IMPLEMENTATION_PLAN.md §1–3. Decided during M2: the skill source lives under
-`games/sts2/` in this repo root (the `t2mod/` wrapper from the plan was dropped),
-and `publish.sh` renders it into `.claude/skills/`.
+The current directory layout and game-pack file table are in
+IMPLEMENTATION_PLAN.md §1–3. Source lives under `games/sts2/`; `publish.sh` renders a
+gitignored Claude dev shape plus the committed plugin (`plugins/open-mod/`) and portable
+Agent Skills (`skills/`) payloads.
 
 ## Branch model — READ THIS FIRST
 
@@ -240,42 +280,37 @@ Planning and research live in `documents/` (PROJECT.md, IMPLEMENTATION_PLAN.md,
 BASELINE_RESEARCH.md, and the competitive-landscape notes). Read the relevant
 ones before starting substantive work; keep them updated when plans change.
 
-## Toolchain & commands (STS2 modding, for the M0 build/verify work)
+## Toolchain & commands (current verified path)
 
-There is no build/test/lint for *this repo* yet (no code). The commands below are
-the STS2 mod toolchain M0 validates, sourced from ModTemplate-StS2 + BaseLib and
-**still to be confirmed on a real machine** — treat as the starting hypothesis,
-not verified fact. Details in R1_R2_FEASIBILITY.md.
+The Windows dev box has live-verified the full scaffold → build → tier-1 → tier-2 loop
+under STS2 stable v0.107.1, .NET 9.0.300, and BaseLib v3.3.5. The shipped wrappers are
+cross-platform Python; macOS/Linux defaults are best-effort until tested there.
 
-Environment required on the STS2 box:
-- **STS2 installed** (note install path; main vs beta branch).
+Environment required:
+- **STS2 installed**.
 - **.NET SDK 9.0+** (`dotnet --version`).
-- **MegaDot 4.5.1 mono** (MegaCrit's Godot fork) — only if the PckPacker shortcut
-  doesn't cover our assets.
-- **BaseLib** — best via Steam Workshop subscribe (id `3737335127`).
+- **BaseLib**, normally via Steam Workshop id `3737335127`.
+- **Python 3** for the shipped wrappers.
 
-Scaffold, build, verify:
+Scaffold once per mod from a dedicated empty work directory whose name differs from the
+mod name:
+```bash
+dotnet new install Alchyr.Sts2.Templates
+dotnet new alchyrsts2contentmod -n <ModName> -M <Author>
 ```
-dotnet new install Alchyr.Sts2.Templates          # install templates (once)
-dotnet new <content-template> -n ProbeMod          # scaffold (no spaces in name)
-dotnet build                                       # fast: .dll only → mods/
-dotnet publish /p:GodotPath="<MegaDot exe>"        # full: .dll + .pck (headless) → mods/
+
+Uncomment the template's `BSchneppe.StS2.PckPacker` package reference, then use:
+```bash
+python <tools>/build.py --project-dir <mod-project> --mod-name <ModName>
+python <tools>/launch.py
+python <tools>/grep_log.py --mod-name <ModName>
+python <tools>/launch.py --self-test --mod-name <ModName>
+python <tools>/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|played|selftest done"
 ```
-- **`build` vs `publish`:** `build` compiles only the `.dll` (fine for code-only
-  changes). `publish` also generates the `.pck` via headless Godot — **required
-  for any localization/image/scene change to show up.**
-- **Try PckPacker first:** uncomment the `BSchneppe.StS2.PckPacker` package ref;
-  if `dotnet build` alone then emits the `.pck`, we avoid the MegaDot dependency.
-- Paths (game/Godot) auto-discover via `Sts2PathDiscovery.props`; override with
-  `/p:Sts2Path=...` / `/p:GodotPath=...`.
 
-Launch + log-assert (R2 tier 1):
-- Put `steam_appid.txt` containing `2868840` in the game dir → run
-  `SlayTheSpire2.exe` directly (no Steam needed, scriptable).
-- Log is `%appdata%/SlayTheSpire2/logs/godot.log` (Windows). Generated mods emit
-  markers via `MainFile.Logger.Info(...)`; the verify loop launches, waits, then
-  greps the log for the `[T2MOD-SELFTEST]` marker and for error lines naming the mod.
-
-Platform note: **Windows-first** (current dev environment). STS2/Steam are
-cross-platform, so mod paths and the game binary differ on macOS/Linux — handle
-later.
+PckPacker makes normal `dotnet build -c Release` emit and copy `.dll`, `.pck`, and
+`.json`; MegaDot/`dotnet publish` is a historical fallback, not the pipeline default.
+`launch.py` ensures `steam_appid.txt`, starts the real game, and in self-test mode waits
+for the harness terminal marker. `grep_log.py` reads the fresh current `godot.log` and
+checks markers plus mod-named errors. Test one harness mod at a time because
+`--t2selftest` arms every loaded harness mod.

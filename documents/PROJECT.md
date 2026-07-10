@@ -6,8 +6,9 @@
 > want to build and why*, so the agent can reason about tradeoffs and make
 > good engineering decisions.
 >
-> Status: v1 (decisions locked below). Remaining `TODO`s are for the
-> implementation-planning phase, not blockers.
+> Status: living brief; core decisions remain locked. The concrete skill/package shape
+> and one-command installation described below shipped in M5. Current execution status
+> lives in `CLAUDE.md` and `IMPLEMENTATION_PLAN.md`.
 >
 > Decisions locked (2026-07-01):
 > - **First target game:** Slay the Spire 2.
@@ -43,29 +44,25 @@ A **skill** is a package that a coding agent (Claude Code or Codex) loads to gai
 a specialized capability — instructions + scripts + reference material the agent
 follows. The user installs it once, then invokes it by describing what they want.
 
-<!-- TODO (implementation phase): pin down the concrete on-disk shape
-     (SKILL.md + scripts + the game pack) for Claude Code first, then the Codex
-     equivalent. Reference model: references/Higgsfield_games/game-studio.md
-     (their skill = one markdown file that drives an interview → brief → build
-     → deploy pipeline). We build/validate on Claude Code first (decision). -->
+The concrete shape is now shipped: editable source under `games/sts2/`, a native Claude
+Code plugin under `plugins/open-mod/`, and a portable Agent Skills tree under `skills/`.
+`publish.sh` renders all three install/development shapes from the same source.
 
-### 3.1 Distribution goal: one-command install from a skill registry
+### 3.1 Distribution: one-command install delivered
 
-**The end-state install experience is a single command**, the way a user adds any
-published skill — e.g. `npx skills add open-mod` (or the equivalent for whatever
-registry we publish to, such as skills.sh). Assuming their game/toolchain
-prerequisites are met, that one command should place the skill where their agent
-finds it, with **no repo clone, no manual `publish.sh`, no "open Claude Code in
-this specific folder"**. Invoke, describe, done.
+The shipping experience no longer requires a clone, manual `publish.sh`, or a fixed
+working directory:
 
-This is a **committed target**, not just a nicety — frictionless distribution is
-one of our differentiators vs. competitors that make you clone a repo and wire up
-tooling ([[competitor-agentthespire]]). Today (M2) install is still the developer
-flow (clone → `./publish.sh --agent claude` → open the repo in Claude Code), which
-is fine for building/testing but is NOT the shipping experience. Closing that gap —
-packaging open-mod so a registry's `add` command deploys it in one step — is
-required before we can honestly call the "no setup" claim true. Track as a late-phase
-deliverable (around M5, alongside the Codex runtime and opt-in Workshop publish).
+- **Claude Code:** `/plugin marketplace add WhiteTowerAI/open-mod`, then
+  `/plugin install open-mod@open-mod`.
+- **Portable Agent Skills:** `npx skills add WhiteTowerAI/open-mod` for Codex, Cursor,
+  OpenClaw, and other compatible consumers.
+
+The Claude plugin uses `${CLAUDE_PLUGIN_ROOT}` for cwd-independent tool paths; the portable
+shape bundles relative Python tools under the skill. This closes the installation-mechanism
+goal established at M2. Remaining distribution work is narrower: registry-directory
+**discoverability**, a live install/run in a non-Claude agent, and macOS/Linux live
+verification. Windows + Claude Code is the fully proven end-to-end path today.
 ## 4. The user and the problem
 
 **Who:** a Slay the Spire 2 player who enjoys the game but cannot program at all.
