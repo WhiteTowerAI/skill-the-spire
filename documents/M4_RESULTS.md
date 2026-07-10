@@ -1,5 +1,10 @@
 # M4 Recipe Results (potion + card)
 
+> **Historical run record.** M4's manual tier-2 observations and its then-proposed
+> `--headless`/`TestMode` follow-up are preserved below as history. M5 later shipped a
+> headed, zero-keystroke in-process harness using public Cmds; all four driving cells pass.
+> Current commands and status are in `games/sts2/tests/canary.md` and `canary-results.md`.
+
 > Companion to IMPLEMENTATION_PLAN.md §6 (M4) and M3_RESULTS.md. Records M4's
 > element-breadth work: **round 1 — potions** (`recipes/potion.md` + spire-codex
 > `grounding.md` + a vanilla potion snapshot, 2026-07-02) and **round 2 — cards**

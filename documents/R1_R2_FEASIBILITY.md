@@ -1,5 +1,11 @@
 # R1 / R2 Feasibility: The Two Gating Risks
 
+> **Historical feasibility record (superseded operationally).** The experiments below
+> preserve the 2026-07-01 hypotheses. Current production paths are PckPacker via
+> `games/sts2/tools/build.py` and the headed, arg-gated in-process tier-2 harness via
+> `launch.py --self-test`; `TestMode`/usable headless game testing did not pan out. See
+> `CLAUDE.md` and `games/sts2/tests/canary.md` for current commands and verified status.
+
 > Companion to PROJECT.md §12 and BASELINE_RESEARCH.md. These two risks decide
 > whether the whole "one sentence → working, auto-tested mod" promise is
 > achievable via a headless, no-human CLI pipeline. Analyzed 2026-07-01 from the

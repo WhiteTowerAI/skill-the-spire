@@ -16,7 +16,7 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now (M5 — relic + potion + card + combo, automated two-tier verify)
+## Scope right now — relic + potion + card + power/combo, automated two-tier verify
 
 This skill turns one sentence into a known-good **relic, potion, or card** end to end,
 verifies it **loads** (tier-1) AND that its **effect actually fires** (tier-2, now

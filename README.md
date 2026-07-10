@@ -7,11 +7,12 @@ and runs in-game.
 
 First supported game: **Slay the Spire 2 (STS2)**.
 
-> **Status: M5 (in progress).** open-mod reliably makes **relics, potions, cards,
-> and custom powers** (including a card that applies its own power), verifies both
-> that the mod **loads** and that its **effect actually fires** in-game, and repairs
-> common build errors automatically. Custom/generated art and one-click Steam
-> Workshop publishing are still on the roadmap. See [Current limits](#current-limits).
+> **Status: M5.5 complete; M6 Core is next.** open-mod reliably makes **relics,
+> potions, cards, and custom powers** (including a card that applies its own power),
+> proves both that the mod **loads** and that its **effect actually fires** in-game,
+> repairs common build errors automatically, and supports placeholder or generated art
+> for all four types. Editing vanilla content and one-click Steam Workshop publishing
+> remain out of scope today. See [Current limits](#current-limits).
 
 ---
 
@@ -26,10 +27,10 @@ build STS2 mods:
 3. **BaseLib** — the community modding library open-mod builds on. Subscribe to it
    on the Steam Workshop (search "BaseLib" for STS2), then launch the game once so
    Steam downloads it.
-4. **Claude Code** — this skill runs inside Claude Code.
-5. **Python 3** and **Git Bash** (the install step uses a short bash script). On
-   Windows, install Python from python.org — note the "python3" that ships with
-   Windows by default is a non-working placeholder.
+4. **A compatible coding agent** — Claude Code is the fully verified path; the portable
+   package also targets Codex, Cursor, OpenClaw, and other Agent Skills consumers.
+5. **Python 3**. On Windows, install Python from python.org — the `python3` command
+   preinstalled by Windows may be a non-working Store placeholder.
 
 The very first time you make a mod, the skill will also install the STS2 project
 template (`dotnet new install Alchyr.Sts2.Templates`) if it isn't already present.
@@ -94,35 +95,35 @@ The skill takes it from there. It will:
    unclear (e.g. how rare the relic should be). Plain language, no jargon.
 2. **Show you a plan** in plain words and confirm it with you.
 3. **Scaffold, write, and build** the mod.
-4. **Launch the game and check the log** to confirm the mod loads with no errors.
-5. **Walk you through a quick in-game check** that the effect actually fires
-   (see below).
+4. **Launch the real game and check its log** to prove the mod loads with no errors.
+5. **Run an unattended in-process self-test**: the generated mod drives itself into a
+   minimal combat, fires the effect, and records the observed marker. If navigation
+   cannot reach combat, the skill falls back to a guided manual check and reports
+   load-only rather than pretending behavior was verified.
 
-You'll be asked to do a couple of hands-on things (launch the game, click through a
-menu) — that's expected. Just follow the prompts.
+The standard verification path requires no dev-console typing or menu clicks. You can
+still launch the game afterward to play with the finished mod yourself.
 
 ---
 
 ## Play it in-game
 
 When the skill finishes, your mod is already installed into the game's `mods/`
-folder. To try it:
+folder and has normally passed both automated verification tiers. To play with it:
 
-1. **Launch Slay the Spire 2** and start a run.
-2. Open the **developer console** with the **`` ` ``** (backtick) key — it's enabled
-   automatically because the game is running modded. Close it with `Esc`.
-3. **Give yourself the relic** by name, e.g.:
+1. Launch Slay the Spire 2 and start a run.
+2. Open the developer console with the **`` ` ``** (backtick) key; close it with
+   `Esc`. Debug commands are available because the game is running modded.
+3. Grant the element using the exact ID the skill reports:
+   - relic: `relic add <ID>`
+   - potion: `potion <ID>`
+   - card: `card <ID>`
+4. Use or trigger it normally. This is for your own play and visual inspection — it
+   is not the primary proof path, which the skill already ran automatically.
 
-   ```
-   relic add <YOUR-RELIC-ID>
-   ```
-
-   The skill tells you the exact id after it builds (something like
-   `MYRELIC-MY_RELIC`). A unique part of the name works too.
-4. **Trigger it.** For a "start of combat" relic, just enter a fight and watch it
-   fire.
-
-If it loaded and fired, you're done — you made a working mod from one sentence.
+If the automatic harness could not navigate into combat, these same steps become its
+honest manual fallback; the skill will tell you exactly what to enter and will only
+claim Tier 2 after the effect marker is observed.
 
 > **Where are the files?** The mod lands in
 > `…\Slay the Spire 2\mods\<YourModName>\` (the `.dll` + `.pck` + `.json`). The mod's
@@ -143,8 +144,15 @@ open-mod is still young. Today it does the following well, and is honest about t
   self-test can't reach combat.
 - ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
   failures, then re-verifies.
-- ⏳ **Not yet:** custom/generated art (elements use a placeholder icon for now),
-  editing existing vanilla content, and one-click Steam Workshop publishing.
+- ✅ **Custom art for all four types** — card portraits and relic/power/potion icons
+  are live-verified. Placeholder art remains the zero-setup default; generation uses
+  your own compatible image backend and falls back safely if unavailable.
+- ⏳ **Not yet:** editing existing vanilla content, content beyond the current four
+  combat-oriented types (M6), and one-click Steam Workshop publishing.
+- ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
+  on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but
+  those combinations have not yet been live-verified. Registry directory listing is
+  also still open; direct GitHub install already works.
 
 If you ask for something outside this, the skill will tell you plainly rather than
 half-build it.
@@ -157,8 +165,10 @@ half-build it.
   with the `open-mod` repo as the working directory.
 - **`publish.sh` says no working Python** — the Windows Store `python3` is a
   placeholder. Install real Python 3 from python.org and reopen your shell.
-- **The relic shows a plain coin/placeholder icon** — expected for now; custom art
-  is on the roadmap.
+- **An element shows placeholder art** — placeholder is the default fast path, not a
+  failure. To generate custom art, choose it during intake and provide a compatible
+  image backend configuration; if generation fails, the mod deliberately remains on
+  the working placeholder rather than blocking the build.
 
 ## For contributors
 
@@ -182,10 +192,10 @@ Both ship payloads **are committed** (the marketplaces fetch them from git) — 
 the relevant publish after any source change and commit the result. Don't hand-edit
 the generated trees; see `plugins/open-mod/GENERATED.md` and `skills/GENERATED.md`.
 
-The tools are **Python** (`build.py` / `launch.py` / `grep_log.py`), so they run on
-Windows/macOS/Linux; invoke with `python` (on Windows the bare `python3` is often the
-Store shim). The legacy `.ps1` versions remain in `games/sts2/tools/` as source but
-are not shipped.
+The tools are **Python** (`build.py` / `launch.py` / `grep_log.py`), so they are
+designed for Windows/macOS/Linux; invoke with `python` (on Windows the bare `python3`
+is often the Store shim). Windows is live-verified; the macOS/Linux path defaults are
+best-effort until tested on those systems.
 
 The marketplace manifest is `.claude-plugin/marketplace.json`; the plugin manifest
 is `plugins/open-mod/.claude-plugin/plugin.json`. Planning and research docs are in

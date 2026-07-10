@@ -3,16 +3,13 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01. **M0–M3 + M4 (potion R1, card R2, and the
-> BloodAndFury two-card/two-power R3) gates all PASSED** (see M0_RESULTS.md …
-> M4_RESULTS.md). The skill under `games/sts2/` reproduces the golden relic from one
-> sentence, the bounded `repair.md` loop fixes broken specs within the retry cap, and
-> the potion/card/power recipes now produce loading, firing elements end to end.
-> **NEXT = M4.5 (pre-mine the toolchain to kill runtime decompilation), NOT M5** —
-> the BloodAndFury run showed spire-codex + baselib grounding misses build/load-time
-> validator rules (analyzer STS001, baselib throws) that are offline-minable. Art
-> pipeline + harder interview still open from M4. See M4.5 in §5 and memory
-> `[[premine-offline-no-runtime-decompile]]`.
+> Status: living plan. Written 2026-07-01 and updated through 2026-07-10.
+> **M0–M5.5 are complete**: four combat-oriented model types build and fire under the
+> automated harness, plugin + portable installation are shipped, and all four art paths
+> are live-verified. **NEXT = M6.0** — capability graph, support contracts, and the first
+> reusable scenario seam for M6 Core. M7 L3/L4 starts after the explicit M6 Core gate;
+> see the M6/M7 sections below. Historical run details remain in `M0_RESULTS.md` …
+> `M4_RESULTS.md` and the milestone records in this file.
 
 ## 0. Design principles (inherited from the research)
 
@@ -44,58 +41,38 @@
 
 ## 1. Repository layout
 
-Mirrors godogen's engine-split so multi-game (Phase 2) is a copy-paste of the
-game folder, and the runtime split so Claude Code / Codex both work.
+The original `t2mod/` wrapper + `runtimes/` proposal was superseded during M2/M5.
+The current source and two committed distribution shapes are:
 
 ```
-t2mod/                              # repo root
-├── README.md                       # human-facing
-├── PROJECT.md / *.md               # the research docs (this set)
-│
-├── games/
-│   └── sts2/                       # the STS2 "game pack" + skill (Phase 1)
-│       ├── skills/
-│       │   ├── modmaker/           # the orchestrator skill
-│       │   │   ├── SKILL.md        # entry / pipeline (the only always-read file)
-│       │   │   ├── interview.md    # one-round intake → mod spec
-│       │   │   ├── spec.md         # write SPEC.md (the design contract)
-│       │   │   ├── scaffold.md     # dotnet new + manifest wiring
-│       │   │   ├── author.md       # write the C# element + localization + art
-│       │   │   ├── build.md        # dotnet build/publish → .dll+.pck (R1)
-│       │   │   ├── verify.md       # launch + log-assert self-test (R2 tier 1)
-│       │   │   ├── behavior-test.md# in-game effect check (R2 tier 2, best-effort)
-│       │   │   ├── repair.md       # read log → diagnose → fix → re-verify loop
-│       │   │   ├── finalize.md     # package; optional Workshop publish
-│       │   │   └── quirks.md       # STS2/BaseLib gotchas
-│       │   └── sts2-api/           # the GAME PACK (knowledge, queried on demand)
-│       │       ├── SKILL.md        # how to query the pack
-│       │       ├── content-models.md   # Card/Relic/Potion/Power model + Custom*Model
-│       │       ├── commands.md         # DamageCmd/PowerCmd/... command catalog
-│       │       ├── recipes/            # known-good patterns per element type
-│       │       │   ├── relic.md
-│       │       │   ├── card.md
-│       │       │   └── potion.md
-│       │       ├── manifest.md         # Mod.json schema + rules
-│       │       ├── localization.md     # *.json format + analyzer behavior
-│       │       ├── art.md              # image sizes/paths/placeholders
-│       │       ├── errors.md           # error → fix catalog (grows over time)
-│       │       └── grounding.md        # how to use spire-codex / decompile when the pack lacks it
-│       ├── scaffold/               # our thin wrapper over Alchyr templates
-│       └── tools/                  # python/shell helpers (build, launch, log-grep)
-│
-├── runtimes/                       # per-agent adapters (godogen pattern)
-│   ├── claude-code/                # Phase 1 target
-│   └── codex/                      # Phase 2
-│
-└── shared/
-    ├── hooks/                      # stop-hook completion gate (godogen pattern)
-    └── skills/                     # anything game-agnostic
+open-mod/                           # actual repo root
+├── README.md / CLAUDE.md / AGENTS.md
+├── documents/                     # plans, research, and historical run records
+├── games/sts2/                    # authoritative editable source
+│   ├── skills/
+│   │   ├── modmaker/              # orchestrator + lazy stage files
+│   │   │   ├── SKILL.md
+│   │   │   ├── interview.md / spec.md / scaffold.md / author.md
+│   │   │   └── build.md / verify.md / repair.md / quirks.md
+│   │   └── sts2-api/              # lazy game pack
+│   │       ├── SKILL.md / grounding.md / errors.md
+│   │       ├── recipes/           # relic/card/potion/power known-good patterns
+│   │       └── reference/         # mechanics, constraints, harness, art contract/samples
+│   ├── tools/                     # build.py / launch.py / grep_log.py / gen_sprite.py
+│   └── tests/                     # maintainer-only canary matrix; never shipped
+├── scripts/publish/               # placeholder rendering helpers
+├── publish.sh                     # renders the three install shapes
+├── plugins/open-mod/              # COMMITTED Claude Code plugin payload (generated)
+├── skills/                        # COMMITTED portable Agent Skills payload (generated)
+└── .claude/skills/                # gitignored Claude development render (generated)
 ```
 
-Note: the actual on-disk skill format for Claude Code (frontmatter, invocation)
-is finalized in the runtimes layer — a `publish` step can render the same source
-into Claude Code and Codex shapes (godogen does exactly this with
-`scripts/publish/*`).
+Edit only `games/sts2/` source, then regenerate committed ship payloads with
+`./publish.sh --plugin` and `./publish.sh --portable`; never hand-edit those payloads.
+The plugin uses `${CLAUDE_PLUGIN_ROOT}` for cwd-independent absolute paths. The portable
+shape bundles Python tools under `skills/modmaker/scripts/` and uses relative paths for
+Codex/Cursor/OpenClaw/other Agent Skills consumers.
+
 
 ## 2. The pipeline (what the orchestrator SKILL.md drives)
 
@@ -122,19 +99,15 @@ User: one sentence ("a relic that ...")
   5. BUILD (build.md)          — dotnet build (+publish for .pck) → .dll/.pck/.json
   |     into mods/. (R1.)  On failure → REPAIR.
   |
-  6. VERIFY (verify.md)        — launch via steam_appid.txt, wait, grep godot.log
-  |     for the self-test marker + absence of mod-referencing errors. (R2 tier 1.)
-  |     On failure → REPAIR.
+  6. VERIFY (verify.md) — run tier 1 (load marker + no mod-named errors), then
+  |     tier 2 through the arg-gated in-process harness. The headed game navigates
+  |     itself into combat, drives public Cmds, and logs the observed effect marker.
+  |     Manual dev-console verification is fallback only. On failure → REPAIR.
   |
-  7. BEHAVIOR TEST (behavior-test.md) — BEST EFFORT: SceneTree test script and/or
-  |     STS2MCP live-state to confirm the effect fires. Clearly report tier
-  |     achieved. (R2 tier 2.)
+  7. REPAIR (repair.md) — shared bounded sub-loop invoked by build/verify: read the
+  |     real error, consult errors.md, apply one fix, re-run only the failed stage.
   |
-  8. REPAIR (repair.md)        — shared sub-loop invoked by 5/6/7: read the log,
-  |     consult errors.md, diagnose, fix, re-run the failed stage. Bounded retries.
-  |
-  9. FINALIZE (finalize.md)    — the mod works locally; summarize; OFFER (opt-in)
-        Workshop publish via megacrit/sts2-mod-uploader.
+  8. FINALIZE — summarize artifacts and the exact observed verification tier.
 ```
 
 ## 3. The game pack (`sts2-api`) — our moat, concretely
@@ -147,14 +120,14 @@ What each file holds and where it's sourced from:
 
 | File | Content | Sourced from |
 |------|---------|--------------|
-| `content-models.md` | Every element = a `Model`; the BaseLib `Custom*Model` base classes and which properties to override | BaseLib-Wiki, ModTemplate |
-| `commands.md` | Catalog of `Cmd`s (`DamageCmd.Attack`, `PowerCmd.Apply<T>`) + BaseLib `CommonActions` shortenings | decompiled base game, BaseLib |
-| `recipes/*.md` | Copy-adaptable known-good pattern per element type, each a full working example | ModTemplate + base-game analogs |
-| `manifest.md` | `Mod.json` schema, id-immutability, `affects_gameplay`, version rules | ModTemplate wiki |
-| `localization.md` | `localization/eng/*.json` format; the analyzer auto-report/generate behavior | StS2ModAnalyzers |
-| `art.md` | Image paths + exact sizes (card 1000x760, etc.); placeholder-first workflow AND the BYO-backend generate path (per-sprite placeholder-vs-generate choice, user-configured image-gen API/local model) — see PROJECT.md §7.1 | ModTemplate wiki |
-| `errors.md` | **Error signature → fix** catalog; grows every time repair succeeds | our own runs (compounding asset) |
-| `grounding.md` | When the pack lacks an answer: query spire-codex API / decompile sts2.dll | spire-codex, decompiling wiki |
+| `SKILL.md` | Query/routing contract for the lazy game pack | current pipeline |
+| `recipes/*.md` | Copy-adaptable known-good patterns for relic/card/potion/power | ModTemplate + base-game analogs + live canaries |
+| `reference/mechanics.md` | Shared DynamicVars, SmartFormat, enum and Cmd/value foundations | decompiled game + live runs |
+| `reference/build-constraints.md` | Complete STS001–004 and BaseLib registration/load constraints | analyzer + BaseLib decompile |
+| `reference/selftest-harness.md` | Arg-gated tier-2 harness and current public-Cmd driver patterns | decompile + live canaries |
+| `reference/art-contract.md` + `art-samples/` | Verified sprite paths/sizes, placeholder/generation contract, style references | live M5.5 runs + extracted assets |
+| `errors.md` | **Error signature → fix** catalog; grows every time repair succeeds | our own runs |
+| `grounding.md` | Runtime-vs-maintainer grounding doctrine and pack-gap handling | project policy |
 
 Key design decisions:
 - **`recipes/` are the heart.** A single-element mod should be ~90% templated:
@@ -173,33 +146,18 @@ Key design decisions:
 
 ## 4. R1 / R2 wired into the pipeline
 
-- **R1 (build.md):** standardize on `dotnet build` + PckPacker if the prototype
-  confirms it (no MegaDot); else `dotnet publish /p:GodotPath=...`. Path
-  discovery is automatic (template props); we only pass overrides. Fail-fast
-  errors from the template feed `repair.md`.
-- **R2 tier 1 (verify.md):** the guaranteed check. Scaffolding always injects a
-  `MainFile.Logger.Info("[T2MOD-SELFTEST] ...")` marker after registration.
-  Launch (`steam_appid.txt`=2868840) → wait → grep `godot.log`. This proves
-  "installs + loads + registered" — already beating raw-AI mods. **Note: this
-  is exactly the tier modmixer stops at** ("a green build does NOT mean it
-  loads"; their loop verifies loads-without-crashing, not behavior). Parity here,
-  not advantage.
-- **Bridge option (from modmixer):** instead of only grepping `godot.log`,
-  consider a small companion "bridge" mod (BaseLib+Harmony) that streams
-  load/runtime errors over localhost, attributed per-mod — cleaner than log
-  scraping. Check first whether **STS2MCP already provides this channel** (fits
-  "reuse at the edges"); decide during M0's tier-2 investigation.
-- **R2 tier 2 (behavior-test.md) — THE differentiator:** best effort, two
-  candidate mechanisms to prototype and pick between:
-  1. **SceneTree test script** (godogen's `test/TestXxx.cs` pattern) — STS2 is
-     Godot, so a `SceneTree` script may load the element and assert via
-     `GD.Print("ASSERT PASS/FAIL")`, no full run needed. Cheapest if it works.
-  2. **STS2MCP live-state** — drive a real run and read game state via the
-     existing MCP mod. Most faithful, more setup.
-  Always report which tier was reached; never claim effect-verified on tier 1.
-  **This tier is where we beat modmixer** — the founder confirmed they explicitly
-  cannot "play the game to test the mod" and hand behavioral correctness back to
-  the user. Resource this; it is the headline, not a footnote.
+- **R1 (build.md):** standardized on `dotnet build -c Release` with PckPacker;
+  `games/sts2/tools/build.py` wraps it and reports copied `.dll/.pck/.json` artifacts.
+  MegaDot publish is a historical fallback, not the user path.
+- **R2 tier 1 (verify.md):** `launch.py` starts the real game and `grep_log.py` checks
+  the load marker plus absence of mod-named errors. This proves installs + loads +
+  registers.
+- **R2 tier 2 (verify.md) — the differentiator, shipped in M5:** each generated mod
+  carries an arg-gated `SelfTest.cs`. `launch.py --self-test` passes `--t2selftest`;
+  the headed game navigates menu→combat with `ForceClick`, calls the public Cmd APIs the
+  dev console wraps, and logs effect + terminal markers. All four driving cells pass
+  live. Manual console steps are an honest fallback only when navigation fails; never
+  claim Tier 2 from a green build or load marker alone.
 
 ## 5. Milestones (each ends in something demonstrable)
 
@@ -240,8 +198,8 @@ finding: tier-1's error-line check is load-bearing — the load marker still fir
 `[Pool]` is missing (MainFile ran), so marker-alone would false-PASS. errors.md grew
 from the run itself (CS0103 added to the guessed-API signature).
 
-**M4 — Breadth within STS2.** Add `recipes/card.md`, `recipes/potion.md`; handle
-2-3 more element types (all pooled/combat: card, potion, power). Harden the interview
+**M4 — Breadth within STS2.** Added card and potion recipes plus auto-discovered
+power support, extending the combat-oriented foundation beyond relics. Hardened the interview
 for ambiguous requests. **The art/sprite pipeline was originally scoped here but is
 now its own milestone, M5.5** (below, after M5) — a no-art element loads cleanly with
 the default placeholder icon, so custom art is not on the critical path to a working
@@ -259,12 +217,12 @@ mod and was deferred.
 > + published. That this slipped past full spire-codex + baselib grounding is what
 > motivates **M4.5** below.
 >
-> **Scope note:** M4's "2-3 more element types" was *consumed* by card + potion +
-> power — all **pooled/combat elements** sharing relic's foundation. The larger,
+> **Scope note:** M4 delivered card + potion (pooled) and power (auto-discovered) —
+> four combat-oriented model types including the original relic foundation. The larger,
 > structurally different content types (event, character, monster, orb, …) are **not**
 > covered here; they are their own milestone line, **M6** below.
 
-**M4.5 — Pre-mine the toolchain: kill runtime decompilation. ← NEXT (do before M5).**
+**M4.5 — Pre-mine the toolchain: kill runtime decompilation. ✅ DONE (2026-07-06).**
 Motivation: the BloodAndFury run proved that grounding on spire-codex (content) +
 baselib decompile (runtime API) leaves a whole third category unmined — the
 **toolchain's own validators** (Roslyn analyzer, csproj/MSBuild targets, BaseLib
@@ -356,8 +314,7 @@ truth" diagnosis: memory `[[premine-offline-no-runtime-decompile]]`.
   discover it, not just install by repo slug.
 - ⏳ **Opt-in Steam Workshop publish** — still to wire.
 
-**M5.5 — Art/sprite pipeline (REQUIRED; PROJECT.md §7.1). Card portrait DONE &
-LIVE-VERIFIED in-game 2026-07-08; relic/power/potion sprites are the remaining sub-steps.**
+**M5.5 — Art/sprite pipeline. ✅ COMPLETE & LIVE-VERIFIED (2026-07-08).**
 Deferred out of M4 to here (after M5): a no-art element loads cleanly with the default
 placeholder icon, so custom art is a quality/parity feature, not on the critical path to
 a working mod.
@@ -375,9 +332,9 @@ or local; we ship the plumbing, not a bundled provider) via a provider-agnostic
   both payloads alongside build/launch/grep). Subcommands `generate` (BYO OpenAI-compat
   HTTP), `import` (local file), `list-specs`. Normalizes any source → magenta chroma-key
   (per-spec: on for cut-out icons, off for full-bleed card portraits) → fit/resize to the
-  exact contract size → place the single `big/<slug>.png` portrait at the exact sub-path.
-  Verified offline: card→1000×760 (the one portrait the game loads), unverified specs
-  refuse without `--size`.
+  exact contract size → place the required sprite(s) at the exact sub-paths. Verified
+  live for card/relic/power/potion; relic and power emit normal + `big/`, potion emits
+  one loose PNG, and card emits the `big/` portrait.
 - **Pipeline wiring** — `interview.md` (art only when the user signals a custom look),
   `spec.md` (per-sprite art plan + PLAN.md art step + confirmation art clause),
   `author.md` §4 (rewritten placeholder→choice, generate branch calls `gen_sprite.py`,
@@ -421,43 +378,113 @@ chroma-key/fit logic reused in `gen_sprite.py`) and `baselines/spire-codex/spine
 want real art. orb (100×100) / enchantment (64×64) sprite sizes are also now known from
 the same extracted set, but those content *types* are M6, so their art rides along there.
 
-**M6 — Content-type breadth: beyond pooled combat elements.** Today the pipeline
-covers the **four pooled/combat elements** (relic, potion, card, power). The authoritative
-scope of "what else STS2 mods can be" is BaseLib's own registration surface, mined from
-the decompile: `CustomContentDictionary` has a `PoolTypes` dict with **exactly 3 pooled
-model families** (`CardModel`/`RelicModel`/`PotionModel` — these need `[Pool]`, are what
-STS004 guards; power shares the `Custom*Model`+flat-loc base but is auto-discovered, no
-pool), **plus 5 parallel non-pooled registration entry points** (`AddEncounter`,
-`AddAncient`, `AddEvent`, `AddAct`, `AddCharacter`), **plus the full `Custom*Model` set
-in `Abstracts/`** (also `CustomOrbModel`, `CustomEnchantmentModel`/`CustomModifierModel`,
-`CustomMonsterModel`, `CustomPetModel`, `CustomRestSiteOption`, `CustomReward`, …). These
-are structurally *different* from pooled elements (own registration path, nested loc
-trees like `AncientEventModel`'s `.talk.*`, or ~14 loc keys + a select-screen for
-characters) — each is a recipe-sized (or larger) unit of work, **not** a new field on an
-existing recipe. Sequence by structural weight:
-- **Tier A (medium, do first):** event, keyword (`CardKeyword`), enchantment/modifier, orb.
-- **Tier B (medium-heavy):** monster **+** encounter (two layers), pet, rest-site option, reward.
-- **Tier C (heaviest, defer):** character, act.
+**M6 — Content breadth as playable vertical slices, not a checklist of classes.** Today
+the pipeline covers four combat-oriented model types: **three pooled families** (card,
+relic, potion — `[Pool]` required) plus **auto-discovered power** (no pool). BaseLib's
+registration surface still defines the authoritative inventory of what else exists:
+`CustomContentDictionary` has those 3 pooled families, **5 parallel explicit entry
+points** (`AddEncounter`, `AddAncient`, `AddEvent`, `AddAct`, `AddCharacter`), and the
+wider `Abstracts/` set (`CustomOrbModel`, enchantment/modifier, monster, pet, rest-site
+option, reward, …). But inventory is not the deliverable. Many of these types are not
+useful alone: a monster needs an encounter, a keyword needs a card/power that uses it,
+an enchantment needs a card to modify, and a reward needs a post-combat host. M6 is done
+only when a non-programmer can describe a **playable unit**, the pipeline can build it,
+and a real game scenario proves the relationship works.
 
-Each type follows the proven cadence: **scout the decompile structure → write
-`recipes/<type>.md` → wire the interview/author dispatch → add one canary cell**.
+### M6.0 — contracts before recipes: the Content Capability Graph
 
-**Anti-bloat is a hard design constraint of M6** (raised 2026-07-06): more types must
-not fatten the pipeline. What the architecture already protects: recipes are
-**lazy-loaded** (a run reads only the one matching SPEC's element — 4 recipes = 1115
-lines total but any run pulls ~200–380), and the canary/golden set is **dev-only, never
-shipped** (`publish.sh` excludes `tests/`), so neither grows per-run context. What *does*
-grow and must be contained: the **always-loaded** triage in `interview.md` + the
-`SKILL.md` routing table, and the **maintenance surface** (each type = recipe + canary +
-errors entries to re-mine on version bump). M6 rules: (1) keep type triage as a compact
-decision **table**, O(one row/type), never a paragraph per type; (2) recipes stay
-lazy-loaded and `tests/` stays unshipped (don't regress the current architecture);
-(3) shared foundations (pooling, loc derivation, hooks) live once in `mechanics.md` /
-`build-constraints.md` — a new recipe states only what's **unique** to its type, never
-restates the base. **Depends on M5**: tier-2 behavior automation must land first, or
-verifying each new type's effect falls back on the user's eyes and the cost explodes.
-Full type inventory + the "3 pooled vs 5 parallel entry points vs full Abstracts set"
-structural finding: memory `[[sts2-content-type-inventory]]`.
+Create one lightweight, maintainer-only Markdown capability map before adding user-facing
+types. For every inventoried type record seven facts: **registration mode** (pooled /
+auto-discovered / explicit `Add*` / attached), **host or dependency**, **verification
+scenario**, **observable proof**, **art contract**, and **what it composes with**. Keep it
+as documentation first — no registry code or schema framework until a real consumer earns
+one. This graph prevents isolated recipes that register but cannot participate in a mod,
+and becomes the common source for author routing, scenario verification, and M7's honest
+capability boundary.
+
+Support is a ladder, not a boolean:
+
+`inventoried → grounded → build-verified → scenario-verified → pipeline-supported`
+
+- **inventoried:** BaseLib/game surface found; no promise to users.
+- **grounded:** constructor, registration, loc, host relationship and one vanilla analog
+  are mined into the pack.
+- **build-verified:** a Type Canary compiles, packages, loads, and registers.
+- **scenario-verified:** a Scenario Canary exercises it through its real host and observes
+  the intended state/behavior change.
+- **pipeline-supported:** interview → common SPEC contract → scaffold/author → both proofs
+  works from natural language. Only this final level may be advertised as "supported."
+
+### Verification architecture — scenarios, not an ever-growing DRIVER switch
+
+M5's combat harness is the first scenario adapter, not a template to duplicate per type.
+M6 should factor tier-2 into a small set of reusable scenario adapters, each with
+`setup → enter → drive → observe → terminal marker`:
+
+| Scenario | Initial content families |
+|----------|--------------------------|
+| **CombatPlayer** | existing card/relic/potion/power; keyword, enchantment/modifier, orb |
+| **CombatEnemy** | monster + encounter; enemy intent/power |
+| **MapNode** | event; later rest-site option |
+| **PostCombat** | reward and encounter outcome (M6 Extra) |
+| **RunStart** | character selection, starter content, character mechanic |
+| **ActMap** | act/map ecosystem — explicitly deferred beyond the M6 gate |
+
+A type contributes only its scenario contract (setup action, drive action, observable
+invariant); navigation, waiting and terminal handling live once per scenario. The proof
+rule therefore upgrades from "one type, one green build" to **two complementary proofs**:
+(1) a **Type Canary** for registration/build/load and (2) a **Scenario Canary** for real
+hosted behavior. One vertical-slice canary may prove several inseparable types — e.g. a
+monster inside its encounter — rather than creating technically green but meaningless
+single-class cells.
+
+### Delivery order — playable vertical slices
+
+1. **M6.0 Contracts & scenario foundation.** Write the capability graph, support ladder,
+   common scenario contract and completion gate; refactor only the verification seam needed
+   by the first slice, not all hypothetical adapters up front.
+2. **Mechanic Vocabulary Slice — keyword + enchantment/modifier + orb.** These are the
+   language of archetypes and directly unlock M7 L2/L3. Prove each through a card/player
+   host in `CombatPlayer`, including its actual display/state/behavior change. Orb art is
+   100×100 and enchantment art 64×64 from the already-extracted contract.
+3. **Enemy Encounter Slice — monster + encounter.** Treat these as one playable unit:
+   enter the custom encounter, spawn the custom monster, advance an enemy action, and
+   observe an intent/effect plus state delta through `CombatEnemy`.
+4. **World Node Slice — event.** Enter the custom event through `MapNode`, choose at least
+   one option, and observe its consequence; nested talk/option localization is part of the
+   proof, not merely a successful registration.
+5. **Minimal Character Slice.** Use the character template where appropriate; prove the
+   character appears in selection, starts a run, owns valid starter content, and exposes at
+   least one small mechanic/vocabulary combination. This is a vertical slice, **not** a full
+   production-size card pool, but it is enough for M7 to reason about archetype identity
+   against a real buildable target.
+6. **M6 Extras — reward, rest-site option, pet.** Add by user value and scenario reuse after
+   Core is green. They do **not** block M7. **Act is outside the M6 completion gate**: it is
+   an ecosystem-sized unit and gets a later milestone after the underlying node/encounter
+   capabilities exist.
+
+For every slice, use proof-first cadence: **declare host + observable invariant → ground
+the exact APIs and loc/art contract → write only the type-unique recipe material → wire the
+pipeline → run Type + Scenario canaries → append real failures to `errors.md`**. Designing
+the proof before mining prevents a recipe whose only success condition is "it loaded."
+
+### Anti-bloat — contain stage architecture and maintenance, not just token count
+
+Recipes remain lazy-loaded and `tests/` remains maintainer-only/unshipped. Shared pooling,
+loc and hook foundations remain single-sourced in `mechanics.md` /
+`build-constraints.md`. But M6 must also stop per-type prose from spreading through every
+stage: `spec.md` should evolve toward a **common SPEC envelope + lazy type contract**;
+`interview.md` and `SKILL.md` keep compact capability/routing tables; `author.md`,
+`scaffold.md`, and `verify.md` dispatch to the selected type/scenario contract rather than
+accumulating another full branch per type. Refactor incrementally with each slice — do not
+build a generic framework before two real shapes prove the abstraction.
+
+**M6 Core completion gate:** Mechanic Vocabulary, Enemy Encounter, World Node, and Minimal
+Character slices all reach **pipeline-supported**, with their Type and Scenario proofs
+recorded. Reward/rest-site/pet are Extras and do not block M7; Act is separately deferred.
+M5's live tier-2 foundation is already complete, so M6 begins at M6.0. Full BaseLib inventory
+remains in memory `[[sts2-content-type-inventory]]`; this section is the execution source of
+truth.
 
 **M7 — Interactive, proactive interview for non-programmers.** NEW major milestone
 (promoted 2026-07-09 from the former "M5.7 harder interview" — that 0.x scope was only the
@@ -510,19 +537,21 @@ The **interplay (联动)** concern specifically is a **ladder of four levels**, 
 - **L3 — archetype identity** (a shared resource/keyword vocabulary + a play-feel that ties
   a *set* of elements into one coherent theme — Silent = poison/discard/Sly, Ironclad =
   Strength/Exhaust). Requires designing a small **content pack**, not one element — so it
-  depends on M6 delivering the heavier types (keyword, character, orb) those archetypes are
-  built from.
+  depends specifically on M6 Core's Mechanic Vocabulary + Minimal Character slices
+  (keyword/orb and a real buildable character target), not on every BaseLib type being done.
 - **L4 — run rhythm & risk-reward advisor** (the highest rung, closest to "think like
   MegaCrit"): does the design scale into act 3, or does the payoff never come online in a
   normal fight? where's the meaningful trade-off / commit moment? is it degenerate (needs a
   rarity/cost/scope constraint the way Dual Wield was limited to Skills)? The interview
   points out a design flaw *before* code is written.
 
-**Sequenced AFTER M6 (locked 2026-07-09):** the full L3/L4 advice ("help me design a
-character's three archetypes") is only meaningful once M6 has shipped the content types
-(keyword/character/orb) those archetypes are made of — so the complete vision **depends on
-M6**. The L1 decomposition slice depends only on the already-live combo harness and MAY be
-pulled forward if a concrete multi-element need arises before M6; the rest waits.
+**Sequenced AFTER the M6 Core gate (locked 2026-07-10):** the full L3/L4 advice
+("help me design a character's three archetypes") becomes meaningful when Mechanic
+Vocabulary and the Minimal Character Slice are both `pipeline-supported` — there is then
+a real keyword/orb vocabulary and a buildable character target to advise against. M7 does
+**not** wait for M6 Extras (reward/rest-site/pet), and Act is outside this dependency. The
+L1 decomposition slice depends only on the already-live combo harness and MAY be pulled
+forward if a concrete multi-element need arises before M6 Core; the rest waits.
 
 **The central tension: proactive, but not exhausting.** The whole point is that the
 interview *proactively* raises edge cases / balance / interplay / extensibility a beginner
@@ -587,18 +616,17 @@ the design/edge-case pages are lazy-loaded and consulted, not prepended to every
 2. **First element type: relic.** Simplest trigger model, matches the
    "Gambler's Coin" example.
 3. **Reuse posture: core self-contained + reuse at the edges.** The core loop
-   (scaffold/author/build/verify/repair) is self-contained and portable.
-   Tier-2 behavior verification and grounding reuse **STS2MCP** and
-   **spire-codex** as optional dependencies.
-4. **Repo: defer.** Do NOT `git init` or lay down the skeleton yet. Build the
-   directory structure (§1) only after M0's gate passes, so we don't scaffold
-   against unvalidated assumptions.
+   (scaffold/author/build/verify/repair) is self-contained and portable. The shipped
+   tier-2 path is also self-contained (generated in-process harness); spire-codex and
+   decompiles are maintainer grounding inputs, not runtime dependencies.
+4. **Repo (historical decision, resolved in M2).** The gate passed and source was laid
+   out under `games/sts2/` in this repo; see §1 for the current structure.
 
 ## 7. M0 de-risk checklist ✅ COMPLETED
 
-> **This checklist is done** — M0 and M1 both passed on 2026-07-01 (M0_RESULTS.md,
-> M1_RESULTS.md). Kept as the historical record of what was validated and how.
-> The current next step is **M2** (skill skeleton driving `recipes/relic.md`).
+> **Historical checklist:** M0 and M1 passed on 2026-07-01. The steps below are
+> preserved as the original gate, not current operating instructions. Current build and
+> tier-2 commands are in `CLAUDE.md` and `games/sts2/tests/canary.md`.
 
 This was manual validation on the STS2 box (no skill code yet). Success here
 unlocked M1+ and confirmed §1's structure is worth building.

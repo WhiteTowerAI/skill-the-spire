@@ -138,11 +138,14 @@ Creature myBody = Owner.Creature;
 var combatState = Owner.PlayerCombatState!;     // Energy, MaxEnergy, TurnNumber
 ```
 
-For other effects (damage, block, powers), consult `commands.md` — `DamageCmd`,
-`PowerCmd.Apply<T>`, etc. follow the same `static async Task` shape; `await` them.
+For other effects (damage, block, powers), query the rest of the pack rather than an
+invented catalog: use `reference/mechanics.md` for shared Cmd/value foundations,
+`reference/build-constraints.md` for enforced model rules, and `errors.md` for known
+failure signatures. If the exact symbol is still absent, follow `grounding.md` and report
+a pack gap — never guess a Cmd name.
 
-**Always** call `Flash()` when the relic visibly triggers, and — during M1/M2 while
-verification is manual — log a marker so tier-2 is greppable:
+**Always** call `Flash()` when the relic visibly triggers, and log the effect marker as
+the tier-2 observation contract used by the automated self-test harness:
 ```csharp
 MainFile.Logger.Info($"[T2MOD-SELFTEST] <RelicName> fired: {outcome} energy {before} -> {after}");
 ```
