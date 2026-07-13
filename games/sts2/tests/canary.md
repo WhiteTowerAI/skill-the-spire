@@ -11,8 +11,9 @@
 > **This matrix is the "golden set."** It replaces the ad-hoc hand-built
 > `m1-gamblers-coin` as the reference for "what correct current pipeline output looks
 > like." (m1 is now just a *substrate proof* — the one artifact the pipeline can't
-> reproduce — not a template. See memory `sts2-m45-analyzer-mined` /
-> `sts2-m4-cardprep-progress`.)
+> reproduce — not a template. See `canary-results.md` for the historical acceptance
+> runs and recipe fixes, and `content-capability-graph.md` for the current support/evidence
+> ledger.)
 
 ## The rule this enforces
 
@@ -24,7 +25,7 @@ this matrix built it. Card/potion/relic each already had a real acceptance mod
 card→power interaction path were not. Any *new* recipe added later must gain a canary
 here before it is considered done.
 
-## The five cells
+## The nine cells
 
 | Cell | Mod | Element(s) | What it proves in the recipe | Tier-2 harness DRIVER + marker |
 |------|-----|-----------|------------------------------|--------------------------------|
@@ -56,9 +57,10 @@ since M1 — repo stays clean; trust regenerate over hoarding). The steps per ce
    `canary-results.md`), so the harness only has to *trigger* it.
 6. `dotnet build Canary<X>.csproj -c Release` → expect **0 warnings, 0 errors** + a
    `.pck` copied to `mods/Canary<X>/`.
-7. **Tier-1** (load): `python <open-mod>/games/sts2/tools/launch.py --wait-seconds 35`
-   (one launch loads all five), then `python <open-mod>/games/sts2/tools/grep_log.py
-   --mod-name Canary<X>` per cell → expect `[PASS] Tier-1 verified`.
+7. **Tier-1** (load): `python <open-mod>/games/sts2/tools/launch.py --wait-seconds 35`.
+   A single ordinary launch may load every enabled canary, then run
+   `python <open-mod>/games/sts2/tools/grep_log.py --mod-name Canary<X>` per cell →
+   expect `[PASS] Tier-1 verified`.
 8. **Tier-2** (effect fires, per driving cell — each self-drives its own combat):
    `python <open-mod>/games/sts2/tools/launch.py --self-test --mod-name Canary<X>` then
    `python <open-mod>/games/sts2/tools/grep_log.py --mod-name Canary<X> --tier2-pattern
@@ -68,12 +70,11 @@ since M1 — repo stays clean; trust regenerate over hoarding). The steps per ce
 
 ## Status
 
-All five **build green (0/0, `.pck` emitted)** and **tier-1 PASS** (load marker +
-zero mod-named errors, one launch) — see `canary-results.md` for the run record and
-the two recipe fixes this suite surfaced. **Tier-2 harness (M5): ALL FOUR driving cells
-PASS on the dev box (2026-07-06)** — relic/card/potion each drove their effect and the
-historical `CanaryCombo` project proved an interaction chain (card applies power → `EndTurn`
-→ power fires), all with zero interaction; power is asserted through that relationship.
+The original five-cell M4.5 baseline **built green (0/0, `.pck` emitted)** and passed
+Tier 1 in one ordinary launch. Its four Tier-2 driving cells later passed on the dev box
+(2026-07-06): relic/card/potion each drove its effect and the historical `CanaryCombo`
+project proved an interaction chain (card applies power → `EndTurn` → power fires), all
+with zero interaction; power is asserted through that relationship.
 **M6 Mechanic Vocabulary (2026-07-10): keyword/enchantment/orb PASS** — three CombatPlayer
 cells live-verified. **M6 Enemy Encounter (2026-07-10): CanaryEncounter PASS** — first
 `CombatEnemy` scenario seam earned: custom encounter started, CanaryMite present, PECK move

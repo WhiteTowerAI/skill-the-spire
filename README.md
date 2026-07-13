@@ -8,12 +8,13 @@ and runs in-game.
 First supported game: **Slay the Spire 2 (STS2)**.
 
 > **Status: M6 Core in progress.** open-mod reliably makes **relics, potions, cards, and
-> custom powers** (including a card that applies its own power), plus **custom card
-> mechanics — keywords, card enchantments, and orbs**. It proves both that the mod
-> **loads** and that its **effect actually fires** in-game, repairs common build errors
-> automatically, and supports placeholder or generated art for the four core element types.
-> More content types (enemy encounters, events, characters) are in active development.
-> Editing vanilla content and one-click Steam Workshop publishing remain out of scope today.
+> custom powers** (including a card that applies its own power), **custom card
+> mechanics — keywords, card enchantments, and orbs — and enemy encounters** (a custom
+> monster plus its encounter). It proves both that the mod **loads** and that its **effect
+> actually fires** in-game, repairs common build errors automatically, and supports
+> placeholder or generated art for the four core element types. Events/world nodes and
+> playable characters are next in M6 Core. Editing vanilla content and one-click Steam
+> Workshop publishing remain out of scope today.
 > See [Current limits](#current-limits).
 
 ---
@@ -23,8 +24,8 @@ First supported game: **Slay the Spire 2 (STS2)**.
 open-mod drives the normal STS2 modding toolchain, so you need a machine set up to
 build STS2 mods:
 
-1. **Slay the Spire 2**, installed via Steam. Note your install path (e.g.
-   `D:\Steam\steamapps\common\Slay the Spire 2`).
+1. **Slay the Spire 2**, installed via Steam. Note your install path (for example,
+   `<SteamLibrary>\steamapps\common\Slay the Spire 2`).
 2. **.NET SDK 9.0 or newer** — check with `dotnet --version`.
 3. **BaseLib** — the community modding library open-mod builds on. Subscribe to it
    on the Steam Workshop (search "BaseLib" for STS2), then launch the game once so
@@ -152,13 +153,13 @@ open-mod is still young. Today it does the following well, and is honest about t
 - ✅ **Custom art for all four types** — card portraits and relic/power/potion icons
   are live-verified. Placeholder art remains the zero-setup default; generation uses
   your own compatible image backend and falls back safely if unavailable.
-- 🔬 **In active development (works in the lab, not yet a supported one-sentence path):**
-  **enemy encounters** — a custom monster plus the encounter that fights you. The full
-  build → enter-combat → observe-the-enemy's-move loop is verified end-to-end on a test
-  mod, but the plain-English intake for it isn't promoted yet. Custom monster *art* (an
-  animated scene) is not wired, so custom enemies use a default appearance for now.
-- ⏳ **Not yet:** editing existing vanilla content, more world/character content
-  (events, playable characters), and one-click Steam Workshop publishing.
+- ✅ **Enemy encounters** — a plain-English request can produce a custom monster plus
+  the encounter that hosts it. The pipeline builds it, enters the real encounter, observes
+  the enemy's move and resulting player-state change, and completed a full acceptance run
+  on 2026-07-13. Custom monster *art* (an animated scene) remains provisional, so custom
+  enemies use the game's fallback appearance for now.
+- ⏳ **Not yet:** editing existing vanilla content, World Node/events, playable
+  characters, and one-click Steam Workshop publishing.
 - ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
   on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but
   those combinations have not yet been live-verified. Registry directory listing is

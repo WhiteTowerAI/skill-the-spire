@@ -3,13 +3,12 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01 and updated through 2026-07-10.
-> **M0–M5.5 are complete**: four combat-oriented model types build and fire under the
-> automated harness, plugin + portable installation are shipped, and all four art paths
-> are live-verified. **NEXT = M6.0** — capability graph, support contracts, and the first
-> reusable scenario seam for M6 Core. M7 L3/L4 starts after the explicit M6 Core gate;
+> Status: living plan. Written 2026-07-01 and updated through 2026-07-13.
+> **M0–M5.5 are complete. M6 Core is in progress:** M6.0 contracts, Mechanic
+> Vocabulary, and Enemy Encounter are complete and pipeline-supported. **NEXT = World
+> Node**, followed by Minimal Character. M7 L3/L4 starts after the explicit M6 Core gate;
 > see the M6/M7 sections below. Historical run details remain in `M0_RESULTS.md` …
-> `M4_RESULTS.md` and the milestone records in this file.
+> `M4_RESULTS.md`, while current M6 evidence lives in `games/sts2/tests/`.
 
 ## 0. Design principles (inherited from the research)
 
@@ -274,7 +273,7 @@ Keep it strictly LOOKUP-shaped (fork + grep a local file), **never dumped into m
 context** — sts2-api is already lookup-shaped, so it fits. This is the biggest of the
 tasks; sequence it after ①–④ (which are smaller and higher-leverage per token).
 Two local references make this cheaper than a from-scratch dig (both gitignored,
-dev-only — memory `[[baselines-local-reference]]`): `baselines/spire-codex/data/*.json`
+dev-only; see `BASELINE_RESEARCH.md` for their role): `baselines/spire-codex/data/*.json`
 is the offline **content** half of the index (eng-only parsed cards/powers/relics/…,
 so content lookups stop hitting the live API), and `baselines/spire-codex/backend/`'s
 regex parsers are a working model for "generate a structured table FROM the decompile"
@@ -284,8 +283,9 @@ Honest scope: the four suggestions + the API index mine *build/load + runtime-AP
 to ~near-completeness (finite code); *behavior* gaps (tier-2 effect fired but wrong) still
 need execution and are NOT mined here — that's M5. And the analyzer/baselib/API gain
 members on version bumps, so the deliverable is a **re-runnable generator + a
-diff-on-upgrade habit**, not a one-time dump. Full rationale + the "three sources of
-truth" diagnosis: memory `[[premine-offline-no-runtime-decompile]]`.
+diff-on-upgrade habit**, not a one-time dump. The full rationale and three-source
+truth model are now canonical in `games/sts2/skills/sts2-api/grounding.md`; mined
+build/load constraints live in `reference/build-constraints.md`.
 
 **M5 — Behavior test (R2 tier 2) + Codex runtime + one-command install + optional publish.**
 - ✅ **Tier-2 behavior automation — DONE (2026-07-06).** In-process self-test harness;
@@ -344,7 +344,8 @@ or local; we ship the plumbing, not a bundled provider) via a provider-agnostic
   falls back to placeholder on no-backend/failure), `SKILL.md` (scope + pipeline art
   sub-step), `sts2-api/SKILL.md` (indexes art-contract.md).
 
-Closes the one concrete feature gap vs. AgentTheSpire (memory `[[competitor-agentthespire]]`).
+Closes the art-pipeline feature gap identified in `COMPETITIVE_LANDSCAPE.md` and
+`BASELINE_RESEARCH.md`.
 Reference studied: `baselines/agent-sprite-forge/` (Codex sprite-gen skill — the
 agent-writes-prompt + deterministic-Python-processes-pixels split, and the magenta
 chroma-key/fit logic reused in `gen_sprite.py`) and `baselines/spire-codex/spine-renderer/`
@@ -513,8 +514,9 @@ build a generic framework before two real shapes prove the abstraction.
 **M6 Core completion gate:** Mechanic Vocabulary, Enemy Encounter, World Node, and Minimal
 Character slices all reach **pipeline-supported**, with their Type and Scenario proofs
 recorded. Reward/rest-site/pet are Extras and do not block M7; Act is separately deferred.
-M5's live tier-2 foundation is already complete, so M6 begins at M6.0. Full BaseLib inventory
-remains in memory `[[sts2-content-type-inventory]]`; this section is the execution source of
+M5's live tier-2 foundation is already complete, so M6 begins at M6.0. The full
+BaseLib inventory and its evidence are maintained in
+`games/sts2/tests/content-capability-graph.md`; this section is the execution source of
 truth.
 
 **M7 — Interactive, proactive interview for non-programmers.** NEW major milestone

@@ -251,34 +251,27 @@ element (e.g. one relic), and the skill produces a mod that **installs, loads,
 and actually works in the game**, with the auto-repair loop handling failures
 along the way.
 
-## 12. Open questions
+## 12. Resolved risks and open questions
 
-**Two risks gate the whole promise — prototype these FIRST (see
-BASELINE_RESEARCH.md for detail):**
-- **R1 — Headless/CLI publish.** STS2's mod build generates the `.pck` via Godot,
-  and the docs only show doing it from Rider. We need a fully no-IDE
-  `dotnet`/MSBuild publish of `.dll`+`.pck` (there's a `GodotPublish` target and
-  a `DOTNET_ROOT` hint suggesting it's possible). If this can't be automated,
-  the pipeline breaks.
-- **R2 — Automated in-game verification.** There's no documented headless test
-  mode. We *can* launch without Steam (`steam_appid.txt` = `2868840`), read
-  `godot.log`, and spawn content via the dev console — but asserting "the effect
-  actually triggered" automatically needs scripting the dev console, an in-mod
-  self-test that logs a marker, or log-assertion. This is our headline
-  differentiator, so validate it early. **Update: `Gennadiyev/STS2MCP` (421★)
-  and `LightEnding/autoSpire` already expose live in-game state to an agent —
-  likely reusable for the hard "did the effect fire?" tier instead of building
-  a harness from scratch. See COMPETITIVE_LANDSCAPE.md.**
+### Resolved foundation risks
 
-**Other open items:**
-- §9: Windows-first is assumed for dev; when do we handle macOS/Linux path
-  differences? (mod paths and the game binary differ per OS.)
-- §9: .NET SDK 9.0+ and MegaDot (Godot) must be present — does the skill assume
-  them, detect them, or guide install?
-- §7/§10: Placeholder-first art is the native STS2 workflow (template ships a
-  default `card.png`); where/when do "real" assets come from?
-- §5: Study the existing **STS2 Modding Assistant MCP** (Nexus #345) and the
-  `spire-codex` decompile project — reuse vs. differentiate. (A background agent
-  is currently sweeping for other competitors/prior art.)
-- §10: Can BaseLib's `Custom*Model` + "copy a similar base card" pattern make
-  single-element mods near-templated, leaving the LLM only the effect logic?
+- **R1 — CLI build and packaging: RESOLVED.** M0 proved a no-IDE build that emits
+  `.dll` + `.pck` + manifest, and M1/M2 proved the same substrate through the skill
+  pipeline. PckPacker is the normal path; see `M0_RESULTS.md`, `M1_RESULTS.md`, and
+  `M2_RESULTS.md`.
+- **R2 — Automated in-game verification: RESOLVED.** Tier 1 reads the real game log;
+  Tier 2 is an arg-gated in-process self-test that drives public game commands and
+  observes effect markers/state changes. The combat cells and later M6 scenarios are
+  recorded in `games/sts2/tests/canary-results.md`; the maintained harness contract is
+  `games/sts2/skills/sts2-api/reference/selftest-harness.md`.
+
+### Open product and distribution questions
+
+- When should the best-effort macOS/Linux paths be promoted to a supported claim through
+  live runs on those platforms?
+- When should the portable package receive a live install/run acceptance test in Codex or
+  another non-Claude agent, and which registry directories should list it?
+- What should the opt-in Steam Workshop publish flow require before any outward-facing
+  upload?
+- How far beyond M6 Core should Phase 1 expand before the reusable game-pack template is
+  formalized for a second game?
