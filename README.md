@@ -7,12 +7,14 @@ and runs in-game.
 
 First supported game: **Slay the Spire 2 (STS2)**.
 
-> **Status: M5.5 complete; M6 Core is next.** open-mod reliably makes **relics,
-> potions, cards, and custom powers** (including a card that applies its own power),
-> proves both that the mod **loads** and that its **effect actually fires** in-game,
-> repairs common build errors automatically, and supports placeholder or generated art
-> for all four types. Editing vanilla content and one-click Steam Workshop publishing
-> remain out of scope today. See [Current limits](#current-limits).
+> **Status: M6 Core in progress.** open-mod reliably makes **relics, potions, cards, and
+> custom powers** (including a card that applies its own power), plus **custom card
+> mechanics — keywords, card enchantments, and orbs**. It proves both that the mod
+> **loads** and that its **effect actually fires** in-game, repairs common build errors
+> automatically, and supports placeholder or generated art for the four core element types.
+> More content types (enemy encounters, events, characters) are in active development.
+> Editing vanilla content and one-click Steam Workshop publishing remain out of scope today.
+> See [Current limits](#current-limits).
 
 ---
 
@@ -137,6 +139,9 @@ open-mod is still young. Today it does the following well, and is honest about t
 
 - ✅ **Relics, potions, cards, and custom powers** — including a card that applies
   its own custom power (the multi-element "combo" case).
+- ✅ **Custom card mechanics** — keywords (shared, reusable card rules), card
+  enchantments (a persistent modification attached to a card), and orbs (a channeled
+  passive/evoke mechanic). Each is proven to actually change combat state, not just load.
 - ✅ **Load verification** — it proves the mod loads in-game, not just "it compiled".
 - ✅ **Effect verification (automated)** — the mod carries an in-process self-test
   that drives itself into a combat and confirms the effect fires, with no dev-console
@@ -147,8 +152,13 @@ open-mod is still young. Today it does the following well, and is honest about t
 - ✅ **Custom art for all four types** — card portraits and relic/power/potion icons
   are live-verified. Placeholder art remains the zero-setup default; generation uses
   your own compatible image backend and falls back safely if unavailable.
-- ⏳ **Not yet:** editing existing vanilla content, content beyond the current four
-  combat-oriented types (M6), and one-click Steam Workshop publishing.
+- 🔬 **In active development (works in the lab, not yet a supported one-sentence path):**
+  **enemy encounters** — a custom monster plus the encounter that fights you. The full
+  build → enter-combat → observe-the-enemy's-move loop is verified end-to-end on a test
+  mod, but the plain-English intake for it isn't promoted yet. Custom monster *art* (an
+  animated scene) is not wired, so custom enemies use a default appearance for now.
+- ⏳ **Not yet:** editing existing vanilla content, more world/character content
+  (events, playable characters), and one-click Steam Workshop publishing.
 - ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
   on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but
   those combinations have not yet been live-verified. Registry directory listing is

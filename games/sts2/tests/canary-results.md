@@ -39,13 +39,16 @@ all but the cell under test (memory `sts2-m5-selftest-single-mod-constraint`).
 | CanaryCombo | selftest done | `Charge played: applied Signal` **+** `Signal fired: 3 dmg` | **PASS** (both links) |
 
 The full ForceClick nav (menu → run → combat) drove itself with zero keystrokes on all four.
-CanaryCombo proves the interaction chain: the card applies the custom power, then `EndTurn`
-starts the enemy turn so the power's `AfterSideTurnStart` fires — both markers observed.
+CanaryCombo (historical project name; now modeled as two elements plus an `applies`
+interaction) proves the relationship chain: the card applies the custom power, then
+`EndTurn` starts the enemy turn so the power's `AfterSideTurnStart` fires — both markers
+observed.
 
 **Bugs the live run surfaced (all fixed in `reference/selftest-harness.md`):** (1)
 `SaveManager.SetFtuesEnabled` NREs at Arm() time → best-effort try/catch; (2) `IsInProgress`
 races ahead of the run UI node (`NRun.GlobalUi`) → added a wait gate before `EnterRoomDebug`;
-(3) harness template emitted 9 nullable warnings → cleaned to 0/0; (4) combo `PlayerCmd.EndTurn`
+(3) harness template emitted 9 nullable warnings → cleaned to 0/0; (4) the interaction
+canary showed `PlayerCmd.EndTurn`
 returns void (awaiting = CS4008) and is *required* for enemy-turn-start powers.
 
 ### Historical (pre-fix) note
@@ -55,16 +58,63 @@ minimal element bodies below already emit each `fired/used/played:` marker, so t
 harness only has to *trigger* it.
 
 - **relic/potion/card** drive their effect within the harness's turn-1 Play phase.
-- **combo** (`CanaryCombo`): `Charge` applies `Signal` to the **enemy**, and `Signal`
-  fires on `AfterSideTurnStart` — i.e. at the **enemy's** turn start. So the combo DRIVER
-  must `PlayerCmd.EndTurn` after playing `Charge` for the dependent `Signal fired:` marker
-  to appear (the harness page's combo body has this `EndTurn` line — uncomment it for this
-  cell). Assert **both** `Charge played: applied Signal` and `Signal fired:`.
+- **multi-element interaction** (historical project `CanaryCombo`): `Charge` applies
+  `Signal` to the **enemy**, and `Signal` fires on `AfterSideTurnStart` — i.e. at the
+  **enemy's** turn start. The source is a card, so its normal card DRIVER must
+  `PlayerCmd.EndTurn` after playing `Charge` for the dependent `Signal fired:` observation
+  to appear (the harness page's card→power example has this `EndTurn` line). Assert
+  **both** `Charge played: applied Signal` and `Signal fired:`.
 - **power** (`CanaryPower`/`Smolder`) has no standalone tier-2 cell — a power ships applied
-  by something else, so its marker is covered by the combo shape.
+  by something else, so its marker is covered by the interaction shape.
 
 Until this section is filled, tier-2 for the matrix is **specified-but-unverified** — do
 not claim it passed.
+
+## M6.0 verification-seam regression (2026-07-10)
+
+Re-ran the existing CanaryCard self-test after making terminal/effect proof independent:
+`launch.py --self-test --mod-name CanaryCard` returned 0 only after `selftest done`, then
+`grep_log.py --tier2-pattern "played"` required all three independent signals — exact
+`CanaryCard loaded ok`, `CanaryCard Jolt played: 6 dmg to target`, and
+`CanaryCard selftest done` — with no mod-named errors. **PASS live.** Standard-library
+synthetic-log tests separately prove that `done` without an effect and `FAILED` after an
+effect both fail.
+
+## M6 Mechanic Vocabulary — Keyword (2026-07-10)
+
+`CanaryKeyword` is a Card+custom-Keyword vertical canary generated outside the repo. Its
+`Resonant` field uses BaseLib `[CustomEnum]` + `[KeywordProperties(After)]`; `Resonant
+Guard` includes that field in `CanonicalKeywords` and implements the named rule in its
+Card host. Build: **0 warnings / 0 errors**, `.dll/.pck/.json` copied to the real mods dir.
+
+Live `CombatPlayer` run (other harness canaries parked): exact load marker found, Card
+autoplayed, then logged `Resonant fired: present=True block 0 -> 7` and `selftest done`,
+with zero mod-named errors. **Type + Scenario PASS.** The first two launches hit known
+navigation setup misses (`ConfirmButton not enabled`, then stale-run `no abandon modal`);
+these correctly returned nonzero and were not treated as effect failures. A clean retry
+passed without changing keyword behavior.
+
+## M6 Mechanic Vocabulary — Card Enchantment (2026-07-10)
+
+`CanaryEnchantment` pairs host Card `Etched Strike` with custom `Guarded :
+CustomEnchantmentModel`. Build: **0 warnings / 0 errors**, packaged and copied to the real
+mods dir. In the isolated live scenario, the card driver called `CardCmd.Enchant<Guarded>`
+and independently observed `Guarded attached: True amount=5`; autoplay then invoked the
+enchantment's `OnPlay`, logging `attached=True amount=5 block 0 -> 5`, followed by
+`selftest done`, with no mod-named errors. **Type + attachment + altered behavior PASS.**
+Custom icon rendering was not checked and remains explicitly provisional.
+
+## M6 Mechanic Vocabulary — Orb (2026-07-10)
+
+`CanaryOrb` pairs host Card `Take Shelter` with `ShelterOrb : CustomOrbModel` using inline
+`OrbLoc`. Build: **0 warnings / 0 errors**, packaged and loaded. The isolated live
+`CombatPlayer` run used a character with zero orb slots; `OrbCmd.Channel` created capacity
+1 and the queue contained the custom orb. Independent observations then proved passive
+Block `0 -> 2` and evoke Block `2 -> 7`, followed by `selftest done`, with no mod-named
+errors. **Type + channel + passive + evoke PASS.** Two preceding attempts hit the existing
+NMainMenu `ObjectDisposedException` setup miss; the verifier returned nonzero and a clean
+retry passed without an orb-code change. Custom icon/combat sprite rendering remains
+provisional.
 
 ## M5.5 art pipeline — sprite verification (2026-07-08)
 
@@ -207,7 +257,7 @@ public sealed class Smolder : CustomPowerModel {           // NO [Pool]
 > `Smolder` was changed to extend the template base `CanaryPowerPower` so the loose-PNG icon
 > resolves (see the M5.5 section above + `recipes/power.md`).
 
-### combo — `Powers/Signal.cs` (as power above) + `Cards/Charge.cs` + both loc tables
+### interaction fixture (historical project `CanaryCombo`) — `Powers/Signal.cs` + `Cards/Charge.cs` + both loc tables
 ```csharp
 [Pool(typeof(ColorlessCardPool))]
 public sealed class Charge : CanaryComboCard {
@@ -223,3 +273,58 @@ public sealed class Charge : CanaryComboCard {
 ```
 `cards.json`: `CANARYCOMBO-CHARGE.{title,description}` (uses `{Signal}`);
 `powers.json`: `CANARYCOMBO-SIGNAL.{title,description,smartDescription}`.
+
+## M6 Enemy Encounter — CanaryEncounter (2026-07-10)
+
+`CanaryEncounter` is a Monster + Encounter vertical canary generated outside the repo at
+`D:\26summer_intern\canary-encounter\`. It contains one custom monster (`CanaryMite :
+CustomMonsterModel`) with a single deterministic PECK move (6 damage, loops) and one
+custom encounter (`CanaryMiteEncounter : CustomEncounterModel`) that spawns exactly one
+CanaryMite. This is the first **`CombatEnemy`** scenario canary — proving the seam
+needed for all enemy-side M6 content.
+
+Build: **0 warnings / 0 errors**, `.dll/.pck/.json` copied to
+`D:\Steam\steamapps\common\Slay the Spire 2\mods\CanaryEncounter\`.
+
+Tier-1 (STS2 v0.107.1, BaseLib v3.3.5, .NET 9.0.300):
+```
+python games/sts2/tools/launch.py --wait-seconds 30
+python games/sts2/tools/grep_log.py --mod-name CanaryEncounter
+```
+→ `[PASS] Tier-1 verified: CanaryEncounter loaded ok.`
+
+Tier-2 — CombatEnemy scenario (other harness mods parked including Overclock):
+```
+python games/sts2/tools/launch.py --self-test --mod-name CanaryEncounter
+python games/sts2/tools/grep_log.py --mod-name CanaryEncounter \
+  --tier2-pattern "Peck attacked|encounter started|monster present|action advanced"
+```
+→ `[PASS] Tier-2 verified: CanaryEncounter loaded AND effect marker fired.`
+
+Four independent CombatEnemy proof signals found in log:
+1. `CanaryEncounter encounter started: custom encounter ok` — custom encounter entered
+2. `CanaryEncounter monster present: CanaryMite hp=12` — custom monster spawned and identified
+3. `CanaryEncounter Peck attacked: player hp [N]` — enemy PECK move executed
+4. `CanaryEncounter action advanced: player hp [N] -> [N-6] delta=6` — state delta confirmed
+
+**Bug found and fixed during live run (corrected in `CanaryMite.cs` before tier-2 PASS):**
+Monster attacks do NOT use `.Targeting(target)` — that is the card pattern. The correct
+vanilla monster pattern (from `SingleAttackMoveMonster`) is `.FromMonster(this).Execute(null)`.
+Using `.Targeting(target)` caused the PECK to hang mid-execution; the player's turn never
+resumed after `EndTurn`, producing `selftest FAILED: player play phase not resumed after
+enemy turn`. Fixed to `.FromMonster(this).Execute(null)` and the second attempt passed.
+
+This finding is now documented in `recipes/monster.md` as a critical warning.
+
+**Art:** no custom scene authored for CanaryMite; game falls back to
+`creature_visuals/fallback`. Monster and encounter visual contracts remain **provisional**
+and are explicitly excluded from the support claim.
+
+| Signal | Marker |
+|--------|--------|
+| load | `CanaryEncounter loaded ok` |
+| encounter entered | `CanaryEncounter encounter started: custom encounter ok` |
+| monster present | `CanaryEncounter monster present: CanaryMite hp=12` |
+| enemy action | `CanaryEncounter Peck attacked: player hp [N]` |
+| state delta | `CanaryEncounter action advanced: player hp [N] -> [N-6] delta=6` |
+| terminal | `CanaryEncounter selftest done` |

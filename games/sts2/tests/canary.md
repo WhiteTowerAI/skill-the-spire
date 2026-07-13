@@ -21,8 +21,8 @@
 `power.md` (commit 5536eee) was pure documentation — an unexecuted code path — until
 this matrix built it. Card/potion/relic each already had a real acceptance mod
 (Firebolt/Firebomb/Gambler's Coin), so their recipes were proven; power and the
-combo path were not. Any *new* recipe added later must gain a canary here before it's
-considered done.
+card→power interaction path were not. Any *new* recipe added later must gain a canary
+here before it is considered done.
 
 ## The five cells
 
@@ -31,8 +31,12 @@ considered done.
 | relic | `CanaryRelic` | relic `Bauble` (CANARYRELIC-BAUBLE) | `[Pool(SharedRelicPool)]`, template base class, `AfterSideTurnStart` + turn-1 guard, `PlayerCmd.GainEnergy`, 3-key `relics.json` (title/description/**flavor**) | `BeforeCombat`: `RelicCmd.Obtain` → auto-fires at combat start → `Bauble fired: +1 energy` |
 | potion | `CanaryPotion` | potion `Fizz` (CANARYPOTION-FIZZ) | the **hand-made `Potions/` + base class** (template scaffolds none), `[Pool(SharedPotionPool)]`, the three abstract props, `OnUse`, `CreatureCmd.Damage`, 2-key `potions.json` | `InCombat`: `TryToProcure` → `EnqueueManualUse(enemy)` → `Fizz used: 10 dmg` |
 | card | `CanaryCard` | card `Jolt` (CANARYCARD-JOLT) | `[Pool(ColorlessCardPool)]`, template card base, `OnPlay`, `DamageCmd.Attack(...)` fluent builder, `DamageVar`/`OnUpgrade`, 2-key `cards.json`, **the `ArgumentNullException.ThrowIfNull(cardPlay.Target)` guard** (without it → CS8604) | `InCombat`: `GainEnergy` → spawn to hand → `CardCmd.AutoPlay(_, _, enemy)` → `Jolt played: 6 dmg to target` |
-| power | `CanaryPower` | power `Smolder` (CANARYPOWER-SMOLDER) | **NO `[Pool]`** (auto-discovered), `Type`+`StackType`, `AfterSideTurnStart` hook, `PowerCmd.Decrement`, and the **3-key `powers.json` incl. `.smartDescription`** — the STS001 case | a power isn't a top-level element — its marker is asserted via the **combo** cell (a card applies it), matching how powers actually ship |
-| combo | `CanaryCombo` | card `Charge` + custom power `Signal` | the **card → `PowerCmd.Apply<CustomPower>`** dependency path (the BloodAndFury multi-element shape) in one mod: `PowerVar<Signal>`, `DynamicVars["Signal"]`, both loc tables | `InCombat` walks SPEC interaction: play `Charge` (`Charge played: applied Signal`) → assert the **dependent** `Signal fired:` marker — the interaction-link proof |
+| power | `CanaryPower` | power `Smolder` (CANARYPOWER-SMOLDER) | **NO `[Pool]`** (auto-discovered), `Type`+`StackType`, `AfterSideTurnStart` hook, `PowerCmd.Decrement`, and the **3-key `powers.json` incl. `.smartDescription`** — the STS001 case | a power isn't a top-level driver — its marker is asserted through the interaction cell (a card applies it), matching how powers actually ship |
+| keyword interaction | `CanaryKeyword` | card `Resonant Guard` + custom keyword `Resonant` | `[CustomEnum]`, `[KeywordProperties(After)]`, `card_keywords.json`, `CanonicalKeywords`, and the display-vs-behavior boundary | `CombatPlayer` autoplays the host Card → assert custom keyword membership `present=True` **and** the named Block rule changes state `0 -> 7` |
+| card-enchantment interaction | `CanaryEnchantment` | card `Etched Strike` + custom enchantment `Guarded` | `CustomEnchantmentModel`, `enchantments` loc, `CardCmd.Enchant`, attached Amount, and host `OnPlay` modification | `CombatPlayer` asserts `attached=True amount=5`, autoplays the host, then observes `Guarded fired: ... block 0 -> 5` |
+| card-orb interaction | `CanaryOrb` | card `Take Shelter` + custom orb `Shelter` | `CustomOrbModel`, inline `OrbLoc`, zero-slot Channel behavior, queue ownership, passive + evoke | `CombatPlayer` autoplays host Card → queue `present=True capacity=1` → passive Block `0 -> 2` → evoke Block `2 -> 7` |
+| interaction | `CanaryCombo` *(historical project name)* | card `Charge` + custom power `Signal` | the **card → `PowerCmd.Apply<CustomPower>`** dependency path (the BloodAndFury multi-element shape) in one mod: two real element nodes, an `applies` interaction, `PowerVar<Signal>`, `DynamicVars["Signal"]`, and both loc tables | `CombatPlayer` drives the real source type (`card`): play `Charge` (`Charge played: applied Signal`) → assert the dependent `Signal fired:` observation — the interaction-edge proof |
+| enemy encounter | `CanaryEncounter` | `CanaryMite : CustomMonsterModel` + `CanaryMiteEncounter : CustomEncounterModel` | `CustomMonsterModel` (no `[Pool]`, auto `RegisterType`), `GenerateMoveStateMachine` + `MoveState("PECK", …, SingleAttackIntent(6))` + `.FollowUpState = peck`, `CustomEncounterModel(RoomType.Monster)` (auto `AddEncounter`), `IsValidForAct`, `AllPossibleMonsters` / `GenerateMonsters`, `monsters.json` + `encounters.json` loc; **bug fix**: monster attacks use `.FromMonster(this).Execute(null)` NOT `.Targeting(target)` | **`CombatEnemy` scenario**: enter via `ModelDb.Encounter<CanaryMiteEncounter>().ToMutable()` + `EnterRoomDebug`; assert `Enemies.FirstOrDefault(e => e.Monster is CanaryMite)` found; wait Play phase; `EndTurn` (void); wait Play phase again; assert player `hp [before] -> [after] delta=6` |
 
 ## How to run (maintainer, on the STS2 dev box)
 
@@ -58,7 +62,8 @@ since M1 — repo stays clean; trust regenerate over hoarding). The steps per ce
 8. **Tier-2** (effect fires, per driving cell — each self-drives its own combat):
    `python <open-mod>/games/sts2/tools/launch.py --self-test --mod-name Canary<X>` then
    `python <open-mod>/games/sts2/tools/grep_log.py --mod-name Canary<X> --tier2-pattern
-   "fired|used|played|selftest done"` → expect `[PASS] Tier-2 verified`. For
+   "fired|used|played"` → expect `[PASS] Tier-2 verified`. The verifier separately requires
+   `<ModName> selftest done`; a terminal line is never accepted as the effect proof. For
    `CanaryCombo`, confirm both the `Charge played:` and dependent `Signal fired:` markers.
 
 ## Status
@@ -66,12 +71,19 @@ since M1 — repo stays clean; trust regenerate over hoarding). The steps per ce
 All five **build green (0/0, `.pck` emitted)** and **tier-1 PASS** (load marker +
 zero mod-named errors, one launch) — see `canary-results.md` for the run record and
 the two recipe fixes this suite surfaced. **Tier-2 harness (M5): ALL FOUR driving cells
-PASS on the dev box (2026-07-06)** — relic/card/potion each drove their effect and combo
-proved the interaction chain (card applies power → `EndTurn` → power fires), all with zero
-interaction; power is asserted through combo. See `canary-results.md` for the per-cell
-markers and the four harness bugs the live run fixed. **Run one cell at a time** —
+PASS on the dev box (2026-07-06)** — relic/card/potion each drove their effect and the
+historical `CanaryCombo` project proved an interaction chain (card applies power → `EndTurn`
+→ power fires), all with zero interaction; power is asserted through that relationship.
+**M6 Mechanic Vocabulary (2026-07-10): keyword/enchantment/orb PASS** — three CombatPlayer
+cells live-verified. **M6 Enemy Encounter (2026-07-10): CanaryEncounter PASS** — first
+`CombatEnemy` scenario seam earned: custom encounter started, CanaryMite present, PECK move
+executed, player HP delta observed; key correction logged (monster `.FromMonster().Execute(null)`
+not `.Targeting()`). See `canary-results.md` §M6 Enemy Encounter for the run record.
+See `canary-results.md` for the per-cell markers and the four harness bugs the live run
+fixed. **Run one cell at a time** —
 `--t2selftest` arms every loaded harness mod, so parking all but the cell under test avoids
-a main-menu collision.
+a main-menu collision. **This includes Overclock** — park it along with all Canary* mods
+before any harness run.
 
 ## Future (M6+)
 

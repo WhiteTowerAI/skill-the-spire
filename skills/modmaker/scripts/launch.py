@@ -91,6 +91,11 @@ def stop_process(proc: subprocess.Popen) -> None:
         proc.kill()
 
 
+def self_test_exit_code(outcome: str) -> int:
+    """Map a self-test terminal outcome to the CLI contract."""
+    return 0 if outcome == "done" else 1
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description="Launch STS2 out-of-Steam for verification")
     ap.add_argument("--game-dir", default=None, help="STS2 install dir")
@@ -145,7 +150,10 @@ def main(argv: list[str]) -> int:
               f"for '{args.mod_name} selftest done|FAILED'")
         deadline = time.monotonic() + wait_seconds
         outcome = "timeout"
-        while time.monotonic() < deadline and proc.poll() is None:
+        while time.monotonic() < deadline:
+            if proc.poll() is not None:
+                outcome = "process-exited"
+                break
             time.sleep(2)
             if not log_path.is_file():
                 continue
@@ -163,20 +171,23 @@ def main(argv: list[str]) -> int:
             print("[launch] harness reported: selftest DONE (effect driven; grep for the fired/used marker now)")
         elif outcome == "failed":
             print("[launch] harness reported: selftest FAILED (couldn't reach/drive combat) -- "
-                  "verify.md: fall back to manual, report tier-1 only")
+                  "verify.md: fall back to manual, report tier-1 only", file=sys.stderr)
+        elif outcome == "process-exited":
+            print(f"[launch] game exited with code {proc.returncode} before a harness terminal marker -- "
+                  "treat as harness/setup failure", file=sys.stderr)
         else:
             print(f"[launch] TIMEOUT after {wait_seconds}s with no terminal marker -- "
-                  "treat as harness setup failure (manual fallback)")
+                  "treat as harness setup failure (manual fallback)", file=sys.stderr)
     else:
         print(f"[launch] pid {proc.pid}; waiting {wait_seconds}s for load")
         time.sleep(wait_seconds)
 
     stop_process(proc)
 
-    tier2_hint = ' --tier2-pattern "fired|used|selftest done"' if args.self_test else ""
+    tier2_hint = ' --tier2-pattern "fired|used|played"' if args.self_test else ""
     print(f"[launch] done. Now run grep_log.py --mod-name {args.mod_name or '<ModName>'}{tier2_hint} "
           "to check the fresh log.")
-    return 0
+    return self_test_exit_code(outcome) if args.self_test else 0
 
 
 if __name__ == "__main__":

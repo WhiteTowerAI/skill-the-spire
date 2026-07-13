@@ -17,7 +17,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M5.5 COMPLETE; next M6 Core (playable content-breadth slices), then M7 (proactive beginner interview)
+## Current status — M6 Core IN PROGRESS: slice ① Mechanic Vocabulary DONE, slice ② Enemy Encounter scenario-verified (next: its pipeline-acceptance run, then slice ③ World Node); then M7 (proactive beginner interview)
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -77,7 +77,8 @@ The hand-built "Gambler's Coin" relic mod lives **outside this repo** at
 the published skill and no longer the "golden" reference for correct output. It loads
 AND its effect fires in-game (both R2 tiers). The current **golden set** is the
 **canary matrix** (`games/sts2/tests/canary.md`, M4.5 ②): one minimal
-pipeline-produced mod per element type (relic/potion/card/power/combo), each build +
+pipeline-produced mod per element type (relic/potion/card/power) plus one multi-element
+interaction canary (historical project name `CanaryCombo`), each build +
 tier-1 verified — the live reference for "what correct current output looks like."
 
 **M5 IN PROGRESS 2026-07-06 — tier-2 behavior automation (docs+harness landed; live
@@ -92,7 +93,7 @@ to later milestones), covering **runtime effect automation + combo/multi-element
 interaction**. What landed this session (all from a fresh decompile grounding at
 `D:\26summer_intern\decomp\sts2_full`): a new pack page
 `reference/selftest-harness.md` (full arg-gated `SelfTest.cs` template + per-element
-DRIVER bodies for relic/card/potion/combo + 3-way marker vocabulary); `author.md` step
+DRIVER bodies for relic/card/potion plus multi-element interaction observations + 3-way marker vocabulary); `author.md` step
 2.5 (emit the harness + the gated `SelfTest.Arm()` line); `verify.md` rewritten to the
 unattended `launch.ps1 -SelfTest` flow with an honest manual fallback; `spec.md` gained
 an interaction/dependency block for combos; `launch.ps1` gained `-SelfTest` (passes
@@ -111,7 +112,8 @@ the subscribable `CombatManager.CombatSetUp`; the harness uses MegaCrit's own
 `CombatRoomHandler` poll pattern (`WaitHelper.Until(IsInProgress)` → wait `Play` phase)
 since it drives its own navigation.
 
-**M5 tier-2 automation is DONE — all four driving cells (card/relic/potion/combo) PASS
+**M5 tier-2 automation is DONE — card/relic/potion source drivers plus the card→power
+interaction (historical `CanaryCombo`) PASS
 live on the dev box 2026-07-06** (see `games/sts2/tests/canary-results.md`).
 
 **M5 one-command install — LANDED 2026-07-06 (Claude Code shape; headless-verified).**
@@ -163,7 +165,8 @@ in `reference/art-samples/` (card/relic/power/potion subdirs; 36 MegaCrit refere
 the template base (not CustomPowerModel/CustomRelicModel directly), and both need the
 `big/` variant. See `games/sts2/tests/canary-results.md` §M5.5 for the full run record.
 
-**Next: M6 Core — playable content-breadth slices (plan redesigned 2026-07-10).** Do
+**Next: M6 Core — playable content-breadth slices (M6.0 contracts LANDED 2026-07-10;
+next Mechanic Vocabulary).** Do
 not execute M6 as a flat "one BaseLib class → one recipe → one canary" checklist: many
 new types only matter through a host relationship (monster→encounter, keyword→card,
 reward→post-combat). Start with **M6.0**, a lightweight maintainer-only Content Capability
@@ -174,8 +177,28 @@ the last is user-facing support. Tier-2 grows through reusable scenario adapters
 (`CombatPlayer`, `CombatEnemy`, `MapNode`, `PostCombat`, `RunStart`) and dual proof:
 Type Canary for build/load plus Scenario Canary for real hosted behavior.
 
-M6 Core ships vertical slices in this order: ① Mechanic Vocabulary (keyword +
-enchantment/modifier + orb), ② Enemy Encounter (monster + encounter), ③ World Node
+M6.0 is now landed as a maintainer-only graph at
+`games/sts2/tests/content-capability-graph.md`: Existing / M6 Core / Extras / Deferred
+capabilities record registration, real host, scenario, observable proof, art, composition,
+support level, and evidence/blockers. STS2 engineering evidence is kept separate from STS1
+or cross-game design analogies; only the former advances the support ladder. M6.0 also fixed
+the Tier-2 proof seam: `launch.py --self-test` now returns nonzero for FAILED/timeout/early
+process exit, and `grep_log.py` requires exact load + a non-terminal effect marker +
+`selftest done` (a terminal line alone can never prove behavior). Standard-library synthetic
+log regressions cover this contract. No registry/schema or hypothetical adapter fleet was
+added. The first real `CombatPlayer` seam has now been earned and reused by the three live
+Mechanic Vocabulary canaries; their lazy recipes and compact pipeline routing are shipped.
+
+M6 Core ships vertical slices in this order: ① Mechanic Vocabulary (**DONE / live
+pipeline-supported 2026-07-10**: keyword + card enchantment + orb; BaseLib
+`CustomModifierModel` is a separate run-modifier capability, not a card-enchantment
+synonym), ② Enemy Encounter (monster + encounter) — **type + scenario live-verified
+2026-07-10** (`CanaryEncounter`: custom monster + encounter build 0/0, first earned
+`CombatEnemy` seam — encounter entered, monster present, PECK move executed, player HP
+delta=6; recipe + pipeline wired; key correction: monster attacks use
+`.FromMonster(this).Execute(null)`, **never** `.Targeting()`; monster Spine/scene art stays
+provisional/fallback). Currently **scenario-verified**; advances to `pipeline-supported`
+after a full natural-language intake acceptance run. ③ World Node
 (event), ④ Minimal Character (selectable, starts a run, valid starter content + one small
 mechanic combination). All four must be `pipeline-supported` to close M6 Core. Reward,
 rest-site option, and pet are **M6 Extras** and do not block M7; Act is outside the M6
@@ -193,7 +216,7 @@ extensibility** — not passively transcribe one sentence into one element. The 
 being proactive *without* being exhausting (beginners overwhelm easily): raise only the few
 concerns that apply, one or two at a time, plain language, with a default offered; keep the
 one-line fast path un-regressed. The interplay concern is itself a four-level ladder (L1
-technical dependency — already shipped via the combo harness; L2 resource loop; L3 archetype
+technical dependency — already shipped via the interaction harness; L2 resource loop; L3 archetype
 identity; L4 run-rhythm & risk-reward), grounded in MegaCrit's design language. M7 L3/L4
 wait specifically for the **M6 Core gate** (Mechanic Vocabulary + Minimal Character provide
 the keyword/orb vocabulary and real buildable character target); they do not wait for M6
@@ -305,7 +328,7 @@ python <tools>/build.py --project-dir <mod-project> --mod-name <ModName>
 python <tools>/launch.py
 python <tools>/grep_log.py --mod-name <ModName>
 python <tools>/launch.py --self-test --mod-name <ModName>
-python <tools>/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|played|selftest done"
+python <tools>/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|played"
 ```
 
 PckPacker makes normal `dotnet build -c Release` emit and copy `.dll`, `.pck`, and

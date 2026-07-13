@@ -81,6 +81,11 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
 - **vars**: <the DynamicVars, e.g. DamageVar 6; BlockVar 5; PowerVar<StrengthPower> 2>
 - **upgrade**: <what OnUpgrade bumps, e.g. Damage +3>
 - **needs custom power?**: <no | name of the buff/debuff to author via recipes/power.md>
+- **custom keywords**: <none | name + shared plain-language rule; author via recipes/keyword.md>
+- **card enchantments**: <none | enchantment name + compatible host + persistent change;
+  author via recipes/enchantment.md; this is not a run modifier>
+- **custom orbs**: <none | orb name + host that channels it + passive effect + evoke effect;
+  author via recipes/orb.md>
 - **display**:
   - title: <shown name>
   - description: <hover text; use {Damage:diff()} style placeholders for scaling numbers>
@@ -92,24 +97,65 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - loc keys (table `cards`): `<NS_UPPER>-<SLUG>.{title,description}`
 ```
 
-**Interaction block** (add ONLY for a multi-element / combo mod — omit it for a single
-element). This is what the tier-2 harness walks to prove elements *link*, not just load.
-List each dependency pair **source → dependent**, and the dependent's own marker that
-must fire when the source is driven. Order matters: the harness drives the source, then
-asserts the dependent's marker.
+**Enemy encounter** (a monster + the encounter that spawns it — always authored as one
+slice; scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
+art is a Spine scene and stays placeholder — custom monster art is not yet supported):
 
 ```markdown
-- **interaction** (combos only; omit for single elements):
-  - <SourceElement> (<type>, id `<NS_UPPER>-<SRC_SLUG>`) → <DependentElement> (<type>,
-    id `<NS_UPPER>-<DEP_SLUG>`): driving the source makes the dependent fire.
-    - assert marker: `[T2MOD-SELFTEST] <DependentName> fired: <what>`
-  - (one line per link; e.g. card "Emberstrike" applies custom power "Kindled" →
-    the Kindled power's start-of-turn hook logs its own fired: marker)
+# SPEC — <Mod Name>
+
+- **element**: enemy encounter
+- **monster class name**: <PascalCase>   e.g. CanaryMite
+- **encounter class name**: <PascalCase>   e.g. CanaryMiteEncounter
+- **mod name**: <PascalCase = csproj/assembly/manifest id>
+- **author**: <author>
+- **hp**: <int>   (Min == Max for deterministic HP)
+- **move**: <plain-language each-turn behavior + numbers> → intent: <SingleAttackIntent(N) | ...>
+- **group**: single | <the monsters the encounter spawns>
+- **valid acts**: all | <Glory | Hive | Overgrowth | Underdocks>
+- **scenario**: CombatEnemy
+- **observe**: encounter entered; monster present in Enemies; enemy action executed; player/monster state delta
+- **art**: placeholder (custom monster Spine scene not yet supported — falls back to creature_visuals/fallback)
+- **derived ids** (compute now, using the recipe's loc-key rule):
+  - monster Id.Entry: `<NS_UPPER>-<MONSTER_SLUG>`; loc key (table `monsters`): `<NS_UPPER>-<MONSTER_SLUG>.name`
+  - encounter Id.Entry: `<NS_UPPER>-<ENCOUNTER_SLUG>`; loc keys (table `encounters`): `<NS_UPPER>-<ENCOUNTER_SLUG>.{title,loss}`
 ```
 
-A single element with a **custom power dependency** (a card that applies a power you
-authored) IS a combo for tier-2 purposes — record it here so the harness asserts the
-power's marker, not just the card's.
+The monster and encounter are **not** modeled as two `elements` + an interaction edge (that
+form is for source→dependent links like card→power). They are one indivisible slice with a
+single recipe (`recipes/monster.md`) and a single `CombatEnemy` proof. `author.md` dispatches
+to that recipe when `element: enemy encounter`.
+
+**Multi-element contract** (add only when the mod contains more than one authored element;
+omit it for the single-element fast path). `elements` are real content nodes. `interactions`
+are directed relationships between them — never use `combo` as an element type.
+
+Each interaction records the source driver, relationship, dependent, scenario, and the
+independent observations that prove the link rather than merely proving both nodes loaded:
+
+```markdown
+- **elements**:
+  - name: <SourceElement>
+    type: card | relic | potion | power
+    id: `<NS_UPPER>-<SRC_SLUG>`
+  - name: <DependentElement>
+    type: card | relic | potion | power
+    id: `<NS_UPPER>-<DEP_SLUG>`
+- **interactions**:
+  - source: <SourceElement>
+    relation: <applies | grants | creates | triggers>
+    dependent: <DependentElement>
+    scenario: CombatPlayer
+    observe:
+      - source marker: `[T2MOD-SELFTEST] <SourceName> played/fired/used: <what>`
+      - dependent marker: `[T2MOD-SELFTEST] <DependentName> fired: <what>`
+      - state invariant: <the concrete HP/block/energy/stack change, when applicable>
+```
+
+A card with an authored custom power dependency automatically gets two `elements` and an
+`interaction` edge. The harness drives the source according to its real type, then checks
+every observation in dependency order. This is the old M5 “combo” proof generalized into a
+relationship contract; `combo` is not a BaseLib model or a user-selectable element.
 
 **Derive the ids now**, not later — the loc-key derivation is the #1 silent
 failure, and it's identical for relics and potions. Query the sts2-api skill

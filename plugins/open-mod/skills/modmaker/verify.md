@@ -49,15 +49,32 @@ triggering**. You then grep the same effect marker.
 
 ```bash
 python ${CLAUDE_PLUGIN_ROOT}/tools/launch.py --self-test --mod-name <ModName>
-python ${CLAUDE_PLUGIN_ROOT}/tools/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|selftest done"
+python ${CLAUDE_PLUGIN_ROOT}/tools/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|played"
 ```
+
+The `--tier2-pattern` is the **effect vocabulary for this SPEC's scenario**. For a
+`CombatPlayer` element that's `"fired|used|played"`. For an **enemy encounter**
+(`CombatEnemy` scenario) the effect words differ — grep for the enemy-action marker instead,
+e.g. `--tier2-pattern "attacked|action advanced|encounter started|monster present"`. Match
+the pattern to the markers `author.md` actually emitted; the verifier still separately
+requires the exact load marker and `selftest done`, and never accepts a terminal line as
+effect proof.
+
+> **Isolation before any `--self-test` run:** `--t2selftest` arms **every** loaded harness
+> mod, so park all non-target harness mods first (move them out of `mods/`), leaving only the
+> one under test. This includes **Overclock** and every `Canary*` — a stray second harness
+> collides on the main menu (`ObjectDisposedException: NMainMenu`) and fails the run.
 
 - `launch.py --self-test` passes `--t2selftest` (which arms the harness — a normal launch
   never does), then **polls the log** until the harness prints its terminal marker
   (`[T2MOD-SELFTEST] <ModName> selftest done` or `… selftest FAILED`), bounded by a
-  timeout. It leaves the game running so the grep can read the fresh log (shared-read).
-- `grep_log.py --tier2-pattern` passes only if the load marker AND an effect marker are
-  both present with no mod-named errors → `[PASS] Tier-2 verified`.
+  timeout. It exits 0 only for `done`; `FAILED`, timeout, or the game exiting before a
+  terminal marker return 1. The game is closed after the terminal outcome so the grep can
+  read the fresh log.
+- `grep_log.py --tier2-pattern` treats the regex as **effect markers only** and excludes
+  `loaded ok`, `selftest done`, and `selftest FAILED` even if the regex matches them. It
+  passes only if the exact load marker, a real effect marker, and `selftest done` are all
+  present, with no `FAILED` or mod-named errors → `[PASS] Tier-2 verified`.
 
 **Read the harness's terminal marker first — it tells you which failure you have:**
 
@@ -83,13 +100,16 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
    - **potion:** `potion <PREFIX>-<SLUG>` (**no `add`**, **exact** match; run in progress).
    - **card:** `card <PREFIX>-<SLUG>` spawns into **hand** (**no `add`**, **exact** match;
      run in progress, hand not full).
+   - **enemy encounter:** `fight <PREFIX>-<ENCOUNTER_SLUG>` enters the custom encounter
+     (run in progress). Confirm the custom monster spawned before ending the turn.
 4. Trigger it: **relic** → enter a combat; **potion** → use it (pick a target if targeted);
-   **card** → play it (target an enemy for an attack; `energy 3` first for headroom).
+   **card** → play it (target an enemy for an attack; `energy 3` first for headroom);
+   **enemy encounter** → end your turn and confirm the enemy takes its move (HP/state changes).
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
    game** (closing rotates the log away):
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/tools/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|selftest done"
+python ${CLAUDE_PLUGIN_ROOT}/tools/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|played"
 ```
 
 If the console won't open or `add` says "Unable to create", see errors.md "Verification

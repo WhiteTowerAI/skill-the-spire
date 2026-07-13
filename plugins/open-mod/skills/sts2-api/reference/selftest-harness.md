@@ -293,13 +293,13 @@ private static async Task InCombat(Player player, CancellationToken ct)
 }
 ```
 
-### combo / multi-element — walk SPEC's interaction block in dependency order
+### multi-element interactions — drive the real source type, then observe each edge
 
-The whole point of the interaction check: drive the **source** element, then assert the
-**dependent** element's *own* marker fired. Each link asserts itself, so a broken link is
-localized. Drive the source exactly as its element type above (a card that applies a
-custom power → the `card` body); the dependent power's `AfterSideTurnStart`/apply hook
-logs its own `fired:` marker. Add one line per SPEC interaction pair, source first:
+There is no `combo` model or DRIVER type. Drive the **source** exactly as its real element
+type above, then walk SPEC's `interactions` in dependency order and assert the dependent's
+own marker/state invariant. Each edge proves itself, so a broken relationship is localized.
+For the live-verified card→custom-power example, use the `card` body; the dependent power's
+`AfterSideTurnStart`/apply hook logs its own `fired:` marker:
 
 ```csharp
 private static async Task InCombat(Player player, CancellationToken ct)
@@ -321,16 +321,83 @@ private static async Task InCombat(Player player, CancellationToken ct)
 }
 ```
 
-> **Proven on the dev box (CanaryCombo, tier-2 PASS):** a debuff power whose hook is
-> `AfterSideTurnStart` fires at the **enemy's** turn start, so the `EndTurn` above is
+> **Proven on the dev box (historical project name `CanaryCombo`, tier-2 PASS):** a debuff
+> power whose hook is `AfterSideTurnStart` fires at the **enemy's** turn start, so the
 > **required**, not optional — without it `Charge played:` appears but `Signal fired:` never
 > does. `PlayerCmd.EndTurn` returns `void` (awaiting it is a CS4008 compile error). If instead
 > the dependent power fires immediately on apply (not at a turn start), drop the `EndTurn` and
 > the second delay — the first `Task.Delay(500)` is enough.
 
-`verify.md` greps for **both** markers (`--tier2-pattern "fired|used|selftest done"`); a
-missing dependent marker after `selftest done` = the interaction link is broken (the exact
-place raw-AI multi-element mods fail).
+`verify.md` asks `grep_log.py` for the type-specific **effect** vocabulary only (for
+example `--tier2-pattern "fired|used|played"`). The verifier separately requires the
+successful `selftest done` terminal marker and excludes all terminal/load lines from effect
+matching. A terminal `done` therefore proves only that the driver completed; it can never
+make a missing effect marker pass.
+A missing dependent marker after `selftest done` means the interaction link is broken (the
+exact place raw-AI multi-element mods fail).
+
+## The `CombatEnemy` scenario (monster + encounter — earned seam, live 2026-07-10)
+
+Enemy-side content (monster + encounter) does not fit the card/relic/potion drivers above:
+the harness must enter the **custom encounter**, confirm the **custom monster** spawned, make
+the enemy **act**, and observe a **state delta** — through the enemy, not the player. This is
+the first non-`CombatPlayer` scenario and reuses the same menu→run navigation
+(`NavigateToRunAsync`) and the same two timing gates; only the room entered and the
+in-combat body differ.
+
+The `CombatEnemy` in-combat body (replaces the `InCombat` in the scaffold; do NOT apply
+`PlatingPower` — we WANT the enemy's hit to land so the delta is observable):
+
+```csharp
+// SelfTest.RunAsync enters the CUSTOM encounter (not CorpseSlugsWeak):
+var encounter = ModelDb.Encounter<<Name>Encounter>().ToMutable();
+await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, encounter);
+await WaitHelper.Until(() => CombatManager.Instance.IsInProgress, ct, TimeSpan.FromSeconds(30), "combat not started");
+var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!);
+await InCombat(player!, ct);
+
+// ... and InCombat proves the four CombatEnemy signals:
+private static async Task InCombat(Player player, CancellationToken ct)
+{
+    var combatState = CombatManager.Instance.DebugOnlyGetState()!;
+
+    // ENTER: the custom monster spawned via the custom encounter.
+    var mob = combatState.Enemies.FirstOrDefault(e => e.Monster is <Name>)
+        ?? throw new InvalidOperationException("<Name> not found in Enemies after entering <Name>Encounter");
+    MainFile.Logger.Info("[T2MOD-SELFTEST] <ModName> encounter started: custom encounter ok");
+    MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> monster present: <Name> hp={mob.CurrentHp}");
+
+    await WaitHelper.Until(
+        () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play || !CombatManager.Instance.IsInProgress,
+        ct, TimeSpan.FromSeconds(30), "play phase not reached");
+    if (!CombatManager.Instance.IsInProgress) throw new InvalidOperationException("combat ended before player could act");
+
+    // DRIVE: end the player turn → the enemy takes its move.
+    int hpBefore = player.Creature.CurrentHp;
+    PlayerCmd.EndTurn(player, canBackOut: false);   // returns void — do NOT await
+
+    // OBSERVE: wait for the player turn to resume (enemy has acted), then assert the delta.
+    await WaitHelper.Until(
+        () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play || !CombatManager.Instance.IsInProgress,
+        ct, TimeSpan.FromSeconds(45), "player play phase not resumed after enemy turn");
+    int hpAfter = player.Creature.CurrentHp;
+    int delta = hpBefore - hpAfter;
+    if (delta <= 0 && CombatManager.Instance.IsInProgress)
+        throw new InvalidOperationException($"enemy did not attack: hp {hpBefore} -> {hpAfter}");
+    MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> action advanced: player hp {hpBefore} -> {hpAfter} delta={delta}");
+}
+```
+
+The monster's own move body logs the `attacked:` effect marker (author.md), so verify greps
+a pattern like `"attacked|action advanced|encounter started|monster present"`.
+
+> **Live-proven (`CanaryEncounter`, tier-2 PASS):** the `PlayerCmd.EndTurn` gate is the same
+> as `CombatRoomHandler`'s AutoSlay loop — after the enemy turn, control returns to the
+> player at `Phase == Play`. The one bug this surfaced: the monster's attack must use
+> `DamageCmd.Attack(n).FromMonster(this).Execute(null)`. Using the card `.Targeting(target)`
+> chain hangs the enemy turn and the second gate times out (`selftest FAILED: player play
+> phase not resumed after enemy turn`). `recipes/monster.md` documents this.
+> Needs `using MegaCrit.Sts2.Core.Map;` for `MapPointType`.
 
 ## Deferred: the headless / menu-skip path (design seam, not built in M5)
 
@@ -346,7 +413,7 @@ need their own mod-reachability grounding first.
 
 - [ ] `SelfTest.cs` emitted in `<ModName>Code/`, in the same namespace as `MainFile.cs` (`<ModName>.<ModName>Code`) so `MainFile.Logger` resolves.
 - [ ] `MainFile.Initialize()` has, after the load marker: `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();`
-- [ ] Exactly one of `BeforeCombat`/`InCombat` filled per SPEC element (relic → BeforeCombat; card/potion/combo → InCombat).
+- [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → the `CombatEnemy` `InCombat` that enters the custom encounter and ends the turn); multi-element interactions reuse that real source driver and add observations.
 - [ ] `<PREFIX>-<SLUG>` ids match the element's real `Id.Entry` (SPEC's derived ids).
 - [ ] The element's own `fired/used` marker (author.md step 2) is present — the harness only *triggers*; the element logs the proof.
 - [ ] Never claim tier-2 on a `selftest FAILED` line — that's a harness/setup miss, report tier-1 + manual fallback.

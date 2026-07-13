@@ -5,8 +5,9 @@ R2 verify step (modmaker's verify.md). Reads the CURRENT godot.log in full. STS2
 archives the previous log (renaming it to godot<timestamp>.log) and starts a fresh
 godot.log on every launch, so the current file already contains exactly one run --
 no byte-offset slicing is needed, and offsets from a prior file are meaningless
-against the new one (that was the tier-1 false-FAIL bug). Exits 0 if the mod's load
-marker is found AND no error lines name the mod; exits 1 otherwise.
+against the new one. Tier 1 requires the exact mod load marker. Tier 2 additionally
+requires a non-terminal effect marker and a successful harness terminal marker;
+``selftest done`` alone can never prove that an effect fired.
 
 Cross-platform port of grep_log.ps1. The log path defaults per-OS:
   Windows : %APPDATA%\\SlayTheSpire2\\logs\\godot.log
@@ -75,18 +76,35 @@ def main(argv: list[str]) -> int:
 
     lines = content.split("\n")
     marker = "[T2MOD-SELFTEST]"
+    load_marker = f"{marker} {mod} loaded ok"
+    done_marker = f"{marker} {mod} selftest done"
+    failed_marker = f"{marker} {mod} selftest FAILED"
 
-    def names_mod(line: str) -> bool:
-        return marker in line and mod in line
+    # Tier-1: require the exact initialization marker. A later mod-named self-test
+    # line does not prove that MainFile.Initialize emitted the load contract.
+    load_line = next((ln for ln in lines if load_marker in ln), None)
+    done_line = next((ln for ln in lines if done_marker in ln), None)
+    failed_line = next((ln for ln in lines if failed_marker in ln), None)
 
-    # Tier-1: load marker (the mod logged its init marker).
-    load_line = next((ln for ln in lines if names_mod(ln)), None)
-
-    # Tier-2: effect marker (only when a pattern is requested).
+    # Tier-2: effect marker (only when a pattern is requested). Terminal lines are
+    # control-plane signals and are never eligible as behavior proof, even when a
+    # caller accidentally supplies a regex that matches them.
     tier2_lines: list[str] = []
     if tier2_pattern:
-        t2re = re.compile(tier2_pattern)
-        tier2_lines = [ln for ln in lines if names_mod(ln) and t2re.search(ln)]
+        try:
+            t2re = re.compile(tier2_pattern)
+        except re.error as exc:
+            print(f"Invalid --tier2-pattern regex: {exc}", file=sys.stderr)
+            return 2
+        tier2_lines = [
+            ln for ln in lines
+            if marker in ln
+            and mod in ln
+            and done_marker not in ln
+            and failed_marker not in ln
+            and load_marker not in ln
+            and t2re.search(ln)
+        ]
 
     # Error lines naming the mod.
     err_re = re.compile(r"\bERROR\b|Exception", re.IGNORECASE)
@@ -104,7 +122,8 @@ def main(argv: list[str]) -> int:
         if tier2_lines:
             print(f"Tier-2 effect marker: FOUND ({len(tier2_lines)}) => {tier2_lines[0]}")
         else:
-            print(f"Tier-2 effect marker: NOT FOUND (pattern '{tier2_pattern}') -- effect not observed in this log yet")
+            print(f"Tier-2 effect marker: NOT FOUND (pattern '{tier2_pattern}') -- effect not observed in this log")
+        print(f"Harness terminal     : {('FAILED => ' + failed_line) if failed_line else ('DONE => ' + done_line) if done_line else 'NOT FOUND'}")
     print()
 
     if error_lines:
@@ -116,7 +135,9 @@ def main(argv: list[str]) -> int:
     print()
 
     tier2_requested = bool(tier2_pattern)
-    tier2_ok = (not tier2_requested) or (len(tier2_lines) > 0)
+    tier2_ok = (not tier2_requested) or (
+        bool(tier2_lines) and done_line is not None and failed_line is None
+    )
 
     if load_line and not error_lines and tier2_ok:
         if tier2_requested:
@@ -131,7 +152,12 @@ def main(argv: list[str]) -> int:
         print("[FAIL] Error lines found. See errors.md for known fixes.")
     if tier2_requested and not tier2_lines:
         print(f"[FAIL] Tier-2 effect marker not found (pattern '{tier2_pattern}'). "
-              "Was the effect triggered before this grep? Don't close the game first.")
+              "The harness terminal marker is not effect proof.")
+    if tier2_requested and failed_line:
+        print("[FAIL] Harness reported selftest FAILED. This is a setup/navigation miss; "
+              "use the manual fallback and report tier-1 only unless the effect is observed.")
+    elif tier2_requested and not done_line:
+        print("[FAIL] Successful harness terminal marker missing; the scenario did not finish.")
     return 1
 
 

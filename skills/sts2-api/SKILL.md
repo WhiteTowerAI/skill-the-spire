@@ -20,9 +20,12 @@ not dump entire files into the response.
 
 ## How to answer
 
-1. Check `./recipes/` for the element type (relic, potion, card,
-   power). Cards/powers also read `./reference/mechanics.md` first
-   (scaling numbers, SmartFormat descriptions, shared enums).
+1. Check `./recipes/` for the element or mechanic type (relic, potion,
+   card, power, keyword, enchantment, orb, monster+encounter). For a **fought enemy** read
+   `recipes/monster.md` — it covers the monster AND its encounter as one vertical slice.
+   Cards/powers/keywords/enchantments/orbs also read
+   `./reference/mechanics.md` first (scaling numbers, SmartFormat
+   descriptions, shared enums).
 2. For error signatures → fix, read `./errors.md`.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a
    symbol the recipe lacks, read `./grounding.md` and, for
@@ -43,9 +46,13 @@ not dump entire files into the response.
 | `recipes/potion.md` | Full known-good potion pattern (OnUse trigger, Rarity/Usage/TargetType, effect Cmds, loc table `potions`, checklist, worked examples) | Authoring a potion |
 | `recipes/card.md` | Full known-good card pattern (OnPlay, CardType/rarity/target, DamageCmd fluent builder + GainBlock + PowerCmd.Apply, DynamicVars/upgrade, loc table `cards`, `card <id>` console cmd, worked examples) | Authoring a card |
 | `recipes/power.md` | Full known-good custom-power pattern (Type/StackType, trigger hooks, PowerCmd.Apply, loc table `powers`) — usually a dependency of a card/relic | Authoring a custom buff/debuff |
+| `recipes/keyword.md` | Custom `CardKeyword` pattern (`[CustomEnum]`, optional `[KeywordProperties]`, `card_keywords` loc, host attachment, behavior-vs-display boundary, Type+Scenario proof) | Authoring shared card-mechanic vocabulary |
+| `recipes/enchantment.md` | Custom Card Enchantment pattern (`CustomEnchantmentModel`, `CardCmd.Enchant`, CardModifierLoc/extraCardText, host restrictions, attachment + altered-behavior proof); explicitly distinct from run `CustomModifierModel` | Authoring a persistent modifier attached to a Card |
+| `recipes/orb.md` | Custom Orb pattern (`CustomOrbModel`, OrbLoc, Channel/Passive/Evoke, owner/slot behavior, provisional icon+sprite seams, three-part Scenario proof) | Authoring an orb plus its Card/relic/power host |
+| `recipes/monster.md` | Custom Monster + Encounter as one vertical slice (`CustomMonsterModel` no-`[Pool]` auto-register, `MoveState`/`MonsterMoveStateMachine`/`SingleAttackIntent`, `CustomEncounterModel(RoomType.Monster)` auto-`AddEncounter`, `AllPossibleMonsters`/`GenerateMonsters`/`IsValidForAct`, `monsters`+`encounters` loc, provisional Spine art, `CombatEnemy` proof); **monster attacks use `.FromMonster(this).Execute(null)`, never `.Targeting()`** | Authoring a fought enemy |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/build-constraints.md` | What the toolchain refuses to BUILD/LOAD: full analyzer diagnostic set STS001–004 + the exact required-loc-key table per model type (cards/potions/relics/powers/…) + `[Pool]` rule | Before writing any element's loc keys + attributes; on any STS0NN build error |
-| `reference/selftest-harness.md` | The tier-2 self-test harness: full `SelfTest.cs` template (arg-gated, drives menu→combat with zero interaction) + per-element DRIVER bodies (relic/card/potion/combo) + marker vocabulary. Public Cmds only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
+| `reference/selftest-harness.md` | The tier-2 self-test harness: full `SelfTest.cs` template (arg-gated, drives menu→combat with zero interaction) + source DRIVER bodies (relic/card/potion) + multi-element interaction observations + marker vocabulary. Public Cmds only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact `res://` path + pixel size per sprite type (card `1000×760`; relic/power/potion `256×256` — all four verified live, each a loose PNG; relic/power write a small + `big/` path, potion writes ONE file, card writes only `big/`; 606×852 full art is Ancient-only, out of scope) + the placeholder-fallback mechanism + the STS2 style descriptor + few-shot references + the prompt template (incl. potion's ~45° tilt) + `gen_sprite.py` (BYO backend) usage | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | 18 real STS2 card portraits (© Mega Crit, reference-only — see ATTRIBUTION.md) used as **few-shot style references** by `gen_sprite.py --reference` so a generated portrait matches the game look | Passed to `--reference` in the art step; not read directly |
 | `grounding.md` | Where facts come from (three sources: content→spire-codex, C# signatures→decompile, build/load→validators) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine miss is a pack gap to report, not a dig | An answer the recipe lacks |
@@ -57,7 +64,8 @@ Harmony patching and is deferred. The recipes make **new** elements.
 
 ## Key rules to remember (recite these when relevant)
 
-- **`[Pool]` is required** on every `CustomRelicModel` / `CustomPotionModel` / `CustomCardModel` subclass or BaseLib throws at registration. (A **power** is the exception — auto-discovered, NO `[Pool]`.)
+- **`[Pool]` is required** on every `CustomRelicModel` / `CustomPotionModel` / `CustomCardModel` subclass or BaseLib throws at registration. (Exceptions with **NO `[Pool]`**, auto-registered in their constructor: **power** `CustomPowerModel`, **orb** `CustomOrbModel`, **monster** `CustomMonsterModel`, **encounter** `CustomEncounterModel`.)
+- **Monster + encounter are one slice.** `CustomMonsterModel` auto-registers via `RegisterType`; `CustomEncounterModel(RoomType.Monster)` auto-`AddEncounter` in its constructor (no manual register). A **monster attack uses `.FromMonster(this).Execute(null)` — NEVER `.Targeting()`** (that's the card pattern and it hangs the enemy turn). Loc: `monsters.<ID>.name`, `encounters.<ID>.title`+`.loss`. See `recipes/monster.md`.
 - **Loc-key derivation** (same for relics, potions, cards, powers): `Id.Entry = "<NS_UPPER>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split + UPPER_SNAKE). Keys are **flat strings**, not nested JSON. Table is `relics` / `potions` / `cards` / `powers` per type.
 - **Relic combat-start energy**: use `AfterSideTurnStart` + `TurnNumber <= 1` guard. `BeforeCombatStart()` is wrong — energy reset wipes it.
 - **Potions fire in `OnUse`** (they're actively used) — no combat hook. Self-buff potions target `AnyPlayer`, not `Self`. Damage/block use `ValueProp.Unpowered`.

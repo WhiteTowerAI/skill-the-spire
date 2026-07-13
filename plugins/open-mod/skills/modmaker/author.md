@@ -12,7 +12,20 @@ localization JSON, and inject the self-test marker. Everything structural
   for a card. For a **card or power**, also read `reference/mechanics.md` first
   (DynamicVars, SmartFormat descriptions, shared enums). If the effect needs a
   buff/debuff no vanilla power covers, read `recipes/power.md` and author the custom
-  power as a dependency. Pull the skeleton, the trigger/usage rules, the effect
+  power as a dependency. If SPEC declares custom keywords, also read
+  `recipes/keyword.md`: emit the generated enum field and `card_keywords.json`, attach
+  it to each host Card, and implement the named rule separately from its tooltip. If SPEC
+  declares a card enchantment, read `recipes/enchantment.md`, author
+  `CustomEnchantmentModel`, and attach it through `CardCmd.Enchant<T>`; never substitute
+  the unrelated run-level `CustomModifierModel`. If SPEC declares a custom orb, read
+  `recipes/orb.md`, author `CustomOrbModel`, and make the real host channel it via
+  `OrbCmd.Channel<T>`; preserve separate passive and evoke observations. For an **enemy
+  encounter** (`element: enemy encounter`), read `recipes/monster.md` and author BOTH the
+  `CustomMonsterModel` and the `CustomEncounterModel(RoomType.Monster)` it spawns as one
+  slice — the monster's move body attacks with `.FromMonster(this).Execute(null)` (**never**
+  `.Targeting()`), and the effect marker goes on the enemy's move; do not model the pair as
+  two `elements` + an interaction. Pull
+  the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. Do **not** guess API names — if
   the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
   means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
@@ -56,6 +69,20 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
   targeted card. `await` every Cmd. If a custom power is needed, author it first
   (`recipes/power.md`) — no `[Pool]` on the power.
 
+**Enemy encounter** — author two classes as one slice (see `recipes/monster.md`), no
+`[Pool]` on either:
+
+- `<ModName>Code/Monsters/<Name>.cs` extends `CustomMonsterModel`: set `MinInitialHp`/
+  `MaxInitialHp` (equal for deterministic HP), and `GenerateMoveStateMachine()` returning a
+  `MonsterMoveStateMachine` built from a `MoveState("<ID>", <MoveBody>, new SingleAttackIntent(<N>))`
+  with `.FollowUpState` set to loop. The `<MoveBody>(IReadOnlyList<Creature> targets)` deals
+  damage with `DamageCmd.Attack(<N>m).FromMonster(this).Execute(null)` — **never
+  `.Targeting()`** (that is the card pattern and it hangs the enemy turn).
+- `<ModName>Code/Encounters/<Name>Encounter.cs` extends `CustomEncounterModel`, calls
+  `base(RoomType.Monster)`, and overrides `IsValidForAct`, `AllPossibleMonsters`
+  (`ModelDb.Monster<T>()`), and `GenerateMonsters()` (`ModelDb.Monster<T>().ToMutable()` +
+  slot, `null` slot ok). Do **not** call `AddEncounter` manually — the base constructor does it.
+
 ## 2. Inject the self-test markers
 
 **Two markers.** The Alchyr template's `MainFile.cs` does NOT log anything by
@@ -67,7 +94,7 @@ Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 
 Then, for **effect** proof, log a marker inside the trigger showing what happened
-(a relic's combat-start hook, a potion's `OnUse`, or a card's `OnPlay`):
+(a relic's combat-start hook, a potion's `OnUse`, a card's `OnPlay`, or an enemy's move body):
 
 ```csharp
 MainFile.Logger.Info($"[T2MOD-SELFTEST] <ElementName> fired/used: <outcome> <metric> {before} -> {after}");
@@ -86,12 +113,20 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
 1. Emit `<ModName>Code/SelfTest.cs` — the fixed scaffold from that page (menu→combat
    navigation is identical for every mod; do not hand-edit it), in the **same namespace
    as `MainFile.cs`** (`<ModName>.<ModName>Code`) so it reaches `MainFile.Logger`.
-2. Fill **exactly one** DRIVER body per SPEC's element: **relic** → `BeforeCombat`
-   (grant it, its `AfterSideTurnStart` fires on its own); **card** → `InCombat`
-   (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`); **potion** → `InCombat`
-   (`TryToProcure` → `EnqueueManualUse`); **combo** → `InCombat`, walking SPEC's
-   interaction block source-first (drive the source element; the dependent logs its own
-   marker). The page has the exact body for each.
+2. Fill **exactly one** source DRIVER body based on the source element's real type:
+   **relic** → `BeforeCombat` (grant it, its `AfterSideTurnStart` fires on its own);
+   **card** → `InCombat` (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`);
+   **potion** → `InCombat` (`TryToProcure` → `EnqueueManualUse`);
+   **enemy encounter** → the **`CombatEnemy`** variant: enter the custom encounter via
+   `ModelDb.Encounter<TEncounter>().ToMutable()` + `EnterRoomDebug`, confirm the monster in
+   `Enemies` (`e.Monster is TMonster`), then `PlayerCmd.EndTurn(player, canBackOut: false)`
+   (void — do NOT await) and assert the player HP delta after the turn resumes. Do NOT apply
+   `PlatingPower` in this scenario (the enemy hit must land). For a multi-element
+   SPEC, use that same source driver, then walk `interactions` in dependency order and
+   observe each dependent marker/state invariant. There is no `combo` element or separate
+   registration path; the reference page's card→power example shows the additional waits
+   and `EndTurn` needed by that particular interaction, and its § CombatEnemy shows the full
+   enemy-encounter driver body.
 3. Add the **gated arm line** to `MainFile.Initialize()`, right after the load marker:
 
 ```csharp
@@ -109,8 +144,8 @@ user launch never arms it — no menu driving, fully inert. It ships dormant ins
 
 Add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
 relic, **`potions.json`** for a potion, **`cards.json`** for a card, **`powers.json`**
-for a custom power. **Keys are FLAT and prefixed** (recipe's loc-key rule + errors.md
-"raw-key title"):
+for a custom power, **`monsters.json`** + **`encounters.json`** for an enemy encounter.
+**Keys are FLAT and prefixed** (recipe's loc-key rule + errors.md "raw-key title"):
 
 ```json
 {
@@ -126,7 +161,9 @@ Relics take `.title/.description/.flavor`; potions take `.title/.description` (p
 `.flavor`, no separate upgrade key). A **card description uses SmartFormat placeholders**
 for scaling numbers — `"Deal {Damage:diff()} damage."` not `"Deal 6 damage."` — so the
 upgraded value renders automatically (`reference/mechanics.md` §2). A **power** takes
-`.title/.description` with `{Amount}` for the stack count. Use the exact `<PREFIX>-<SLUG>`
+`.title/.description` with `{Amount}` for the stack count. An **enemy encounter** takes
+two tables: `monsters.json` with just `<PREFIX>-<MONSTER_SLUG>.name`, and `encounters.json`
+with `<PREFIX>-<ENCOUNTER_SLUG>.title` + `.loss`. Use the exact `<PREFIX>-<SLUG>`
 you derived in SPEC. Not nested JSON — a flat `Dictionary<string,string>`.
 
 ## 4. Art (per SPEC's art plan — placeholder or generate)

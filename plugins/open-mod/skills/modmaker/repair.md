@@ -72,9 +72,9 @@ Read the artifact, not your memory of what you wrote.
      (e.g. a Cmd awaited wrong, a guard that never passes). Fix the effect logic.
   3. **`fired/used:` marker present but the value is wrong** (e.g. `6 dmg` not `9` after
      upgrade, energy unchanged) → effect fired but computes wrong → fix the numbers/vars.
-  Signatures 2 and 3 are effect fixes; signature 1 is not. For a **combo**, a missing
-  *dependent* marker after `selftest done` (source fired, dependent didn't) localizes the
-  break to that interaction link.
+  Signatures 2 and 3 are effect fixes; signature 1 is not. For a multi-element
+  **interaction**, a missing dependent observation after `selftest done` (source fired,
+  dependent did not) localizes the break to that directed relationship.
 
 ## Forming a hypothesis on a miss (no errors.md entry yet)
 

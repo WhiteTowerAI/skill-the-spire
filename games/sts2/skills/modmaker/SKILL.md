@@ -16,15 +16,23 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now — relic + potion + card + power/combo, automated two-tier verify
+## Scope right now — relic + potion + card + power; keyword/enchantment/orb mechanics; enemy encounter (monster + encounter); interaction-aware two-tier verify
 
-This skill turns one sentence into a known-good **relic, potion, or card** end to end,
-verifies it **loads** (tier-1) AND that its **effect actually fires** (tier-2, now
+This skill turns one sentence into a known-good **relic, potion, card, or enemy encounter**
+end to end, including custom card keywords, card enchantments, and custom orbs when the
+concept needs reusable vocabulary, a persistent Card modification, or an orb passive/evoke
+mechanic, verifies it **loads** (tier-1) AND that its **effect actually fires** (tier-2, now
 automated by an in-process self-test harness — no dev-console typing), and when a stage
 fails runs the **bounded automated repair loop** (`repair.md`) to diagnose → fix →
 re-verify within a hard retry cap. A **custom power** (buff/debuff) is supported too,
-usually as the dependency of a card/relic that applies it — and that card→power link is
-checked as a **combo** by the tier-2 harness. **Custom art (M5.5)** is now wired and
+usually as the dependency of a card/relic that applies it. An **enemy encounter** is a
+custom monster + the encounter that spawns it, authored as one vertical slice and proven
+through the **`CombatEnemy`** scenario (enter the encounter, confirm the monster, end the
+turn, observe the enemy's action) — custom monster *art* (a Spine scene) is not yet wired,
+so enemy visuals fall back to the game default. Multi-element mods record real
+content nodes plus directed **interactions**; tier-2 drives the source by its actual type and
+checks the dependent observation, so a card→power link cannot pass merely because both
+models loaded. “Combo” is not a content type. **Custom art (M5.5)** is now wired and
 live-verified for **all four element types — card portraits, relic icons, power icons, and
 potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
 user picks placeholder (default, fast) or generate via a bring-your-own image backend

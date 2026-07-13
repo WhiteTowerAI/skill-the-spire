@@ -346,7 +346,8 @@ analysis. These are the raw material for the planned pack page
    decks needn't be balanced against each other — they can be tuned for entertainment.)
 
 **The "联动性 (interplay)" ladder these imply** (M7 scope): L1 technical dependency
-(A triggers B — already shipped via the combo harness), L2 resource loop (enabler↔payoff,
+(A triggers B — already shipped via the interaction harness, historical project
+`CanaryCombo`), L2 resource loop (enabler↔payoff,
 principle 4), L3 archetype identity (principles 3+6, needs M6's content types), L4 run
 rhythm & risk-reward advisor (principles 1+5+7+8, the highest rung). See IMPLEMENTATION_PLAN.md
 §5 M7 for how each rung maps to interview/spec work.

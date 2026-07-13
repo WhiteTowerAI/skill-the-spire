@@ -243,8 +243,9 @@ instance — it closes an entire *class* of bug. The `RequiredLocalization` tabl
 already partly dumped this run, so it's mostly ready to transcribe.
 
 **② Self-test canary matrix — the skill verifies itself, no human.** The pipeline
-already automates scaffold→build→verify. Build one minimal mod per element type
-(relic / potion / card / power / combo), run build + tier-1, as a repeatable
+already automates scaffold→build→verify. Build one minimal mod per content type
+(relic / potion / card / power) plus one multi-element relationship canary (historical
+project name `CanaryCombo`), run build + tier-1, as a repeatable
 regression suite. The `.smartDescription` bug hits *anyone* the first time they build a
 power mod — a "one canary per element type" matrix exposes it with **zero user tests**.
 Sharper point: this bug landed on the *one recipe written from grounding but never
@@ -288,7 +289,9 @@ truth" diagnosis: memory `[[premine-offline-no-runtime-decompile]]`.
 
 **M5 — Behavior test (R2 tier 2) + Codex runtime + one-command install + optional publish.**
 - ✅ **Tier-2 behavior automation — DONE (2026-07-06).** In-process self-test harness;
-  all four driving cells (card/relic/potion/combo) PASS live. See `games/sts2/tests/`.
+  card/relic/potion source drivers plus the card→power interaction all PASS live. The
+  historical canary project remains named `CanaryCombo`, but combo is not a content type.
+  See `games/sts2/tests/`.
 - ✅ **One-command install (Claude Code) — DONE (2026-07-06).** Shipped as a native
   Claude Code plugin: repo root is the marketplace (`.claude-plugin/marketplace.json`),
   plugin at `plugins/open-mod/` (committed payload rendered by `publish.sh --plugin`),
@@ -384,7 +387,8 @@ relic, potion — `[Pool]` required) plus **auto-discovered power** (no pool). B
 registration surface still defines the authoritative inventory of what else exists:
 `CustomContentDictionary` has those 3 pooled families, **5 parallel explicit entry
 points** (`AddEncounter`, `AddAncient`, `AddEvent`, `AddAct`, `AddCharacter`), and the
-wider `Abstracts/` set (`CustomOrbModel`, enchantment/modifier, monster, pet, rest-site
+wider `Abstracts/` set (`CustomOrbModel`, card enchantment, run modifier, monster, pet,
+rest-site
 option, reward, …). But inventory is not the deliverable. Many of these types are not
 useful alone: a monster needs an encounter, a keyword needs a card/power that uses it,
 an enchantment needs a card to modify, and a reward needs a post-combat host. M6 is done
@@ -394,13 +398,15 @@ and a real game scenario proves the relationship works.
 ### M6.0 — contracts before recipes: the Content Capability Graph
 
 Create one lightweight, maintainer-only Markdown capability map before adding user-facing
-types. For every inventoried type record seven facts: **registration mode** (pooled /
-auto-discovered / explicit `Add*` / attached), **host or dependency**, **verification
-scenario**, **observable proof**, **art contract**, and **what it composes with**. Keep it
-as documentation first — no registry code or schema framework until a real consumer earns
-one. This graph prevents isolated recipes that register but cannot participate in a mod,
-and becomes the common source for author routing, scenario verification, and M7's honest
-capability boundary.
+types. For every inventoried type record seven capability facts: **registration mode**
+(pooled / auto-discovered / explicit `Add*` / attached), **host or dependency**,
+**verification scenario**, **observable proof**, **art contract**, **what it composes with**,
+and **support level**. Keep a separate evidence ledger: STS2 engineering evidence may
+advance support, while STS1/cross-game design analogies may shape scenarios but never count
+as STS2 implementation proof. Keep it as documentation first — no registry code or schema
+framework until a real consumer earns one. This graph prevents isolated recipes that
+register but cannot participate in a mod, and becomes the common source for author routing,
+scenario verification, and M7's honest capability boundary.
 
 Support is a ladder, not a boolean:
 
@@ -423,7 +429,7 @@ M6 should factor tier-2 into a small set of reusable scenario adapters, each wit
 
 | Scenario | Initial content families |
 |----------|--------------------------|
-| **CombatPlayer** | existing card/relic/potion/power; keyword, enchantment/modifier, orb |
+| **CombatPlayer** | existing card/relic/potion/power; keyword, card enchantment, orb |
 | **CombatEnemy** | monster + encounter; enemy intent/power |
 | **MapNode** | event; later rest-site option |
 | **PostCombat** | reward and encounter outcome (M6 Extra) |
@@ -440,16 +446,39 @@ single-class cells.
 
 ### Delivery order — playable vertical slices
 
-1. **M6.0 Contracts & scenario foundation.** Write the capability graph, support ladder,
-   common scenario contract and completion gate; refactor only the verification seam needed
+1. **M6.0 Contracts & scenario foundation. ✅ LANDED 2026-07-10.** The maintainer-only
+   graph is `games/sts2/tests/content-capability-graph.md`, with the support ladder,
+   Type+Scenario proof rule, scenario contracts, and separate STS2-engineering vs.
+   cross-game-design evidence ledgers. M6.0 also closes a verification-seam false positive:
+   terminal `selftest done` is no longer eligible as an effect marker, and harness
+   FAILED/timeout/early-exit return nonzero. It intentionally adds no new recipe, canary,
+   registry/schema, or hypothetical adapters. Refactor only the verification seam needed
    by the first slice, not all hypothetical adapters up front.
-2. **Mechanic Vocabulary Slice — keyword + enchantment/modifier + orb.** These are the
-   language of archetypes and directly unlock M7 L2/L3. Prove each through a card/player
-   host in `CombatPlayer`, including its actual display/state/behavior change. Orb art is
-   100×100 and enchantment art 64×64 from the already-extracted contract.
-3. **Enemy Encounter Slice — monster + encounter.** Treat these as one playable unit:
+2. **Mechanic Vocabulary Slice — keyword + card enchantment + orb. ✅ PIPELINE-SUPPORTED
+   2026-07-10.** These are the language of archetypes and directly unlock M7 L2/L3.
+   `CustomModifierModel` is a separate run-modifier capability (Good/Bad modifier lists),
+   not a synonym for card enchantment; it is tracked outside this Core slice until its
+   RunStart/UI scenario is defined. Three proof-first canaries now pass live through the
+   existing `CombatPlayer` seam: Card+Keyword proves generated keyword membership plus its
+   named Block rule; Card+Enchantment proves attachment/Amount plus altered `OnPlay`;
+   Card+Orb proves zero-slot channel, queue presence, passive, and evoke. Lazy recipes and
+   the common elements/interactions SPEC routing are wired. Custom enchantment/orb visual
+   rendering remains a separate provisional art claim (mechanic support does not pretend
+   it was eyeballed).
+3. **Enemy Encounter Slice — monster + encounter. ✅ TYPE + SCENARIO VERIFIED 2026-07-10;
+   pipeline-acceptance pending.** Treated as one playable unit:
    enter the custom encounter, spawn the custom monster, advance an enemy action, and
-   observe an intent/effect plus state delta through `CombatEnemy`.
+   observe an intent/effect plus state delta through `CombatEnemy`. `CanaryEncounter`
+   (`CanaryMite : CustomMonsterModel` + `CanaryMiteEncounter : CustomEncounterModel`) built
+   0/0, and the first earned `CombatEnemy` seam observed all four signals: encounter entered,
+   monster present in `Enemies`, `PECK` move executed via `MoveState`, player HP delta=6.
+   `recipes/monster.md` (combined monster+encounter), the `CombatEnemy` harness section, and
+   the modmaker stages (interview/spec/author/verify/SKILL) are wired. Registration:
+   `CustomMonsterModel`/`CustomEncounterModel` both auto-register (no `[Pool]`); the
+   correction logged is that a monster attack uses `.FromMonster(this).Execute(null)`, never
+   the card `.Targeting()` (which hangs the enemy turn). Custom monster art (Spine scene) is
+   provisional — enemies fall back to `creature_visuals/fallback`. Advances to
+   `pipeline-supported` after a full natural-language intake → verified-mod acceptance run.
 4. **World Node Slice — event.** Enter the custom event through `MapNode`, choose at least
    one option, and observe its consequence; nested talk/option localization is part of the
    proof, not merely a successful registration.
@@ -525,7 +554,7 @@ The **interplay (联动)** concern specifically is a **ladder of four levels**, 
 
 - **L1 — technical dependency** (A triggers B; e.g. a card applies a custom power that
   fires on the enemy's turn). ✅ Already shipped: `spec.md`'s interaction block + the
-  tier-2 combo harness (`CanaryCombo`). M7 folds the old M5.7 multi-element **intake
+  tier-2 interaction harness (historical `CanaryCombo`). M7 folds the old M5.7 multi-element **intake
   decomposition** in here: interview must split a multi-element sentence into elements,
   surface their dependency pairs (source → dependent + the dependent's own marker), keep
   the single-element fast path un-regressed, and feed the block spec/harness already
@@ -550,7 +579,7 @@ The **interplay (联动)** concern specifically is a **ladder of four levels**, 
 Vocabulary and the Minimal Character Slice are both `pipeline-supported` — there is then
 a real keyword/orb vocabulary and a buildable character target to advise against. M7 does
 **not** wait for M6 Extras (reward/rest-site/pet), and Act is outside this dependency. The
-L1 decomposition slice depends only on the already-live combo harness and MAY be pulled
+L1 decomposition slice depends only on the already-live interaction harness and MAY be pulled
 forward if a concrete multi-element need arises before M6 Core; the rest waits.
 
 **The central tension: proactive, but not exhausting.** The whole point is that the

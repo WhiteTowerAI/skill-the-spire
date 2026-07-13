@@ -117,4 +117,4 @@ if (-not $proc.HasExited) {
     if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
 }
 
-Write-Host "[launch] done. Now run grep_log.ps1 -ModName $ModName $(if($SelfTest){'-Tier2Pattern ''fired|used|selftest done'''}) to check the fresh log."
+Write-Host "[launch] done. Now run grep_log.ps1 -ModName $ModName $(if($SelfTest){'-Tier2Pattern ''fired|used|played'''}) to check the fresh log."

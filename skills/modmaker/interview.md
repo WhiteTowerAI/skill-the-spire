@@ -13,12 +13,14 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 
 ## What to resolve (only if unclear from the sentence)
 
-1. **Element type.** Relic / card / potion? Infer if possible:
+1. **Element type.** Relic / card / potion / enemy? Infer if possible:
    - Owns a passive/triggered effect the player *has* → **relic**.
    - Something the player *plays from hand for an energy cost* → **card**.
    - A **one-shot consumable the player drinks/uses** → **potion**.
-   - **Supported now: relic, potion, and card.** (*Editing* an existing vanilla
-     card/relic/potion is not yet supported — if that's the ask, say so and offer to
+   - **A monster/enemy the player fights** → **enemy encounter** (a monster + the encounter
+     that spawns it — always one unit; you never build a lone monster).
+   - **Supported now: relic, potion, card, and enemy encounter.** (*Editing* an existing
+     vanilla card/relic/potion is not yet supported — if that's the ask, say so and offer to
      build the closest **new** element instead.)
 2. **Trigger / usage / how it's played:**
    - **Relic**: when does the effect happen? Map the user's words to a lifecycle
@@ -32,7 +34,18 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      **type** (deals damage → Attack; block/utility → Skill; a permanent buff →
      Power), and **what it targets** (one enemy / all enemies / yourself) only if the
      effect makes that ambiguous. If the effect needs a buff/debuff no vanilla power
-     covers, note it — `author.md` will add a custom power as a dependency.
+     covers, note it — `author.md` will add a custom power as a dependency. If the user
+     names a reusable rule that several cards should share, record a **custom keyword**
+     plus its plain-language behavior. If they want a persistent modification attached to
+     a particular Card (often granted by an event/relic), record a **card enchantment** and
+     what it changes. If a Card/relic/power channels a persistent orb, record the orb's
+     **passive** and **evoke** effects separately. Do not call either a run modifier, and
+     never ask about enum fields or APIs.
+   - **Enemy encounter**: an enemy is fought inside its encounter, so treat them as one
+     unit. Resolve only what genuinely shapes the fight: the monster's **HP**, what its
+     **move** does each turn (attack for N? gain block? apply a debuff?), and whether it's
+     a **single monster or a group**. Don't ask about scenes, animations, intents-as-code,
+     or any API — those are the recipe's job.
 3. **Effect**: what exactly happens, in game terms (energy, damage, block, draw,
    heal, a power/status). Get numbers if they matter ("double", "gain 2", "20 damage").
    For a card, also ask what **upgrading** it should improve if not obvious (default:
@@ -113,6 +126,18 @@ target: one enemy | all enemies | self
 effect: <plain-language, with numbers>
 upgrade: <what improves, e.g. "damage 6 -> 9">
 art: placeholder | generate: <subject/style, if the user asked for custom art>
+```
+
+For an **enemy encounter** (monster + the encounter that spawns it, one unit):
+
+```
+element: enemy encounter
+monster name: <proposed>
+encounter name: <proposed, or "<Monster> Encounter">
+hp: <int>
+move: <plain-language each-turn behavior, with numbers, e.g. "attack for 6">
+group: single | <describe the group>
+art: placeholder (custom monster scene/animation not yet supported)
 ```
 
 Do not write files here — `spec.md` does that. If nothing was ambiguous, skip
