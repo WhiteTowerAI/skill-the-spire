@@ -465,8 +465,8 @@ single-class cells.
    the common elements/interactions SPEC routing are wired. Custom enchantment/orb visual
    rendering remains a separate provisional art claim (mechanic support does not pretend
    it was eyeballed).
-3. **Enemy Encounter Slice — monster + encounter. ✅ TYPE + SCENARIO VERIFIED 2026-07-10;
-   pipeline-acceptance pending.** Treated as one playable unit:
+3. **Enemy Encounter Slice — monster + encounter. ✅ PIPELINE-SUPPORTED 2026-07-13.**
+   Treated as one playable unit:
    enter the custom encounter, spawn the custom monster, advance an enemy action, and
    observe an intent/effect plus state delta through `CombatEnemy`. `CanaryEncounter`
    (`CanaryMite : CustomMonsterModel` + `CanaryMiteEncounter : CustomEncounterModel`) built
@@ -477,8 +477,10 @@ single-class cells.
    `CustomMonsterModel`/`CustomEncounterModel` both auto-register (no `[Pool]`); the
    correction logged is that a monster attack uses `.FromMonster(this).Execute(null)`, never
    the card `.Targeting()` (which hangs the enemy turn). Custom monster art (Spine scene) is
-   provisional — enemies fall back to `creature_visuals/fallback`. Advances to
-   `pipeline-supported` after a full natural-language intake → verified-mod acceptance run.
+   provisional — enemies fall back to `creature_visuals/fallback`. A full natural-language
+   user acceptance run completed on 2026-07-13 and produced a working verified mod, closing
+   the final pipeline-support gate. During that run the open-mod 0.5.0 self-test template's
+   nonexistent `TaskHelper` reference was found and corrected to `_ = RunAsync();`.
 4. **World Node Slice — event.** Enter the custom event through `MapNode`, choose at least
    one option, and observe its consequence; nested talk/option localization is part of the
    proof, not merely a successful registration.

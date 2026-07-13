@@ -124,7 +124,7 @@ internal static class SelfTest
     {
         if (_armed) return;
         _armed = true;
-        TaskHelper.RunSafely(RunAsync());   // fire-and-forget; never blocks Initialize
+        _ = RunAsync();   // fire-and-forget; never blocks Initialize
     }
 
     private static async Task RunAsync()

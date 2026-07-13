@@ -328,3 +328,17 @@ and are explicitly excluded from the support claim.
 | enemy action | `CanaryEncounter Peck attacked: player hp [N]` |
 | state delta | `CanaryEncounter action advanced: player hp [N] -> [N-6] delta=6` |
 | terminal | `CanaryEncounter selftest done` |
+
+### Natural-language pipeline acceptance (2026-07-13)
+
+A user test against the published open-mod **0.5.0** plugin completed the full
+plain-language Enemy Encounter pipeline and produced a working mod. This advances the
+Monster + Encounter slice from `scenario-verified` to **`pipeline-supported`**; the
+reproducible Type + Scenario proof remains the `CanaryEncounter` run above.
+
+The acceptance run also found one template defect before self-test compilation:
+`SelfTest.Arm()` called nonexistent `TaskHelper.RunSafely(RunAsync())`. `TaskHelper` is
+not supplied by STS2, BaseLib, or the generated project. The source template now uses
+standard fire-and-forget `_ = RunAsync();`; `RunAsync()` already catches and logs its own
+exceptions. Both committed distribution payloads were regenerated from the corrected
+source.

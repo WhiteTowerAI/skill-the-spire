@@ -17,7 +17,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M6 Core IN PROGRESS: slice ① Mechanic Vocabulary DONE, slice ② Enemy Encounter scenario-verified (next: its pipeline-acceptance run, then slice ③ World Node); then M7 (proactive beginner interview)
+## Current status — M6 Core IN PROGRESS: slices ① Mechanic Vocabulary + ② Enemy Encounter DONE / pipeline-supported; next slice ③ World Node; then ④ Minimal Character and M7 (proactive beginner interview)
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -192,13 +192,13 @@ Mechanic Vocabulary canaries; their lazy recipes and compact pipeline routing ar
 M6 Core ships vertical slices in this order: ① Mechanic Vocabulary (**DONE / live
 pipeline-supported 2026-07-10**: keyword + card enchantment + orb; BaseLib
 `CustomModifierModel` is a separate run-modifier capability, not a card-enchantment
-synonym), ② Enemy Encounter (monster + encounter) — **type + scenario live-verified
-2026-07-10** (`CanaryEncounter`: custom monster + encounter build 0/0, first earned
+synonym), ② Enemy Encounter (monster + encounter) — **pipeline-supported 2026-07-13**
+(`CanaryEncounter`: custom monster + encounter build 0/0, first earned
 `CombatEnemy` seam — encounter entered, monster present, PECK move executed, player HP
-delta=6; recipe + pipeline wired; key correction: monster attacks use
+delta=6; recipe + pipeline wired; full natural-language user acceptance run completed;
+key correction: monster attacks use
 `.FromMonster(this).Execute(null)`, **never** `.Targeting()`; monster Spine/scene art stays
-provisional/fallback). Currently **scenario-verified**; advances to `pipeline-supported`
-after a full natural-language intake acceptance run. ③ World Node
+provisional/fallback). ③ World Node
 (event), ④ Minimal Character (selectable, starts a run, valid starter content + one small
 mechanic combination). All four must be `pipeline-supported` to close M6 Core. Reward,
 rest-site option, and pet are **M6 Extras** and do not block M7; Act is outside the M6

@@ -209,3 +209,13 @@
 - **Fix:** do NOT offset-slice. STS2's rotation guarantees the current `godot.log`
   holds exactly one run, so read the **whole current file**. `grep_log.py` now takes
   only `--mod-name` (no offset); `launch.py` no longer emits an offset.
+
+### Self-test template fails to build: `TaskHelper` does not exist
+- **Signature:** `CS0103: The name 'TaskHelper' does not exist in the current context`
+  on `TaskHelper.RunSafely(RunAsync())` in generated `SelfTest.cs`.
+- **Cause:** the open-mod 0.5.0 self-test template referenced a helper that is not part
+  of STS2, BaseLib, or the generated mod. The template's `RunAsync()` already catches
+  and logs its own exceptions, so no external task wrapper is needed.
+- **Fix:** start the task with the standard C# discard form: `_ = RunAsync();`. This
+  remains fire-and-forget, does not block `Initialize()`, and does not fabricate a
+  dependency.
