@@ -210,7 +210,7 @@ absent. This is the fast path — nothing to build, no backend, no dev box. For 
 the class must instead set `CustomInitialPortraitPath` to the verified vanilla placeholder
 from `recipes/event.md`; the default event layout always preloads a portrait. Skip to §5.
 
-### Generate (custom sprite via `tools/gen_sprite.py`)
+### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
 Supported sprite specs (see `sts2-api` → `reference/art-contract.md` for the full
 contract):
@@ -253,37 +253,67 @@ placeholders and do not call `gen_sprite.py` for them.
    **For a `relic`/`power` icon** the same name→subject translation applies, but since it's
    a cut-out (chroma ON), ③ must also ask for a **solid flat `#FF00FF` magenta background,
    no gradient** so the tool can key it out cleanly (the contract's cut-out rule).
-1a. **Confirm before spending.** Generating calls the user's paid API, so show the
-   assembled prompt + the subject you derived and get a one-line yes before the first
-   generate. If unhappy with the result, adjust ② and re-run (the regenerate loop) —
-   don't silently keep spending.
+1a. **Confirm before spending.** Show the assembled prompt, chosen model/backend, output
+   count (**one**), and that this action spends credits; get a one-line yes for this exact
+   generation. Never treat an earlier art preference as spending approval. Every
+   regeneration needs a new confirmation.
 2. **Locate the mod's images dir**: `<work dir>/<ModName>/images` (the resource subdir
    the template made; `<slug>` = lowercased prefix-stripped id, same as the loc keys).
-3. **Run the tool** (`${CLAUDE_PLUGIN_ROOT}/tools` resolves per install — same as `build.py`).
-   Use the `--spec` matching SPEC's element (`card` / `relic` / `power`):
+3. **Acquire through the SPEC's `art source`, then import** (`${CLAUDE_PLUGIN_ROOT}/tools` resolves
+   per install — same as `build.py`). Use the `--spec` matching SPEC's element.
+
+   **Vofy managed credits:** the user installs/authenticates Vofy themselves. Never run
+   `vofy login`, inspect credential files, or put status/credit output in SPEC/MEMORY/logs.
+   First run the read-only checks:
+   ```
+   python ${CLAUDE_PLUGIN_ROOT}/tools/acquire_sprite.py preflight --model <chosen-model>
+   vofy models <chosen-model>
+   ```
+   Read the live model capabilities before choosing `--image`, `--aspect-ratio`, or
+   `--resolution`; do not hardcode a model or current price. Pick at most three files from
+   `${CLAUDE_PLUGIN_ROOT}/skills/sts2-api/reference/art-samples/<spec>/` only when that model supports
+   image-to-image references. After step 1a's confirmation, submit exactly one synchronous
+   paid task:
+   ```
+   python ${CLAUDE_PLUGIN_ROOT}/tools/acquire_sprite.py create \
+     --spec <card|relic|power|potion> --slug <slug> --prompt "<the prompt>" \
+     --out <work dir>/<ModName>/images --model <chosen-model> \
+     [--aspect-ratio <confirmed-ratio>] [--resolution <confirmed-resolution>] \
+     [--reference <sample.png> ...] --yes
+   ```
+   `--yes` means the user approved this exact prompt/model/one-image spend. The tool reruns
+   preflight, downloads into a unique empty directory, requires exactly one image, then
+   calls `gen_sprite.py import` (including chroma for icon specs). It never parses Vofy
+   stdout for a filename. On timeout or ambiguous output, inspect `vofy tasks --plain`;
+   never auto-resubmit because the first task may already have spent credits.
+
+   **BYO HTTP backend:** run the existing generator:
    ```
    python ${CLAUDE_PLUGIN_ROOT}/tools/gen_sprite.py generate \
-     --spec <card|relic|power> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --config <path to art-backend.json> \
      --reference ${CLAUDE_PLUGIN_ROOT}/skills/sts2-api/reference/art-samples
    ```
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
    point it at the **root** `art-samples` dir (as shown): the tool auto-picks the `card/`,
-   `relic/`, or `power/` subdir matching `--spec`, so a relic never gets card refs. Backends
+   `relic/`, `power/`, or `potion/` subdir matching `--spec`, so a relic never gets card refs. Backends
    that accept reference images (gpt-image-1 edits, Gemini/nano-banana, ComfyUI) imitate the
    game style far better, and plain text-to-image backends just ignore it.
    The tool POSTs to the user's backend, then chroma-keys (per spec — OFF for a full-bleed
-   `card`, ON for a cut-out `relic`/`power` icon) / fits / resizes to the exact contract
-   size and writes `<slug>.png` at the spec's sub-path. Each spec makes exactly one file
-   (a relic's optional `_outline.png` is not generated — see above).
-   Local file instead of a backend? Use `gen_sprite.py import --input <file> …`.
-4. **No backend / failure → fall back to placeholder, don't block.** If the user chose
-   generate but has no `art-backend.json`, or the tool exits non-zero (it prints a clear
-   reason and writes `.gen_sprite.log`), record that in `MEMORY.md`, tell the user the
-   mod will use placeholder art, and continue. Art never blocks the pipeline.
-5. **Regenerate/tweak** is just re-running step 3 with an adjusted prompt (or a different
-   `--input`), then rebuilding. The `.pck` rebuild in `build.md` picks up whatever PNG is
-   at the path — placeholder if none, the custom one if present.
+   `card`, ON for a cut-out `relic`/`power`/`potion` icon) / fits / resizes to the exact
+   contract size and writes every required path: one card/potion file or two relic/power
+   files. A relic's optional `_outline.png` is not generated (see above).
+   **Local image:** use `gen_sprite.py import --input <file> ...`; for a magenta-backed
+   relic/power/potion source add `--chroma`.
+4. **Unavailable/failure → bounded fallback, don't block.** Missing Vofy/auth/credits,
+   unsupported model flags, task failure/timeout, zero or multiple downloads, missing BYO
+   config, or import failure must stop that route. Tell the user what failed and offer BYO
+   HTTP, local import, or placeholder. Never silently choose another paid backend or retry
+   a possibly charged Vofy task. Record only the route/outcome in `MEMORY.md`, never account
+   or credit output.
+5. **Regenerate/tweak** means adjusting the subject/prompt, obtaining fresh approval, then
+   rerunning the chosen acquisition + import. The `.pck` rebuild in `build.md` picks up
+   whatever PNG is at the path — placeholder if none, the custom one if present.
 
 Whether placeholder or generated, the `.pck` build (`build.md`) is what makes the art
 reach the game — a code-only `dotnet build` won't (same rule as localization).

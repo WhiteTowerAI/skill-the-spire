@@ -1,0 +1,229 @@
+from __future__ import annotations
+
+import ast
+import base64
+import os
+import subprocess
+import sys
+import tempfile
+import textwrap
+import unittest
+from pathlib import Path
+
+from PIL import Image
+
+
+TOOLS_DIR = Path(__file__).resolve().parents[1]
+ACQUIRE = TOOLS_DIR / "acquire_sprite.py"
+PNG = "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGP4z8DwH4QZGBgYGMAAAAD//wMAjQkH/QAAAABJRU5ErkJggg=="
+
+
+FAKE_VOFY = f"""
+import base64
+import os
+import sys
+import time
+from pathlib import Path
+
+args = sys.argv[1:]
+mode = os.environ.get("FAKE_VOFY_MODE", "success")
+record = os.environ.get("FAKE_VOFY_RECORD")
+if record:
+    with Path(record).open("a", encoding="utf-8") as handle:
+        handle.write(repr(args) + "\\n")
+
+if args == ["status"]:
+    print("private account name; credits=999")
+    sys.exit(4 if mode == "auth_failure" else 0)
+if args[:1] == ["models"]:
+    print("model capability output")
+    sys.exit(5 if mode == "model_failure" else 0)
+if args[:2] == ["image", "create"]:
+    if mode == "task_failure":
+        sys.exit(6)
+    if mode == "timeout":
+        time.sleep(2)
+    output = Path(args[args.index("--download-to") + 1])
+    output.mkdir(parents=True, exist_ok=True)
+    if mode != "zero":
+        (output / "source.png").write_bytes(base64.b64decode({PNG!r}))
+    if mode == "multiple":
+        (output / "second.png").write_bytes(base64.b64decode({PNG!r}))
+    sys.exit(0)
+sys.exit(9)
+"""
+
+
+class AcquireSpriteTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        self.fake = self.root / "fake vofy.py"
+        self.fake.write_text(textwrap.dedent(FAKE_VOFY), encoding="utf-8")
+        self.cmd = self.root / "fake vofy.cmd"
+        self.cmd.write_text(
+            f'@echo off\r\n"{sys.executable}" "{self.fake}" %*\r\n',
+            encoding="utf-8",
+        )
+        self.record = self.root / "calls.txt"
+        self.out = self.root / "mod images"
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def run_tool(self, *args: str, mode: str = "success") -> subprocess.CompletedProcess[str]:
+        env = os.environ.copy()
+        env["FAKE_VOFY_MODE"] = mode
+        env["FAKE_VOFY_RECORD"] = str(self.record)
+        return subprocess.run(
+            [sys.executable, str(ACQUIRE), *args, "--vofy-command", str(self.fake)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            env=env,
+            check=False,
+        )
+
+    def create_args(self, spec: str = "card") -> list[str]:
+        return [
+            "create",
+            "--model", "test-model",
+            "--spec", spec,
+            "--slug", "paid-art",
+            "--prompt", "one approved image",
+            "--out", str(self.out),
+        ]
+
+    def test_preflight_hides_account_output(self) -> None:
+        result = self.run_tool("preflight", "--model", "test-model")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertNotIn("private account", result.stdout)
+        self.assertNotIn("999", result.stdout)
+
+    def test_windows_npm_cmd_shim_is_supported(self) -> None:
+        env = os.environ.copy()
+        env["FAKE_VOFY_MODE"] = "success"
+        result = subprocess.run(
+            [sys.executable, str(ACQUIRE), "preflight", "--model", "test-model",
+             "--vofy-command", str(self.cmd)],
+            capture_output=True, text=True, encoding="utf-8", env=env, check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_windows_cmd_receives_complete_prompt_on_one_line(self) -> None:
+        env = os.environ.copy()
+        env["FAKE_VOFY_MODE"] = "success"
+        env["FAKE_VOFY_RECORD"] = str(self.record)
+        prompt = "First sentence.\r\nSecond sentence.\n  Final constraint."
+        result = subprocess.run(
+            [sys.executable, str(ACQUIRE), *self.create_args(),
+             "--prompt", prompt, "--yes", "--vofy-command", str(self.cmd)],
+            capture_output=True, text=True, encoding="utf-8", env=env, check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+
+        calls = [ast.literal_eval(line) for line in self.record.read_text(
+            encoding="utf-8").splitlines()]
+        create = next(args for args in calls if args[:2] == ["image", "create"])
+        received = create[create.index("--prompt") + 1]
+        self.assertEqual(
+            "First sentence. Second sentence. Final constraint.", received
+        )
+        self.assertNotIn("\r", received)
+        self.assertNotIn("\n", received)
+
+    def test_missing_cli_is_actionable_and_never_logs_in(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ACQUIRE), "preflight", "--model", "test-model",
+             "--vofy-command", str(self.root / "missing-vofy")],
+            capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        self.assertEqual(2, result.returncode)
+        self.assertIn("never install it or launch `vofy login`", result.stderr)
+
+    def test_auth_and_model_failures_stop_at_preflight(self) -> None:
+        for mode, expected in (("auth_failure", "status/auth/credits"),
+                               ("model_failure", "capability lookup")):
+            with self.subTest(mode=mode):
+                result = self.run_tool("preflight", "--model", "test-model", mode=mode)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn(expected, result.stderr)
+                self.assertNotIn("private account", result.stdout + result.stderr)
+
+    def test_create_requires_explicit_paid_approval_before_cli_calls(self) -> None:
+        result = self.run_tool(*self.create_args())
+        self.assertEqual(2, result.returncode)
+        self.assertIn("Paid generation was not approved", result.stderr)
+        self.assertFalse(self.record.exists())
+
+    def test_whitespace_only_prompt_stops_before_cli_calls(self) -> None:
+        result = self.run_tool(
+            *self.create_args(), "--prompt", " \r\n\t ", "--yes"
+        )
+        self.assertEqual(2, result.returncode)
+        self.assertIn("cannot be empty or whitespace-only", result.stderr)
+        self.assertFalse(self.record.exists())
+
+    def test_invalid_local_references_stop_before_cli_calls(self) -> None:
+        cases = (
+            (["--reference", str(self.root / "missing.png")], "Reference image not found"),
+            (["--reference", str(self.fake)] * 4, "at most three"),
+        )
+        for reference_args, expected in cases:
+            with self.subTest(expected=expected):
+                self.record.unlink(missing_ok=True)
+                result = self.run_tool(*self.create_args(), *reference_args, "--yes")
+                self.assertEqual(2, result.returncode)
+                self.assertIn(expected, result.stderr)
+                self.assertFalse(self.record.exists())
+
+    def test_task_failure_timeout_and_ambiguous_downloads_do_not_retry(self) -> None:
+        cases = (
+            ("task_failure", [], "image generation failed"),
+            ("timeout", ["--generation-timeout", "0.05"], "Do not submit it again"),
+            ("zero", [], "contained 0 images"),
+            ("multiple", [], "contained 2 images"),
+        )
+        for mode, extra, expected in cases:
+            with self.subTest(mode=mode):
+                self.record.unlink(missing_ok=True)
+                result = self.run_tool(*self.create_args(), *extra, "--yes", mode=mode)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn(expected, result.stderr)
+                calls = self.record.read_text(encoding="utf-8")
+                self.assertEqual(1, calls.count("'image', 'create'"))
+                self.assertFalse(any(self.out.rglob("*.png")))
+
+    def test_card_uses_one_paid_task_then_imports_to_contract(self) -> None:
+        reference = self.root / "style reference.png"
+        reference.write_bytes(base64.b64decode(PNG))
+        result = self.run_tool(
+            *self.create_args(),
+            "--reference", str(reference),
+            "--aspect-ratio", "4:3",
+            "--resolution", "2K",
+            "--yes",
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        destination = self.out / "card_portraits" / "big" / "paid-art.png"
+        with Image.open(destination) as image:
+            self.assertEqual((1000, 760), image.size)
+        calls = self.record.read_text(encoding="utf-8")
+        self.assertEqual(1, calls.count("'image', 'create'"))
+        for token in ("'--yes'", "'--n', '1'", "'--image'", "'--aspect-ratio', '4:3'"):
+            self.assertIn(token, calls)
+
+    def test_cutout_uses_import_chroma_and_emits_both_relic_paths(self) -> None:
+        result = self.run_tool(*self.create_args("relic"), "--yes")
+        self.assertEqual(0, result.returncode, result.stderr)
+        small = self.out / "relics" / "paid-art.png"
+        big = self.out / "relics" / "big" / "paid-art.png"
+        with Image.open(small) as image:
+            self.assertEqual((256, 256), image.size)
+            self.assertEqual("RGBA", image.mode)
+        with Image.open(big) as image:
+            self.assertEqual((256, 256), image.size)
+
+
+if __name__ == "__main__":
+    unittest.main()

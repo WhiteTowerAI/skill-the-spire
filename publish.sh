@@ -25,7 +25,7 @@
 #                    installs into Codex / Cursor / OpenClaw / etc. Tools are bundled inside
 #                    skills/modmaker/scripts/ and referenced by RELATIVE path (the AgentSkills
 #                    spec convention — no ${CLAUDE_PLUGIN_ROOT} variable exists off Claude).
-#                    The three tools are Python (.py), so they run on Windows/macOS/Linux.
+#                    The bundled tools are Python (.py), so they run on Windows/macOS/Linux.
 #
 # Mirrors the shape of htdt/godogen's publish.sh, trimmed to one game (STS2)
 # and, for now, one runtime (Claude Code). The codex branch is stubbed: the

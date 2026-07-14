@@ -64,9 +64,11 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    - **All four element types — card portraits, relic icons, power icons, and potion
      icons** can be generated (all live-verified; each is a loose PNG the game loads
      directly, no `.tres` authoring).
-   - Custom generation is **bring-your-own-backend** (their own OpenAI-compatible image
-     endpoint, configured later in an `art-backend.json`). If they don't have one,
-     record `art: placeholder` and move on — never block on art.
+   - Offer one available source in plain language: an already-installed and authenticated
+     **Vofy CLI** (managed credits), their own OpenAI-compatible endpoint
+     (`art-backend.json`), or an existing local image. Check Vofy only with
+     `acquire_sprite.py preflight`; never install it, run `vofy login`, or expose account
+     output. If no custom route is ready, record `art: placeholder` and move on.
    - Capture the intended **subject/style** in plain words (e.g. "a burning arrow, comic
      style") once, for the mod. If the mod has several cards and the user wants distinct
      art per card, take one overall style note here; `author.md` fills the per-card
@@ -96,7 +98,8 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
   custom look (e.g. "a card showing a red phoenix", "make it look like…"). All four types —
   card / relic / power / potion sprites — can be generated (see step 4). It is a
   **single mod-level choice**, asked at most once regardless of sprite count. Custom
-  generation is BYO-backend.
+  generation can use an already-authenticated Vofy CLI or a BYO HTTP backend; an existing
+  local image uses the same deterministic import path.
 - **Author**: reuse the project's configured author, else "OpenMod".
 
 ## Output
@@ -109,7 +112,8 @@ name: <proposed>
 rarity: Common
 trigger: start of combat (turn 1)
 effect: <plain-language, with numbers>
-art: placeholder
+art: placeholder | generate: <subject/style, if requested>
+art source: vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
 
 For a **potion** (usage/target instead of trigger):
@@ -121,7 +125,8 @@ rarity: Common
 usage: CombatOnly | AnyTime
 target: self | one enemy | all enemies
 effect: <plain-language, with numbers>
-art: placeholder
+art: placeholder | generate: <subject/style, if requested>
+art source: vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
 
 For a **card** (cost/type/target + upgrade instead of trigger):
@@ -136,6 +141,7 @@ target: one enemy | all enemies | self
 effect: <plain-language, with numbers>
 upgrade: <what improves, e.g. "damage 6 -> 9">
 art: placeholder | generate: <subject/style, if the user asked for custom art>
+art source: vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
 
 For an **enemy encounter** (monster + the encounter that spawns it, one unit):

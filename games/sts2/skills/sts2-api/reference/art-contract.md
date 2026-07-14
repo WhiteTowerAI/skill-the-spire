@@ -237,10 +237,14 @@ direction, distilled from the vanilla references:
 
 ## Confirm the prompt before spending, and the regenerate loop
 
-Generating calls the user's paid API. So **before the first generate, show the user the
+Generating calls the user's paid API or managed-credit CLI. So **before every paid
+generation, disclose the model/backend, output count (one), and credit-spending action.
+Use the
 assembled prompt** (segments ①②③ concatenated) and the subject you derived, and get a
 quick yes — one line, e.g. *"I'll generate the portrait with this prompt: … — go ahead?"*
-Don't silently spend. This is also where the §7.1 "regenerate/tweak this sprite" loop
+Don't silently spend or treat an earlier custom-art preference as approval. Every
+regeneration needs a new confirmation. This is also where the §7.1
+"regenerate/tweak this sprite" loop
 lives:
 
 ```
@@ -257,6 +261,18 @@ so cross-card style stays consistent even though each card's ② differs.
 ## Using the tool
 
 ```
+# managed credits — Vofy is acquisition only. The user installs/logs in themselves;
+# preflight prints no account/credit details. Inspect live model capabilities separately:
+python ${GAME_TOOLS_DIR}/acquire_sprite.py preflight --model <chosen-model>
+vofy models <chosen-model>
+
+# after explicit approval for this prompt/model/one-image spend. Add --reference only
+# when the live model guide supports image inputs; repeat it at most three times:
+python ${GAME_TOOLS_DIR}/acquire_sprite.py create \
+  --spec card --slug firebolt --prompt "<the filled template above>" \
+  --out <mod>/<ModName>/images --model <chosen-model> \
+  --aspect-ratio <confirmed-ratio> [--reference <sample.png> ...] --yes
+
 # generate (BYO backend) — POSTs the prompt (+ few-shot STS2 style references when the
 # backend supports them), then fits + resizes to the contract size + places it:
 python ${GAME_TOOLS_DIR}/gen_sprite.py generate \
@@ -271,6 +287,18 @@ python ${GAME_TOOLS_DIR}/gen_sprite.py import \
 # list the contract (script's view — should match the table above):
 python ${GAME_TOOLS_DIR}/gen_sprite.py list-specs
 ```
+
+`acquire_sprite.py` never installs Vofy, runs `vofy login`, reads credentials, records
+status/credit output, or parses Vofy's normal stdout for a result filename. It runs one
+synchronous `vofy image create --yes --n 1` into a unique empty temporary directory,
+requires exactly one downloaded image, and invokes `gen_sprite.py import` for the real
+crop/fit/chroma/path contract. For relic/power/potion it supplies import's `--chroma`
+automatically. Before crossing a Windows/npm `.cmd` shim it folds all prompt whitespace
+to one line, preserving every sentence; an empty/whitespace-only prompt stops before any
+CLI call. A missing CLI/auth/account, model lookup failure, task failure/timeout, or
+zero/multiple downloads exits nonzero. Do not automatically resubmit after a timeout or
+ambiguous result; inspect `vofy tasks --plain` first because the task may already be paid.
+Offer BYO HTTP, local import, or placeholder instead, with no silent second paid route.
 
 Backend config (`art-backend.json`, **never committed — holds a key**) is
 provider-agnostic. There are **two transport shapes**, chosen by `mode` — because image

@@ -153,34 +153,42 @@ The skill is responsible for the entire pipeline (per §6):
 - Interpreting the natural-language request into a concrete mod spec.
 - Scaffolding the mod in the game's correct format / structure.
 - Generating the code, config, and manifest to the game's conventions.
-- Providing assets via the **art pipeline** (see §7.1): per sprite, the user
-  chooses placeholder vs. generate; generation backend is user-configured.
+- Providing assets via the **art pipeline** (see §7.1): the user approves placeholder
+  vs. custom art and the acquisition route; open-mod owns deterministic STS2 processing.
 - Packaging the mod and placing it where the game loads mods from.
 - Launching the game to validate the mod loads and the behavior triggers.
 - Reading errors and auto-repairing, then re-validating — iterating until it works.
 
 ### 7.1 Art / sprite pipeline (REQUIRED feature)
 
-Whenever a mod needs a new sprite (relic icon, card portrait, etc.), the skill
-must let the **user decide per sprite**, not silently pick one:
+Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
+the art decision explicit and the result source-independent:
 
-- **Choice per sprite: placeholder OR generate.** For each needed sprite, offer
-  (a) use a **placeholder** for now (the template's default art — keeps the loop
-  fast and the mod immediately testable), or (b) **generate a new sprite**. The
-  user can mix: placeholder some, generate others.
-- **User-chosen generation backend.** If the user picks "generate," the *user*
-  decides how the image is produced — their **own image-gen API** (configurable:
-  provider + key + model) or a **local model**. We do NOT hardcode or bundle a
-  single provider; we provide the plumbing (prompt → backend → correctly-sized,
-  correctly-placed sprite) and let the user point it at whatever they want.
+- **One mod-level choice: placeholder OR custom art.** Placeholder is the silent default
+  and keeps the loop immediately testable. Only discuss generation when the user signals
+  that visuals matter; do not make a beginner choose every individual file or provider.
+- **Current shipped acquisition routes:** (a) an authenticated managed-credit Vofy CLI,
+  live-verified on Windows 2026-07-14; (b) a user-configured OpenAI-compatible HTTP backend
+  through `gen_sprite.py generate`; or (c) an existing local image through
+  `gen_sprite.py import`. We do not bundle inference or credentials.
+- **Managed-credit boundary:** the route follows the
+  Imagine baseline. The user installs and logs into the CLI; open-mod may submit one
+  confirmed non-interactive job and download its source image. It never invokes browser
+  login or reads stored auth. A fresh Codex acceptance run generated card plus cut-out
+  sprites, rebuilt the `.pck`, and passed in-game visual inspection on Windows. macOS/Linux
+  behavior and live provider rejection/insufficient-credit paths remain unverified.
+- **Acquisition is not normalization.** HTTP generation, managed CLI, and local files all
+  converge on the same deterministic `gen_sprite.py import` contract. Provider output is
+  never trusted to already have the exact size, alpha/chroma, duplicate `big/` variant,
+  or STS2 path.
 - **Correct output regardless of source.** Whether placeholder or generated, the
   asset must land at the right path and exact size the game expects (e.g. card
   portrait 1000x760), so a `.pck` rebuild (Path A / PckPacker) picks it up.
 - **Why required:** closes the one concrete feature gap vs. AgentTheSpire (which
   ships an art pipeline). Placeholder-first stays the default for speed; real
-  generation is opt-in and BYO-backend so users aren't locked to our choice.
+  generation is opt-in and source-pluggable so users aren't locked to our choice.
 
-Design resolved (M5.5, card portrait first): the **backend config** is a
+Current implementation resolved (M5.5, card portrait first): the **backend config** is a
 provider-agnostic `art-backend.json` (`{base_url, api_key, model}`, OpenAI-images
 -compatible — no provider bundled, BYO) read by `tools/gen_sprite.py`; the **prompt
 template** per sprite type lives in `sts2-api/reference/art-contract.md` (card portrait
@@ -191,7 +199,10 @@ portrait is `1000×760`; 606×852 full art is Ancient-only, out of scope;
 relic/power/potion icons are 256×256 loose PNGs, all four types live-verified) is recorded in
 `art-contract.md`. `gen_sprite.py` also has an `import` mode for a
 user-supplied local image. Placeholder stays the default (a missing sprite falls back to
-the template art), so art never blocks the pipeline.
+the template art), so art never blocks the pipeline. The Vofy route produces a
+local intermediate and then reuses `import`; it does not replace `art-contract.md` or add
+Vofy credentials to `art-backend.json`. See `BASELINE_RESEARCH.md` and
+`IMPLEMENTATION_PLAN.md` M5.5 follow-up for its exact boundary and proof gate.
 
 ## 8. Out of scope (for now)
 
@@ -200,12 +211,12 @@ the template art), so art never blocks the pipeline.
 - **Publishing to Steam Workshop** — Workshop IS live for STS2, but Phase 1
   ends at a mod that works locally. Auto-publishing to Workshop is a later,
   opt-in step (and should always ask first). The user installs/tests locally.
-- **Bundling a specific image-gen provider / hosting inference** — the art
-  pipeline (§7.1) IS in scope, but generation is **bring-your-own-backend**
-  (user configures their own API or local model). We ship the plumbing, not a
-  chosen provider or hosted image generation. High-quality original audio, and
-  polished/curated original art beyond what the user's chosen backend produces,
-  remain later.
+- **Bundling a specific image-gen provider, account, or hosted inference** — the art
+  pipeline (§7.1) IS in scope, including optional execution through a user-installed,
+  user-authenticated managed-credit CLI. We ship the integration and deterministic asset
+  plumbing, not the provider, credentials, credits, or hosted generation. High-quality
+  original audio and polished/curated original art beyond what the user's chosen backend
+  produces remain later.
 - **Complex / total-conversion mods** — start with single-element mods (one
   relic, one card, one potion), not sweeping overhauls.
 

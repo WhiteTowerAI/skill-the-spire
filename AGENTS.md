@@ -166,6 +166,24 @@ in `reference/art-samples/` (card/relic/power/potion subdirs; 36 MegaCrit refere
 the template base (not CustomPowerModel/CustomRelicModel directly), and both need the
 `big/` variant. See `games/sts2/tests/canary-results.md` §M5.5 for the full run record.
 
+**M5.5 managed-credit art follow-up LIVE-VERIFIED ON WINDOWS 2026-07-14.** The user-provided
+`WhiteTowerAI/imagine-skill` baseline remains gitignored at `baselines/imagine-skill/`
+(snapshot `1163a79`); it is research only, not a runtime dependency. New cross-platform
+`tools/acquire_sprite.py` owns the optional Vofy CLI edge: silent `status` + live-model
+preflight, an explicit per-job `--yes` approval gate, one synchronous paid task into an
+isolated directory, exactly-one-image discovery, then the existing `gen_sprite.py import`
+normalizer/placer. It never calls `/imagine`, installs/logs into Vofy, reads credentials,
+records account/credit output, parses Vofy stdout for filenames, or automatically retries
+a possibly charged task. Eleven Windows acquisition tests cover missing CLI/auth/model,
+approval, task failure/timeout, zero/multiple output, card import, relic two-path/chroma,
+invalid local references, prompt normalization, and an npm-style `.cmd` shim; the 19-test
+tools suite passes. A fresh Codex acceptance mod (`HonedEdge`) used Vofy `gpt-image-2` plus
+type-matched STS2 references for three card portraits and power/relic cut-outs, then imported,
+built, and visually passed in game. The first multiline prompt was rejected; the wrapper now
+folds all prompt whitespace to one line before the Windows CLI boundary. macOS/Linux and live
+provider rejection/insufficient-credit paths remain unverified. Details:
+`documents/BASELINE_RESEARCH.md` §5 and `IMPLEMENTATION_PLAN.md` M5.5 follow-up.
+
 **M6 Core — playable content-breadth slices (M6.0 contracts LANDED 2026-07-10;
 next Minimal Character).** Do
 not execute M6 as a flat "one BaseLib class → one recipe → one canary" checklist: many

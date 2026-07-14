@@ -12,8 +12,9 @@ OpenClaw, and other agents that read the standard skills directory.
 - `skills/modmaker/`, `skills/sts2-api/` — rendered from `games/sts2/skills/`.
   Tool and skill-internal references are **relative** (`scripts/build.py`,
   `./recipes/…`), because off Claude there is no `${CLAUDE_PLUGIN_ROOT}` variable.
-- `skills/modmaker/scripts/*.py` — the three cross-platform Python tools
-  (build / launch / grep_log), copied from `games/sts2/tools/`. They run on
+- `skills/modmaker/scripts/*.py` — the cross-platform Python tools
+  (build / launch / grep_log / gen_sprite / acquire_sprite), copied from
+  `games/sts2/tools/`. They run on
   Windows/macOS/Linux (only Windows is verified on the dev box).
 
 **Edit the source, then re-run `./publish.sh --portable`.** Changes made directly

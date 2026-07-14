@@ -8,7 +8,8 @@ source under `games/sts2/skills/` and `games/sts2/tools/`.
   (the `${VAR}` placeholders are resolved at publish time; the one exception is
   `${CLAUDE_PLUGIN_ROOT}`, which is left intact for Claude Code to substitute at
   load time with this plugin's install directory).
-- `tools/*.ps1` — copied verbatim from `games/sts2/tools/`.
+- `tools/*.py` — the cross-platform build/launch/verification/art tools copied from
+  `games/sts2/tools/`.
 
 **Edit the source, then re-run `./publish.sh --plugin`.** Changes made directly
 here are overwritten on the next publish.

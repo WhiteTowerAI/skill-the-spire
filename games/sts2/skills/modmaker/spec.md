@@ -30,6 +30,8 @@ Use the block for the element type. **Relic:**
   - flavor: <flavor line>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below; `relic`
   icons are wired for generate, 256×256, live-verified)
+- **art source**: vofy | byo-http | local-image  (generate only; never record credentials,
+  account details, or credit balance)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys: `<NS_UPPER>-<SLUG>.{title,description,flavor}`
@@ -57,6 +59,7 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
 - **art**: placeholder | generate (a `potion` icon is a loose 256×256 PNG, generate-wired
   and live-verified — same as relic/power; see `reference/art-contract.md`)
+- **art source**: vofy | byo-http | local-image  (generate only)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `potions`): `<NS_UPPER>-<SLUG>.{title,description}`
@@ -92,6 +95,7 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below;
   generate is wired for all four types: `card` / `relic` / `power` / `potion`)
+- **art source**: vofy | byo-http | local-image  (generate only)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `cards`): `<NS_UPPER>-<SLUG>.{title,description}`
@@ -199,8 +203,8 @@ example: class `GamblersCoin` in namespace `GamblersCoin.*` → `GAMBLERSCOIN-GA
 The mod gets **one** art decision, taken from the interview (asked at most once, never
 per sprite): **placeholder** (the default — do nothing, the template's built-in art
 shows; keeps the loop fast and the mod immediately testable) or **generate** (produce
-custom sprites via `author.md`'s art step + `tools/gen_sprite.py`). Record it in
-`SPEC.md`'s `**art**` line, plus one overall subject/style note if `generate`, so
+custom sprites via `author.md`'s art step). Record it in `SPEC.md`'s `**art**` line,
+plus the selected `**art source**` and one overall subject/style note if `generate`, so
 `author.md` can build each prompt. When the mod has several cards, `author.md` fills the
 per-card subject from each card's SPEC at generate time — but the placeholder-vs-generate
 choice was made once, for the whole mod.
@@ -215,9 +219,12 @@ Rules for this round:
   `reference/art-contract.md`).
 - **Event and enemy-encounter art stays placeholder.** Do not call `gen_sprite.py` for
   either; their scene/portrait contracts have not been live-grounded.
-- **`generate` needs a user-supplied backend** (an OpenAI-compatible image endpoint) via
-  an `art-backend.json` the user configures. If they chose generate but have no backend,
-  fall back to placeholder and say so — never block the pipeline on art.
+- **`generate` has three source routes:** an already-installed/authenticated Vofy CLI
+  (managed credits), a user-supplied OpenAI-compatible endpoint (`art-backend.json`), or
+  an existing local image. Every route converges on the `gen_sprite.py` normalization
+  contract; Vofy is only acquisition and calls `import`. If the selected route is
+  unavailable, offer another route or fall back to
+  placeholder — never silently spend through a second backend and never block on art.
 
 ## Seed `PLAN.md`
 

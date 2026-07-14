@@ -57,7 +57,7 @@ open-mod/                           # actual repo root
 │   │       ├── SKILL.md / grounding.md / errors.md
 │   │       ├── recipes/           # relic/card/potion/power known-good patterns
 │   │       └── reference/         # mechanics, constraints, harness, art contract/samples
-│   ├── tools/                     # build.py / launch.py / grep_log.py / gen_sprite.py
+│   ├── tools/                     # build / launch / grep_log / gen_sprite / acquire_sprite
 │   └── tests/                     # maintainer-only canary matrix; never shipped
 ├── scripts/publish/               # placeholder rendering helpers
 ├── publish.sh                     # renders the three install shapes
@@ -377,6 +377,107 @@ chroma-key/fit logic reused in `gen_sprite.py`) and `baselines/spire-codex/spine
   "Fizz" via Poe/nano-banana, built, confirmed in-game. `gen_sprite.py` gained the `potion`
   spec; `art-samples/potion/` added (6 refs).
 - **③ Ancient full art (606×852) stays out of scope** — we don't make Ancient cards.
+
+**M5.5 follow-up — managed-credit CLI art source. LIVE-VERIFIED ON WINDOWS
+(2026-07-14).** The user has substantial credits
+on the service exposed by
+WhiteTowerAI/imagine-skill. The repository was shallow-cloned to the gitignored
+`baselines/imagine-skill/` at commit `1163a799ebffc19ba4d2aeb45ed945bdaa3dd514`.
+The checked-in product/CLI names are Vofy / `vofy-cli` (not Coi in the repository).
+Imagine is an MIT agent-instruction package over a separately installed CLI; it is a
+research baseline, not a runtime library to vendor.
+
+The integration boundary is **optional CLI acquisition → existing deterministic import**:
+
+```text
+prompt + selected STS2 style references
+  → `vofy image create ... --yes --n 1 --download-to <isolated-dir>`
+  → exactly one downloaded source image
+  → `gen_sprite.py import --spec ...`
+  → existing crop/fit/chroma + required STS2 file(s)
+  → PckPacker + live visual verification
+```
+
+Why this shape:
+
+- **Do not call `/imagine` or require imagine-skill.** Cross-skill discovery/invocation is
+  not portable across Claude Code, Codex, Cursor, and other Agent Skills consumers. The
+  documented `vofy` CLI is the stable execution boundary.
+- **Do not put Vofy inside `gen_sprite.py`'s HTTP backend.** Vofy owns browser auth,
+  refreshable local credentials, task submission, provider routing, credits, and download;
+  open-mod owns prompts, references, deterministic pixels, paths, duplicates, and `.pck`.
+- **Do not parse normal stdout for a filename.** The researched CLI documents no stable
+  JSON-output flag and does not promise a result basename. Generate synchronously into a
+  unique empty temp directory, request one result, enumerate image files, and require
+  exactly one. Async `tasks --plain` / `task <id>` is a recovery path, not the normal flow.
+- **Do not hardcode a model, current price, or route.** Preflight with `vofy status`, query
+  `vofy models <model>` for current mode/input-count/ratio/resolution/credit constraints,
+  and use repeatable `--image` references only when supported. A card requests 4:3 where
+  possible then normalizes to 1000×760; icons request 1:1 and keep the existing magenta
+  cut-out contract.
+- **No silent setup or spending.** The agent never installs the CLI, runs `vofy login`,
+  reads/copies credentials, or records account/credit output in SPEC/MEMORY. Before each
+  generation it shows prompt + model + output count and asks once for approval. Missing
+  CLI/auth/credits, failed task, timeout, unsupported flags, or zero/multiple downloads
+  falls back to BYO HTTP, local import, or placeholder without silently spending elsewhere.
+
+Implemented user-facing routing when `art: generate` is selected:
+
+1. managed credits via an already installed/authenticated `vofy` CLI;
+2. current `art-backend.json` BYO HTTP route;
+3. local image import;
+4. placeholder fallback.
+
+Keep this routing plain-language and offer one recommended available route; beginners
+should not have to understand provider protocols. This follow-up does **not** reopen M5.5
+or block M6. The managed route may be described as live-verified on Windows; macOS/Linux
+remains best-effort until tested there.
+
+Implementation acceptance gate (required before advertising the route as live-verified):
+
+1. **PASS (contract-tested on Windows):** preflight covers CLI missing, auth missing,
+   model/status failure, and an npm-style `.cmd` shim without launching login or exposing
+   account output.
+2. **PASS (live on Windows):** three card portraits used type-matched STS2 references,
+   downloaded one source per approved task, imported to 1000×760, rebuilt `.pck`, and were
+   visually confirmed in game in the `HonedEdge` acceptance mod.
+3. **PASS (live on Windows):** the same acceptance generated power and relic cut-outs,
+   imported to 256×256 two-file shapes, rebuilt, and visually confirmed them in game.
+4. **PASS at the wrapper contract:** invalid/missing local references are rejected before
+   spend; task failure, timeout, and zero/multiple download output each produce a bounded,
+   actionable fallback with no automatic retry or second charge. Live provider flag errors
+   remain part of gates 2/3.
+5. Only after Windows passes should macOS/Linux path/auth behavior be tested and claimed.
+
+Implementation landed as stdlib-only `games/sts2/tools/acquire_sprite.py` plus eleven Windows
+tests in `games/sts2/tools/tests/test_acquire_sprite.py`. `publish.sh` bundles the tool into
+both committed distributions (`plugins/open-mod/tools/` and
+`skills/modmaker/scripts/`); modmaker interview/spec/author and `art-contract.md` route the
+managed-credit source through `gen_sprite.py import`. The full Windows tools suite passes
+(19 tests). The first live task exposed a multiline prompt transport defect: Vofy acted on
+only the opening line, so that draft was rejected and kept outside runtime resources. The
+wrapper now folds prompt whitespace to one line before the CLI call and rejects an empty
+normalized prompt before preflight; a Windows `.cmd` regression covers the complete prompt.
+Live provider rejection/insufficient-credit paths and macOS/Linux remain open. Full findings
+and the command/model snapshot are in `BASELINE_RESEARCH.md` §5.
+
+**Acceptance follow-up — Power amount-domain safety. TODO (found 2026-07-14).** The
+Honed Edge user acceptance run exposed a behavior bug that build, Tier 1, and the original
+Tier 2 happy path did not catch: using `PowerCmd.Apply<Edge>(..., -4, ...)` to consume a
+nonnegative Counter power creates a new `Edge` at `-4` when no instance exists, so later
+attacks lose damage. `PowerVar<T>` has no min/max contract and `AllowNegative => false`
+does not validate a newly applied negative amount. The follow-up must:
+
+1. make every custom Counter power declare its valid amount domain in SPEC (nonnegative by
+   default; signed only when explicitly intended, plus any finite bounds);
+2. update `reference/mechanics.md`, `recipes/power.md`, and `author.md` so nonnegative power
+   consumption finds the existing instance, clamps the spend, and calls
+   `PowerCmd.ModifyAmount` rather than negative `PowerCmd.Apply<T>`;
+3. add the live negative-stack signature and fix to append-only `errors.md`;
+4. extend interaction/self-test guidance for "consume up to N" with zero-stack and
+   fewer-than-N cases and an assertion that no negative instance remains or appears; and
+5. audit recipes, generated examples/canaries, and adjacent state-consuming patterns for
+   the same missing-boundary class before closing the item.
 
 **Sequence: after M5, before M6** — M6's heavier content types (characters especially)
 want real art. orb (100×100) / enchantment (64×64) sprite sizes are also now known from

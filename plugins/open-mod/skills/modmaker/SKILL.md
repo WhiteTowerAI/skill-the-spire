@@ -41,8 +41,12 @@ cannot pass merely because both
 models loaded. “Combo” is not a content type. **Custom art (M5.5)** is now wired and
 live-verified for **all four element types — card portraits, relic icons, power icons, and
 potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
-user picks placeholder (default, fast) or generate via a bring-your-own image backend
-(`tools/gen_sprite.py`; see `author.md` §4 and `sts2-api` → `reference/art-contract.md`).
+user picks placeholder (default, fast) or custom art acquired through an already-
+authenticated Vofy CLI, a bring-your-own HTTP backend, or a local image. All custom
+routes converge on the `tools/gen_sprite.py` normalization contract; Vofy and local files
+call its `import` command. See `author.md` §4 and `sts2-api` →
+`reference/art-contract.md`. The managed-credit route is live-verified through Vofy + an
+in-game `.pck` on Windows; macOS/Linux remains best-effort and must be reported as such.
 *Editing existing* vanilla content (needs Harmony patching, not a recipe) is still out.
 If a request needs what isn't wired, say so plainly rather than half-doing it.
 
@@ -86,7 +90,7 @@ User: one sentence ("a relic that ...")
     [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
     (SelfTest.cs, step 2.5 — reference/selftest-harness.md). Then the ART sub-step
     (author.md §4): per SPEC's art plan, leave placeholder (default) or generate a
-    custom sprites for supported types via tools/gen_sprite.py (BYO backend). Art never
+    custom source through the selected route and pass it to tools/gen_sprite.py import. Art never
     blocks —
     a missing sprite falls back to the template default. Regenerate = re-run + rebuild.
     |

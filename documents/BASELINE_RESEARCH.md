@@ -1,7 +1,8 @@
 # Baseline Research: Reference Repos for Text-to-Mod (STS2)
 
 > Companion to PROJECT.md. Records what we learned from candidate baselines and
-> which we build on. Fetched 2026-07-01 via local proxy.
+> which we build on. Initial baselines fetched 2026-07-01; Imagine/Vofy art-source
+> follow-up researched 2026-07-14.
 
 ## Why this project (framing, from the user)
 
@@ -129,6 +130,103 @@ than generating a whole game.
   we are a low-friction Claude Code *skill* for true non-programmers, with a
   curated game pack (vs. ad-hoc decompilation) and tier-2 behavior verification.
 
+### 5. WhiteTowerAI/imagine-skill — MANAGED-CREDIT ART ACQUISITION reference
+
+Researched from gitignored `baselines/imagine-skill/` at commit
+`1163a799ebffc19ba4d2aeb45ed945bdaa3dd514` (2026-05-19), repository package
+version 0.1.2, MIT. The user described the service as Coi; the checked-in repository
+identifies the actual execution service as **Vofy** and the executable as `vofy`, so
+those are the names used here.
+
+**What it is — and is not:**
+
+- `imagine-skill` is an agent-instruction layer over the separately installed
+  `vofy-cli@0.1.7`; it is not an image SDK and contains no inference transport itself.
+- The user installs the CLI and performs `vofy login` once. Login opens a browser and
+  stores a refresh-capable local session; an agent must never initiate it.
+- After setup, the agent uses non-interactive CLI commands. `vofy status` checks auth,
+  plan, and credits; `vofy image create ... --yes` creates a task; synchronous mode waits
+  for completion; `--download-to <path>` saves the result locally.
+- Async recovery exists through `vofy tasks --plain` and
+  `vofy task <id_or_prefix> --download-to <path>`, but a normal open-mod sprite should use
+  the synchronous path so the art stage remains one resumable pipeline step.
+
+**Relevant image contract:**
+
+- `vofy image create` supports text-to-image, repeatable `--image <path|url>` inputs for
+  image-to-image/reference work, `--n`, aspect ratio, resolution, model selection, and a
+  local download target.
+- Model capabilities are not uniform. In the researched snapshot, for example,
+  `seedream-4.5` accepts up to 14 image inputs and supports 4:3/1:1; GPT Image 1.5 accepts
+  references and optional transparent backgrounds but not 4:3; Gemini Flash accepts
+  references and 4:3. These are examples, not defaults to hardcode.
+- `vofy models <model>` is the runtime source of truth for modes, input count, ratios,
+  resolution, provider route, and current credit price. Generated model docs can drift.
+- STS2 card portraits are 1000x760, not a standard generation ratio. Request 4:3 where
+  supported, then let open-mod crop/fit to exactly 1000x760. Cut-out icons request 1:1 and
+  retain the existing magenta-background contract; provider transparency is an optional
+  optimization, not a new asset contract.
+
+**Integration decision: use the CLI boundary, not skill-to-skill delegation.** Agent skill
+composition and installation order differ across Claude Code, Codex, Cursor, and other
+runtimes. open-mod therefore should not invoke `/imagine`, import Imagine's prompt skills,
+or make `imagine-skill` a runtime dependency. It may optionally invoke the documented
+`vofy` executable when present. Imagine remains a maintainer baseline for safe command
+construction and capability lookup.
+
+The art pipeline should keep acquisition separate from deterministic asset processing:
+
+```text
+open-mod art prompt + STS2 references
+    |
+    +-- current: BYO HTTP backend (`gen_sprite.py generate`)
+    +-- current: authenticated managed-credit CLI (`vofy image create`)
+    +-- current: user/local file
+    |
+downloaded/generated source image
+    |
+`gen_sprite.py import` -> crop/fit/chroma -> exact STS2 path(s) -> PckPacker
+```
+
+The managed-CLI implementation does not add provider HTTP code to `gen_sprite.py`. It:
+
+1. detect `vofy` and run `vofy status`; if unavailable/unauthenticated, instruct the user
+   to install/login themselves and offer BYO HTTP, local import, or placeholder;
+2. run `vofy models <chosen-model>` before using model-specific flags;
+3. show the final prompt, model, output count, and credit-spending action for confirmation;
+4. generate synchronously with `--yes --n 1 --download-to <unique-empty-temp-dir>`, adding
+   repeatable `--image` references only when the chosen model supports them;
+5. discover the single new image from that isolated directory rather than parse human
+   stdout (the researched CLI documents no stable JSON-output flag and does not guarantee
+   a result filename);
+6. pass that file to the already-live `gen_sprite.py import` path, then build and verify
+   the normal STS2 asset contract.
+
+**Security and UX boundaries:** open-mod never reads/copies Vofy credentials, writes them
+to SPEC/MEMORY/logs, silently installs the CLI, launches login, chooses a paid route without
+confirmation, or silently falls through to another paid backend. Missing auth, insufficient
+credits, CLI failure, timeout, zero/multiple downloaded images, and unsupported references
+must all fall back honestly without blocking the mod. Placeholder remains the default.
+
+**Implementation and proof status (2026-07-14):** stdlib-only `tools/acquire_sprite.py`
+implements this boundary and is bundled into both plugin payloads. Eleven Windows tests use
+an isolated fake Vofy executable (including an npm-style `.cmd` shim) to cover missing
+CLI/auth/model, the paid-approval gate, invalid local references, prompt normalization,
+task failure/timeout, zero/multiple output, and successful card plus relic import contracts.
+The full tools suite passes (19 tests). The wrapper suppresses status/create output, never
+invokes login, submits one task, and calls the sibling `gen_sprite.py import`; it does not
+duplicate pixel normalization.
+
+The fresh Codex acceptance mod `HonedEdge` closes the Windows happy-path proof gate. It used
+Vofy `gpt-image-2` with type-matched STS2 references to acquire three card portraits plus one
+power and one relic cut-out, imported them to the exact one/two-file contracts, rebuilt the
+`.pck`, and passed in-game visual inspection. The first multiline Honed Edge prompt produced
+a rejected draft because the CLI path acted on only its opening line; the draft stayed
+outside runtime resources. Subsequent single-line prompts produced the five accepted runtime
+sprites. The wrapper now folds all whitespace to one line before invoking Vofy and has a
+Windows `.cmd` regression proving later sentences survive. macOS/Linux behavior and live
+provider rejection for unsupported flags or insufficient credits remain unverified.
+
 ## Conclusion: our baseline is a COMBINATION
 
 There is no single repo to fork. The right baseline is:
@@ -138,6 +236,10 @@ There is no single repo to fork. The right baseline is:
 > game" to "generate a mod", **sitting on top of ModTemplate-StS2's mod anatomy +
 > BaseLib + dotnet-new scaffolding**, borrowing **Claude-Code-Game-Studios'
 > patterns** for organizing skills/agents/hooks only where useful.
+
+Imagine/Vofy does not change that core combination. It is a reusable **edge acquisition
+pattern** for optional art: delegate account/task/download concerns to a user-owned CLI,
+then return immediately to open-mod's source-independent asset contract.
 
 Mapping the closed-loop stages (GodotMaker's `gm-*` names; godogen has the same
 shape) onto our text-to-mod flow:
@@ -173,6 +275,7 @@ STS2 has no documented headless test mode, so our observed reality is the
 - https://github.com/Alchyr/ModTemplate-StS2 (+ /wiki)
 - https://github.com/Donchitos/Claude-Code-Game-Studios
 - https://github.com/cgxjdzz/AgentTheSpire (closest competitor + art-pipeline reference)
+- https://github.com/WhiteTowerAI/imagine-skill (managed-credit CLI art-source reference)
 
 ---
 
