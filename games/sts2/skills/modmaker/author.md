@@ -100,6 +100,21 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
 - Override `CustomInitialPortraitPath` with the recipe's verified vanilla placeholder;
   custom event portrait/background generation is not yet supported.
 
+**Counter Power amount-domain gate (applies to every source element)** — before writing
+any custom Counter mutation, read that Power's `amount domain` from SPEC. The default
+nonnegative domain means:
+
+- positive gain/application may use `PowerCmd.Apply<T>`;
+- consumption must call `GetPower<T>()`, spend zero when absent, clamp the actual spend
+  to the existing `Amount`, then call `PowerCmd.ModifyAmount` on that instance;
+- a negative `PowerCmd.Apply<T>` is forbidden for consumption because it can create a
+  missing Power with a negative amount;
+- every finite SPEC bound must be enforced by clamping gain/consumption to current
+  headroom, and a signed domain is allowed only with explicit negative-stack semantics.
+
+Use the exact copyable sequence in `recipes/power.md`; do not treat `PowerVar<T>` or
+`AllowNegative` as min/max validation.
+
 ## 2. Inject the self-test markers
 
 **Two markers.** The Alchyr template's `MainFile.cs` does NOT log anything by
@@ -148,8 +163,10 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    that same source driver, then walk `interactions` in dependency order and
    observe each dependent marker/state invariant. There is no `combo` element or separate
    registration path; the reference page's card→power example shows the additional waits
-   and `EndTurn` needed by that particular interaction, and its § CombatEnemy shows the full
-   enemy-encounter driver body.
+   and `EndTurn` needed by that particular interaction. A nonnegative Counter `consumes`
+   edge must also run the reference page's zero/fewer-than-N/at-least-N boundary matrix and
+   assert that no negative instance appears. Its § CombatEnemy shows the full enemy-encounter
+   driver body.
 3. Add the **gated arm line** to `MainFile.Initialize()`, right after the load marker:
 
 ```csharp

@@ -345,6 +345,82 @@ make a missing effect marker pass.
 A missing dependent marker after `selftest done` means the interaction link is broken (the
 exact place raw-AI multi-element mods fail).
 
+## State-consuming Counter interactions — test the amount domain
+
+A `consumes` edge for a nonnegative Counter needs more than the normal happy path. The
+driver must exercise zero stacks, fewer than N, and at least N in the same hosted scenario,
+and reject any negative instance after every case. Drive the real source each time; do not
+test a helper while bypassing the card/relic/potion that owns the consumption behavior.
+
+For a card that says "consume up to 4", factor the normal card DRIVER into
+`PlayConsumerCard`, then add this sequence (replace the type/id and adapt the numbers from
+SPEC). A damaging source may be played three times, so the setup gives all enemies enough
+Block to keep the hosted target alive; add `MegaCrit.Sts2.Core.ValueProps` for `ValueProp`.
+
+```csharp
+private static async Task PlayConsumerCard(Player player)
+{
+    await PlayerCmd.GainEnergy(10m, player);
+    var model = ModelDb.AllCards.First(c => c.Id.Entry == "<CARD_PREFIX>-<CARD_SLUG>");
+    var card = CombatManager.Instance.DebugOnlyGetState()!.CreateCard(model, player);
+    await CardPileCmd.Add(card, PileType.Hand);
+    Creature? target = card.TargetType == TargetType.AnyEnemy
+        ? card.CombatState?.HittableEnemies.FirstOrDefault()
+        : null;
+    await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
+}
+
+private static void AssertNoNegativePower(Creature owner, string stage)
+{
+    var power = owner.GetPower<<PowerName>>();
+    if (power is { Amount: < 0 })
+        throw new InvalidOperationException(
+            $"<PowerName> amount-domain violation after {stage}: {power.Amount}");
+}
+
+private static async Task ExerciseConsumeBoundaries(Player player)
+{
+    var owner = player.Creature;
+    if (owner.GetPower<<PowerName>>() is { } initial)
+        await PowerCmd.Remove(initial); // establish the zero-stack precondition
+
+    foreach (var enemy in CombatManager.Instance.DebugOnlyGetState()!.HittableEnemies)
+        await CreatureCmd.GainBlock(enemy, 999m, ValueProp.Unpowered, null);
+
+    // 0 stacks: consuming is a no-op and must not create an instance.
+    await PlayConsumerCard(player);
+    if (owner.GetPower<<PowerName>>() is not null)
+        throw new InvalidOperationException("zero-stack consume created <PowerName>");
+    AssertNoNegativePower(owner, "zero-stack consume");
+    MainFile.Logger.Info("[T2MOD-SELFTEST] <PowerName> consume boundary: zero ok");
+
+    // Fewer than N (2 < 4): consume the available amount and remove at zero.
+    await PowerCmd.Apply<<PowerName>>(new ThrowingPlayerChoiceContext(), owner,
+        2m, owner, null);
+    await PlayConsumerCard(player);
+    if (owner.GetPower<<PowerName>>() is not null)
+        throw new InvalidOperationException("fewer-than-N consume did not remove <PowerName>");
+    AssertNoNegativePower(owner, "fewer-than-N consume");
+    MainFile.Logger.Info("[T2MOD-SELFTEST] <PowerName> consume boundary: 2 -> 0 ok");
+
+    // At least N (6 >= 4): consume exactly N and preserve the remainder.
+    await PowerCmd.Apply<<PowerName>>(new ThrowingPlayerChoiceContext(), owner,
+        6m, owner, null);
+    await PlayConsumerCard(player);
+    var remaining = owner.GetPower<<PowerName>>();
+    if (remaining?.Amount != 2)
+        throw new InvalidOperationException(
+            $"normal consume expected 2 <PowerName>, got {remaining?.Amount.ToString() ?? "missing"}");
+    AssertNoNegativePower(owner, "normal consume");
+    MainFile.Logger.Info("[T2MOD-SELFTEST] <PowerName> consume boundary: 6 -> 2 ok");
+}
+```
+
+Call `ExerciseConsumeBoundaries(player)` from the source's `InCombat` body instead of
+playing the consumer only once. If N is 1, zero is also the only fewer-than-N integer case;
+keep the zero case plus an at-least-N remainder case. The successful terminal marker still
+comes only after all boundary assertions pass.
+
 ## The `CombatEnemy` scenario (monster + encounter — earned seam, live 2026-07-10)
 
 Enemy-side content (monster + encounter) does not fit the card/relic/potion drivers above:
@@ -498,4 +574,6 @@ need their own mod-reachability grounding first.
 - [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + option UI click); multi-element interactions reuse that real source driver and add observations.
 - [ ] `<PREFIX>-<SLUG>` ids match the element's real `Id.Entry` (SPEC's derived ids).
 - [ ] The element's own type-specific effect marker (author.md step 2) is present — the harness only *triggers*; the element logs the proof.
+- [ ] Every nonnegative Counter `consumes` edge runs zero/fewer-than-N/at-least-N cases
+      and asserts after each that no negative instance exists.
 - [ ] Never claim tier-2 on a `selftest FAILED` line — that's a harness/setup miss, report tier-1 + manual fallback.

@@ -101,6 +101,35 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - loc keys (table `cards`): `<NS_UPPER>-<SLUG>.{title,description}`
 ```
 
+**Custom power** (standalone or a dependency of a card/relic/potion; include one block
+for every authored custom Power):
+
+```markdown
+- **element**: power
+- **class name**: <PascalCase, no spaces>
+- **mod name**: <PascalCase = csproj/assembly/manifest id>
+- **type**: Buff | Debuff
+- **stack type**: Counter | Single
+- **amount domain**: `[0, unbounded]` (default for Counter) | `[<min>, <max>]`
+- **signed amounts**: no (default) | yes - <what negative stacks mean>
+- **effect**: <precise hook/passive behavior, with numbers>
+- **display**:
+  - title: <shown name>
+  - description: <hover text using {Amount}>
+  - smartDescription: <usually the same text; required>
+- **art**: placeholder | generate
+- **art source**: vofy | byo-http | local-image  (generate only)
+- **derived ids**:
+  - Id.Entry: `<NS_UPPER>-<SLUG>`
+  - loc keys (table `powers`): `<NS_UPPER>-<SLUG>.{title,description,smartDescription}`
+```
+
+`amount domain` is mandatory for every custom `Counter`. Keep the nonnegative default
+unless the design explicitly defines negative-stack behavior; `AllowNegative` is an
+implementation property, not a substitute for this SPEC decision. Write finite bounds
+as numbers rather than leaving them implicit. `Single` is a flag-like Power with hidden
+amount 1, so it does not need a Counter domain.
+
 **Enemy encounter** (a monster + the encounter that spawns it — always authored as one
 slice; scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
 art is a Spine scene and stays placeholder — custom monster art is not yet supported):
@@ -179,7 +208,7 @@ independent observations that prove the link rather than merely proving both nod
     id: `<NS_UPPER>-<DEP_SLUG>`
 - **interactions**:
   - source: <SourceElement>
-    relation: <applies | grants | creates | triggers>
+    relation: <applies | grants | creates | triggers | consumes>
     dependent: <DependentElement>
     scenario: CombatPlayer
     observe:
@@ -192,6 +221,11 @@ A card with an authored custom power dependency automatically gets two `elements
 `interaction` edge. The harness drives the source according to its real type, then checks
 every observation in dependency order. This is the old M5 “combo” proof generalized into a
 relationship contract; `combo` is not a BaseLib model or a user-selectable element.
+
+For a `consumes` edge on a nonnegative Counter (for example, "consume up to N"), add
+three boundary observations: zero stacks, fewer than N, and at least N. Each observation
+must state the expected remaining amount/removal and assert that no instance with
+`Amount < 0` appears. These become required self-test cases, not prose-only edge cases.
 
 **Derive the ids now**, not later — the loc-key derivation is the #1 silent
 failure, and it's identical for relics and potions. Query the sts2-api skill

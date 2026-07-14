@@ -71,6 +71,13 @@ Other confirmed commands:
 - `OrbCmd.Passive(choiceContext, orb, target)`
 - `OrbCmd.EvokeNext(...)` / `EvokeLast(...)`
 
+Slot amounts are a caller-owned nonnegative domain. Clamp a variable request first
+(`amount = Math.Max(0, amount)`) and skip the Cmd at zero. Do not pass a negative amount
+to `AddSlots` as a shortcut for removal or to `RemoveSlots` as a shortcut for addition:
+their internal upper-bound clamps do not reject negatives, so the operation can run in
+the opposite direction. `EvokeNext`/`EvokeLast` are safe on an empty queue (they check
+`Orbs.Count > 0`).
+
 ## Art contract (provisional until live-rendered)
 
 BaseLib exposes three custom seams:
@@ -101,5 +108,6 @@ presence was true with capacity 1, passive Block `0 -> 2`, evoke Block `2 -> 7`.
 - [ ] PassiveVal/EvokeVal/DarkenedColor and OrbLoc all supplied
 - [ ] behavior reads mutable `Owner`, not canonical state
 - [ ] host uses `OrbCmd.Channel<T>`
+- [ ] any variable `AddSlots`/`RemoveSlots` amount is clamped nonnegative before the Cmd
 - [ ] channel + passive + evoke are separately observed
 - [ ] custom icon/sprite claims remain provisional until rendered live

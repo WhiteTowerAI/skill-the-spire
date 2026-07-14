@@ -115,10 +115,33 @@ sets read from the decompile (STS2 v0.107.1 — a game update could add members)
   `Unblockable`, `Unpowered | Unblockable` combine (Poison uses the latter).
   `props.IsPoweredAttack()` gates Strength/Vulnerable modifiers.
 
+## 4. Counter Power amount domains
+
+Every custom `PowerStackType.Counter` needs an explicit **amount domain** in `SPEC.md`.
+The default is nonnegative (`[0, unbounded]`). Use a signed domain only when negative
+stacks have intentional gameplay semantics (Strength/Dexterity-style), and record every
+finite lower or upper bound.
+
+The runtime types do **not** supply this contract for you:
+
+- `PowerVar<T>` is a card `DynamicVar` for the amount an effect requests. It has no
+  minimum/maximum API and does not constrain the mutable Power instance.
+- `AllowNegative => false` controls when an existing Power is removed after an amount
+  change. It does not reject a negative amount when `PowerCmd.Apply<T>` creates the first
+  instance.
+- `PowerCmd.Apply<T>` is therefore for gaining/applying a Power. For a nonnegative
+  Counter, never pass a negative amount to it to consume stacks.
+
+To consume a nonnegative Counter, get the existing instance with
+`Creature.GetPower<T>()`, clamp the actual spend to `0..power.Amount`, and call
+`PowerCmd.ModifyAmount` on that instance. If there is no instance, spend zero and do
+nothing. `recipes/power.md` has the copyable Cmd sequence and finite-bound rule.
+
 ## Where each recipe leans on this file
 
 - **`recipes/power.md`** — DynamicVars (§1) for the stack/scaling number, `{Amount}` +
-  formatters (§2) for the description, `PowerType`/`PowerStackType` (§3).
+  formatters (§2) for the description, `PowerType`/`PowerStackType` (§3), and the
+  required Counter amount-domain contract (§4).
 - **`recipes/card.md`** — `DamageVar`/`BlockVar` in `CanonicalVars` (§1), `OnUpgrade`,
   `{Damage:diff()}` (§2), `CardType`/`CardRarity`/`TargetType` in the constructor (§3).
 - **relics/potions** — mostly literal amounts + plain descriptions; they only need §3

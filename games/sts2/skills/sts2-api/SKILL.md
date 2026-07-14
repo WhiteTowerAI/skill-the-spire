@@ -44,7 +44,7 @@ not dump entire files into the response.
 | `recipes/relic.md` | Full known-good relic pattern (skeleton, hooks, energy Cmds, RNG, loc-key derivation, checklist, golden example) | Authoring a relic |
 | `recipes/potion.md` | Full known-good potion pattern (OnUse trigger, Rarity/Usage/TargetType, effect Cmds, loc table `potions`, checklist, worked examples) | Authoring a potion |
 | `recipes/card.md` | Full known-good card pattern (OnPlay, CardType/rarity/target, DamageCmd fluent builder + GainBlock + PowerCmd.Apply, DynamicVars/upgrade, loc table `cards`, `card <id>` console cmd, worked examples) | Authoring a card |
-| `recipes/power.md` | Full known-good custom-power pattern (Type/StackType, trigger hooks, PowerCmd.Apply, loc table `powers`) — usually a dependency of a card/relic | Authoring a custom buff/debuff |
+| `recipes/power.md` | Full known-good custom-power pattern (Type/StackType, amount domains, trigger hooks, `PowerCmd.Apply` gain + guarded `ModifyAmount` consumption, loc table `powers`) — usually a dependency of a card/relic | Authoring or consuming a custom buff/debuff |
 | `recipes/keyword.md` | Custom `CardKeyword` pattern (`[CustomEnum]`, optional `[KeywordProperties]`, `card_keywords` loc, host attachment, behavior-vs-display boundary, Type+Scenario proof) | Authoring shared card-mechanic vocabulary |
 | `recipes/enchantment.md` | Custom Card Enchantment pattern (`CustomEnchantmentModel`, `CardCmd.Enchant`, CardModifierLoc/extraCardText, host restrictions, attachment + altered-behavior proof); explicitly distinct from run `CustomModifierModel` | Authoring a persistent modifier attached to a Card |
 | `recipes/orb.md` | Custom Orb pattern (`CustomOrbModel`, OrbLoc, Channel/Passive/Evoke, owner/slot behavior, provisional icon+sprite seams, three-part Scenario proof) | Authoring an orb plus its Card/relic/power host |
@@ -75,5 +75,9 @@ Harmony patching and is deferred. The recipes make **new** elements.
 - **Relic combat-start energy**: use `AfterSideTurnStart` + `TurnNumber <= 1` guard. `BeforeCombatStart()` is wrong — energy reset wipes it.
 - **Potions fire in `OnUse`** (they're actively used) — no combat hook. Self-buff potions target `AnyPlayer`, not `Self`. Damage/block use `ValueProp.Unpowered`.
 - **Cards fire in `OnPlay`**; a card targeting the player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions). Numbers come from `DynamicVars` (scaling), not literals; attacks use the `DamageCmd.Attack(...)` fluent builder. Loc table `cards`, no separate upgrade key (SmartFormat `:diff()` handles it).
+- **Counter Power amounts need a SPEC domain** (nonnegative by default). To consume a
+  nonnegative Counter, find its existing instance, clamp the spend, and call
+  `PowerCmd.ModifyAmount`; never consume with a negative `PowerCmd.Apply<T>` because a
+  missing instance would be created negative.
 - **Never `System.Random`** for in-game RNG — use `MegaCrit.Sts2.Core.Random.Rng`.
 - **Don't guess an API** — if the recipe lacks it, check the rest of the pack (`reference/mechanics.md`, `reference/build-constraints.md`, snapshots, `errors.md`) per `grounding.md`. If it's genuinely not in the pack, report a pack gap rather than digging or guessing.

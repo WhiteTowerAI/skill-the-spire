@@ -3,7 +3,8 @@
 > A copy-adaptable, **known-good** pattern for a single STS2 power (a buff/debuff:
 > Strength, Poison, Vulnerable…). Every signature here was confirmed against
 > decompiled `sts2.dll` + BaseLib — not guessed. Reads the shared `reference/mechanics.md`
-> for DynamicVars, SmartFormat descriptions, and enums; **read that first.**
+> for DynamicVars, SmartFormat descriptions, enums, and Counter amount domains;
+> **read that first.**
 >
 > Vanilla powers to imitate: `StrengthPower` (passive damage modifier), `PoisonPower`
 > (turn-triggered damage + decay), `VulnerablePower` (duration debuff that ticks down).
@@ -84,7 +85,19 @@ public sealed class <PowerName> : <ModName>Power
 | `StackType` | `PowerStackType` = `None, Counter, Single` | **`Counter`** = visible numeric stacks (Strength, Poison). **`Single`** = hidden flag, amount always 1 (a boolean "you have this" power). |
 
 Optional: `AllowNegative => true` (Strength/Dexterity — negative stacks debuff you;
-power auto-removed at exactly 0). Default `false` (removed when it drops below 0).
+power auto-removed at exactly 0). Default `false` removes an existing power at 0 or
+below after an amount change, but does **not** reject a negative first application.
+
+## Amount domain (required for every custom Counter)
+
+Copy the `amount domain` from `SPEC.md` before writing any mutation. Default to
+nonnegative (`[0, unbounded]`). A signed domain is valid only when SPEC explains what
+negative stacks do; implement that intent with `AllowNegative => true`. Record and
+enforce finite lower/upper bounds in every gain or consumption path.
+
+`PowerVar<T>` does not have min/max metadata, and `AllowNegative` is removal/display
+behavior rather than input validation. The authored Cmd sequence must preserve the SPEC
+domain; neither type can do it automatically.
 
 ## Trigger hooks (override the ONE matching the request)
 
@@ -126,6 +139,10 @@ await CreatureCmd.GainBlock(base.Owner, base.Amount, ValueProp.Unpowered, null);
 await PowerCmd.TickDownDuration(this);
 ```
 
+`Decrement(this)` and `TickDownDuration(this)` operate on the already-present Power
+instance, so they cannot create a missing negative instance. For variable or multi-stack
+consumption initiated by another element, use the guarded pattern below instead.
+
 **Applying THIS power from a card/relic** (the caller side — usually in the card's
 `OnPlay` or the relic's hook). Single target:
 
@@ -140,6 +157,42 @@ card if applied from a card's `OnPlay` (pass `this`), else `null` (e.g. from a r
 hook). See the worked example below for both.
 
 (There's also an `IEnumerable<Creature>` overload for all-target application.)
+
+### Consuming a nonnegative Counter (find, clamp, then modify)
+
+`PowerCmd.Apply<T>` is for gaining/applying. **Never consume a nonnegative Counter with
+`PowerCmd.Apply<T>(..., -N, ...)`.** When no instance exists, that call creates a new
+Power at `-N`; `AllowNegative => false` does not block the first application.
+
+For "consume up to N", find the mutable instance, clamp the actual spend to its current
+amount, and modify that instance. This card-side example also records the real spend for
+the effect marker (`using System;` supplies `Math`):
+
+```csharp
+int requested = Math.Max(0, base.DynamicVars["PowerSpent"].IntValue);
+int spent = 0;
+var power = base.Owner.Creature.GetPower<<PowerName>>();
+if (power is { Amount: > 0 })
+{
+    spent = Math.Min(power.Amount, requested);
+    await PowerCmd.ModifyAmount(choiceContext, power, -spent,
+        base.Owner.Creature, this);
+}
+
+MainFile.Logger.Info(
+    $"[T2MOD-SELFTEST] <CardName> played: spent {spent} <PowerName>");
+```
+
+At zero stacks, `GetPower<T>()` returns `null` and the code spends zero. With fewer than
+N, it spends the available amount and `ModifyAmount` removes the Power at 0. With at least
+N, it subtracts exactly N. A relic/potion uses the same sequence with its real owner and
+`cardSource: null` where appropriate.
+
+If SPEC declares a finite upper bound, clamp positive gains to the available headroom
+before `Apply<T>` too: `headroom = Math.Max(0, max - current)` and
+`gained = Math.Min(Math.Max(0, requested), headroom)`, then skip the Cmd when
+`gained == 0`. Apply the same current-state clamp to either side of any finite signed
+domain.
 
 ## DynamicVars & description (see `reference/mechanics.md` §1–2)
 
@@ -189,6 +242,8 @@ default — not a failure. To ship art, drop a 256×256 PNG at `powers/<slug>.pn
       `CustomPowerModel` directly — that breaks the custom icon; see the skeleton note).
 - [ ] **NO `[Pool]` attribute** (powers aren't pooled — auto-discovered).
 - [ ] Both abstract props overridden: `Type`, `StackType`.
+- [ ] Every `Counter` has its SPEC amount domain implemented; signed behavior is explicit,
+      and every finite bound is enforced.
 - [ ] Correct hook overridden; turn hooks guard `participants.Contains(base.Owner)`.
 - [ ] Modify-* hooks **return** a value and guard `props.IsPoweredAttack()` + owner/target.
 - [ ] Turn hooks `await` all Cmds and consume a stack (`Decrement`/`TickDownDuration`)
@@ -197,6 +252,8 @@ default — not a failure. To ship art, drop a 256×256 PNG at `powers/<slug>.pn
       THREE** (the analyzer `STS001`-fails without `.smartDescription`), **flat,
       prefixed keys**, table `powers`; `{Amount}` in the text if it scales.
 - [ ] The card/relic that applies it uses `PowerCmd.Apply<<PowerName>>(...)`.
+- [ ] Nonnegative Counter consumption finds an existing instance, clamps the spend, and
+      uses `PowerCmd.ModifyAmount`; no negative `PowerCmd.Apply<T>`.
 - [ ] `[T2MOD-SELFTEST]` marker logged on trigger (for tier-2 verify).
 
 ## Full worked example — a turn-start damage debuff (Poison-like)

@@ -183,6 +183,11 @@ await PowerCmd.Apply<VulnerablePower>(choiceContext, cardPlay.Target,
 If no vanilla power matches the request ("at end of turn deal 3 to all"), author a
 **custom power** first (`recipes/power.md`), then `PowerCmd.Apply<YourPower>(...)` here.
 
+`Apply<T>` is the gain/application path. If the card **consumes** a custom nonnegative
+Counter ("lose/consume up to N stacks"), do not pass a negative amount to `Apply<T>`.
+Use `recipes/power.md`'s amount-domain pattern: `GetPower<T>()`, clamp the spend to the
+existing amount, then `PowerCmd.ModifyAmount` that instance.
+
 ### Combine — attack THEN debuff (Bash pattern)
 
 Declare both vars, run the attack, then apply the power on the same target:

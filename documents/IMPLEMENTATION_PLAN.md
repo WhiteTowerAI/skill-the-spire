@@ -461,23 +461,70 @@ normalized prompt before preflight; a Windows `.cmd` regression covers the compl
 Live provider rejection/insufficient-credit paths and macOS/Linux remain open. Full findings
 and the command/model snapshot are in `BASELINE_RESEARCH.md` §5.
 
-**Acceptance follow-up — Power amount-domain safety. TODO (found 2026-07-14).** The
-Honed Edge user acceptance run exposed a behavior bug that build, Tier 1, and the original
-Tier 2 happy path did not catch: using `PowerCmd.Apply<Edge>(..., -4, ...)` to consume a
-nonnegative Counter power creates a new `Edge` at `-4` when no instance exists, so later
-attacks lose damage. `PowerVar<T>` has no min/max contract and `AllowNegative => false`
-does not validate a newly applied negative amount. The follow-up must:
+**Acceptance follow-up — Power amount-domain safety. IMPLEMENTED 2026-07-14; closure
+blocked by technical-review follow-ups below.** The Honed Edge user acceptance run exposed
+a behavior bug that build, Tier 1, and the original Tier 2 happy path did not catch: using
+`PowerCmd.Apply<Edge>(..., -4, ...)` to consume a nonnegative Counter power creates a new
+`Edge` at `-4` when no instance exists, so later attacks lose damage. `PowerVar<T>` has no
+min/max contract and `AllowNegative => false` does not validate a newly applied negative
+amount. The five scoped fixes landed in source and both generated payloads:
 
-1. make every custom Counter power declare its valid amount domain in SPEC (nonnegative by
+1. every custom Counter power declares its valid amount domain in SPEC (nonnegative by
    default; signed only when explicitly intended, plus any finite bounds);
-2. update `reference/mechanics.md`, `recipes/power.md`, and `author.md` so nonnegative power
-   consumption finds the existing instance, clamps the spend, and calls
+2. `reference/mechanics.md`, `recipes/power.md`, and `author.md` require nonnegative power
+   consumption to find the existing instance, clamp the spend, and call
    `PowerCmd.ModifyAmount` rather than negative `PowerCmd.Apply<T>`;
-3. add the live negative-stack signature and fix to append-only `errors.md`;
-4. extend interaction/self-test guidance for "consume up to N" with zero-stack and
-   fewer-than-N cases and an assertion that no negative instance remains or appears; and
-5. audit recipes, generated examples/canaries, and adjacent state-consuming patterns for
-   the same missing-boundary class before closing the item.
+3. append-only `errors.md` records the live negative-stack signature and repair;
+4. interaction/self-test guidance covers zero, fewer-than-N, and at-least-N stacks and
+   asserts that no negative instance remains or appears; and
+5. the adjacent state-consuming audit added equivalent nonnegative guards for orb-slot
+   add/remove operations and found no checked-in generated mod source requiring repair.
+
+Windows tools tests (19/19), `compileall`, `git diff --check`, Markdown-fence/placeholder
+checks, and fresh-publish source/payload hash checks passed before this checkpoint.
+
+**Open technical-review findings (next-session work; do not call this follow-up closed
+until these are fixed and re-verified):**
+
+1. **P1 — Tier 2 can false-pass.** `games/sts2/tools/grep_log.py` accepts any broad
+   `played|fired|used` marker plus `selftest done`, while
+   `reference/selftest-harness.md` does not require concrete post-effect state assertions.
+   The acceptance `HonedEdgeCode/SelfTest.cs` only plays cards, and `Edge.cs` logs from
+   `ModifyDamageAdditive`, so preview/calculation calls can produce many matching markers
+   without proving the intended consumption result. Tighten the proof contract and add a
+   regression that fails when only broad/preview markers plus the terminal marker exist.
+2. **P1 — `launch.py` can accept a stale terminal marker.** Its self-test polling reads the
+   existing `godot.log` before STS2 necessarily rotates it and has no fresh-log or new
+   mod-load-marker boundary. Gate terminal-marker acceptance on evidence from the current
+   launch and add a stale-log regression.
+3. **P1 — the potion recipe publishes a nonexistent API.** `recipes/potion.md` uses
+   `PlayerCmd.Draw`; stable v0.107.1 exposes
+   `CardPileCmd.Draw(choiceContext, count, player)`. Correct source and regenerate both
+   payloads.
+4. **P1 — `grep_log.py` misses multiline/global errors.** It currently requires
+   `ERROR`/`Exception` and the mod name on the same line. The archived live log
+   `%APPDATA%/SlayTheSpire2/logs/godot2026-07-14T16.32.16.log` has a real HonedEdge save
+   error at line 156, but verification reported PASS and `Errors naming HonedEdge: none`.
+   Parse error blocks/context, then cover multiline and global runtime failures without
+   making unrelated historical log text fail a fresh run.
+5. **P2 — consumption must report the actual hook-adjusted offset.** The new
+   `recipes/power.md` template passes the applier/card source and logs pre-hook `spent`, but
+   `ModifyAmount` hooks can rewrite the offset; vanilla internal consumption (for example
+   `VigorPower`) passes `null, null`. Ground whether finite bounds constrain requested or
+   final hook-modified amounts, use the correct consumption context, and assert/log observed
+   post-state rather than the pre-hook request.
+6. **P2 — remove nonessential `SetFtuesEnabled(false)` from the harness.** Catching its
+   exception does not prevent the internal save error seen in the archived log; the
+   self-test does not need this persistent-setting mutation.
+7. **P2 — correct two stale pack facts.** `errors.md` says `TaskHelper` does not exist even
+   though it is public in stable v0.107.1, and `recipes/power.md` still documents
+   `card add`; the verified grammar is `card <id> [pile]`.
+
+The next session should inspect the live HonedEdge evidence under
+`D:/user_test_openmod/honed-edge-mod/` alongside the archived log, fix all seven items in
+`games/sts2/`, regenerate `plugins/open-mod` and top-level `skills`, and rerun the complete
+Windows tools suite, `compileall`, `diff --check`, source/payload consistency checks, plus
+focused regressions for stale logs, multiline errors, and Tier-2 state-proof failures.
 
 **Sequence: after M5, before M6** — M6's heavier content types (characters especially)
 want real art. orb (100×100) / enchantment (64×64) sprite sizes are also now known from

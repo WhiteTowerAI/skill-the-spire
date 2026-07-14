@@ -166,6 +166,25 @@
 - **Fix:** guard with both `participants.Contains(Owner.Creature)` (right owner) and
   `Owner.PlayerCombatState!.TurnNumber <= 1` (combat start only).
 
+### Nonnegative Counter appears at a negative amount after "consume up to N"
+- **Signature:** after the consumer runs at zero stacks, `godot.log` shows a first
+  application such as `[T2MOD-SELFTEST] Edge applied: -4 stacks`, followed by the
+  Power's effect using that value (live example: repeated `Edge fired: added -4 attack
+  damage`). Builds, Tier 1, and a happy-path Tier 2 with enough starting stacks can all
+  pass before this appears.
+- **Cause:** the consumer called `PowerCmd.Apply<Edge>(..., -4, ...)`. `Apply<T>` stacks
+  an existing instance, but when none exists it creates a mutable Power and applies the
+  negative amount directly. `PowerVar<T>` has no min/max API, and
+  `AllowNegative => false` controls removal after modifying an existing Power; neither
+  validates the first negative `Apply`.
+- **Fix:** declare every custom Counter's amount domain in SPEC (default
+  `[0, unbounded]`; signed only with explicit negative semantics). For nonnegative
+  consumption, call `target.GetPower<T>()`; if absent, spend zero. Otherwise clamp the
+  spend to `0..power.Amount` and pass the negative **clamped offset** to
+  `PowerCmd.ModifyAmount(choiceContext, power, -spent, applier, cardSource)`. Never use
+  a negative `PowerCmd.Apply<T>` to consume it. Tier 2 must cover zero, fewer than N,
+  and at least N, asserting after each case that no `Amount < 0` instance exists.
+
 ## Verification harness (launch / console)
 
 ### Dev console won't open in-game
