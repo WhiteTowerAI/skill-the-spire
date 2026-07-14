@@ -6,8 +6,9 @@
 >
 > Companion to `canary.md`. Records the first full run (2026-07-03, STS2 v0.107.1,
 > .NET 9.0.300, BaseLib active) and the exact minimal element bodies used, so the
-> suite is reproducible. All projects live **outside the repo** at
-> `D:\26summer_intern\canary-<x>\` (regenerate-on-demand, not committed).
+> suite is reproducible. Canary projects are regenerate-on-demand and uncommitted:
+> historical cells live under `D:\26summer_intern\canary-<x>\`; newer cells may use
+> gitignored `.claude/` maintainer work dirs.
 
 ## Result: ALL FIVE PASS (build 0/0 + tier-1 load-verified)
 
@@ -342,3 +343,86 @@ not supplied by STS2, BaseLib, or the generated project. The source template now
 standard fire-and-forget `_ = RunAsync();`; `RunAsync()` already catches and logs its own
 exceptions. Both committed distribution payloads were regenerated from the corrected
 source.
+
+## M6 World Node — CanaryEvent (2026-07-13)
+
+`CanaryEvent` is the Event / World Node vertical canary generated in the gitignored
+maintainer work dir `.claude/canary-event-work/`. It contains one
+`GildedSignpost : CustomEventModel` with an `INITIAL` page, one `FollowTheSign` option,
+and a `FOLLOW_THE_SIGN` result page. The option grants 25 Gold through
+`PlayerCmd.GainGold` and finishes the event.
+
+Build: **0 warnings / 0 errors**. PckPacker emitted and installed
+`CanaryEvent.dll/.pck/.json/.pdb` into the real STS2 mods directory.
+
+Tier 1:
+
+```text
+python games/sts2/tools/launch.py
+python games/sts2/tools/grep_log.py --mod-name CanaryEvent
+```
+
+Result: `[PASS] Tier-1 verified: CanaryEvent loaded ok.` No mod-named errors.
+
+Tier 2 — first `MapNode` scenario (all other harness mods parked):
+
+```text
+python games/sts2/tools/launch.py --self-test --mod-name CanaryEvent
+python games/sts2/tools/grep_log.py --mod-name CanaryEvent \
+  --tier2-pattern "event entered|option chosen|option observed"
+```
+
+Result: `[PASS] Tier-2 verified: CanaryEvent loaded AND effect marker fired.`
+
+```text
+CanaryEvent loaded ok
+CanaryEvent event entered: title='Gilded Signpost' option='Follow the sign'
+CanaryEvent option chosen: gold 99 -> 124 delta=25
+CanaryEvent option observed: gold 99 -> 124 delta=25
+CanaryEvent selftest done
+```
+
+This proves more than registration: `EnterRoomDebug(RoomType.Event,
+MapPointType.Unknown, ModelDb.Event<GildedSignpost>())` entered the real `EventRoom`;
+the harness read formatted nested title/option/result localization, clicked an actual
+enabled `NEventOptionButton` with `UiHelper.Click`, and independently observed the same
+Gold delta as the option method.
+
+Grounded contracts promoted into `recipes/event.md`:
+
+- `CustomEventModel()` auto-calls `AddEvent`; no `[Pool]` and no manual registration.
+- Empty `Acts` means BaseLib all-act placement, distinct from multiplayer
+  `EventModel.IsShared`.
+- `EventLoc` / `EventPageLoc` / `EventOptionLoc` generate the nested `events` keys.
+- `Option(Method)` slugifies the method name, so `FollowTheSign` must match
+  `FOLLOW_THE_SIGN` localization.
+- The provisional portrait `res://images/events/this_or_that.png` loads. Custom event
+  portrait/background generation is not part of the support claim.
+
+### Natural-language pipeline acceptance — ForgottenCache (2026-07-14)
+
+Fresh input, deliberately different from the canary:
+
+> an event called Forgotten Cache where opening the cache gives 30 gold
+
+The current source pipeline inferred Event, all acts, one `OpenTheCache` option, and
+placeholder art; wrote `SPEC.md` / `PLAN.md` / `MEMORY.md`; scaffolded a new
+`ForgottenCache` template project; authored nested `EventLoc` plus the MapNode harness;
+then built and verified it with **zero repair attempts**. Acceptance state/source remains
+in gitignored `.claude/acceptance-forgotten-cache/`.
+
+- Build: **0 warnings / 0 errors**; dll/json/pck/pdb installed.
+- Tier 1: PASS (`RUNNING MODDED`, exact load marker, zero mod-named errors).
+- Tier 2: PASS (real event room + option UI + independent state observation).
+
+```text
+ForgottenCache loaded ok
+ForgottenCache event entered: title='Forgotten Cache' option='Open the cache'
+ForgottenCache option chosen: gold 99 -> 129 delta=30
+ForgottenCache option observed: gold 99 -> 129 delta=30
+ForgottenCache selftest done
+```
+
+The canary supplies the reproducible Type + Scenario proof; this second, one-sentence run
+closes the separate natural-language pipeline gate. Event / World Node therefore advances
+to **`pipeline-supported`** while custom event art remains provisional.

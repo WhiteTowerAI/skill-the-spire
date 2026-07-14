@@ -126,6 +126,38 @@ form is for source→dependent links like card→power). They are one indivisibl
 single recipe (`recipes/monster.md`) and a single `CombatEnemy` proof. `author.md` dispatches
 to that recipe when `element: enemy encounter`.
 
+**Event / World Node** (one `CustomEventModel` with nested pages/options; scenario is
+`MapNode`; custom event art is provisional and stays on the verified vanilla placeholder):
+
+```markdown
+# SPEC — <Mod Name>
+
+- **element**: event
+- **class name**: <PascalCase>   e.g. GildedSignpost
+- **mod name**: <PascalCase = csproj/assembly/manifest id>
+- **author**: <author>
+- **acts**: all | <Glory | Hive | Overgrowth | Underdocks>
+- **opening**: <initial page description>
+- **options**:
+  - method: <PascalCase method, e.g. FollowTheSign>
+    key: <UPPER_SNAKE derived from method, e.g. FOLLOW_THE_SIGN>
+    title: <button title>
+    description: <button consequence text>
+    effect: <precise Cmd consequence with numbers>
+    result page: <key + result description>
+- **scenario**: MapNode
+- **observe**: custom event room entered; formatted title/option/result loc; real option UI clicked; run-state consequence
+- **art**: placeholder (verified vanilla `res://images/events/this_or_that.png`; custom event art not yet supported)
+- **derived ids**:
+  - Id.Entry: `<NS_UPPER>-<SLUG>`
+  - code loc keys: `<ID>.title`, `<ID>.pages.INITIAL.description`,
+    `<ID>.pages.INITIAL.options.<OPTION_KEY>.{title,description}`,
+    `<ID>.pages.<RESULT_KEY>.description`
+```
+
+`Option(Method)` slugifies the method name, so its derived `<OPTION_KEY>` must exactly
+match `EventOptionLoc`. `author.md` dispatches `element: event` to `recipes/event.md`.
+
 **Multi-element contract** (add only when the mod contains more than one authored element;
 omit it for the single-element fast path). `elements` are real content nodes. `interactions`
 are directed relationships between them — never use `combo` as an element type.
@@ -181,6 +213,8 @@ Rules for this round:
 - **`generate` is wired for all four element types — `card`, `relic`, `power`, `potion`**
   (all live-verified — card 1000×760; relic/power/potion 256×256 loose PNGs;
   `reference/art-contract.md`).
+- **Event and enemy-encounter art stays placeholder.** Do not call `gen_sprite.py` for
+  either; their scene/portrait contracts have not been live-grounded.
 - **`generate` needs a user-supplied backend** (an OpenAI-compatible image endpoint) via
   an `art-backend.json` the user configures. If they chose generate but have no backend,
   fall back to placeholder and say so — never block the pipeline on art.
@@ -209,7 +243,7 @@ Start it with the derived ids and any decisions, so nothing is re-derived later:
 # MEMORY — <Mod Name>
 - Id.Entry: <...>
 - loc keys: <...>
-- decisions: rarity=Common (default), pool=Shared (default)
+- decisions: <type-specific defaults, e.g. rarity/pool OR event acts=all>
 ```
 
 ## Confirm with the user
@@ -225,6 +259,10 @@ Show a **plain-language** summary and get a yes before scaffolding:
 > (card) I'll build **<Title>**, a Common <Attack/Skill/Power> card that costs
 > <N> energy. When played it <effect in plain words>; upgrading it <upgrade in plain
 > words>. It'll appear for any character. <art line>. Sound right?
+>
+> (event) I'll build **<Title>**, a map event available in <all acts / the chosen acts>.
+> The player sees <opening>, can choose <option summary>, and that choice <consequence>.
+> It will use a placeholder event portrait for now. Sound right?
 
 For the **<art line>**, reflect the SPEC art plan: "with placeholder art for now" (the
 fast default), or "with custom art I'll generate for the portrait" if they chose

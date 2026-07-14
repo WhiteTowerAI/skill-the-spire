@@ -24,8 +24,10 @@ localization JSON, and inject the self-test marker. Everything structural
   `CustomMonsterModel` and the `CustomEncounterModel(RoomType.Monster)` it spawns as one
   slice — the monster's move body attacks with `.FromMonster(this).Execute(null)` (**never**
   `.Targeting()`), and the effect marker goes on the enemy's move; do not model the pair as
-  two `elements` + an interaction. Pull
-  the skeleton, the trigger/usage rules, the effect
+  two `elements` + an interaction. For an **event / World Node** (`element: event`),
+  read `recipes/event.md`: author one `CustomEventModel`, nested `EventLoc` pages/options,
+  a public-Cmd consequence, and a `SetEventFinished` result page; no `[Pool]` or manual
+  `AddEvent`. Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. Do **not** guess API names — if
   the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
   means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
@@ -83,6 +85,21 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
   (`ModelDb.Monster<T>()`), and `GenerateMonsters()` (`ModelDb.Monster<T>().ToMutable()` +
   slot, `null` slot ok). Do **not** call `AddEncounter` manually — the base constructor does it.
 
+**Event / World Node** — create `<ModName>Code/Events/` and add `<Name>.cs` from
+`recipes/event.md`:
+
+- Extend `CustomEventModel`; no `[Pool]` and no manual `AddEvent` (the base constructor
+  registers it). Leave `Acts` empty for the default all-act placement unless SPEC scopes it.
+- Override `Localization` with `EventLoc` containing the title, `INITIAL` page, every
+  `EventOptionLoc`, and every result page. The key for `Option(Method)` must be the exact
+  upper-snake slug of the method name.
+- `GenerateInitialOptions()` returns `Option(<Method>)`. The method uses confirmed public
+  Cmds against `Owner`, logs the observed state delta, then calls
+  `SetEventFinished(PageDescription("<RESULT_KEY>"))` (or deliberately `SetEventState` for
+  another choice page).
+- Override `CustomInitialPortraitPath` with the recipe's verified vanilla placeholder;
+  custom event portrait/background generation is not yet supported.
+
 ## 2. Inject the self-test markers
 
 **Two markers.** The Alchyr template's `MainFile.cs` does NOT log anything by
@@ -94,7 +111,8 @@ Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 
 Then, for **effect** proof, log a marker inside the trigger showing what happened
-(a relic's combat-start hook, a potion's `OnUse`, a card's `OnPlay`, or an enemy's move body):
+(a relic's combat-start hook, a potion's `OnUse`, a card's `OnPlay`, an enemy's move body,
+or an event option method):
 
 ```csharp
 MainFile.Logger.Info($"[T2MOD-SELFTEST] <ElementName> fired/used: <outcome> <metric> {before} -> {after}");
@@ -110,9 +128,10 @@ This is what makes tier-2 automatic — the effect fires and is grepped with **n
 the keyboard, no dev-console typing**. Query the **sts2-api** skill for
 `reference/selftest-harness.md` and follow it. In short:
 
-1. Emit `<ModName>Code/SelfTest.cs` — the fixed scaffold from that page (menu→combat
-   navigation is identical for every mod; do not hand-edit it), in the **same namespace
-   as `MainFile.cs`** (`<ModName>.<ModName>Code`) so it reaches `MainFile.Logger`.
+1. Emit `<ModName>Code/SelfTest.cs` from that page. The arg gate, menu→run navigation,
+   timeout, catch, terminal markers, and ship-safety are shared by every type; the hosted
+   room entry is scenario-specific. Keep it in the **same namespace as `MainFile.cs`**
+   (`<ModName>.<ModName>Code`) so it reaches `MainFile.Logger`.
 2. Fill **exactly one** source DRIVER body based on the source element's real type:
    **relic** → `BeforeCombat` (grant it, its `AfterSideTurnStart` fires on its own);
    **card** → `InCombat` (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`);
@@ -121,8 +140,12 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    `ModelDb.Encounter<TEncounter>().ToMutable()` + `EnterRoomDebug`, confirm the monster in
    `Enemies` (`e.Monster is TMonster`), then `PlayerCmd.EndTurn(player, canBackOut: false)`
    (void — do NOT await) and assert the player HP delta after the turn resumes. Do NOT apply
-   `PlatingPower` in this scenario (the enemy hit must land). For a multi-element
-   SPEC, use that same source driver, then walk `interactions` in dependency order and
+   `PlatingPower` in this scenario (the enemy hit must land).
+   **event** → the **`MapNode`** variant: enter the canonical custom event with
+   `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, ModelDb.Event<T>())`, wait for its
+   real `NEventOptionButton`, read formatted nested loc, click it with `UiHelper.Click`, and
+   assert the SPEC's run-state consequence plus result page. For a multi-element SPEC, use
+   that same source driver, then walk `interactions` in dependency order and
    observe each dependent marker/state invariant. There is no `combo` element or separate
    registration path; the reference page's card→power example shows the additional waits
    and `EndTurn` needed by that particular interaction, and its § CombatEnemy shows the full
@@ -142,7 +165,11 @@ user launch never arms it — no menu driving, fully inert. It ships dormant ins
 
 ## 3. Write localization
 
-Add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
+For an **event**, use the recipe's in-code `EventLoc` / `EventPageLoc` /
+`EventOptionLoc` inside the event class. Do not also add `events.json` for the same keys;
+BaseLib prefixes the relative nested keys with the real `Id.Entry` at `ModelDb.Init`.
+
+For the JSON-backed types, add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
 relic, **`potions.json`** for a potion, **`cards.json`** for a card, **`powers.json`**
 for a custom power, **`monsters.json`** + **`encounters.json`** for an enemy encounter.
 **Keys are FLAT and prefixed** (recipe's loc-key rule + errors.md "raw-key title"):
@@ -179,12 +206,16 @@ default, and the mod loads fine on it: a **relic** falls back to `relic.png` if
 `images/relics/<slug>.png` is absent; a **potion** falls back to `potion.png` when
 `images/potions/<slug>.png` is absent (the base's `PotionImagePath` `Exists()` check); a
 **card** renders on the default portrait when `images/card_portraits/big/<slug>.png` is
-absent. This is the fast path — nothing to build, no backend, no dev box. Skip to §5.
+absent. This is the fast path — nothing to build, no backend, no dev box. For an **event**,
+the class must instead set `CustomInitialPortraitPath` to the verified vanilla placeholder
+from `recipes/event.md`; the default event layout always preloads a portrait. Skip to §5.
 
 ### Generate (custom sprite via `tools/gen_sprite.py`)
 
 Supported sprite specs (see `sts2-api` → `reference/art-contract.md` for the full
 contract):
+Events and enemy encounters are **not** supported sprite specs; keep their provisional
+placeholders and do not call `gen_sprite.py` for them.
 - **`--spec card`** — the one portrait a normal card loads, **1000×760 landscape**, full-
   bleed (chroma OFF), written to `card_portraits/big/<slug>.png`. **Live-verified in-game.**
   The 606×852 "full art" size is **Ancient-rarity only and out of scope — we never make it**.

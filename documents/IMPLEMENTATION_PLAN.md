@@ -3,10 +3,10 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01 and updated through 2026-07-13.
+> Status: living plan. Written 2026-07-01 and updated through 2026-07-14.
 > **M0–M5.5 are complete. M6 Core is in progress:** M6.0 contracts, Mechanic
-> Vocabulary, and Enemy Encounter are complete and pipeline-supported. **NEXT = World
-> Node**, followed by Minimal Character. M7 L3/L4 starts after the explicit M6 Core gate;
+> Vocabulary, Enemy Encounter, and World Node are complete and pipeline-supported.
+> **NEXT = Minimal Character.** M7 L3/L4 starts after the explicit M6 Core gate;
 > see the M6/M7 sections below. Historical run details remain in `M0_RESULTS.md` …
 > `M4_RESULTS.md`, while current M6 evidence lives in `games/sts2/tests/`.
 
@@ -382,8 +382,8 @@ chroma-key/fit logic reused in `gen_sprite.py`) and `baselines/spire-codex/spine
 want real art. orb (100×100) / enchantment (64×64) sprite sizes are also now known from
 the same extracted set, but those content *types* are M6, so their art rides along there.
 
-**M6 — Content breadth as playable vertical slices, not a checklist of classes.** Today
-the pipeline covers four combat-oriented model types: **three pooled families** (card,
+**M6 — Content breadth as playable vertical slices, not a checklist of classes.** M6 began
+with four combat-oriented model types: **three pooled families** (card,
 relic, potion — `[Pool]` required) plus **auto-discovered power** (no pool). BaseLib's
 registration surface still defines the authoritative inventory of what else exists:
 `CustomContentDictionary` has those 3 pooled families, **5 parallel explicit entry
@@ -482,9 +482,17 @@ single-class cells.
    user acceptance run completed on 2026-07-13 and produced a working verified mod, closing
    the final pipeline-support gate. During that run the open-mod 0.5.0 self-test template's
    nonexistent `TaskHelper` reference was found and corrected to `_ = RunAsync();`.
-4. **World Node Slice — event.** Enter the custom event through `MapNode`, choose at least
-   one option, and observe its consequence; nested talk/option localization is part of the
-   proof, not merely a successful registration.
+4. **World Node Slice — event. ✅ PIPELINE-SUPPORTED 2026-07-14.** `CustomEventModel`
+   auto-registers through `AddEvent` (no `[Pool]`); empty `Acts` gives all-act placement.
+   `recipes/event.md` records nested `EventLoc` pages/options, the `Option(Method)` slug
+   contract, public-Cmd consequences, and the verified vanilla portrait placeholder. The
+   first earned `MapNode` seam enters `ModelDb.Event<T>()`, reads formatted title/option
+   loc, clicks a real `NEventOptionButton`, and observes the result page plus run-state
+   delta. `CanaryEvent` built 0/0 and independently observed Gold `99 -> 124` (`delta=25`)
+   in both event and harness markers. A separate one-sentence `ForgottenCache` run then
+   completed SPEC → scaffold → author → build → Tier 1 → Tier 2 with Gold `99 -> 129`
+   (`delta=30`) and zero repair, closing the pipeline gate. Custom event portrait/background
+   generation remains provisional and is excluded from this support claim.
 5. **Minimal Character Slice.** Use the character template where appropriate; prove the
    character appears in selection, starts a run, owns valid starter content, and exposes at
    least one small mechanic/vocabulary combination. This is a vertical slice, **not** a full

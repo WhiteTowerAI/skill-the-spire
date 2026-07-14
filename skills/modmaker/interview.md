@@ -13,13 +13,15 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 
 ## What to resolve (only if unclear from the sentence)
 
-1. **Element type.** Relic / card / potion / enemy? Infer if possible:
+1. **Element type.** Relic / card / potion / enemy / event? Infer if possible:
    - Owns a passive/triggered effect the player *has* → **relic**.
    - Something the player *plays from hand for an energy cost* → **card**.
    - A **one-shot consumable the player drinks/uses** → **potion**.
    - **A monster/enemy the player fights** → **enemy encounter** (a monster + the encounter
      that spawns it — always one unit; you never build a lone monster).
-   - **Supported now: relic, potion, card, and enemy encounter.** (*Editing* an existing
+   - **A story/choice room on the map** where the player picks an option and gets a
+     consequence → **event / World Node**.
+   - **Supported now: relic, potion, card, enemy encounter, and event.** (*Editing* an existing
      vanilla card/relic/potion is not yet supported — if that's the ask, say so and offer to
      build the closest **new** element instead.)
 2. **Trigger / usage / how it's played:**
@@ -46,6 +48,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      **move** does each turn (attack for N? gain block? apply a debuff?), and whether it's
      a **single monster or a group**. Don't ask about scenes, animations, intents-as-code,
      or any API — those are the recipe's job.
+   - **Event / World Node**: resolve the event's opening situation, the option(s) the
+     player can choose, and each option's concrete consequence (gold/HP/card/relic/etc.).
+     A one-option event is valid for the fast path. Ask which acts only if the user cares;
+     default is all acts. Do not ask about `EventLoc`, room nodes, or registration.
 3. **Effect**: what exactly happens, in game terms (energy, damage, block, draw,
    heal, a power/status). Get numbers if they matter ("double", "gain 2", "20 damage").
    For a card, also ask what **upgrading** it should improve if not obvious (default:
@@ -65,6 +71,9 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      style") once, for the mod. If the mod has several cards and the user wants distinct
      art per card, take one overall style note here; `author.md` fills the per-card
      subject from each card's SPEC when it generates — but you still only *ask* once.
+   - **Events and enemy encounters do not have custom-art generation yet.** If the user
+     requests a custom event/monster visual, state the current placeholder limitation and
+     continue only if they accept it.
 
 ## Defaults (apply silently unless the user specified otherwise)
 
@@ -81,6 +90,7 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
   ask if genuinely unclear.
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
+- **Acts** (event): all acts unless the user specifies a setting.
 - **Art**: **placeholder** (the template's fallback icon). This is the default — do NOT
   proactively ask about art. Only switch to `generate` if the user's sentence asks for a
   custom look (e.g. "a card showing a red phoenix", "make it look like…"). All four types —
@@ -138,6 +148,18 @@ hp: <int>
 move: <plain-language each-turn behavior, with numbers, e.g. "attack for 6">
 group: single | <describe the group>
 art: placeholder (custom monster scene/animation not yet supported)
+```
+
+For an **event / World Node**:
+
+```
+element: event
+name: <proposed>
+opening: <short situation/initial page>
+options:
+  - <option title> -> <precise consequence with numbers>
+acts: all | <specified acts>
+art: placeholder (custom event portrait/background not yet supported)
 ```
 
 Do not write files here — `spec.md` does that. If nothing was ambiguous, skip

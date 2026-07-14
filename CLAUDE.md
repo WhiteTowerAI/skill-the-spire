@@ -17,7 +17,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M6 Core IN PROGRESS: slices ① Mechanic Vocabulary + ② Enemy Encounter DONE / pipeline-supported; next slice ③ World Node; then ④ Minimal Character and M7 (proactive beginner interview)
+## Current status — M6 Core IN PROGRESS: slices ① Mechanic Vocabulary + ② Enemy Encounter + ③ World Node DONE / pipeline-supported; next slice ④ Minimal Character, then M7 (proactive beginner interview)
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -165,8 +165,8 @@ in `reference/art-samples/` (card/relic/power/potion subdirs; 36 MegaCrit refere
 the template base (not CustomPowerModel/CustomRelicModel directly), and both need the
 `big/` variant. See `games/sts2/tests/canary-results.md` §M5.5 for the full run record.
 
-**Next: M6 Core — playable content-breadth slices (M6.0 contracts LANDED 2026-07-10;
-next Mechanic Vocabulary).** Do
+**M6 Core — playable content-breadth slices (M6.0 contracts LANDED 2026-07-10;
+next Minimal Character).** Do
 not execute M6 as a flat "one BaseLib class → one recipe → one canary" checklist: many
 new types only matter through a host relationship (monster→encounter, keyword→card,
 reward→post-combat). Start with **M6.0**, a lightweight maintainer-only Content Capability
@@ -186,8 +186,9 @@ the Tier-2 proof seam: `launch.py --self-test` now returns nonzero for FAILED/ti
 process exit, and `grep_log.py` requires exact load + a non-terminal effect marker +
 `selftest done` (a terminal line alone can never prove behavior). Standard-library synthetic
 log regressions cover this contract. No registry/schema or hypothetical adapter fleet was
-added. The first real `CombatPlayer` seam has now been earned and reused by the three live
-Mechanic Vocabulary canaries; their lazy recipes and compact pipeline routing are shipped.
+added. The `CombatPlayer` seam is reused by the three live Mechanic Vocabulary canaries;
+`CombatEnemy` and `MapNode` have since been earned by their own vertical slices. Their lazy
+recipes and compact pipeline routing are shipped.
 
 M6 Core ships vertical slices in this order: ① Mechanic Vocabulary (**DONE / live
 pipeline-supported 2026-07-10**: keyword + card enchantment + orb; BaseLib
@@ -198,8 +199,12 @@ synonym), ② Enemy Encounter (monster + encounter) — **pipeline-supported 202
 delta=6; recipe + pipeline wired; full natural-language user acceptance run completed;
 key correction: monster attacks use
 `.FromMonster(this).Execute(null)`, **never** `.Targeting()`; monster Spine/scene art stays
-provisional/fallback). ③ World Node
-(event), ④ Minimal Character (selectable, starts a run, valid starter content + one small
+provisional/fallback). ③ World Node (event) — **pipeline-supported 2026-07-14**
+(`CanaryEvent`: `CustomEventModel` build 0/0, first earned `MapNode` seam — real event room,
+nested title/option/result loc, real option UI click, Gold delta=25; `recipes/event.md` +
+pipeline wired; separate one-sentence `ForgottenCache` acceptance passed 0/0 + Tier 1 +
+Tier 2 with Gold delta=30 and zero repair; event art remains a verified vanilla placeholder,
+custom generation provisional), ④ Minimal Character (selectable, starts a run, valid starter content + one small
 mechanic combination). All four must be `pipeline-supported` to close M6 Core. Reward,
 rest-site option, and pet are **M6 Extras** and do not block M7; Act is outside the M6
 completion gate. Anti-bloat applies to every stage: evolve toward a common SPEC envelope +

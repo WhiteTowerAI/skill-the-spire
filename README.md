@@ -9,11 +9,11 @@ First supported game: **Slay the Spire 2 (STS2)**.
 
 > **Status: M6 Core in progress.** open-mod reliably makes **relics, potions, cards, and
 > custom powers** (including a card that applies its own power), **custom card
-> mechanics — keywords, card enchantments, and orbs — and enemy encounters** (a custom
-> monster plus its encounter). It proves both that the mod **loads** and that its **effect
+> mechanics — keywords, card enchantments, and orbs — **enemy encounters** (a custom
+> monster plus its encounter), and **map events / World Nodes**. It proves both that the mod **loads** and that its **effect
 > actually fires** in-game, repairs common build errors automatically, and supports
-> placeholder or generated art for the four core element types. Events/world nodes and
-> playable characters are next in M6 Core. Editing vanilla content and one-click Steam
+> placeholder or generated art for the four core element types. Playable characters are
+> next in M6 Core. Editing vanilla content and one-click Steam
 > Workshop publishing remain out of scope today.
 > See [Current limits](#current-limits).
 
@@ -99,9 +99,9 @@ The skill takes it from there. It will:
 2. **Show you a plan** in plain words and confirm it with you.
 3. **Scaffold, write, and build** the mod.
 4. **Launch the real game and check its log** to prove the mod loads with no errors.
-5. **Run an unattended in-process self-test**: the generated mod drives itself into a
-   minimal combat, fires the effect, and records the observed marker. If navigation
-   cannot reach combat, the skill falls back to a guided manual check and reports
+5. **Run an unattended in-process self-test**: the generated mod drives itself into the
+   hosted scenario its content needs, fires the effect, and records the observed marker.
+   If navigation cannot reach that scenario, the skill falls back to a guided manual check and reports
    load-only rather than pretending behavior was verified.
 
 The standard verification path requires no dev-console typing or menu clicks. You can
@@ -121,10 +121,12 @@ folder and has normally passed both automated verification tiers. To play with i
    - relic: `relic add <ID>`
    - potion: `potion <ID>`
    - card: `card <ID>`
+   - enemy encounter: `fight <ENCOUNTER_ID>`
+   - event: `event <ID>`
 4. Use or trigger it normally. This is for your own play and visual inspection — it
    is not the primary proof path, which the skill already ran automatically.
 
-If the automatic harness could not navigate into combat, these same steps become its
+If the automatic harness could not navigate into its scenario, these same steps become its
 honest manual fallback; the skill will tell you exactly what to enter and will only
 claim Tier 2 after the effect marker is observed.
 
@@ -145,9 +147,9 @@ open-mod is still young. Today it does the following well, and is honest about t
   passive/evoke mechanic). Each is proven to actually change combat state, not just load.
 - ✅ **Load verification** — it proves the mod loads in-game, not just "it compiled".
 - ✅ **Effect verification (automated)** — the mod carries an in-process self-test
-  that drives itself into a combat and confirms the effect fires, with no dev-console
+  that drives itself into the required hosted scenario and confirms the effect fires, with no dev-console
   typing. It falls back to a guided manual check and reports load-only if the
-  self-test can't reach combat.
+  self-test can't reach its scenario.
 - ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
   failures, then re-verifies.
 - ✅ **Custom art for all four types** — card portraits and relic/power/potion icons
@@ -158,7 +160,11 @@ open-mod is still young. Today it does the following well, and is honest about t
   the enemy's move and resulting player-state change, and completed a full acceptance run
   on 2026-07-13. Custom monster *art* (an animated scene) remains provisional, so custom
   enemies use the game's fallback appearance for now.
-- ⏳ **Not yet:** editing existing vanilla content, World Node/events, playable
+- ✅ **Map events / World Nodes** — a plain-English request can produce a custom event
+  with nested page/option text and a real run-state consequence. The pipeline enters the
+  event room, clicks its real option UI, and independently observes the result. Custom
+  event art remains provisional, so events use a verified vanilla portrait placeholder.
+- ⏳ **Not yet:** editing existing vanilla content, playable
   characters, and one-click Steam Workshop publishing.
 - ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
   on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but

@@ -9,8 +9,8 @@ process. Does NOT assert anything itself -- pair with grep_log.py to check for t
 Two modes:
   default (tier-1) : launch, wait a fixed --wait-seconds, close. Proves it loads.
   --self-test (t2) : pass --t2selftest so the mod's in-process harness drives itself
-    from the main menu into a minimal combat and fires the effect with zero
-    interaction. Instead of a fixed wait, POLL the log until the harness prints its
+    from the main menu into the hosted scenario required by the mod and fires the
+    effect with zero interaction. Instead of a fixed wait, POLL the log until it prints its
     terminal marker ([T2MOD-SELFTEST] <ModName> selftest done | selftest FAILED),
     bounded by --wait-seconds. Requires --mod-name.
 
@@ -225,7 +225,7 @@ def main(argv: list[str]) -> int:
     extra_args: list[str] = []
     if args.self_test:
         extra_args.append("--t2selftest")
-        print("[launch] SELF-TEST mode: passing --t2selftest; harness will self-drive to combat")
+        print("[launch] SELF-TEST mode: passing --t2selftest; harness will self-drive its scenario")
 
     print(f"[launch] starting {exe.name} ...")
     proc = launch_process(exe, game_dir, extra_args)
@@ -255,9 +255,9 @@ def main(argv: list[str]) -> int:
                 outcome = "failed"
                 break
         if outcome == "done":
-            print("[launch] harness reported: selftest DONE (effect driven; grep for the fired/used marker now)")
+            print("[launch] harness reported: selftest DONE (scenario driven; grep for the type-specific effect marker now)")
         elif outcome == "failed":
-            print("[launch] harness reported: selftest FAILED (couldn't reach/drive combat) -- "
+            print("[launch] harness reported: selftest FAILED (couldn't reach/drive its scenario) -- "
                   "verify.md: fall back to manual, report tier-1 only", file=sys.stderr)
         elif outcome == "process-exited":
             print(f"[launch] game exited with code {proc.returncode} before a harness terminal marker -- "
@@ -271,7 +271,7 @@ def main(argv: list[str]) -> int:
 
     stop_process(proc)
 
-    tier2_hint = ' --tier2-pattern "fired|used|played"' if args.self_test else ""
+    tier2_hint = ' --tier2-pattern "<type-specific-effect-pattern>"' if args.self_test else ""
     print(f"[launch] done. Now run grep_log.py --mod-name {args.mod_name or '<ModName>'}{tier2_hint} "
           "to check the fresh log.")
     return self_test_exit_code(outcome) if args.self_test else 0

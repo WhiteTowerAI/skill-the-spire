@@ -44,19 +44,21 @@ This is the guaranteed check: it proves "installs + loads + registered".
 
 **Tier-2 is now unattended** (M5). The mod ships an arg-gated in-process harness
 (`SelfTest.cs`, author.md step 2.5). Launched with `--self-test`, it drives itself from the
-main menu into a minimal combat and fires the effect — **no dev-console typing, no human
-triggering**. You then grep the same effect marker.
+main menu into the required hosted scenario and fires the effect — **no dev-console typing,
+no human triggering**. You then grep the same effect marker.
 
 ```bash
 python scripts/launch.py --self-test --mod-name <ModName>
-python scripts/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|played"
+python scripts/grep_log.py --mod-name <ModName> --tier2-pattern "<type-specific-effect-pattern>"
 ```
 
 The `--tier2-pattern` is the **effect vocabulary for this SPEC's scenario**. For a
 `CombatPlayer` element that's `"fired|used|played"`. For an **enemy encounter**
 (`CombatEnemy` scenario) the effect words differ — grep for the enemy-action marker instead,
-e.g. `--tier2-pattern "attacked|action advanced|encounter started|monster present"`. Match
-the pattern to the markers `author.md` actually emitted; the verifier still separately
+e.g. `--tier2-pattern "attacked|action advanced|encounter started|monster present"`.
+For an **event** (`MapNode` scenario), use its room/option markers, e.g.
+`--tier2-pattern "event entered|option chosen|option observed"`. Match the pattern to the
+markers `author.md` actually emitted; the verifier still separately
 requires the exact load marker and `selftest done`, and never accepts a terminal line as
 effect proof.
 
@@ -78,12 +80,12 @@ effect proof.
 
 **Read the harness's terminal marker first — it tells you which failure you have:**
 
-- `selftest done` **and** the element's own `fired/used` marker present → **tier-2 PASS**.
+- `selftest done` **and** the type-specific effect marker present → **tier-2 PASS**.
   The effect actually fired, driven end-to-end with zero interaction.
-- `selftest done` but the `fired/used` marker is **absent** → the harness reached combat
-  and triggered, but the effect didn't fire → a **real tier-2 behavior bug** → `repair.md`
+- `selftest done` but the type-specific effect marker is **absent** → the harness reached
+  its scenario and triggered, but the effect didn't fire → a **real tier-2 behavior bug** → `repair.md`
   (signal: "no effect").
-- `selftest FAILED: <stage>` or timeout → the **harness couldn't reach/drive combat**
+- `selftest FAILED: <stage>` or timeout → the **harness couldn't reach/drive its scenario**
   (navigation/timing — a setup problem, not your effect). Do **not** report a tier-2
   failure of the mod. Fall back to the **manual guide below**, and if that's not feasible,
   report **tier-1 only** honestly.
@@ -102,14 +104,17 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
      run in progress, hand not full).
    - **enemy encounter:** `fight <PREFIX>-<ENCOUNTER_SLUG>` enters the custom encounter
      (run in progress). Confirm the custom monster spawned before ending the turn.
+   - **event:** `event <PREFIX>-<SLUG>` enters the custom event (**exact** match; run in
+     progress). Confirm the localized option appears before choosing it.
 4. Trigger it: **relic** → enter a combat; **potion** → use it (pick a target if targeted);
    **card** → play it (target an enemy for an attack; `energy 3` first for headroom);
-   **enemy encounter** → end your turn and confirm the enemy takes its move (HP/state changes).
+   **enemy encounter** → end your turn and confirm the enemy takes its move (HP/state changes);
+   **event** → choose the specified option and confirm its run-state consequence.
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
    game** (closing rotates the log away):
 
 ```bash
-python scripts/grep_log.py --mod-name <ModName> --tier2-pattern "fired|used|played"
+python scripts/grep_log.py --mod-name <ModName> --tier2-pattern "<type-specific-effect-pattern>"
 ```
 
 If the console won't open or `add` says "Unable to create", see errors.md "Verification
@@ -122,8 +127,8 @@ Update `PLAN.md` (check the verify boxes for the tiers actually reached). Then
 summarize for the user in plain language:
 
 > Built **<Title>** (Common relic). It **loads in-game** (verified) and its effect
-> **<fired automatically in a self-test combat / is written but not yet observed —
-> the harness couldn't reach combat>**. Artifacts are in `mods/<ModName>/`.
+> **<fired automatically in its self-test scenario / is written but not yet observed —
+> the harness couldn't reach its scenario>**. Artifacts are in `mods/<ModName>/`.
 > <If tier-2 not observed: the harness marker it stopped on, and the manual check.>
 
 Be honest about the tier. A loaded-but-effect-unobserved mod is tier-1, not tier-2 —

@@ -78,6 +78,13 @@ classes, which agrees with the model table above and is a useful cross-check:
 `ModifierLoc`/`CardModifierLoc` = title+description, `MonsterLoc` = `name`,
 `ActLoc` = `title`, `EncounterLoc` = title+`loss`.
 
+`EventModel` has no `NamedTypeLocData` row in analyzer v0.1.9, so STS001 does not define
+a flat required-key set for it. BaseLib's in-code `EventLoc` helpers generate nested keys
+under the model's real `Id.Entry`: `.title`, `.pages.<PAGE>.description`, and
+`.pages.<PAGE>.options.<OPTION>.{title,description}`. `Option(Method)` slugifies the method
+name, so that slug must match the corresponding `EventOptionLoc` key. See
+`recipes/event.md`; a clean analyzer run alone cannot prove this event UI localization.
+
 ### 2c. Power override-satisfy escape hatch
 
 For `PowerModel`, the analyzer's `OverrideIgnores` lets a power satisfy the loc

@@ -6,22 +6,24 @@
 >
 > **What it is:** one `SelfTest.cs` file compiled into the generated mod, **dormant
 > unless launched with `--t2selftest`**. When that arg is present, it drives the game
-> from the main menu into a minimal combat with zero interaction, fires the element's
-> effect, and logs the same `[T2MOD-SELFTEST] … fired/used` marker the manual path used.
+> from the main menu into the hosted scenario required by the SPEC with zero interaction,
+> fires the element's effect, and logs the same `[T2MOD-SELFTEST]` effect marker the manual
+> path used.
 > `verify.md` then greps that marker — the effect is proven, not eyeballed.
 >
 > **Ship-safety:** the arg gate (`CommandLineHelper.HasArg("t2selftest")`) means a normal
-> user launch never arms it — no menu driving, no `CombatSetUp` side effects. It is inert.
+> user launch never arms it — no menu or room driving and no scenario side effects. It is
+> inert.
 
 ## Why in-process, and why it drives its own navigation
 
 - **In-process (not keystroke injection / external MCP):** the harness *is* mod code, so
   it calls the game's own public Cmds directly. No OS automation, no second process.
-- **It drives navigation itself** (main menu → run → jump to combat), so it knows exactly
-  when combat is reachable. That means it uses the game's own **poll pattern** — the same
-  code `CombatRoomHandler` (MegaCrit's AutoSlay) uses — not an event subscription:
-  `WaitHelper.Until(() => CombatManager.Instance.IsInProgress)`, then wait for the **Play**
-  phase before playing a card. Race-free.
+- **It drives navigation itself** (main menu → run → hosted room), so it knows exactly
+  when the scenario is reachable. Combat drivers use the game's own **poll pattern** — the
+  same code `CombatRoomHandler` (MegaCrit's AutoSlay) uses — then wait for the **Play** phase
+  before acting. The `MapNode` event driver instead waits for the real `EventRoom` and
+  option UI. Both paths poll observable game state rather than guessing timing.
 
 ## The one correction that matters (do NOT regress)
 
@@ -33,6 +35,7 @@ that each console command wraps (all confirmed `public static`, shipped in `sts2
 | Console command | Public API the harness calls instead |
 |---|---|
 | `fight <id>` | `RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, encounter.ToMutable())` |
+| `event <id>` | `RunManager.Instance.EnterRoomDebug(RoomType.Event, MapPointType.Unknown, ModelDb.Event<T>())` |
 | `relic add <id>` | `RelicCmd.Obtain(relic.ToMutable(), player)` |
 | `card <ID>` | `CombatManager.Instance.DebugOnlyGetState().CreateCard(card, player)` + `CardPileCmd.Add(c, PileType.Hand)` |
 | `energy N` | `PlayerCmd.GainEnergy(3m, player)` |
@@ -70,21 +73,27 @@ keep them:
 
 ## Marker vocabulary (three-way signal for verify/repair)
 
-The harness logs one of three terminal lines so `verify.md`/`repair.md` can tell setup
+The harness and element expose three signals so `verify.md`/`repair.md` can tell setup
 failure from a real effect bug:
 
-- `[T2MOD-SELFTEST] <ModName> selftest done` — reached combat, drove the effect, finished.
+- `[T2MOD-SELFTEST] <ModName> selftest done` — reached the hosted scenario, drove the
+  effect, and observed its result.
 - `[T2MOD-SELFTEST] <ModName> selftest FAILED: <stage>: <reason>` — harness couldn't reach
-  combat (navigation/timeout). **This is a harness/setup problem, NOT an effect bug** —
+  or drive the scenario (navigation/timeout). **This is a harness/setup problem, NOT an
+  effect bug** —
   `verify.md` falls back to the manual guide and reports tier-1 only.
-- the element's own `[T2MOD-SELFTEST] <Element> fired/used: …` (from author.md step 2) —
-  this is the actual tier-2 proof; absent-after-`done` = effect didn't fire (real bug).
+- the element's own type-specific `[T2MOD-SELFTEST]` effect marker (for example
+  `played:`, `attacked:`, or `option chosen:` from author.md step 2) — this is the actual
+  tier-2 proof; absent-after-`done` = effect didn't fire (real bug).
 
-## The fixed scaffold (identical for every mod — do not hand-edit per element)
+## Shared scaffold and scenario-specific room driver
 
-Emit this as `<ModName>Code/SelfTest.cs`. Only the **`BeforeCombat` / `InCombat`** bodies
-(the "DRIVER" region) change per element type — fill them from the table further down.
-`<ModName>` / `<PREFIX>-<SLUG>` are substituted exactly as elsewhere.
+Emit this as `<ModName>Code/SelfTest.cs`. The arg gate, menu→run navigation, timeout, and
+terminal markers are shared. The scaffold below is the `CombatPlayer` baseline: its
+**`BeforeCombat` / `InCombat`** DRIVER bodies change per combat element. `CombatEnemy`
+replaces the encounter entry and combat driver; `MapNode` replaces combat entry entirely
+with the event room/UI driver documented below. `<ModName>` / `<PREFIX>-<SLUG>` are
+substituted exactly as elsewhere.
 
 ```csharp
 using System;
@@ -232,7 +241,7 @@ internal static class SelfTest
 
 ## The DRIVER bodies (fill per SPEC element type)
 
-The element's own `fired/used` marker (author.md step 2) is what proves tier-2 — the
+The element's own type-specific effect marker (author.md step 2) is what proves tier-2 — the
 driver's only job is to *make it fire*. Branch on SPEC's `element`:
 
 ### relic — grant before combat, then just wait
@@ -399,6 +408,79 @@ a pattern like `"attacked|action advanced|encounter started|monster present"`.
 > phase not resumed after enemy turn`). `recipes/monster.md` documents this.
 > Needs `using MegaCrit.Sts2.Core.Map;` for `MapPointType`.
 
+## The `MapNode` scenario (event / World Node — earned seam, live 2026-07-13)
+
+An event is not proven by registration alone. The harness must enter its real `EventRoom`,
+wait for the nested event UI, click an actual `NEventOptionButton`, and observe the option's
+run-state consequence. Reuse the fixed menu-to-run navigation and `NRun.GlobalUi` timing
+gate; replace the combat entry/driver with this body:
+
+```csharp
+var canonical = ModelDb.Event<<Name>>();
+await RunManager.Instance.EnterRoomDebug(RoomType.Event, MapPointType.Unknown, canonical);
+
+EventRoom? room = null;
+await WaitHelper.Until(() =>
+{
+    room = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom as EventRoom;
+    return room?.LocalMutableEvent is <Name> && NEventRoom.Instance?.Layout != null;
+}, ct, TimeSpan.FromSeconds(30), "custom event room not entered");
+
+var mutableEvent = (<Name>)room!.LocalMutableEvent;
+NEventOptionButton? choice = null;
+await WaitHelper.Until(() =>
+{
+    var eventRoomNode = NEventRoom.Instance;
+    if (eventRoomNode == null) return false;
+    choice = UiHelper.FindAll<NEventOptionButton>(eventRoomNode)
+        .SingleOrDefault(button =>
+            !button.Option.IsLocked
+            && button.Option.Title.GetFormattedText() == "<Option title>");
+    return choice is { IsEnabled: true, Visible: true };
+}, ct, TimeSpan.FromSeconds(30), "event option not available");
+
+// ENTER/LOC: prove title + nested option localization before driving the choice.
+var title = mutableEvent.Title.GetFormattedText();
+var optionTitle = choice!.Option.Title.GetFormattedText();
+var optionDescription = choice.Option.Description.GetFormattedText();
+if (title != "<Title>" || optionTitle != "<Option title>" || optionDescription.Length == 0)
+    throw new InvalidOperationException(
+        $"Nested event localization mismatch: title='{title}', option='{optionTitle}', description='{optionDescription}'");
+MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> event entered: title='{title}' option='{optionTitle}'");
+
+// DRIVE/OBSERVE: click the game's real option UI and assert the SPEC consequence.
+var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!)
+    ?? throw new InvalidOperationException("local player not found");
+var before = player.Gold;
+await UiHelper.Click(choice);
+await WaitHelper.Until(
+    () => player.Gold == before + <amount> && mutableEvent.IsFinished,
+    ct, TimeSpan.FromSeconds(30), "event option consequence not observed");
+
+var resultDescription = mutableEvent.Description?.GetFormattedText() ?? string.Empty;
+if (resultDescription.Length == 0)
+    throw new InvalidOperationException("result page localization missing");
+MainFile.Logger.Info(
+    $"[T2MOD-SELFTEST] <ModName> option observed: gold {before} -> {player.Gold} delta={player.Gold - before}");
+```
+
+Required namespaces beyond the fixed scaffold: the event type; `MegaCrit.Sts2.Core.Map`;
+`MegaCrit.Sts2.Core.Nodes.Events`; `MegaCrit.Sts2.Core.Nodes.Rooms`; and
+`MegaCrit.Sts2.Core.Rooms`. `System.Linq` is already used by the navigation code.
+
+Select the button by the SPEC option's formatted title, not merely "the only unlocked
+option"; multi-option events are valid and the scenario drives one specified consequence.
+The event option method logs its own `option chosen:` marker **after** the Cmd changes run
+state. The harness independently reads the same state and logs `option observed:`. Verify
+with a pattern such as `"event entered|option chosen|option observed"`; the verifier still
+requires the exact load marker and `selftest done`.
+
+> **Live-proven (`CanaryEvent`, tier-2 PASS):** `GildedSignpost` entered through
+> `EnterRoomDebug(..., ModelDb.Event<GildedSignpost>())`; formatted title and option loc
+> resolved; `UiHelper.Click` selected `Follow the sign`; the event and harness independently
+> observed gold `99 -> 124` (`delta=25`); the result page resolved; zero mod-named errors.
+> The portrait is the provisional vanilla `This or That?` placeholder, not custom event art.
+
 ## Deferred: the headless / menu-skip path (design seam, not built in M5)
 
 The fragile part is `NavigateToRunAsync` (scene-tree paths shift across versions). The
@@ -413,7 +495,7 @@ need their own mod-reachability grounding first.
 
 - [ ] `SelfTest.cs` emitted in `<ModName>Code/`, in the same namespace as `MainFile.cs` (`<ModName>.<ModName>Code`) so `MainFile.Logger` resolves.
 - [ ] `MainFile.Initialize()` has, after the load marker: `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();`
-- [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → the `CombatEnemy` `InCombat` that enters the custom encounter and ends the turn); multi-element interactions reuse that real source driver and add observations.
+- [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + option UI click); multi-element interactions reuse that real source driver and add observations.
 - [ ] `<PREFIX>-<SLUG>` ids match the element's real `Id.Entry` (SPEC's derived ids).
-- [ ] The element's own `fired/used` marker (author.md step 2) is present — the harness only *triggers*; the element logs the proof.
+- [ ] The element's own type-specific effect marker (author.md step 2) is present — the harness only *triggers*; the element logs the proof.
 - [ ] Never claim tier-2 on a `selftest FAILED` line — that's a harness/setup miss, report tier-1 + manual fallback.

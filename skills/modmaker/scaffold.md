@@ -54,7 +54,10 @@ The template lays out (confirmed from the M1 golden mod):
   class** (also scaffolded — resolves card portrait paths); your concrete card
   extends it. **Note:** there is **no `Potions/` folder or base class** — a potion
   mod creates both in `author.md` (see `recipes/potion.md` "Scaffold difference").
-  Powers need no base class (auto-discovered; see `recipes/power.md`).
+  Powers need no base class (auto-discovered; see `recipes/power.md`). Events are not
+  scaffolded either: an event mod creates `<ModName>Code/Events/` and its
+  `CustomEventModel` class in `author.md` (see `recipes/event.md`); no shared event base
+  class is needed.
 - `<ModName>/` — resources: `localization/eng/*.json`, `images/...`.
 
 ## 2. Enable the `.pck` (PckPacker)

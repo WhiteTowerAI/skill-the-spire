@@ -16,12 +16,13 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now — relic + potion + card + power; keyword/enchantment/orb mechanics; enemy encounter (monster + encounter); interaction-aware two-tier verify
+## Scope right now — relic + potion + card + power; keyword/enchantment/orb mechanics; enemy encounter; World Node/event; interaction-aware two-tier verify
 
-This skill turns one sentence into a known-good **relic, potion, card, or enemy encounter**
-end to end, including custom card keywords, card enchantments, and custom orbs when the
-concept needs reusable vocabulary, a persistent Card modification, or an orb passive/evoke
-mechanic, verifies it **loads** (tier-1) AND that its **effect actually fires** (tier-2, now
+This skill turns one sentence into a known-good **relic, potion, card, enemy encounter,
+or World Node/event** end to end, including custom card keywords, card enchantments,
+and custom orbs when the concept needs reusable vocabulary, a persistent Card
+modification, or an orb passive/evoke mechanic. It verifies the mod **loads** (tier-1)
+AND that its **effect actually fires** (tier-2, now
 automated by an in-process self-test harness — no dev-console typing), and when a stage
 fails runs the **bounded automated repair loop** (`repair.md`) to diagnose → fix →
 re-verify within a hard retry cap. A **custom power** (buff/debuff) is supported too,
@@ -29,9 +30,14 @@ usually as the dependency of a card/relic that applies it. An **enemy encounter*
 custom monster + the encounter that spawns it, authored as one vertical slice and proven
 through the **`CombatEnemy`** scenario (enter the encounter, confirm the monster, end the
 turn, observe the enemy's action) — custom monster *art* (a Spine scene) is not yet wired,
-so enemy visuals fall back to the game default. Multi-element mods record real
-content nodes plus directed **interactions**; tier-2 drives the source by its actual type and
-checks the dependent observation, so a card→power link cannot pass merely because both
+so enemy visuals fall back to the game default.
+An **event** is a normal map event with nested pages/options, authored as one
+`CustomEventModel` and proven through the **`MapNode`** scenario (enter the event room,
+read its localized option, click it, and observe the run-state consequence). Custom event
+art is not yet wired, so events use a verified vanilla portrait as a provisional placeholder.
+Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
+the source by its actual type and checks the dependent observation, so a card→power link
+cannot pass merely because both
 models loaded. “Combo” is not a content type. **Custom art (M5.5)** is now wired and
 live-verified for **all four element types — card portraits, relic icons, power icons, and
 potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
@@ -74,12 +80,14 @@ User: one sentence ("a relic that ...")
     manifest, uncomment PckPacker.
     |
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
-    plus power.md if the effect needs a custom buff/debuff), write the Custom*Model
+    monster+encounter/event, plus power.md if the effect needs a custom buff/debuff),
+    write the Custom*Model
     subclass filling ONLY the effect logic, add localization JSON, inject both
     [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
     (SelfTest.cs, step 2.5 — reference/selftest-harness.md). Then the ART sub-step
     (author.md §4): per SPEC's art plan, leave placeholder (default) or generate a
-    custom card portrait via tools/gen_sprite.py (BYO backend). Art never blocks —
+    custom sprites for supported types via tools/gen_sprite.py (BYO backend). Art never
+    blocks —
     a missing sprite falls back to the template default. Regenerate = re-run + rebuild.
     |
  5. BUILD (build.md) — tools/build.py → .dll/.pck/.json into mods/ (the .pck rebuild is
@@ -87,9 +95,9 @@ User: one sentence ("a relic that ...")
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
     and mod-named errors (tier-1). Then run the tier-2 self-test unattended
-    (launch.py --self-test → the harness drives itself into combat and fires the
-    effect → grep the fired/used marker). Fall back to the manual dev-console guide
-    only if the harness can't reach combat. Never claim the effect is verified when
+    (launch.py --self-test → the harness drives the required combat/event scenario and
+    fires the effect → grep the type-specific marker). Fall back to the manual dev-console guide
+    only if the harness can't reach its scenario. Never claim the effect is verified when
     only load was. On failure: go to REPAIR (repair.md).
     |
  7. FINALIZE — summarize what was built, where the artifacts are, and which tier
@@ -118,7 +126,7 @@ conversational memory.
 A green build is not success. The mod must **load** (tier-1: log marker greppable,
 no mod-named errors) and its **effect must fire** (tier-2: driven automatically by the
 in-process self-test harness and grepped from the log — no human triggering). Report
-exactly which tier was reached; a harness that couldn't reach combat is tier-1, not a
+exactly which tier was reached; a harness that couldn't reach its scenario is tier-1, not a
 tier-2 failure of the mod. See `verify.md`.
 
 ## When you need a concrete STS2 answer

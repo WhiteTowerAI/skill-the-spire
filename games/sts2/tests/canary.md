@@ -25,7 +25,7 @@ this matrix built it. Card/potion/relic each already had a real acceptance mod
 card→power interaction path were not. Any *new* recipe added later must gain a canary
 here before it is considered done.
 
-## The nine cells
+## The ten cells
 
 | Cell | Mod | Element(s) | What it proves in the recipe | Tier-2 harness DRIVER + marker |
 |------|-----|-----------|------------------------------|--------------------------------|
@@ -38,11 +38,13 @@ here before it is considered done.
 | card-orb interaction | `CanaryOrb` | card `Take Shelter` + custom orb `Shelter` | `CustomOrbModel`, inline `OrbLoc`, zero-slot Channel behavior, queue ownership, passive + evoke | `CombatPlayer` autoplays host Card → queue `present=True capacity=1` → passive Block `0 -> 2` → evoke Block `2 -> 7` |
 | interaction | `CanaryCombo` *(historical project name)* | card `Charge` + custom power `Signal` | the **card → `PowerCmd.Apply<CustomPower>`** dependency path (the BloodAndFury multi-element shape) in one mod: two real element nodes, an `applies` interaction, `PowerVar<Signal>`, `DynamicVars["Signal"]`, and both loc tables | `CombatPlayer` drives the real source type (`card`): play `Charge` (`Charge played: applied Signal`) → assert the dependent `Signal fired:` observation — the interaction-edge proof |
 | enemy encounter | `CanaryEncounter` | `CanaryMite : CustomMonsterModel` + `CanaryMiteEncounter : CustomEncounterModel` | `CustomMonsterModel` (no `[Pool]`, auto `RegisterType`), `GenerateMoveStateMachine` + `MoveState("PECK", …, SingleAttackIntent(6))` + `.FollowUpState = peck`, `CustomEncounterModel(RoomType.Monster)` (auto `AddEncounter`), `IsValidForAct`, `AllPossibleMonsters` / `GenerateMonsters`, `monsters.json` + `encounters.json` loc; **bug fix**: monster attacks use `.FromMonster(this).Execute(null)` NOT `.Targeting(target)` | **`CombatEnemy` scenario**: enter via `ModelDb.Encounter<CanaryMiteEncounter>().ToMutable()` + `EnterRoomDebug`; assert `Enemies.FirstOrDefault(e => e.Monster is CanaryMite)` found; wait Play phase; `EndTurn` (void); wait Play phase again; assert player `hp [before] -> [after] delta=6` |
+| event / World Node | `CanaryEvent` | `GildedSignpost : CustomEventModel` | no `[Pool]`; constructor auto-`AddEvent`; default empty `Acts` means all-act placement; nested in-code `EventLoc` / `EventPageLoc` / `EventOptionLoc`; `Option(FollowTheSign)` slug matches `FOLLOW_THE_SIGN`; `PlayerCmd.GainGold(25m, Owner)` + `SetEventFinished`; verified vanilla portrait placeholder | **`MapNode` scenario**: enter `ModelDb.Event<GildedSignpost>()` via `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, …)`; assert formatted title/option loc; click one real `NEventOptionButton`; independently observe Gold `99 -> 124` (`delta=25`), finished state, and result-page loc |
 
 ## How to run (maintainer, on the STS2 dev box)
 
-Canary projects are **regenerated on demand outside the repo** (like every test mod
-since M1 — repo stays clean; trust regenerate over hoarding). The steps per cell:
+Canary projects are **regenerated on demand outside tracked source** (in an external
+work dir or gitignored `.claude/`; repo stays clean; trust regenerate over hoarding).
+The steps per cell:
 
 1. `mkdir canary-<x> && cd canary-<x> && dotnet new alchyrsts2contentmod -n Canary<X> -M OpenMod`
 2. Uncomment `BSchneppe.StS2.PckPacker` in the csproj.
@@ -61,10 +63,12 @@ since M1 — repo stays clean; trust regenerate over hoarding). The steps per ce
    A single ordinary launch may load every enabled canary, then run
    `python <open-mod>/games/sts2/tools/grep_log.py --mod-name Canary<X>` per cell →
    expect `[PASS] Tier-1 verified`.
-8. **Tier-2** (effect fires, per driving cell — each self-drives its own combat):
+8. **Tier-2** (effect fires, per driving cell — each self-drives its own hosted scenario):
    `python <open-mod>/games/sts2/tools/launch.py --self-test --mod-name Canary<X>` then
    `python <open-mod>/games/sts2/tools/grep_log.py --mod-name Canary<X> --tier2-pattern
-   "fired|used|played"` → expect `[PASS] Tier-2 verified`. The verifier separately requires
+   "<type-specific effect pattern>"` → expect `[PASS] Tier-2 verified`. CombatPlayer uses
+   `"fired|used|played"`; CombatEnemy and MapNode use the marker vocabulary in the table.
+   The verifier separately requires
    `<ModName> selftest done`; a terminal line is never accepted as the effect proof. For
    `CanaryCombo`, confirm both the `Charge played:` and dependent `Signal fired:` markers.
 
@@ -79,7 +83,11 @@ with zero interaction; power is asserted through that relationship.
 cells live-verified. **M6 Enemy Encounter (2026-07-10): CanaryEncounter PASS** — first
 `CombatEnemy` scenario seam earned: custom encounter started, CanaryMite present, PECK move
 executed, player HP delta observed; key correction logged (monster `.FromMonster().Execute(null)`
-not `.Targeting()`). See `canary-results.md` §M6 Enemy Encounter for the run record.
+not `.Targeting()`). **M6 World Node (2026-07-13): CanaryEvent PASS** — first `MapNode`
+scenario seam earned: custom event room entered, nested title/option/result loc resolved,
+real option UI clicked, and event+harness independently observed Gold `delta=25`. A fresh
+one-sentence `ForgottenCache` acceptance then passed 0/0 + Tier 1 + Tier 2 with zero repair
+on 2026-07-14, advancing Event to `pipeline-supported`. See `canary-results.md` for both.
 See `canary-results.md` for the per-cell markers and the four harness bugs the live run
 fixed. **Run one cell at a time** —
 `--t2selftest` arms every loaded harness mod, so parking all but the cell under test avoids
@@ -95,5 +103,5 @@ before any harness run.
 - A vertical-slice canary may prove several inseparable types together (for example,
   monster + encounter) instead of creating meaningless isolated cells.
 - Consider a single Python driver that regenerates/builds the matrix, runs tier-1 once,
-  then parks/arms one self-test mod at a time for tier-2. Defer until M6's second scenario
-  shape proves the abstraction earns its maintenance cost.
+  then parks/arms one self-test mod at a time for tier-2. Revisit after `RunStart` adds a
+  fourth real scenario shape; do not add it only because three adapters now exist.
