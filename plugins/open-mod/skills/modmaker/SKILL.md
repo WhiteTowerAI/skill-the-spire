@@ -16,10 +16,10 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now — relic + potion + card + power; keyword/enchantment/orb mechanics; enemy encounter; World Node/event; interaction-aware two-tier verify
+## Scope right now — relic + potion + card + power; keyword/enchantment/orb mechanics; enemy encounter; World Node/event; Character Foundation; interaction-aware two-tier verify
 
 This skill turns one sentence into a known-good **relic, potion, card, enemy encounter,
-or World Node/event** end to end, including custom card keywords, card enchantments,
+World Node/event, or minimal playable character Foundation** end to end, including custom card keywords, card enchantments,
 and custom orbs when the concept needs reusable vocabulary, a persistent Card
 modification, or an orb passive/evoke mechanic. It verifies the mod **loads** (tier-1)
 AND that its **effect actually fires** (tier-2, now
@@ -39,6 +39,19 @@ An **event** is a normal map event with nested pages/options, authored as one
 `CustomEventModel` and proven through the **`MapNode`** scenario (enter the event room,
 read its localized option, click it, and observe the run-state consequence). Custom event
 art is not yet wired, so events use a verified vanilla portrait as a provisional placeholder.
+A **Character Foundation** uses the Alchyr character template plus BaseLib's
+`PlaceholderCharacterModel`. It appears in the real character-select UI, starts a run
+with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
+3 energy, and one public/BaseLib starter mechanic through `RunStart` + `CombatPlayer`.
+The constructor already registers the character; generated code never calls
+`AddCharacter`. Custom character art/animation and advanced resources/zones/patch kernels
+remain outside this Foundation boundary.
+The **6c capability kernel** is separately scenario-verified as maintainer infrastructure:
+combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, and one
+version/MVID-gated B-risk combat-UI postfix. It is not a user-facing mechanic by itself.
+Route to `reference/capability-kernel.md` only for a specifically grounded advanced
+capability; resource/payment and zone/dynamic-output semantics still wait for their own
+6d recipes and canaries, and one consumer never creates `OpenMod.Runtime`.
 Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
 the source by its actual type and checks the dependent observation, so a card→power link
 cannot pass merely because both models loaded. “Combo” is not a content type.
@@ -57,7 +70,8 @@ routes converge on the `tools/gen_sprite.py` normalization contract; Vofy and lo
 call its `import` command. See `author.md` §4 and `sts2-api` →
 `reference/art-contract.md`. The managed-credit route is live-verified through Vofy + an
 in-game `.pck` on Windows; macOS/Linux remains best-effort and must be reported as such.
-*Editing existing* vanilla content (needs Harmony patching, not a recipe) is still out.
+*Editing existing* vanilla content is still out; the verified 6c lifecycle bridge is not
+a general vanilla-editing recipe.
 If a request needs what isn't wired, say so plainly rather than half-doing it.
 
 ## Stage files
@@ -87,7 +101,7 @@ User: one sentence ("a relic that ...")
  1. INTERVIEW (interview.md) — ONE short round, only for genuinely ambiguous
     things (element type? rarity? exact trigger?). Non-blocking defaults for the rest.
     |
- 2. SPEC (spec.md) — write SPEC.md: element type, name, rarity, trigger, effect
+ 2. SPEC (spec.md) — write SPEC.md: element type, name, type-specific host/starter contract, trigger, effect
     in game terms, any state event/threshold/lifetime/reset/persistence, and art plan.
     Show the user a plain-language summary to confirm.
     |
@@ -95,7 +109,7 @@ User: one sentence ("a relic that ...")
     manifest, uncomment PckPacker.
     |
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
-    monster+encounter/event, plus power.md if the effect needs a custom buff/debuff),
+    monster+encounter/event/character, plus power.md if the effect needs a custom buff/debuff),
     write the Custom*Model
     subclass filling ONLY the effect logic, add localization JSON, inject the load +
     diagnostic [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
@@ -110,7 +124,7 @@ User: one sentence ("a relic that ...")
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
     and fresh-run error blocks (tier-1). Then run the tier-2 self-test unattended
-    (launch.py --self-test → the harness drives the required combat/event scenario and
+    (launch.py --self-test → the harness drives the required combat/event/run-start scenario and
     asserts concrete post-state → grep its structured state proof). Fall back to the manual dev-console guide
     only if the harness can't reach its scenario. Never claim the effect is verified when
     only load was. On failure: go to REPAIR (repair.md).

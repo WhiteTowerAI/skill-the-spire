@@ -30,7 +30,15 @@ localization JSON, and inject the self-test marker. Everything structural
   `elements` + an interaction. For an **event / World Node** (`element: event`),
   read `recipes/event.md`: author one `CustomEventModel`, nested `EventLoc` pages/options,
   a public-Cmd consequence, and a `SetEventFinished` result page; no `[Pool]` or manual
-  `AddEvent`. Pull the skeleton, the trigger/usage rules, the effect
+  `AddEvent`. For a **Character Foundation** (`element: character`), read
+  `recipes/character.md`: keep the character template's `PlaceholderCharacterModel` and
+  three pool bases, fill exact starters/HP/loc, and never call `AddCharacter` manually.
+  If SPEC also selects an advanced capability whose own semantic recipe/canary is green,
+  read `reference/capability-kernel.md` after its recipe: prefer public/BaseLib, otherwise
+  emit only the selected self-contained typed state/hook/UI/patch module. The one verified
+  B adapter is `NCombatUi.Activate(CombatState)`; do not generalize it into resource/zone
+  rules, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
+  Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. Do **not** guess API names — if
   the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
   means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
@@ -121,6 +129,21 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
 - Override `CustomInitialPortraitPath` with the recipe's verified vanilla placeholder;
   custom event portrait/background generation is not yet supported.
 
+**Character Foundation** — use the classes scaffolded by `alchyrsts2charmod` and
+`recipes/character.md`:
+
+- Fill the `PlaceholderCharacterModel` subclass with exact `StartingHp`, Basic-card
+  `StartingDeck`, Starter `StartingRelics`, and `ModelDb.*Pool<T>()` references.
+- Do not call `AddCharacter`, instantiate the character, or add manual registration;
+  the BaseLib 3.3.5 `CustomCharacterModel` constructor owns registration.
+- Author concrete card/relic/potion members through the existing recipes while retaining
+  the character template's inherited `[Pool(typeof(<ModName>*Pool))]` attributes.
+- Add all 14 `CharacterLoc` values and the four Architect keys from the character recipe.
+- Keep `PlaceholderCharacterModel` plus template icons; character art/animation is not a
+  Foundation gate. A Foundation-only SPEC emits no capability-kernel code. An advanced
+  SPEC routes separately through its scenario-verified semantic recipe plus
+  `reference/capability-kernel.md`; 6c alone does not authorize 6d behavior.
+
 **Counter Power amount-domain gate (applies to every source element)** — before writing
 any custom Counter mutation, read that Power's `amount domain` from SPEC. The default
 nonnegative domain means:
@@ -188,7 +211,19 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    **event** → the **`MapNode`** variant: enter the canonical custom event with
    `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, ModelDb.Event<T>())`, wait for its
    real `NEventOptionButton`, read formatted nested loc, click it with `UiHelper.Click`, and
-   assert the SPEC's run-state consequence plus result page. For a multi-element SPEC, use
+   assert the SPEC's run-state consequence plus result page.
+   **character** → the **`RunStart` + `CombatPlayer`** variant: locate the real custom
+   character button by normalized icon resource path, click it and Confirm, wait for
+   `NRun.GlobalUi`, assert runtime HP/pools/starter multisets, enter combat, then assert
+   designed `MaxEnergy` and the starter mechanic's independent state delta. Never select
+   the first unlocked vanilla character.
+   **capability-kernel maintainer canary** → use the two-combat `CombatPlayer` proof in
+   `reference/capability-kernel.md`: Tier 1 asserts exact version/MVID target resolution,
+   one owned postfix and idempotence; combat 1 asserts typed dispatch/state/listener plus
+   the real hosted UI node; combat 2 asserts a distinct combat-scoped state generation.
+   This route verifies infrastructure only and is not a substitute for the selected
+   capability's gameplay invariant.
+   For a multi-element SPEC, use
    that same source driver, then walk `interactions` in dependency order and
    observe each dependent marker/state invariant. There is no `combo` element or separate
    registration path; the reference page's card→power example shows the additional waits
@@ -220,7 +255,9 @@ user launch never arms it — no menu driving, fully inert. It ships dormant ins
 
 ## 3. Write localization
 
-For an **event**, use the recipe's in-code `EventLoc` / `EventPageLoc` /
+For a **character**, use `CharacterLoc` for the 14 character values and
+`ancients.json` for the four exact `THE_ARCHITECT.talk.<CHAR_ID>` keys in
+`recipes/character.md`. For an **event**, use the recipe's in-code `EventLoc` / `EventPageLoc` /
 `EventOptionLoc` inside the event class. Do not also add `events.json` for the same keys;
 BaseLib prefixes the relative nested keys with the real `Id.Entry` at `ModelDb.Init`.
 
@@ -264,13 +301,15 @@ default, and the mod loads fine on it: a **relic** falls back to `relic.png` if
 absent. This is the fast path — nothing to build, no backend, no dev box. For an **event**,
 the class must instead set `CustomInitialPortraitPath` to the verified vanilla placeholder
 from `recipes/event.md`; the default event layout always preloads a portrait. Skip to §5.
+For a **character**, keep the character template's icon PNGs and built-in scene fallbacks;
+custom character sprite/animation generation is not supported in Foundation.
 
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
 Supported sprite specs (see `sts2-api` → `reference/art-contract.md` for the full
 contract):
-Events and enemy encounters are **not** supported sprite specs; keep their provisional
-placeholders and do not call `gen_sprite.py` for them.
+Events, enemy encounters, and characters are **not** supported sprite specs; keep their
+provisional/template placeholders and do not call `gen_sprite.py` for them.
 - **`--spec card`** — the one portrait a normal card loads, **1000×760 landscape**, full-
   bleed (chroma OFF), written to `card_portraits/big/<slug>.png`. **Live-verified in-game.**
   The 606×852 "full art" size is **Ancient-rarity only and out of scope — we never make it**.

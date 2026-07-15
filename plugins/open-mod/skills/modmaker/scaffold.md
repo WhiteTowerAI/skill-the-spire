@@ -38,22 +38,36 @@ polluted layout that costs several tool calls to untangle (real M4 rework):**
 ```powershell
 mkdir <modname>-mod            # dedicated, empty, name != <ModName>
 cd <modname>-mod               # template writes into CWD
+# Character Foundation:
+dotnet new alchyrsts2charmod -n <ModName> -M <Author>
+# Every other supported element:
 dotnet new alchyrsts2contentmod -n <ModName> -M <Author>
 ```
+
+Run exactly one template command based on SPEC; do not scaffold both into one directory.
 
 - `<ModName>`: PascalCase, **no spaces** (from SPEC `mod name`). Becomes the
   csproj/assembly name, the `mods/<ModName>/` folder, and the manifest `id`.
 - `-M <Author>`: author string (SPEC `author`, default `OpenMod`).
 
 The template lays out (confirmed from the M1 golden mod):
+- For `element: character`, `alchyrsts2charmod` additionally scaffolds
+  `<ModName>Code/Character/` with the `PlaceholderCharacterModel` shell and all three
+  `Custom*PoolModel` classes, character-scoped card/relic/potion bases, `characters.json`,
+  `ancients.json`, and placeholder character UI images. Keep that structure and follow
+  `recipes/character.md`; never add a manual `AddCharacter` call.
+- If SPEC selects a separately grounded advanced capability adapter, keep the same chosen
+  template. AUTHOR may add `<ModName>Code/CapabilityKernel/` plus thin `Domain/` code per
+  `reference/capability-kernel.md`; do not scaffold or depend on `OpenMod.Runtime`.
 - `<ModName>.csproj`, `<ModName>.json` (manifest), `project.godot`, `Sts2PathDiscovery.props` at the ROOT.
-- `<ModName>Code/` — C# source, with `MainFile.cs` and per-type folders
+- For the content template, `<ModName>Code/` is C# source with `MainFile.cs` and per-type folders
   (`Relics/`, `Cards/`, `Powers/`, ...). `<ModName>Code/Relics/<ModName>Relic.cs`
   is the mod's relic base class (resolves image paths); your concrete relic
   extends it. `<ModName>Code/Cards/<ModName>Card.cs` is the mod's **card base
   class** (also scaffolded — resolves card portrait paths); your concrete card
-  extends it. **Note:** there is **no `Potions/` folder or base class** — a potion
+  extends it. **Note:** the content template has **no `Potions/` folder or base class** — a potion
   mod creates both in `author.md` (see `recipes/potion.md` "Scaffold difference").
+  The character template already includes its character-scoped potion base.
   Powers need no base class (auto-discovered; see `recipes/power.md`). Events are not
   scaffolded either: an event mod creates `<ModName>Code/Events/` and its
   `CustomEventModel` class in `author.md` (see `recipes/event.md`); no shared event base

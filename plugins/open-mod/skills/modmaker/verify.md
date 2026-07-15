@@ -60,8 +60,11 @@ The `--tier2-pattern` selects the SPEC invariant from structured
 `[T2MOD-SELFTEST] <ModName> state proof:` lines. Use concrete expected/observed vocabulary:
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
 `"cadence cross-combat threshold.*observed=0/4"`,
-`"enemy attack.*observed=6"`, `"monster vocabulary complete.*observed=all"`, or
-`"event gold.*observed=25"`. The verifier ignores all
+`"enemy attack.*observed=6"`, `"monster vocabulary complete.*observed=all"`,
+`"event gold.*observed=25"`, or
+`"character foundation complete.*observed=all"`. A maintainer capability-kernel canary
+uses `"patch kernel complete.*observed=all"` only after its patch, typed state, hosted UI,
+and lifetime assertions. The verifier ignores all
 ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
 requires the exact load marker and `selftest done`.
 
@@ -88,6 +91,10 @@ requires the exact load marker and `selftest done`.
 - For a multi-move enemy, one HP delta is likewise insufficient. Before the terminal proof,
   the harness must execute every SPEC move/branch outcome and assert its move history,
   concrete creature/Power state, downstream buff consequence, and multi-hit result count.
+- For a Character Foundation, the final proof is valid only after the harness has asserted
+  one constructor-registered model, the real selection button, runtime identity/HP, three
+  pool types and member models, exact starter deck/relic multisets, designed MaxEnergy,
+  and one hosted public/BaseLib mechanic delta through `CombatPlayer`.
 
 **Read the harness's terminal marker first — it tells you which failure you have:**
 
@@ -117,11 +124,15 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
      (run in progress). Confirm the custom monster spawned before ending the turn.
    - **event:** `event <PREFIX>-<SLUG>` enters the custom event (**exact** match; run in
      progress). Confirm the localized option appears before choosing it.
+   - **character:** select the custom character on the real character screen and click
+     Confirm; there is no console shortcut that proves character-select presence.
 4. Trigger it: **relic** → enter a combat; **potion** → use it (pick a target if targeted);
    **card** → play it (target an enemy for an attack; `energy 3` first for headroom);
    **enemy encounter** → end enough turns to traverse the declared cycle; confirm every
    move's visible intent and exact HP/Block/Power change, and drive each conditional outcome;
    **event** → choose the specified option and confirm its run-state consequence.
+   **character** → confirm HP, starter deck/relic, and standard 3 energy after run start;
+   enter combat and observe the named starter mechanic's exact state delta.
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
    game** (closing rotates the log away):
 

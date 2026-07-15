@@ -562,3 +562,142 @@ EmberWarden selftest done
 This closes the separate natural-language acceptance gate. Monster Move Vocabulary is now
 `pipeline-supported`; custom monster Spine art remains provisional. All harness mods parked
 for isolation were restored to the real `mods/` directory after verification.
+
+## M6 Character Foundation - CanaryCharacter (2026-07-15)
+
+`CanaryCharacter` was generated in gitignored `.claude/canary-character-work/` with
+`Alchyr.Sts2.Templates` 2.5.0's `alchyrsts2charmod`. The vertical slice contains:
+
+- `CanaryCharacter : PlaceholderCharacterModel`, starting HP 72 and inherited standard
+  3 energy;
+- `CanaryCharacterCardPool`, `CanaryCharacterRelicPool`, and
+  `CanaryCharacterPotionPool` with concrete Foundation card/relic/potion members;
+- an exact 10-card starter deck (5 `FoundationStrike`, 5 `FoundationDefend`);
+- one `TrailMarker` Starter relic whose grounded turn-1 hook gains 1 Energy;
+- code-side `CharacterLoc` plus the exact four `THE_ARCHITECT.talk.<CHAR_ID>` keys;
+- a verification-only `RunStart` + `CombatPlayer` harness.
+
+The generated character source contains no `AddCharacter` call. BaseLib 3.3.5's
+`CustomCharacterModel` constructor owns registration, and Tier 2 independently observed
+exactly one canonical instance.
+
+The first real analyzer run exposed one pack gap: `CharacterLoc` covers the 14
+`characters` suffixes, but `STS001` additionally listed four required Architect lines in
+`ancients.json`. Adding exactly those four keys converged the build. Final build output:
+
+```text
+CanaryCharacter -> ...\Release\CanaryCharacter.dll
+PCK packed: ...\Release\CanaryCharacter.pck
+0 warnings
+0 errors
+```
+
+Tier 1 passed on a fresh ordinary launch: exact load marker found,
+`RUNNING MODDED=YES`, and no fresh errors after the marker.
+
+The first two Tier-2 attempts found setup-only bugs and did not change character behavior:
+
+1. The Windows template helper returned a mixed-separator `res://` icon path. Normalizing
+   both the expected path and Godot `Texture.ResourcePath` made the real button match.
+2. `RunManager.IsInProgress` became true before `LocalContext.GetMe` was ready. Moving the
+   existing `NRun.Instance.GlobalUi` gate before the local-player lookup fixed the race.
+
+The next unattended run completed with these independent state proofs:
+
+```text
+CanaryCharacter state proof: constructor auto-registration expected=1 observed=1
+CanaryCharacter state proof: character select expected icon=res://CanaryCharacter/images/charui/char_select_char_name.png observed=present
+CanaryCharacter state proof: run start expected character=CanaryCharacter hp=72/72 observed=CanaryCharacter hp=72/72
+CanaryCharacter state proof: pools expected card/relic/potion valid with member models observed=all
+CanaryCharacter state proof: starters expected deck=10 strike=5 defend=5 relic=1 observed=10/5/5/1
+TrailMarker fired: energy 3 -> 4
+CanaryCharacter state proof: combat energy expected max/current=3/4 observed=3/4
+CanaryCharacter state proof: character foundation complete expected=all observed=all
+CanaryCharacter selftest done
+```
+
+Strict verifier results:
+
+```text
+[PASS] Tier-1 verified: CanaryCharacter loaded ok.
+[PASS] Tier-2 verified: CanaryCharacter loaded AND asserted post-state matched.
+```
+
+Five non-target test mods were parked for the self-test and all five were restored
+afterward. `recipes/character.md` plus compact interview/spec/scaffold/author/verify
+routing now make this exact Foundation boundary pipeline-supported. This does not claim
+the later resource/UI, custom-zone/dynamic-output, or patch-kernel cells.
+
+## M6 Capability Kernel - CanaryPatchKernel (2026-07-15)
+
+`CanaryPatchKernel` was generated in gitignored
+`.claude/canary-patch-kernel-work/` with `alchyrsts2contentmod`. It deliberately does not
+repeat Character Foundation. A vanilla run hosts a self-contained capability module with:
+
+- `ScopedState<CombatState, KernelProbeState>` declaring `Combat` lifetime;
+- deterministic `HookBus<CombatUiActivateContext>` listener ids;
+- a `UiHostDescriptor` that mounts/refreshes a generic fallback `Label` under the public
+  `NCombatUi.EnergyCounterContainer`;
+- a versioned `PatchRegistry` with exact-one target resolution, MVID gate, idempotence,
+  owned/foreign postfix counts, compatible-conflict marker, and explicit zero-target,
+  version, resolver, apply, and owned-count failure markers;
+- one B-risk postfix on public `NCombatUi.Activate(CombatState)`;
+- separate `KernelProbeDomain` code owning state increments, UI text/metadata, and the
+  behavior assertions.
+
+The target contract is STS2 stable `0.107.1` with `sts2.dll` module MVID
+`97f10687-c306-4798-ab75-8b9f23f34dfb`. The mod uses neither Publicizer/internal access
+nor a transpiler, and it does not create or depend on `OpenMod.Runtime`.
+
+The first wrapper call stopped before source compilation because the sandboxed new project
+could not restore `Godot.NET.Sdk` from NuGet. Re-running the same standard build with
+approved dependency access restored packages; the first source compile then passed with no
+repair:
+
+```text
+CanaryPatchKernel -> ...\Release\CanaryPatchKernel.dll
+PCK packed: ...\Release\CanaryPatchKernel.pck
+0 warnings
+0 errors
+```
+
+Tier 1 passed on a fresh isolated ordinary launch: exact load marker,
+`RUNNING MODDED=YES`, and no fresh error block. The required patch diagnostics were:
+
+```text
+[OPENMOD-PATCH] id=CombatUiActivate risk=B supportedGame=0.107.1 mvid=97f10687-c306-4798-ab75-8b9f23f34dfb target=NCombatUi.Activate(CombatState) targets=1 status=resolved
+[OPENMOD-PATCH] id=CombatUiActivate ownedPostfixes=1 foreignPostfixes=3 conflict=compatible-postfix-composition status=applied
+[OPENMOD-PATCH] id=CombatUiActivate status=already-applied ownedPostfixes=1
+```
+
+The three foreign postfixes were observed rather than assumed away; the selected adapter
+is additive and its conflict contract permits postfix composition. The canary's intentional
+second `Install` call did not add a second owned patch.
+
+Tier 2 entered two real combats. The first proved patch status, one typed listener dispatch,
+one combat-scoped state activation, and an actual UI node inside the host with exact
+text/metadata. It then finished combat through `CreatureCmd.Kill` plus
+`CombatManager.CheckWinCondition`, entered another real combat, and proved a distinct state
+generation whose activation count reset independently:
+
+```text
+CanaryPatchKernel state proof: patch registration expected applied/targets/owned/idempotent=true/1/1/1 observed=True/1/1/1
+CanaryPatchKernel state proof: typed hook expected dispatch/state/listeners=1/1/1 observed=1/1/1
+CanaryPatchKernel state proof: UI host expected node/text/meta/create/refresh=present/Kernel probe: active/CombatUiActivate/Combat/1/1 observed=present/Kernel probe: active/CombatUiActivate/Combat/1/1
+CanaryPatchKernel state proof: combat lifetime reset expected distinct=true activations=1/1 generations=1/2 dispatches=2 observed distinct=True activations=1/1 generations=1/2 dispatches=2
+CanaryPatchKernel state proof: patch kernel complete expected=all observed=all
+CanaryPatchKernel selftest done
+```
+
+Strict verifier results:
+
+```text
+[PASS] Tier-1 verified: CanaryPatchKernel loaded ok.
+[PASS] Tier-2 verified: CanaryPatchKernel loaded AND asserted post-state matched.
+```
+
+Six non-target mods were parked for isolation and all six were restored afterward.
+`reference/capability-kernel.md` plus compact SPEC/scaffold/author/verify routing advances
+6c to **scenario-verified infrastructure**. Resource/payment, bounded zones/dynamic output,
+C/D patch risks, shared runtime extraction, and user-facing advanced Character support
+remain unpromoted.

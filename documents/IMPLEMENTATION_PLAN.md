@@ -6,8 +6,10 @@
 > Status: living plan. Written 2026-07-01 and updated through 2026-07-15.
 > **M0–M5.5 are complete. M6 Core is in progress:** M6.0 contracts, Mechanic
 > Vocabulary, Enemy Encounter (including rich Monster Move Vocabulary), and World Node
-> are complete and pipeline-supported. **DIRECT NEXT = Character Capability Program:**
-> selectable/run-start foundation, then a reusable advanced-mechanic kernel and fresh
+> are complete and pipeline-supported. Character Foundation (6b) is also live-green and
+> pipeline-supported at its explicit shell/starter boundary. The 6c capability kernel is
+> scenario-verified at its infrastructure boundary. **DIRECT NEXT = Character Capability
+> Program 6d:** Resource/UI and Zone/Dynamic-Output cells, then representative and fresh
 > natural-language character acceptance. Downfall is the implementation-depth baseline;
 > art is not a gate for this programming phase.
 > M7 L3/L4 starts after the explicit M6 Core gate;
@@ -707,7 +709,7 @@ single-class cells.
    Strict verification also closed two setup errors: no initialization-time
    `SetFtuesEnabled`, and placeholder monsters explicitly target the built-in fallback
    scene so a missing convention path never logs first. Custom Spine art remains excluded.
-6. **Character Capability Program. ⏭ DIRECT NEXT.** The goal is no longer merely a
+6. **Character Capability Program. 🚧 IN PROGRESS (6b complete; 6c scenario-verified; 6d direct next).** The goal is no longer merely a
    selectable shell with one small known mechanic. It is the first upstream character
    system that lets AI-authored designs compose mechanics beyond BaseLib's named model
    families, while keeping every advertised primitive evidence-backed.
@@ -722,7 +724,7 @@ single-class cells.
    source-only because the current combined project does not compile them. No Downfall art,
    extracted game assets, or runtime dependency enters open-mod.
 
-   **Next-session resume point (2026-07-15).** Treat 6a as complete. Do not repeat the
+   **Historical resume point before 6b (2026-07-15).** Treat 6a as complete. Do not repeat the
    repository-wide Downfall audit and do not live-decompile STS2. Read the audit's `Shared
    architecture worth moving upstream`, `Capability families for open-mod`, and `Character
    Systems proof program` sections, then implement 6b. Narrow inspection of the current
@@ -731,21 +733,53 @@ single-class cells.
    Foundation canary, recipe/pipeline wiring, and recorded Type + Scenario evidence are
    green; do not pre-build the 6c runtime/kernel.
 
-   **6b - Character Foundation.** Ground the current BaseLib character template and exact
-   loc/pool/minimum-resource contract. Prove constructor auto-registration, character-select
-   presence, embark, expected HP/energy, valid card/relic/potion pools, starter deck/relic,
-   and one public/BaseLib mechanic through `RunStart` + `CombatPlayer`. Use placeholders or
-   generic scenes; no custom animation/art gate.
+   **6b - Character Foundation. ✅ PIPELINE-SUPPORTED 2026-07-15.**
+   `CanaryCharacter` used `alchyrsts2charmod` + `PlaceholderCharacterModel`; its source has
+   no manual `AddCharacter`, while Tier 2 observed constructor registration count `1` and
+   the real custom select icon. The run started as the custom character at HP `72/72` with
+   concrete custom card/relic/potion pools, an exact 10-card deck (5 Strike/5 Defend), and
+   one `TrailMarker` Starter relic. In `CombatPlayer`, standard `MaxEnergy=3` and the relic's
+   public `PlayerCmd.GainEnergy` effect produced Energy `3 -> 4`. Final build was 0 warnings /
+   0 errors; Tier 1 and strict Tier 2 passed with no fresh errors. The analyzer run grounded
+   the missing four Architect loc keys; the first two Tier-2 setup attempts grounded Windows
+   `res://` path normalization and the `NRun.GlobalUi`-before-`LocalContext.GetMe` gate.
+   `recipes/character.md`, compact stage routing, and both generated payloads carry the
+   proven Foundation contract. Custom character art/animation remains non-gating and
+   unclaimed. Evidence: `games/sts2/tests/canary-results.md` and graph E19.
 
-   **6c - Capability kernel boundary.** Implement the smallest typed primitives earned by
-   real canaries: semantic state/lifetime, typed hook dispatch, patch registration with
-   zero-target/failure markers, and UI-host descriptors. Keep character-specific rules in
-   generated domain code. Start selected modules self-contained; create an automatically
-   installed `OpenMod.Runtime` dependency only after two independent generated mods need the
-   same Harmony/Publicizer seam. A shared runtime, when earned, owns cross-mod patches and
-   registries only - never a monolithic character framework.
+   **Historical resume point after 6b (2026-07-15).** Treat Character Foundation as
+   complete and do not regenerate or re-prove the selectable shell. Begin 6c from the
+   capability-family/kernel contracts in the Downfall audit. Keep the first advanced module
+   self-contained and proof-first; do not create `OpenMod.Runtime` until two independent
+   generated mods have earned the same shared Harmony/Publicizer seam.
 
-   **6d - Representative advanced cells.** First prove (1) a character resource with
+   **6c - Capability kernel boundary. ✅ SCENARIO-VERIFIED 2026-07-15.**
+   `CanaryPatchKernel` built 0 warnings / 0 errors and passed strict Tier 1 plus an
+   unattended two-combat Tier 2. Its self-contained module provides combat-scoped semantic
+   state, deterministic typed hook dispatch, descriptor-based fallback UI, and a
+   version/MVID/signature-gated patch registry with idempotence, exact target/owned counts,
+   foreign-patch conflict diagnostics, and explicit zero-target/version/resolve/apply/
+   owned-count failure markers. The one adapter is a stable B-risk postfix on public
+   `NCombatUi.Activate(CombatState)` for STS2 0.107.1 (MVID
+   `97f10687-c306-4798-ab75-8b9f23f34dfb`). Tier 1 observed targets/owned/idempotent
+   `1/1/1` and three compatible foreign postfixes. Tier 2 observed typed
+   dispatch/state/listeners `1/1/1`, a real fallback Label under
+   `EnergyCounterContainer`, and distinct combat generations `1/2` with activations
+   `1/1`. `KernelProbeDomain` owns the behavior; the patch body only creates and dispatches
+   the typed context. `reference/capability-kernel.md` and compact SPEC/scaffold/author/
+   verify routing carry the contract. This is scenario-verified infrastructure, not a
+   user-facing gameplay family. No Publicizer, transpiler, resource/payment, zone/dynamic
+   output, or `OpenMod.Runtime` was added. Evidence: `canary-results.md` and graph E20.
+
+   **Next-session resume point after 6c (2026-07-15).** Treat 6a-6c as complete at their
+   stated boundaries. Do not re-audit Downfall, live-decompile STS2, regenerate Foundation,
+   or build another kernel-only canary. Begin 6d with the Resource/UI vertical cell, using
+   the self-contained 6c module only where its verified combat-UI seam is actually needed.
+   Then build the bounded custom-Zone/dynamic-output cell. Keep gameplay rules in generated
+   domain code and do not create `OpenMod.Runtime` until a second independent generated mod
+   earns the same cross-mod seam.
+
+   **6d - Representative advanced cells. 🚧 DIRECT NEXT.** First prove (1) a character resource with
    gain/spend/reset/affordability plus a generic live counter and (2) a bounded custom card
    zone whose ordered contents create a deterministic dynamic output. At least one cell must
    cross a real non-BaseLib boundary through a stable prefix/postfix or internal-access

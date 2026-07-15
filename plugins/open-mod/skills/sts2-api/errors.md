@@ -84,6 +84,18 @@
   model doesn't inherit a `CustomModel`, STS004 poolable model (card/potion/relic,
   **not power**) missing `[Pool]` (see the PoolAttribute entry below).
 
+### STS001: four `THE_ARCHITECT.talk.<CHAR_ID>` keys missing (a custom character)
+- **Signature:** build fails on the character symbol and lists
+  `THE_ARCHITECT.talk.<CHAR_ID>.0-0r.char`, `.0-0r.next`, `.0-1r.ancient`, and
+  `.0-attack` as missing, even when the 14 `characters` values are supplied through
+  `CharacterLoc`.
+- **Cause:** `CharacterModel` localization spans two tables. `CharacterLoc` satisfies
+  `characters`, but the analyzer independently requires four Architect conversation
+  entries from `ancients`.
+- **Fix:** add those exact four flat keys to `localization/eng/ancients.json`, using the
+  character's final `Id.Entry`, then rebuild. See `recipes/character.md` and
+  `reference/build-constraints.md` section 2a.
+
 ## Registration / load-time (godot.log)
 
 > These are the load-time twins of build §1. A card/potion/relic model

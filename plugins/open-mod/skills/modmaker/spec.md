@@ -233,6 +233,63 @@ an intent label or a green build is not behavior proof.
 `Option(Method)` slugifies the method name, so its derived `<OPTION_KEY>` must exactly
 match `EventOptionLoc`. `author.md` dispatches `element: event` to `recipes/event.md`.
 
+**Character Foundation** (one selectable character shell plus its starter ecosystem;
+scenarios are `RunStart` + `CombatPlayer`; advanced resource/zone/patch modules are not
+part of this boundary):
+
+```markdown
+# SPEC — <Mod Name>
+
+- **element**: character
+- **character class name**: <PascalCase>
+- **mod name**: <PascalCase = csproj/assembly/manifest id>
+- **author**: <author>
+- **display**:
+  - title: <shown character name>
+  - description: <short identity/theme>
+  - pronouns: <subject/object/possessive adjective/possessive pronoun>
+- **starting HP**: <int>
+- **energy per turn**: 3 (current grounded Foundation value)
+- **pools**: <ModName>CardPool / <ModName>RelicPool / <ModName>PotionPool
+- **starter deck**: <exact Basic-card multiset and total count>
+- **starter relic**: <exact Starter relic>
+- **hosted mechanic**: <one starter card/relic public/BaseLib effect with exact numbers>
+- **scenario**: RunStart + CombatPlayer
+- **observe**:
+  - constructor auto-registration count=1; no manual `AddCharacter`
+  - real character-select button present and clicked
+  - runtime identity, HP, three pool types/members, exact deck/relic multisets
+  - combat `MaxEnergy=3` plus the hosted mechanic's independent state delta
+- **advanced mechanic**: none | <preserved but explicitly beyond Foundation>
+- **art**: character-template/built-in placeholders (custom character art not yet supported)
+- **derived ids**:
+  - character Id.Entry: `<NS_UPPER>-<CHARACTER_SLUG>`
+  - every starter content Id.Entry and flat loc keys
+  - four `THE_ARCHITECT.talk.<CHAR_ID>` keys from `recipes/character.md`
+```
+
+`author.md` dispatches `element: character` to `recipes/character.md`. Do not add a
+manual registration line or invent a nonstandard energy override. If `advanced mechanic`
+is not `none`, also record the envelope below. Author it only when the named semantic
+capability has its own scenario-verified pack contract; the 6c kernel alone does not make
+resource/payment or zone/dynamic-output behavior supported.
+
+```markdown
+- **capability module**: <family/name>
+- **semantic host**: <real owner/event>
+- **lifetime/reset/save**: <turn|combat|run; exact reset and persistence>
+- **public surface**: <typed context/listener used by domain code>
+- **adapter**: public/BaseLib | <risk B-D, exact target, version/fingerprint>
+- **multiplayer ordering**: <owner/local guard and deterministic order>
+- **UI host/fallback**: <host, visibility, refresh, generic fallback>
+- **conflict/failure**: <composition policy and fallback>
+- **scenario/invariant**: <real host plus exact expected/observed state>
+```
+
+When `adapter` is not public/BaseLib, route AUTHOR to
+`reference/capability-kernel.md`. Never infer C/D access or a patch target from this
+envelope.
+
 **Multi-element contract** (add only when the mod contains more than one authored element;
 omit it for the single-element fast path). `elements` are real content nodes. `interactions`
 are directed relationships between them — never use `combo` as an element type.
@@ -293,8 +350,9 @@ Rules for this round:
 - **`generate` is wired for all four element types — `card`, `relic`, `power`, `potion`**
   (all live-verified — card 1000×760; relic/power/potion 256×256 loose PNGs;
   `reference/art-contract.md`).
-- **Event and enemy-encounter art stays placeholder.** Do not call `gen_sprite.py` for
-  either; their scene/portrait contracts have not been live-grounded.
+- **Event, enemy-encounter, and character art stays placeholder.** Do not call
+  `gen_sprite.py` for them; their scene/portrait/animation contracts have not been
+  live-grounded.
 - **`generate` has three source routes:** an already-installed/authenticated Vofy CLI
   (managed credits), a user-supplied OpenAI-compatible endpoint (`art-backend.json`), or
   an existing local image. Every route converges on the `gen_sprite.py` normalization
@@ -347,6 +405,11 @@ Show a **plain-language** summary and get a yes before scaffolding:
 > (event) I'll build **<Title>**, a map event available in <all acts / the chosen acts>.
 > The player sees <opening>, can choose <option summary>, and that choice <consequence>.
 > It will use a placeholder event portrait for now. Sound right?
+>
+> (character) I'll build **<Title>**, a selectable character with <HP> HP, standard
+> 3 energy, <starter deck summary>, and <starter relic/effect>. The first build uses
+> character-template placeholders and proves selection, run start, and the starter effect.
+> Sound right?
 
 For the **<art line>**, reflect the SPEC art plan: "with placeholder art for now" (the
 fast default), or "with custom art I'll generate for the portrait" if they chose

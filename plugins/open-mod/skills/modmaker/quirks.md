@@ -7,6 +7,9 @@ during M1.
 
 ## Registration
 
+- **Custom characters register in the BaseLib constructor.** In BaseLib 3.3.5,
+  `CustomCharacterModel()` calls `CustomContentDictionary.AddCharacter(this)`.
+  A class inheriting `PlaceholderCharacterModel` must not call `AddCharacter` manually.
 - **`[Pool(...)]` is mandatory** on every `CustomRelicModel` subclass. BaseLib
   auto-registers custom models in their ctor and **throws at startup** without a
   pool attribute. `using BaseLib.Utils;` for `[Pool]`,

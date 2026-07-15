@@ -66,8 +66,19 @@ relics each add exactly one extra key, but a *different* one — don't cross the
 `.possessiveAdjective`, `.pronounPossessive`, `.pronounSubject`, `.goldMonologue`,
 `.eventDeathPrevention`, `.aromaPrinciple`, `.cardsModifierTitle`,
 `.cardsModifierDescription`, `.banter.alive.endTurnPing`, `.banter.dead.endTurnPing`.
-Plus `ancients` table talk lines. Characters are far beyond current recipes — listed
-for completeness; ground fully before attempting.
+BaseLib's `CharacterLoc` constructor emits exactly those 14 suffixes.
+
+The `ancients` table additionally requires four flat Architect keys for each character
+`<ID>` (live-confirmed by `CanaryCharacter`'s first analyzer run on 2026-07-15):
+
+```text
+THE_ARCHITECT.talk.<ID>.0-0r.char
+THE_ARCHITECT.talk.<ID>.0-0r.next
+THE_ARCHITECT.talk.<ID>.0-1r.ancient
+THE_ARCHITECT.talk.<ID>.0-attack
+```
+
+See `recipes/character.md` for the code-side `CharacterLoc` order and JSON shape.
 
 ### 2b. Code-side localization classes (`*Loc`) — same key sets, cross-check
 

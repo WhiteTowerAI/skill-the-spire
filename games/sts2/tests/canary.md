@@ -25,7 +25,7 @@ this matrix built it. Card/potion/relic each already had a real acceptance mod
 card→power interaction path were not. Any *new* recipe added later must gain a canary
 here before it is considered done.
 
-## The twelve cells
+## The fourteen cells
 
 | Cell | Mod | Element(s) | What it proves in the recipe | Tier-2 harness DRIVER + marker |
 |------|-----|-----------|------------------------------|--------------------------------|
@@ -41,6 +41,8 @@ here before it is considered done.
 | monster move vocabulary | `CanaryMonsterVocabulary` | `CanarySentinel` + custom buff `BattleFocus` in one `CanarySentinelEncounter` | `BuffIntent`/custom Power, `SingleAttackIntent` + `DebuffIntent`, `MultiAttackIntent` + `.WithHitCount(2)`, `DefendIntent`, `HealIntent`, explicit `FollowUpState` cycle, exhaustive half-HP `ConditionalBranchState`, and explicit built-in fallback scene | **multi-turn `CombatEnemy`**: two full cycles; assert `NextMove` + `MonsterPerformedMoveEntry`; Power `2 -> 4` and later attack `5 -> 7`; Weak `2`; two-hit totals `8 -> 12`; healthy Block `+5`; wounded HP/Block `+3/+4`; both branch outcomes; final `observed=all` |
 | event / World Node | `CanaryEvent` | `GildedSignpost : CustomEventModel` | no `[Pool]`; constructor auto-`AddEvent`; default empty `Acts` means all-act placement; nested in-code `EventLoc` / `EventPageLoc` / `EventOptionLoc`; `Option(FollowTheSign)` slug matches `FOLLOW_THE_SIGN`; `PlayerCmd.GainGold(25m, Owner)` + `SetEventFinished`; verified vanilla portrait placeholder | **`MapNode` scenario**: enter `ModelDb.Event<GildedSignpost>()` via `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, …)`; assert formatted title/option loc; click one real `NEventOptionButton`; independently observe Gold `99 -> 124` (`delta=25`), finished state, and result-page loc |
 | stateful cadence | `CadenceCanary` | relic `CadenceBloom` + relic `CombatSundial` | run-persistent `[SavedProperty] int` modulo progress vs combat-owned `PlayerCombatState.TurnNumber`; visible counter updates; no combat-end reset of run progress | **multi-combat `CombatPlayer` scenario**: combat 1 proves progress `1 -> 2` and turn-2 local effect; `SavedProperties.From/Fill` restores `2`; combat 2 turn 1 proves run carry-over threshold `2 -> 0`, Energy `3 -> 4`, plus combat reset `TurnNumber=1` / no second Sundial activation |
+| character Foundation | `CanaryCharacter` | selectable `CanaryCharacter` + custom card/relic/potion pools + 10-card starter deck + `TrailMarker` starter relic | `alchyrsts2charmod`; `PlaceholderCharacterModel`; constructor auto-`AddCharacter` with **no manual call**; 14 `CharacterLoc` values + four Architect keys; exact pool/starter ecosystem; standard 3 energy | **`RunStart` + `CombatPlayer` scenario**: locate/click the real custom icon button; registration count=1; run starts HP `72/72`; pools contain expected models; starters `10/5/5/1`; `TrailMarker` changes Energy `3 -> 4` while `MaxEnergy=3`; final `observed=all` |
+| capability kernel | `CanaryPatchKernel` | self-contained combat-scoped state + typed hook + UI-host descriptor + one B-risk postfix | version/MVID/signature-gated registry; exact-one target and owned postfix; idempotent repeat; explicit zero-target/failure path; foreign-postfix conflict marker; domain rules outside kernel; no Publicizer/transpiler/`OpenMod.Runtime` | **two-combat `CombatPlayer` scenario**: Tier 1 proves resolved/applied/already-applied markers; combat 1 asserts dispatch/state/listeners `1/1/1` and the real fallback Label; combat 2 asserts distinct generations `1/2` with activations `1/1`; final `patch kernel complete ... observed=all` |
 
 ## How to run (maintainer, on the STS2 dev box)
 
@@ -48,9 +50,11 @@ Canary projects are **regenerated on demand outside tracked source** (in an exte
 work dir or gitignored `.claude/`; repo stays clean; trust regenerate over hoarding).
 The steps per cell:
 
-1. `mkdir canary-<x> && cd canary-<x> && dotnet new alchyrsts2contentmod -n Canary<X> -M OpenMod`
+1. `mkdir canary-<x> && cd canary-<x> && dotnet new alchyrsts2contentmod -n Canary<X> -M OpenMod`.
+   For the character cell, use `dotnet new alchyrsts2charmod -n CanaryCharacter -M OpenMod`.
 2. Uncomment `BSchneppe.StS2.PckPacker` in the csproj.
-3. Author the minimal element per its recipe (see the file list in
+3. Author the minimal element per its recipe; the capability-kernel maintainer cell uses
+   `reference/capability-kernel.md` (see the file list in
    `canary-results.md` for the exact minimal bodies used — copy-paste ready).
 4. Add `Logger.Info("[T2MOD-SELFTEST] Canary<X> loaded ok")` at the end of
    `MainFile.Initialize()`.
@@ -98,6 +102,18 @@ enemy turns proved self custom Power + downstream scaling, player Debuff, Block/
 multi-hit history count, composite actions, an explicit cycle, and both half-HP branch
 outcomes. A separate one-sentence `EmberWarden` run passed build 0/0 + Tier 1 + Tier 2 with
 zero repair, advancing the richer move scope to `pipeline-supported`.
+**M6 Character Foundation (2026-07-15): CanaryCharacter PASS** — the character-template
+slice built 0/0, loaded without fresh errors, appeared in character selection, started a
+run with exact HP/pools/starters, and proved its starter relic through `RunStart` +
+`CombatPlayer`. The new character recipe and compact pipeline routing advance the
+Foundation boundary to `pipeline-supported`; advanced Character Program capabilities
+remain separate later cells.
+**M6 Capability Kernel (2026-07-15): CanaryPatchKernel PASS** — the self-contained module
+built 0/0 and passed strict Tier 1 + two-combat Tier 2. It version-gated and idempotently
+applied one B-risk `NCombatUi.Activate(CombatState)` postfix, dispatched a typed context,
+mounted a real generic UI node, and reset semantic state across combat hosts. This advances
+the 6c infrastructure boundary to `scenario-verified`; it does not promote 6d gameplay
+families or create `OpenMod.Runtime`.
 See `canary-results.md` for the per-cell markers and harness bugs the live runs
 fixed. **Run one cell at a time** —
 `--t2selftest` arms every loaded harness mod, so parking all but the cell under test avoids

@@ -13,7 +13,7 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 
 ## What to resolve (only if unclear from the sentence)
 
-1. **Element type.** Relic / card / potion / enemy / event? Infer if possible:
+1. **Element type.** Relic / card / potion / enemy / event / character? Infer if possible:
    - Owns a passive/triggered effect the player *has* → **relic**.
    - Something the player *plays from hand for an energy cost* → **card**.
    - A **one-shot consumable the player drinks/uses** → **potion**.
@@ -21,7 +21,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      that spawns it — always one unit; you never build a lone monster).
    - **A story/choice room on the map** where the player picks an option and gets a
      consequence → **event / World Node**.
-   - **Supported now: relic, potion, card, enemy encounter, and event.** (*Editing* an existing
+   - **A new selectable hero** with their own starting deck/relic and card identity →
+     **character Foundation**. This boundary supports the shell and public/BaseLib starter
+     mechanics, not custom resource UI, custom card zones, or patch-kernel mechanics.
+   - **Supported now: relic, potion, card, enemy encounter, event, and character Foundation.** (*Editing* an existing
      vanilla card/relic/potion is not yet supported — if that's the ask, say so and offer to
      build the closest **new** element instead.)
 2. **Trigger / usage / how it's played:**
@@ -61,6 +64,13 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      player can choose, and each option's concrete consequence (gold/HP/card/relic/etc.).
      A one-option event is valid for the fast path. Ask which acts only if the user cares;
      default is all acts. Do not ask about `EventLoc`, room nodes, or registration.
+   - **Character Foundation**: resolve the character's identity/theme, starting HP,
+     exact starter deck counts, starter relic, and one starter card/relic mechanic that
+     public/BaseLib APIs can prove in combat. Default to standard 3 energy and placeholder
+     visuals. If the core idea requires a custom resource, custom zone, dynamic output, or
+     Harmony/Publicizer seam, preserve it in the SPEC as unsupported beyond Foundation;
+     do not silently flatten it. The 6c kernel is verified infrastructure, not those
+     gameplay semantics; preserve the idea for a capability whose own 6d canary exists.
 3. **Effect**: what exactly happens, in game terms (energy, damage, block, draw,
    heal, a power/status). Get numbers if they matter ("double", "gain 2", "20 damage").
    For a card, also ask what **upgrading** it should improve if not obvious (default:
@@ -84,8 +94,9 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      style") once, for the mod. If the mod has several cards and the user wants distinct
      art per card, take one overall style note here; `author.md` fills the per-card
      subject from each card's SPEC when it generates — but you still only *ask* once.
-   - **Events and enemy encounters do not have custom-art generation yet.** If the user
-     requests a custom event/monster visual, state the current placeholder limitation and
+   - **Events, enemy encounters, and characters do not have custom-art generation yet.**
+     Characters use the template/built-in placeholder shell. If the user requests a custom
+     event/monster/character visual, state the current placeholder limitation and
      continue only if they accept it.
 
 ## Defaults (apply silently unless the user specified otherwise)
@@ -104,6 +115,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
+- **Character Foundation**: 70 HP, standard 3 energy, a 10-card Basic starter deck,
+  one Starter relic, valid character-scoped card/relic/potion pools, and template/built-in
+  placeholder visuals. Derive starter effects from the user's stated theme; do not invent
+  an advanced resource or patch seam.
 - **Monster move order**: moves repeat in the order stated. Do not invent random choice;
   add a conditional branch only when the concept names a condition or the user confirms it.
 - **State lifetime**: "every N turns" on a relic continues across combats in the current
@@ -189,6 +204,21 @@ options:
   - <option title> -> <precise consequence with numbers>
 acts: all | <specified acts>
 art: placeholder (custom event portrait/background not yet supported)
+```
+
+For a **character Foundation**:
+
+```
+element: character
+name: <display name>
+starting HP: <int, default 70>
+energy per turn: 3 (current grounded Foundation value)
+starter deck: <exact card names and counts, total 10>
+starter relic: <name + one public/BaseLib effect>
+pools: character-scoped card/relic/potion pools with at least one concrete member each
+scenario: RunStart + CombatPlayer
+art: character-template/built-in placeholders
+advanced mechanic: none | <preserved idea that remains beyond Foundation>
 ```
 
 Do not write files here — `spec.md` does that. If nothing was ambiguous, skip

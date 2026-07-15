@@ -18,10 +18,18 @@ not dump entire files into the response.
 ## How to answer
 
 1. Check `${STS2_API_SKILL_DIR}/recipes/` for the element or mechanic type (relic, potion,
-   card, power, keyword, enchantment, orb, monster+encounter, event). For a **fought enemy** read
+   card, power, keyword, enchantment, orb, monster+encounter, event, character). For a **fought enemy** read
    `recipes/monster.md` — it covers the monster AND its encounter as one vertical slice.
    For a **World Node/event** read `recipes/event.md` — it covers registration, nested
    `EventLoc`, option consequences, provisional portrait fallback, and the `MapNode` proof.
+   For a **playable character Foundation** read `recipes/character.md` — it covers the
+   character template, constructor auto-registration, three pools, starters, two-table
+   localization, placeholder shell, and `RunStart` + `CombatPlayer` proof.
+   For a **grounded advanced capability that needs a non-public host seam**, read
+   `${STS2_API_SKILL_DIR}/reference/capability-kernel.md` after the public/BaseLib check.
+   It covers self-contained typed state/hooks/UI descriptors and the one verified B-risk
+   combat-UI postfix. It is infrastructure, not permission to invent 6d resource/zone
+   semantics, C/D patches, or `OpenMod.Runtime`.
    Cards/powers/keywords/enchantments/orbs also read
    `${STS2_API_SKILL_DIR}/reference/mechanics.md` first (scaling numbers, SmartFormat
    descriptions, shared enums).
@@ -52,10 +60,12 @@ not dump entire files into the response.
 | `recipes/orb.md` | Custom Orb pattern (`CustomOrbModel`, OrbLoc, Channel/Passive/Evoke, owner/slot behavior, provisional icon+sprite seams, three-part Scenario proof) | Authoring an orb plus its Card/relic/power host |
 | `recipes/monster.md` | Custom Monster + Encounter as one vertical slice: registration/loc/art plus grounded move vocabulary for self buff/custom Power, target debuff, block/heal, multi-hit, composite moves, explicit cycles, and conditional branches; multi-turn `CombatEnemy` proof; **monster attacks use `.FromMonster(this).Execute(null)`, never `.Targeting()`** | Authoring a fought enemy or its move cycle |
 | `recipes/event.md` | Custom Event / World Node pattern (`CustomEventModel` auto-`AddEvent`, all-act vs act-scoped placement, nested `EventLoc` pages/options, `Option(Method)` slug contract, Cmd consequence + `SetEventFinished`, provisional vanilla portrait, `MapNode` UI-click proof) | Authoring a map event with at least one consequential option |
+| `recipes/character.md` | Character Foundation (`alchyrsts2charmod`, `PlaceholderCharacterModel`, constructor auto-`AddCharacter`, card/relic/potion pools, starter deck/relic, exact character+Architect loc, placeholder visuals, `RunStart` + `CombatPlayer` proof) | Authoring a minimal playable custom character shell |
+| `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, version/MVID-gated patch registry with zero-target/failure/owned/foreign diagnostics, and the scenario-verified B-risk `NCombatUi.Activate(CombatState)` postfix. Self-contained only; no `OpenMod.Runtime`, 6d resource/zone semantics, Publicizer, or transpiler support | Maintaining or emitting a specifically grounded advanced capability after public/BaseLib cannot expose its host seam |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; turn/combat/run counter patterns; Happy Flower `[SavedProperty]` vs Stone Calendar `TurnNumber`; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | What the toolchain refuses to BUILD/LOAD: full analyzer diagnostic set STS001–004 + the exact required-loc-key table per model type (cards/potions/relics/powers/…) + `[Pool]` rule | Before writing any element's loc keys + attributes; on any STS0NN build error |
-| `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
+| `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact `res://` path + pixel size per sprite type (card `1000×760`; relic/power/potion `256×256` — all four verified live, each a loose PNG; relic/power write a small + `big/` path, potion writes ONE file, card writes only `big/`; 606×852 full art is Ancient-only, out of scope) + the placeholder-fallback mechanism + the STS2 style descriptor + few-shot references + the prompt template (incl. potion's ~45° tilt) + `acquire_sprite.py` (Vofy managed credits) / `gen_sprite.py` (BYO HTTP + deterministic import) usage | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | 18 real STS2 card portraits (© Mega Crit, reference-only — see ATTRIBUTION.md) used as **few-shot style references** by `gen_sprite.py --reference` so a generated portrait matches the game look | Passed to `--reference` in the art step; not read directly |
 | `grounding.md` | Where facts come from (three sources: content→spire-codex, C# signatures→decompile, build/load→validators) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine miss is a pack gap to report, not a dig | An answer the recipe lacks |
@@ -74,6 +84,16 @@ Harmony patching and is deferred. The recipes make **new** elements.
   method name slug must match its `EventOptionLoc` key. Prove it through `MapNode` by
   entering `ModelDb.Event<T>()`, clicking a real `NEventOptionButton`, and asserting the
   option's run-state consequence. Custom event art remains provisional.
+- **Character Foundation:** scaffold with `alchyrsts2charmod`; inherit
+  `PlaceholderCharacterModel`; its `CustomCharacterModel` constructor already calls
+  `AddCharacter(this)`, so never call it manually. Supply all three custom pool models,
+  exact starter deck/relic, 14 `CharacterLoc` values plus four Architect keys, then prove
+  the real selection button and run state through `RunStart` + `CombatPlayer`.
+- **Capability kernel:** it is not a gameplay recipe. Prefer public/BaseLib; otherwise use
+  only a pack-grounded adapter with exact version/MVID/signature, one owned patch,
+  zero-target/failure markers, conflict policy, and a hosted state proof. The only verified
+  non-public seam is the B-risk `NCombatUi.Activate(CombatState)` postfix. Keep it inside
+  the generated mod; do not create `OpenMod.Runtime` from one consumer.
 - **Loc-key derivation** (same for relics, potions, cards, powers): `Id.Entry = "<NS_UPPER>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split + UPPER_SNAKE). Keys are **flat strings**, not nested JSON. Table is `relics` / `potions` / `cards` / `powers` per type.
 - **Relic combat-start energy**: use `AfterSideTurnStart` + `TurnNumber <= 1` guard. `BeforeCombatStart()` is wrong — energy reset wipes it.
 - **Counter lifetime is a design decision:** "every N turns" defaults to run-persistent

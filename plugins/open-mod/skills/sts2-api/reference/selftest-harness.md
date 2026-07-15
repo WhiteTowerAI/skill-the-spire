@@ -65,6 +65,14 @@ internal save reports a global error even if the caller catches an exception.
 > fails mid-flight, add a `Stage(string)` breadcrumb (`MainFile.Logger.Info` per step) and
 > read the trail — it tells you the exact step, which the stack trace won't.
 
+For a Character Foundation `RunStart` driver, keep one further ordering constraint:
+after character-select Confirm and `RunManager.Instance.IsInProgress`, wait for
+`NRun.Instance?.GlobalUi != null` **before** `LocalContext.GetMe(...)`. The canary's
+second live attempt proved that the run-state flag can become true while the local player
+is still unavailable. Also normalize `\\` to `/` on both the template's character-select
+icon path and Godot's texture `ResourcePath`; Windows template helpers may return a mixed
+separator `res://` path even though the correct button is present.
+
 ## Proof and control signals for verify/repair
 
 The harness and element expose three signals so `verify.md`/`repair.md` can tell setup
@@ -767,6 +775,65 @@ Adapt move ids, numbers, Power types, and branch setup to SPEC. The important in
 > chain hangs the enemy turn and the second gate times out (`selftest FAILED: player play
 > phase not resumed after enemy turn`). `recipes/monster.md` documents this.
 > Needs `using MegaCrit.Sts2.Core.Map;` for `MapPointType`.
+
+## The `RunStart` + `CombatPlayer` scenario (Character Foundation, live 2026-07-15)
+
+A character is not proven by `ModelDb` registration alone. The harness must select its
+real UI button, start a run as it, assert the starter ecosystem, then enter combat and
+prove one hosted mechanic. Replace the baseline's first-unlocked selection with:
+
+```csharp
+var registered = ModelDb.AllCharacters.OfType<<CharacterName>>().ToList();
+StateProof(registered.Count == 1,
+    $"constructor auto-registration expected=1 observed={registered.Count}");
+var canonical = registered.Single();
+var expectedIconPath = canonical.CustomCharacterSelectIconPath.Replace('\\', '/');
+var buttons = UiHelper.FindAll<NCharacterSelectButton>(
+    charSelect!.GetNode("CharSelectButtons/ButtonContainer"));
+var pick = buttons.SingleOrDefault(button =>
+    button.GetNodeOrNull<TextureRect>("%Icon")?.Texture?.ResourcePath.Replace('\\', '/') ==
+    expectedIconPath);
+StateProof(pick != null,
+    $"character select expected icon={expectedIconPath} observed={(pick == null ? "missing" : "present")}");
+pick!.UnlockIfPossible();
+pick.Select();
+await Task.Delay(100, ct);
+await UiHelper.Click(await WaitHelper.ForNode<NButton>(mainMenu,
+    "Submenus/CharacterSelectScreen/ConfirmButton", ct, TimeSpan.FromSeconds(10)));
+```
+
+After `IsInProgress`, wait for `NRun.Instance?.GlobalUi != null`, get the local player,
+and assert concrete runtime state rather than only canonical model declarations:
+
+```csharp
+var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!)
+    ?? throw new InvalidOperationException("local player missing");
+var character = player.Character;
+StateProof(character is <CharacterName> &&
+           player.Creature.CurrentHp == <HP> && player.Creature.MaxHp == <HP>,
+    $"run start expected character=<CharacterName> hp=<HP>/<HP> " +
+    $"observed={character.GetType().Name} hp={player.Creature.CurrentHp}/{player.Creature.MaxHp}");
+
+// Also assert concrete CardPool/RelicPool/PotionPool types plus AllCards/AllRelics/
+// AllPotions membership, then the exact player.Deck.Cards and player.Relics multisets.
+```
+
+Enter the minimal combat as in `CombatPlayer`, wait for `PlayerTurnPhase.Play`, and
+assert both designed energy and the independent starter behavior. The live canary used
+a turn-1 starter relic:
+
+```csharp
+var combat = player.PlayerCombatState!;
+StateProof(combat.MaxEnergy == 3 && combat.Energy == 4,
+    $"combat energy expected max/current=3/4 observed={combat.MaxEnergy}/{combat.Energy}");
+StateProof(true, "character foundation complete expected=all observed=all");
+```
+
+> **Live-proven (`CanaryCharacter`, build 0/0 + Tier 1 + Tier 2 PASS):** BaseLib
+> constructor registration count was 1; the custom icon button was present and selected;
+> the run started as the custom character at HP `72/72`; card/relic/potion pools contained
+> their expected models; deck/relic counts were `10/5/5/1`; and `TrailMarker` changed
+> Energy `3 -> 4` while `MaxEnergy` remained 3. No manual `AddCharacter` call exists.
 
 ## The `MapNode` scenario (event / World Node — earned seam, live 2026-07-13)
 
