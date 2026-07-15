@@ -22,9 +22,12 @@ localization JSON, and inject the self-test marker. Everything structural
   `OrbCmd.Channel<T>`; preserve separate passive and evoke observations. For an **enemy
   encounter** (`element: enemy encounter`), read `recipes/monster.md` and author BOTH the
   `CustomMonsterModel` and the `CustomEncounterModel(RoomType.Monster)` it spawns as one
-  slice — the monster's move body attacks with `.FromMonster(this).Execute(null)` (**never**
-  `.Targeting()`), and the diagnostic trigger marker goes on the enemy's move; do not model the pair as
-  two `elements` + an interaction. For an **event / World Node** (`element: event`),
+  slice. Implement SPEC's compact move contract with `MoveState`, explicit `FollowUpState`,
+  and `ConditionalBranchState` only where declared. Use the recipe's grounded intent/effect
+  patterns for buff/Power, debuff, block/heal, multi-hit, and composite actions. Monster
+  attacks use `.FromMonster(this).Execute(null)` (**never** `.Targeting()`), and the
+  diagnostic trigger marker goes on the enemy's move; do not model the pair as two
+  `elements` + an interaction. For an **event / World Node** (`element: event`),
   read `recipes/event.md`: author one `CustomEventModel`, nested `EventLoc` pages/options,
   a public-Cmd consequence, and a `SetEventFinished` result page; no `[Pool]` or manual
   `AddEvent`. Pull the skeleton, the trigger/usage rules, the effect
@@ -83,11 +86,21 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
 `[Pool]` on either:
 
 - `<ModName>Code/Monsters/<Name>.cs` extends `CustomMonsterModel`: set `MinInitialHp`/
-  `MaxInitialHp` (equal for deterministic HP), and `GenerateMoveStateMachine()` returning a
-  `MonsterMoveStateMachine` built from a `MoveState("<ID>", <MoveBody>, new SingleAttackIntent(<N>))`
-  with `.FollowUpState` set to loop. The `<MoveBody>(IReadOnlyList<Creature> targets)` deals
-  damage with `DamageCmd.Attack(<N>m).FromMonster(this).Execute(null)` — **never
+  `MaxInitialHp` (equal for deterministic HP), then translate every SPEC move to one
+  `MoveState` whose intent list matches every visible effect. Link deterministic order with
+  explicit `.FollowUpState`; for a declared condition, add one `ConditionalBranchState`
+  with exhaustive ordered predicates and include it in the machine's state list. A
+  self-buff/custom Power uses `PowerCmd.Apply<T>` on `Creature`; a player debuff applies to
+  `targets`; block/heal use `CreatureCmd.GainBlock/Heal`; multi-hit uses matching
+  `MultiAttackIntent(N, R)` + `.WithHitCount(R)`; a composite move lists and awaits every
+  effect in order. Every attack ends with `.FromMonster(this).Execute(null)` — **never
   `.Targeting()`** (that is the card pattern and it hangs the enemy turn).
+- Until custom Spine art is supported, explicitly override `CustomVisualPath` with
+  `SceneHelper.GetScenePath("creature_visuals/fallback")`. Leaving it null first requests a
+  nonexistent mod scene and emits a fresh resource error, even though the game later recovers.
+- If the monster needs a custom buff/debuff, author its power from `recipes/power.md` and
+  include all three `powers.json` keys. A buff is not proven by attachment alone: SPEC and
+  Tier 2 must observe its downstream effect on a later move.
 - `<ModName>Code/Encounters/<Name>Encounter.cs` extends `CustomEncounterModel`, calls
   `base(RoomType.Monster)`, and overrides `IsValidForAct`, `AllPossibleMonsters`
   (`ModelDb.Monster<T>()`), and `GenerateMonsters()` (`ModelDb.Monster<T>().ToMutable()` +
@@ -165,9 +178,13 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    **potion** → `InCombat` (`TryToProcure` → `EnqueueManualUse`);
    **enemy encounter** → the **`CombatEnemy`** variant: enter the custom encounter via
    `ModelDb.Encounter<TEncounter>().ToMutable()` + `EnterRoomDebug`, confirm the monster in
-   `Enemies` (`e.Monster is TMonster`), then `PlayerCmd.EndTurn(player, canBackOut: false)`
-   (void — do NOT await) and assert the player HP delta after the turn resumes. Do NOT apply
-   `PlatingPower` in this scenario (the enemy hit must land).
+   `Enemies` (`e.Monster is TMonster`), and use the reference page's multi-turn helper. Before
+   each `PlayerCmd.EndTurn` assert `NextMove.Id` plus its intent types/repeat count; afterward
+   require the player's `TurnNumber` to advance, assert the matching
+   `MonsterPerformedMoveEntry`, and inspect `CreatureAttackedEntry.DamageResults` plus the
+   exact player/monster HP, Block, and Power states. Force every conditional outcome through
+   its real state condition. Do NOT apply `PlatingPower` in this scenario (enemy hits must
+   remain observable).
    **event** → the **`MapNode`** variant: enter the canonical custom event with
    `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, ModelDb.Event<T>())`, wait for its
    real `NEventOptionButton`, read formatted nested loc, click it with `UiHelper.Click`, and

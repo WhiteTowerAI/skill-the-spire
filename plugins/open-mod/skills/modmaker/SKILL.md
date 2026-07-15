@@ -29,7 +29,11 @@ re-verify within a hard retry cap. A **custom power** (buff/debuff) is supported
 usually as the dependency of a card/relic that applies it. An **enemy encounter** is a
 custom monster + the encounter that spawns it, authored as one vertical slice and proven
 through the **`CombatEnemy`** scenario (enter the encounter, confirm the monster, end the
-turn, observe the enemy's action) — custom monster *art* (a Spine scene) is not yet wired,
+turns needed to traverse its declared cycle/branches, and assert move history plus exact
+player/monster HP, Block, Power, debuff, and multi-hit state). Grounded move vocabulary
+includes self buff/custom Power with a downstream consequence, player debuff, block/heal,
+multi-attack, composite actions, deterministic cycles, and conditional branches. Custom
+monster *art* (a Spine scene) is not yet wired,
 so enemy visuals fall back to the game default.
 An **event** is a normal map event with nested pages/options, authored as one
 `CustomEventModel` and proven through the **`MapNode`** scenario (enter the event room,

@@ -14,9 +14,9 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > mod **loads** and that its **effect actually fires** in-game, repairs common build
 > errors automatically, and supports placeholder or generated art for the four core
 > element types. Stateful relic timing now covers both counters that continue across
-> combats/save-resume and turn numbers that reset each combat. Enemy encounters currently
-> support a basic deterministic attack; richer monster actions are the direct next step,
-> followed by playable characters. Editing vanilla content and one-click Steam
+> combats/save-resume and turn numbers that reset each combat. Enemy encounters support
+> rich deterministic/conditional move cycles with multi-turn behavior proof. Minimal
+> Character is the direct next step. Editing vanilla content and one-click Steam
 > Workshop publishing remain out of scope today.
 > See [Current limits](#current-limits).
 
@@ -160,22 +160,21 @@ open-mod is still young. Today it does the following well, and is honest about t
 - ✅ **Custom art for all four types** — card portraits and relic/power/potion icons
   are live-verified. Placeholder art remains the zero-setup default; generation uses
   your own compatible image backend and falls back safely if unavailable.
-- ✅ **Enemy encounters (basic attack scope)** — a plain-English request can produce a
-  custom monster plus the encounter that hosts it. The pipeline builds it, enters the real
-  encounter, observes its deterministic attack and resulting player-state change, and
-  completed a full acceptance run on 2026-07-13. Self-buffs, player debuffs, defense,
-  healing, multi-attacks, and conditional move sequences are not yet advertised as
-  supported. Custom monster *art* (an animated scene) remains provisional, so custom
-  enemies use the game's fallback appearance for now.
+- ✅ **Enemy encounters and rich move cycles** — a plain-English request can produce a
+  custom monster plus its encounter, including self custom-Powers, player debuffs,
+  Block/Heal, multi-attacks, combined actions, deterministic cycles, and conditional
+  branches. Multi-turn verification observes exact move history, hit count, and
+  player/monster HP/Block/Power state; a fresh one-sentence run passed build + both live
+  tiers with zero repair on 2026-07-15. Custom monster *art* (an animated scene) remains
+  provisional, so custom enemies use an explicit built-in fallback appearance for now.
 - ✅ **Map events / World Nodes** — a plain-English request can produce a custom event
   with nested page/option text and a real run-state consequence. The pipeline enters the
   event room, clicks its real option UI, and independently observes the result. Custom
   event art remains provisional, so events use a verified vanilla portrait placeholder.
-- ⏭️ **Direct next: richer monster actions** — ground and live-verify self-buffs/custom
-  powers, player debuffs, defense/healing, multi-attacks, combined moves, and deterministic
-  or conditional move sequences through a multi-turn `CombatEnemy` canary.
-- ⏳ **Not yet:** editing existing vanilla content, playable characters (after the monster
-  action follow-up), and one-click Steam Workshop publishing.
+- ⏭️ **Direct next: Minimal Character** — prove a selectable character can start a run with
+  valid starter content and one small supported mechanic combination.
+- ⏳ **Not yet:** editing existing vanilla content, production-size playable characters,
+  and one-click Steam Workshop publishing.
 - ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
   on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but
   those combinations have not yet been live-verified. Registry directory listing is

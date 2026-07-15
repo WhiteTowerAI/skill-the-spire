@@ -5,8 +5,8 @@
 > skill pipeline, the game pack shape, and a phased milestone plan.
 > Status: living plan. Written 2026-07-01 and updated through 2026-07-15.
 > **M0–M5.5 are complete. M6 Core is in progress:** M6.0 contracts, Mechanic
-> Vocabulary, Enemy Encounter, and World Node are complete and pipeline-supported.
-> **DIRECT NEXT = Monster Move Vocabulary acceptance hardening; then Minimal Character.**
+> Vocabulary, Enemy Encounter (including rich Monster Move Vocabulary), and World Node
+> are complete and pipeline-supported. **DIRECT NEXT = Minimal Character.**
 > M7 L3/L4 starts after the explicit M6 Core gate;
 > see the M6/M7 sections below. Historical run details remain in `M0_RESULTS.md` …
 > `M4_RESULTS.md`, while current M6 evidence lives in `games/sts2/tests/`.
@@ -669,27 +669,23 @@ single-class cells.
    completed SPEC → scaffold → author → build → Tier 1 → Tier 2 with Gold `99 -> 129`
    (`delta=30`) and zero repair, closing the pipeline gate. Custom event portrait/background
    generation remains provisional and is excluded from this support claim.
-5. **Monster Move Vocabulary follow-up. ⏭ DIRECT NEXT.** The current Enemy Encounter
-   claim is deliberately narrow: one deterministic `SingleAttackIntent` move whose player
-   HP delta is live-proven. Stable-v0.107.1 grounding already shows the substrate for richer
-   behavior (`BuffIntent`, `DebuffIntent`, `DefendIntent`, `HealIntent`,
-   `MultiAttackIntent`, combined intents, `PowerCmd.Apply` to self/targets,
-   `ConditionalBranchState`, and explicit `FollowUpState` cycles), but none of that becomes
-   a pipeline promise without hosted proof. This follow-up must:
-   - add a compact move contract to interview/SPEC: move id, visible intent(s), exact
-     effect, next state, and condition/loop where applicable;
-   - extend `recipes/monster.md` with copyable self-Buff/custom-Power, player-Debuff,
-     Block/Heal, multi-attack, attack+effect, deterministic-cycle, and conditional-branch
-     patterns, without creating one recipe per move;
-   - extend `CombatEnemy` to drive multiple enemy turns and independently assert monster
-     Power/Block/HP plus player Power/HP state, including downstream effect (for example,
-     Strength is not proven until a later attack's damage increases);
-   - build a representative action-vocabulary canary and run a fresh natural-language
-     monster acceptance mod. Each advertised action family needs an observed invariant;
-     registration or compilation alone cannot promote it.
-   This is direct acceptance hardening of the existing Enemy Encounter slice, not a fifth
-   content type. It is the hard gate before Minimal Character work starts.
-6. **Minimal Character Slice.** Use the character template where appropriate; prove the
+5. **Monster Move Vocabulary follow-up. ✅ PIPELINE-SUPPORTED 2026-07-15.** This remains
+   behavior breadth on the existing Enemy Encounter slice, not a fifth content type.
+   `interview.md`/`spec.md` now carry a compact move contract (id, intents, ordered effect,
+   successor, condition/loop); `recipes/monster.md` has copyable self custom-Power,
+   player-Debuff, Block/Heal, multi-hit, composite-action, explicit-cycle, and exhaustive
+   conditional-branch patterns. The multi-turn `CombatEnemy` helper waits for a larger
+   player `TurnNumber`, asserts `NextMove` plus `MonsterPerformedMoveEntry`, and counts
+   `CreatureAttackedEntry.DamageResults` rather than inferring hit count from total HP.
+   `CanaryMonsterVocabulary` built 0/0 and passed strict Tier 1 + eight-turn Tier 2:
+   Power `2 -> 4`, later attack `5 -> 7`, Weak `2`, two-hit totals `8 -> 12`, healthy
+   Block `+5`, wounded HP/Block `+3/+4`, both branch exits, and cycle return. A fresh
+   Chinese one-sentence `EmberWarden` run used different values (`6/10 -> 8/14`,
+   Block `+6`, HP/Block `+5/+4`) and passed build 0/0 + Tier 1 + Tier 2 with zero repair.
+   Strict verification also closed two setup errors: no initialization-time
+   `SetFtuesEnabled`, and placeholder monsters explicitly target the built-in fallback
+   scene so a missing convention path never logs first. Custom Spine art remains excluded.
+6. **Minimal Character Slice. ⏭ DIRECT NEXT.** Use the character template where appropriate; prove the
    character appears in selection, starts a run, owns valid starter content, and exposes at
    least one small mechanic/vocabulary combination. This is a vertical slice, **not** a full
    production-size card pool, but it is enough for M7 to reason about archetype identity
@@ -717,9 +713,9 @@ build a generic framework before two real shapes prove the abstraction.
 
 **M6 Core completion gate:** Mechanic Vocabulary, Enemy Encounter, World Node, and Minimal
 Character slices all reach **pipeline-supported**, with their Type and Scenario proofs
-recorded. The Monster Move Vocabulary direct follow-up must pass before Minimal Character
-starts; the existing Enemy Encounter support label remains scoped to a basic deterministic
-attack until then. Reward/rest-site/pet are Extras and do not block M7; Act is separately deferred.
+recorded. Monster Move Vocabulary has passed its hard gate; Minimal Character is now the
+only remaining M6 Core slice. Reward/rest-site/pet are Extras and do not block M7; Act is
+separately deferred.
 M5's live tier-2 foundation is already complete, so M6 begins at M6.0. The full
 BaseLib inventory and its evidence are maintained in
 `games/sts2/tests/content-capability-graph.md`; this section is the execution source of

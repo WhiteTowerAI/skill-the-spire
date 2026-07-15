@@ -531,7 +531,7 @@ playing the consumer only once. If N is 1, zero is also the only fewer-than-N in
 keep the zero case plus an at-least-N remainder case. The successful terminal marker still
 comes only after all boundary assertions pass.
 
-## The `CombatEnemy` scenario (monster + encounter — earned seam, live 2026-07-10)
+## The `CombatEnemy` scenario (monster + encounter; one- and multi-move live)
 
 Enemy-side content (monster + encounter) does not fit the card/relic/potion drivers above:
 the harness must enter the **custom encounter**, confirm the **custom monster** spawned, make
@@ -569,11 +569,14 @@ private static async Task InCombat(Player player, CancellationToken ct)
 
     // DRIVE: end the player turn → the enemy takes its move.
     int hpBefore = player.Creature.CurrentHp;
+    int turnBefore = player.PlayerCombatState!.TurnNumber;
     PlayerCmd.EndTurn(player, canBackOut: false);   // returns void — do NOT await
 
     // OBSERVE: wait for the player turn to resume (enemy has acted), then assert the delta.
     await WaitHelper.Until(
-        () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play || !CombatManager.Instance.IsInProgress,
+        () => (player.PlayerCombatState?.Phase == PlayerTurnPhase.Play &&
+               player.PlayerCombatState.TurnNumber > turnBefore) ||
+              !CombatManager.Instance.IsInProgress,
         ct, TimeSpan.FromSeconds(45), "player play phase not resumed after enemy turn");
     int hpAfter = player.Creature.CurrentHp;
     int delta = hpBefore - hpAfter;
@@ -585,6 +588,177 @@ private static async Task InCombat(Player player, CancellationToken ct)
 
 The monster's own move body still logs `attacked:` for diagnosis; verify uses the independent
 state proof, for example `"enemy attack.*observed=6"`.
+
+### Multi-turn move vocabulary
+
+The one-turn body above is the fast path for a one-move self-loop. For a multi-move SPEC,
+drive the real enemy turn repeatedly and use combat history to prove which move and how many
+hits actually resolved. Do not call move bodies, `PerformMove`, `SetMoveImmediate`, or
+`ForceCurrentState` from the harness; those bypass normal enemy turn selection.
+
+Add these namespaces:
+
+```csharp
+using MegaCrit.Sts2.Core.Combat.History.Entries;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.MonsterMoves.Intents;
+using MegaCrit.Sts2.Core.ValueProps;
+```
+
+Reusable turn driver:
+
+```csharp
+private readonly record struct EnemyTurnObservation(
+    string MoveId, int PlayerHpDelta, int HitCount, decimal UnblockedDamage);
+
+private static async Task<EnemyTurnObservation> DriveEnemyTurn(
+    Player player, Creature monster, string expectedMoveId, CancellationToken ct)
+{
+    await WaitHelper.Until(
+        () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play ||
+              !CombatManager.Instance.IsInProgress,
+        ct, TimeSpan.FromSeconds(30), $"play phase not reached before {expectedMoveId}");
+    if (!CombatManager.Instance.IsInProgress)
+        throw new InvalidOperationException($"combat ended before {expectedMoveId}");
+    var monsterModel = monster.Monster
+        ?? throw new InvalidOperationException("enemy creature has no monster model");
+
+    StateProof(monsterModel.NextMove.Id == expectedMoveId,
+        $"enemy next move expected={expectedMoveId} observed={monsterModel.NextMove.Id}");
+
+    var history = CombatManager.Instance.History;
+    int movesBefore = history.Entries.OfType<MonsterPerformedMoveEntry>()
+        .Count(e => ReferenceEquals(e.Monster, monsterModel));
+    int attacksBefore = history.Entries.OfType<CreatureAttackedEntry>()
+        .Count(e => ReferenceEquals(e.Actor, monster));
+    int turnBefore = player.PlayerCombatState!.TurnNumber;
+    int hpBefore = player.Creature.CurrentHp;
+
+    PlayerCmd.EndTurn(player, canBackOut: false);   // void -- do NOT await
+
+    // Phase alone can still be the old Play frame. TurnNumber must also advance.
+    await WaitHelper.Until(
+        () => (player.PlayerCombatState?.Phase == PlayerTurnPhase.Play &&
+               player.PlayerCombatState.TurnNumber > turnBefore) ||
+              !CombatManager.Instance.IsInProgress,
+        ct, TimeSpan.FromSeconds(45), $"player turn not resumed after {expectedMoveId}");
+    if (!CombatManager.Instance.IsInProgress)
+        throw new InvalidOperationException($"combat ended during {expectedMoveId}");
+
+    var moves = history.Entries.OfType<MonsterPerformedMoveEntry>()
+        .Where(e => ReferenceEquals(e.Monster, monsterModel))
+        .Skip(movesBefore).ToList();
+    StateProof(moves.Count == 1 && moves[0].Move.Id == expectedMoveId,
+        $"enemy move history expected={expectedMoveId} " +
+        $"observed={string.Join(",", moves.Select(e => e.Move.Id))}");
+
+    var attacks = history.Entries.OfType<CreatureAttackedEntry>()
+        .Where(e => ReferenceEquals(e.Actor, monster))
+        .Skip(attacksBefore).ToList();
+    int hitCount = attacks.Sum(e => e.DamageResults.Count);
+    decimal unblocked = attacks.SelectMany(e => e.DamageResults)
+        .Sum(r => r.UnblockedDamage);
+
+    return new EnemyTurnObservation(
+        expectedMoveId, hpBefore - player.Creature.CurrentHp, hitCount, unblocked);
+}
+```
+
+For the representative cycle in `recipes/monster.md` (`MUSTER -> PRESSURE -> FLURRY ->
+HEALTH_BRANCH -> GUARD|RECOVER -> MUSTER`), the driver body is:
+
+```csharp
+var monsterModel = mob.Monster
+    ?? throw new InvalidOperationException("enemy creature has no monster model");
+var musterIntent = monsterModel.NextMove.Intents.OfType<BuffIntent>().Count() == 1;
+StateProof(musterIntent, "monster MUSTER intent expected=buff observed=match");
+await DriveEnemyTurn(player, mob, "MUSTER", ct);
+var buff = mob.GetPower<<CustomBuff>>();
+StateProof(buff?.Amount == 2,
+    $"monster self power expected=2 observed={buff?.Amount.ToString() ?? "missing"}");
+
+var pressureIntents = monsterModel.NextMove.Intents;
+StateProof(pressureIntents.OfType<SingleAttackIntent>().Count() == 1 &&
+           pressureIntents.OfType<DebuffIntent>().Count() == 1,
+    "monster PRESSURE intents expected=attack+debuff observed=match");
+var pressure = await DriveEnemyTurn(player, mob, "PRESSURE", ct);
+var weak = player.Creature.GetPower<WeakPower>();
+StateProof(pressure.PlayerHpDelta == 5 && weak?.Amount == 2,
+    $"monster attack+debuff expected=5/2 observed={pressure.PlayerHpDelta}/" +
+    $"{weak?.Amount.ToString() ?? "missing"}");
+
+var multi = monsterModel.NextMove.Intents.OfType<MultiAttackIntent>().SingleOrDefault();
+StateProof(multi?.Repeats == 2,
+    $"monster FLURRY intent repeats expected=2 observed={multi?.Repeats.ToString() ?? "missing"}");
+var flurry = await DriveEnemyTurn(player, mob, "FLURRY", ct);
+StateProof(flurry.HitCount == 2 && flurry.PlayerHpDelta == 8,
+    $"monster multi-attack expected=2/8 observed={flurry.HitCount}/{flurry.PlayerHpDelta}");
+
+// At full health the branch must choose GUARD.
+int blockBefore = mob.Block;
+await DriveEnemyTurn(player, mob, "GUARD", ct);
+StateProof(mob.Block - blockBefore == 5,
+    $"monster healthy branch expected=GUARD block+5 observed={mob.Block - blockBefore}");
+
+// Change the branch's real input through a public Cmd, without forcing a move state.
+int woundedHp = Math.Max(1, mob.MaxHp / 2 - 1);
+int setupDamage = mob.CurrentHp - woundedHp;
+await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), mob, setupDamage,
+    ValueProp.Unblockable | ValueProp.Unpowered, player.Creature, null);
+StateProof(mob.CurrentHp == woundedHp,
+    $"monster branch setup expectedHp={woundedHp} observed={mob.CurrentHp}");
+
+// Traverse the explicit cycle again. The stacked buff must change later attack damage.
+await DriveEnemyTurn(player, mob, "MUSTER", ct);
+buff = mob.GetPower<<CustomBuff>>();
+StateProof(buff?.Amount == 4,
+    $"monster self power stacked expected=4 observed={buff?.Amount.ToString() ?? "missing"}");
+
+pressure = await DriveEnemyTurn(player, mob, "PRESSURE", ct);
+weak = player.Creature.GetPower<WeakPower>();
+StateProof(pressure.PlayerHpDelta == 7 && weak?.Amount == 2,
+    $"monster buff downstream+debuff expected=7/2 observed={pressure.PlayerHpDelta}/" +
+    $"{weak?.Amount.ToString() ?? "missing"}");
+
+flurry = await DriveEnemyTurn(player, mob, "FLURRY", ct);
+StateProof(flurry.HitCount == 2 && flurry.PlayerHpDelta == 12,
+    $"monster stacked multi-attack expected=2/12 observed={flurry.HitCount}/{flurry.PlayerHpDelta}");
+
+int hpBeforeRecover = mob.CurrentHp;
+blockBefore = mob.Block;
+await DriveEnemyTurn(player, mob, "RECOVER", ct);
+StateProof(mob.CurrentHp - hpBeforeRecover == 3 && mob.Block - blockBefore == 4,
+    $"monster wounded branch heal+block expected=3/4 observed=" +
+    $"{mob.CurrentHp - hpBeforeRecover}/{mob.Block - blockBefore}");
+
+StateProof(true,
+    "monster vocabulary complete expected=all observed=all; " +
+    "cycle=twice branches=GUARD,RECOVER");
+```
+
+Adapt move ids, numbers, Power types, and branch setup to SPEC. The important invariants are:
+
+- inspect `NextMove` intents before the turn and the matching
+  `MonsterPerformedMoveEntry` afterward;
+- prove self Power attachment **and** a later changed result;
+- assert target debuff amount immediately after the composite move;
+- wound through a public Cmd, then assert exact heal/Block deltas;
+- prove multi-hit with `CreatureAttackedEntry.DamageResults.Count` (HP total alone is not a
+  repeat count);
+- drive every advertised branch through its real predicate and traverse enough turns to
+  demonstrate the explicit cycle.
+
+> **Live-proven (`CanaryMonsterVocabulary` + fresh `EmberWarden`, 2026-07-15):** both
+> projects built 0/0 and passed strict Tier 1 + Tier 2 through eight enemy turns. The
+> canary observed self Power `2 -> 4`, later attack damage `5 -> 7`, two-hit totals
+> `8 -> 12`, Weak, healthy Block `+5`, wounded HP/Block `+3/+4`, and both branch exits.
+> The independent one-sentence mod used different numbers (`6/10 -> 8/14`, Block `+6`,
+> HP/Block `+5/+4`) and passed with zero repair. Strict verification also established two
+> setup rules: never call `SaveManager.SetFtuesEnabled` from initialization, and point a
+> placeholder monster directly at `SceneHelper.GetScenePath("creature_visuals/fallback")`
+> so no missing custom-scene error is logged before fallback.
 
 > **Live-proven (`CanaryEncounter`, tier-2 PASS):** the `PlayerCmd.EndTurn` gate is the same
 > as `CombatRoomHandler`'s AutoSlay loop — after the enemy turn, control returns to the
@@ -687,6 +861,10 @@ need their own mod-reachability grounding first.
 - [ ] The element's own type-specific marker (author.md step 2) is present for diagnosis.
 - [ ] The harness snapshots concrete state, asserts the SPEC's exact post-state, and calls
       `StateProof`; broad trigger/preview markers are never used as Tier-2 proof.
+- [ ] A multi-move `CombatEnemy` waits for `TurnNumber` to advance, asserts `NextMove`
+      intents + `MonsterPerformedMoveEntry`, and traverses every declared cycle/branch outcome.
+- [ ] Multi-hit proof counts `CreatureAttackedEntry.DamageResults`; self Power proof includes
+      its downstream changed result; Block/Heal/debuff assertions read exact live state.
 - [ ] Every nonnegative Counter `consumes` edge runs zero/fewer-than-N/at-least-N cases
       and asserts after each that no negative instance exists.
 - [ ] Never claim tier-2 on a `selftest FAILED` line — that's a harness/setup miss, report tier-1 + manual fallback.

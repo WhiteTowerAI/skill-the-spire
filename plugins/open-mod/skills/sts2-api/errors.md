@@ -273,3 +273,28 @@
 - **Fix:** none in generated mod code. Current `grep_log.py` reports and ignores only
   those exact stack-qualified blocks. A lookalike, a different file/error, or any other
   global/multiline error still fails and must be diagnosed normally.
+
+### Self-test logs `InitProfileId must be called on SaveManager`
+- **Signature:** `[ERROR] Failed to save progress: System.InvalidOperationException:
+  InitProfileId must be called on SaveManager!`, with
+  `ProgressSaveManager.SetFtuesEnabled → SaveManager.SetFtuesEnabled` and the mod's
+  `SelfTest.RunAsync` in the stack. The harness may continue because the call was wrapped
+  in `try/catch`, but strict verification still fails the fresh error block.
+- **Cause:** `SelfTest.Arm()` runs during mod initialization, before profile state is ready.
+  Calling `SaveManager.SetFtuesEnabled(false)` attempts to persist a user setting and logs
+  the global save error before throwing to the caller.
+- **Fix:** remove the call. Tutorial state is not required by the menu navigation, and a
+  verification harness must not mutate a persistent user preference. Keep the run-UI
+  timing gates from `reference/selftest-harness.md` instead.
+
+### Placeholder custom monster logs a missing `creature_visuals/<mod>-<class>.tscn`
+- **Signature:** Godot reports `Cannot open file` / `Failed loading resource` for
+  `res://scenes/creature_visuals/<mod>-<class>.tscn`, followed by
+  `Encountered exception loading the creature visuals ... Falling back to error scene`.
+  The monster may still fight on the error visual, but strict verification fails.
+- **Cause:** a `CustomMonsterModel` left `CustomVisualPath` null while no convention-named
+  custom Spine scene exists. BaseLib lets the vanilla path convention run; the game logs
+  the failed load before recovering.
+- **Fix:** for the supported placeholder-art path, explicitly override
+  `CustomVisualPath => SceneHelper.GetScenePath("creature_visuals/fallback")`. Custom art
+  remains provisional until a real scene is authored and live-rendered.

@@ -60,7 +60,8 @@ The `--tier2-pattern` selects the SPEC invariant from structured
 `[T2MOD-SELFTEST] <ModName> state proof:` lines. Use concrete expected/observed vocabulary:
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
 `"cadence cross-combat threshold.*observed=0/4"`,
-`"enemy attack.*observed=6"`, or `"event gold.*observed=25"`. The verifier ignores all
+`"enemy attack.*observed=6"`, `"monster vocabulary complete.*observed=all"`, or
+`"event gold.*observed=25"`. The verifier ignores all
 ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
 requires the exact load marker and `selftest done`.
 
@@ -84,6 +85,9 @@ requires the exact load marker and `selftest done`.
   harness must assert `N-1`, threshold, and reset/carry-over before it emits `selftest done`;
   a run `[SavedProperty]` also asserts `SavedProperties.From`/`Fill`. Use the multi-combat
   variant in `reference/selftest-harness.md`.
+- For a multi-move enemy, one HP delta is likewise insufficient. Before the terminal proof,
+  the harness must execute every SPEC move/branch outcome and assert its move history,
+  concrete creature/Power state, downstream buff consequence, and multi-hit result count.
 
 **Read the harness's terminal marker first — it tells you which failure you have:**
 
@@ -115,7 +119,8 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
      progress). Confirm the localized option appears before choosing it.
 4. Trigger it: **relic** → enter a combat; **potion** → use it (pick a target if targeted);
    **card** → play it (target an enemy for an attack; `energy 3` first for headroom);
-   **enemy encounter** → end your turn and confirm the enemy takes its move (HP/state changes);
+   **enemy encounter** → end enough turns to traverse the declared cycle; confirm every
+   move's visible intent and exact HP/Block/Power change, and drive each conditional outcome;
    **event** → choose the specified option and confirm its run-state consequence.
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
    game** (closing rotates the log away):

@@ -50,10 +50,13 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      **passive** and **evoke** effects separately. Do not call either a run modifier, and
      never ask about enum fields or APIs.
    - **Enemy encounter**: an enemy is fought inside its encounter, so treat them as one
-     unit. Resolve only what genuinely shapes the fight: the monster's **HP**, what its
-     **move** does each turn (attack for N? gain block? apply a debuff?), and whether it's
-     a **single monster or a group**. Don't ask about scenes, animations, intents-as-code,
-     or any API — those are the recipe's job.
+     unit. Resolve only what genuinely shapes the fight: the monster's **HP**, whether it
+     is alone or in a group, and each move's visible warning, exact effect, and what comes
+     next. If there are several moves, record the fixed order or the plain-language
+     condition (for example, "below half health, heal instead"). Ask one sequence question
+     only when the order/condition is genuinely unclear; default to the stated order in a
+     repeating cycle. Don't ask about scenes, animations, intent class names, or APIs —
+     those are the recipe's job.
    - **Event / World Node**: resolve the event's opening situation, the option(s) the
      player can choose, and each option's concrete consequence (gold/HP/card/relic/etc.).
      A one-option event is valid for the fast path. Ask which acts only if the user cares;
@@ -101,6 +104,8 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
+- **Monster move order**: moves repeat in the order stated. Do not invent random choice;
+  add a conditional branch only when the concept names a condition or the user confirms it.
 - **State lifetime**: "every N turns" on a relic continues across combats in the current
   run; "on turn N of each combat" uses that combat's turn number. Turn-local/once-per-
   combat wording resets at the boundary it names. Ask one carry-over question only when
@@ -165,7 +170,11 @@ element: enemy encounter
 monster name: <proposed>
 encounter name: <proposed, or "<Monster> Encounter">
 hp: <int>
-move: <plain-language each-turn behavior, with numbers, e.g. "attack for 6">
+moves:
+  - id: <plain name>; warning: <attack|buff|debuff|defend|heal or combination>;
+    effect: <exact effects and numbers>; next: <next move id>
+condition: none | <plain condition> -> <move id>; otherwise -> <move id>
+loop: <move id> -> <move id> -> ...
 group: single | <describe the group>
 art: placeholder (custom monster scene/animation not yet supported)
 ```

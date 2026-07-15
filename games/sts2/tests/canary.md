@@ -25,7 +25,7 @@ this matrix built it. Card/potion/relic each already had a real acceptance mod
 card→power interaction path were not. Any *new* recipe added later must gain a canary
 here before it is considered done.
 
-## The eleven cells
+## The twelve cells
 
 | Cell | Mod | Element(s) | What it proves in the recipe | Tier-2 harness DRIVER + marker |
 |------|-----|-----------|------------------------------|--------------------------------|
@@ -38,6 +38,7 @@ here before it is considered done.
 | card-orb interaction | `CanaryOrb` | card `Take Shelter` + custom orb `Shelter` | `CustomOrbModel`, inline `OrbLoc`, zero-slot Channel behavior, queue ownership, passive + evoke | `CombatPlayer` autoplays host Card → queue `present=True capacity=1` → passive Block `0 -> 2` → evoke Block `2 -> 7` |
 | interaction | `CanaryCombo` *(historical project name)* | card `Charge` + custom power `Signal` | the **card → `PowerCmd.Apply<CustomPower>`** dependency path (the BloodAndFury multi-element shape) in one mod: two real element nodes, an `applies` interaction, `PowerVar<Signal>`, `DynamicVars["Signal"]`, and both loc tables | `CombatPlayer` drives the real source type (`card`): play `Charge` (`Charge played: applied Signal`) → assert the dependent `Signal fired:` observation — the interaction-edge proof |
 | enemy encounter | `CanaryEncounter` | `CanaryMite : CustomMonsterModel` + `CanaryMiteEncounter : CustomEncounterModel` | `CustomMonsterModel` (no `[Pool]`, auto `RegisterType`), `GenerateMoveStateMachine` + `MoveState("PECK", …, SingleAttackIntent(6))` + `.FollowUpState = peck`, `CustomEncounterModel(RoomType.Monster)` (auto `AddEncounter`), `IsValidForAct`, `AllPossibleMonsters` / `GenerateMonsters`, `monsters.json` + `encounters.json` loc; **bug fix**: monster attacks use `.FromMonster(this).Execute(null)` NOT `.Targeting(target)` | **`CombatEnemy` scenario**: enter via `ModelDb.Encounter<CanaryMiteEncounter>().ToMutable()` + `EnterRoomDebug`; assert `Enemies.FirstOrDefault(e => e.Monster is CanaryMite)` found; wait Play phase; `EndTurn` (void); wait Play phase again; assert player `hp [before] -> [after] delta=6` |
+| monster move vocabulary | `CanaryMonsterVocabulary` | `CanarySentinel` + custom buff `BattleFocus` in one `CanarySentinelEncounter` | `BuffIntent`/custom Power, `SingleAttackIntent` + `DebuffIntent`, `MultiAttackIntent` + `.WithHitCount(2)`, `DefendIntent`, `HealIntent`, explicit `FollowUpState` cycle, exhaustive half-HP `ConditionalBranchState`, and explicit built-in fallback scene | **multi-turn `CombatEnemy`**: two full cycles; assert `NextMove` + `MonsterPerformedMoveEntry`; Power `2 -> 4` and later attack `5 -> 7`; Weak `2`; two-hit totals `8 -> 12`; healthy Block `+5`; wounded HP/Block `+3/+4`; both branch outcomes; final `observed=all` |
 | event / World Node | `CanaryEvent` | `GildedSignpost : CustomEventModel` | no `[Pool]`; constructor auto-`AddEvent`; default empty `Acts` means all-act placement; nested in-code `EventLoc` / `EventPageLoc` / `EventOptionLoc`; `Option(FollowTheSign)` slug matches `FOLLOW_THE_SIGN`; `PlayerCmd.GainGold(25m, Owner)` + `SetEventFinished`; verified vanilla portrait placeholder | **`MapNode` scenario**: enter `ModelDb.Event<GildedSignpost>()` via `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, …)`; assert formatted title/option loc; click one real `NEventOptionButton`; independently observe Gold `99 -> 124` (`delta=25`), finished state, and result-page loc |
 | stateful cadence | `CadenceCanary` | relic `CadenceBloom` + relic `CombatSundial` | run-persistent `[SavedProperty] int` modulo progress vs combat-owned `PlayerCombatState.TurnNumber`; visible counter updates; no combat-end reset of run progress | **multi-combat `CombatPlayer` scenario**: combat 1 proves progress `1 -> 2` and turn-2 local effect; `SavedProperties.From/Fill` restores `2`; combat 2 turn 1 proves run carry-over threshold `2 -> 0`, Energy `3 -> 4`, plus combat reset `TurnNumber=1` / no second Sundial activation |
 
@@ -70,7 +71,8 @@ The steps per cell:
    `python <open-mod>/games/sts2/tools/grep_log.py --mod-name Canary<X> --tier2-pattern
    "<state-proof pattern>"` → expect `[PASS] Tier-2 verified`. Match concrete state such as
    `"damage.*observed=6"`, `"enemy attack.*observed=6"`, or
-   `"event gold.*observed=25"`. The verifier separately requires the current launch's load
+   `"event gold.*observed=25"`; rich enemies use
+   `"monster vocabulary complete.*observed=all"`. The verifier separately requires the current launch's load
    marker plus `<ModName> selftest done`; terminal and broad trigger/preview lines are never
    accepted as proof. For `CanaryCombo`, require separate state proofs for the card→Power
    application and the dependent Power consequence.
@@ -91,7 +93,12 @@ scenario seam earned: custom event room entered, nested title/option/result loc 
 real option UI clicked, and event+harness independently observed Gold `delta=25`. A fresh
 one-sentence `ForgottenCache` acceptance then passed 0/0 + Tier 1 + Tier 2 with zero repair
 on 2026-07-14, advancing Event to `pipeline-supported`. See `canary-results.md` for both.
-See `canary-results.md` for the per-cell markers and the four harness bugs the live run
+**M6 Monster Move Vocabulary (2026-07-15): CanaryMonsterVocabulary PASS** — eight real
+enemy turns proved self custom Power + downstream scaling, player Debuff, Block/Heal,
+multi-hit history count, composite actions, an explicit cycle, and both half-HP branch
+outcomes. A separate one-sentence `EmberWarden` run passed build 0/0 + Tier 1 + Tier 2 with
+zero repair, advancing the richer move scope to `pipeline-supported`.
+See `canary-results.md` for the per-cell markers and harness bugs the live runs
 fixed. **Run one cell at a time** —
 `--t2selftest` arms every loaded harness mod, so parking all but the cell under test avoids
 a main-menu collision. **This includes Overclock** — park it along with all Canary* mods

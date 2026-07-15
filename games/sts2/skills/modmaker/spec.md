@@ -169,12 +169,26 @@ art is a Spine scene and stays placeholder — custom monster art is not yet sup
 - **mod name**: <PascalCase = csproj/assembly/manifest id>
 - **author**: <author>
 - **hp**: <int>   (Min == Max for deterministic HP)
-- **move**: <plain-language each-turn behavior + numbers> → intent: <SingleAttackIntent(N) | ...>
+- **moves**:
+  - id: <UPPER_SNAKE>
+    intents: <attack N | multi N x R | buff | debuff | defend | heal; list every visible intent>
+    effect: <ordered Cmd effects with exact numbers and targets>
+    next: <move id | branch id>
+- **branches**: none | <branch id>: if <exhaustive condition> -> <move id>; else -> <move id>
+- **loop**: <deterministic move/branch cycle; every move and branch has a reachable successor>
 - **group**: single | <the monsters the encounter spawns>
 - **valid acts**: all | <Glory | Hive | Overgrowth | Underdocks>
 - **scenario**: CombatEnemy
-- **observe**: encounter entered; monster present in Enemies; enemy action executed; player/monster state delta
-- **art**: placeholder (custom monster Spine scene not yet supported — falls back to creature_visuals/fallback)
+- **observe**:
+  - every advertised move id executes in the declared order
+  - self buff/custom Power: exact monster Power amount plus a later changed attack/result
+  - player debuff: exact player Power amount immediately after application
+  - block/heal: exact monster Block and HP deltas from a wounded pre-state
+  - multi-attack: `CreatureAttackedEntry.DamageResults.Count` equals the repeat count
+  - composite action: every effect from the same move is observed
+  - branch: each advertised outcome is forced by its real condition and observed
+- **art**: explicit built-in placeholder (`SceneHelper.GetScenePath("creature_visuals/fallback")`;
+  custom monster Spine scene not yet supported)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - monster Id.Entry: `<NS_UPPER>-<MONSTER_SLUG>`; loc key (table `monsters`): `<NS_UPPER>-<MONSTER_SLUG>.name`
   - encounter Id.Entry: `<NS_UPPER>-<ENCOUNTER_SLUG>`; loc keys (table `encounters`): `<NS_UPPER>-<ENCOUNTER_SLUG>.{title,loss}`
@@ -183,7 +197,9 @@ art is a Spine scene and stays placeholder — custom monster art is not yet sup
 The monster and encounter are **not** modeled as two `elements` + an interaction edge (that
 form is for source→dependent links like card→power). They are one indivisible slice with a
 single recipe (`recipes/monster.md`) and a single `CombatEnemy` proof. `author.md` dispatches
-to that recipe when `element: enemy encounter`.
+to that recipe when `element: enemy encounter`. A one-move enemy may keep one self-looping
+move. A multi-move enemy must fill the compact move/branch contract above before authoring;
+an intent label or a green build is not behavior proof.
 
 **Event / World Node** (one `CustomEventModel` with nested pages/options; scenario is
 `MapNode`; custom event art is provisional and stays on the verified vanilla placeholder):

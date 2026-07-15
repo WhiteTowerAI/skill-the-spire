@@ -18,7 +18,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M6 Core IN PROGRESS: direct next = Monster Move Vocabulary hardening; then ④ Minimal Character, then M7
+## Current status — M6 Core IN PROGRESS: direct next = ④ Minimal Character, then M7
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -193,18 +193,19 @@ Calendar-style timing reads `PlayerCombatState.TurnNumber` and resets with each 
 Adjacent grounded/unsupported families are recorded honestly in
 `games/sts2/tests/mechanic-capability-audit.md`; see `IMPLEMENTATION_PLAN.md` follow-up.
 
-**DIRECT NEXT — Monster Move Vocabulary acceptance hardening.** Enemy Encounter is
-pipeline-supported only for its current basic deterministic-attack scope. Before Minimal
-Character, expand the existing monster+encounter slice to grounded, copyable actions for
-self Buff/custom Power, player Debuff, Block/Heal, multi-attack, attack+effect, deterministic
-move cycles, and conditional branches. Extend interview/SPEC/author routing and the
-`CombatEnemy` harness to drive multiple enemy turns and assert monster Power/Block/HP plus
-player Power/HP state. A live canary and a fresh natural-language acceptance run are the
-promotion gate; API presence or a green build is not enough. This is behavior breadth on
-the existing slice, not a new content type. Full gate: `IMPLEMENTATION_PLAN.md` §5 M6.
+**Monster Move Vocabulary hardening LIVE-VERIFIED 2026-07-15.** The existing Enemy
+Encounter slice now covers grounded/copyable self custom-Power, player Debuff, Block/Heal,
+multi-attack, attack+effect, explicit cycles, and conditional branches. The multi-turn
+`CombatEnemy` harness asserts `NextMove`/move history, hit count, and exact player/monster
+HP/Block/Power state. `CanaryMonsterVocabulary` built 0/0 and passed strict Tier 1 + an
+eight-turn Tier 2 through both half-HP branches; a fresh Chinese one-sentence `EmberWarden`
+run used different numbers and passed 0/0 + Tier 1 + Tier 2 with zero repair. Strict
+verification also retired initialization-time `SetFtuesEnabled` and implicit missing-scene
+fallback errors. Custom monster Spine art remains provisional. Full evidence:
+`games/sts2/tests/canary-results.md` + `IMPLEMENTATION_PLAN.md` §5 M6.
 
 **M6 Core — playable content-breadth slices (M6.0 contracts LANDED 2026-07-10;
-direct next Monster Move Vocabulary, then Minimal Character).** Do
+direct next Minimal Character).** Do
 not execute M6 as a flat "one BaseLib class → one recipe → one canary" checklist: many
 new types only matter through a host relationship (monster→encounter, keyword→card,
 reward→post-combat). Start with **M6.0**, a lightweight maintainer-only Content Capability
@@ -242,8 +243,8 @@ provisional/fallback). ③ World Node (event) — **pipeline-supported 2026-07-1
 nested title/option/result loc, real option UI click, Gold delta=25; `recipes/event.md` +
 pipeline wired; separate one-sentence `ForgottenCache` acceptance passed 0/0 + Tier 1 +
 Tier 2 with Gold delta=30 and zero repair; event art remains a verified vanilla placeholder,
-custom generation provisional), then the **Monster Move Vocabulary hard gate** (richer
-actions and multi-turn `CombatEnemy` proof), then ④ Minimal Character (selectable,
+custom generation provisional); the **Monster Move Vocabulary hard gate passed 2026-07-15**
+(richer actions and multi-turn `CombatEnemy` proof). Direct next is ④ Minimal Character (selectable,
 starts a run, valid starter content + one small
 mechanic combination). All four must be `pipeline-supported` to close M6 Core. Reward,
 rest-site option, and pet are **M6 Extras** and do not block M7; Act is outside the M6
@@ -289,6 +290,12 @@ The design is a **combination baseline**, not a fork (see BASELINE_RESEARCH.md):
   the headed game navigates with `ForceClick`, calls public Cmds, and logs the actual
   effect marker; all four driving cells pass. Manual dev-console steps are fallback
   only when navigation misses. Never claim an effect was verified when only load was.
+- **Keep live verification evidence-dense.** Prove each semantic behavior once. Do not
+  extend a scenario merely to observe another additive value (for example Power
+  `2 -> 4` or attack `5 -> 7`) or repeat the same downstream consequence. Repeat an
+  action only to cover a distinct control-flow or lifecycle boundary such as another
+  conditional branch, a required cycle return, reset/persistence, or a cap/floor.
+  Prefer the fewest game turns and assertions that cover all independent invariants.
 - **Reuse at the edges:** `spire-codex` (queryable decompiled API) for grounding,
   `STS2MCP`/`autoSpire` for live-state behavior checks — optional dependencies, not
   the core loop.

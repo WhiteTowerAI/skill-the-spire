@@ -481,3 +481,84 @@ mod behavior: Godot returns `Failed` when abandon removes a nonexistent
 the verification process. `grep_log.py` now ignores only those exact headers when their
 full base-game cleanup stacks are present; lookalikes and every other global/multiline
 error still fail. Focused positive and negative regressions cover both exclusions.
+
+## Monster Move Vocabulary - CanaryMonsterVocabulary + EmberWarden (2026-07-15)
+
+`CanaryMonsterVocabulary` was generated in gitignored
+`.claude/canary-monster-vocabulary-work/`. Its `CanarySentinel` has a deterministic cycle:
+
+```text
+MUSTER -> PRESSURE -> FLURRY -> HEALTH_BRANCH -> GUARD|RECOVER -> MUSTER
+```
+
+`MUSTER` applies a custom `BattleFocus` buff; `PRESSURE` attacks and applies Weak;
+`FLURRY` uses `MultiAttackIntent(2, 2)` plus `.WithHitCount(2)`; the branch chooses
+`GUARD` at or above half HP and `RECOVER` below half HP. Placeholder art explicitly points
+to `SceneHelper.GetScenePath("creature_visuals/fallback")`.
+
+The first compile exposed two nullable warnings in the new history helper. After extracting
+the checked mutable `MonsterModel`, the final build was **0 warnings / 0 errors** and
+PckPacker installed DLL/PCK/manifest. The first headed behavior run reached every assertion,
+but strict `grep_log.py` correctly failed two unrelated fresh error blocks:
+
+- initialization-time `SaveManager.SetFtuesEnabled(false)` logged `InitProfileId must be
+  called` before the catch;
+- a null `CustomVisualPath` tried the nonexistent convention scene before falling back.
+
+The shared harness already prohibited the SaveManager call; the old canary copy was brought
+up to that contract. `recipes/monster.md` now requires the explicit built-in fallback, and
+both signatures were appended to `errors.md`. After rebuilding, strict Tier 1 and Tier 2
+both passed with no fresh-run error blocks:
+
+```text
+CanaryMonsterVocabulary state proof: monster self power expected=2 observed=2
+CanaryMonsterVocabulary state proof: monster attack+debuff expected=5/1/2 observed=5/1/2
+CanaryMonsterVocabulary state proof: monster multi-attack expected=2/8 observed=2/8
+CanaryMonsterVocabulary state proof: monster healthy branch expected=GUARD block+5 observed=5
+CanaryMonsterVocabulary state proof: monster self power stacked expected=4 observed=4
+CanaryMonsterVocabulary state proof: monster buff downstream+debuff expected=7/1/2 observed=7/1/2
+CanaryMonsterVocabulary state proof: monster stacked multi-attack expected=2/12 observed=2/12
+CanaryMonsterVocabulary state proof: monster wounded branch heal+block expected=3/4 observed=3/4
+CanaryMonsterVocabulary state proof: monster deterministic cycle expected=MUSTER observed=MUSTER
+CanaryMonsterVocabulary state proof: monster vocabulary complete expected=all observed=all; cycle=twice branches=GUARD,RECOVER
+CanaryMonsterVocabulary selftest done
+```
+
+Final verifier:
+
+```text
+[PASS] Tier-2 verified: CanaryMonsterVocabulary loaded AND asserted post-state matched.
+```
+
+### Fresh natural-language pipeline acceptance - EmberWarden
+
+Fresh input, with different names and numbers from the canary:
+
+> 做一个叫灰烬看守者的36血敌人：第一回合获得2层灼热专注（每层让后续攻击多1点伤害），第二回合攻击4并施加1层虚弱，第三回合造成3点伤害两次；之后若生命至少一半就获得6格挡，否则获得4格挡并回复5点生命，然后循环。
+
+The updated pipeline wrote the compact move/branch SPEC, scaffolded `EmberWarden`, authored
+the monster + encounter + `SearingFocus` Power and multi-turn harness, then built and
+verified it. State/source remains in gitignored
+`.claude/acceptance-ember-warden-work/`.
+
+- First build: **0 warnings / 0 errors**; no repair attempts.
+- Tier 1: PASS; exact load marker and no fresh-run errors.
+- Tier 2: PASS after eight normal enemy turns; no manual console fallback.
+
+```text
+EmberWarden state proof: monster self power expected=2 observed=2
+EmberWarden state proof: monster attack+debuff expected=6/1/1 observed=6/1/1
+EmberWarden state proof: monster multi-attack expected=2/10 observed=2/10
+EmberWarden state proof: monster healthy branch expected=GUARD block+6 observed=6
+EmberWarden state proof: monster self power stacked expected=4 observed=4
+EmberWarden state proof: monster buff downstream+debuff expected=8/1/1 observed=8/1/1
+EmberWarden state proof: monster stacked multi-attack expected=2/14 observed=2/14
+EmberWarden state proof: monster wounded branch heal+block expected=5/4 observed=5/4
+EmberWarden state proof: monster deterministic cycle expected=KINDLE observed=KINDLE
+EmberWarden state proof: monster vocabulary complete expected=all observed=all; cycle=twice branches=GUARD,RECOVER
+EmberWarden selftest done
+```
+
+This closes the separate natural-language acceptance gate. Monster Move Vocabulary is now
+`pipeline-supported`; custom monster Spine art remains provisional. All harness mods parked
+for isolation were restored to the real `mods/` directory after verification.
