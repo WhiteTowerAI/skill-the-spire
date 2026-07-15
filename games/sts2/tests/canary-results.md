@@ -46,7 +46,9 @@ interaction) proves the relationship chain: the card applies the custom power, t
 observed.
 
 **Bugs the live run surfaced (all fixed in `reference/selftest-harness.md`):** (1)
-`SaveManager.SetFtuesEnabled` NREs at Arm() time → best-effort try/catch; (2) `IsInProgress`
+`SaveManager.SetFtuesEnabled` was initially wrapped after an Arm-time NRE, then removed
+entirely on 2026-07-15 after the catch was shown not to prevent its internal save error;
+(2) `IsInProgress`
 races ahead of the run UI node (`NRun.GlobalUi`) → added a wait gate before `EnterRoomDebug`;
 (3) harness template emitted 9 nullable warnings → cleaned to 0/0; (4) the interaction
 canary showed `PlayerCmd.EndTurn`
@@ -54,9 +56,10 @@ returns void (awaiting = CS4008) and is *required* for enemy-turn-start powers.
 
 ### Historical (pre-fix) note
 
-The per-cell DRIVER body + asserted marker are specified in `canary.md`'s table; the
-minimal element bodies below already emit each `fired/used/played:` marker, so the
-harness only has to *trigger* it.
+The text below records the original 2026-07-06 marker-based run. It is retained as
+historical gameplay evidence, but its broad `fired/used/played` verifier contract was
+superseded on 2026-07-15: current drivers must independently assert concrete state and emit
+structured `<ModName> state proof:` lines.
 
 - **relic/potion/card** drive their effect within the harness's turn-1 Play phase.
 - **multi-element interaction** (historical project `CanaryCombo`): `Charge` applies
@@ -80,6 +83,13 @@ Re-ran the existing CanaryCard self-test after making terminal/effect proof inde
 `CanaryCard selftest done` — with no mod-named errors. **PASS live.** Standard-library
 synthetic-log tests separately prove that `done` without an effect and `FAILED` after an
 effect both fail.
+
+**Superseded verifier contract (2026-07-15):** that live output used a broad `played`
+marker and would intentionally fail the current verifier. The Acceptance follow-up now
+requires an independently asserted `state proof:` line; synthetic regressions cover
+preview-only false passes, stale terminal markers, and multiline/global error blocks. The
+older live run remains evidence that the scenario drove the card, not evidence that the new
+proof format has been live re-run.
 
 ## M6 Mechanic Vocabulary — Keyword (2026-07-10)
 
@@ -338,11 +348,12 @@ Monster + Encounter slice from `scenario-verified` to **`pipeline-supported`**; 
 reproducible Type + Scenario proof remains the `CanaryEncounter` run above.
 
 The acceptance run also found one template defect before self-test compilation:
-`SelfTest.Arm()` called nonexistent `TaskHelper.RunSafely(RunAsync())`. `TaskHelper` is
-not supplied by STS2, BaseLib, or the generated project. The source template now uses
-standard fire-and-forget `_ = RunAsync();`; `RunAsync()` already catches and logs its own
-exceptions. Both committed distribution payloads were regenerated from the corrected
-source.
+`SelfTest.Arm()` called unresolved `TaskHelper.RunSafely(RunAsync())`. Later stable-v0.107.1
+grounding confirmed the helper is public at `MegaCrit.Sts2.Core.Helpers.TaskHelper`; the
+original diagnosis that STS2 did not supply it was wrong. The generated file did not need
+the helper because `RunAsync()` already catches and logs its own exceptions, so the source
+template keeps standard fire-and-forget `_ = RunAsync();`. Both committed distribution
+payloads were regenerated from the corrected source.
 
 ## M6 World Node — CanaryEvent (2026-07-13)
 
@@ -426,3 +437,47 @@ ForgottenCache selftest done
 The canary supplies the reproducible Type + Scenario proof; this second, one-sentence run
 closes the separate natural-language pipeline gate. Event / World Node therefore advances
 to **`pipeline-supported`** while custom event art remains provisional.
+
+## Stateful cadence — CadenceCanary (2026-07-15)
+
+`CadenceCanary` was generated in gitignored `.claude/canary-cadence-work/` with two
+custom relics that deliberately use different lifetimes:
+
+- `CadenceBloom`: Happy Flower shape, `[SavedProperty] int Progress`, increments at the
+  owner's turn start, wraps every 3 turns, and never clears progress at combat end;
+- `CombatSundial`: Stone Calendar shape, no saved counter, reads
+  `PlayerCombatState.TurnNumber` and fires only on turn 2 of each combat.
+
+Build: **0 warnings / 0 errors**; PckPacker emitted and installed
+`CadenceCanary.dll/.pck/.json/.pdb`. Tier 1 passed with the exact load marker and no
+fresh-run error blocks.
+
+Tier 2 used one multi-combat `CombatPlayer` scenario. All other harness mods were parked.
+The harness entered a real first combat, advanced a real player turn, ended the combat
+through `CreatureCmd.Kill` + `CombatManager.CheckWinCondition`, then entered a real second
+combat. It also serialized the live custom relic with `SavedProperties.From`, filled a
+fresh mutable instance, and asserted the restored property.
+
+```text
+CadenceCanary state proof: cadence first event expected progress=1 activations=0 observed=1/0
+CombatSundial fired: combat turn=2 block=2 activations=1
+CadenceCanary state proof: cadence below threshold expected progress=2; combat turn trigger expected block=2 activations=1 observed progress=2 block=2 activations=1
+CadenceCanary state proof: cadence save round trip expected=2 observed=2
+CadenceBloom fired: progress=0 energy 3 -> 4
+CadenceCanary state proof: cadence cross-combat threshold expected progress=0 energy=4 observed=0/4
+CadenceCanary state proof: combat lifetime reset expected turn=1 activations=1 observed=1/1
+CadenceCanary selftest done
+```
+
+Final verifier result:
+
+```text
+[PASS] Tier-2 verified: CadenceCanary loaded AND asserted post-state matched.
+```
+
+Repeated headed self-tests also exposed two base-game/tool cleanup blocks unrelated to
+mod behavior: Godot returns `Failed` when abandon removes a nonexistent
+`current_run.save.backup`, and native Sentry can report code 1 while the launcher closes
+the verification process. `grep_log.py` now ignores only those exact headers when their
+full base-game cleanup stacks are present; lookalikes and every other global/multiline
+error still fail. Focused positive and negative regressions cover both exclusions.

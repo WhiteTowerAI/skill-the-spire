@@ -25,7 +25,7 @@ this matrix built it. Card/potion/relic each already had a real acceptance mod
 card→power interaction path were not. Any *new* recipe added later must gain a canary
 here before it is considered done.
 
-## The ten cells
+## The eleven cells
 
 | Cell | Mod | Element(s) | What it proves in the recipe | Tier-2 harness DRIVER + marker |
 |------|-----|-----------|------------------------------|--------------------------------|
@@ -39,6 +39,7 @@ here before it is considered done.
 | interaction | `CanaryCombo` *(historical project name)* | card `Charge` + custom power `Signal` | the **card → `PowerCmd.Apply<CustomPower>`** dependency path (the BloodAndFury multi-element shape) in one mod: two real element nodes, an `applies` interaction, `PowerVar<Signal>`, `DynamicVars["Signal"]`, and both loc tables | `CombatPlayer` drives the real source type (`card`): play `Charge` (`Charge played: applied Signal`) → assert the dependent `Signal fired:` observation — the interaction-edge proof |
 | enemy encounter | `CanaryEncounter` | `CanaryMite : CustomMonsterModel` + `CanaryMiteEncounter : CustomEncounterModel` | `CustomMonsterModel` (no `[Pool]`, auto `RegisterType`), `GenerateMoveStateMachine` + `MoveState("PECK", …, SingleAttackIntent(6))` + `.FollowUpState = peck`, `CustomEncounterModel(RoomType.Monster)` (auto `AddEncounter`), `IsValidForAct`, `AllPossibleMonsters` / `GenerateMonsters`, `monsters.json` + `encounters.json` loc; **bug fix**: monster attacks use `.FromMonster(this).Execute(null)` NOT `.Targeting(target)` | **`CombatEnemy` scenario**: enter via `ModelDb.Encounter<CanaryMiteEncounter>().ToMutable()` + `EnterRoomDebug`; assert `Enemies.FirstOrDefault(e => e.Monster is CanaryMite)` found; wait Play phase; `EndTurn` (void); wait Play phase again; assert player `hp [before] -> [after] delta=6` |
 | event / World Node | `CanaryEvent` | `GildedSignpost : CustomEventModel` | no `[Pool]`; constructor auto-`AddEvent`; default empty `Acts` means all-act placement; nested in-code `EventLoc` / `EventPageLoc` / `EventOptionLoc`; `Option(FollowTheSign)` slug matches `FOLLOW_THE_SIGN`; `PlayerCmd.GainGold(25m, Owner)` + `SetEventFinished`; verified vanilla portrait placeholder | **`MapNode` scenario**: enter `ModelDb.Event<GildedSignpost>()` via `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, …)`; assert formatted title/option loc; click one real `NEventOptionButton`; independently observe Gold `99 -> 124` (`delta=25`), finished state, and result-page loc |
+| stateful cadence | `CadenceCanary` | relic `CadenceBloom` + relic `CombatSundial` | run-persistent `[SavedProperty] int` modulo progress vs combat-owned `PlayerCombatState.TurnNumber`; visible counter updates; no combat-end reset of run progress | **multi-combat `CombatPlayer` scenario**: combat 1 proves progress `1 -> 2` and turn-2 local effect; `SavedProperties.From/Fill` restores `2`; combat 2 turn 1 proves run carry-over threshold `2 -> 0`, Energy `3 -> 4`, plus combat reset `TurnNumber=1` / no second Sundial activation |
 
 ## How to run (maintainer, on the STS2 dev box)
 
@@ -55,8 +56,9 @@ The steps per cell:
 5. **(M5) Emit the tier-2 harness** per `reference/selftest-harness.md`: add
    `Canary<X>Code/SelfTest.cs`, fill the DRIVER body from the table above, and append
    `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();` after the load marker.
-   Each element already logs its `fired:`/`played:`/`used:` marker (see the bodies in
-   `canary-results.md`), so the harness only has to *trigger* it.
+   Each driver must snapshot and assert the table's concrete observable proof, then emit
+   `[T2MOD-SELFTEST] Canary<X> state proof: ...`; element `fired/played/used` logs are
+   diagnostic only.
 6. `dotnet build Canary<X>.csproj -c Release` → expect **0 warnings, 0 errors** + a
    `.pck` copied to `mods/Canary<X>/`.
 7. **Tier-1** (load): `python <open-mod>/games/sts2/tools/launch.py --wait-seconds 35`.
@@ -66,11 +68,12 @@ The steps per cell:
 8. **Tier-2** (effect fires, per driving cell — each self-drives its own hosted scenario):
    `python <open-mod>/games/sts2/tools/launch.py --self-test --mod-name Canary<X>` then
    `python <open-mod>/games/sts2/tools/grep_log.py --mod-name Canary<X> --tier2-pattern
-   "<type-specific effect pattern>"` → expect `[PASS] Tier-2 verified`. CombatPlayer uses
-   `"fired|used|played"`; CombatEnemy and MapNode use the marker vocabulary in the table.
-   The verifier separately requires
-   `<ModName> selftest done`; a terminal line is never accepted as the effect proof. For
-   `CanaryCombo`, confirm both the `Charge played:` and dependent `Signal fired:` markers.
+   "<state-proof pattern>"` → expect `[PASS] Tier-2 verified`. Match concrete state such as
+   `"damage.*observed=6"`, `"enemy attack.*observed=6"`, or
+   `"event gold.*observed=25"`. The verifier separately requires the current launch's load
+   marker plus `<ModName> selftest done`; terminal and broad trigger/preview lines are never
+   accepted as proof. For `CanaryCombo`, require separate state proofs for the card→Power
+   application and the dependent Power consequence.
 
 ## Status
 

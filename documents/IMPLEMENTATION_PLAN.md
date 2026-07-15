@@ -3,10 +3,11 @@
 > Companion to PROJECT.md, BASELINE_RESEARCH.md, R1_R2_FEASIBILITY.md,
 > COMPETITIVE_LANDSCAPE.md. This is the build blueprint: directory layout, the
 > skill pipeline, the game pack shape, and a phased milestone plan.
-> Status: living plan. Written 2026-07-01 and updated through 2026-07-14.
+> Status: living plan. Written 2026-07-01 and updated through 2026-07-15.
 > **M0–M5.5 are complete. M6 Core is in progress:** M6.0 contracts, Mechanic
 > Vocabulary, Enemy Encounter, and World Node are complete and pipeline-supported.
-> **NEXT = Minimal Character.** M7 L3/L4 starts after the explicit M6 Core gate;
+> **DIRECT NEXT = Monster Move Vocabulary acceptance hardening; then Minimal Character.**
+> M7 L3/L4 starts after the explicit M6 Core gate;
 > see the M6/M7 sections below. Historical run details remain in `M0_RESULTS.md` …
 > `M4_RESULTS.md`, while current M6 evidence lives in `games/sts2/tests/`.
 
@@ -98,9 +99,10 @@ User: one sentence ("a relic that ...")
   5. BUILD (build.md)          — dotnet build (+publish for .pck) → .dll/.pck/.json
   |     into mods/. (R1.)  On failure → REPAIR.
   |
-  6. VERIFY (verify.md) — run tier 1 (load marker + no mod-named errors), then
+  6. VERIFY (verify.md) — run tier 1 (load marker + no fresh-run error blocks), then
   |     tier 2 through the arg-gated in-process harness. The headed game navigates
-  |     itself into combat, drives public Cmds, and logs the observed effect marker.
+  |     itself into combat, drives public Cmds, asserts concrete post-state, and logs
+  |     a structured state proof.
   |     Manual dev-console verification is fallback only. On failure → REPAIR.
   |
   7. REPAIR (repair.md) — shared bounded sub-loop invoked by build/verify: read the
@@ -149,13 +151,14 @@ Key design decisions:
   `games/sts2/tools/build.py` wraps it and reports copied `.dll/.pck/.json` artifacts.
   MegaDot publish is a historical fallback, not the user path.
 - **R2 tier 1 (verify.md):** `launch.py` starts the real game and `grep_log.py` checks
-  the load marker plus absence of mod-named errors. This proves installs + loads +
+  the load marker plus absence of fresh-run multiline/global error blocks. This proves installs + loads +
   registers.
 - **R2 tier 2 (verify.md) — the differentiator, shipped in M5:** each generated mod
   carries an arg-gated `SelfTest.cs`. `launch.py --self-test` passes `--t2selftest`;
   the headed game navigates menu→combat with `ForceClick`, calls the public Cmd APIs the
-  dev console wraps, and logs effect + terminal markers. All four driving cells pass
-  live. Manual console steps are an honest fallback only when navigation fails; never
+  dev console wraps, asserts concrete post-state, and logs state-proof + terminal markers.
+  The original four driving cells passed live under the earlier marker contract; current
+  generated harnesses require the stronger state-proof format. Manual console steps are an honest fallback only when navigation fails; never
   claim Tier 2 from a green build or load marker alone.
 
 ## 5. Milestones (each ends in something demonstrable)
@@ -461,8 +464,7 @@ normalized prompt before preflight; a Windows `.cmd` regression covers the compl
 Live provider rejection/insufficient-credit paths and macOS/Linux remain open. Full findings
 and the command/model snapshot are in `BASELINE_RESEARCH.md` §5.
 
-**Acceptance follow-up — Power amount-domain safety. IMPLEMENTED 2026-07-14; closure
-blocked by technical-review follow-ups below.** The Honed Edge user acceptance run exposed
+**Acceptance follow-up — Power amount-domain safety. CLOSED 2026-07-15.** The Honed Edge user acceptance run exposed
 a behavior bug that build, Tier 1, and the original Tier 2 happy path did not catch: using
 `PowerCmd.Apply<Edge>(..., -4, ...)` to consume a nonnegative Counter power creates a new
 `Edge` at `-4` when no instance exists, so later attacks lose damage. `PowerVar<T>` has no
@@ -483,48 +485,74 @@ amount. The five scoped fixes landed in source and both generated payloads:
 Windows tools tests (19/19), `compileall`, `git diff --check`, Markdown-fence/placeholder
 checks, and fresh-publish source/payload hash checks passed before this checkpoint.
 
-**Open technical-review findings (next-session work; do not call this follow-up closed
-until these are fixed and re-verified):**
+The technical review then found seven gaps; all are resolved:
 
-1. **P1 — Tier 2 can false-pass.** `games/sts2/tools/grep_log.py` accepts any broad
-   `played|fired|used` marker plus `selftest done`, while
-   `reference/selftest-harness.md` does not require concrete post-effect state assertions.
-   The acceptance `HonedEdgeCode/SelfTest.cs` only plays cards, and `Edge.cs` logs from
-   `ModifyDamageAdditive`, so preview/calculation calls can produce many matching markers
-   without proving the intended consumption result. Tighten the proof contract and add a
-   regression that fails when only broad/preview markers plus the terminal marker exist.
-2. **P1 — `launch.py` can accept a stale terminal marker.** Its self-test polling reads the
-   existing `godot.log` before STS2 necessarily rotates it and has no fresh-log or new
-   mod-load-marker boundary. Gate terminal-marker acceptance on evidence from the current
-   launch and add a stale-log regression.
-3. **P1 — the potion recipe publishes a nonexistent API.** `recipes/potion.md` uses
-   `PlayerCmd.Draw`; stable v0.107.1 exposes
-   `CardPileCmd.Draw(choiceContext, count, player)`. Correct source and regenerate both
-   payloads.
-4. **P1 — `grep_log.py` misses multiline/global errors.** It currently requires
-   `ERROR`/`Exception` and the mod name on the same line. The archived live log
-   `%APPDATA%/SlayTheSpire2/logs/godot2026-07-14T16.32.16.log` has a real HonedEdge save
-   error at line 156, but verification reported PASS and `Errors naming HonedEdge: none`.
-   Parse error blocks/context, then cover multiline and global runtime failures without
-   making unrelated historical log text fail a fresh run.
-5. **P2 — consumption must report the actual hook-adjusted offset.** The new
-   `recipes/power.md` template passes the applier/card source and logs pre-hook `spent`, but
-   `ModifyAmount` hooks can rewrite the offset; vanilla internal consumption (for example
-   `VigorPower`) passes `null, null`. Ground whether finite bounds constrain requested or
-   final hook-modified amounts, use the correct consumption context, and assert/log observed
-   post-state rather than the pre-hook request.
-6. **P2 — remove nonessential `SetFtuesEnabled(false)` from the harness.** Catching its
-   exception does not prevent the internal save error seen in the archived log; the
-   self-test does not need this persistent-setting mutation.
-7. **P2 — correct two stale pack facts.** `errors.md` says `TaskHelper` does not exist even
-   though it is public in stable v0.107.1, and `recipes/power.md` still documents
-   `card add`; the verified grammar is `card <id> [pile]`.
+1. **Tier-2 proof is state-based.** The harness now snapshots real state, asserts the exact
+   SPEC invariant, and emits a structured `<ModName> state proof:` line. `grep_log.py`
+   accepts only that proof plus `selftest done`; broad preview/trigger logs cannot pass.
+2. **Launch markers are fresh.** `launch.py` captures the pre-launch log, isolates only
+   replacement/truncated/appended text from this launch, and accepts a terminal marker only
+   after this launch's exact mod load marker.
+3. **Potion draw uses the stable API.** The recipe now calls
+   `CardPileCmd.Draw(choiceContext, count, player)` rather than nonexistent `PlayerCmd.Draw`.
+4. **Errors are block-aware and run-bounded.** `grep_log.py` parses multiline/global error
+   blocks after the last target load marker, so appended historical text is ignored while
+   the archived HonedEdge save failure is correctly reported. Live cadence-canary reruns
+   added two narrow, stack-qualified base-game cleanup exclusions: missing backup deletion
+   through `NMainMenu.AbandonRun`, and native Sentry close during launcher termination.
+   Generic/global errors and lookalike headers without those exact cleanup stacks still fail.
+5. **Power consumption reports hook-adjusted reality.** Stable-v0.107.1 grounding confirms
+   `ModifyAmount` runs given/received hooks before returning raw `newAmount`; vanilla
+   internal consumers pass `null, null`. The recipe now does the same, derives actual offset
+   from the return, re-reads retained state, and applies finite domains to final post-hook
+   state as well as requested input.
+6. **The harness no longer mutates FTUE settings.** `SetFtuesEnabled(false)` and the Saves
+   import were removed; the persistent mutation was unnecessary and its internal save could
+   error before profile initialization despite caller-side catch.
+7. **Stale facts are corrected.** `TaskHelper` is documented as public under
+   `MegaCrit.Sts2.Core.Helpers`, and the power recipe uses verified `card <id> [pile]`
+   grammar.
 
-The next session should inspect the live HonedEdge evidence under
-`D:/user_test_openmod/honed-edge-mod/` alongside the archived log, fix all seven items in
-`games/sts2/`, regenerate `plugins/open-mod` and top-level `skills`, and rerun the complete
-Windows tools suite, `compileall`, `diff --check`, source/payload consistency checks, plus
-focused regressions for stale logs, multiline errors, and Tier-2 state-proof failures.
+Focused regressions cover preview-only false passes, stale terminals without a fresh load,
+replacement and appended logs, multiline/global errors, and historical errors before the
+fresh-run boundary. The real archived HonedEdge log now fails on its complete
+`Failed to save progress` block and stack context, as intended.
+
+Closure verification: Windows tools suite **27/27**, full shipped-tool/publish-helper
+`compileall`, `git diff --check`, all 100 tracked Markdown fence checks, plugin JSON,
+generated-placeholder rules, and stale-fact scans pass. Fresh plugin/portable publishing is
+idempotent (aggregate tree hashes unchanged on a second publish), and all five shipped tool
+hashes match source → plugin → portable.
+
+**Acceptance follow-up — stateful timing/counter lifetimes. LIVE-VERIFIED 2026-07-15.**
+The Honed Edge conversation exposed a broader pack gap: the pipeline could author ordinary
+hooks but had no explicit contract for effects that remember progress, so it could reject
+"every 3 turns" instead of distinguishing two common meanings. The shipped fix is a
+state-lifetime contract (`event + threshold/phase + lifetime + reset + persistence + proof`)
+in `reference/stateful-mechanics.md`, routed through interview → SPEC → author → self-test.
+A counter remains state on its real element, never a fake content type.
+
+Two core relic families are now pipeline-supported and live-proven in `CadenceCanary`:
+
+1. Happy Flower-style run cadence uses a custom relic `[SavedProperty] int`, keeps progress
+   across combat, survives `SavedProperties.From/Fill`, and triggers after entering a second
+   real combat (`Progress 1 -> 2 -> 0`, Energy `3 -> 4`).
+2. Stone Calendar-style combat cadence reads `PlayerCombatState.TurnNumber`, fires on the
+   specified combat turn, and naturally returns to turn 1 in the next real combat with no
+   leaked activation.
+
+The adjacent audit is explicit rather than optimistic: per-turn event counters, once-per-
+combat flags, previous-turn memory, and run-limited uses have grounded vanilla patterns and
+copyable authoring guidance but remain below `pipeline-supported` until their own scenario
+proofs; persistent Card/Enchantment/Modifier state is holder-grounded only; potion/arbitrary
+holder state, profile/meta progress, arbitrary objects, and wall-clock timers are unsupported.
+See `games/sts2/tests/mechanic-capability-audit.md`.
+
+Closure checks for the combined Power-review + stateful follow-up worktree: Windows tools
+suite **31/31**, shipped-tool/publish-helper `compileall`, `git diff --check`, all 104
+source/tracked Markdown fence checks, plugin JSON/generated-placeholder checks, exact
+source→plugin→portable hashes for all five tools and the new state page, and repeated
+plugin/portable tree hashes all pass. No commit was created.
 
 **Sequence: after M5, before M6** — M6's heavier content types (characters especially)
 want real art. orb (100×100) / enchantment (64×64) sprite sizes are also now known from
@@ -599,7 +627,7 @@ single-class cells.
    graph is `games/sts2/tests/content-capability-graph.md`, with the support ladder,
    Type+Scenario proof rule, scenario contracts, and separate STS2-engineering vs.
    cross-game-design evidence ledgers. M6.0 also closes a verification-seam false positive:
-   terminal `selftest done` is no longer eligible as an effect marker, and harness
+   terminal `selftest done` is no longer eligible as behavior proof, and harness
    FAILED/timeout/early-exit return nonzero. It intentionally adds no new recipe, canary,
    registry/schema, or hypothetical adapters. Refactor only the verification seam needed
    by the first slice, not all hypothetical adapters up front.
@@ -641,12 +669,32 @@ single-class cells.
    completed SPEC → scaffold → author → build → Tier 1 → Tier 2 with Gold `99 -> 129`
    (`delta=30`) and zero repair, closing the pipeline gate. Custom event portrait/background
    generation remains provisional and is excluded from this support claim.
-5. **Minimal Character Slice.** Use the character template where appropriate; prove the
+5. **Monster Move Vocabulary follow-up. ⏭ DIRECT NEXT.** The current Enemy Encounter
+   claim is deliberately narrow: one deterministic `SingleAttackIntent` move whose player
+   HP delta is live-proven. Stable-v0.107.1 grounding already shows the substrate for richer
+   behavior (`BuffIntent`, `DebuffIntent`, `DefendIntent`, `HealIntent`,
+   `MultiAttackIntent`, combined intents, `PowerCmd.Apply` to self/targets,
+   `ConditionalBranchState`, and explicit `FollowUpState` cycles), but none of that becomes
+   a pipeline promise without hosted proof. This follow-up must:
+   - add a compact move contract to interview/SPEC: move id, visible intent(s), exact
+     effect, next state, and condition/loop where applicable;
+   - extend `recipes/monster.md` with copyable self-Buff/custom-Power, player-Debuff,
+     Block/Heal, multi-attack, attack+effect, deterministic-cycle, and conditional-branch
+     patterns, without creating one recipe per move;
+   - extend `CombatEnemy` to drive multiple enemy turns and independently assert monster
+     Power/Block/HP plus player Power/HP state, including downstream effect (for example,
+     Strength is not proven until a later attack's damage increases);
+   - build a representative action-vocabulary canary and run a fresh natural-language
+     monster acceptance mod. Each advertised action family needs an observed invariant;
+     registration or compilation alone cannot promote it.
+   This is direct acceptance hardening of the existing Enemy Encounter slice, not a fifth
+   content type. It is the hard gate before Minimal Character work starts.
+6. **Minimal Character Slice.** Use the character template where appropriate; prove the
    character appears in selection, starts a run, owns valid starter content, and exposes at
    least one small mechanic/vocabulary combination. This is a vertical slice, **not** a full
    production-size card pool, but it is enough for M7 to reason about archetype identity
    against a real buildable target.
-6. **M6 Extras — reward, rest-site option, pet.** Add by user value and scenario reuse after
+7. **M6 Extras — reward, rest-site option, pet.** Add by user value and scenario reuse after
    Core is green. They do **not** block M7. **Act is outside the M6 completion gate**: it is
    an ecosystem-sized unit and gets a later milestone after the underlying node/encounter
    capabilities exist.
@@ -669,7 +717,9 @@ build a generic framework before two real shapes prove the abstraction.
 
 **M6 Core completion gate:** Mechanic Vocabulary, Enemy Encounter, World Node, and Minimal
 Character slices all reach **pipeline-supported**, with their Type and Scenario proofs
-recorded. Reward/rest-site/pet are Extras and do not block M7; Act is separately deferred.
+recorded. The Monster Move Vocabulary direct follow-up must pass before Minimal Character
+starts; the existing Enemy Encounter support label remains scoped to a basic deterministic
+attack until then. Reward/rest-site/pet are Extras and do not block M7; Act is separately deferred.
 M5's live tier-2 foundation is already complete, so M6 begins at M6.0. The full
 BaseLib inventory and its evidence are maintained in
 `games/sts2/tests/content-capability-graph.md`; this section is the execution source of

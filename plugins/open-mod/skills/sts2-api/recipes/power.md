@@ -164,35 +164,51 @@ hook). See the worked example below for both.
 `PowerCmd.Apply<T>(..., -N, ...)`.** When no instance exists, that call creates a new
 Power at `-N`; `AllowNegative => false` does not block the first application.
 
-For "consume up to N", find the mutable instance, clamp the actual spend to its current
-amount, and modify that instance. This card-side example also records the real spend for
-the effect marker (`using System;` supplies `Math`):
+For "consume up to N", find the mutable instance, clamp the requested spend to its current
+amount, and modify that instance. Consumption is an internal state transition, like
+vanilla `VigorPower`, `PlatingPower`, and `PowerCmd.Decrement`, so pass `null, null` for
+`applier` and `cardSource`; those arguments describe an external giver/source and would
+activate unrelated given-amount hooks.
+
+`ModifyAmount` hooks may rewrite the requested offset. Its return value is the hook-adjusted
+raw new amount (before a nonnegative Power may be removed), so derive the actual offset from
+that return and separately read the retained post-state. Never report the pre-hook request as
+the amount actually consumed (`using System;` supplies `Math`):
 
 ```csharp
 int requested = Math.Max(0, base.DynamicVars["PowerSpent"].IntValue);
-int spent = 0;
+int requestedOffset = 0;
+int actualOffset = 0;
+int remaining = 0;
 var power = base.Owner.Creature.GetPower<<PowerName>>();
 if (power is { Amount: > 0 })
 {
-    spent = Math.Min(power.Amount, requested);
-    await PowerCmd.ModifyAmount(choiceContext, power, -spent,
-        base.Owner.Creature, this);
+    int before = power.Amount;
+    requestedOffset = -Math.Min(before, requested);
+    int rawNewAmount = await PowerCmd.ModifyAmount(
+        choiceContext, power, requestedOffset, null, null);
+    actualOffset = rawNewAmount - before;
+    remaining = base.Owner.Creature.GetPower<<PowerName>>()?.Amount ?? 0;
 }
 
 MainFile.Logger.Info(
-    $"[T2MOD-SELFTEST] <CardName> played: spent {spent} <PowerName>");
+    $"[T2MOD-SELFTEST] <CardName> consumed <PowerName>: " +
+    $"requestedOffset={requestedOffset} actualOffset={actualOffset} remaining={remaining}");
 ```
 
 At zero stacks, `GetPower<T>()` returns `null` and the code spends zero. With fewer than
 N, it spends the available amount and `ModifyAmount` removes the Power at 0. With at least
-N, it subtracts exactly N. A relic/potion uses the same sequence with its real owner and
-`cardSource: null` where appropriate.
+N, the unmodified-hook result subtracts exactly N. The log still reports a hook-adjusted
+result if another combat model changes the offset.
 
 If SPEC declares a finite upper bound, clamp positive gains to the available headroom
 before `Apply<T>` too: `headroom = Math.Max(0, max - current)` and
 `gained = Math.Min(Math.Max(0, requested), headroom)`, then skip the Cmd when
 `gained == 0`. Apply the same current-state clamp to either side of any finite signed
-domain.
+domain. These clamps constrain what this mod **requests**; `PowerCmd.Apply/ModifyAmount`
+then run amount hooks and do not enforce the SPEC domain. The domain therefore applies to
+the **final hook-modified observable state** too. Capture the Cmd return, re-read the live
+instance, and make Tier 2 fail if the retained amount is outside any finite bound.
 
 ## DynamicVars & description (see `reference/mechanics.md` §1–2)
 
@@ -254,7 +270,7 @@ default — not a failure. To ship art, drop a 256×256 PNG at `powers/<slug>.pn
 - [ ] The card/relic that applies it uses `PowerCmd.Apply<<PowerName>>(...)`.
 - [ ] Nonnegative Counter consumption finds an existing instance, clamps the spend, and
       uses `PowerCmd.ModifyAmount`; no negative `PowerCmd.Apply<T>`.
-- [ ] `[T2MOD-SELFTEST]` marker logged on trigger (for tier-2 verify).
+- [ ] `[T2MOD-SELFTEST]` diagnostic marker logged on trigger; `SelfTest` asserts post-state.
 
 ## Full worked example — a turn-start damage debuff (Poison-like)
 
@@ -319,8 +335,7 @@ await PowerCmd.Apply<Smolder>(choiceContext, target, 5m, Owner.Creature, null);
 1. Build (PckPacker uncommented) → tier-1 launch + grep the load marker
    (`verify.md`). A no-art power should load with the fallback icon — if load
    *errors*, that's a repair signal.
-2. Tier-2 (user-guided, `verify.md`): a power can't be granted directly by console —
-   grant the **card/relic that applies it** (`card add …` / `relic add …`), or use a
-   vanilla applier, then enter combat, trigger it, and confirm the stacks appear on
-   the creature + the effect fires. Re-grep for the `fired:` marker. (Automating this
-   is M5.)
+2. Automated Tier 2 (`verify.md`) drives the card/relic that applies the Power and asserts
+   both attachment and its concrete effect. For manual fallback, grant the host with
+   `card <id> [pile]` / `relic add <id>`, trigger it, and directly confirm stacks plus the
+   resulting state change; `fired:` alone is diagnostic, not proof.

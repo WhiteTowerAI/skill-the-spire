@@ -23,7 +23,7 @@ localization JSON, and inject the self-test marker. Everything structural
   encounter** (`element: enemy encounter`), read `recipes/monster.md` and author BOTH the
   `CustomMonsterModel` and the `CustomEncounterModel(RoomType.Monster)` it spawns as one
   slice — the monster's move body attacks with `.FromMonster(this).Execute(null)` (**never**
-  `.Targeting()`), and the effect marker goes on the enemy's move; do not model the pair as
+  `.Targeting()`), and the diagnostic trigger marker goes on the enemy's move; do not model the pair as
   two `elements` + an interaction. For an **event / World Node** (`element: event`),
   read `recipes/event.md`: author one `CustomEventModel`, nested `EventLoc` pages/options,
   a public-Cmd consequence, and a `SetEventFinished` result page; no `[Pool]` or manual
@@ -33,6 +33,10 @@ localization JSON, and inject the self-test marker. Everything structural
   means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
   snapshots, `errors.md`), and if it's genuinely not there, report a pack gap. Never
   invent a Cmd name — that's the #1 way the repair loop burns its attempts.
+- If SPEC has a non-`none` **state** block, also read
+  `reference/stateful-mechanics.md` before writing the hook. Implement its event,
+  threshold/phase, lifetime, reset, persistence, UI meaning, and proof as one contract;
+  never infer lifetime from the C# field that happens to be easiest.
 
 ## 1. Write the element class
 
@@ -45,6 +49,10 @@ localization JSON, and inject the self-test marker. Everything structural
   `Owner.PlayerCombatState!.TurnNumber <= 1` guards.
 - Fill **only** the effect block with the confirmed Cmds/RNG from the recipe. `await`
   every Cmd. Use `Rng`, never `System.Random`. Call `Flash()` when it visibly triggers.
+- For stateful relics, follow `reference/stateful-mechanics.md`: run-lifetime progress is
+  a supported `[SavedProperty]` `int`/`bool` and is never cleared at combat end; combat-
+  local fixed/periodic turns read `PlayerCombatState.TurnNumber`; turn/combat fields reset
+  only at the SPEC boundary. Any visible setter calls `InvokeDisplayAmountChanged()`.
 
 **Potion** — the Alchyr template does **not** scaffold a `Potions/` folder or base
 class, so first create `<ModName>Code/Potions/` and the `<ModName>Potion` base class
@@ -106,18 +114,22 @@ nonnegative domain means:
 
 - positive gain/application may use `PowerCmd.Apply<T>`;
 - consumption must call `GetPower<T>()`, spend zero when absent, clamp the actual spend
-  to the existing `Amount`, then call `PowerCmd.ModifyAmount` on that instance;
+  to the existing `Amount`, then call `PowerCmd.ModifyAmount` on that instance with
+  `null, null` applier/card source (the vanilla internal-consumption context);
 - a negative `PowerCmd.Apply<T>` is forbidden for consumption because it can create a
   missing Power with a negative amount;
 - every finite SPEC bound must be enforced by clamping gain/consumption to current
-  headroom, and a signed domain is allowed only with explicit negative-stack semantics.
+  headroom, and a signed domain is allowed only with explicit negative-stack semantics;
+- because amount hooks can rewrite a requested offset, capture the Cmd return and re-read
+  the retained Power. The domain and Tier-2 assertion apply to that final post-hook state,
+  and logs must distinguish requested offset, actual offset, and remaining amount.
 
 Use the exact copyable sequence in `recipes/power.md`; do not treat `PowerVar<T>` or
 `AllowNegative` as min/max validation.
 
-## 2. Inject the self-test markers
+## 2. Inject the load and diagnostic markers
 
-**Two markers.** The Alchyr template's `MainFile.cs` does NOT log anything by
+The Alchyr template's `MainFile.cs` does NOT log anything by
 default — you must add the **load** marker yourself, or tier-1 verify silently
 finds nothing. In `MainFile.Initialize()`, right after `harmony.PatchAll();`:
 
@@ -125,17 +137,17 @@ finds nothing. In `MainFile.Initialize()`, right after `harmony.PatchAll();`:
 Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 
-Then, for **effect** proof, log a marker inside the trigger showing what happened
+Then log a **diagnostic** marker inside the trigger showing what code ran
 (a relic's combat-start hook, a potion's `OnUse`, a card's `OnPlay`, an enemy's move body,
 or an event option method):
 
 ```csharp
-MainFile.Logger.Info($"[T2MOD-SELFTEST] <ElementName> fired/used: <outcome> <metric> {before} -> {after}");
+MainFile.Logger.Info($"[T2MOD-SELFTEST] <ElementName> fired/used: <requested outcome>");
 ```
 
-verify.md greps the first for tier-1 and the second for tier-2. **Both markers stay in
-every mod** — the load marker proves it loads, the effect marker is what the tier-2
-harness (next step) makes fire automatically.
+The load marker proves Tier 1. The trigger marker stays for diagnosis, but it is **not**
+Tier-2 proof: preview/calculation hooks may log without committing state. The harness in
+the next step independently asserts post-state and emits the only accepted proof marker.
 
 ## 2.5 Emit the tier-2 self-test harness
 
@@ -167,7 +179,16 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    edge must also run the reference page's zero/fewer-than-N/at-least-N boundary matrix and
    assert that no negative instance appears. Its § CombatEnemy shows the full enemy-encounter
    driver body.
-3. Add the **gated arm line** to `MainFile.Initialize()`, right after the load marker:
+   A stateful source must instead use the page's **stateful cadence** variant: assert the
+   `N-1` no-fire state, the exact threshold delta, and the reset/carry-over boundary. A
+   run-lifetime `[SavedProperty]` additionally round-trips through
+   `SavedProperties.From`/`Fill`; a run cadence must enter a second combat rather than
+   mutating the property directly to simulate carry-over.
+3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
+   post-state, then call the shared `StateProof(...)`. Its structured
+   `[T2MOD-SELFTEST] <ModName> state proof:` line must include expected and observed values;
+   a broad `played/fired/used` marker never qualifies.
+4. Add the **gated arm line** to `MainFile.Initialize()`, right after the load marker:
 
 ```csharp
 if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();   // verification-only; dormant for end users
@@ -338,7 +359,8 @@ reach the game — a code-only `dotnet build` won't (same rule as localization).
 ## 5. Update state
 
 Record in `MEMORY.md`: the class name, the hook used, the exact loc keys written,
-any Cmd choices, which DRIVER body the harness uses, and the **art outcome**
+any Cmd choices, the state lifetime/reset/persistence (when present), which DRIVER body
+the harness uses, and the **art outcome**
 (placeholder, or generated `<slug>.png`/`big/<slug>.png` — and if generate was chosen
 but fell back to placeholder, why). Mark `author` and `art` done in `PLAN.md`. Then go
 to `build.md`.

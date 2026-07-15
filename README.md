@@ -9,11 +9,14 @@ First supported game: **Slay the Spire 2 (STS2)**.
 
 > **Status: M6 Core in progress.** open-mod reliably makes **relics, potions, cards, and
 > custom powers** (including a card that applies its own power), **custom card
-> mechanics — keywords, card enchantments, and orbs — **enemy encounters** (a custom
-> monster plus its encounter), and **map events / World Nodes**. It proves both that the mod **loads** and that its **effect
-> actually fires** in-game, repairs common build errors automatically, and supports
-> placeholder or generated art for the four core element types. Playable characters are
-> next in M6 Core. Editing vanilla content and one-click Steam
+> mechanics** (keywords, card enchantments, and orbs), **enemy encounters** (a custom
+> monster plus its encounter), and **map events / World Nodes**. It proves both that the
+> mod **loads** and that its **effect actually fires** in-game, repairs common build
+> errors automatically, and supports placeholder or generated art for the four core
+> element types. Stateful relic timing now covers both counters that continue across
+> combats/save-resume and turn numbers that reset each combat. Enemy encounters currently
+> support a basic deterministic attack; richer monster actions are the direct next step,
+> followed by playable characters. Editing vanilla content and one-click Steam
 > Workshop publishing remain out of scope today.
 > See [Current limits](#current-limits).
 
@@ -142,6 +145,8 @@ open-mod is still young. Today it does the following well, and is honest about t
 
 - ✅ **Relics, potions, cards, and custom powers** — including a card that applies
   its own custom power (the multi-element "combo" case).
+- ✅ **Stateful relic timing** — Happy Flower-style counters can continue across combats
+  and save/resume; Stone Calendar-style timing resets with each combat's turn number.
 - ✅ **Custom card mechanics** — keywords (shared, reusable card rules), card
   enchantments (a persistent modification attached to a card), and orbs (a channeled
   passive/evoke mechanic). Each is proven to actually change combat state, not just load.
@@ -155,17 +160,22 @@ open-mod is still young. Today it does the following well, and is honest about t
 - ✅ **Custom art for all four types** — card portraits and relic/power/potion icons
   are live-verified. Placeholder art remains the zero-setup default; generation uses
   your own compatible image backend and falls back safely if unavailable.
-- ✅ **Enemy encounters** — a plain-English request can produce a custom monster plus
-  the encounter that hosts it. The pipeline builds it, enters the real encounter, observes
-  the enemy's move and resulting player-state change, and completed a full acceptance run
-  on 2026-07-13. Custom monster *art* (an animated scene) remains provisional, so custom
+- ✅ **Enemy encounters (basic attack scope)** — a plain-English request can produce a
+  custom monster plus the encounter that hosts it. The pipeline builds it, enters the real
+  encounter, observes its deterministic attack and resulting player-state change, and
+  completed a full acceptance run on 2026-07-13. Self-buffs, player debuffs, defense,
+  healing, multi-attacks, and conditional move sequences are not yet advertised as
+  supported. Custom monster *art* (an animated scene) remains provisional, so custom
   enemies use the game's fallback appearance for now.
 - ✅ **Map events / World Nodes** — a plain-English request can produce a custom event
   with nested page/option text and a real run-state consequence. The pipeline enters the
   event room, clicks its real option UI, and independently observes the result. Custom
   event art remains provisional, so events use a verified vanilla portrait placeholder.
-- ⏳ **Not yet:** editing existing vanilla content, playable
-  characters, and one-click Steam Workshop publishing.
+- ⏭️ **Direct next: richer monster actions** — ground and live-verify self-buffs/custom
+  powers, player debuffs, defense/healing, multi-attacks, combined moves, and deterministic
+  or conditional move sequences through a multi-turn `CombatEnemy` canary.
+- ⏳ **Not yet:** editing existing vanilla content, playable characters (after the monster
+  action follow-up), and one-click Steam Workshop publishing.
 - ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
   on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but
   those combinations have not yet been live-verified. Registry directory listing is

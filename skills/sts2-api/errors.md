@@ -185,6 +185,27 @@
   a negative `PowerCmd.Apply<T>` to consume it. Tier 2 must cover zero, fewer than N,
   and at least N, asserting after each case that no `Amount < 0` instance exists.
 
+### "Every N" relic loses progress after combat or save/resume
+- **Signature:** the counter advances and may trigger inside one combat, but the next
+  combat starts from zero; or an in-process `SavedProperties.From`/`Fill` round trip
+  restores the default instead of the observed progress.
+- **Cause:** run-lifetime state was stored in an ordinary field, was cleared from
+  `AfterCombatEnd`/`AfterRoomEntered`, or used an unsupported `[SavedProperty]` value/
+  holder. A plain field can look correct until the first save/resume.
+- **Fix:** for a supported custom relic counter, expose an `int`/`bool` property marked
+  `[SavedProperty]`, mutate it through an `AssertMutable()` setter, and never clear it at
+  combat boundaries. Keep UI `Status` reset separate. Tier 2 must prove `N-1` in combat 1,
+  carry-over/threshold in combat 2, and `SavedProperties.From`/`Fill`. See
+  `reference/stateful-mechanics.md`.
+
+### "On turn N" effect leaks across combats or fires on the wrong side
+- **Signature:** the effect fires early/late in a new fight, counts enemy turns, or a
+  second combat begins with a custom counter value from combat 1.
+- **Cause:** code duplicated combat turn state in a field or omitted the owner-side guard.
+- **Fix:** read `Owner.PlayerCombatState.TurnNumber` and compare `== N` (or `% N == 0`
+  for periodic combat timing), with `participants.Contains(Owner.Creature)`. Do not add
+  `[SavedProperty]`; the combat state owns the reset.
+
 ## Verification harness (launch / console)
 
 ### Dev console won't open in-game
@@ -229,12 +250,26 @@
   holds exactly one run, so read the **whole current file**. `grep_log.py` now takes
   only `--mod-name` (no offset); `launch.py` no longer emits an offset.
 
-### Self-test template fails to build: `TaskHelper` does not exist
+### Self-test template fails to build: `TaskHelper` is unresolved
 - **Signature:** `CS0103: The name 'TaskHelper' does not exist in the current context`
   on `TaskHelper.RunSafely(RunAsync())` in generated `SelfTest.cs`.
-- **Cause:** the open-mod 0.5.0 self-test template referenced a helper that is not part
-  of STS2, BaseLib, or the generated mod. The template's `RunAsync()` already catches
-  and logs its own exceptions, so no external task wrapper is needed.
+- **Cause:** stable v0.107.1 **does** expose the public
+  `MegaCrit.Sts2.Core.Helpers.TaskHelper`; `CS0103` means its namespace/import was absent
+  from that generated file, not that the game lacks the API. The harness's `RunAsync()`
+  already catches and logs its own exceptions, so the helper is unnecessary here.
 - **Fix:** start the task with the standard C# discard form: `_ = RunAsync();`. This
-  remains fire-and-forget, does not block `Initialize()`, and does not fabricate a
-  dependency.
+  remains fire-and-forget and does not block `Initialize()`. For other code that genuinely
+  needs `TaskHelper`, import `MegaCrit.Sts2.Core.Helpers` rather than inventing a replacement.
+
+### Tier verify reports only the known abandon-backup or Sentry shutdown cleanup block
+- **Signature:** the only post-load error is either (a) deletion of
+  `modded/profileN\\saves\\current_run.save.backup: Failed` with the full
+  `RunSaveManager.DeleteCurrentRun → NMainMenu.AbandonRun → UiHelper.Click` stack, or
+  (b) `Sentry: Failed to close native SDK cleanly. Error code: 1` with native close +
+  `SentryService.Shutdown` stack.
+- **Cause:** headed self-test cleanup, not element behavior. STS2 asks Godot to remove a
+  backup that may not exist; the verification launcher also terminates the headed process
+  after the terminal marker.
+- **Fix:** none in generated mod code. Current `grep_log.py` reports and ignores only
+  those exact stack-qualified blocks. A lookalike, a different file/error, or any other
+  global/multiline error still fails and must be diagnosed normally.

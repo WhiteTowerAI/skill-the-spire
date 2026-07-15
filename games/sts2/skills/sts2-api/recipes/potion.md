@@ -151,7 +151,7 @@ await PowerCmd.Apply<StrengthPower>(choiceContext, target, 2m, base.Owner.Creatu
 
 // ENERGY / DRAW (player-level; good for AnyTime utility potions):
 await PlayerCmd.GainEnergy(2m, base.Owner);
-await PlayerCmd.Draw(3, base.Owner);   // Draw's signature: maintainer to confirm + fold in (not yet canary-verified)
+await CardPileCmd.Draw(choiceContext, 3m, base.Owner);
 ```
 
 For an effect not listed, follow `grounding.md`: match the closest vanilla row in
@@ -205,7 +205,8 @@ same registration exception relics do (errors.md). Pools
 - [ ] `AssertValidForTargetedPotion(target)` first if the potion targets.
 - [ ] Effect in `OnUse`; all `Cmd`s `await`ed; `ValueProp.Unpowered` for damage/block.
 - [ ] `potions.json` has `<PREFIX>-<SLUG>.{title,description}` — **flat, prefixed keys**, table `potions`.
-- [ ] `[T2MOD-SELFTEST]` marker logged in `OnUse` (for tier-2 verify) + the load marker in MainFile (tier-1).
+- [ ] `[T2MOD-SELFTEST]` diagnostic marker logged in `OnUse`; load marker in MainFile;
+      `SelfTest` independently asserts post-state.
 
 ## Full worked examples (verified vanilla, copy-adapt)
 
@@ -260,10 +261,11 @@ public sealed class Firebomb : <ModName>Potion
    expected placeholder behavior, not a failure. To ship custom art, drop a 256×256 PNG at
    `images/potions/<slug>.png` (via `gen_sprite.py --spec potion`) and rebuild the `.pck`
    (see `reference/art-contract.md`).
-2. Launch, grep `godot.log` for the load marker (tier-1).
-3. Tier-2: dev console (backtick, auto-enabled when modded) → **`potion <PREFIX>-<SLUG>`**
-   → in a combat, use the potion (target if needed) → confirm the effect and grep the
-   `used:` marker.
+2. Run `verify.md`: Tier 1 checks the load marker; automated Tier 2 procures/uses the potion,
+   asserts its concrete state delta, and greps the structured `state proof:` line.
+3. Manual fallback only: dev console (backtick) → **`potion <PREFIX>-<SLUG>`** → in combat,
+   use it and directly confirm the expected state change. The `used:` marker is diagnostic,
+   not sufficient proof.
 
 > ⚠️ The potion console command is **`potion <id>`** — there is **no `add`/`remove`
 > subcommand** (unlike `relic [add|remove] <id>`). It also matches the id **exactly**

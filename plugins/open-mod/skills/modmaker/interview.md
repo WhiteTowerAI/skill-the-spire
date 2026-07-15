@@ -27,7 +27,13 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 2. **Trigger / usage / how it's played:**
    - **Relic**: when does the effect happen? Map the user's words to a lifecycle
      moment — "start of combat", "start of each turn", "when you play a card",
-     "start of each floor". If they said it, don't re-ask.
+     "start of each floor". If they said it, don't re-ask. If it remembers progress
+     ("every 3 turns", "the third Attack", "once per combat"), resolve whether that
+     progress resets each **turn**, each **fight**, or continues across fights in the
+     current run. Ask only when the wording is genuinely ambiguous: "Should progress
+     continue into the next fight, or restart each fight?" Offer continue-across-fights
+     as the default for "every N turns" (Happy Flower semantics); "on turn N" defaults
+     to restarting each fight (Stone Calendar semantics).
    - **Potion**: potions fire when *used*, so there's no trigger to pick — instead
      resolve **when it can be used** (in combat only? any time?) and **what it
      targets** (yourself, one enemy, all enemies) only if the effect makes that
@@ -55,7 +61,9 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 3. **Effect**: what exactly happens, in game terms (energy, damage, block, draw,
    heal, a power/status). Get numbers if they matter ("double", "gain 2", "20 damage").
    For a card, also ask what **upgrading** it should improve if not obvious (default:
-   bump the main number).
+   bump the main number). When any effect counts events, also record the exact event and
+   threshold; do not collapse "every N" into "on the Nth" or omit whether the triggering
+   event counts before the check.
 4. **Art — ONE question for the whole mod (only if the user signalled they care about
    the look).** Default is placeholder — skip this entirely unless their sentence
    implies a custom visual. This is a **single mod-level decision**: placeholder or
@@ -93,6 +101,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
+- **State lifetime**: "every N turns" on a relic continues across combats in the current
+  run; "on turn N of each combat" uses that combat's turn number. Turn-local/once-per-
+  combat wording resets at the boundary it names. Ask one carry-over question only when
+  the phrase could reasonably mean either behavior.
 - **Art**: **placeholder** (the template's fallback icon). This is the default — do NOT
   proactively ask about art. Only switch to `generate` if the user's sentence asks for a
   custom look (e.g. "a card showing a red phoenix", "make it look like…"). All four types —
@@ -112,6 +124,8 @@ name: <proposed>
 rarity: Common
 trigger: start of combat (turn 1)
 effect: <plain-language, with numbers>
+state: none | event=<what advances>; threshold=<N>; lifetime=turn|combat|run;
+  reset=<exact boundary>; persistence=field|SavedProperty
 art: placeholder | generate: <subject/style, if requested>
 art source: vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```

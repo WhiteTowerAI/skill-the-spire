@@ -7,9 +7,9 @@
 > **What it is:** one `SelfTest.cs` file compiled into the generated mod, **dormant
 > unless launched with `--t2selftest`**. When that arg is present, it drives the game
 > from the main menu into the hosted scenario required by the SPEC with zero interaction,
-> fires the element's effect, and logs the same `[T2MOD-SELFTEST]` effect marker the manual
-> path used.
-> `verify.md` then greps that marker — the effect is proven, not eyeballed.
+> fires the element's effect, independently asserts a concrete post-effect state invariant,
+> then logs `[T2MOD-SELFTEST] <ModName> state proof: ...` with the observed before/after
+> values. `verify.md` accepts only that structured proof, never a hook/preview log.
 >
 > **Ship-safety:** the arg gate (`CommandLineHelper.HasArg("t2selftest")`) means a normal
 > user launch never arms it — no menu or room driving and no scenario side effects. It is
@@ -43,20 +43,14 @@ that each console command wraps (all confirmed `public static`, shipped in `sts2
 | (play the card) | `CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target)` |
 | (use the potion) | `potion.EnqueueManualUse(target)` *(not a Cmd — a method on the model)* |
 
-## Two timing gates that are load-bearing (proven on the dev box, do NOT regress)
+## The load-bearing timing gate (proven on the dev box, do NOT regress)
 
-The first live end-to-end run (CanaryCard, tier-2 PASS) exposed two race conditions that
-crashed the harness before it reached combat. Both are now baked into the scaffold above —
-keep them:
+The first live end-to-end run (CanaryCard, tier-2 PASS) exposed this race before combat;
+keep the gate below. Do **not** call `SaveManager.SetFtuesEnabled(false)`: tutorial state is
+not required for navigation, the call persists a user setting, and before profile setup its
+internal save reports a global error even if the caller catches an exception.
 
-1. **FTUE-disable must be best-effort.** `SaveManager.Instance` (and its FTUE state) is
-   **not reliably up** when `Initialize()` runs `Arm()` — even `WaitHelper.Until(() =>
-   SaveManager.Instance != null)` does not make `SetFtuesEnabled` safe. Calling it unguarded
-   throws `NullReferenceException` and kills the whole self-test. It is **non-essential**
-   (worst case: a tutorial popup that nav dismisses), so wrap it:
-   `try { SaveManager.Instance?.SetFtuesEnabled(false); } catch { }`. Never let it abort.
-
-2. **`IsInProgress` is NOT enough to call `EnterRoomDebug`.** `RunManager.Instance.
+**`IsInProgress` is NOT enough to call `EnterRoomDebug`.** `RunManager.Instance.
    IsInProgress` flips at the **run-state** level, but `EnterRoomDebug` reaches into the run
    **UI node** (`NRun.Instance.GlobalUi.TopBar.RoomIcon…`, and its `?.` only guards
    `NRun.Instance`, not `GlobalUi`). `GlobalUi` is wired in `NRun._Ready`, which runs
@@ -71,20 +65,24 @@ keep them:
 > fails mid-flight, add a `Stage(string)` breadcrumb (`MainFile.Logger.Info` per step) and
 > read the trail — it tells you the exact step, which the stack trace won't.
 
-## Marker vocabulary (three-way signal for verify/repair)
+## Proof and control signals for verify/repair
 
 The harness and element expose three signals so `verify.md`/`repair.md` can tell setup
 failure from a real effect bug:
 
-- `[T2MOD-SELFTEST] <ModName> selftest done` — reached the hosted scenario, drove the
-  effect, and observed its result.
+- `[T2MOD-SELFTEST] <ModName> state proof: <invariant>; observed <before> -> <after>` —
+  the harness independently compared real post-effect state with the SPEC and the assertion
+  passed. This is the **only** Tier-2 behavior proof accepted by `grep_log.py`.
+- `[T2MOD-SELFTEST] <ModName> selftest done` — the scenario driver completed after its
+  assertions. This terminal marker is necessary control flow, but is never behavior proof.
 - `[T2MOD-SELFTEST] <ModName> selftest FAILED: <stage>: <reason>` — harness couldn't reach
   or drive the scenario (navigation/timeout). **This is a harness/setup problem, NOT an
   effect bug** —
   `verify.md` falls back to the manual guide and reports tier-1 only.
-- the element's own type-specific `[T2MOD-SELFTEST]` effect marker (for example
-  `played:`, `attacked:`, or `option chosen:` from author.md step 2) — this is the actual
-  tier-2 proof; absent-after-`done` = effect didn't fire (real bug).
+- the element's own type-specific `[T2MOD-SELFTEST]` diagnostic marker (for example
+  `played:`, `attacked:`, or `option chosen:` from author.md step 2) — useful for locating
+  the trigger, but **not proof**: calculation/preview hooks can emit it without a committed
+  state change.
 
 ## Shared scaffold and scenario-specific room driver
 
@@ -119,7 +117,6 @@ using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
-using MegaCrit.Sts2.Core.Saves;
 
 namespace <ModName>.<ModName>Code;   // SAME namespace as MainFile.cs (scaffold nests <ModName>Code)
 
@@ -128,6 +125,13 @@ namespace <ModName>.<ModName>Code;   // SAME namespace as MainFile.cs (scaffold 
 internal static class SelfTest
 {
     private static bool _armed;
+
+    private static void StateProof(bool condition, string observation)
+    {
+        if (!condition)
+            throw new InvalidOperationException($"state proof failed: {observation}");
+        MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> state proof: {observation}");
+    }
 
     public static void Arm()
     {
@@ -143,12 +147,6 @@ internal static class SelfTest
         try
         {
             await WaitHelper.Until(() => NGame.Instance != null, ct, TimeSpan.FromSeconds(30), "no NGame");
-            // Kill FTUE popups so they can't block nav. BEST-EFFORT ONLY: SaveManager (and
-            // its FTUE state) is NOT reliably up at Initialize time — calling it unguarded
-            // NREs and kills the whole run. Skipping it is harmless (a stray tutorial popup
-            // at worst, which nav dismisses). Never let it abort the self-test.
-            try { SaveManager.Instance?.SetFtuesEnabled(false); } catch { /* FTUE not ready — ignore */ }
-
             await NavigateToRunAsync(ct);
             await WaitHelper.Until(() => RunManager.Instance.IsInProgress, ct, TimeSpan.FromSeconds(30), "run not in progress");
 
@@ -241,8 +239,10 @@ internal static class SelfTest
 
 ## The DRIVER bodies (fill per SPEC element type)
 
-The element's own type-specific effect marker (author.md step 2) is what proves tier-2 — the
-driver's only job is to *make it fire*. Branch on SPEC's `element`:
+Every driver must snapshot the SPEC's observable state, drive the real source element,
+assert the exact expected post-state, and call `StateProof` with concrete observed values.
+The element's own marker is diagnostic only: passive hooks such as damage modifiers can run
+during previews. Branch on SPEC's `element` and adapt the shown invariant to the effect:
 
 ### relic — grant before combat, then just wait
 
@@ -257,8 +257,108 @@ private static async Task BeforeCombat(CancellationToken ct)
     var relic = ModelDb.AllRelics.First(r => r.Id.Entry == "<PREFIX>-<SLUG>");
     await RelicCmd.Obtain(relic.ToMutable(), player);
 }
-private static Task InCombat(Player player, CancellationToken ct) => Task.CompletedTask;
+private static Task InCombat(Player player, CancellationToken ct)
+{
+    // Energy-relic example. For another effect, assert its SPEC state instead.
+    int observed = player.PlayerCombatState!.Energy;
+    StateProof(observed == <EXPECTED_ENERGY>,
+        $"relic energy expected=<EXPECTED_ENERGY> observed={observed}");
+    return Task.CompletedTask;
+}
 ```
+
+### stateful relic cadence — prove the lifetime, not only one trigger
+
+The normal relic DRIVER proves one combat-start effect. A stateful relic needs a
+multi-combat variant. Replace the scaffold's one `EnterRoomDebug` + `InCombat` block
+with a scenario that owns the live mutable relic, advances real player turns, finishes
+the first combat through the public combat flow, and enters a second combat. Add
+`using MegaCrit.Sts2.Core.Saves.Runs;` for the save round trip.
+
+Shared helpers (live-proven by `CadenceCanary` on 2026-07-15):
+
+```csharp
+private static async Task EnterMinimalCombat(CancellationToken ct)
+{
+    var encounter = ModelDb.Encounter<CorpseSlugsWeak>().ToMutable();
+    await RunManager.Instance.EnterRoomDebug(RoomType.Monster,
+        MegaCrit.Sts2.Core.Map.MapPointType.Unassigned, encounter);
+    await WaitHelper.Until(() => CombatManager.Instance.IsInProgress, ct,
+        TimeSpan.FromSeconds(30), "combat not started");
+}
+
+private static async Task WaitForPlayTurn(Player player, int turn, CancellationToken ct)
+{
+    await WaitHelper.Until(
+        () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play &&
+              player.PlayerCombatState.TurnNumber == turn,
+        ct, TimeSpan.FromSeconds(45), $"player turn {turn} not reached");
+}
+
+private static async Task FinishCombat(CancellationToken ct)
+{
+    var enemies = CombatManager.Instance.DebugOnlyGetState()!.Enemies
+        .Where(enemy => enemy.IsAlive).ToList();
+    await CreatureCmd.Kill(enemies, force: true);
+    await CombatManager.Instance.CheckWinCondition();
+    await WaitHelper.Until(() => !CombatManager.Instance.IsInProgress, ct,
+        TimeSpan.FromSeconds(30), "first combat did not finish");
+}
+```
+
+**Run-persistent periodic counter (Happy Flower shape):** let the first combat
+advance the real `[SavedProperty]` progress to `N - 1`, verify no effect, serialize and
+fill a fresh mutable instance, then let turn 1 of the second combat cross the threshold.
+For `N=3` and an energy effect:
+
+```csharp
+var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!)
+    ?? throw new InvalidOperationException("local player missing");
+var live = await RelicCmd.Obtain<<RelicName>>(player);
+
+await EnterMinimalCombat(ct);             // turn 1: Progress 0 -> 1
+await WaitForPlayTurn(player, 1, ct);
+StateProof(live.Progress == 1,
+    $"cadence first event expected=1 observed={live.Progress}");
+
+PlayerCmd.EndTurn(player, canBackOut: false);
+await WaitForPlayTurn(player, 2, ct);      // turn 2: Progress 1 -> 2, no fire
+StateProof(live.Progress == 2 && player.PlayerCombatState!.Energy ==
+        player.PlayerCombatState.MaxEnergy,
+    $"cadence below threshold expected progress=2/no effect " +
+    $"observed={live.Progress}/{player.PlayerCombatState.Energy}");
+
+var saved = SavedProperties.From(live)
+    ?? throw new InvalidOperationException("saved counter missing");
+var restored = (<RelicName>)ModelDb.Relic<<RelicName>>().ToMutable();
+saved.Fill(restored);
+StateProof(restored.Progress == 2,
+    $"cadence save round trip expected=2 observed={restored.Progress}");
+
+await FinishCombat(ct);
+await EnterMinimalCombat(ct);             // new combat turn 1: Progress 2 -> 0, fire
+await WaitForPlayTurn(player, 1, ct);
+int expectedEnergy = player.PlayerCombatState!.MaxEnergy + <ENERGY_GAIN>;
+StateProof(live.Progress == 0 && player.PlayerCombatState.Energy == expectedEnergy,
+    $"cadence cross-combat threshold expected progress=0 energy={expectedEnergy} " +
+    $"observed={live.Progress}/{player.PlayerCombatState.Energy}");
+```
+
+For another threshold, advance real turns until `N - 1`; do not set `Progress` from the
+harness. Replace the energy observations with the SPEC's real HP/block/stack state.
+The save round trip and second combat are separate proofs and both are required.
+
+**Combat-local fixed/periodic turn (Stone Calendar shape):** in combat 1, assert no
+effect at turn 1, advance to the specified turn using `PlayerCmd.EndTurn`, and assert the
+exact effect delta. Finish combat, enter combat 2, wait for turn 1, then assert
+`TurnNumber == 1` and that the effect has not fired again. Read the game's turn number;
+do not mutate a custom counter to simulate reset. A diagnostic activation count may help
+localize the test, but Tier-2 still needs the actual gameplay delta.
+
+The live canary combined both relics and proved: run progress `1 -> 2 -> 0` across two
+combats, energy `3 -> 4` at the threshold, save restoration `2 -> 2`, combat-local turn-2
+Block, and a new-combat `TurnNumber=1` with no second activation. One structured proof per
+invariant makes a wrong lifetime distinguishable from a wrong effect.
 
 ### card — spawn into hand, add energy, AutoPlay
 
@@ -273,7 +373,14 @@ private static async Task InCombat(Player player, CancellationToken ct)
     Creature? target = card.TargetType == TargetType.AnyEnemy
         ? card.CombatState?.HittableEnemies.FirstOrDefault()
         : null;                                                   // Self/AllEnemies → null
+    // Attack example. Snapshot Block/Power/orb state instead for other card effects.
+    int hpBefore = target?.CurrentHp
+        ?? throw new InvalidOperationException("attack target missing");
     await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
+    int hpAfter = target.CurrentHp;
+    StateProof(hpBefore - hpAfter == <EXPECTED_DAMAGE>,
+        $"card damage expected=<EXPECTED_DAMAGE> observed={hpBefore - hpAfter}; " +
+        $"target hp {hpBefore} -> {hpAfter}");
 }
 ```
 (`TargetType` is `MegaCrit.Sts2.Core.Models` — already imported. For an attack the
@@ -297,18 +404,25 @@ private static async Task InCombat(Player player, CancellationToken ct)
         TargetType.Self      => cs?.PlayerCreatures.FirstOrDefault(c => c.IsAlive),
         _ => null,
     };
+    // Damage-potion example. Snapshot the SPEC's concrete state for another effect.
+    int hpBefore = target?.CurrentHp
+        ?? throw new InvalidOperationException("potion target missing");
     potion.EnqueueManualUse(target);        // drives the potion's OnUse → its used: marker
-    await Task.Delay(500, ct);              // let the enqueued use resolve before `done`
+    await Task.Delay(500, ct);              // let the enqueued use resolve before observing
+    int hpAfter = target.CurrentHp;
+    StateProof(hpBefore - hpAfter == <EXPECTED_DAMAGE>,
+        $"potion damage expected=<EXPECTED_DAMAGE> observed={hpBefore - hpAfter}; " +
+        $"target hp {hpBefore} -> {hpAfter}");
 }
 ```
 
 ### multi-element interactions — drive the real source type, then observe each edge
 
 There is no `combo` model or DRIVER type. Drive the **source** exactly as its real element
-type above, then walk SPEC's `interactions` in dependency order and assert the dependent's
-own marker/state invariant. Each edge proves itself, so a broken relationship is localized.
-For the live-verified card→custom-power example, use the `card` body; the dependent power's
-`AfterSideTurnStart`/apply hook logs its own `fired:` marker:
+type above, then walk SPEC's `interactions` in dependency order and assert each dependent
+state invariant. Emit one `StateProof` per edge so a broken relationship is localized.
+For the live-verified card→custom-power shape, assert both application and the power's
+turn-start consequence; its own `fired:` log remains diagnostic:
 
 ```csharp
 private static async Task InCombat(Player player, CancellationToken ct)
@@ -318,15 +432,24 @@ private static async Task InCombat(Player player, CancellationToken ct)
     var model = ModelDb.AllCards.First(c => c.Id.Entry == "<CARD_PREFIX>-<CARD_SLUG>");
     var card  = CombatManager.Instance.DebugOnlyGetState()!.CreateCard(model, player);
     await CardPileCmd.Add(card, PileType.Hand);
-    var target = card.CombatState?.HittableEnemies.FirstOrDefault();
+    var target = card.CombatState?.HittableEnemies.FirstOrDefault()
+        ?? throw new InvalidOperationException("interaction target missing");
     await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
-    // Link 2 (dependent): the applied power logs its OWN [T2MOD-SELFTEST] <Power> fired:
-    // marker from its hook. If the power fires at a SIDE's turn start (AfterSideTurnStart),
-    // it won't fire on OUR turn — end the turn so the enemy's turn starts and triggers it.
+    int applied = target.GetPower<<PowerName>>()?.Amount ?? 0;
+    StateProof(applied == <EXPECTED_STACKS>,
+        $"card -> power expected=<EXPECTED_STACKS> observed={applied}");
+
+    // If the power fires at a SIDE's turn start (AfterSideTurnStart), it won't fire on
+    // OUR turn. End the turn, then assert the dependent's real state consequence.
+    int hpBefore = target.CurrentHp;
     await Task.Delay(500, ct);
     if (player.PlayerCombatState?.Phase == PlayerTurnPhase.Play)
         PlayerCmd.EndTurn(player, canBackOut: false);   // returns void — do NOT await it
-    await Task.Delay(1500, ct);                         // let the enemy turn start + power fire
+    await Task.Delay(1500, ct);
+    int hpAfter = target.CurrentHp;
+    StateProof(hpBefore - hpAfter == <EXPECTED_POWER_DAMAGE>,
+        $"power trigger expected=<EXPECTED_POWER_DAMAGE> observed={hpBefore - hpAfter}; " +
+        $"target hp {hpBefore} -> {hpAfter}");
 }
 ```
 
@@ -337,20 +460,20 @@ private static async Task InCombat(Player player, CancellationToken ct)
 > the dependent power fires immediately on apply (not at a turn start), drop the `EndTurn` and
 > the second delay — the first `Task.Delay(500)` is enough.
 
-`verify.md` asks `grep_log.py` for the type-specific **effect** vocabulary only (for
-example `--tier2-pattern "fired|used|played"`). The verifier separately requires the
-successful `selftest done` terminal marker and excludes all terminal/load lines from effect
-matching. A terminal `done` therefore proves only that the driver completed; it can never
-make a missing effect marker pass.
-A missing dependent marker after `selftest done` means the interaction link is broken (the
-exact place raw-AI multi-element mods fail).
+`verify.md` asks `grep_log.py` for the scenario's **state-proof** vocabulary, for example
+`--tier2-pattern "card damage.*observed=6"`. The verifier considers only structured
+`<ModName> state proof:` lines and separately requires `selftest done`. Broad
+`played|fired|used` logs plus the terminal marker therefore fail. A missing dependent proof
+localizes a broken interaction edge (the exact place raw-AI multi-element mods fail).
 
 ## State-consuming Counter interactions — test the amount domain
 
 A `consumes` edge for a nonnegative Counter needs more than the normal happy path. The
 driver must exercise zero stacks, fewer than N, and at least N in the same hosted scenario,
-and reject any negative instance after every case. Drive the real source each time; do not
-test a helper while bypassing the card/relic/potion that owns the consumption behavior.
+and reject any retained amount outside the SPEC domain after every case. A finite upper
+bound constrains the final hook-modified state, not merely the requested offset. Drive the
+real source each time; do not test a helper while bypassing the card/relic/potion that owns
+the consumption behavior.
 
 For a card that says "consume up to 4", factor the normal card DRIVER into
 `PlayConsumerCard`, then add this sequence (replace the type/id and adapt the numbers from
@@ -370,14 +493,6 @@ private static async Task PlayConsumerCard(Player player)
     await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
 }
 
-private static void AssertNoNegativePower(Creature owner, string stage)
-{
-    var power = owner.GetPower<<PowerName>>();
-    if (power is { Amount: < 0 })
-        throw new InvalidOperationException(
-            $"<PowerName> amount-domain violation after {stage}: {power.Amount}");
-}
-
 private static async Task ExerciseConsumeBoundaries(Player player)
 {
     var owner = player.Creature;
@@ -389,30 +504,25 @@ private static async Task ExerciseConsumeBoundaries(Player player)
 
     // 0 stacks: consuming is a no-op and must not create an instance.
     await PlayConsumerCard(player);
-    if (owner.GetPower<<PowerName>>() is not null)
-        throw new InvalidOperationException("zero-stack consume created <PowerName>");
-    AssertNoNegativePower(owner, "zero-stack consume");
-    MainFile.Logger.Info("[T2MOD-SELFTEST] <PowerName> consume boundary: zero ok");
+    var afterZero = owner.GetPower<<PowerName>>();
+    StateProof(afterZero is null,
+        $"counter zero consume expected=missing observed={afterZero?.Amount.ToString() ?? "missing"}");
 
     // Fewer than N (2 < 4): consume the available amount and remove at zero.
     await PowerCmd.Apply<<PowerName>>(new ThrowingPlayerChoiceContext(), owner,
         2m, owner, null);
     await PlayConsumerCard(player);
-    if (owner.GetPower<<PowerName>>() is not null)
-        throw new InvalidOperationException("fewer-than-N consume did not remove <PowerName>");
-    AssertNoNegativePower(owner, "fewer-than-N consume");
-    MainFile.Logger.Info("[T2MOD-SELFTEST] <PowerName> consume boundary: 2 -> 0 ok");
+    var afterFewer = owner.GetPower<<PowerName>>();
+    StateProof(afterFewer is null,
+        $"counter fewer-than-N 2 -> 0; observed={afterFewer?.Amount.ToString() ?? "missing"}");
 
     // At least N (6 >= 4): consume exactly N and preserve the remainder.
     await PowerCmd.Apply<<PowerName>>(new ThrowingPlayerChoiceContext(), owner,
         6m, owner, null);
     await PlayConsumerCard(player);
     var remaining = owner.GetPower<<PowerName>>();
-    if (remaining?.Amount != 2)
-        throw new InvalidOperationException(
-            $"normal consume expected 2 <PowerName>, got {remaining?.Amount.ToString() ?? "missing"}");
-    AssertNoNegativePower(owner, "normal consume");
-    MainFile.Logger.Info("[T2MOD-SELFTEST] <PowerName> consume boundary: 6 -> 2 ok");
+    StateProof(remaining?.Amount == 2,
+        $"counter at-least-N 6 -> 2; observed={remaining?.Amount.ToString() ?? "missing"}");
 }
 ```
 
@@ -427,7 +537,7 @@ Enemy-side content (monster + encounter) does not fit the card/relic/potion driv
 the harness must enter the **custom encounter**, confirm the **custom monster** spawned, make
 the enemy **act**, and observe a **state delta** — through the enemy, not the player. This is
 the first non-`CombatPlayer` scenario and reuses the same menu→run navigation
-(`NavigateToRunAsync`) and the same two timing gates; only the room entered and the
+(`NavigateToRunAsync`) and run-UI timing gate; only the room entered and the
 in-combat body differ.
 
 The `CombatEnemy` in-combat body (replaces the `InCombat` in the scaffold; do NOT apply
@@ -467,14 +577,14 @@ private static async Task InCombat(Player player, CancellationToken ct)
         ct, TimeSpan.FromSeconds(45), "player play phase not resumed after enemy turn");
     int hpAfter = player.Creature.CurrentHp;
     int delta = hpBefore - hpAfter;
-    if (delta <= 0 && CombatManager.Instance.IsInProgress)
-        throw new InvalidOperationException($"enemy did not attack: hp {hpBefore} -> {hpAfter}");
-    MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> action advanced: player hp {hpBefore} -> {hpAfter} delta={delta}");
+    StateProof(delta == <EXPECTED_DAMAGE>,
+        $"enemy attack expected=<EXPECTED_DAMAGE> observed={delta}; " +
+        $"player hp {hpBefore} -> {hpAfter}");
 }
 ```
 
-The monster's own move body logs the `attacked:` effect marker (author.md), so verify greps
-a pattern like `"attacked|action advanced|encounter started|monster present"`.
+The monster's own move body still logs `attacked:` for diagnosis; verify uses the independent
+state proof, for example `"enemy attack.*observed=6"`.
 
 > **Live-proven (`CanaryEncounter`, tier-2 PASS):** the `PlayerCmd.EndTurn` gate is the same
 > as `CombatRoomHandler`'s AutoSlay loop — after the enemy turn, control returns to the
@@ -536,8 +646,9 @@ await WaitHelper.Until(
 var resultDescription = mutableEvent.Description?.GetFormattedText() ?? string.Empty;
 if (resultDescription.Length == 0)
     throw new InvalidOperationException("result page localization missing");
-MainFile.Logger.Info(
-    $"[T2MOD-SELFTEST] <ModName> option observed: gold {before} -> {player.Gold} delta={player.Gold - before}");
+StateProof(player.Gold - before == <amount> && mutableEvent.IsFinished,
+    $"event gold expected=<amount> observed={player.Gold - before}; " +
+    $"gold {before} -> {player.Gold}; resultLoc={resultDescription.Length > 0}");
 ```
 
 Required namespaces beyond the fixed scaffold: the event type; `MegaCrit.Sts2.Core.Map`;
@@ -547,9 +658,9 @@ Required namespaces beyond the fixed scaffold: the event type; `MegaCrit.Sts2.Co
 Select the button by the SPEC option's formatted title, not merely "the only unlocked
 option"; multi-option events are valid and the scenario drives one specified consequence.
 The event option method logs its own `option chosen:` marker **after** the Cmd changes run
-state. The harness independently reads the same state and logs `option observed:`. Verify
-with a pattern such as `"event entered|option chosen|option observed"`; the verifier still
-requires the exact load marker and `selftest done`.
+state. The harness independently asserts the same state and emits `state proof:`. Verify
+with a pattern such as `"event gold.*observed=25"`; the verifier still requires the exact
+load marker and `selftest done`.
 
 > **Live-proven (`CanaryEvent`, tier-2 PASS):** `GildedSignpost` entered through
 > `EnterRoomDebug(..., ModelDb.Event<GildedSignpost>())`; formatted title and option loc
@@ -573,7 +684,9 @@ need their own mod-reachability grounding first.
 - [ ] `MainFile.Initialize()` has, after the load marker: `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();`
 - [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + option UI click); multi-element interactions reuse that real source driver and add observations.
 - [ ] `<PREFIX>-<SLUG>` ids match the element's real `Id.Entry` (SPEC's derived ids).
-- [ ] The element's own type-specific effect marker (author.md step 2) is present — the harness only *triggers*; the element logs the proof.
+- [ ] The element's own type-specific marker (author.md step 2) is present for diagnosis.
+- [ ] The harness snapshots concrete state, asserts the SPEC's exact post-state, and calls
+      `StateProof`; broad trigger/preview markers are never used as Tier-2 proof.
 - [ ] Every nonnegative Counter `consumes` edge runs zero/fewer-than-N/at-least-N cases
       and asserts after each that no negative instance exists.
 - [ ] Never claim tier-2 on a `selftest FAILED` line — that's a harness/setup miss, report tier-1 + manual fallback.

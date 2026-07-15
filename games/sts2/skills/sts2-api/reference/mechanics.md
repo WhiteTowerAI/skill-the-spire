@@ -135,7 +135,19 @@ The runtime types do **not** supply this contract for you:
 To consume a nonnegative Counter, get the existing instance with
 `Creature.GetPower<T>()`, clamp the actual spend to `0..power.Amount`, and call
 `PowerCmd.ModifyAmount` on that instance. If there is no instance, spend zero and do
-nothing. `recipes/power.md` has the copyable Cmd sequence and finite-bound rule.
+nothing. Internal consumption passes `null, null` for applier/card source, matching vanilla
+`VigorPower`/`Decrement`. Amount hooks can rewrite an offset, so the SPEC domain constrains
+the final observable amount as well as the request: capture `ModifyAmount`'s returned raw
+new amount, re-read the retained instance, and assert/log those post-hook values.
+`recipes/power.md` has the copyable Cmd sequence and finite-bound rule.
+
+## 5. Stateful timing and counters
+
+DynamicVars and Power amounts are not a general lifecycle contract. When an effect
+remembers turns/cards/uses, route to `stateful-mechanics.md` and specify the advancing
+event, threshold phase, `turn|combat|run` lifetime, reset, persistence, and boundary
+proof. In particular, a run-persistent relic counter uses `[SavedProperty]`, while a
+combat-local turn trigger reads `PlayerCombatState.TurnNumber`.
 
 ## Where each recipe leans on this file
 
@@ -145,7 +157,8 @@ nothing. `recipes/power.md` has the copyable Cmd sequence and finite-bound rule.
 - **`recipes/card.md`** — `DamageVar`/`BlockVar` in `CanonicalVars` (§1), `OnUpgrade`,
   `{Damage:diff()}` (§2), `CardType`/`CardRarity`/`TargetType` in the constructor (§3).
 - **relics/potions** — mostly literal amounts + plain descriptions; they only need §3
-  (enums). They reach here only for a scaling effect.
+  (enums). They reach here only for a scaling effect. A stateful relic additionally
+  routes to `stateful-mechanics.md` (§5); potion saved state is not pipeline-supported.
 
 When this file lacks a specific value or formatter, follow `grounding.md`: at runtime
 that means the rest of the pack (recipes, `build-constraints.md`, snapshots,

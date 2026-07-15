@@ -37,8 +37,14 @@ read its localized option, click it, and observe the run-state consequence). Cus
 art is not yet wired, so events use a verified vanilla portrait as a provisional placeholder.
 Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
 the source by its actual type and checks the dependent observation, so a card→power link
-cannot pass merely because both
-models loaded. “Combo” is not a content type. **Custom art (M5.5)** is now wired and
+cannot pass merely because both models loaded. “Combo” is not a content type.
+Two core **stateful relic** families are pipeline-supported: Happy Flower-style counters
+cross combats and save/resume through `[SavedProperty]`, while Stone Calendar-style timing
+reads the current combat's `TurnNumber`. Tier-2 proves `N-1`, threshold, reset/carry-over,
+and the save round trip where applicable. Turn-local event counts, once-per-combat flags,
+previous-turn memory, and limited run uses have grounded patterns but remain provisional
+until their scenario canaries. A counter is state on its real element, not a new element
+type. **Custom art (M5.5)** is now wired and
 live-verified for **all four element types — card portraits, relic icons, power icons, and
 potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
 user picks placeholder (default, fast) or custom art acquired through an already-
@@ -78,7 +84,8 @@ User: one sentence ("a relic that ...")
     things (element type? rarity? exact trigger?). Non-blocking defaults for the rest.
     |
  2. SPEC (spec.md) — write SPEC.md: element type, name, rarity, trigger, effect
-    in game terms, art plan. Show the user a plain-language summary to confirm.
+    in game terms, any state event/threshold/lifetime/reset/persistence, and art plan.
+    Show the user a plain-language summary to confirm.
     |
  3. SCAFFOLD (scaffold.md) — dotnet new from the Alchyr template (once), set the
     manifest, uncomment PckPacker.
@@ -86,8 +93,8 @@ User: one sentence ("a relic that ...")
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
     monster+encounter/event, plus power.md if the effect needs a custom buff/debuff),
     write the Custom*Model
-    subclass filling ONLY the effect logic, add localization JSON, inject both
-    [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
+    subclass filling ONLY the effect logic, add localization JSON, inject the load +
+    diagnostic [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
     (SelfTest.cs, step 2.5 — reference/selftest-harness.md). Then the ART sub-step
     (author.md §4): per SPEC's art plan, leave placeholder (default) or generate a
     custom source through the selected route and pass it to tools/gen_sprite.py import. Art never
@@ -98,9 +105,9 @@ User: one sentence ("a relic that ...")
     what makes any custom art reach the game). On failure: go to REPAIR (repair.md).
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
-    and mod-named errors (tier-1). Then run the tier-2 self-test unattended
+    and fresh-run error blocks (tier-1). Then run the tier-2 self-test unattended
     (launch.py --self-test → the harness drives the required combat/event scenario and
-    fires the effect → grep the type-specific marker). Fall back to the manual dev-console guide
+    asserts concrete post-state → grep its structured state proof). Fall back to the manual dev-console guide
     only if the harness can't reach its scenario. Never claim the effect is verified when
     only load was. On failure: go to REPAIR (repair.md).
     |
@@ -118,7 +125,8 @@ User: one sentence ("a relic that ...")
 Keep important state in files in the work dir so the pipeline survives long
 threads and context compaction:
 
-- **SPEC.md** — the design contract (element, name, rarity, trigger, effect, art).
+- **SPEC.md** — the design contract (element, name, rarity, trigger, effect, state
+  lifetime/reset/persistence when applicable, art).
 - **PLAN.md** — stage checklist + status; update after each stage.
 - **MEMORY.md** — discoveries, chosen ids, derived loc keys, what worked/failed.
 
@@ -128,8 +136,8 @@ conversational memory.
 ## Verify on observed reality, never "it compiled"
 
 A green build is not success. The mod must **load** (tier-1: log marker greppable,
-no mod-named errors) and its **effect must fire** (tier-2: driven automatically by the
-in-process self-test harness and grepped from the log — no human triggering). Report
+no fresh-run errors) and its **effect must fire** (tier-2: driven automatically by the
+in-process self-test harness, then independently state-asserted — no human triggering). Report
 exactly which tier was reached; a harness that couldn't reach its scenario is tier-1, not a
 tier-2 failure of the mod. See `verify.md`.
 

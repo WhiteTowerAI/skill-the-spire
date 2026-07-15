@@ -169,8 +169,8 @@ During an active run, the dev-console command is:
 event <PREFIX>-<SLUG>
 ```
 
-It is an exact uppercased `Id.Entry` match. Choose the option normally, then grep the
-option's effect marker without closing the game.
+It is an exact uppercased `Id.Entry` match. In manual fallback, choose the option normally
+and directly confirm the run-state consequence; the option marker is diagnostic only.
 
 ## Checklist
 

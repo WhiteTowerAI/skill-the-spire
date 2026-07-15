@@ -25,6 +25,8 @@ not dump entire files into the response.
    Cards/powers/keywords/enchantments/orbs also read
    `${STS2_API_SKILL_DIR}/reference/mechanics.md` first (scaling numbers, SmartFormat
    descriptions, shared enums).
+   For any effect that remembers progress (every N events, once per combat, previous
+   turn, limited run uses), read `${STS2_API_SKILL_DIR}/reference/stateful-mechanics.md`.
 2. For error signatures → fix, read `${STS2_API_SKILL_DIR}/errors.md`.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a
    symbol the recipe lacks, read `${STS2_API_SKILL_DIR}/grounding.md` and, for
@@ -51,8 +53,9 @@ not dump entire files into the response.
 | `recipes/monster.md` | Custom Monster + Encounter as one vertical slice (`CustomMonsterModel` no-`[Pool]` auto-register, `MoveState`/`MonsterMoveStateMachine`/`SingleAttackIntent`, `CustomEncounterModel(RoomType.Monster)` auto-`AddEncounter`, `AllPossibleMonsters`/`GenerateMonsters`/`IsValidForAct`, `monsters`+`encounters` loc, provisional Spine art, `CombatEnemy` proof); **monster attacks use `.FromMonster(this).Execute(null)`, never `.Targeting()`** | Authoring a fought enemy |
 | `recipes/event.md` | Custom Event / World Node pattern (`CustomEventModel` auto-`AddEvent`, all-act vs act-scoped placement, nested `EventLoc` pages/options, `Option(Method)` slug contract, Cmd consequence + `SetEventFinished`, provisional vanilla portrait, `MapNode` UI-click proof) | Authoring a map event with at least one consequential option |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
+| `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; turn/combat/run counter patterns; Happy Flower `[SavedProperty]` vs Stone Calendar `TurnNumber`; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | What the toolchain refuses to BUILD/LOAD: full analyzer diagnostic set STS001–004 + the exact required-loc-key table per model type (cards/potions/relics/powers/…) + `[Pool]` rule | Before writing any element's loc keys + attributes; on any STS0NN build error |
-| `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`), multi-element observations, and marker vocabulary. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
+| `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact `res://` path + pixel size per sprite type (card `1000×760`; relic/power/potion `256×256` — all four verified live, each a loose PNG; relic/power write a small + `big/` path, potion writes ONE file, card writes only `big/`; 606×852 full art is Ancient-only, out of scope) + the placeholder-fallback mechanism + the STS2 style descriptor + few-shot references + the prompt template (incl. potion's ~45° tilt) + `acquire_sprite.py` (Vofy managed credits) / `gen_sprite.py` (BYO HTTP + deterministic import) usage | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | 18 real STS2 card portraits (© Mega Crit, reference-only — see ATTRIBUTION.md) used as **few-shot style references** by `gen_sprite.py --reference` so a generated portrait matches the game look | Passed to `--reference` in the art step; not read directly |
 | `grounding.md` | Where facts come from (three sources: content→spire-codex, C# signatures→decompile, build/load→validators) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine miss is a pack gap to report, not a dig | An answer the recipe lacks |
@@ -73,6 +76,10 @@ Harmony patching and is deferred. The recipes make **new** elements.
   option's run-state consequence. Custom event art remains provisional.
 - **Loc-key derivation** (same for relics, potions, cards, powers): `Id.Entry = "<NS_UPPER>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split + UPPER_SNAKE). Keys are **flat strings**, not nested JSON. Table is `relics` / `potions` / `cards` / `powers` per type.
 - **Relic combat-start energy**: use `AfterSideTurnStart` + `TurnNumber <= 1` guard. `BeforeCombatStart()` is wrong — energy reset wipes it.
+- **Counter lifetime is a design decision:** "every N turns" defaults to run-persistent
+  Happy Flower semantics (`[SavedProperty]`); "on turn N of each combat" reads
+  `PlayerCombatState.TurnNumber`. Never use a plain field for state that must survive
+  save/resume, and never duplicate the combat turn counter.
 - **Potions fire in `OnUse`** (they're actively used) — no combat hook. Self-buff potions target `AnyPlayer`, not `Self`. Damage/block use `ValueProp.Unpowered`.
 - **Cards fire in `OnPlay`**; a card targeting the player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions). Numbers come from `DynamicVars` (scaling), not literals; attacks use the `DamageCmd.Attack(...)` fluent builder. Loc table `cards`, no separate upgrade key (SmartFormat `:diff()` handles it).
 - **Counter Power amounts need a SPEC domain** (nonnegative by default). To consume a

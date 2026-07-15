@@ -286,7 +286,8 @@ Pools (`MegaCrit.Sts2.Core.Models.CardPools`):
 - [ ] `cards.json` has `<PREFIX>-<SLUG>.{title,description}` — **flat, prefixed keys**,
       table `cards`; description uses `{Damage:diff()}` etc. so upgrades render.
 - [ ] All `Cmd`s `await`ed.
-- [ ] `[T2MOD-SELFTEST]` marker logged in `OnPlay` (tier-2) + the load marker in MainFile (tier-1).
+- [ ] `[T2MOD-SELFTEST]` diagnostic marker logged in `OnPlay`; load marker in MainFile;
+      `SelfTest` independently asserts post-state.
 
 ## Full worked examples (verified vanilla, copy-adapt)
 
@@ -367,10 +368,11 @@ public sealed class Bulk : BulkCard
 1. Build: PckPacker uncommented, `dotnet build -c Release` → `.dll`+`.pck` into
    `mods/<ModName>/`. (Details: `build.md`.) A no-art card loads with a placeholder
    portrait — expected in M4, not a failure. If load *errors*, that's a repair signal.
-2. Launch, grep `godot.log` for the load marker (tier-1).
-3. Tier-2: dev console (backtick) → **`card <PREFIX>-<SLUG>`** → the card spawns into
-   your **hand** (a run must be in progress; hand not full) → play it (in combat;
-   target an enemy if it's an attack) → confirm the effect and grep the `played:` marker.
+2. Run `verify.md`: Tier 1 checks the load marker; automated Tier 2 spawns/plays the card,
+   asserts its concrete state delta, and greps the structured `state proof:` line.
+3. Manual fallback only: dev console (backtick) → **`card <PREFIX>-<SLUG>`** → play it in
+   combat and directly confirm the expected state change. The `played:` marker is diagnostic,
+   not sufficient proof.
 
 > ⚠️ The card console command is **`card <id> [pile]`** — spawns into your **hand by
 > default**, there is **no `add`/`remove` subcommand** (unlike `relic add <id>`). It

@@ -15,6 +15,10 @@ player *owns* (not a card they play, not a one-shot potion). Triggers are combat
 or run-lifecycle events: "at the start of combat…", "whenever you play a card…",
 "the first time each turn…", "at the start of each floor…".
 
+If the relic remembers progress ("every N", "once per combat", "last turn", limited
+uses), read `../reference/stateful-mechanics.md` before choosing a field or hook. The
+state lifetime is part of the SPEC; it is not an implementation detail.
+
 ## The skeleton (fill only the marked spot)
 
 Assume a mod scaffolded with `dotnet new alchyrsts2contentmod -n <ModName> -M <Author>`.
@@ -101,6 +105,10 @@ There is NO `ICombatHook` to implement; just override the method.
 |---|---|---|
 | "at the start of combat" | `AfterSideTurnStart(CombatSide, IReadOnlyList<Creature>, ICombatState)` | Guard `TurnNumber <= 1`. **This is the combat-start hook** — same one Lantern uses. Fires every turn otherwise. |
 | "at the start of each turn" | `AfterSideTurnStart(...)` | Same hook, no TurnNumber guard (still guard `participants.Contains(Owner.Creature)`). |
+| "every N turns" across combats | `AfterSideTurnStart(...)` | `[SavedProperty]` modulo progress; never clear it at combat end. See `stateful-mechanics.md`. |
+| "on turn N" / "every N turns this combat" | start: `AfterSideTurnStart(...)`; end: `BeforeSideTurnEnd(...)` | Read `Owner.PlayerCombatState.TurnNumber` (`== N` or `% N == 0`); no saved counter. |
+| "every N cards this turn" | `AfterCardPlayed(...)` + `BeforeSideTurnStart(...)` reset | Owner-card guard; ordinary turn-local field. |
+| "once per combat" | the real trigger + `AfterRoomEntered(CombatRoom)` reset | Ordinary bool; reset only on combat entry. |
 | pre-combat setup (no energy) | `BeforeCombatStart()` | Fires once before turn 1. **Do NOT grant energy here** — the turn-1 energy reset wipes it. |
 
 > ⚠️ Do not use `BeforeCombatStart()` for energy. Confirmed: `PlayerCombatState`
@@ -144,8 +152,9 @@ invented catalog: use `reference/mechanics.md` for shared Cmd/value foundations,
 failure signatures. If the exact symbol is still absent, follow `grounding.md` and report
 a pack gap — never guess a Cmd name.
 
-**Always** call `Flash()` when the relic visibly triggers, and log the effect marker as
-the tier-2 observation contract used by the automated self-test harness:
+**Always** call `Flash()` when the relic visibly triggers, and log a diagnostic marker.
+The automated harness uses it to localize the trigger, but independently asserted state is
+the Tier-2 proof:
 ```csharp
 MainFile.Logger.Info($"[T2MOD-SELFTEST] <RelicName> fired: {outcome} energy {before} -> {after}");
 ```
@@ -168,11 +177,15 @@ relic unless the request implies otherwise.
 - [ ] `[Pool(typeof(SharedRelicPool))]` present (else BaseLib throws).
 - [ ] `Rarity` overridden.
 - [ ] Correct hook overridden; combat-start uses `AfterSideTurnStart` + `TurnNumber <= 1`.
+- [ ] If stateful: event/threshold/phase/lifetime/reset/persistence match SPEC; run state
+      uses `[SavedProperty]`, combat turns use `PlayerCombatState.TurnNumber`.
 - [ ] `participants.Contains(Owner.Creature)` guard present.
 - [ ] All `Cmd`/RNG calls `await`ed.
 - [ ] `relics.json` has `<PREFIX>-<SLUG>.{title,description,flavor}` — **flat, prefixed keys**.
 - [ ] Icon at `images/relics/<slug>.png` (+ `_outline`, + `big/`) or placeholder left in place.
-- [ ] `[T2MOD-SELFTEST]` marker logged on trigger (for tier-2 verify).
+- [ ] `[T2MOD-SELFTEST]` diagnostic marker logged on trigger; `SelfTest` asserts post-state.
+- [ ] Stateful SelfTest proves `N-1`, threshold, reset/carry-over, and a
+      `SavedProperties.From`/`Fill` round trip for run-persistent state.
 
 ## Full golden example (Gambler's Coin — verified firing in-game)
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Grep godot.log for the [T2MOD-SELFTEST] load marker and any mod-related errors.
+"""Verify STS2 load and state-proof markers in the current godot.log.
 
 R2 verify step (modmaker's verify.md). Reads the CURRENT godot.log in full. STS2
 archives the previous log (renaming it to godot<timestamp>.log) and starts a fresh
 godot.log on every launch, so the current file already contains exactly one run --
 no byte-offset slicing is needed, and offsets from a prior file are meaningless
 against the new one. Tier 1 requires the exact mod load marker. Tier 2 additionally
-requires a non-terminal effect marker and a successful harness terminal marker;
-``selftest done`` alone can never prove that an effect fired.
+requires a structured state-proof marker and a successful harness terminal marker;
+ordinary hook/preview logs and ``selftest done`` can never prove behavior.
 
 Cross-platform port of grep_log.ps1. The log path defaults per-OS:
   Windows : %APPDATA%\\SlayTheSpire2\\logs\\godot.log
@@ -18,7 +18,7 @@ mac/Linux defaults follow Godot's standard user-data dirs (best-effort).
 
 Usage:
   python grep_log.py --mod-name CanaryCard
-  python grep_log.py --mod-name CanaryCard --tier2-pattern "played|fired|used"
+  python grep_log.py --mod-name CanaryCard --tier2-pattern "damage.*6"
 """
 from __future__ import annotations
 
@@ -27,6 +27,25 @@ import os
 import re
 import sys
 from pathlib import Path
+
+
+LOG_RECORD_RE = re.compile(
+    r"^\s*(?:\d+\w*\s+)?\[(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\]",
+    re.IGNORECASE,
+)
+PLAIN_ERROR_RE = re.compile(
+    r"\b(?:ERROR|FATAL)\b|\b(?:Unhandled\s+)?[A-Za-z0-9_.]*Exception\b",
+    re.IGNORECASE,
+)
+ABANDON_MISSING_BACKUP_RE = re.compile(
+    r"^\s*\[ERROR\]\s+Error deleting path "
+    r"modded[\\/]profile\d+[\\/]saves[\\/]current_run\.save\.backup: Failed\s*$",
+    re.IGNORECASE,
+)
+SENTRY_SHUTDOWN_RE = re.compile(
+    r"^\s*ERROR:\s+Sentry: Failed to close native SDK cleanly\. Error code: 1\s*$",
+    re.IGNORECASE,
+)
 
 
 def default_log_path() -> Path:
@@ -51,14 +70,71 @@ def read_shared(path: Path) -> str:
         return fh.read()
 
 
+def is_error_record(line: str) -> bool:
+    """Whether a line starts an error record rather than continuing one."""
+    record = LOG_RECORD_RE.match(line)
+    if record:
+        return record.group("level").upper() in {"ERROR", "FATAL"}
+    return PLAIN_ERROR_RE.search(line) is not None
+
+
+def error_blocks(lines: list[str], start_index: int) -> list[list[str]]:
+    """Collect error headers and their multiline context from a run window."""
+    blocks: list[list[str]] = []
+    index = max(0, start_index)
+    while index < len(lines):
+        if not is_error_record(lines[index]):
+            index += 1
+            continue
+        end = index + 1
+        while end < len(lines) and not LOG_RECORD_RE.match(lines[end]):
+            end += 1
+        blocks.append(lines[index:end])
+        index = end
+    return blocks
+
+
+def is_known_verification_cleanup(block: list[str]) -> bool:
+    """Match only grounded base-game noise caused by the verification lifecycle.
+
+    STS2's abandon path unconditionally removes a backup; on Windows/Godot a missing
+    backup can return ``Failed`` instead of ``FileNotFound``. The launcher can also
+    make the native Sentry bridge report a close error while terminating the headed
+    verification process. Require each exact header plus its base-game cleanup stack
+    so similarly worded mod/runtime errors still fail.
+    """
+    if not block:
+        return False
+    header = block[0]
+    context = "\n".join(block)
+    if ABANDON_MISSING_BACKUP_RE.match(header):
+        return all(
+            frame in context
+            for frame in (
+                "RunSaveManager.DeleteCurrentRun()",
+                "NMainMenu.AbandonRun()",
+                "UiHelper.Click",
+            )
+        )
+    if SENTRY_SHUTDOWN_RE.match(header):
+        return all(
+            frame in context
+            for frame in (
+                "sentry::native::NativeSDK::close",
+                "MegaCrit.Sts2.Core.Debug.SentryService.Shutdown()",
+            )
+        )
+    return False
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description="Verify STS2 mod load/effect from godot.log")
     ap.add_argument("--mod-name", required=True,
                     help="Mod name (Mod.json 'id', also the mods/<ModName> folder)")
     ap.add_argument("--log-path", default=None, help="Full path to godot.log")
     ap.add_argument("--tier2-pattern", default="",
-                    help="Also report [T2MOD-SELFTEST] lines matching this regex "
-                         "(e.g. 'played|fired|used'). Empty = tier-1 only.")
+                    help="Match this regex against structured '<ModName> state proof:' "
+                         "lines. Empty = tier-1 only.")
     args = ap.parse_args(argv)
 
     log_path = Path(args.log_path) if args.log_path else default_log_path()
@@ -74,21 +150,26 @@ def main(argv: list[str]) -> int:
         print(f"Could not read {log_path}: {exc}", file=sys.stderr)
         return 2
 
-    lines = content.split("\n")
+    lines = content.splitlines()
     marker = "[T2MOD-SELFTEST]"
     load_marker = f"{marker} {mod} loaded ok"
     done_marker = f"{marker} {mod} selftest done"
     failed_marker = f"{marker} {mod} selftest FAILED"
+    proof_marker = f"{marker} {mod} state proof:"
 
     # Tier-1: require the exact initialization marker. A later mod-named self-test
     # line does not prove that MainFile.Initialize emitted the load contract.
-    load_line = next((ln for ln in lines if load_marker in ln), None)
-    done_line = next((ln for ln in lines if done_marker in ln), None)
-    failed_line = next((ln for ln in lines if failed_marker in ln), None)
+    load_matches = [(index, line) for index, line in enumerate(lines)
+                    if load_marker in line]
+    load_match = load_matches[-1] if load_matches else None
+    load_index = load_match[0] if load_match else None
+    load_line = load_match[1] if load_match else None
+    run_lines = lines[load_index:] if load_index is not None else lines
+    done_line = next((ln for ln in run_lines if done_marker in ln), None)
+    failed_line = next((ln for ln in run_lines if failed_marker in ln), None)
 
-    # Tier-2: effect marker (only when a pattern is requested). Terminal lines are
-    # control-plane signals and are never eligible as behavior proof, even when a
-    # caller accidentally supplies a regex that matches them.
+    # Tier-2 accepts only a harness state proof emitted after a concrete assertion.
+    # Element hook logs are useful diagnostics but may also fire during previews.
     tier2_lines: list[str] = []
     if tier2_pattern:
         try:
@@ -97,18 +178,25 @@ def main(argv: list[str]) -> int:
             print(f"Invalid --tier2-pattern regex: {exc}", file=sys.stderr)
             return 2
         tier2_lines = [
-            ln for ln in lines
-            if marker in ln
-            and mod in ln
-            and done_marker not in ln
-            and failed_marker not in ln
-            and load_marker not in ln
+            ln for ln in run_lines
+            if proof_marker in ln
             and t2re.search(ln)
         ]
 
-    # Error lines naming the mod.
-    err_re = re.compile(r"\bERROR\b|Exception", re.IGNORECASE)
-    error_lines = [ln for ln in lines if err_re.search(ln) and mod in ln]
+    # Once this mod's current load marker appears, any error record is a fresh-run
+    # failure, even when only a continuation line names the mod. Before that boundary,
+    # retain only mod-named blocks for diagnostics and ignore unrelated old text.
+    parsed_error_blocks = error_blocks(lines, load_index or 0)
+    if load_index is None:
+        parsed_error_blocks = [
+            block for block in parsed_error_blocks if mod in "\n".join(block)
+        ]
+    ignored_cleanup_blocks = [
+        block for block in parsed_error_blocks if is_known_verification_cleanup(block)
+    ]
+    parsed_error_blocks = [
+        block for block in parsed_error_blocks if not is_known_verification_cleanup(block)
+    ]
 
     modded = any("RUNNING MODDED" in ln for ln in lines)
 
@@ -120,18 +208,22 @@ def main(argv: list[str]) -> int:
     print(f"Tier-1 load marker  : {('FOUND => ' + load_line) if load_line else 'NOT FOUND -- mod did not log its init marker'}")
     if tier2_pattern:
         if tier2_lines:
-            print(f"Tier-2 effect marker: FOUND ({len(tier2_lines)}) => {tier2_lines[0]}")
+            print(f"Tier-2 state proof  : FOUND ({len(tier2_lines)}) => {tier2_lines[0]}")
         else:
-            print(f"Tier-2 effect marker: NOT FOUND (pattern '{tier2_pattern}') -- effect not observed in this log")
+            print(f"Tier-2 state proof  : NOT FOUND (pattern '{tier2_pattern}') -- asserted post-state not observed")
         print(f"Harness terminal     : {('FAILED => ' + failed_line) if failed_line else ('DONE => ' + done_line) if done_line else 'NOT FOUND'}")
     print()
 
-    if error_lines:
-        print(f"Errors/exceptions naming '{mod}':")
-        for ln in error_lines:
-            print(f"  {ln}")
+    if parsed_error_blocks:
+        print(f"Errors/exceptions after '{mod}' load marker:")
+        for block in parsed_error_blocks:
+            for line in block:
+                print(f"  {line}")
     else:
-        print(f"Errors naming '{mod}'   : none")
+        print(f"Fresh-run errors after '{mod}' load: none")
+    if ignored_cleanup_blocks:
+        print("Known verification cleanup noise: "
+              f"IGNORED ({len(ignored_cleanup_blocks)} exact base-game block(s))")
     print()
 
     tier2_requested = bool(tier2_pattern)
@@ -139,20 +231,20 @@ def main(argv: list[str]) -> int:
         bool(tier2_lines) and done_line is not None and failed_line is None
     )
 
-    if load_line and not error_lines and tier2_ok:
+    if load_line and not parsed_error_blocks and tier2_ok:
         if tier2_requested:
-            print(f"[PASS] Tier-2 verified: {mod} loaded AND effect marker fired.")
+            print(f"[PASS] Tier-2 verified: {mod} loaded AND asserted post-state matched.")
         else:
             print(f"[PASS] Tier-1 verified: {mod} loaded ok.")
         return 0
 
     if not load_line:
         print("[FAIL] Load marker missing. Check: was PckPacker uncommented? did build copy to mods/? see errors.md.")
-    if error_lines:
-        print("[FAIL] Error lines found. See errors.md for known fixes.")
+    if parsed_error_blocks:
+        print("[FAIL] Fresh-run error block(s) found. See errors.md for known fixes.")
     if tier2_requested and not tier2_lines:
-        print(f"[FAIL] Tier-2 effect marker not found (pattern '{tier2_pattern}'). "
-              "The harness terminal marker is not effect proof.")
+        print(f"[FAIL] Tier-2 state proof not found (pattern '{tier2_pattern}'). "
+              "Hook/preview and terminal markers are not post-state proof.")
     if tier2_requested and failed_line:
         print("[FAIL] Harness reported selftest FAILED. This is a setup/navigation miss; "
               "use the manual fallback and report tier-1 only unless the effect is observed.")

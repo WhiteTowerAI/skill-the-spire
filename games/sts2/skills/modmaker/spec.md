@@ -24,6 +24,7 @@ Use the block for the element type. **Relic:**
 - **pool**: SharedRelicPool | Ironclad/Silent/Defect/Regent/Necrobinder
 - **trigger**: <plain language> → hook: <AfterSideTurnStart + TurnNumber<=1 | ...>
 - **effect**: <precise game-terms description, with numbers>
+- **state**: none | see the stateful-mechanic contract below
 - **display**:
   - title: <shown name>
   - description: <hover text the player reads>
@@ -129,6 +130,31 @@ unless the design explicitly defines negative-stack behavior; `AllowNegative` is
 implementation property, not a substitute for this SPEC decision. Write finite bounds
 as numbers rather than leaving them implicit. `Single` is a flag-like Power with hidden
 amount 1, so it does not need a Counter domain.
+
+**Stateful-mechanic contract** (add when any element remembers progress; omit for a
+stateless effect). This is state owned by the real relic/card/power, not a new element:
+
+```markdown
+- **state**:
+  - event: <the exact owner-scoped event that advances state>
+  - threshold: <N>
+  - phase: advance-then-check | check-then-consume
+  - lifetime: turn | combat | run
+  - reset: <owner turn start | enter CombatRoom | never during the run>
+  - persistence: ordinary field | `[SavedProperty]` int/bool
+  - display: hidden | progress | current combat turn | uses remaining
+  - observe:
+    - below threshold: <N-1 progress and no effect>
+    - at threshold: <exact effect delta + wrap/consume result>
+    - boundary: <turn/combat reset OR carry-over into a second combat>
+    - save round trip: <required for run lifetime; restored property value>
+```
+
+Use `run` + `[SavedProperty]` for Happy Flower-style progress that crosses combat and
+survives save/resume. Use `combat` + `PlayerCombatState.TurnNumber` for Stone Calendar-
+style "on turn N"/"every N turns this combat"; do not duplicate the game's turn counter.
+Use an ordinary field with an explicit reset for turn-local and once-per-combat state.
+Query `reference/stateful-mechanics.md` before authoring or verifying this block.
 
 **Enemy encounter** (a monster + the encounter that spawns it — always authored as one
 slice; scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
@@ -285,6 +311,7 @@ Start it with the derived ids and any decisions, so nothing is re-derived later:
 - Id.Entry: <...>
 - loc keys: <...>
 - decisions: <type-specific defaults, e.g. rarity/pool OR event acts=all>
+- state: <none OR event/threshold/phase/lifetime/reset/persistence + required proofs>
 ```
 
 ## Confirm with the user

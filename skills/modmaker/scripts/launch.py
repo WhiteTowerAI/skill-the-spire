@@ -3,8 +3,7 @@
 
 R2 launch step (modmaker's verify.md). Ensures steam_appid.txt (=2868840) exists in
 the game dir so the game runs without Steam, launches it, waits, then stops the
-process. Does NOT assert anything itself -- pair with grep_log.py to check for the
-[T2MOD-SELFTEST] marker.
+process. Pair with grep_log.py to verify the resulting state-proof marker.
 
 Two modes:
   default (tier-1) : launch, wait a fixed --wait-seconds, close. Proves it loads.
@@ -167,6 +166,39 @@ def read_shared(path: Path) -> str:
         return fh.read()
 
 
+def log_since_launch(baseline: str | None, current: str) -> str:
+    """Return only log text produced by the current launch.
+
+    Godot normally replaces godot.log on startup, but polling can begin before that
+    rotation. If it appends instead, retain only the suffix beyond the captured
+    baseline. A replacement/truncation cannot start with the complete old content,
+    so its full contents belong to this launch.
+    """
+    if baseline is None:
+        return current
+    if current.startswith(baseline):
+        return current[len(baseline):]
+    return current
+
+
+def self_test_log_outcome(current_launch_log: str, mod_name: str) -> str | None:
+    """Read a terminal outcome only after this launch's exact mod-load marker."""
+    marker = "[T2MOD-SELFTEST]"
+    load_marker = f"{marker} {mod_name} loaded ok"
+    load_index = current_launch_log.rfind(load_marker)
+    if load_index < 0:
+        return None
+
+    after_load = current_launch_log[load_index:]
+    fail_marker = f"{marker} {mod_name} selftest FAILED"
+    done_marker = f"{marker} {mod_name} selftest done"
+    if fail_marker in after_load:
+        return "failed"
+    if done_marker in after_load:
+        return "done"
+    return None
+
+
 def stop_process(proc: subprocess.Popen) -> None:
     if proc.poll() is not None:
         return
@@ -220,8 +252,17 @@ def main(argv: list[str]) -> int:
         appid_file.write_text(APPID, encoding="ascii")
         print(f"[launch] created steam_appid.txt ({APPID}) for no-Steam launch")
 
-    # STS2 archives the old log and starts a fresh godot.log on launch, so grep_log.py
-    # just reads the whole current file afterward -- no offset bookkeeping needed here.
+    # Polling can start before Godot rotates godot.log. Capture the old contents so a
+    # stale terminal marker can never satisfy this launch's self-test.
+    log_baseline: str | None = None
+    if args.self_test and log_path.is_file():
+        try:
+            log_baseline = read_shared(log_path)
+        except OSError as exc:
+            print(f"Could not capture pre-launch log boundary from {log_path}: {exc}",
+                  file=sys.stderr)
+            return 2
+
     extra_args: list[str] = []
     if args.self_test:
         extra_args.append("--t2selftest")
@@ -231,8 +272,6 @@ def main(argv: list[str]) -> int:
     proc = launch_process(exe, game_dir, extra_args)
 
     if args.self_test:
-        done_marker = f"[T2MOD-SELFTEST] {args.mod_name} selftest done"
-        fail_marker = f"[T2MOD-SELFTEST] {args.mod_name} selftest FAILED"
         print(f"[launch] pid {proc.pid}; polling log up to {wait_seconds}s "
               f"for '{args.mod_name} selftest done|FAILED'")
         deadline = time.monotonic() + wait_seconds
@@ -248,14 +287,13 @@ def main(argv: list[str]) -> int:
                 txt = read_shared(log_path)
             except OSError:
                 continue
-            if done_marker in txt:
-                outcome = "done"
-                break
-            if fail_marker in txt:
-                outcome = "failed"
+            current_outcome = self_test_log_outcome(log_since_launch(log_baseline, txt),
+                                                    args.mod_name)
+            if current_outcome is not None:
+                outcome = current_outcome
                 break
         if outcome == "done":
-            print("[launch] harness reported: selftest DONE (scenario driven; grep for the type-specific effect marker now)")
+            print("[launch] harness reported: selftest DONE (scenario driven; verify its asserted state proof now)")
         elif outcome == "failed":
             print("[launch] harness reported: selftest FAILED (couldn't reach/drive its scenario) -- "
                   "verify.md: fall back to manual, report tier-1 only", file=sys.stderr)
@@ -271,7 +309,7 @@ def main(argv: list[str]) -> int:
 
     stop_process(proc)
 
-    tier2_hint = ' --tier2-pattern "<type-specific-effect-pattern>"' if args.self_test else ""
+    tier2_hint = ' --tier2-pattern "<state-proof-pattern>"' if args.self_test else ""
     print(f"[launch] done. Now run grep_log.py --mod-name {args.mod_name or '<ModName>'}{tier2_hint} "
           "to check the fresh log.")
     return self_test_exit_code(outcome) if args.self_test else 0

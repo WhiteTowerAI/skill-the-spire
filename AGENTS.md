@@ -18,7 +18,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M6 Core IN PROGRESS: slices ① Mechanic Vocabulary + ② Enemy Encounter + ③ World Node DONE / pipeline-supported; next slice ④ Minimal Character, then M7 (proactive beginner interview)
+## Current status — M6 Core IN PROGRESS: direct next = Monster Move Vocabulary hardening; then ④ Minimal Character, then M7
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -184,8 +184,27 @@ folds all prompt whitespace to one line before the Windows CLI boundary. macOS/L
 provider rejection/insufficient-credit paths remain unverified. Details:
 `documents/BASELINE_RESEARCH.md` §5 and `IMPLEMENTATION_PLAN.md` M5.5 follow-up.
 
+**Stateful timing/counter follow-up LIVE-VERIFIED 2026-07-15.** The pipeline now has an
+explicit state contract for remembered mechanics: advancing event, threshold phase,
+`turn|combat|run` lifetime, reset, persistence, UI meaning, and boundary proof. Happy
+Flower-style relic counters use `[SavedProperty]` and continue across combat/save; Stone
+Calendar-style timing reads `PlayerCombatState.TurnNumber` and resets with each combat.
+`CadenceCanary` built 0/0 and passed Tier 1 + a two-combat Tier 2 with save round trip.
+Adjacent grounded/unsupported families are recorded honestly in
+`games/sts2/tests/mechanic-capability-audit.md`; see `IMPLEMENTATION_PLAN.md` follow-up.
+
+**DIRECT NEXT — Monster Move Vocabulary acceptance hardening.** Enemy Encounter is
+pipeline-supported only for its current basic deterministic-attack scope. Before Minimal
+Character, expand the existing monster+encounter slice to grounded, copyable actions for
+self Buff/custom Power, player Debuff, Block/Heal, multi-attack, attack+effect, deterministic
+move cycles, and conditional branches. Extend interview/SPEC/author routing and the
+`CombatEnemy` harness to drive multiple enemy turns and assert monster Power/Block/HP plus
+player Power/HP state. A live canary and a fresh natural-language acceptance run are the
+promotion gate; API presence or a green build is not enough. This is behavior breadth on
+the existing slice, not a new content type. Full gate: `IMPLEMENTATION_PLAN.md` §5 M6.
+
 **M6 Core — playable content-breadth slices (M6.0 contracts LANDED 2026-07-10;
-next Minimal Character).** Do
+direct next Monster Move Vocabulary, then Minimal Character).** Do
 not execute M6 as a flat "one BaseLib class → one recipe → one canary" checklist: many
 new types only matter through a host relationship (monster→encounter, keyword→card,
 reward→post-combat). Start with **M6.0**, a lightweight maintainer-only Content Capability
@@ -202,7 +221,7 @@ capabilities record registration, real host, scenario, observable proof, art, co
 support level, and evidence/blockers. STS2 engineering evidence is kept separate from STS1
 or cross-game design analogies; only the former advances the support ladder. M6.0 also fixed
 the Tier-2 proof seam: `launch.py --self-test` now returns nonzero for FAILED/timeout/early
-process exit, and `grep_log.py` requires exact load + a non-terminal effect marker +
+process exit, and `grep_log.py` requires exact load + an asserted structured state proof +
 `selftest done` (a terminal line alone can never prove behavior). Standard-library synthetic
 log regressions cover this contract. No registry/schema or hypothetical adapter fleet was
 added. The `CombatPlayer` seam is reused by the three live Mechanic Vocabulary canaries;
@@ -223,7 +242,9 @@ provisional/fallback). ③ World Node (event) — **pipeline-supported 2026-07-1
 nested title/option/result loc, real option UI click, Gold delta=25; `recipes/event.md` +
 pipeline wired; separate one-sentence `ForgottenCache` acceptance passed 0/0 + Tier 1 +
 Tier 2 with Gold delta=30 and zero repair; event art remains a verified vanilla placeholder,
-custom generation provisional), ④ Minimal Character (selectable, starts a run, valid starter content + one small
+custom generation provisional), then the **Monster Move Vocabulary hard gate** (richer
+actions and multi-turn `CombatEnemy` proof), then ④ Minimal Character (selectable,
+starts a run, valid starter content + one small
 mechanic combination). All four must be `pipeline-supported` to close M6 Core. Reward,
 rest-site option, and pet are **M6 Extras** and do not block M7; Act is outside the M6
 completion gate. Anti-bloat applies to every stage: evolve toward a common SPEC envelope +
