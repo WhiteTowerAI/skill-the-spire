@@ -18,7 +18,7 @@ Phase 2 abstracts the game-specific knowledge into a reusable "game pack" templa
 for more games. Full rationale, scope, and decisions are in `documents/` — read
 those before substantive work; do not restate them here.
 
-## Current status — M6 Core IN PROGRESS: direct next = ④ Minimal Character, then M7
+## Current status — M6 Core IN PROGRESS: direct next = ④ Character Capability Program, then M7
 
 **M4.5 COMPLETE 2026-07-06 (all four steps).** Pre-mined the toolchain so runtime
 never live-decompiles: ① analyzer mined whole → new pack page
@@ -49,11 +49,12 @@ findings: (1) the card console command is **`card <id> [pile]`** — spawns into
 no `add` subcommand, exact match (a third distinct grammar vs relic/potion); (2)
 `grep_log.ps1` had a file-lock bug (exclusive `File.ReadAllText` threw while the game
 was open) — fixed to `FileShare.ReadWrite` + a `-Tier2Pattern` arg that verifies both
-tiers in one call. *Editing existing* vanilla content is deferred (needs raw Harmony
-patching; no BaseLib wrapper). **M4 round 1** (potion, 2026-07-02): `recipes/potion.md`
+tiers in one call. At M4, *editing existing* vanilla content was deferred because it needs
+Harmony rather than a BaseLib wrapper; the current Character Capability Program now treats
+curated, versioned Harmony/Publicizer adapters as valid future capability modules, but none
+is user-facing until its own scenario canary passes. **M4 round 1** (potion, 2026-07-02): `recipes/potion.md`
 + `grounding.md` + a 63-potion snapshot; "Firebomb" scaffolded → built → tier-1 →
-tier-2 observed, zero repair; console command `potion <id>` (exact, no `add`). What
-exists now:
+tier-2 observed, zero repair; console command `potion <id>` (exact, no `add`). What exists now:
 - The research docs in `documents/`, `LICENSE`, `README.md`, this file.
 - **The skill source tree** under `games/sts2/` (decided: use the existing repo
   root, not a `t2mod/` wrapper). Layout:
@@ -204,8 +205,30 @@ verification also retired initialization-time `SetFtuesEnabled` and implicit mis
 fallback errors. Custom monster Spine art remains provisional. Full evidence:
 `games/sts2/tests/canary-results.md` + `IMPLEMENTATION_PLAN.md` §5 M6.
 
+**Downfall advanced-character baseline + capability planning LANDED 2026-07-15.** The
+gitignored maintainer baseline is `baselines/downfall/`, pinned at `ee2f801` (Downfall
+0.0.30; STS2 0.107.1; BaseLib 3.3.5; MIT); it is never shipped or read at runtime. The
+maintainer audit `games/sts2/tests/downfall-character-capability-audit.md` decomposes all
+ten source characters into reusable programming families rather than role-named recipes:
+scoped state/FSMs, custom zones, dynamic content, resources/payment, owned entities,
+run-start choices, hosted rewards/rest actions, semantic hooks, UI adapters, save/network
+contracts, and versioned Harmony/Publicizer bridges. Collector and Gremlins are marked
+source-only because the current combined Downfall project does not compile them. Direct
+registration correction: BaseLib 3.3.5 `CustomCharacterModel` constructor auto-calls
+`AddCharacter(this)`; generated code must not call it explicitly. BaseLib is now the first
+choice, not the feature ceiling. Art/animation is deliberately non-gating for this
+programming phase; use fallback/built-in/generic visuals until code behavior is green.
+
+**Next-session handoff:** Downfall-wide research is complete; do not repeat the audit or
+live-decompile STS2. Read `games/sts2/tests/downfall-character-capability-audit.md`
+(`Shared architecture`, `Capability families`, and `Character Systems proof program`) and
+`IMPLEMENTATION_PLAN.md` M6 step 6, then begin **6b Character Foundation**. The first
+acceptance is one canary character that auto-registers, appears in character selection,
+starts a run with valid pools/starter deck/starter relic, has the expected HP/energy, and
+proves one public/BaseLib mechanic through `RunStart` + `CombatPlayer`. Art is non-gating.
+
 **M6 Core — playable content-breadth slices (M6.0 contracts LANDED 2026-07-10;
-direct next Minimal Character).** Do
+direct next Character Capability Program).** Do
 not execute M6 as a flat "one BaseLib class → one recipe → one canary" checklist: many
 new types only matter through a host relationship (monster→encounter, keyword→card,
 reward→post-combat). Start with **M6.0**, a lightweight maintainer-only Content Capability
@@ -244,9 +267,12 @@ nested title/option/result loc, real option UI click, Gold delta=25; `recipes/ev
 pipeline wired; separate one-sentence `ForgottenCache` acceptance passed 0/0 + Tier 1 +
 Tier 2 with Gold delta=30 and zero repair; event art remains a verified vanilla placeholder,
 custom generation provisional); the **Monster Move Vocabulary hard gate passed 2026-07-15**
-(richer actions and multi-turn `CombatEnemy` proof). Direct next is ④ Minimal Character (selectable,
-starts a run, valid starter content + one small
-mechanic combination). All four must be `pipeline-supported` to close M6 Core. Reward,
+(richer actions and multi-turn `CombatEnemy` proof). Direct next is ④ the **Character
+Capability Program**: Foundation (selectable, starts a run, valid pools/starter content),
+then a typed advanced-mechanic kernel, Resource/UI and custom-Zone/dynamic-output canaries,
+and a fresh natural-language character that composes at least two capability families and
+crosses one verified non-BaseLib seam. A selectable shell alone no longer closes M6. All
+four Core slices must be `pipeline-supported` at their stated boundaries. Reward,
 rest-site option, and pet are **M6 Extras** and do not block M7; Act is outside the M6
 completion gate. Anti-bloat applies to every stage: evolve toward a common SPEC envelope +
 lazy type/scenario contracts instead of adding full per-type prose branches to
@@ -264,8 +290,9 @@ concerns that apply, one or two at a time, plain language, with a default offere
 one-line fast path un-regressed. The interplay concern is itself a four-level ladder (L1
 technical dependency — already shipped via the interaction harness; L2 resource loop; L3 archetype
 identity; L4 run-rhythm & risk-reward), grounded in MegaCrit's design language. M7 L3/L4
-wait specifically for the **M6 Core gate** (Mechanic Vocabulary + Minimal Character provide
-the keyword/orb vocabulary and real buildable character target); they do not wait for M6
+wait specifically for the **M6 Core gate** (Mechanic Vocabulary + the Character Capability
+Program provide the keyword/orb vocabulary, buildable character target, and an advanced
+composition path); they do not wait for every Downfall-derived capability, M6
 Extras or Act. See `documents/BASELINE_RESEARCH.md` ("MegaCrit design language") +
 IMPLEMENTATION_PLAN.md §5 M7 + memory `[[sts2-m7-design-advisor]]`.
 
@@ -278,13 +305,19 @@ The design is a **combination baseline**, not a fork (see BASELINE_RESEARCH.md):
   scaffold → author → build → verify (tier 1 + tier 2) → repair → finalize. **Files
   are state** (`SPEC.md`/`PLAN.md`/`MEMORY.md`) so the pipeline resumes after
   context compaction — resume-check first.
-- **Mod substrate** is `Alchyr/ModTemplate-StS2` + **BaseLib**: scaffolding is
-  `dotnet new` (pure CLI); each element is a `Custom*Model` subclass; behavior is a
-  sequence of `Cmd`s; a mod = `Mod.json` + `.dll` + `.pck`.
+- **Mod substrate** is `Alchyr/ModTemplate-StS2` + **BaseLib-first capability
+  composition**: scaffolding is `dotnet new` (pure CLI); normal behavior is built from
+  `Custom*Model` + `Cmd`s. When no public seam exists, only maintainer-grounded,
+  versioned Harmony/Publicizer modules with patch diagnostics and Scenario proof are
+  eligible. A mod remains `Mod.json` + `.dll` + `.pck`; an optional automatically installed
+  `OpenMod.Runtime` may later own shared cross-mod patch registries after two real canaries
+  earn that boundary.
 - **The moat is the `sts2-api` "game pack"** — curated, on-demand knowledge
-  (`recipes/`, shared mechanics/build constraints, the self-test/art contracts, and
-  append-only `errors.md`) that pre-digests STS2's community-reverse-engineered
-  conventions so the LLM writes correct code without live-decompiling.
+  (`recipes/`, semantic capability contracts, versioned patch adapters, shared
+  mechanics/build constraints, the self-test/art contracts, and append-only `errors.md`)
+  that pre-digests STS2's community-reverse-engineered conventions so the LLM writes
+  correct code without live-decompiling. Preserve imaginative mechanics in SPEC; compose
+  or ground the missing primitive instead of silently simplifying the idea.
 - **Verification is on observed reality, never "it compiled."** Tier 1 proves load
   via the real game log. Tier 2 is the live-verified, arg-gated in-process self-test:
   the headed game navigates with `ForceClick`, calls public Cmds, and logs the actual

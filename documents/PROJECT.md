@@ -153,6 +153,9 @@ The skill is responsible for the entire pipeline (per §6):
 - Interpreting the natural-language request into a concrete mod spec.
 - Scaffolding the mod in the game's correct format / structure.
 - Generating the code, config, and manifest to the game's conventions.
+- Preserving unusual mechanic ideas and compiling them through BaseLib-first capability
+  composition plus maintainer-grounded Harmony/Publicizer adapters when no public seam
+  exists. The user never configures patches, local game references, or decompilation.
 - Providing assets via the **art pipeline** (see §7.1): the user approves placeholder
   vs. custom art and the acquisition route; open-mod owns deterministic STS2 processing.
 - Packaging the mod and placing it where the game loads mods from.
@@ -160,6 +163,12 @@ The skill is responsible for the entire pipeline (per §6):
 - Reading errors and auto-repairing, then re-validating — iterating until it works.
 
 ### 7.1 Art / sprite pipeline (REQUIRED feature)
+
+Art remains a required product capability, but it is not the gate for the current M6
+Character Systems programming phase. Character-system canaries use built-in/fallback
+visuals, generated nodes, or generic open-mod-owned scenes while state, hooks, save,
+choice, UI-host, and patch behavior are proven. Production character animation/art returns
+after those code contracts are live-green.
 
 Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
 the art decision explicit and the result source-independent:
@@ -217,8 +226,10 @@ Vofy credentials to `art-backend.json`. See `BASELINE_RESEARCH.md` and
   plumbing, not the provider, credentials, credits, or hosted generation. High-quality
   original audio and polished/curated original art beyond what the user's chosen backend
   produces remain later.
-- **Complex / total-conversion mods** — start with single-element mods (one
-  relic, one card, one potion), not sweeping overhauls.
+- **Full total conversions / replacement acts** remain later ecosystem work. Advanced
+  playable characters and large mechanic changes are now in scope when they can be
+  expressed as verified capability modules; "BaseLib has no wrapper" is not by itself an
+  out-of-scope reason.
 
 ## 9. Constraints & assumptions
 
@@ -243,6 +254,13 @@ containing the game's internal rules, the standard/correct way to write things
 (`Mod.json` conventions, Harmony patch patterns), common errors, and working
 runnable examples. Because STS2 has no official API, this curated knowledge is
 the difference between "gamble on luck" and "reliably works."
+
+For advanced mechanics, the pack also carries semantic capability contracts and
+versioned patch adapters: state/lifetime, zones, resources/payment, owned entities,
+run choices, hosted UI, save/network ordering, exact Harmony/Publicizer target, conflict
+boundary, and Scenario proof. Downfall is the maintainer implementation-depth baseline;
+the published pack contains only independently verified distilled modules, never the
+gitignored checkout or extracted game assets.
 
 - Building this pack (est. **~1–1.5 weeks** of focused work) is the core moat —
   it's the effort others won't bother to put in.

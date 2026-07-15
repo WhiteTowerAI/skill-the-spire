@@ -15,9 +15,12 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > errors automatically, and supports placeholder or generated art for the four core
 > element types. Stateful relic timing now covers both counters that continue across
 > combats/save-resume and turn numbers that reset each combat. Enemy encounters support
-> rich deterministic/conditional move cycles with multi-turn behavior proof. Minimal
-> Character is the direct next step. Editing vanilla content and one-click Steam
-> Workshop publishing remain out of scope today.
+> rich deterministic/conditional move cycles with multi-turn behavior proof. The direct
+> next step is the **Character Capability Program**: first a selectable/run-start
+> foundation, then reusable advanced mechanic cells for resources/UI, custom card
+> zones/dynamic output, and a verified non-BaseLib patch seam. Those character and
+> vanilla-editing capabilities are planned, not supported today. One-click Steam Workshop
+> publishing also remains out of scope.
 > See [Current limits](#current-limits).
 
 ---
@@ -171,10 +174,12 @@ open-mod is still young. Today it does the following well, and is honest about t
   with nested page/option text and a real run-state consequence. The pipeline enters the
   event room, clicks its real option UI, and independently observes the result. Custom
   event art remains provisional, so events use a verified vanilla portrait placeholder.
-- ⏭️ **Direct next: Minimal Character** — prove a selectable character can start a run with
-  valid starter content and one small supported mechanic combination.
-- ⏳ **Not yet:** editing existing vanilla content, production-size playable characters,
-  and one-click Steam Workshop publishing.
+- ⏭️ **Direct next: Character Capability Program** — prove a selectable character can start
+  a run with valid pools/starter content, then establish reusable advanced-mechanic modules
+  and a fresh AI-designed character that composes them. Programming proof comes first;
+  custom character art/animation is not a gate for this phase.
+- ⏳ **Not yet:** user-facing character generation, editing existing vanilla content,
+  production-size character card pools, and one-click Steam Workshop publishing.
 - ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
   on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but
   those combinations have not yet been live-verified. Registry directory listing is

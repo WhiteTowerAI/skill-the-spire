@@ -2,7 +2,8 @@
 
 > Companion to PROJECT.md. Records what we learned from candidate baselines and
 > which we build on. Initial baselines fetched 2026-07-01; Imagine/Vofy art-source
-> follow-up researched 2026-07-14.
+> follow-up researched 2026-07-14; Downfall advanced-character research added
+> 2026-07-15.
 
 ## Why this project (framing, from the user)
 
@@ -227,6 +228,74 @@ sprites. The wrapper now folds all whitespace to one line before invoking Vofy a
 Windows `.cmd` regression proving later sentences survive. macOS/Linux behavior and live
 provider rejection for unsupported flags or insufficient credits remain unverified.
 
+### 6. lamali292/Downfall - ADVANCED CHARACTER CAPABILITY baseline
+
+Researched from the gitignored `baselines/downfall/` checkout at commit
+`ee2f8018635110569f2f5125aef6a45754b62280` (2026-07-15 repository HEAD), mod version
+`0.0.30`, MIT. Its manifest targets the same live-verified substrate as open-mod: STS2
+`0.107.1`, BaseLib `3.3.5`, and .NET 9. The local checkout is maintainer research input;
+it is not shipped, read at runtime, or made a generated-mod dependency.
+
+**What it is:** a large combined STS2 mod with ten character source modules and a shared
+runtime kernel. The current combined project compiles Automaton, Awakened, Champ, Guardian,
+Hermit, Hexaghost, Slime Boss, and Snecko. Collector and Gremlins remain substantial
+source/assets in the repository but are commented out of the current `Downfall.csproj`
+compile, so their code is grounding/design evidence rather than current-release behavior
+proof. Across the repository there are 4,526 tracked files, including roughly 1,804 C#
+files. This is production-size evidence for how character mechanics compose, not a minimal
+template to copy.
+
+**Why it changes the character plan:** BaseLib is a strong substrate, not the intended
+feature ceiling. Downfall demonstrates mechanisms that are larger than one `Custom*Model`:
+
+- custom combat zones and generated cards (Automaton);
+- threshold transformations and rotating private pools (Awakened);
+- owner-bound finite-state machines with charges and entry/exit actions (Champ);
+- timed zones, persistent card attachments, rest-site options, and custom rewards
+  (Guardian);
+- hand-position semantics requiring a pre-play Harmony snapshot (Hermit);
+- ordered circular state machines with polymorphic nodes (Hexaghost);
+- owned minion rosters, command protocols, and death compatibility patches (Slime Boss);
+- saved run-setup choices and cross-character card-pool composition (Snecko);
+- persistent collection/currency/payment/reward systems (Collector, source-only);
+- a multi-body party with active/bench rotation and per-member HP persistence (Gremlins,
+  source-only).
+
+These named mechanics reduce to reusable capability families: scoped state, state
+machines, card zones, dynamic content, resources/payment, owned entities, run setup,
+hosted choices, semantic hooks, UI adapters, save/network contracts, and versioned patch
+bridges. The detailed source map and risk analysis live in
+`games/sts2/tests/downfall-character-capability-audit.md`.
+
+**The upstream lesson:** Downfall already separates a shared kernel from thin character
+modules. `DownfallHook` owns typed dispatch/aggregation; registries expose card execution,
+combat UI, top-bar, and custom-pile hosts; `ModPatcher` applies selected Harmony patches and
+reports zero-target/failure results. open-mod should generalize this further: generated
+character code describes semantic states/transitions/resources, maintained capability
+modules provide reusable implementation, and an optional automatically installed
+`OpenMod.Runtime` eventually owns only cross-mod Harmony/Publicizer seams. Do not create a
+shared runtime until two real advanced canaries prove the boundary; otherwise keep the
+selected module self-contained in the generated mod.
+
+**Registration correction:** Downfall never calls `AddCharacter` directly. In BaseLib
+3.3.5, `CustomCharacterModel`'s constructor auto-registers through
+`CustomContentDictionary.AddCharacter(this)`. Our capability graph must describe the
+constructor behavior so generated code does not make an explicit duplicate call.
+
+**What not to inherit:** Downfall's contributor build requires a local game path, a
+Godot/MegaDot path, and GDRE-extracted assets linked into the project; it also carries a
+large Publicizer/Harmony surface, including fragile transpilers. Players installing its
+prebuilt DLL/PCK do not need those tools. open-mod's product opportunity is to absorb the
+author-side complexity into path discovery, generated project configuration, curated
+capability modules, packaging, patch diagnostics, and live self-tests. It must not require
+users to install an editor or decompile/extract the game.
+
+**Current scope decision:** programming expressiveness is the Character Systems priority.
+Use built-in/fallback visuals, generated nodes, or generic open-mod-owned scenes while the
+code contracts are proven; polished character art/animation is not a gate for this phase.
+MIT code may be adapted with notice, but Downfall art, ported content, and extracted game
+assets are not assumed reusable.
+
 ## Conclusion: our baseline is a COMBINATION
 
 There is no single repo to fork. The right baseline is:
@@ -236,6 +305,11 @@ There is no single repo to fork. The right baseline is:
 > game" to "generate a mod", **sitting on top of ModTemplate-StS2's mod anatomy +
 > BaseLib + dotnet-new scaffolding**, borrowing **Claude-Code-Game-Studios'
 > patterns** for organizing skills/agents/hooks only where useful.
+
+For advanced characters, add **Downfall's demonstrated mechanic families and shared-kernel
+pattern** as the implementation-depth baseline. This remains a combination, not a fork:
+open-mod owns a smaller capability-oriented layout, versioned patch seams, natural-language
+composition, and stronger Type + Scenario verification than the reference repository.
 
 Imagine/Vofy does not change that core combination. It is a reusable **edge acquisition
 pattern** for optional art: delegate account/task/download concerns to a user-owned CLI,
@@ -276,6 +350,7 @@ STS2 has no documented headless test mode, so our observed reality is the
 - https://github.com/Donchitos/Claude-Code-Game-Studios
 - https://github.com/cgxjdzz/AgentTheSpire (closest competitor + art-pipeline reference)
 - https://github.com/WhiteTowerAI/imagine-skill (managed-credit CLI art-source reference)
+- https://github.com/lamali292/Downfall (advanced character capability reference)
 
 ---
 

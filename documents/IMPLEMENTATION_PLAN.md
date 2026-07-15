@@ -6,7 +6,10 @@
 > Status: living plan. Written 2026-07-01 and updated through 2026-07-15.
 > **M0–M5.5 are complete. M6 Core is in progress:** M6.0 contracts, Mechanic
 > Vocabulary, Enemy Encounter (including rich Monster Move Vocabulary), and World Node
-> are complete and pipeline-supported. **DIRECT NEXT = Minimal Character.**
+> are complete and pipeline-supported. **DIRECT NEXT = Character Capability Program:**
+> selectable/run-start foundation, then a reusable advanced-mechanic kernel and fresh
+> natural-language character acceptance. Downfall is the implementation-depth baseline;
+> art is not a gate for this programming phase.
 > M7 L3/L4 starts after the explicit M6 Core gate;
 > see the M6/M7 sections below. Historical run details remain in `M0_RESULTS.md` …
 > `M4_RESULTS.md`, while current M6 evidence lives in `games/sts2/tests/`.
@@ -28,6 +31,14 @@
   cap retries, then hand back a clear "couldn't fix, here's the error."
 - **Non-programmer UX is the wedge** (vs modmixer/the MCP tools): one sentence
   in, plain-language progress, no file/tooling knowledge required.
+- **BaseLib-first, not BaseLib-limited.** Prefer its public model/command surface, but
+  preserve unusual user ideas instead of reducing them to the nearest built-in content
+  type. Maintainer-grounded Harmony/Publicizer capability modules are allowed when they
+  have version gates, patch diagnostics, conflict boundaries, and live Scenario proof.
+- **Compile imagination into capabilities.** Interview/SPEC describes semantic state,
+  transitions, resources, zones, owned entities, and interactions. AUTHOR composes those
+  primitives; named Downfall characters and one-off card lists never become hard-coded
+  recipe branches.
 - **Zero runtime decompilation (pre-mine, don't live-dig).** A `/modmaker` run must
   never make the user wait on a live dig through the 3425-file `decomp/` tree — that
   "online-slow" cost belongs to *pack maintenance*, done once, not to every run.
@@ -554,15 +565,17 @@ source/tracked Markdown fence checks, plugin JSON/generated-placeholder checks, 
 source→plugin→portable hashes for all five tools and the new state page, and repeated
 plugin/portable tree hashes all pass. No commit was created.
 
-**Sequence: after M5, before M6** — M6's heavier content types (characters especially)
-want real art. orb (100×100) / enchantment (64×64) sprite sizes are also now known from
-the same extracted set, but those content *types* are M6, so their art rides along there.
+**Sequence: after M5, before M6** — M5.5 established the general art pipeline, but the
+current Character Capability Program deliberately separates programming proof from visual
+polish. Character canaries may use built-in/fallback visuals, generated Godot nodes, or
+generic open-mod-owned scenes. Custom portraits, animation, audio, and production UI art
+return after the state/host/patch contracts are live-green; they do not block this phase.
 
 **M6 — Content breadth as playable vertical slices, not a checklist of classes.** M6 began
 with four combat-oriented model types: **three pooled families** (card,
 relic, potion — `[Pool]` required) plus **auto-discovered power** (no pool). BaseLib's
 registration surface still defines the authoritative inventory of what else exists:
-`CustomContentDictionary` has those 3 pooled families, **5 parallel explicit entry
+`CustomContentDictionary` has those 3 pooled families and **5 parallel `Add*` entry
 points** (`AddEncounter`, `AddAncient`, `AddEvent`, `AddAct`, `AddCharacter`), and the
 wider `Abstracts/` set (`CustomOrbModel`, card enchantment, run modifier, monster, pet,
 rest-site
@@ -571,6 +584,15 @@ useful alone: a monster needs an encounter, a keyword needs a card/power that us
 an enchantment needs a card to modify, and a reward needs a post-combat host. M6 is done
 only when a non-programmer can describe a **playable unit**, the pipeline can build it,
 and a real game scenario proves the relationship works.
+
+The Character program widens the implementation boundary beyond that BaseLib inventory.
+The gitignored `baselines/downfall/` snapshot and
+`games/sts2/tests/downfall-character-capability-audit.md` show production STS2 examples of
+custom zones, resources/payment, state machines, owned entities, run-start choices,
+reward/rest hosts, save/network state, UI injection, and Harmony/Publicizer bridges.
+BaseLib remains the preferred substrate; it is not the ceiling on what open-mod may build.
+In particular, BaseLib 3.3.5 `CustomCharacterModel` auto-registers from its constructor by
+calling `AddCharacter(this)`; generated character code must not call it explicitly.
 
 ### M6.0 — contracts before recipes: the Content Capability Graph
 
@@ -606,11 +628,11 @@ M6 should factor tier-2 into a small set of reusable scenario adapters, each wit
 
 | Scenario | Initial content families |
 |----------|--------------------------|
-| **CombatPlayer** | existing card/relic/potion/power; keyword, card enchantment, orb |
+| **CombatPlayer** | existing card/relic/potion/power; keyword, card enchantment, orb; character resources/zones/state machines |
 | **CombatEnemy** | monster + encounter; enemy intent/power |
 | **MapNode** | event; later rest-site option |
 | **PostCombat** | reward and encounter outcome (M6 Extra) |
-| **RunStart** | character selection, starter content, character mechanic |
+| **RunStart** | character selection, pools/starter content, run initialization/configuration and saved character state |
 | **ActMap** | act/map ecosystem — explicitly deferred beyond the M6 gate |
 
 A type contributes only its scenario contract (setup action, drive action, observable
@@ -685,15 +707,85 @@ single-class cells.
    Strict verification also closed two setup errors: no initialization-time
    `SetFtuesEnabled`, and placeholder monsters explicitly target the built-in fallback
    scene so a missing convention path never logs first. Custom Spine art remains excluded.
-6. **Minimal Character Slice. ⏭ DIRECT NEXT.** Use the character template where appropriate; prove the
-   character appears in selection, starts a run, owns valid starter content, and exposes at
-   least one small mechanic/vocabulary combination. This is a vertical slice, **not** a full
-   production-size card pool, but it is enough for M7 to reason about archetype identity
-   against a real buildable target.
+6. **Character Capability Program. ⏭ DIRECT NEXT.** The goal is no longer merely a
+   selectable shell with one small known mechanic. It is the first upstream character
+   system that lets AI-authored designs compose mechanics beyond BaseLib's named model
+   families, while keeping every advertised primitive evidence-backed.
+
+   **6a - Downfall capability audit. ✅ RESEARCH LANDED 2026-07-15.** The gitignored
+   `baselines/downfall/` checkout is pinned at `ee2f801` (Downfall `0.0.30`; STS2
+   `0.107.1`; BaseLib `3.3.5`; MIT). The maintainer-only audit at
+   `games/sts2/tests/downfall-character-capability-audit.md` decomposes all ten source
+   characters into reusable families: scoped state, state machines, card zones, dynamic
+   content, resources/payment, owned entities, run setup, hosted choices, semantic hooks,
+   UI adapters, save/network contracts, and patch bridges. Collector/Gremlins are marked
+   source-only because the current combined project does not compile them. No Downfall art,
+   extracted game assets, or runtime dependency enters open-mod.
+
+   **Next-session resume point (2026-07-15).** Treat 6a as complete. Do not repeat the
+   repository-wide Downfall audit and do not live-decompile STS2. Read the audit's `Shared
+   architecture worth moving upstream`, `Capability families for open-mod`, and `Character
+   Systems proof program` sections, then implement 6b. Narrow inspection of the current
+   BaseLib/template source is allowed only to resolve an exact Character Foundation API or
+   resource contract that the checked-in pack does not already answer. Stop after the
+   Foundation canary, recipe/pipeline wiring, and recorded Type + Scenario evidence are
+   green; do not pre-build the 6c runtime/kernel.
+
+   **6b - Character Foundation.** Ground the current BaseLib character template and exact
+   loc/pool/minimum-resource contract. Prove constructor auto-registration, character-select
+   presence, embark, expected HP/energy, valid card/relic/potion pools, starter deck/relic,
+   and one public/BaseLib mechanic through `RunStart` + `CombatPlayer`. Use placeholders or
+   generic scenes; no custom animation/art gate.
+
+   **6c - Capability kernel boundary.** Implement the smallest typed primitives earned by
+   real canaries: semantic state/lifetime, typed hook dispatch, patch registration with
+   zero-target/failure markers, and UI-host descriptors. Keep character-specific rules in
+   generated domain code. Start selected modules self-contained; create an automatically
+   installed `OpenMod.Runtime` dependency only after two independent generated mods need the
+   same Harmony/Publicizer seam. A shared runtime, when earned, owns cross-mod patches and
+   registries only - never a monolithic character framework.
+
+   **6d - Representative advanced cells.** First prove (1) a character resource with
+   gain/spend/reset/affordability plus a generic live counter and (2) a bounded custom card
+   zone whose ordered contents create a deterministic dynamic output. At least one cell must
+   cross a real non-BaseLib boundary through a stable prefix/postfix or internal-access
+   adapter. D-level transpilers wait for their own fingerprinted canary; Downfall's presence
+   does not waive that proof.
+
+   **6e - Fresh creative acceptance.** Start from a natural-language character idea that is
+   not named after a Downfall role and was not prewritten as a recipe. The pipeline must
+   preserve its semantic mechanic, compose at least two capability families, build 0/0,
+   pass selection/run-start, and produce independent Tier-2 state proof with zero manual
+   coding. This is still a vertical slice rather than a production-size card pool, but it
+   proves that AI brainstorming is compiled into reusable primitives instead of flattened
+   to a simple supported effect.
 7. **M6 Extras — reward, rest-site option, pet.** Add by user value and scenario reuse after
    Core is green. They do **not** block M7. **Act is outside the M6 completion gate**: it is
    an ecosystem-sized unit and gets a later milestone after the underlying node/encounter
    capabilities exist.
+
+### Character capability architecture - upstream, not a Downfall fork
+
+The intended code direction is:
+
+```text
+natural-language mechanic / semantic SPEC
+    -> generated character domain code (named states, transitions, content)
+    -> selected open-mod capability modules (state, zone, resource, choice, entity)
+    -> optional shared OpenMod.Runtime seams (Harmony/Publicizer registries only)
+    -> BaseLib + STS2
+```
+
+The capability vocabulary is extensible, not a closed whitelist used to censor the
+interview. If a new idea composes known primitives, AUTHOR may generate a new combination.
+If it needs a new game seam, record the missing primitive explicitly and ground the
+smallest adapter; do not silently rewrite the user's idea into something simpler.
+
+Every advanced module records: semantic host, lifetime/reset/save, public surface, patch
+risk A-D, exact target/version or BaseLib call, multiplayer ordering, UI fallback, conflict
+boundary, Type proof, and Scenario invariant. Prefix/postfix patches on stable lifecycle
+methods are preferred over internal access; internal access is preferred over transpilers.
+Novel transpilers are never generated from intuition alone.
 
 For every slice, use proof-first cadence: **declare host + observable invariant → ground
 the exact APIs and loc/art contract → write only the type-unique recipe material → wire the
@@ -711,15 +803,23 @@ stage: `spec.md` should evolve toward a **common SPEC envelope + lazy type contr
 accumulating another full branch per type. Refactor incrementally with each slice — do not
 build a generic framework before two real shapes prove the abstraction.
 
-**M6 Core completion gate:** Mechanic Vocabulary, Enemy Encounter, World Node, and Minimal
-Character slices all reach **pipeline-supported**, with their Type and Scenario proofs
-recorded. Monster Move Vocabulary has passed its hard gate; Minimal Character is now the
-only remaining M6 Core slice. Reward/rest-site/pet are Extras and do not block M7; Act is
-separately deferred.
+The same rule now applies inside characters: do not add `if Automaton`, `if Guardian`, or
+one recipe per imaginative mechanic. Keep semantic capability contracts lazy, emit only
+selected source modules, and promote code into a shared runtime only when multiple real
+mods prove that it owns a cross-mod patch seam.
+
+**M6 Core completion gate:** Mechanic Vocabulary, Enemy Encounter, World Node, and the
+Character Capability Program reach **pipeline-supported** at their stated boundaries, with
+Type and Scenario proofs recorded. Character completion requires the Foundation plus both
+representative advanced cells and the fresh creative acceptance; a selectable shell alone
+does not close M6. The full Downfall-derived backlog advances capability by capability and
+does not need false blanket parity before M7. Reward/rest-site/pet remain Extras unless a
+specific Character cell earns one as a dependency; Act is separately deferred.
 M5's live tier-2 foundation is already complete, so M6 begins at M6.0. The full
 BaseLib inventory and its evidence are maintained in
-`games/sts2/tests/content-capability-graph.md`; this section is the execution source of
-truth.
+`games/sts2/tests/content-capability-graph.md`; advanced character decomposition lives in
+`games/sts2/tests/downfall-character-capability-audit.md`. This section is the execution
+source of truth.
 
 **M7 — Interactive, proactive interview for non-programmers.** NEW major milestone
 (promoted 2026-07-09 from the former "M5.7 harder interview" — that 0.x scope was only the
@@ -772,18 +872,20 @@ The **interplay (联动)** concern specifically is a **ladder of four levels**, 
 - **L3 — archetype identity** (a shared resource/keyword vocabulary + a play-feel that ties
   a *set* of elements into one coherent theme — Silent = poison/discard/Sly, Ironclad =
   Strength/Exhaust). Requires designing a small **content pack**, not one element — so it
-  depends specifically on M6 Core's Mechanic Vocabulary + Minimal Character slices
-  (keyword/orb and a real buildable character target), not on every BaseLib type being done.
+  depends specifically on M6 Core's Mechanic Vocabulary + Character Capability Program
+  (keyword/orb, a real buildable character target, and an advanced composition path), not
+  on every Downfall-derived capability being done.
 - **L4 — run rhythm & risk-reward advisor** (the highest rung, closest to "think like
   MegaCrit"): does the design scale into act 3, or does the payoff never come online in a
   normal fight? where's the meaningful trade-off / commit moment? is it degenerate (needs a
   rarity/cost/scope constraint the way Dual Wield was limited to Skills)? The interview
   points out a design flaw *before* code is written.
 
-**Sequenced AFTER the M6 Core gate (locked 2026-07-10):** the full L3/L4 advice
+**Sequenced AFTER the M6 Core gate (expanded 2026-07-15):** the full L3/L4 advice
 ("help me design a character's three archetypes") becomes meaningful when Mechanic
-Vocabulary and the Minimal Character Slice are both `pipeline-supported` — there is then
-a real keyword/orb vocabulary and a buildable character target to advise against. M7 does
+Vocabulary and the Character Capability Program's stated gate are `pipeline-supported` —
+there is then a real keyword/orb vocabulary, a buildable character target, and proof that
+an unusual mechanic can be composed without flattening the idea. M7 does
 **not** wait for M6 Extras (reward/rest-site/pet), and Act is outside this dependency. The
 L1 decomposition slice depends only on the already-live interaction harness and MAY be pulled
 forward if a concrete multi-element need arises before M6 Core; the rest waits.
