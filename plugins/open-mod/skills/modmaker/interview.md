@@ -92,8 +92,13 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    - **All four element types — card portraits, relic icons, power icons, and potion
      icons** can be generated (all live-verified; each is a loose PNG the game loads
      directly, no `.tres` authoring).
-   - Offer one available source in plain language: an already-installed and authenticated
-     **Vofy CLI** (managed credits), their own OpenAI-compatible endpoint
+   - Prefer a **host-native image generator** when the current runtime actually exposes
+     one. In Codex this is the built-in `image_gen` tool governed by the installed
+     `imagegen` skill and it needs no separate `OPENAI_API_KEY`. Do not infer availability
+     from the text-model name or from the presence of a skill file; the image tool itself
+     must be callable. Record this route as `runtime-imagegen`.
+   - Otherwise offer one available source in plain language: an already-installed and
+     authenticated **Vofy CLI** (managed credits), their own OpenAI-compatible endpoint
      (`art-backend.json`), or an existing local image. Check Vofy only with
      `acquire_sprite.py preflight`; never install it, run `vofy login`, or expose account
      output. If no custom route is ready, record `art: placeholder` and move on.
@@ -141,8 +146,9 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
   custom look (e.g. "a card showing a red phoenix", "make it look like…"). All four types —
   card / relic / power / potion sprites — can be generated (see step 4). It is a
   **single mod-level choice**, asked at most once regardless of sprite count. Custom
-  generation can use an already-authenticated Vofy CLI or a BYO HTTP backend; an existing
-  local image uses the same deterministic import path.
+  generation prefers a callable host-native image tool, then can use an already-
+  authenticated Vofy CLI or a BYO HTTP backend; an existing local image uses the same
+  deterministic import path. If no selected route is available, keep the placeholder.
 - **Author**: reuse the project's configured author, else "OpenMod".
 
 ## Output
@@ -158,7 +164,7 @@ effect: <plain-language, with numbers>
 state: none | event=<what advances>; threshold=<N>; lifetime=turn|combat|run;
   reset=<exact boundary>; persistence=field|SavedProperty
 art: placeholder | generate: <subject/style, if requested>
-art source: vofy | byo-http | local-image  (generate only; no credentials/credits)
+art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
 
 For a **potion** (usage/target instead of trigger):
@@ -171,7 +177,7 @@ usage: CombatOnly | AnyTime
 target: self | one enemy | all enemies
 effect: <plain-language, with numbers>
 art: placeholder | generate: <subject/style, if requested>
-art source: vofy | byo-http | local-image  (generate only; no credentials/credits)
+art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
 
 For a **card** (cost/type/target + upgrade instead of trigger):
@@ -186,7 +192,7 @@ target: one enemy | all enemies | self
 effect: <plain-language, with numbers>
 upgrade: <what improves, e.g. "damage 6 -> 9">
 art: placeholder | generate: <subject/style, if the user asked for custom art>
-art source: vofy | byo-http | local-image  (generate only; no credentials/credits)
+art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
 
 For an **enemy encounter** (monster + the encounter that spawns it, one unit):

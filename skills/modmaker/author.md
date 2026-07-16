@@ -362,14 +362,47 @@ provisional/template placeholders and do not call `gen_sprite.py` for them.
    **For a `relic`/`power` icon** the same name→subject translation applies, but since it's
    a cut-out (chroma ON), ③ must also ask for a **solid flat `#FF00FF` magenta background,
    no gradient** so the tool can key it out cleanly (the contract's cut-out rule).
-1a. **Confirm before spending.** Show the assembled prompt, chosen model/backend, output
-   count (**one**), and that this action spends credits; get a one-line yes for this exact
-   generation. Never treat an earlier art preference as spending approval. Every
-   regeneration needs a new confirmation.
+1a. **Respect the selected route's consent boundary.** For `runtime-imagegen`, the user's
+   mod-level `generate` choice authorizes the initial one-image-per-asset native-tool run;
+   it needs no separate API key, but follow any approval or usage warning presented by the
+   host and never claim that host usage is free. For Vofy or BYO HTTP, show the assembled
+   prompt, chosen model/backend, output count (**one**), and credit-spending action, then
+   get a one-line yes for this exact paid generation. Never treat an earlier art preference
+   as approval to spend through an external route. Every regeneration, on any route, needs
+   a new confirmation after the user sees the current result.
 2. **Locate the mod's images dir**: `<work dir>/<ModName>/images` (the resource subdir
    the template made; `<slug>` = lowercased prefix-stripped id, same as the loc keys).
 3. **Acquire through the SPEC's `art source`, then import** (`scripts` resolves
    per install — same as `build.py`). Use the `--spec` matching SPEC's element.
+
+   **Host-native image generation (`runtime-imagegen`):** use this route only when the
+   current runtime actually exposes a callable raster image-generation tool. In Codex,
+   follow the installed `imagegen` skill and use its built-in `image_gen` mode; do not
+   switch to that skill's CLI/API fallback, which requires `OPENAI_API_KEY`, unless the
+   user explicitly selected the separate `byo-http` route. A model name or installed skill
+   file alone does not prove that the native tool is available.
+
+   Issue one native image call per distinct asset with the assembled prompt. For a full-
+   bleed card, request the landscape composition without a keyed background. For relic,
+   power, and potion icons, keep the prompt's perfectly flat `#FF00FF` background; do not
+   remove it with a runtime-specific helper because `gen_sprite.py import --chroma` owns
+   that deterministic step. When the native tool supports reference images, first make up
+   to three type-matched files from
+   `./reference/art-samples/<spec>/` visible using the runtime's normal
+   local-image viewing mechanism and label them STYLE REFERENCE ONLY. If reference inputs
+   are unavailable, use the fixed text style descriptor alone.
+
+   Inspect the generated image, then use the actual local file path reported by the host
+   (Codex normally saves built-in results below `$CODEX_HOME/generated_images/`; do not
+   assume that path for other runtimes). The route is unavailable if it produces no local
+   image file. Pass that file through the existing normalizer:
+   ```
+   python scripts/gen_sprite.py import \
+     --spec <card|relic|power|potion> --slug <slug> --input "<native-output.png>" \
+     --out "<work dir>/<ModName>/images" [--chroma]
+   ```
+   Add `--chroma` only for `relic`, `power`, and `potion`. The normalized project asset,
+   not the host's raw output, is what the mod references and packages.
 
    **Vofy managed credits:** the user installs/authenticates Vofy themselves. Never run
    `vofy login`, inspect credential files, or put status/credit output in SPEC/MEMORY/logs.
@@ -406,7 +439,7 @@ provisional/template placeholders and do not call `gen_sprite.py` for them.
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
    point it at the **root** `art-samples` dir (as shown): the tool auto-picks the `card/`,
    `relic/`, `power/`, or `potion/` subdir matching `--spec`, so a relic never gets card refs. Backends
-   that accept reference images (gpt-image-1 edits, Gemini/nano-banana, ComfyUI) imitate the
+   that accept reference images (gpt-image edits or Gemini/nano-banana) imitate the
    game style far better, and plain text-to-image backends just ignore it.
    The tool POSTs to the user's backend, then chroma-keys (per spec — OFF for a full-bleed
    `card`, ON for a cut-out `relic`/`power`/`potion` icon) / fits / resizes to the exact
@@ -414,12 +447,13 @@ provisional/template placeholders and do not call `gen_sprite.py` for them.
    files. A relic's optional `_outline.png` is not generated (see above).
    **Local image:** use `gen_sprite.py import --input <file> ...`; for a magenta-backed
    relic/power/potion source add `--chroma`.
-4. **Unavailable/failure → bounded fallback, don't block.** Missing Vofy/auth/credits,
+4. **Unavailable/failure → bounded fallback, don't block.** A missing native image tool,
+   native output with no local file, host-tool failure, missing Vofy/auth/credits,
    unsupported model flags, task failure/timeout, zero or multiple downloads, missing BYO
-   config, or import failure must stop that route. Tell the user what failed and offer BYO
-   HTTP, local import, or placeholder. Never silently choose another paid backend or retry
-   a possibly charged Vofy task. Record only the route/outcome in `MEMORY.md`, never account
-   or credit output.
+   config, or import failure must stop that route. Keep the placeholder unless the user
+   explicitly selects BYO HTTP, Vofy, or local import instead. Never silently choose a paid
+   backend or retry a possibly charged task. Record only the route/outcome in `MEMORY.md`,
+   never account or credit output.
 5. **Regenerate/tweak** means adjusting the subject/prompt, obtaining fresh approval, then
    rerunning the chosen acquisition + import. The `.pck` rebuild in `build.md` picks up
    whatever PNG is at the path — placeholder if none, the custom one if present.

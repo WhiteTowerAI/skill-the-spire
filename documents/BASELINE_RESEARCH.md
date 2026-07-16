@@ -180,6 +180,7 @@ The art pipeline should keep acquisition separate from deterministic asset proce
 ```text
 open-mod art prompt + STS2 references
     |
+    +-- current: host-native raster image tool when callable (Codex `image_gen`)
     +-- current: BYO HTTP backend (`gen_sprite.py generate`)
     +-- current: authenticated managed-credit CLI (`vofy image create`)
     +-- current: user/local file
@@ -188,6 +189,14 @@ downloaded/generated source image
     |
 `gen_sprite.py import` -> crop/fit/chroma -> exact STS2 path(s) -> PckPacker
 ```
+
+The host-native route is an agent capability, not another Python transport. The runtime
+must expose a callable image-generation tool and return a local source file; a model name
+or installed skill file is not sufficient. Codex's built-in `image_gen` mode requires no
+separate `OPENAI_API_KEY`, but it is not exposed by every Codex surface or third-party
+model route. When present, the agent generates one raw image per asset and passes the
+reported file to `gen_sprite.py import`; when absent or failed, open-mod keeps the
+placeholder unless the user explicitly selects one of the existing external routes.
 
 The managed-CLI implementation does not add provider HTTP code to `gen_sprite.py`. It:
 
@@ -227,6 +236,15 @@ outside runtime resources. Subsequent single-line prompts produced the five acce
 sprites. The wrapper now folds all whitespace to one line before invoking Vofy and has a
 Windows `.cmd` regression proving later sentences survive. macOS/Linux behavior and live
 provider rejection for unsupported flags or insufficient credits remain unverified.
+
+**Host-native acquisition follow-up (2026-07-16):** the source skill now prefers a
+callable runtime-native raster image tool for the four already-grounded static specs. In
+Codex, that is the built-in `image_gen` path governed by the installed `imagegen` skill;
+its raw local output is inspected and passed to `gen_sprite.py import`, with chroma owned
+by the existing normalizer. The route adds no provider transport and does not expand the
+supported asset families. The current third-party Codex route exposed the skill
+instructions but not a callable `image_gen` tool, so first-party native-tool invocation
+still needs a separate runtime acceptance; absence falls back to placeholder.
 
 ### 6. lamali292/Downfall - ADVANCED CHARACTER CAPABILITY baseline
 

@@ -13,7 +13,9 @@
 > Decisions locked (2026-07-01):
 > - **First target game:** Slay the Spire 2.
 > - **Local game assumed installed** so we can launch it and close the loop.
-> - **First agent runtime:** Claude Code (Codex is a later target).
+> - **Primary live-development runtime:** Claude Code. A portable Codex-compatible package
+>   is shipped, but each non-Claude surface and optional native tool keeps its own live
+>   acceptance gate.
 
 ---
 
@@ -176,20 +178,24 @@ the art decision explicit and the result source-independent:
 - **One mod-level choice: placeholder OR custom art.** Placeholder is the silent default
   and keeps the loop immediately testable. Only discuss generation when the user signals
   that visuals matter; do not make a beginner choose every individual file or provider.
-- **Current shipped acquisition routes:** (a) an authenticated managed-credit Vofy CLI,
-  live-verified on Windows 2026-07-14; (b) a user-configured OpenAI-compatible HTTP backend
-  through `gen_sprite.py generate`; or (c) an existing local image through
-  `gen_sprite.py import`. We do not bundle inference or credentials.
+- **Current shipped acquisition routes:** (a) a host-native raster image tool when it is
+  actually callable (`runtime-imagegen`; Codex calls it `image_gen` and its built-in mode
+  needs no separate `OPENAI_API_KEY`); (b) an authenticated managed-credit Vofy CLI,
+  live-verified on Windows 2026-07-14; (c) a user-configured OpenAI-compatible HTTP backend
+  through `gen_sprite.py generate`; or (d) an existing local image through
+  `gen_sprite.py import`. We do not bundle inference or credentials. Native tool
+  availability is a runtime capability, not something inferred from a text-model name or
+  an installed instruction file.
 - **Managed-credit boundary:** the route follows the
   Imagine baseline. The user installs and logs into the CLI; open-mod may submit one
   confirmed non-interactive job and download its source image. It never invokes browser
   login or reads stored auth. A fresh Codex acceptance run generated card plus cut-out
   sprites, rebuilt the `.pck`, and passed in-game visual inspection on Windows. macOS/Linux
   behavior and live provider rejection/insufficient-credit paths remain unverified.
-- **Acquisition is not normalization.** HTTP generation, managed CLI, and local files all
-  converge on the same deterministic `gen_sprite.py import` contract. Provider output is
-  never trusted to already have the exact size, alpha/chroma, duplicate `big/` variant,
-  or STS2 path.
+- **Acquisition is not normalization.** Host-native generation, HTTP generation, managed
+  CLI, and local files all converge on the same deterministic `gen_sprite.py import`
+  contract. Provider output is never trusted to already have the exact size, alpha/chroma,
+  duplicate `big/` variant, or STS2 path.
 - **Correct output regardless of source.** Whether placeholder or generated, the
   asset must land at the right path and exact size the game expects (e.g. card
   portrait 1000x760), so a `.pck` rebuild (Path A / PckPacker) picks it up.
@@ -210,13 +216,18 @@ relic/power/potion icons are 256×256 loose PNGs, all four types live-verified) 
 user-supplied local image. Placeholder stays the default (a missing sprite falls back to
 the template art), so art never blocks the pipeline. The Vofy route produces a
 local intermediate and then reuses `import`; it does not replace `art-contract.md` or add
-Vofy credentials to `art-backend.json`. See `BASELINE_RESEARCH.md` and
+Vofy credentials to `art-backend.json`. A callable host-native route likewise produces a
+local intermediate and reuses `import`; if the host exposes no local image tool or file,
+the skill keeps the placeholder rather than silently choosing a paid backend. See
+`BASELINE_RESEARCH.md` and
 `history/IMPLEMENTATION_PLAN_THROUGH_M6.md` M5.5 follow-up for its exact boundary and proof gate.
 
 ## 8. Out of scope (for now)
 
 - **Other games** — Phase 2. Phase 1 is Slay the Spire 2 only.
-- **Codex runtime** — later target; build and validate on Claude Code first.
+- **Universal Codex surface support** — the portable skill can route to Codex, but each
+  surface must expose and prove the required tools. In particular, host-native
+  `image_gen` is optional and is not available through every third-party model route.
 - **Publishing to Steam Workshop** — Workshop IS live for STS2, but Phase 1
   ends at a mod that works locally. Auto-publishing to Workshop is a later,
   opt-in step (and should always ask first). The user installs/tests locally.
@@ -233,7 +244,9 @@ Vofy credentials to `art-backend.json`. See `BASELINE_RESEARCH.md` and
 
 ## 9. Constraints & assumptions
 
-- **First runtime: Claude Code** (Codex is an eventual target, not Phase 1).
+- **Primary live-development runtime: Claude Code.** A portable cross-agent package is
+  shipped, but Codex and other surfaces keep separate live acceptance gates; optional
+  host-native tools such as `image_gen` must be detected rather than assumed.
 - **The game is installed locally** on the user's machine and can be launched
   with mods — this is required for the auto-test / closed-loop step (§6.3).
 - The user is a non-programmer; the experience must be conversational and

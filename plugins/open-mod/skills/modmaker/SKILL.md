@@ -69,12 +69,16 @@ until their scenario canaries. A counter is state on its real element, not a new
 type. **Custom art (M5.5)** is now wired and
 live-verified for **all four element types — card portraits, relic icons, power icons, and
 potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
-user picks placeholder (default, fast) or custom art acquired through an already-
-authenticated Vofy CLI, a bring-your-own HTTP backend, or a local image. All custom
-routes converge on the `tools/gen_sprite.py` normalization contract; Vofy and local files
-call its `import` command. See `author.md` §4 and `sts2-api` →
-`reference/art-contract.md`. The managed-credit route is live-verified through Vofy + an
-in-game `.pck` on Windows; macOS/Linux remains best-effort and must be reported as such.
+user picks placeholder (default, fast) or custom art. When the current agent runtime
+actually exposes a host-native raster image tool, prefer that route (Codex calls it
+`image_gen` and its built-in mode needs no `OPENAI_API_KEY`); otherwise use an already-
+authenticated Vofy CLI, a bring-your-own HTTP backend, or a local image. Do not infer
+native image capability from the text-model name or from an installed instruction file:
+the tool itself must be callable. All custom routes converge on the `tools/gen_sprite.py`
+normalization contract; native-tool, Vofy, and local-file outputs call its `import`
+command. See `author.md` §4 and `sts2-api` → `reference/art-contract.md`. The
+managed-credit route is live-verified through Vofy + an in-game `.pck` on Windows;
+host-native tool availability is runtime-dependent, and macOS/Linux remains best-effort.
 *Editing existing* vanilla content is still out; the verified 6c lifecycle bridge is not
 a general vanilla-editing recipe.
 If a request needs what isn't wired, say so plainly rather than half-doing it.

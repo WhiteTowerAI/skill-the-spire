@@ -26,7 +26,17 @@ Current pipeline-supported surfaces include:
 - combat resource with explicit all-or-nothing payment and generic live counter;
 - bounded ordered **semantic** card-play buffer with visible state and deterministic output;
 - stateful relic cadence for combat-local and run-persistent counters;
-- placeholder or generated art for card/relic/power/potion.
+- placeholder or generated art for card/relic/power/potion. Custom acquisition prefers a
+  callable host-native raster image tool (`runtime-imagegen`; Codex `image_gen`), then the
+  existing Vofy, BYO HTTP, or local-image routes; every source converges on
+  `gen_sprite.py import`.
+
+Host-native image generation is an optional runtime capability, not a bundled model. Do
+not infer it from the text-model name or the presence of an `imagegen` skill file: the
+tool itself must be callable and return a local image. If it is absent or fails, keep the
+placeholder unless the user explicitly selects another route. Never silently switch to a
+paid backend. This route applies only to the four already-grounded static specs and does
+not advance any M6 Art Expansion family.
 
 Important correction from the real Wayfinder player run:
 
@@ -59,6 +69,11 @@ suites; do not require one project per asset type. Art support advances only aft
 headed game renders the intended asset with visual evidence. A model path, successful build,
 or fallback visual is not enough. Record exact blockers and keep an honest fallback for any
 Spine/scene family that cannot yet be generated safely.
+
+The `runtime-imagegen` edge may be reused for card/relic/power/potion because their import
+and headed render contracts are already live-grounded. A universal first-party Codex
+native-tool claim still requires a dedicated acceptance run; the current third-party Codex
+route exposes the instructions but not a callable `image_gen` tool.
 
 ## Architecture
 

@@ -31,7 +31,7 @@ Use the block for the element type. **Relic:**
   - flavor: <flavor line>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below; `relic`
   icons are wired for generate, 256×256, live-verified)
-- **art source**: vofy | byo-http | local-image  (generate only; never record credentials,
+- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only; never record credentials,
   account details, or credit balance)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
@@ -60,7 +60,7 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
 - **art**: placeholder | generate (a `potion` icon is a loose 256×256 PNG, generate-wired
   and live-verified — same as relic/power; see `reference/art-contract.md`)
-- **art source**: vofy | byo-http | local-image  (generate only)
+- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `potions`): `<NS_UPPER>-<SLUG>.{title,description}`
@@ -96,7 +96,7 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below;
   generate is wired for all four types: `card` / `relic` / `power` / `potion`)
-- **art source**: vofy | byo-http | local-image  (generate only)
+- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `cards`): `<NS_UPPER>-<SLUG>.{title,description}`
@@ -119,7 +119,7 @@ for every authored custom Power):
   - description: <hover text using {Amount}>
   - smartDescription: <usually the same text; required>
 - **art**: placeholder | generate
-- **art source**: vofy | byo-http | local-image  (generate only)
+- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 - **derived ids**:
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - loc keys (table `powers`): `<NS_UPPER>-<SLUG>.{title,description,smartDescription}`
@@ -386,12 +386,15 @@ Rules for this round:
 - **Event, enemy-encounter, and character art stays placeholder.** Do not call
   `gen_sprite.py` for them; their scene/portrait/animation contracts have not been
   live-grounded.
-- **`generate` has three source routes:** an already-installed/authenticated Vofy CLI
-  (managed credits), a user-supplied OpenAI-compatible endpoint (`art-backend.json`), or
-  an existing local image. Every route converges on the `gen_sprite.py` normalization
-  contract; Vofy is only acquisition and calls `import`. If the selected route is
-  unavailable, offer another route or fall back to
-  placeholder — never silently spend through a second backend and never block on art.
+- **`generate` has four source routes:** a host-native raster image tool that is actually
+  callable in the current runtime (`runtime-imagegen`; Codex calls it `image_gen`), an
+  already-installed/authenticated Vofy CLI (managed credits), a user-supplied OpenAI-
+  compatible endpoint (`art-backend.json`), or an existing local image. Every route
+  converges on the `gen_sprite.py` normalization contract; runtime-imagegen, Vofy, and
+  local images call `import`. Do not infer native tool availability from a model name or
+  installed skill file. If the selected route is unavailable, use placeholder unless the
+  user explicitly selects another route — never silently spend through a second backend
+  and never block on art.
 
 ## Seed `PLAN.md`
 
@@ -401,7 +404,7 @@ Rules for this round:
 - [x] spec
 - [ ] scaffold
 - [ ] author
-- [ ] art (per SPEC art plan: placeholder = nothing to do; generate = gen_sprite.py)
+- [ ] art (per SPEC art plan: placeholder = nothing to do; generate = acquire + gen_sprite.py import)
 - [ ] build
 - [ ] verify (tier-1 load)
 - [ ] verify (tier-2 effect, automated via the self-test harness)

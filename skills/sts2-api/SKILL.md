@@ -49,8 +49,9 @@ not dump entire files into the response.
    potions, `./reference/potions-snapshot.md`.
 4. For the **tier-2 self-test harness** (`SelfTest.cs`, the automated effect check), read
    `./reference/selftest-harness.md`.
-5. For **custom art** (a card portrait's path + size, the prompt template, the
-   `gen_sprite.py` usage), read `./reference/art-contract.md`.
+5. For **custom art** (a card portrait's path + size, the prompt template, host-native
+   `image_gen` routing when callable, and `gen_sprite.py` usage), read
+   `./reference/art-contract.md`.
 6. Return only the relevant snippet (hook, Cmd, loc-key rule, error fix, one analog).
 
 **Never read all files at once.** Each file is loaded on demand.
@@ -76,7 +77,7 @@ not dump entire files into the response.
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; turn/combat/run counter patterns; Happy Flower `[SavedProperty]` vs Stone Calendar `TurnNumber`; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | What the toolchain refuses to BUILD/LOAD: full analyzer diagnostic set STS001–004 + the exact required-loc-key table per model type (cards/potions/relics/powers/…) + `[Pool]` rule | Before writing any element's loc keys + attributes; on any STS0NN build error |
 | `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
-| `reference/art-contract.md` | Custom-sprite contract: exact `res://` path + pixel size per sprite type (card `1000×760`; relic/power/potion `256×256` — all four verified live, each a loose PNG; relic/power write a small + `big/` path, potion writes ONE file, card writes only `big/`; 606×852 full art is Ancient-only, out of scope) + the placeholder-fallback mechanism + the STS2 style descriptor + few-shot references + the prompt template (incl. potion's ~45° tilt) + `acquire_sprite.py` (Vofy managed credits) / `gen_sprite.py` (BYO HTTP + deterministic import) usage | The art sub-step (author.md §4); any custom-sprite path/size/style question |
+| `reference/art-contract.md` | Custom-sprite contract: exact `res://` path + pixel size per sprite type (card `1000×760`; relic/power/potion `256×256` — all four verified live, each a loose PNG; relic/power write a small + `big/` path, potion writes ONE file, card writes only `big/`; 606×852 full art is Ancient-only, out of scope) + the placeholder-fallback mechanism + the STS2 style descriptor + few-shot references + the prompt template (incl. potion's ~45° tilt) + optional host-native `image_gen` acquisition + `acquire_sprite.py` (Vofy managed credits) / `gen_sprite.py` (BYO HTTP + deterministic import) usage | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | 18 real STS2 card portraits (© Mega Crit, reference-only — see ATTRIBUTION.md) used as **few-shot style references** by `gen_sprite.py --reference` so a generated portrait matches the game look | Passed to `--reference` in the art step; not read directly |
 | `grounding.md` | Where facts come from (three sources: content→spire-codex, C# signatures→decompile, build/load→validators) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine miss is a pack gap to report, not a dig | An answer the recipe lacks |
 | `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |

@@ -16,8 +16,11 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > output. It proves both that the
 > mod **loads** and that its **effect actually fires** in-game, repairs common build
 > errors automatically, and supports placeholder or generated art for the four core
-> element types. Stateful relic timing now covers both counters that continue across
-> combats/save-resume and turn numbers that reset each combat. Enemy encounters support
+> element types. When the agent runtime exposes a native image tool, open-mod can use it
+> without a separate image API key; otherwise the existing BYO/managed/local routes remain
+> available and missing art stays on the placeholder. Stateful relic timing now covers
+> both counters that continue across combats/save-resume and turn numbers that reset each
+> combat. Enemy encounters support
 > rich deterministic/conditional move cycles with multi-turn behavior proof. A fresh
 > Wayfinder character composed the advanced resource/UI and spatial-route mechanics and
 > passed build plus two-combat live verification. The direct next step is extending the
@@ -164,8 +167,10 @@ open-mod is still young. Today it does the following well, and is honest about t
 - ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
   failures, then re-verifies.
 - ✅ **Custom art for the original four types** — card portraits and relic/power/potion icons
-  are live-verified. Placeholder art remains the zero-setup default; generation uses
-  your own compatible image backend and falls back safely if unavailable.
+  are live-verified. Placeholder art remains the zero-setup default. Generation prefers a
+  callable host-native image tool (Codex `image_gen` when exposed), then supports Vofy,
+  your own compatible image backend, or a local image. Every route uses the same
+  deterministic STS2 normalizer and falls back safely if unavailable.
 - ✅ **Enemy encounters and rich move cycles** — a plain-English request can produce a
   custom monster plus its encounter, including self custom-Powers, player debuffs,
   Block/Heal, multi-attacks, combined actions, deterministic cycles, and conditional
@@ -216,9 +221,10 @@ half-build it.
 - **`publish.sh` says no working Python** — the Windows Store `python3` is a
   placeholder. Install real Python 3 from python.org and reopen your shell.
 - **An element shows placeholder art** — placeholder is the default fast path, not a
-  failure. To generate custom art, choose it during intake and provide a compatible
-  image backend configuration; if generation fails, the mod deliberately remains on
-  the working placeholder rather than blocking the build.
+  failure. To generate custom art, choose it during intake. The skill uses a host-native
+  image tool only when it is actually callable; otherwise select a compatible backend,
+  Vofy, or a local image. If generation fails, the mod deliberately remains on the
+  working placeholder rather than blocking the build.
 
 ## For contributors
 

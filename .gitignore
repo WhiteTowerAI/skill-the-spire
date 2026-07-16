@@ -12,3 +12,6 @@ __pycache__/
 # Tool scratch output (build.ps1 writes full dotnet output here to keep the
 # console quiet). Regenerated each build.
 .build.log
+
+# Local image-generation credentials. Never commit provider keys.
+art-backend.json

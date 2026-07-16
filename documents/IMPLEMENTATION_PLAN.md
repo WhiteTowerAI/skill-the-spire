@@ -120,6 +120,13 @@ not make runtime `/modmaker` sessions inspect local game assemblies.
 5. Preserve explicit fallback behavior for unsupported dynamic formats. Never present a
    vanilla/template fallback as generated custom art.
 
+The optional host-native acquisition edge (`runtime-imagegen`; Codex `image_gen`) applies
+only to the four already-live static specs: card, relic, power, and potion. It produces a
+local source file and reuses `gen_sprite.py import`; it does not advance any new M6 art
+family. Detect the callable tool itself rather than a model name or installed skill file,
+and keep the placeholder when the tool is absent or fails. A universal native-tool claim
+still requires acceptance on the specific first-party runtime surface.
+
 ### Verification and exit bar
 
 - Assert exact source dimensions/format and final `res://` path or scene reference.

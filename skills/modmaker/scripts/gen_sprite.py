@@ -561,8 +561,8 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--reference", help="few-shot STS2 style references: a dir (e.g. the "
                    "sts2-api art-samples/) or comma-separated image files. Sent to the "
                    "backend's /images/edits endpoint so output matches the game style. "
-                   "Requires a backend that accepts reference images (e.g. gpt-image-1 "
-                   "edits, Gemini/nano-banana, ComfyUI). Omit → plain text-to-image.")
+                   "Requires a backend that accepts reference images (e.g. gpt-image "
+                   "edits or Gemini/nano-banana). Omit → plain text-to-image.")
     g.add_argument("--max-refs", type=int, default=3, help="cap reference images (default 3)")
     g.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
     g.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")

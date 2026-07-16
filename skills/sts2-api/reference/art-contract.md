@@ -15,6 +15,14 @@
 > registration step. Verified against a scaffolded mod's
 > `<ModName>Code/Extensions/StringExtensions.cs`.
 >
+> **Acquisition is source-independent.** When the current agent runtime exposes a
+> callable host-native raster image tool, it may create the source PNG without a separate
+> user API key (Codex calls the tool `image_gen`). Do not infer that capability from a
+> text-model name or an installed skill file: the tool itself must be callable and must
+> yield a local image file. Its output, Vofy output, and user/local files all enter the
+> same `gen_sprite.py import` path. A host without that tool keeps the placeholder unless
+> the user explicitly selects another acquisition route.
+>
 > **Sizes derived from MegaCrit content** (via the decompile / existing snapshots) —
 > © Mega Crit. Only the *contract* (path + size) is distilled here; no game asset ships.
 
@@ -141,17 +149,21 @@ NOT photorealistic, NOT a 3D render, NOT pixel art. No text, letters, numbers, l
 border, card frame, UI, or watermark.
 ```
 
-**Layer 2 — few-shot reference images (when the backend supports them, much stronger).**
+**Layer 2 — few-shot reference images (when the acquisition route supports them, much
+stronger).**
 Pass `--reference <sts2-api>/reference/art-samples` to `gen_sprite.py generate` — always
 the **root** samples dir, not a subdir. That dir is split into `card/` (18 portraits),
 `relic/` (6 icons), `power/` (6 icons), and `potion/` (6 icons), and the tool
 **auto-selects the subdir matching `--spec`** so a relic run never gets card portraits
 (they look nothing alike — mixing them poisons the style). It sends up to `--max-refs` (default 3, even stride to
 span styles) to the backend's `/images/edits` endpoint so the model imitates the game's
-look directly. This needs a backend that accepts reference images (e.g. gpt-image-1 edits,
-Gemini / nano-banana, ComfyUI IPAdapter). Plain text-to-image backends ignore references —
-Layer 1 carries them. (All © Mega Crit, reference-only — see `art-samples/ATTRIBUTION.md`.
-If they're removed, Layer 1 still works.)
+look directly. This needs a backend that accepts reference images (e.g. gpt-image edits or
+Gemini/nano-banana). For a host-native tool, make up to three files from the matching spec
+directory visible through that runtime's normal local-image viewing mechanism and label
+them STYLE REFERENCE ONLY before generation. If the native tool cannot consume local
+references, use Layer 1 alone. Plain text-to-image backends ignore references. (All © Mega
+Crit, reference-only — see `art-samples/ATTRIBUTION.md`. If they're removed, Layer 1 still
+works.)
 
 ## The card portrait prompt template — three segments
 
@@ -235,15 +247,17 @@ direction, distilled from the vanilla references:
 - **relic / power** — a single emblem/object centered upright; match the material and
   symbol language of the `relic/` / `power/` references.
 
-## Confirm the prompt before spending, and the regenerate loop
+## Consent and the regenerate loop
 
-Generating calls the user's paid API or managed-credit CLI. So **before every paid
-generation, disclose the model/backend, output count (one), and credit-spending action.
-Use the
-assembled prompt** (segments ①②③ concatenated) and the subject you derived, and get a
-quick yes — one line, e.g. *"I'll generate the portrait with this prompt: … — go ahead?"*
-Don't silently spend or treat an earlier custom-art preference as approval. Every
-regeneration needs a new confirmation. This is also where the §7.1
+For a host-native tool, the mod-level `generate` choice authorizes the initial one-image-
+per-asset run without a separate API key. Follow any approval or usage warning presented by
+the host and do not claim that host usage is free. For a paid API or managed-credit CLI,
+**before every paid generation, disclose the model/backend, output count (one), and credit-
+spending action. Use the assembled prompt** (segments ①②③ concatenated) and the subject
+you derived, and get a quick yes — one line, e.g. *"I'll generate the portrait with this
+prompt: … — go ahead?"* Do not silently spend or treat an earlier custom-art preference as
+approval for an external route. Every regeneration, including a native-tool regeneration,
+needs a new confirmation after the user sees the current result. This is also where the §7.1
 "regenerate/tweak this sprite" loop
 lives:
 
@@ -261,6 +275,16 @@ so cross-card style stays consistent even though each card's ② differs.
 ## Using the tool
 
 ```
+# host-native image generation is an agent tool call, not a shell command. Use it only
+# when the current runtime actually exposes it. Codex: built-in image_gen mode, one call
+# per asset, no OPENAI_API_KEY. Then normalize the host-reported local source file:
+python scripts/gen_sprite.py import \
+  --spec card --slug firebolt --input "<native-output.png>" \
+  --out "<mod>/<ModName>/images"
+
+# For relic/power/potion native sources, use the same import command with --chroma.
+# Keep the raw source on a perfectly flat #FF00FF background until this import step.
+
 # managed credits — Vofy is acquisition only. The user installs/logs in themselves;
 # preflight prints no account/credit details. Inspect live model capabilities separately:
 python scripts/acquire_sprite.py preflight --model <chosen-model>
@@ -287,6 +311,15 @@ python scripts/gen_sprite.py import \
 # list the contract (script's view — should match the table above):
 python scripts/gen_sprite.py list-specs
 ```
+
+The host-native route must follow the runtime's installed image-generation instructions.
+For Codex, use the built-in `image_gen` tool rather than the image skill's CLI/API fallback;
+that fallback requires `OPENAI_API_KEY` and belongs under the explicit BYO route. Inspect
+the native output before importing it. Use the actual local path returned by the host
+(Codex normally stores built-in output under `$CODEX_HOME/generated_images/`); if the host
+returns no local file, the route is unavailable and the placeholder remains. Do not run a
+second background-removal helper for icon sources: `gen_sprite.py import --chroma` owns the
+keying, fit, resize, and final STS2 placement.
 
 `acquire_sprite.py` never installs Vofy, runs `vofy login`, reads credentials, records
 status/credit output, or parses Vofy's normal stdout for a result filename. It runs one
