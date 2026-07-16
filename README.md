@@ -7,23 +7,23 @@ and runs in-game.
 
 First supported game: **Slay the Spire 2 (STS2)**.
 
-> **Status: M6 Core in progress.** open-mod reliably makes **relics, potions, cards, and
+> **Status: M6 Core complete.** open-mod reliably makes **relics, potions, cards, and
 > custom powers** (including a card that applies its own power), **custom card
 > mechanics** (keywords, card enchantments, and orbs), **enemy encounters** (a custom
-> monster plus its encounter), **map events / World Nodes**, and a minimal **Character
-> Foundation** (selectable character, valid pools/starters, run start, and one public/BaseLib
-> starter mechanic). It proves both that the
+> monster plus its encounter), **map events / World Nodes**, and bounded advanced
+> **playable characters**: selectable Foundation, valid pools/starters, combat resources
+> with live fallback UI, and ordered semantic card-play buffers that create deterministic dynamic
+> output. It proves both that the
 > mod **loads** and that its **effect actually fires** in-game, repairs common build
 > errors automatically, and supports placeholder or generated art for the four core
 > element types. Stateful relic timing now covers both counters that continue across
 > combats/save-resume and turn numbers that reset each combat. Enemy encounters support
-> rich deterministic/conditional move cycles with multi-turn behavior proof. The advanced
-> Character program now also has a scenario-verified, version-gated non-BaseLib patch
-> kernel, but that is infrastructure rather than a user-facing mechanic. The direct next
-> step is reusable resource/UI and custom card-zone/dynamic-output cells.
-> Those advanced character gameplay capabilities and vanilla editing are planned, not supported
-> today. One-click Steam Workshop
-> publishing also remains out of scope.
+> rich deterministic/conditional move cycles with multi-turn behavior proof. A fresh
+> Wayfinder character composed the advanced resource/UI and spatial-route mechanics and
+> passed build plus two-combat live verification. The direct next step is extending the
+> art pipeline to the M6 content families that still use fallback presentation; M7's
+> proactive beginner interview follows that pass. Vanilla editing and one-click Steam
+> Workshop publishing also remain out of scope.
 > See [Current limits](#current-limits).
 
 ---
@@ -163,7 +163,7 @@ open-mod is still young. Today it does the following well, and is honest about t
   self-test can't reach its scenario.
 - ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
   failures, then re-verifies.
-- ✅ **Custom art for all four types** — card portraits and relic/power/potion icons
+- ✅ **Custom art for the original four types** — card portraits and relic/power/potion icons
   are live-verified. Placeholder art remains the zero-setup default; generation uses
   your own compatible image backend and falls back safely if unavailable.
 - ✅ **Enemy encounters and rich move cycles** — a plain-English request can produce a
@@ -182,14 +182,21 @@ open-mod is still young. Today it does the following well, and is honest about t
   standard 3 energy, and one public/BaseLib starter mechanic. Verification clicks the real
   character button, starts the run, checks the starter ecosystem, and observes the combat
   effect. Character art/animation uses template/built-in placeholders for now.
+- ✅ **Advanced Character composition** — combat-only resources use explicit payment and
+  a live generic counter; bounded ordered semantic buffers produce configured output cards
+  while source cards use STS2's normal result piles.
+  A fresh Wayfinder acceptance combined both into a spatial route mechanic and passed
+  selection, run-start, payment, geometry, history, and two-combat reset proof.
 - 🧪 **Character capability kernel (maintainer infrastructure)** — a self-contained,
   version-gated B-risk postfix now has build, load, real UI-host, typed-state, conflict,
   idempotence, and two-combat lifetime proof. It is deliberately not advertised as a
   gameplay mechanic and has not been extracted into `OpenMod.Runtime`.
-- ⏭️ **Direct next: advanced Character Capability Program 6d** — establish reusable
-  resource/UI and custom-zone/dynamic-output mechanics, then a fresh AI-designed character
-  that composes them across the verified non-BaseLib seam.
-- ⏳ **Not yet:** advanced user-facing character systems, nonstandard character energy,
+- ⏭️ **Direct next: M6 Art Expansion** — ground and live-verify the asset contracts for
+  M6 mechanics, enemies, events, and characters, then extend the existing source-independent
+  generation/import pipeline without mistaking fallback visuals for support.
+- ⏳ **After the art pass:** M7's proactive beginner interview. **Not yet:** retained-card
+  custom zone UI, unverified advanced character families,
+  nonstandard character energy,
   editing existing vanilla content, production-size character card pools, and one-click
   Steam Workshop publishing.
 - ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
@@ -241,8 +248,9 @@ is often the Store shim). Windows is live-verified; the macOS/Linux path default
 best-effort until tested on those systems.
 
 The marketplace manifest is `.claude-plugin/marketplace.json`; the plugin manifest
-is `plugins/open-mod/.claude-plugin/plugin.json`. Planning and research docs are in
-`documents/`. See `CLAUDE.md` and `AGENTS.md` before contributing.
+is `plugins/open-mod/.claude-plugin/plugin.json`. Current planning and research live in
+`documents/`; completed process evidence is indexed in `documents/history/README.md`.
+See `AGENTS.md` before contributing.
 
 ## License
 

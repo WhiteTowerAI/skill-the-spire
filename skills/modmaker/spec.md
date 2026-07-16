@@ -234,8 +234,8 @@ an intent label or a green build is not behavior proof.
 match `EventOptionLoc`. `author.md` dispatches `element: event` to `recipes/event.md`.
 
 **Character Foundation** (one selectable character shell plus its starter ecosystem;
-scenarios are `RunStart` + `CombatPlayer`; advanced resource/zone/patch modules are not
-part of this boundary):
+scenarios are `RunStart` + `CombatPlayer`; selected advanced capabilities use the
+separate contracts below):
 
 ```markdown
 # SPEC — <Mod Name>
@@ -260,7 +260,7 @@ part of this boundary):
   - real character-select button present and clicked
   - runtime identity, HP, three pool types/members, exact deck/relic multisets
   - combat `MaxEnergy=3` plus the hosted mechanic's independent state delta
-- **advanced mechanic**: none | <preserved but explicitly beyond Foundation>
+- **advanced mechanic**: none | <selected verified capability or explicit pack gap>
 - **art**: character-template/built-in placeholders (custom character art not yet supported)
 - **derived ids**:
   - character Id.Entry: `<NS_UPPER>-<CHARACTER_SLUG>`
@@ -272,7 +272,8 @@ part of this boundary):
 manual registration line or invent a nonstandard energy override. If `advanced mechanic`
 is not `none`, also record the envelope below. Author it only when the named semantic
 capability has its own scenario-verified pack contract; the 6c kernel alone does not make
-resource/payment or zone/dynamic-output behavior supported.
+arbitrary advanced behavior supported. The scenario-verified 6d routes are exactly
+`reference/character-resource.md` and `reference/ordered-card-buffer.md`.
 
 ```markdown
 - **capability module**: <family/name>
@@ -289,6 +290,38 @@ resource/payment or zone/dynamic-output behavior supported.
 When `adapter` is not public/BaseLib, route AUTHOR to
 `reference/capability-kernel.md`. Never infer C/D access or a patch target from this
 envelope.
+
+For a selected **character resource**, also record:
+
+```markdown
+- **resource**: <name>
+- **owner/lifetime**: local Player / combat; new PlayerCombatState resets to 0
+- **amount domain**: nonnegative integer, floor 0
+- **gain sources**: <source -> positive amount>
+- **spend/payoff**: <cost -> exact consequence>; all-or-nothing
+- **affordability boundary**: <one affordable and one unaffordable case>
+- **UI**: generic counter text `<name>: <amount>` under combat energy UI
+- **adapter**: risk B `NCombatUi.Activate(CombatState)`, STS2 0.107.1,
+  MVID `97f10687-c306-4798-ab75-8b9f23f34dfb`
+- **observe**: gain/spend/rejection/floor/counter plus distinct zero state in combat 2
+```
+
+For a selected **ordered semantic buffer**, also record:
+
+```markdown
+- **buffer**: <name>; owner local PlayerCombatState; lifetime combat
+- **recorded value/order**: <semantic value from accepted cards>; append order <matters|not>
+- **capacity/overflow**: <positive N>; reject without mutating current contents
+- **source destination**: normal STS2 result pile, default Discard
+- **visibility**: <compact player-readable state through a grounded UI host>
+- **compile**: <trigger>; snapshot <ordered fields>; formula <deterministic expression>
+- **output**: <real card + configured DynamicVars + exact effect>
+- **observe**: exact source/compile-card destinations, order/capacity/overflow/UI,
+  one CardGeneratedEntry, output state/effect, and distinct empty state in combat 2
+```
+
+If the user requires real played-card instances to remain in a custom zone, preserve that
+idea as a pack gap. Do not silently generate a no-UI `CustomPile`.
 
 **Multi-element contract** (add only when the mod contains more than one authored element;
 omit it for the single-element fast path). `elements` are real content nodes. `interactions`

@@ -1,7 +1,7 @@
 # Recipe: Relic
 
 > A copy-adaptable, **known-good** pattern for a single STS2 relic, distilled from
-> the hand-built "Gambler's Coin" golden mod (M1_RESULTS.md). Every signature here
+> the live-verified hand-built "Gambler's Coin" substrate proof. Every signature here
 > was confirmed against decompiled `sts2.dll` + BaseLib 3.3.2 — not guessed. The
 > goal: the skill fills only the **effect logic**; everything else (class skeleton,
 > pool attribute, localization, image paths) is templated.

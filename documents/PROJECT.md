@@ -8,7 +8,7 @@
 >
 > Status: living brief; core decisions remain locked. The concrete skill/package shape
 > and one-command installation described below shipped in M5. Current execution status
-> lives in `CLAUDE.md` and `IMPLEMENTATION_PLAN.md`.
+> lives in `../AGENTS.md` and `IMPLEMENTATION_PLAN.md`.
 >
 > Decisions locked (2026-07-01):
 > - **First target game:** Slay the Spire 2.
@@ -164,11 +164,11 @@ The skill is responsible for the entire pipeline (per §6):
 
 ### 7.1 Art / sprite pipeline (REQUIRED feature)
 
-Art remains a required product capability, but it is not the gate for the current M6
-Character Systems programming phase. Character-system canaries use built-in/fallback
-visuals, generated nodes, or generic open-mod-owned scenes while state, hooks, save,
-choice, UI-host, and patch behavior are proven. Production character animation/art returns
-after those code contracts are live-green.
+Art remains a required product capability. It was deliberately non-gating during the M6
+gameplay/programming phase, so M6 canaries used built-in/fallback visuals, generated nodes,
+or generic open-mod-owned scenes while behavior contracts were proven. Those contracts are
+now live-green; the direct follow-up is to research and extend the art pipeline across the
+M6 mechanic, enemy, event, character, and character-UI surfaces before starting M7.
 
 Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
 the art decision explicit and the result source-independent:
@@ -211,7 +211,7 @@ user-supplied local image. Placeholder stays the default (a missing sprite falls
 the template art), so art never blocks the pipeline. The Vofy route produces a
 local intermediate and then reuses `import`; it does not replace `art-contract.md` or add
 Vofy credentials to `art-backend.json`. See `BASELINE_RESEARCH.md` and
-`IMPLEMENTATION_PLAN.md` M5.5 follow-up for its exact boundary and proof gate.
+`history/IMPLEMENTATION_PLAN_THROUGH_M6.md` M5.5 follow-up for its exact boundary and proof gate.
 
 ## 8. Out of scope (for now)
 
@@ -286,12 +286,12 @@ along the way.
 
 - **R1 — CLI build and packaging: RESOLVED.** M0 proved a no-IDE build that emits
   `.dll` + `.pck` + manifest, and M1/M2 proved the same substrate through the skill
-  pipeline. PckPacker is the normal path; see `M0_RESULTS.md`, `M1_RESULTS.md`, and
-  `M2_RESULTS.md`.
+  pipeline. PckPacker is the normal path; see `history/M0_RESULTS.md`,
+  `history/M1_RESULTS.md`, and `history/M2_RESULTS.md`.
 - **R2 — Automated in-game verification: RESOLVED.** Tier 1 reads the real game log;
   Tier 2 is an arg-gated in-process self-test that drives public game commands and
   observes effect markers/state changes. The combat cells and later M6 scenarios are
-  recorded in `games/sts2/tests/canary-results.md`; the maintained harness contract is
+  recorded in `history/canary-results-through-m6.md`; the maintained harness contract is
   `games/sts2/skills/sts2-api/reference/selftest-harness.md`.
 
 ### Open product and distribution questions

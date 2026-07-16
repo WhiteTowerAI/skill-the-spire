@@ -25,11 +25,16 @@ not dump entire files into the response.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
    character template, constructor auto-registration, three pools, starters, two-table
    localization, placeholder shell, and `RunStart` + `CombatPlayer` proof.
+   For a combat-lifetime **character resource with explicit payment and a live counter**,
+   read `${STS2_API_SKILL_DIR}/reference/character-resource.md`. For a **bounded ordered
+   semantic card-play buffer with deterministic dynamic output**, read
+   `${STS2_API_SKILL_DIR}/reference/ordered-card-buffer.md`. Both are pipeline-supported
+   through the live 6e Wayfinder composition acceptance.
    For a **grounded advanced capability that needs a non-public host seam**, read
    `${STS2_API_SKILL_DIR}/reference/capability-kernel.md` after the public/BaseLib check.
    It covers self-contained typed state/hooks/UI descriptors and the one verified B-risk
-   combat-UI postfix. It is infrastructure, not permission to invent 6d resource/zone
-   semantics, C/D patches, or `OpenMod.Runtime`.
+   combat-UI postfix. Resource UI may select that exact adapter through its own page; it
+   is not permission to invent other patch targets, C/D patches, or `OpenMod.Runtime`.
    Cards/powers/keywords/enchantments/orbs also read
    `${STS2_API_SKILL_DIR}/reference/mechanics.md` first (scaling numbers, SmartFormat
    descriptions, shared enums).
@@ -61,7 +66,9 @@ not dump entire files into the response.
 | `recipes/monster.md` | Custom Monster + Encounter as one vertical slice: registration/loc/art plus grounded move vocabulary for self buff/custom Power, target debuff, block/heal, multi-hit, composite moves, explicit cycles, and conditional branches; multi-turn `CombatEnemy` proof; **monster attacks use `.FromMonster(this).Execute(null)`, never `.Targeting()`** | Authoring a fought enemy or its move cycle |
 | `recipes/event.md` | Custom Event / World Node pattern (`CustomEventModel` auto-`AddEvent`, all-act vs act-scoped placement, nested `EventLoc` pages/options, `Option(Method)` slug contract, Cmd consequence + `SetEventFinished`, provisional vanilla portrait, `MapNode` UI-click proof) | Authoring a map event with at least one consequential option |
 | `recipes/character.md` | Character Foundation (`alchyrsts2charmod`, `PlaceholderCharacterModel`, constructor auto-`AddCharacter`, card/relic/potion pools, starter deck/relic, exact character+Architect loc, placeholder visuals, `RunStart` + `CombatPlayer` proof) | Authoring a minimal playable custom character shell |
-| `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, version/MVID-gated patch registry with zero-target/failure/owned/foreign diagnostics, and the scenario-verified B-risk `NCombatUi.Activate(CombatState)` postfix. Self-contained only; no `OpenMod.Runtime`, 6d resource/zone semantics, Publicizer, or transpiler support | Maintaining or emitting a specifically grounded advanced capability after public/BaseLib cannot expose its host seam |
+| `reference/character-resource.md` | 6d combat resource contract: `PlayerCombatState` ownership, nonnegative gain/affordability/all-or-nothing spend, second-combat reset, card-hosted payoff, generic live Label, and selection of the exact 6c combat-UI adapter | Authoring a character resource and explicit-payoff loop |
+| `reference/ordered-card-buffer.md` | Ordered combat-buffer contract: `PlayerCombatState` semantic values, native source-card Discard, visible state text, bounded order/overflow, deterministic per-instance output, `CardGeneratedEntry`, and combat reset; retained-card `CustomPile` gameplay is explicitly unsupported | Authoring an ordered card-play record and dynamic output |
+| `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, version/MVID-gated patch registry with zero-target/failure/owned/foreign diagnostics, and the scenario-verified B-risk `NCombatUi.Activate(CombatState)` postfix. Self-contained only; no `OpenMod.Runtime`, unverified patch target, Publicizer, or transpiler support | Maintaining or emitting a specifically grounded advanced capability after public/BaseLib cannot expose its host seam |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; turn/combat/run counter patterns; Happy Flower `[SavedProperty]` vs Stone Calendar `TurnNumber`; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | What the toolchain refuses to BUILD/LOAD: full analyzer diagnostic set STS001–004 + the exact required-loc-key table per model type (cards/potions/relics/powers/…) + `[Pool]` rule | Before writing any element's loc keys + attributes; on any STS0NN build error |
@@ -92,8 +99,17 @@ Harmony patching and is deferred. The recipes make **new** elements.
 - **Capability kernel:** it is not a gameplay recipe. Prefer public/BaseLib; otherwise use
   only a pack-grounded adapter with exact version/MVID/signature, one owned patch,
   zero-target/failure markers, conflict policy, and a hosted state proof. The only verified
-  non-public seam is the B-risk `NCombatUi.Activate(CombatState)` postfix. Keep it inside
-  the generated mod; do not create `OpenMod.Runtime` from one consumer.
+  non-public seam is the B-risk `NCombatUi.Activate(CombatState)` postfix, now selected by
+  the scenario-verified character-resource UI contract. Keep it inside the generated mod;
+  a maintainer canary is not the second generated consumer required for `OpenMod.Runtime`.
+- **Character resource:** combat-owned integer state is nonnegative; check affordability
+  before an all-or-nothing spend, refresh the generic counter after every change, and prove
+  a distinct zero state in combat 2. This does not authorize alternative-energy patches.
+- **Ordered combat buffer:** record semantic values in combat-scoped state and let every
+  source card use its native result pile; expose current order through grounded UI, enforce
+  capacity before mutation, and add the configured output through
+  `AddGeneratedCardToCombat`. Retained-card `CustomPile`, persistence, and custom zone UI
+  remain unsupported.
 - **Loc-key derivation** (same for relics, potions, cards, powers): `Id.Entry = "<NS_UPPER>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split + UPPER_SNAKE). Keys are **flat strings**, not nested JSON. Table is `relics` / `potions` / `cards` / `powers` per type.
 - **Relic combat-start energy**: use `AfterSideTurnStart` + `TurnNumber <= 1` guard. `BeforeCombatStart()` is wrong — energy reset wipes it.
 - **Counter lifetime is a design decision:** "every N turns" defaults to run-persistent

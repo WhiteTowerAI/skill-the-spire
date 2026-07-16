@@ -22,11 +22,17 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    - **A story/choice room on the map** where the player picks an option and gets a
      consequence → **event / World Node**.
    - **A new selectable hero** with their own starting deck/relic and card identity →
-     **character Foundation**. This boundary supports the shell and public/BaseLib starter
-     mechanics, not custom resource UI, custom card zones, or patch-kernel mechanics.
-   - **Supported now: relic, potion, card, enemy encounter, event, and character Foundation.** (*Editing* an existing
+     **character**. Supported composition includes a named nonnegative combat resource with
+     an explicit payoff/live counter and a bounded ordered semantic record of card plays
+     with deterministic output. Source cards use their normal result piles.
+   - **Supported now: relic, potion, card, enemy encounter, event, and bounded character composition.**
+     (*Editing* an existing
      vanilla card/relic/potion is not yet supported — if that's the ask, say so and offer to
      build the closest **new** element instead.)
+   - If the request says played cards should physically remain in a special area, ask one
+     short question: should the cards instead resolve normally while a visible text record
+     tracks their order? Offer that as the supported default. Retained-card zone UI is a
+     pack gap, not something AUTHOR should improvise.
 2. **Trigger / usage / how it's played:**
    - **Relic**: when does the effect happen? Map the user's words to a lifecycle
      moment — "start of combat", "start of each turn", "when you play a card",
@@ -64,13 +70,14 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      player can choose, and each option's concrete consequence (gold/HP/card/relic/etc.).
      A one-option event is valid for the fast path. Ask which acts only if the user cares;
      default is all acts. Do not ask about `EventLoc`, room nodes, or registration.
-   - **Character Foundation**: resolve the character's identity/theme, starting HP,
+   - **Character**: resolve the character's identity/theme, starting HP,
      exact starter deck counts, starter relic, and one starter card/relic mechanic that
      public/BaseLib APIs can prove in combat. Default to standard 3 energy and placeholder
-     visuals. If the core idea requires a custom resource, custom zone, dynamic output, or
-     Harmony/Publicizer seam, preserve it in the SPEC as unsupported beyond Foundation;
-     do not silently flatten it. The 6c kernel is verified infrastructure, not those
-     gameplay semantics; preserve the idea for a capability whose own 6d canary exists.
+     visuals. If it names a custom resource, capture its gain sources, spenders/payoff,
+     floor, combat reset, and counter text. If it names a custom zone, capture accepted
+     cards, order, capacity/overflow, compile trigger, deterministic formula, and output.
+     Ask only for missing semantics and offer the verified defaults below. Any other
+     Harmony/Publicizer seam stays an explicit pack gap; do not silently flatten it.
 3. **Effect**: what exactly happens, in game terms (energy, damage, block, draw,
    heal, a power/status). Get numbers if they matter ("double", "gain 2", "20 damage").
    For a card, also ask what **upgrading** it should improve if not obvious (default:
@@ -117,8 +124,12 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Acts** (event): all acts unless the user specifies a setting.
 - **Character Foundation**: 70 HP, standard 3 energy, a 10-card Basic starter deck,
   one Starter relic, valid character-scoped card/relic/potion pools, and template/built-in
-  placeholder visuals. Derive starter effects from the user's stated theme; do not invent
-  an advanced resource or patch seam.
+  placeholder visuals. Derive starter effects from the user's stated theme.
+- **Character resource** (only when requested): combat lifetime, starts at 0, nonnegative
+  integer, all-or-nothing spend, generic text counter, and no alternative-energy payment.
+- **Custom card zone** (only when requested): combat lifetime, hidden/no-art, finite
+  capacity, reject overflow without mutation, preserve insertion order, and create one
+  deterministic real output card.
 - **Monster move order**: moves repeat in the order stated. Do not invent random choice;
   add a conditional branch only when the concept names a condition or the user confirms it.
 - **State lifetime**: "every N turns" on a relic continues across combats in the current
@@ -206,7 +217,7 @@ acts: all | <specified acts>
 art: placeholder (custom event portrait/background not yet supported)
 ```
 
-For a **character Foundation**:
+For a **character**:
 
 ```
 element: character
@@ -218,7 +229,15 @@ starter relic: <name + one public/BaseLib effect>
 pools: character-scoped card/relic/potion pools with at least one concrete member each
 scenario: RunStart + CombatPlayer
 art: character-template/built-in placeholders
-advanced mechanic: none | <preserved idea that remains beyond Foundation>
+advanced mechanic: none | <unverified idea that remains beyond Foundation>
+```
+
+When the idea selects a verified 6d capability, replace `advanced mechanic` with one or
+both compact semantic blocks:
+
+```text
+resource: <name>; gain <sources/amounts>; spend <cost/payoff>; floor 0; reset combat; UI <counter text>
+zone: <name>; accepts <cards>; order <rule>; capacity <N>; overflow reject; compile <trigger/formula/output>
 ```
 
 Do not write files here — `spec.md` does that. If nothing was ambiguous, skip

@@ -1,6 +1,6 @@
 # errors.md — STS2 mod error → fix catalog
 
-> **Append-only, compounding asset** (IMPLEMENTATION_PLAN.md §3). Every failure the
+> **Append-only, compounding asset.** Every failure the
 > repair loop diagnoses becomes a permanent entry: an error *signature* (what you'd
 > grep for, or the wrong behavior observed) → the *fix*. Over time this makes the
 > repair loop faster and the game pack harder to replicate.
@@ -18,8 +18,8 @@
   csproj (the template ships it commented).
 - **Fix:** uncomment
   `<PackageReference Include="BSchneppe.StS2.PckPacker" Version="0.1.1" PrivateAssets="All" />`
-  and rebuild. Plain `dotnet build -c Release` then emits both. (No MegaDot needed
-  — see sts2-dependency-decisions / M0_RESULTS.md.)
+  and rebuild. Plain `dotnet build -c Release` then emits both through PckPacker;
+  no MegaDot step is needed.
 
 ### MSB1008 when passing MSBuild properties
 - **Signature:** `MSB1008: Only one project can be specified` on a `dotnet

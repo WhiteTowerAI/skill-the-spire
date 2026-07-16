@@ -33,11 +33,13 @@ localization JSON, and inject the self-test marker. Everything structural
   `AddEvent`. For a **Character Foundation** (`element: character`), read
   `recipes/character.md`: keep the character template's `PlaceholderCharacterModel` and
   three pool bases, fill exact starters/HP/loc, and never call `AddCharacter` manually.
-  If SPEC also selects an advanced capability whose own semantic recipe/canary is green,
-  read `reference/capability-kernel.md` after its recipe: prefer public/BaseLib, otherwise
-  emit only the selected self-contained typed state/hook/UI/patch module. The one verified
-  B adapter is `NCombatUi.Activate(CombatState)`; do not generalize it into resource/zone
-  rules, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
+  If SPEC selects a character resource, read `reference/character-resource.md`; if it
+  selects a bounded ordered semantic buffer/dynamic output, read
+  `reference/ordered-card-buffer.md`.
+  Read `reference/capability-kernel.md` only when the selected resource UI needs its exact
+  verified combat-UI adapter. Prefer public/BaseLib, emit only selected self-contained
+  modules, and do not generalize the adapter into alternative-energy patches, visible
+  zone UI, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. Do **not** guess API names — if
   the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
@@ -140,9 +142,12 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
   the character template's inherited `[Pool(typeof(<ModName>*Pool))]` attributes.
 - Add all 14 `CharacterLoc` values and the four Architect keys from the character recipe.
 - Keep `PlaceholderCharacterModel` plus template icons; character art/animation is not a
-  Foundation gate. A Foundation-only SPEC emits no capability-kernel code. An advanced
-  SPEC routes separately through its scenario-verified semantic recipe plus
-  `reference/capability-kernel.md`; 6c alone does not authorize 6d behavior.
+  Foundation gate. A Foundation-only SPEC emits no capability-kernel code. A resource
+  SPEC emits its named domain state/payment rules plus only the exact selected UI kernel.
+  An ordered-buffer SPEC emits combat-scoped semantic state, native source-card result
+  piles, visible state text, and a configured output card. Never emit a retained-card
+  `CustomPile` without a separately grounded UI lifecycle. Keep proof-only observers and
+  assertions out of generated gameplay.
 
 **Counter Power amount-domain gate (applies to every source element)** — before writing
 any custom Counter mutation, read that Power's `amount domain` from SPEC. The default
@@ -223,6 +228,16 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    the real hosted UI node; combat 2 asserts a distinct combat-scoped state generation.
    This route verifies infrastructure only and is not a substitute for the selected
    capability's gameplay invariant.
+   **character resource** → use `reference/character-resource.md`: in combat 1 drive real
+   gain and spender cards, assert affordable/unaffordable cases, successful/rejected
+   payoff, floor, and live counter refresh; enter combat 2 and assert distinct zero state
+   plus reset counter. Finish with `resource UI complete ... observed=all`.
+   **ordered semantic buffer/dynamic output** → use `reference/ordered-card-buffer.md`: drive
+   real source cards through their native result piles, assert order/capacity/
+   non-destructive overflow and visible state, compile/clear the ordered snapshot, assert
+   one `CardGeneratedEntry`, play the configured output, then prove a distinct empty state
+   in combat 2. Reuse the owning character or `CombatPlayer` suite; do not create a project
+   solely for this capability.
    For a multi-element SPEC, use
    that same source driver, then walk `interactions` in dependency order and
    observe each dependent marker/state invariant. There is no `combo` element or separate

@@ -25,7 +25,7 @@ this matrix built it. Card/potion/relic each already had a real acceptance mod
 card→power interaction path were not. Any *new* recipe added later must gain a canary
 here before it is considered done.
 
-## The fourteen cells
+## The sixteen cells
 
 | Cell | Mod | Element(s) | What it proves in the recipe | Tier-2 harness DRIVER + marker |
 |------|-----|-----------|------------------------------|--------------------------------|
@@ -43,6 +43,9 @@ here before it is considered done.
 | stateful cadence | `CadenceCanary` | relic `CadenceBloom` + relic `CombatSundial` | run-persistent `[SavedProperty] int` modulo progress vs combat-owned `PlayerCombatState.TurnNumber`; visible counter updates; no combat-end reset of run progress | **multi-combat `CombatPlayer` scenario**: combat 1 proves progress `1 -> 2` and turn-2 local effect; `SavedProperties.From/Fill` restores `2`; combat 2 turn 1 proves run carry-over threshold `2 -> 0`, Energy `3 -> 4`, plus combat reset `TurnNumber=1` / no second Sundial activation |
 | character Foundation | `CanaryCharacter` | selectable `CanaryCharacter` + custom card/relic/potion pools + 10-card starter deck + `TrailMarker` starter relic | `alchyrsts2charmod`; `PlaceholderCharacterModel`; constructor auto-`AddCharacter` with **no manual call**; 14 `CharacterLoc` values + four Architect keys; exact pool/starter ecosystem; standard 3 energy | **`RunStart` + `CombatPlayer` scenario**: locate/click the real custom icon button; registration count=1; run starts HP `72/72`; pools contain expected models; starters `10/5/5/1`; `TrailMarker` changes Energy `3 -> 4` while `MaxEnergy=3`; final `observed=all` |
 | capability kernel | `CanaryPatchKernel` | self-contained combat-scoped state + typed hook + UI-host descriptor + one B-risk postfix | version/MVID/signature-gated registry; exact-one target and owned postfix; idempotent repeat; explicit zero-target/failure path; foreign-postfix conflict marker; domain rules outside kernel; no Publicizer/transpiler/`OpenMod.Runtime` | **two-combat `CombatPlayer` scenario**: Tier 1 proves resolved/applied/already-applied markers; combat 1 asserts dispatch/state/listeners `1/1/1` and the real fallback Label; combat 2 asserts distinct generations `1/2` with activations `1/1`; final `patch kernel complete ... observed=all` |
+| character resource/UI | `CanaryResourceUi` | combat-owned nonnegative `Charge` resource + gain/spender cards + generic live Label + exact 6c UI adapter | `ScopedState<PlayerCombatState, ...>`; `CanAfford`; all-or-nothing `TrySpend`; payoff only after payment; `NCombatUi.Activate(CombatState)` MVID-gated postfix; no alternative-energy patch or runtime extraction | **two-combat `CombatPlayer`**: amount/counter `0 -> 3 -> 1`; affordable/unaffordable `true/false`; paid Block `+4`; rejected spend leaves amount/Block; combat 2 distinct state/counter `0`; final `resource UI complete ... observed=all` |
+| bounded zone/dynamic output | `CanaryZoneDynamic` | hidden BaseLib `CustomPile` + one dynamic source card + compile/output cards | `[CustomEnum] PileType`; capacity before mutation; `CardPileCmd.Add` transitions; ordered source snapshot; per-instance `DynamicVars`; `AddGeneratedCardToCombat` history; no patch/UI/persistence | **two-combat `CombatPlayer`**: order `2>3>5`, capacity `3`, overflow rejected to Discard, hook enter/exit `3/3`, one `CardGeneratedEntry`, configured/actual Block `23`, combat 2 distinct empty pile; final `zone dynamic output complete ... observed=all` |
+| advanced character acceptance | `WayfinderAcceptance` | selectable Wayfinder + combat-only Ink/UI + hidden ordered Map + spatially configured MappedRoute | Foundation plus exact 6c UI adapter and both 6d contracts; direction order models movement rather than merged card effects; no `PatchAll`, Publicizer, transpiler, manual registration, or shared runtime | **`RunStart` + two-combat `CombatPlayer`**: HP/pools/starters/Energy; `N>E>S>W`, overflow, one generated history; endpoint/right/left/back/closed/Block `0,0/3/0/0/true/20`; Ink `0->4->0`; paid/rejected output; distinct empty combat 2; final `wayfinder acceptance complete ... observed=all` |
 
 ## How to run (maintainer, on the STS2 dev box)
 
@@ -53,8 +56,8 @@ The steps per cell:
 1. `mkdir canary-<x> && cd canary-<x> && dotnet new alchyrsts2contentmod -n Canary<X> -M OpenMod`.
    For the character cell, use `dotnet new alchyrsts2charmod -n CanaryCharacter -M OpenMod`.
 2. Uncomment `BSchneppe.StS2.PckPacker` in the csproj.
-3. Author the minimal element per its recipe; the capability-kernel maintainer cell uses
-   `reference/capability-kernel.md` (see the file list in
+3. Author the minimal element per its recipe; the capability-kernel and two 6d maintainer
+   cells use `reference/{capability-kernel,character-resource,custom-card-zone}.md` (see
    `canary-results.md` for the exact minimal bodies used — copy-paste ready).
 4. Add `Logger.Info("[T2MOD-SELFTEST] Canary<X> loaded ok")` at the end of
    `MainFile.Initialize()`.
@@ -76,7 +79,9 @@ The steps per cell:
    "<state-proof pattern>"` → expect `[PASS] Tier-2 verified`. Match concrete state such as
    `"damage.*observed=6"`, `"enemy attack.*observed=6"`, or
    `"event gold.*observed=25"`; rich enemies use
-   `"monster vocabulary complete.*observed=all"`. The verifier separately requires the current launch's load
+   `"monster vocabulary complete.*observed=all"`; the 6d cells use
+   `"resource UI complete.*observed=all"` and
+   `"zone dynamic output complete.*observed=all"`. The verifier separately requires the current launch's load
    marker plus `<ModName> selftest done`; terminal and broad trigger/preview lines are never
    accepted as proof. For `CanaryCombo`, require separate state proofs for the card→Power
    application and the dependent Power consequence.
@@ -107,13 +112,25 @@ slice built 0/0, loaded without fresh errors, appeared in character selection, s
 run with exact HP/pools/starters, and proved its starter relic through `RunStart` +
 `CombatPlayer`. The new character recipe and compact pipeline routing advance the
 Foundation boundary to `pipeline-supported`; advanced Character Program capabilities
-remain separate later cells.
+remain separate from the Foundation claim.
 **M6 Capability Kernel (2026-07-15): CanaryPatchKernel PASS** — the self-contained module
 built 0/0 and passed strict Tier 1 + two-combat Tier 2. It version-gated and idempotently
 applied one B-risk `NCombatUi.Activate(CombatState)` postfix, dispatched a typed context,
 mounted a real generic UI node, and reset semantic state across combat hosts. This advances
-the 6c infrastructure boundary to `scenario-verified`; it does not promote 6d gameplay
-families or create `OpenMod.Runtime`.
+the 6c infrastructure boundary to `scenario-verified`; it did not by itself promote a
+gameplay family or create `OpenMod.Runtime`.
+**M6 6d Representative Advanced Cells (2026-07-16): PASS.** Both canaries were authored
+before testing, built to 0/0, and passed a shared ordinary-launch Tier 1. Resource/UI then
+passed a two-combat Tier 2 with exact payment/floor/counter/reset proof; Zone/Dynamic
+Output passed a two-combat Tier 2 with order/capacity/hooks/history/output/reset proof.
+The Resource canary reused only the exact 6c UI seam; the Zone cell stayed BaseLib/public.
+Both first advanced to `scenario-verified`; the fresh `WayfinderAcceptance` run then
+composed them through the real character path and advanced the bounded Character Program
+and M6 Core to `pipeline-supported`.
+**M6 6e Fresh Creative Acceptance (2026-07-16): WayfinderAcceptance PASS.** The new
+spatial-route mechanic built 0/0 on its first source compile, passed strict Tier 1, and
+passed isolated two-combat Tier 2 with exact Foundation, Map geometry, Ink payment/UI, and
+reset proofs. Nine parked mods were restored afterward. This closes M6 Core; M7 is next.
 See `canary-results.md` for the per-cell markers and harness bugs the live runs
 fixed. **Run one cell at a time** —
 `--t2selftest` arms every loaded harness mod, so parking all but the cell under test avoids

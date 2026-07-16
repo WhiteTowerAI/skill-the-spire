@@ -4,6 +4,11 @@ Status: **scenario-verified for one B-risk postfix on STS2 0.107.1** by
 `CanaryPatchKernel` (2026-07-15). This page is a capability-module contract, not a
 standalone content recipe. It does not make character resources, payment rules, custom
 zones, dynamic cards, vanilla editing, Publicizer access, or transpilers user-facing.
+`CanaryResourceUi` reused this exact self-contained adapter on 2026-07-16 and proved a
+real resource consumer; its gameplay contract lives in `character-resource.md`.
+`WayfinderAcceptance` is the first fresh natural-language character consumer of the same
+adapter. Keep it self-contained: one acceptance consumer still does not justify extracting
+`OpenMod.Runtime`.
 
 ## Route here only after the public/BaseLib check
 

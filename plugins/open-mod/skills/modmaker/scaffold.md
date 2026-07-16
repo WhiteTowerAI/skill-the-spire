@@ -59,6 +59,10 @@ The template lays out (confirmed from the M1 golden mod):
 - If SPEC selects a separately grounded advanced capability adapter, keep the same chosen
   template. AUTHOR may add `<ModName>Code/CapabilityKernel/` plus thin `Domain/` code per
   `reference/capability-kernel.md`; do not scaffold or depend on `OpenMod.Runtime`.
+- A selected character resource adds only its `Domain/` module, gain/spend host cards,
+  and the exact `CapabilityKernel/` combat-UI adapter. A selected custom zone adds
+  `Zones/`, its `Domain/` transition/composition module, and source/output cards. Do not
+  add a generic capability framework or unselected module.
 - `<ModName>.csproj`, `<ModName>.json` (manifest), `project.godot`, `Sts2PathDiscovery.props` at the ROOT.
 - For the content template, `<ModName>Code/` is C# source with `MainFile.cs` and per-type folders
   (`Relics/`, `Cards/`, `Powers/`, ...). `<ModName>Code/Relics/<ModName>Relic.cs`

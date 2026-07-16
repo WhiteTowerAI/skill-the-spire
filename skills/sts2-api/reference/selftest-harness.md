@@ -835,6 +835,59 @@ StateProof(true, "character foundation complete expected=all observed=all");
 > their expected models; deck/relic counts were `10/5/5/1`; and `TrailMarker` changed
 > Energy `3 -> 4` while `MaxEnergy` remained 3. No manual `AddCharacter` call exists.
 
+## Advanced `CombatPlayer` capabilities (6d, live 2026-07-16)
+
+The Character Foundation checks still run for a generated character, but they do not
+replace each selected capability's own invariant. Read the capability page and add its
+driver after combat reaches `PlayerTurnPhase.Play`.
+
+### Resource/UI
+
+Use `reference/character-resource.md`. Drive the real gain and spender cards, then enter
+a second combat. Before the terminal marker assert all of:
+
+1. the exact 6c UI patch is applied once and the generic Label starts at zero;
+2. gain changes state and counter;
+3. one affordable and one unaffordable check return the expected values;
+4. successful spend changes amount and payoff exactly once;
+5. rejected spend changes neither amount nor payoff and never creates debt;
+6. combat 2 has a distinct resource state at zero and a reset counter.
+
+Finish with:
+
+```csharp
+StateProof(true, "resource UI complete expected=all observed=all");
+```
+
+The live canary observed amount `0 -> 3 -> 1`, Block `+4` only on payment, a rejected
+second cost at amount `1`, Label text `Charge: 0/3/1`, and distinct-combat amounts `1/0`.
+
+### Ordered semantic buffer/dynamic output
+
+Use `reference/ordered-card-buffer.md`. Drive real source cards through normal visual/result
+pile behavior, compile through the generated domain method, play the produced card, and
+enter a second combat. Assert all of:
+
+1. the combat-scoped buffer and player-visible state start empty;
+2. accepted semantic values preserve exact order and every source reaches its normal
+   result pile;
+3. capacity overflow leaves the buffer/resource unchanged while its source still resolves;
+4. the compile card resolves normally, clears state, and refreshes visible text;
+5. the output stores the ordered snapshot and exact deterministic `DynamicVars`;
+6. exactly one matching `CardGeneratedEntry` exists and the output effect fires;
+7. combat 2 owns a distinct empty state and reset UI.
+
+Finish with:
+
+```csharp
+StateProof(true, "ordered buffer complete expected=all observed=all");
+```
+
+The corrected Wayfinder suite observed four source cards plus the compile card in Discard,
+route text `- -> N>E>S>W -> -`, rejected overflow, generated history `1`, configured/
+actual Block `20`, and a distinct empty second-combat state. Retained-card custom piles
+are not covered by this supported path.
+
 ## The `MapNode` scenario (event / World Node — earned seam, live 2026-07-13)
 
 An event is not proven by registration alone. The harness must enter its real `EventRoom`,

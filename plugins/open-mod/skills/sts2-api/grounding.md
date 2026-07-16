@@ -1,7 +1,7 @@
 # grounding.md — where facts come from (and who does the digging)
 
 > When the pack doesn't already answer a question, **ground it — don't guess.**
-> IMPLEMENTATION_PLAN.md §3: "Reuse, don't rebuild grounding."
+> Project policy: "Reuse, don't rebuild grounding."
 >
 > **Read this first — who is asking matters:**
 > - **At runtime (a `/modmaker` run), you read the PACK and nothing else.** The
@@ -9,9 +9,9 @@
 >   `errors.md` are the whole world. You do **not** live-decompile, hit the network,
 >   or open any path outside the pack — those files don't exist on the user's machine.
 >   If the pack genuinely lacks something the request needs, that's a **pack gap**:
->   say so plainly and stop, don't dig. (IMPLEMENTATION_PLAN.md §0: "zero runtime
->   decompilation".) The rest of this page is what the *maintainer* did to build the
->   pack — context, not a runtime instruction.
+>   say so plainly and stop, don't dig. Runtime decompilation is forbidden. The rest of
+>   this page is what the *maintainer* did to build the pack - context, not a runtime
+>   instruction.
 > - **As a maintainer (extending the pack, offline, not during a user run)** you use
 >   the three sources below to distill new recipe/reference/errors content. The result
 >   ships; the source paths never do (`[[audience-split-pack-vs-maintainer]]`).

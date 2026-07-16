@@ -16,7 +16,7 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now — relic + potion + card + power; keyword/enchantment/orb mechanics; enemy encounter; World Node/event; Character Foundation; interaction-aware two-tier verify
+## Scope right now — core elements; Character Foundation; scenario-verified resource/UI and zone/dynamic capabilities; interaction-aware two-tier verify
 
 This skill turns one sentence into a known-good **relic, potion, card, enemy encounter,
 World Node/event, or minimal playable character Foundation** end to end, including custom card keywords, card enchantments,
@@ -44,14 +44,19 @@ A **Character Foundation** uses the Alchyr character template plus BaseLib's
 with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
 3 energy, and one public/BaseLib starter mechanic through `RunStart` + `CombatPlayer`.
 The constructor already registers the character; generated code never calls
-`AddCharacter`. Custom character art/animation and advanced resources/zones/patch kernels
-remain outside this Foundation boundary.
+`AddCharacter`. Custom character art/animation remains outside this Foundation boundary.
 The **6c capability kernel** is separately scenario-verified as maintainer infrastructure:
 combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, and one
 version/MVID-gated B-risk combat-UI postfix. It is not a user-facing mechanic by itself.
-Route to `reference/capability-kernel.md` only for a specifically grounded advanced
-capability; resource/payment and zone/dynamic-output semantics still wait for their own
-6d recipes and canaries, and one consumer never creates `OpenMod.Runtime`.
+Two **advanced capability contracts are pipeline-supported through the corrected Wayfinder
+acceptance**: a combat-owned
+nonnegative resource with explicit gain/affordability/all-or-nothing spend/reset plus a
+generic live counter, and a bounded ordered semantic buffer whose source cards use native
+Discard while its snapshot creates a deterministic per-instance output card. Route only
+to `reference/character-resource.md` and `reference/ordered-card-buffer.md`; resource UI may
+select the exact 6c combat-UI adapter. Retaining played cards in a `CustomPile` is not
+supported. Do not invent alternative-energy patches, zone UI, persistence, C/D access, or
+`OpenMod.Runtime`.
 Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
 the source by its actual type and checks the dependent observation, so a card→power link
 cannot pass merely because both models loaded. “Combo” is not a content type.

@@ -295,6 +295,12 @@ needs Harmony is acceptable when it has:
    independently on the support ladder; none inherits support merely because
    Downfall contains an example.
 
+Steps 3 and 4 passed their open-mod Type + Scenario canaries on 2026-07-16. Step 5 then
+passed through the fresh spatial-route `WayfinderAcceptance`: first source compile 0/0,
+strict Tier 1, and isolated two-combat Tier 2 with both families plus the exact 6c UI seam.
+The bounded Character Program is pipeline-supported; step 6 remains a set of independent
+later depth cells rather than part of the M6 gate.
+
 Art is not a gate for these cells. Use built-in/fallback visuals, generated
 Godot nodes, or generic open-mod-owned scene templates until the programming
 contract is live-green.

@@ -18,7 +18,7 @@ than generating a whole game.
 ## The references
 
 > Note: `htdt/godogen` was surfaced by the later competitive sweep
-> (COMPETITIVE_LANDSCAPE.md) and is now our **primary** architectural baseline,
+> (`history/COMPETITIVE_LANDSCAPE.md`) and is now our **primary** architectural baseline,
 > ahead of GodotMaker — same engine family and closed loop, ~10× the traction,
 > and a permissive MIT license. GodotMaker remains a strong corroborating
 > reference (the two are near-identical in shape, so they validate each other).
@@ -111,13 +111,13 @@ than generating a whole game.
   defer, scope-based depth routing (`/quick-design` vs `/design-system` — their answer to
   "proactive but not exhausting"), and incremental section writing. Take the interaction
   *shape*, not the multi-agent gate/director machinery (out of scope for our one-shot,
-  non-programmer, single-mod tool). See IMPLEMENTATION_PLAN.md §5 M7.
+  non-programmer, single-mod tool). See `IMPLEMENTATION_PLAN.md` M7.
 
 ### 4. cgxjdzz/AgentTheSpire — CLOSEST DIRECT COMPETITOR, also a borrow reference ⭐
 - STS2 text-to-mod generator (formerly "SpireForge"). Standalone local web app
   (Python FastAPI + React/TS + C#/Godot template), MIT, 51★, very new/thinly
   maintained (~4 commits ~2026-03-21). Full competitive analysis:
-  COMPETITIVE_LANDSCAPE.md §1 (it is our closest rival — same game, same stack,
+  `history/COMPETITIVE_LANDSCAPE.md` §1 (it is our closest rival — same game, same stack,
   shipped first).
 - **Why it's also a reference (MIT-licensed, so borrowable):**
   - **It has an art-generation pipeline and we don't yet** — the one concrete
@@ -265,7 +265,7 @@ These named mechanics reduce to reusable capability families: scoped state, stat
 machines, card zones, dynamic content, resources/payment, owned entities, run setup,
 hosted choices, semantic hooks, UI adapters, save/network contracts, and versioned patch
 bridges. The detailed source map and risk analysis live in
-`games/sts2/tests/downfall-character-capability-audit.md`.
+`history/downfall-character-capability-audit.md`.
 
 **The upstream lesson:** Downfall already separates a shared kernel from thin character
 modules. `DownfallHook` owns typed dispatch/aggregation; registries expose card execution,
@@ -290,11 +290,12 @@ author-side complexity into path discovery, generated project configuration, cur
 capability modules, packaging, patch diagnostics, and live self-tests. It must not require
 users to install an editor or decompile/extract the game.
 
-**Current scope decision:** programming expressiveness is the Character Systems priority.
-Use built-in/fallback visuals, generated nodes, or generic open-mod-owned scenes while the
-code contracts are proven; polished character art/animation is not a gate for this phase.
-MIT code may be adapted with notice, but Downfall art, ported content, and extracted game
-assets are not assumed reusable.
+**Current scope decision:** programming expressiveness was the M6 Character Systems
+priority, and those code contracts are now proven. The direct follow-up is an M6 art pass:
+ground the real asset/scene contracts and extend open-mod's source-independent pipeline for
+the new mechanics, enemies, events, characters, and character UI before M7. MIT code may be
+adapted with notice, but Downfall art, ported content, and extracted game assets are not
+assumed reusable.
 
 ## Conclusion: our baseline is a COMBINATION
 
@@ -487,7 +488,7 @@ Gathered to answer: *what does "designing like MegaCrit" actually mean*, so M7's
 interview can guide a mod author instead of just transcribing one sentence into one
 element. Nine principles distilled from developer interviews + deckbuilder design
 analysis. These are the raw material for the planned pack page
-`reference/design-principles.md` (see IMPLEMENTATION_PLAN.md §5, M7).
+`reference/design-principles.md` (see `IMPLEMENTATION_PLAN.md`, M7).
 
 1. **Risk vs reward is the spine.** Anthony Giovannetti (co-designer): *"The core design
    of Slay the Spire is risk versus reward."* Every card / relic / choice should be a
@@ -527,7 +528,7 @@ analysis. These are the raw material for the planned pack page
 (A triggers B — already shipped via the interaction harness, historical project
 `CanaryCombo`), L2 resource loop (enabler↔payoff,
 principle 4), L3 archetype identity (principles 3+6, needs M6's content types), L4 run
-rhythm & risk-reward advisor (principles 1+5+7+8, the highest rung). See IMPLEMENTATION_PLAN.md
+rhythm & risk-reward advisor (principles 1+5+7+8, the highest rung). See `IMPLEMENTATION_PLAN.md`
 §5 M7 for how each rung maps to interview/spec work.
 
 **Sources (2026-07-09):**

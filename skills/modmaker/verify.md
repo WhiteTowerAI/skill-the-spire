@@ -62,7 +62,9 @@ The `--tier2-pattern` selects the SPEC invariant from structured
 `"cadence cross-combat threshold.*observed=0/4"`,
 `"enemy attack.*observed=6"`, `"monster vocabulary complete.*observed=all"`,
 `"event gold.*observed=25"`, or
-`"character foundation complete.*observed=all"`. A maintainer capability-kernel canary
+`"character foundation complete.*observed=all"`,
+`"resource UI complete.*observed=all"`, or
+`"ordered buffer complete.*observed=all"`. A maintainer capability-kernel canary
 uses `"patch kernel complete.*observed=all"` only after its patch, typed state, hosted UI,
 and lifetime assertions. The verifier ignores all
 ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
@@ -95,6 +97,12 @@ requires the exact load marker and `selftest done`.
   one constructor-registered model, the real selection button, runtime identity/HP, three
   pool types and member models, exact starter deck/relic multisets, designed MaxEnergy,
   and one hosted public/BaseLib mechanic delta through `CombatPlayer`.
+- For a character resource, require gain, affordable and unaffordable checks, one exact
+  successful payoff, one rejected spend with no mutation/negative state, live counter
+  values, and a distinct zero state/counter in combat 2.
+- For an ordered semantic buffer/dynamic output, require exact source/compile-card result
+  piles, visible order, capacity and overflow behavior, one generated-history entry, exact
+  configured output/effect, and a distinct empty state/UI in combat 2.
 
 **Read the harness's terminal marker first — it tells you which failure you have:**
 

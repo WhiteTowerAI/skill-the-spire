@@ -419,8 +419,9 @@ Fresh input, deliberately different from the canary:
 The current source pipeline inferred Event, all acts, one `OpenTheCache` option, and
 placeholder art; wrote `SPEC.md` / `PLAN.md` / `MEMORY.md`; scaffolded a new
 `ForgottenCache` template project; authored nested `EventLoc` plus the MapNode harness;
-then built and verified it with **zero repair attempts**. Acceptance state/source remains
-in gitignored `.claude/acceptance-forgotten-cache/`.
+then built and verified it with **zero repair attempts**. The one-off gitignored work
+directory was retired after E12 retained the reproducible canary and this evidence was
+recorded.
 
 - Build: **0 warnings / 0 errors**; dll/json/pck/pdb installed.
 - Tier 1: PASS (`RUNNING MODDED`, exact load marker, zero mod-named errors).
@@ -538,8 +539,8 @@ Fresh input, with different names and numbers from the canary:
 
 The updated pipeline wrote the compact move/branch SPEC, scaffolded `EmberWarden`, authored
 the monster + encounter + `SearingFocus` Power and multi-turn harness, then built and
-verified it. State/source remains in gitignored
-`.claude/acceptance-ember-warden-work/`.
+verified it. The one-off gitignored work directory was retired after E16 retained the
+reproducible canary and this evidence was recorded.
 
 - First build: **0 warnings / 0 errors**; no repair attempts.
 - Tier 1: PASS; exact load marker and no fresh-run errors.
@@ -701,3 +702,212 @@ Six non-target mods were parked for isolation and all six were restored afterwar
 6c to **scenario-verified infrastructure**. Resource/payment, bounded zones/dynamic output,
 C/D patch risks, shared runtime extraction, and user-facing advanced Character support
 remain unpromoted.
+
+## M6 6d Resource/UI - CanaryResourceUi (2026-07-16)
+
+`CanaryResourceUi` was generated in gitignored
+`.claude/canary-resource-ui-work/` with `alchyrsts2contentmod`. It deliberately reuses
+only the 6c module's exact `NCombatUi.Activate(CombatState)` adapter; named gameplay stays
+in `ChargeResourceDomain`:
+
+- `ScopedState<PlayerCombatState, ChargeResourceState>` gives each combat/player a
+  nonnegative amount starting at zero;
+- `Gain`, `CanAfford`, and all-or-nothing `TrySpend` are public domain operations;
+- `GainCharge` adds 3; `SpendCharge` costs 2 and grants 4 Block only after payment;
+- one typed UI listener mounts a generic `Label` under `EnergyCounterContainer` and
+  refreshes it after every gain/spend;
+- no `CardModel.SpendResources`/`HasEnoughResourcesFor` patch, Publicizer, transpiler, or
+  `OpenMod.Runtime` is present.
+
+The first sandboxed batch build could not resolve `Godot.NET.Sdk` because NuGet access was
+blocked before source compilation. Re-running through the standard approved build path
+compiled the first source draft at 0/0:
+
+```text
+CanaryResourceUi.dll  57,856 bytes
+CanaryResourceUi.pck  63,212 bytes
+CanaryResourceUi.json 375 bytes
+0 warnings
+0 errors
+```
+
+Both 6d mods then passed Tier 1 from the same ordinary game launch: both exact load
+markers were present and neither had a fresh error block. Resource/UI's isolated Tier 2
+entered two real combats and recorded:
+
+```text
+CanaryResourceUi state proof: resource UI patch expected applied/targets/owned=true/1/1 observed=True/1/1
+CanaryResourceUi state proof: resource counter expected text/meta=Charge: 0/Charge/Combat observed=Charge: 0/Charge/Combat
+CanaryResourceUi state proof: resource gain/affordability expected amount/can2/can4=3/true/false observed=3/True/False
+CanaryResourceUi state proof: resource counter expected text/meta=Charge: 3/Charge/Combat observed=Charge: 3/Charge/Combat
+CanaryResourceUi state proof: resource spend expected paid/amount/blockDelta=true/1/4 observed=True/1/4
+CanaryResourceUi state proof: resource floor expected paid/amount/block/gain/spend/reject=false/1/unchanged/1/1/1 observed=False/1/True/1/1/1
+CanaryResourceUi state proof: resource counter expected text/meta=Charge: 1/Charge/Combat observed=Charge: 1/Charge/Combat
+CanaryResourceUi state proof: combat reset expected distinct=true amounts=1/0 observed distinct=True amounts=1/0
+CanaryResourceUi state proof: resource UI complete expected=all observed=all
+CanaryResourceUi selftest done
+```
+
+Strict verifier results:
+
+```text
+[PASS] Tier-1 verified: CanaryResourceUi loaded ok.
+[PASS] Tier-2 verified: CanaryResourceUi loaded AND asserted post-state matched.
+```
+
+This advances combat-lifetime explicit resource/payment/UI to **scenario-verified**.
+Alternative-energy cost substitution, run persistence/save, custom UI art, remote-player
+UI, and runtime extraction remain unsupported.
+
+## M6 6d Zone/Dynamic-Output - CanaryZoneDynamic (2026-07-16)
+
+`CanaryZoneDynamic` was generated in gitignored
+`.claude/canary-zone-dynamic-work/` with `alchyrsts2contentmod`:
+
+- `PatternPile : CustomPile` owns an auto-registered `[CustomEnum] PileType`, hidden/no-art;
+- played `PatternPart` instances carry mutable contributions and move through
+  `CardPileCmd.Add`, preserving normal pile hooks;
+- capacity is 3 and overflow is rejected before mutation, leaving the rejected card to
+  its normal Discard result;
+- `CompilePattern` snapshots pile order, moves sources to Exhaust through normal commands,
+  configures one mutable `CompiledPattern`, and calls `AddGeneratedCardToCombat`;
+- the order-sensitive formula is `sum(value * one-based position)`, so `2>3>5` yields 23;
+- proof-only `PatternZoneObserver` counts normal `AfterCardChangedPiles` transitions.
+
+Its first real source compile found one local missing `using` for the domain namespace
+(`CS0103 PatternZoneDomain`); the one-line import was added and only this failed build was
+re-run. Final artifacts were:
+
+```text
+CanaryZoneDynamic.dll  41,984 bytes
+CanaryZoneDynamic.pck  63,449 bytes
+CanaryZoneDynamic.json 377 bytes
+0 warnings
+0 errors
+```
+
+After the shared Tier 1 launch, isolated Tier 2 entered two real combats and recorded:
+
+```text
+CanaryZoneDynamic state proof: custom zone registration expected registered/count=true/0 observed=True/0
+CanaryZoneDynamic state proof: ordered zone expected accepted/order/entered/exited=true/2>3>5/3/0 observed=True/2>3>5/3/0
+CanaryZoneDynamic state proof: zone capacity expected overflow/pile/count/order=false/Discard/3/2>3>5 observed=False/Discard/3/2>3>5
+CanaryZoneDynamic state proof: dynamic output expected pile/sources/order/value/hooks/history=empty/Exhaust/2>3>5/23/3>3/1 observed=0/Exhaust,Exhaust,Exhaust/2>3>5/23/3>3/1
+CanaryZoneDynamic state proof: dynamic output effect expected blockDelta=23 observed=23
+CanaryZoneDynamic state proof: zone combat reset expected distinct/count=true/0 observed=True/0
+CanaryZoneDynamic state proof: zone dynamic output complete expected=all observed=all
+CanaryZoneDynamic selftest done
+```
+
+Strict verifier results:
+
+```text
+[PASS] Tier-1 verified: CanaryZoneDynamic loaded ok.
+[PASS] Tier-2 verified: CanaryZoneDynamic loaded AND asserted post-state matched.
+```
+
+The two Tier-2 runs were intentionally sequential because `--t2selftest` arms every loaded
+harness mod. Non-target canaries were parked for each run, then all pre-test mods plus both
+new 6d canaries were restored. This advances hidden combat-lifetime bounded zones and
+deterministic per-instance output to **scenario-verified**. Visible zone UI, persistence,
+custom draw lifecycle, dynamic model registration, and multiplayer sharing remain
+unsupported.
+
+Together the two lazy capability pages plus compact pipeline routing close 6d at its
+representative-cell boundary. At that checkpoint the remaining user-facing gate was 6e's
+fresh natural-language composition; the next section records its completion.
+
+## M6 6e Fresh Creative Acceptance - WayfinderAcceptance (2026-07-16)
+
+`WayfinderAcceptance` was generated in gitignored
+`.claude/acceptance-wayfinder-work/` with `alchyrsts2charmod`. The idea was deliberately
+chosen to avoid Downfall's role/mechanic shapes: direction cards draw a spatial path rather
+than merge effects, and there is no stance/ring, summon, spellbook, alternate Energy, or
+persistent economy. The bounded vertical slice contains:
+
+- `Wayfinder : PlaceholderCharacterModel`, HP 69, concrete character card/relic/potion
+  pools, starters `2 Northbound / 2 Eastbound / 2 Southbound / 2 Westbound / 2 Survey`,
+  and one `BrassCompass` Starter relic;
+- combat-owned nonnegative Ink with explicit gain/affordability/all-or-nothing payment and
+  a live generic `Ink: N` Label through only the exact 6c UI adapter;
+- hidden capacity-4 `MapPile : CustomPile`, normal `CardPileCmd` transitions, and
+  non-destructive overflow;
+- `Survey`, which snapshots ordered directions and configures one mutable `MappedRoute`;
+- geometry `Block = 5 + 3*right + left + (closed ? 6 : 0)` and Ink cost 4.
+
+The first sandboxed wrapper call stopped before source compilation because it could not
+restore `Godot.NET.Sdk`. The approved dependency-restore run reached the first source
+compile and passed without source repair:
+
+```text
+WayfinderAcceptance.dll  84,992 bytes
+WayfinderAcceptance.pck  100,215 bytes
+WayfinderAcceptance.json 391 bytes
+0 warnings
+0 errors
+```
+
+Tier 1 passed on a fresh ordinary launch with the exact load marker and no fresh error
+block. For Tier 2, all nine other installed harness/content mods were parked, leaving only
+WayfinderAcceptance active. The self-test selected the real custom character icon and
+recorded these key proofs:
+
+```text
+WayfinderAcceptance state proof: constructor auto-registration expected=1 observed=1
+WayfinderAcceptance state proof: run start expected character=Wayfinder hp=69/69 observed=Wayfinder hp=69/69
+WayfinderAcceptance state proof: starters expected deck/N/E/S/W/Survey/relic=10/2/2/2/2/2/1 observed=10/2/2/2/2/2/1
+WayfinderAcceptance state proof: Brass Compass expected max/current=3/4 observed=3/4
+WayfinderAcceptance state proof: ordered Map expected accepted/order/Ink=true/North>East>South>West/4 observed=True/North>East>South>West/4
+WayfinderAcceptance state proof: Map overflow expected accepted/pile/order/Ink=false/Discard/canonical/4 observed=False/Discard/North>East>South>West/4
+WayfinderAcceptance state proof: Survey transition expected Map/sources/output/history=empty/Exhaust/Hand/1 observed=0/Exhaust,Exhaust,Exhaust,Exhaust/Hand/1
+WayfinderAcceptance state proof: route geometry expected endpoint/right/left/back/closed/Block=0,0/3/0/0/true/20 observed=0,0/3/0/0/True/20
+WayfinderAcceptance state proof: route payment expected affordable/paid/Ink/blockDelta=true/true/0/20 observed=True/True/0/20
+WayfinderAcceptance state proof: rejected route expected paid/Ink/Block=false/0/unchanged observed=False/0/True
+WayfinderAcceptance state proof: combat reset expected state/Ink/Map distinct and zero=true/true/true/0/0 observed=True/True/True/0/0
+WayfinderAcceptance state proof: wayfinder foundation complete expected=all observed=all
+WayfinderAcceptance state proof: wayfinder geometry complete expected=all observed=all
+WayfinderAcceptance state proof: wayfinder acceptance complete expected=all observed=all
+WayfinderAcceptance selftest done
+```
+
+Patch diagnostics resolved the exact STS2 0.107.1 MVID target once, observed one owned and
+three compatible foreign postfixes, and reported no failure. Three separate strict verifier
+runs accepted the Foundation, Geometry, and Acceptance structured proofs; each also required
+the current launch's load and terminal markers and found no fresh error block. All nine
+parked mods were restored and the temporary parking directory was removed.
+
+The acceptance contains no `PatchAll`, Publicizer, transpiler, manual `AddCharacter`, or
+`OpenMod.Runtime`. It advances the bounded Resource/UI and Zone/Dynamic composition path,
+the Character Capability Program, and M6 Core to **pipeline-supported**. Custom character
+art/animation, production-size pools, visible zone UI, persistence, alternative-energy
+hooks, and multiplayer resource UI remain outside the claim.
+
+## Wayfinder player-lifecycle correction (2026-07-16)
+
+The first real player run found a presentation failure that the model-only zone assertions
+missed: direction cards retained in the no-UI `CustomPile` floated and overlapped, and
+their views remained after `Survey`. The old implementation combined
+`GetTargetPosition => Vector2.Zero`, `CardShouldBeVisible(false)`, and
+`skipVisuals: true`; correct model pile state did not imply a correct card-view lifecycle.
+
+The supported design was simplified instead of adding another canary project:
+
+- remove `MapPile` and retain no played card instances;
+- record only ordered `RouteDirection` values in combat-scoped `RouteState`;
+- let direction cards and `Survey` use STS2's native Play -> Discard lifecycle;
+- render `Ink: N | Route: ...` through the existing verified fallback Label;
+- reuse the Wayfinder Character Suite with normal card visuals enabled.
+
+The corrected build passed 0 warnings / 0 errors, strict Tier 1, and all three existing
+Tier-2 terminal proofs. New state observations were:
+
+```text
+native discard route ... observed=True/Discard,Discard,Discard,Discard/North>East>South>West/4
+Wayfinder counter ... observed=Ink: 4 | Route: N>E>S>W/Ink/Combat
+Survey lifecycle ... observed=0/Discard,Discard,Discard,Discard/Discard/Hand/1
+Wayfinder counter ... observed=Ink: 4 | Route: -/Ink/Combat
+combat reset ... observed=True/True/True/0/0
+```
+
+This supersedes the earlier retained-card zone support claim. The semantic ordered buffer
+is pipeline-supported; retained-card `CustomPile` gameplay is not.
