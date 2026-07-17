@@ -38,6 +38,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import random
 import sys
 import urllib.request
 import urllib.error
@@ -62,6 +63,23 @@ except ImportError:
 # notification all render correctly). potion 256×256 also live-verified (2026-07-08,
 # canary-potion "Fizz") — BaseLib DOES accept a loose PNG via CustomPackedImagePath (no
 # .tres atlas needed); potion has ONE image texture (no big/), drawn tilted ~45° right.
+# event is the first M6 Static Art Expansion candidate: the current .pck and multiple normal-event
+# samples agree on a 3440x1613 initial portrait. Its single loose PNG reaches
+# EventModel.CreateInitialPortrait through CustomEventModel.CustomInitialPortraitPath. The
+# contract was live-verified in the real MapNode host on 2026-07-17: the displayed
+# TextureRect used the mod path at 3440x1613 and the headed screenshot excluded the
+# vanilla fallback.
+# enchantment is one 64x64 loose icon. The 2026-07-17 CanaryEnchantment headed run
+# observed the same custom resource in both the real NCard enchantment tab and the card's
+# hover tooltip, then preserved the attached enchantment's Block behavior.
+# orb art has two independent contracts. This spec owns only the loose 100x100 icon used
+# by the hover tooltip and NOrb flash particles. CanaryOrb live-verified both consumers on
+# 2026-07-17. The persistent combat body is a separate Spine scene and is never emitted by
+# this raster normalizer.
+# monster is a static-body profile, not an animation contract. BaseLib renders the loose
+# texture one-to-one through NCreatureVisualsFactory, so the normalized pixel dimensions
+# also define the combat/bestiary footprint. CanaryMonsterVocabulary live-verified the
+# 360x360 texture in both consumers with generated bounds/intent nodes on 2026-07-17.
 # fit: "cover"   = fill the whole rect, crop overflow (a full-bleed illustration the
 #                  game frames itself, e.g. a card portrait). Opaque.
 #      "contain" = fit inside with transparent padding (a cut-out object on a keyed
@@ -100,6 +118,9 @@ except ImportError:
 # to both. `card` writes only big/ (the outer bar path is dead code under BaseLib).
 # potion has only ONE image getter (CustomPackedImagePath); the detail/inspect view scales
 # that same texture up — there is no separate big/ file — so potion's extra_sub_paths is [].
+# enchantment likewise has ONE icon getter. NCard contexts and the hover tooltip reuse the
+# same EnchantmentModel.Icon texture, so there is no big/ variant.
+# orb likewise has ONE icon getter, but its combat body remains a separate scene contract.
 # (A relic also has PackedIconOutlinePath → relics/<slug>_outline.png, the hover outline; we
 # don't emit it yet — missing falls back to the template's relic_outline.png, which the user
 # confirmed looks fine. power has no outline. beta icon paths default null — ignore.)
@@ -108,7 +129,12 @@ SPECS: dict[str, dict] = {
     "relic":      {"sub_path": "relics",               "extra_sub_paths": ["relics/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "power":      {"sub_path": "powers",               "extra_sub_paths": ["powers/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "potion":     {"sub_path": "potions",              "extra_sub_paths": [],             "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
+    "event":      {"sub_path": "events",               "extra_sub_paths": [],             "size": (3440, 1613), "verified": True,  "fit": "cover",   "chroma": False},
+    "enchantment": {"sub_path": "enchantments",         "extra_sub_paths": [],             "size": (64, 64),    "verified": True,  "fit": "contain", "chroma": True},
+    "orb":        {"sub_path": "orbs",                 "extra_sub_paths": [],             "size": (100, 100),  "verified": True,  "fit": "contain", "chroma": True},
+    "monster":    {"sub_path": "monsters",             "extra_sub_paths": [],             "size": (360, 360),  "verified": True,  "fit": "contain", "chroma": True},
 }
+FRAGMENT_CLEANUP_SPECS = {"enchantment", "orb", "monster"}
 
 
 def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
@@ -123,8 +149,7 @@ def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]
 
 
 # --- normalize primitives (magenta chroma-key adapted from agent-sprite-forge,
-#     reference/baselines; re-implemented here, single-pass since the prompt
-#     guarantees a flat #FF00FF background) ------------------------------------
+#     reference/baselines; M6 cut-outs also remove disconnected model debris) ---
 
 def chroma_key_magenta(img: "Image.Image", threshold: int = 100) -> "Image.Image":
     """Make near-#FF00FF pixels transparent. Single pass over RGBA data."""
@@ -138,6 +163,83 @@ def chroma_key_magenta(img: "Image.Image", threshold: int = 100) -> "Image.Image
         else:
             out.append((r, g, b, a))
     img.putdata(out)
+    return img
+
+
+def remove_cutout_fragments(img: "Image.Image", alpha_threshold: int = 8) -> "Image.Image":
+    """Keep the central subject cluster while dropping disconnected background debris."""
+    img = img.convert("RGBA")
+    width, height = img.size
+    alpha = img.getchannel("A")
+    alpha_pixels = alpha.load()
+    visited = bytearray(width * height)
+    components: list[list[int]] = []
+
+    for y in range(height):
+        for x in range(width):
+            start = y * width + x
+            if visited[start]:
+                continue
+            visited[start] = 1
+            if alpha_pixels[x, y] <= alpha_threshold:
+                continue
+
+            component = [start]
+            stack = [start]
+            while stack:
+                index = stack.pop()
+                px, py = index % width, index // width
+                for ny in range(max(0, py - 1), min(height, py + 2)):
+                    for nx in range(max(0, px - 1), min(width, px + 2)):
+                        neighbor = ny * width + nx
+                        if visited[neighbor]:
+                            continue
+                        visited[neighbor] = 1
+                        if alpha_pixels[nx, ny] > alpha_threshold:
+                            component.append(neighbor)
+                            stack.append(neighbor)
+            components.append(component)
+
+    if len(components) <= 1:
+        return img
+
+    canvas_center_x = (width - 1) / 2
+    canvas_center_y = (height - 1) / 2
+    primary = min(
+        components,
+        key=lambda component: min(
+            ((index % width) - canvas_center_x) ** 2
+            + ((index // width) - canvas_center_y) ** 2
+            for index in component
+        ),
+    )
+    primary_x = [index % width for index in primary]
+    primary_y = [index // width for index in primary]
+    left, right = min(primary_x), max(primary_x)
+    top, bottom = min(primary_y), max(primary_y)
+    padding = max(2, round(max(right - left + 1, bottom - top + 1) * 0.25))
+    min_area = max(3, round(len(primary) * 0.01))
+
+    keep = bytearray(width * height)
+    for component in components:
+        component_x = [index % width for index in component]
+        component_y = [index // width for index in component]
+        center_x = (min(component_x) + max(component_x)) / 2
+        center_y = (min(component_y) + max(component_y)) / 2
+        near_subject = (
+            left - padding <= center_x <= right + padding
+            and top - padding <= center_y <= bottom + padding
+        )
+        companion = min_area <= len(component) <= len(primary) and near_subject
+        if component is primary or companion:
+            for index in component:
+                keep[index] = 1
+
+    pixels = list(img.getdata())
+    img.putdata([
+        pixel if keep[index] else (0, 0, 0, 0)
+        for index, pixel in enumerate(pixels)
+    ])
     return img
 
 
@@ -172,9 +274,14 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
     log(f"source size {src.size}, target {size}, chroma={do_chroma}, fit={fit}")
     img = src
     if do_chroma:
-        img = chroma_key_magenta(img)
+        threshold = 180 if spec in FRAGMENT_CLEANUP_SPECS else 100
+        img = chroma_key_magenta(img, threshold=threshold)
         log("applied magenta chroma-key")
     img = fit_into_rect(img, size, fit)
+    if do_chroma and spec in FRAGMENT_CLEANUP_SPECS:
+        img = remove_cutout_fragments(img)
+        img = fit_into_rect(img, size, fit)
+        log("removed disconnected cut-out background fragments")
     info = SPECS[spec]
     # write the primary path + any extra paths the game reads for this spec (e.g. a relic's
     # big/ detail-popup icon). The first is returned as the canonical dest.
@@ -435,15 +542,14 @@ def make_logger(out_dir: Path):
 def resolve_references(ref_arg: str, max_refs: int, log,
                        spec: str | None = None) -> list[Path] | None:
     """Turn --reference (a dir of style samples, or a comma-separated file list) into a
-    capped list of image Paths for the few-shot edit call. Returns None if nothing
+    randomly capped list of image Paths for the few-shot edit call. Returns None if nothing
     usable is found (caller falls back to plain text-to-image, never blocks).
 
-    Spec-aware subdir selection: a card portrait, a relic icon, and a power icon look
-    nothing alike, so the shipped art-samples/ dir is split into card/ relic/ power/
-    subdirs. When a --reference token is a directory that CONTAINS a subdir named after
-    the current --spec, we descend into that subdir — so the caller passes the samples
-    ROOT and gets the right kind automatically. A flat dir (no such subdir) keeps the old
-    behavior (use its images directly), so old callers and custom dirs still work."""
+    Spec-aware subdir selection: different families look nothing alike, so the shipped
+    art-samples/ dir is split into per-spec subdirs. When a --reference
+    token is a directory that CONTAINS a subdir named after the current --spec, we descend
+    into it. A root with no matching subdir contributes only its own direct image files,
+    never another family's subdir. A custom flat dir keeps the old behavior."""
     IMG_EXT = (".png", ".jpg", ".jpeg", ".webp")
     def images_in(d: Path) -> list[Path]:
         return [f for f in sorted(d.iterdir()) if f.suffix.lower() in IMG_EXT]
@@ -470,9 +576,7 @@ def resolve_references(ref_arg: str, max_refs: int, log,
         log("no usable reference images — falling back to text-to-image")
         return None
     if max_refs and len(paths) > max_refs:
-        # even stride so a directory of many samples still spans styles, not just the first N
-        step = len(paths) / max_refs
-        paths = [paths[int(i * step)] for i in range(max_refs)]
+        paths = random.SystemRandom().sample(paths, max_refs)
     log(f"using {len(paths)} reference image(s): {[p.name for p in paths]}")
     return paths
 
@@ -533,9 +637,10 @@ def cmd_list_specs(_args: argparse.Namespace) -> int:
     for name, info in SPECS.items():
         size = f'{info["size"][0]}x{info["size"][1]}' if info["size"] else "(unverified)"
         chroma = "on" if info["chroma"] else "off"
-        star = "" if info["verified"] else "  *unverified size"
+        star = "" if info["verified"] else "  *not live-verified"
         print(f'{name:<11} {info["sub_path"]:<30} {size:<12} {info["fit"]:<8} {chroma}{star}')
-    print("\n* size not source-measured — pass --size WxH and confirm in-game.")
+    if any(not info["verified"] for info in SPECS.values()):
+        print("\n* contract is source-grounded but still requires headed in-game proof.")
     return 0
 
 
@@ -563,7 +668,8 @@ def build_parser() -> argparse.ArgumentParser:
                    "backend's /images/edits endpoint so output matches the game style. "
                    "Requires a backend that accepts reference images (e.g. gpt-image "
                    "edits or Gemini/nano-banana). Omit → plain text-to-image.")
-    g.add_argument("--max-refs", type=int, default=3, help="cap reference images (default 3)")
+    g.add_argument("--max-refs", type=int, default=3,
+                   help="randomly sample at most this many reference images (default 3)")
     g.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
     g.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")
     g.set_defaults(func=cmd_generate)

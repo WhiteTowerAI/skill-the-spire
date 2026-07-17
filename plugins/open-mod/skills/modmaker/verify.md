@@ -104,6 +104,24 @@ requires the exact load marker and `selftest done`.
   piles, visible order, capacity and overflow behavior, one generated-history entry, exact
   configured output/effect, and a distinct empty state/UI in combat 2.
 
+### Custom-art headed acceptance
+
+Tier 2 proves behavior, not custom art. When `SPEC.md` selected `generate`, keep the art
+claim separate until the real headed game visibly excludes the fallback in every independent
+consumer named by `reference/art-contract.md`. Record a screenshot or an equivalent node
+assertion plus visual inspection. In particular:
+
+- relic: bar icon and clicked detail popup;
+- power: status icon and big apply/expire notification;
+- enchantment: card tab and hover tooltip;
+- orb icon: smart tooltip and trigger flash (the Frost combat body remains fallback);
+- monster: static body in combat with unobscured intent/floor alignment, then the same
+  custom body in bestiary with title/move list and no crop;
+- event: the normal initial portrait behind the real option UI.
+
+If a secondary view cannot be reached, report behavior Tier 2 separately and label the art
+unverified; do not infer it from a resource path, `.pck` build, or primary view.
+
 **Read the harness's terminal marker first — it tells you which failure you have:**
 
 - `selftest done` **and** the matching state proof present → **tier-2 PASS**. The harness

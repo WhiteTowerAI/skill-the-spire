@@ -14,6 +14,7 @@ can offer BYO HTTP, local import, or placeholder art without making a second cha
 from __future__ import annotations
 
 import argparse
+import random
 import shutil
 import subprocess
 import sys
@@ -22,7 +23,7 @@ from pathlib import Path
 
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
-ICON_SPECS = {"relic", "power", "potion"}
+CHROMA_SPECS = {"relic", "power", "potion", "enchantment", "orb", "monster"}
 
 
 class AcquisitionError(Exception):
@@ -94,6 +95,36 @@ def image_files(directory: Path) -> list[Path]:
     )
 
 
+def resolve_reference_inputs(items: list[str], spec: str) -> list[Path]:
+    """Resolve explicit files or a spec-aware reference pool, then randomly cap at three."""
+    explicit_files = [Path(item).resolve() for item in items if Path(item).is_file()]
+    if len(explicit_files) > 3:
+        raise AcquisitionError("Use at most three explicit STS2 style reference images.", 2)
+
+    candidates: list[Path] = []
+    for item in items:
+        path = Path(item).resolve()
+        if not path.exists():
+            raise AcquisitionError(f"Reference image not found: {path}", 2)
+        if path.is_file():
+            candidates.append(path)
+            continue
+
+        spec_dir = path / spec
+        reference_dir = spec_dir if spec_dir.is_dir() else path
+        candidates.extend(
+            child for child in sorted(reference_dir.iterdir())
+            if child.is_file() and child.suffix.lower() in IMAGE_SUFFIXES
+        )
+
+    candidates = list(dict.fromkeys(candidates))
+    if items and not candidates:
+        raise AcquisitionError(f"Reference directory contains no images for spec {spec!r}.", 2)
+    if len(candidates) > 3:
+        candidates = random.SystemRandom().sample(candidates, 3)
+    return candidates
+
+
 def single_line_prompt(prompt: str) -> str:
     """Keep the complete prompt while making it safe for Windows CLI shims."""
     return " ".join(prompt.split())
@@ -114,7 +145,7 @@ def import_source(args: argparse.Namespace, source: Path) -> Path:
         "--out",
         str(Path(args.out)),
     ]
-    if args.spec in ICON_SPECS:
+    if args.spec in CHROMA_SPECS:
         command.append("--chroma")
     result = subprocess.run(
         command,
@@ -159,12 +190,9 @@ def cmd_create(args: argparse.Namespace) -> int:
             2,
         )
 
-    references = [Path(item).resolve() for item in args.reference]
-    missing = [str(path) for path in references if not path.is_file()]
-    if missing:
-        raise AcquisitionError(f"Reference image not found: {missing[0]}", 2)
-    if len(references) > 3:
-        raise AcquisitionError("Use at most three STS2 style reference images.", 2)
+    references = resolve_reference_inputs(args.reference, args.spec)
+    if references:
+        print(f"[acquire_sprite] selected references: {[path.name for path in references]}")
 
     prefix = command_prefix(args.vofy_command)
     preflight(prefix, args.model, args.preflight_timeout)
@@ -232,11 +260,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     create = sub.add_parser("create", help="Create one approved image and import it into an STS2 mod.")
     add_common(create)
-    create.add_argument("--spec", required=True, choices=("card", "relic", "power", "potion"))
+    create.add_argument(
+        "--spec",
+        required=True,
+        choices=("card", "relic", "power", "potion", "event", "enchantment", "orb", "monster"),
+    )
     create.add_argument("--slug", required=True)
     create.add_argument("--prompt", required=True)
     create.add_argument("--out", required=True, help="the mod's <ModName>/images directory")
-    create.add_argument("--reference", action="append", default=[], help="supported STS2 style image; repeat up to three times")
+    create.add_argument(
+        "--reference",
+        action="append",
+        default=[],
+        help="style image or art-samples root; directories auto-select the spec and randomly cap at three",
+    )
     create.add_argument("--aspect-ratio", help="only after confirming support with `vofy models <model>`")
     create.add_argument("--resolution", help="only after confirming support with `vofy models <model>`")
     create.add_argument("--generation-timeout", type=float, default=600.0, help="synchronous task timeout in seconds (default 600)")

@@ -169,8 +169,8 @@ The skill is responsible for the entire pipeline (per §6):
 Art remains a required product capability. It was deliberately non-gating during the M6
 gameplay/programming phase, so M6 canaries used built-in/fallback visuals, generated nodes,
 or generic open-mod-owned scenes while behavior contracts were proven. Those contracts are
-now live-green; the direct follow-up is to research and extend the art pipeline across the
-M6 mechanic, enemy, event, character, and character-UI surfaces before starting M7.
+now live-green. The remaining presentation pass is ordered: finish Event static art first,
+then Character static assets, then richer character-mechanic UI before starting M7.
 
 Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
 the art decision explicit and the result source-independent:
@@ -211,16 +211,40 @@ done: subject-centered, no text/border, full-bleed); **regenerate/tweak** is an 
 sub-step after AUTHOR and before BUILD — re-run `gen_sprite.py` with an adjusted prompt,
 then rebuild the `.pck`. The exact sprite **path + size contract** (a normal card's one
 portrait is `1000×760`; 606×852 full art is Ancient-only, out of scope;
-relic/power/potion icons are 256×256 loose PNGs, all four types live-verified) is recorded in
+relic/power/potion icons are 256×256 loose PNGs; an enchantment icon is one 64×64 PNG; an
+orb icon is one 100×100 PNG; a static monster body is one 360×360 PNG shared by combat and
+bestiary; and a normal event initial portrait is one opaque 3440×1613 PNG; all eight static specs are
+live-verified) is recorded in
 `art-contract.md`. `gen_sprite.py` also has an `import` mode for a
 user-supplied local image. Placeholder stays the default (a missing sprite falls back to
 the template art), so art never blocks the pipeline. The Vofy route produces a
 local intermediate and then reuses `import`; it does not replace `art-contract.md` or add
 Vofy credentials to `art-backend.json`. A callable host-native route likewise produces a
 local intermediate and reuses `import`; if the host exposes no local image tool or file,
-the skill keeps the placeholder rather than silently choosing a paid backend. See
+the skill keeps the placeholder rather than silently choosing a paid backend. Card,
+relic, power, potion, enchantment, orb, and monster each own a real-game reference pool;
+reference-capable routes select the matching family and randomly sample three distinct
+images. Event remains text-template-only until its dedicated samples are grounded. An
+ignored local baseline inventories 56 deduplicated wiki.gg Event PNGs as candidates; they
+must still be reviewed, attributed, and promoted into the committed Event sample pool. See
 `BASELINE_RESEARCH.md` and
 `history/IMPLEMENTATION_PLAN_THROUGH_M6.md` M5.5 follow-up for its exact boundary and proof gate.
+
+Custom keywords are a separate text-presentation contract, not an image spec. A
+headed `CombatPlayer` run on 2026-07-17 verified the auto-positioned keyword on the real
+hand card, the localized hover tooltip with an intentional null icon, and the original
+keyword-driven Block behavior.
+
+Orb icon support is likewise deliberately narrow. A headed `CombatPlayer` run on
+2026-07-17 verified one checked 100x100 loose PNG in the smart tooltip and trigger flash,
+while the persistent body stayed on the explicit Frost Spine scene/channel-SFX fallback.
+The bitmap pipeline does not generate a Spine scene.
+
+Static monster art is deliberately separate from animation. A headed `CombatEnemy` run on
+2026-07-17 verified one checked 360×360 loose PNG through BaseLib's non-Spine factory in
+both combat and a real default bestiary layout, including generated bounds/intent placement
+and the explicit missing-file scene fallback. Spine, move animation, phobia variants, and
+animated bestiary previews are postponed to the later animation expansion.
 
 ## 8. Out of scope (for now)
 

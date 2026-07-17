@@ -77,6 +77,22 @@ if (active)
 If multiple hosts share non-trivial behavior, extract a small mechanic helper; do not copy
 an entire Power into every card.
 
+## Presentation contract
+
+A keyword owns no bitmap, atlas, or scene. Do not add a keyword spec to `gen_sprite.py`.
+Its two player-visible consumers are both text:
+
+1. With `AutoKeywordPosition.Before` or `After`, `CardModel.GetDescriptionForPile` inserts
+   the localized keyword text into the real card description.
+2. `CardModel.HoverTips` routes the keyword through BaseLib's rich-keyword patch, which
+   creates a localized `HoverTip` with an intentional `Texture2D` null icon.
+
+Prove both consumers on the same real hand-card holder. Check `%DescriptionLabel` for the
+base effect and keyword title, focus the holder, then identify the keyword tooltip by its
+`%Title` rather than assuming it is the only tooltip. Assert `%Description` matches the
+localized rule and `%Icon.Texture` is null. Capture the card and tooltip together. Other
+tooltips, such as Block, may appear beside it and are not keyword-owned assets.
+
 ## Type + Scenario proof
 
 A keyword is not complete when only localization loads.
@@ -85,10 +101,16 @@ A keyword is not complete when only localization loads.
    the generated keyword value.
 2. **Scenario proof (`CombatPlayer`):** drive the host by its real type (normally Card),
    assert keyword membership, then assert the rule's concrete state delta and terminal
-   marker. Tooltip rendering is a separate visual observation, not a substitute for behavior.
+   marker.
+3. **Presentation proof (headed `CombatPlayer`):** assert the auto-positioned card text,
+   localized hover title/description, explicit null icon, and a screenshot containing the
+   real card plus tooltip. Presentation complements behavior; it never replaces the state
+   proof.
 
-Known-good live canary (2026-07-10): `Resonant Guard` has custom `Resonant`, verifies
-`present=True`, then gains Block (`0 -> 7`) when played.
+Known-good live canary (2026-07-17): `Resonant Guard` rendered `Resonant` after `Gain 7
+Block.` on the real hand card, displayed the localized no-icon tooltip, captured both in
+one headed screenshot, verified `present=True`, then gained Block (`0 -> 7`). Strict Tier 2
+passed with no fresh error block.
 
 ## Checklist
 
@@ -97,4 +119,6 @@ Known-good live canary (2026-07-10): `Resonant Guard` has custom `Resonant`, ver
 - [ ] `card_keywords.json` has prefixed `.title` + `.description`
 - [ ] host Card attaches the exact generated field
 - [ ] named behavior is implemented separately from display
-- [ ] Type Canary build/load and Scenario Canary membership + state delta both pass
+- [ ] headed card text and localized tooltip render; tooltip icon is explicitly null
+- [ ] no keyword bitmap/spec is generated
+- [ ] Type Canary build/load and Scenario Canary presentation + membership + state delta pass

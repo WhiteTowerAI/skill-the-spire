@@ -28,11 +28,24 @@ using BaseLib.Abstracts;
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Helpers;
 
 namespace <ModName>.<ModName>Code.Orbs;
 
 public sealed class <Name>Orb : CustomOrbModel
 {
+    public const string FallbackIconPath = "res://images/orbs/frost_orb.png";
+    public static string ModIconPath =>
+        $"{MainFile.ResPath}/images/orbs/<slug>.png";
+    public static string FallbackSpritePath =>
+        SceneHelper.GetScenePath("orbs/orb_visuals/frost_orb");
+
+    public override string? CustomIconPath =>
+        ResourceLoader.Exists(ModIconPath) ? ModIconPath : FallbackIconPath;
+    public override string? CustomSpritePath => FallbackSpritePath;
+    public override string? CustomChannelSfx =>
+        "event:/sfx/characters/defect/defect_frost_channel";
+
     public override decimal PassiveVal => ModifyOrbValue(<N>m);
     public override decimal EvokeVal => ModifyOrbValue(<M>m);
     public override Color DarkenedColor => new("<hex>");
@@ -78,7 +91,7 @@ their internal upper-bound clamps do not reject negatives, so the operation can 
 the opposite direction. `EvokeNext`/`EvokeLast` are safe on an empty queue (they check
 `Orbs.Count > 0`).
 
-## Art contract (provisional until live-rendered)
+## Presentation contract
 
 BaseLib exposes three custom seams:
 
@@ -86,10 +99,25 @@ BaseLib exposes three custom seams:
 - `CustomSpritePath` for a PackedScene used by the combat orb visual;
 - `CreateCustomSprite()` to construct a `Node2D` directly (takes precedence when non-null).
 
-Extracted vanilla orb icons are 100×100, but a loose custom PNG alone is not the whole
-combat visual: the sprite is a scene/Node2D. Keep placeholder/default visuals during the
-mechanic proof and do not advertise custom orb art until both icon and combat sprite render
-live.
+These are two independent contracts. The **icon pipeline is supported**: one transparent
+`images/orbs/<slug>.png`, normalized to 100x100 with `contain` fit and chroma-key on. The
+existence-checked `CustomIconPath` above selects it when packed and otherwise returns the
+verified Frost icon. The same `OrbModel.Icon` feeds both:
+
+- the real orb smart hover tooltip (`HoverTip(orb, ...)`);
+- `NOrb/%Flash`, whose `CpuParticles2D.Texture` emits when `orb.Trigger()` fires.
+
+The **persistent combat body is still a separate Spine scene**, not a bitmap. `NOrb`
+unconditionally gets `SpineSkeleton` from `OrbModel.CreateSprite()` and starts
+`idle_loop`; a plain `Sprite2D` or the generated 100x100 icon is not a safe substitute.
+Keep the explicit Frost `CustomSpritePath` fallback. Custom skeleton/animation lifecycle
+belongs to the later animation expansion and does not block M6 or M7. Never describe an
+icon-only run as full custom orb art.
+
+The explicit `CustomChannelSfx` is also required for a clean placeholder path.
+`OrbCmd.Channel` always calls `PlayChannelSfx`; leaving the custom value null/empty makes
+the game probe `res://debug_audio/<custom-id>_channel.mp3`, producing a fresh global error
+even though channeling succeeds.
 
 ## Type + Scenario proof
 
@@ -98,9 +126,17 @@ live.
    `player.PlayerCombatState.OrbQueue` (including capacity).
 3. **Passive:** call/advance the real passive lifecycle and assert its state delta.
 4. **Evoke:** evoke the queued orb and independently assert its state delta/removal.
+5. **Icon presentation (headed `CombatPlayer`):** identify the real `NOrb`, assert its
+   `%Flash.Texture` and hover-tooltip `%Icon.Texture` both use the custom 100x100 path,
+   trigger the flash, and capture the orb plus tooltip together. Separately assert the
+   rendered sprite is the declared fallback scene and contains `SpineSkeleton`.
 
-Known-good live canary (2026-07-10): `Take Shelter` channels custom `ShelterOrb`; queue
-presence was true with capacity 1, passive Block `0 -> 2`, evoke Block `2 -> 7`.
+Known-good live canary (2026-07-17): `Take Shelter` channels custom `ShelterOrb`; the same
+custom 100x100 icon rendered in the real smart tooltip and trigger flash, while the combat
+body remained the explicit Frost Spine fallback. The headed screenshot captured both,
+queue capacity was 1, passive Block was `0 -> 2`, evoke Block was `2 -> 7`, and strict
+Tier 2 passed with no fresh error block. An earlier run exposed the required channel-SFX
+fallback through a missing `debug_audio/..._channel.mp3` error; the clean rerun fixed it.
 
 ## Checklist
 
@@ -108,6 +144,9 @@ presence was true with capacity 1, passive Block `0 -> 2`, evoke Block `2 -> 7`.
 - [ ] PassiveVal/EvokeVal/DarkenedColor and OrbLoc all supplied
 - [ ] behavior reads mutable `Owner`, not canonical state
 - [ ] host uses `OrbCmd.Channel<T>`
+- [ ] checked custom icon path with an explicit vanilla icon fallback
+- [ ] explicit Spine scene and channel-SFX fallbacks; no missing custom-id probes
 - [ ] any variable `AddSlots`/`RemoveSlots` amount is clamped nonnegative before the Cmd
 - [ ] channel + passive + evoke are separately observed
-- [ ] custom icon/sprite claims remain provisional until rendered live
+- [ ] custom icon appears in tooltip + trigger flash at 100x100
+- [ ] combat scene remains labeled fallback; custom Spine body is later animation work

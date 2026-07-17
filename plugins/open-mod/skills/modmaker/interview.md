@@ -89,9 +89,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    implies a custom visual. This is a **single mod-level decision**: placeholder or
    generate for the mod, asked **once** no matter how many cards/sprites it has. Do NOT
    ask per sprite. If they want custom art:
-   - **All four element types — card portraits, relic icons, power icons, and potion
-     icons** can be generated (all live-verified; each is a loose PNG the game loads
-     directly, no `.tres` authoring).
+   - **Eight static specs — card portraits, relic icons, power icons, potion icons,
+     enchantment icons, orb icons, static monster bodies, and a normal event's initial portrait** can be generated
+     (all live-verified as loose PNGs; orb support is icon-only, and event support does not
+     include phobia, later-page, VFX, or custom-layout assets).
    - Prefer a **host-native image generator** when the current runtime actually exposes
      one. In Codex this is the built-in `image_gen` tool governed by the installed
      `imagegen` skill and it needs no separate `OPENAI_API_KEY`. Do not infer availability
@@ -103,13 +104,17 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      `acquire_sprite.py preflight`; never install it, run `vofy login`, or expose account
      output. If no custom route is ready, record `art: placeholder` and move on.
    - Capture the intended **subject/style** in plain words (e.g. "a burning arrow, comic
-     style") once, for the mod. If the mod has several cards and the user wants distinct
-     art per card, take one overall style note here; `author.md` fills the per-card
-     subject from each card's SPEC when it generates — but you still only *ask* once.
-   - **Events, enemy encounters, and characters do not have custom-art generation yet.**
-     Characters use the template/built-in placeholder shell. If the user requests a custom
-     event/monster/character visual, state the current placeholder limitation and
-     continue only if they accept it.
+     style") once, for the mod. If the mod has several generated assets, take one overall
+     style note here; `author.md` fills each asset's subject from its element SPEC when it
+     generates — but you still only *ask* once.
+   - **Static monster bodies are supported; monster animation and character visuals are not.**
+     Monsters use one static combat/bestiary body or the built-in scene fallback. Preserve
+     requests for Spine bodies, attack/hurt/cast/death animation, phobia variants, or
+     bestiary move previews as later-animation gaps. Characters use the template/built-in
+     placeholder shell; state that limitation if custom character visuals are requested and
+     continue only if the user accepts it. For an event, offer only the normal initial
+     portrait; preserve any request for phobia, later-page, VFX, custom-layout, or Ancient
+     art as a gap.
 
 ## Defaults (apply silently unless the user specified otherwise)
 
@@ -141,10 +146,11 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
   run; "on turn N of each combat" uses that combat's turn number. Turn-local/once-per-
   combat wording resets at the boundary it names. Ask one carry-over question only when
   the phrase could reasonably mean either behavior.
-- **Art**: **placeholder** (the template's fallback icon). This is the default — do NOT
+- **Art**: **placeholder** (the template/game fallback). This is the default — do NOT
   proactively ask about art. Only switch to `generate` if the user's sentence asks for a
-  custom look (e.g. "a card showing a red phoenix", "make it look like…"). All four types —
-  card / relic / power / potion sprites — can be generated (see step 4). It is a
+  custom look (e.g. "a card showing a red phoenix", "make it look like…"). Eight static
+  specs — card / relic / power / potion / enchantment / orb icon / monster body /
+  normal-event initial portrait — can be generated (see step 4). It is a
   **single mod-level choice**, asked at most once regardless of sprite count. Custom
   generation prefers a callable host-native image tool, then can use an already-
   authenticated Vofy CLI or a BYO HTTP backend; an existing local image uses the same
@@ -208,7 +214,9 @@ moves:
 condition: none | <plain condition> -> <move id>; otherwise -> <move id>
 loop: <move id> -> <move id> -> ...
 group: single | <describe the group>
-art: placeholder (custom monster scene/animation not yet supported)
+art: placeholder | generate: <one full creature in a neutral combat-ready pose>
+art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
+art boundary: one static 360x360 body shared by combat+bestiary; no animation/phobia variant
 ```
 
 For an **event / World Node**:
@@ -220,7 +228,9 @@ opening: <short situation/initial page>
 options:
   - <option title> -> <precise consequence with numbers>
 acts: all | <specified acts>
-art: placeholder (custom event portrait/background not yet supported)
+art: placeholder | generate: <opening scene; focal subject left, dark UI space right>
+art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
+art boundary: normal initial portrait only; no phobia/later-page/VFX/custom-layout assets
 ```
 
 For a **character**:

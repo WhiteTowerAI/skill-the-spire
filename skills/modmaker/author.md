@@ -19,7 +19,8 @@ localization JSON, and inject the self-test marker. Everything structural
   `CustomEnchantmentModel`, and attach it through `CardCmd.Enchant<T>`; never substitute
   the unrelated run-level `CustomModifierModel`. If SPEC declares a custom orb, read
   `recipes/orb.md`, author `CustomOrbModel`, and make the real host channel it via
-  `OrbCmd.Channel<T>`; preserve separate passive and evoke observations. For an **enemy
+  `OrbCmd.Channel<T>`; preserve separate passive and evoke observations, and keep the
+  recipe's checked icon plus explicit Spine-scene/channel-SFX fallbacks. For an **enemy
   encounter** (`element: enemy encounter`), read `recipes/monster.md` and author BOTH the
   `CustomMonsterModel` and the `CustomEncounterModel(RoomType.Monster)` it spawns as one
   slice. Implement SPEC's compact move contract with `MoveState`, explicit `FollowUpState`,
@@ -27,7 +28,8 @@ localization JSON, and inject the self-test marker. Everything structural
   patterns for buff/Power, debuff, block/heal, multi-hit, and composite actions. Monster
   attacks use `.FromMonster(this).Execute(null)` (**never** `.Targeting()`), and the
   diagnostic trigger marker goes on the enemy's move; do not model the pair as two
-  `elements` + an interaction. For an **event / World Node** (`element: event`),
+  `elements` + an interaction. Keep the recipe's checked static-body factory plus explicit
+  fallback scene; animation is outside this pass. For an **event / World Node** (`element: event`),
   read `recipes/event.md`: author one `CustomEventModel`, nested `EventLoc` pages/options,
   a public-Cmd consequence, and a `SetEventFinished` result page; no `[Pool]` or manual
   `AddEvent`. For a **Character Foundation** (`element: character`), read
@@ -92,6 +94,16 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
   targeted card. `await` every Cmd. If a custom power is needed, author it first
   (`recipes/power.md`) — no `[Pool]` on the power.
 
+**Custom orb** - add `<ModName>Code/Orbs/<OrbName>.cs` from `recipes/orb.md`:
+
+- Extend `CustomOrbModel`; no `[Pool]`. Implement channel, passive, and evoke as separate
+  behavior contracts through a real Card/relic/power host.
+- Keep the existence-checked `CustomIconPath`: generated art is one 100x100 icon shared by
+  the smart tooltip and trigger flash. Its missing-file branch returns the Frost icon.
+- Keep the explicit Frost `CustomSpritePath` and `CustomChannelSfx`. The icon is not the
+  persistent combat body; a custom Spine scene is later animation work, and null fallbacks
+  emit missing custom-id scene/audio errors.
+
 **Enemy encounter** — author two classes as one slice (see `recipes/monster.md`), no
 `[Pool]` on either:
 
@@ -105,9 +117,10 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
   `MultiAttackIntent(N, R)` + `.WithHitCount(R)`; a composite move lists and awaits every
   effect in order. Every attack ends with `.FromMonster(this).Execute(null)` — **never
   `.Targeting()`** (that is the card pattern and it hangs the enemy turn).
-- Until custom Spine art is supported, explicitly override `CustomVisualPath` with
-  `SceneHelper.GetScenePath("creature_visuals/fallback")`. Leaving it null first requests a
-  nonexistent mod scene and emits a fresh resource error, even though the game later recovers.
+- Declare `ModVisualPath` at `images/monsters/<slug>.png`; existence-check it in
+  `CreateCustomVisuals()` and call `NodeFactory<NCreatureVisuals>.CreateFromResource` only
+  when present. Keep `CustomVisualPath` on `creature_visuals/fallback` for the missing-file
+  branch, and set `HasDeathSfx => false`. Never return the PNG from `CustomVisualPath`.
 - If the monster needs a custom buff/debuff, author its power from `recipes/power.md` and
   include all three `powers.json` keys. A buff is not proven by attachment alone: SPEC and
   Tier 2 must observe its downstream effect on a later move.
@@ -128,8 +141,10 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
   Cmds against `Owner`, logs the observed state delta, then calls
   `SetEventFinished(PageDescription("<RESULT_KEY>"))` (or deliberately `SetEventState` for
   another choice page).
-- Override `CustomInitialPortraitPath` with the recipe's verified vanilla placeholder;
-  custom event portrait/background generation is not yet supported.
+- Override `CustomInitialPortraitPath` with the recipe's existence check: use the one
+  generated `images/events/<slug>.png` when present, otherwise the verified vanilla
+  `this_or_that.png` fallback. This supports only the normal initial portrait, not phobia,
+  per-page, VFX, custom-layout, or Ancient background assets.
 
 **Character Foundation** — use the classes scaffolded by `alchyrsts2charmod` and
 `recipes/character.md`:
@@ -304,7 +319,8 @@ you derived in SPEC. Not nested JSON — a flat `Dictionary<string,string>`.
 
 Read `SPEC.md`'s `**art**` line — it holds the **one mod-level** art choice made at
 interview time (placeholder or generate). Do NOT re-ask here. Two branches follow. If
-generate, apply it to every card portrait in the mod using each card's own SPEC subject.
+generate, apply it to every supported asset in the mod using each element's own SPEC
+subject.
 
 ### Placeholder (the default — do nothing)
 
@@ -314,17 +330,24 @@ default, and the mod loads fine on it: a **relic** falls back to `relic.png` if
 `images/potions/<slug>.png` is absent (the base's `PotionImagePath` `Exists()` check); a
 **card** renders on the default portrait when `images/card_portraits/big/<slug>.png` is
 absent. This is the fast path — nothing to build, no backend, no dev box. For an **event**,
-the class must instead set `CustomInitialPortraitPath` to the verified vanilla placeholder
-from `recipes/event.md`; the default event layout always preloads a portrait. Skip to §5.
+the class uses the recipe's `ResourceLoader.Exists` branch and returns the verified vanilla
+portrait when `images/events/<slug>.png` is absent; the default event layout always preloads
+a portrait. For an **enchantment**, its `CustomIconPath` existence check returns `null`
+when `images/enchantments/<slug>.png` is absent, preserving the game's missing-icon
+fallback.
+For an **orb**, placeholder mode keeps the recipe's Frost icon, Spine scene, and channel
+SFX fallbacks; it must not rely on the custom-id path convention. Skip to §5.
+For an **enemy encounter**, the recipe checks `images/monsters/<slug>.png` and returns
+`null` from `CreateCustomVisuals()` when absent, so the explicit built-in fallback scene
+loads without a missing-resource error. Skip to §5.
 For a **character**, keep the character template's icon PNGs and built-in scene fallbacks;
 custom character sprite/animation generation is not supported in Foundation.
 
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
 Supported sprite specs (see `sts2-api` → `reference/art-contract.md` for the full
-contract):
-Events, enemy encounters, and characters are **not** supported sprite specs; keep their
-provisional/template placeholders and do not call `gen_sprite.py` for them.
+contract). Characters are **not yet** supported sprite specs; keep their template
+placeholders and do not call `gen_sprite.py` for them.
 - **`--spec card`** — the one portrait a normal card loads, **1000×760 landscape**, full-
   bleed (chroma OFF), written to `card_portraits/big/<slug>.png`. **Live-verified in-game.**
   The 606×852 "full art" size is **Ancient-rarity only and out of scope — we never make it**.
@@ -348,10 +371,31 @@ provisional/template placeholders and do not call `gen_sprite.py` for them.
   `art-contract.md`). **Prereq:** the potion subclass must extend the template base
   (`<ModName>Potion`), which the template does NOT scaffold — add it + a `PotionImagePath`
   helper per `recipes/potion.md`; a direct `CustomPotionModel` subclass shows the default icon.
+- **`--spec enchantment`** — one **64×64** cut-out icon, `fit: contain`, magenta
+  chroma-key ON, written to `enchantments/<slug>.png`. **Live-verified in the real hand-card
+  tab and its hover tooltip.** Both consumers reuse the same `EnchantmentModel.Icon`; there
+  is no `big/` variant. The subclass must use the recipe's existence-checked
+  `CustomIconPath` so placeholder mode retains `MissingIconPath`.
+- **`--spec orb`** - one **100x100** cut-out icon, `fit: contain`, magenta chroma-key ON,
+  written to `orbs/<slug>.png`. **Live-verified in the real smart tooltip and trigger
+  flash.** This does not generate the persistent combat Spine scene; retain the recipe's
+  Frost scene and channel-SFX fallbacks.
+- **`--spec monster`** - one **360x360** transparent static body, `fit: contain`, magenta
+  chroma-key ON, written to `monsters/<slug>.png`. **Live-verified in both the real combat
+  `NCreature` and default bestiary layout.** The concrete monster must use the recipe's
+  existence-checked `CreateCustomVisuals()` factory and keep `CustomVisualPath` on the
+  built-in scene fallback. This does not add Spine, move animation, or a phobia variant.
+- **`--spec event`** — the normal/default-layout event's one opaque **3440×1613** initial
+  portrait, `fit: cover`, chroma-key OFF, written to `events/<slug>.png`. **Live-verified
+  in the real MapNode host.** The event class must retain the recipe's existence-checked
+  vanilla fallback. This does not generate a phobia variant, later-page portrait, VFX,
+  custom layout, or Ancient background scene.
 
-1. **Build the prompt (three segments — see `art-contract.md`).** ① the fixed STS2 style
+1. **Build the prompt (three segments — see `art-contract.md`).** For card and the M5.5
+   `relic`/`power`/`potion` icon specs,
+   use ① the fixed STS2 style
    descriptor (verbatim, incl. the "reference images = STYLE ONLY, don't reuse their
-   objects" guard), ② the visual subject you *translate* from the card's **name**
+   objects" guard), ② the visual subject you *translate* from the element's **name**
    (flavor secondary) — NOT its damage/keyword numbers; mechanics have no picture, and
    painting them ("two blood drops" for "lose 2 HP") looks literal and awkward. Write ②
    as **two-to-four sentences describing one dramatic, centered, frozen-mid-motion
@@ -359,9 +403,27 @@ provisional/template placeholders and do not call `gen_sprite.py` for them.
    streaking diagonally mid-flight, trailing embers, orange-to-yellow rim light on its
    edge*), not a keyword list. ③ the fixed structural/negative constraints. You write
    it — don't make the user do it. Only ② differs per element; ①③ are shared guardrails.
-   **For a `relic`/`power` icon** the same name→subject translation applies, but since it's
-   a cut-out (chroma ON), ③ must also ask for a **solid flat `#FF00FF` magenta background,
-   no gradient** so the tool can key it out cleanly (the contract's cut-out rule).
+   **For a `relic`/`power`/`potion` icon** the same name→subject translation applies,
+   but since it's a cut-out (chroma ON), ③ must also ask for a **solid flat `#FF00FF`
+   magenta background, no gradient** so the tool can key it out cleanly.
+   **For `enchantment`**, use the contract's dedicated micro-emblem template: bold slightly
+   irregular silhouette, broad matte fills, one dominant hue with only one or two value
+   steps, and almost no fine detail so it survives at 64x64. Do not turn it into a relic,
+   glossy app icon, badge, or miniature scene.
+   **For `orb`**, use the dedicated elemental-core template: a large irregular near-circle,
+   chunky layered material forms, three-to-five broad values, dark internal occlusion,
+   selective highlights, and contained glow. Do not request a generic vector glyph, glass
+   marble, UI frame, detached particles, or persistent combat body.
+   **For `monster`**, use the dedicated softly hand-painted render template, not Card's hard
+   cel shading/radial burst. Translate the concept into one complete creature with broad
+   values, gently modeled volume, controlled brush texture, selective edges, a restrained
+   base palette, and focused accents. Keep a neutral front/3/4 pose, both feet on one
+   baseline, the full silhouette inside the frame, and no ground/shadow/attack effect; the
+   same still is shown for every move and in bestiary.
+   **For `event`**, use the separate event template: derive one concrete opening situation,
+   place the focal subject in the left third, and reserve darker low-detail center-right and
+   lower-right space for the game's title, description, and options. Do not reuse the card
+   prompt's centered-subject constraint or paint option reward numbers into the scene.
 1a. **Respect the selected route's consent boundary.** For `runtime-imagegen`, the user's
    mod-level `generate` choice authorizes the initial one-image-per-asset native-tool run;
    it needs no separate API key, but follow any approval or usage warning presented by the
@@ -384,12 +446,13 @@ provisional/template placeholders and do not call `gen_sprite.py` for them.
 
    Issue one native image call per distinct asset with the assembled prompt. For a full-
    bleed card, request the landscape composition without a keyed background. For relic,
-   power, and potion icons, keep the prompt's perfectly flat `#FF00FF` background; do not
+   power, potion, enchantment, orb icons, and monster bodies, keep the prompt's perfectly flat `#FF00FF`
+   background; do not
    remove it with a runtime-specific helper because `gen_sprite.py import --chroma` owns
-   that deterministic step. When the native tool supports reference images, first make up
-   to three type-matched files from
-   `./reference/art-samples/<spec>/` visible using the runtime's normal
-   local-image viewing mechanism and label them STYLE REFERENCE ONLY. If reference inputs
+   that deterministic step. When the native tool supports reference images, randomly choose
+   up to three type-matched files from
+   `./reference/art-samples/<spec>/`, make them visible using the
+   runtime's normal local-image viewing mechanism, and label them STYLE REFERENCE ONLY. If reference inputs
    are unavailable, use the fixed text style descriptor alone.
 
    Inspect the generated image, then use the actual local file path reported by the host
@@ -398,10 +461,10 @@ provisional/template placeholders and do not call `gen_sprite.py` for them.
    image file. Pass that file through the existing normalizer:
    ```
    python scripts/gen_sprite.py import \
-     --spec <card|relic|power|potion> --slug <slug> --input "<native-output.png>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event> --slug <slug> --input "<native-output.png>" \
      --out "<work dir>/<ModName>/images" [--chroma]
    ```
-   Add `--chroma` only for `relic`, `power`, and `potion`. The normalized project asset,
+   Add `--chroma` only for `relic`, `power`, `potion`, `enchantment`, `orb`, and `monster`. The normalized project asset,
    not the host's raw output, is what the mod references and packages.
 
    **Vofy managed credits:** the user installs/authenticates Vofy themselves. Never run
@@ -412,41 +475,44 @@ provisional/template placeholders and do not call `gen_sprite.py` for them.
    vofy models <chosen-model>
    ```
    Read the live model capabilities before choosing `--image`, `--aspect-ratio`, or
-   `--resolution`; do not hardcode a model or current price. Pick at most three files from
-   `./reference/art-samples/<spec>/` only when that model supports
-   image-to-image references. After step 1a's confirmation, submit exactly one synchronous
-   paid task:
+   `--resolution`; do not hardcode a model or current price. Use the bundled pool only when
+   that model supports image-to-image references. Pass the root directory once;
+   `acquire_sprite.py` selects the matching spec and randomly samples three files. After
+   step 1a's confirmation, submit exactly one synchronous paid task:
    ```
    python scripts/acquire_sprite.py create \
-     --spec <card|relic|power|potion> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --model <chosen-model> \
      [--aspect-ratio <confirmed-ratio>] [--resolution <confirmed-resolution>] \
-     [--reference <sample.png> ...] --yes
+     [--reference ./reference/art-samples] --yes
    ```
    `--yes` means the user approved this exact prompt/model/one-image spend. The tool reruns
    preflight, downloads into a unique empty directory, requires exactly one image, then
-   calls `gen_sprite.py import` (including chroma for icon specs). It never parses Vofy
+   calls `gen_sprite.py import` (including chroma for cut-out specs). It never parses Vofy
    stdout for a filename. On timeout or ambiguous output, inspect `vofy tasks --plain`;
    never auto-resubmit because the first task may already have spent credits.
 
    **BYO HTTP backend:** run the existing generator:
    ```
    python scripts/gen_sprite.py generate \
-     --spec <card|relic|power|potion> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --config <path to art-backend.json> \
      --reference ./reference/art-samples
    ```
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
-   point it at the **root** `art-samples` dir (as shown): the tool auto-picks the `card/`,
-   `relic/`, `power/`, or `potion/` subdir matching `--spec`, so a relic never gets card refs. Backends
+   point it at the **root** `art-samples` dir (as shown). The tool auto-picks the matching
+   `card`/`relic`/`power`/`potion`/`enchantment`/`orb`/`monster` subdir and randomly samples
+   three distinct files; families are never mixed. Event has no bundled pool yet, so omit
+   `--reference` for event unless the user supplies type-matched references. Backends
    that accept reference images (gpt-image edits or Gemini/nano-banana) imitate the
    game style far better, and plain text-to-image backends just ignore it.
    The tool POSTs to the user's backend, then chroma-keys (per spec — OFF for a full-bleed
-   `card`, ON for a cut-out `relic`/`power`/`potion` icon) / fits / resizes to the exact
-   contract size and writes every required path: one card/potion file or two relic/power
-   files. A relic's optional `_outline.png` is not generated (see above).
+   `card`/`event`, ON for a cut-out `relic`/`power`/`potion`/`enchantment`/`orb`/`monster`) / fits /
+   resizes to the exact contract size and writes every required path: one
+   card/potion/enchantment/orb/monster/event file or two relic/power files. A relic's optional
+   `_outline.png` is not generated (see above).
    **Local image:** use `gen_sprite.py import --input <file> ...`; for a magenta-backed
-   relic/power/potion source add `--chroma`.
+   relic/power/potion/enchantment/orb/monster source add `--chroma`.
 4. **Unavailable/failure → bounded fallback, don't block.** A missing native image tool,
    native output with no local file, host-tool failure, missing Vofy/auth/credits,
    unsupported model flags, task failure/timeout, zero or multiple downloads, missing BYO

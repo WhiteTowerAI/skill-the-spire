@@ -32,13 +32,14 @@ through the **`CombatEnemy`** scenario (enter the encounter, confirm the monster
 turns needed to traverse its declared cycle/branches, and assert move history plus exact
 player/monster HP, Block, Power, debuff, and multi-hit state). Grounded move vocabulary
 includes self buff/custom Power with a downstream consequence, player debuff, block/heal,
-multi-attack, composite actions, deterministic cycles, and conditional branches. Custom
-monster *art* (a Spine scene) is not yet wired,
-so enemy visuals fall back to the game default.
+multi-attack, composite actions, deterministic cycles, and conditional branches. One
+checked 360×360 static monster body is supported in combat and bestiary, with an explicit
+built-in fallback when absent. Spine and move animation are later extensions.
 An **event** is a normal map event with nested pages/options, authored as one
 `CustomEventModel` and proven through the **`MapNode`** scenario (enter the event room,
-read its localized option, click it, and observe the run-state consequence). Custom event
-art is not yet wired, so events use a verified vanilla portrait as a provisional placeholder.
+read its localized option, click it, and observe the run-state consequence). Its normal
+initial portrait can be generated as one 3440×1613 loose PNG with an existence-checked
+vanilla fallback. Phobia/later-page portraits, VFX, and custom/Ancient scenes remain out.
 A **Character Foundation** uses the Alchyr character template plus BaseLib's
 `PlaceholderCharacterModel`. It appears in the real character-select UI, starts a run
 with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
@@ -66,9 +67,11 @@ reads the current combat's `TurnNumber`. Tier-2 proves `N-1`, threshold, reset/c
 and the save round trip where applicable. Turn-local event counts, once-per-combat flags,
 previous-turn memory, and limited run uses have grounded patterns but remain provisional
 until their scenario canaries. A counter is state on its real element, not a new element
-type. **Custom art (M5.5)** is now wired and
-live-verified for **all four element types — card portraits, relic icons, power icons, and
-potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
+  type. **Custom static art** is now wired and live-verified for **eight specs — card
+  portraits, relic icons, power icons, potion icons, enchantment icons, orb icons, static monster bodies, and normal-event
+  initial portraits** (each a loose PNG the game loads directly; no `.tres` atlas authoring)
+  — orb support is icon-only and retains its explicit vanilla Spine scene/channel-SFX
+  fallbacks. The
 user picks placeholder (default, fast) or custom art. When the current agent runtime
 actually exposes a host-native raster image tool, prefer that route (Codex calls it
 `image_gen` and its built-in mode needs no `OPENAI_API_KEY`); otherwise use an already-

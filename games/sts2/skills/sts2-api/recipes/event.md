@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BaseLib.Abstracts;
+using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Events;
 
@@ -35,10 +36,12 @@ namespace <ModName>.<ModName>Code.Events;
 
 public sealed class <Name> : CustomEventModel
 {
-    // Provisional placeholder: reuse a real vanilla portrait that is already in the game.
-    // Custom event portrait generation is not pipeline-supported yet.
+    public const string FallbackPortraitPath = "res://images/events/this_or_that.png";
+    public static string ModPortraitPath =>
+        $"{MainFile.ResPath}/images/events/<slug>.png";
+
     public override string? CustomInitialPortraitPath =>
-        "res://images/events/this_or_that.png";
+        ResourceLoader.Exists(ModPortraitPath) ? ModPortraitPath : FallbackPortraitPath;
 
     public override List<(string, string)> Localization => new EventLoc(
         "<Title>",
@@ -116,16 +119,29 @@ run. Read it inside option methods / lifecycle hooks, never from the canonical i
 Use game `Cmd`s for consequences (`PlayerCmd.GainGold`, card/relic/potion Cmds, creature
 Cmds); do not mutate run fields directly.
 
-## Art contract (provisional)
+## Art contract: normal initial portrait
 
-The default event layout always preloads an initial portrait. A custom id's inferred path
-does not exist, so the minimal working recipe overrides `CustomInitialPortraitPath` with a
-known vanilla portrait path. `res://images/events/this_or_that.png` is live-proven as the
-placeholder used by `CanaryEvent`.
+Normal/default-layout event initial portraits are pipeline-supported as one loose opaque
+PNG: `res://<ModName>/images/events/<slug>.png`, exactly **3440×1613**. Generate/import it
+with `gen_sprite.py --spec event`; the `.pck` rebuild is required. The concrete event must
+use the existence-checked override in the skeleton above because BaseLib returns
+`CustomInitialPortraitPath` directly and does not provide the template fallback helper used
+by cards/relics.
 
-Custom event portrait path, dimensions, generation, background scene, and VFX are not yet
-pipeline-supported. Do not route event art through `gen_sprite.py` or advertise it as
-verified. The event mechanic and nested UI are supported on the placeholder portrait.
+Placeholder remains the silent default: when the mod PNG is absent, return the live-proven
+`res://images/events/this_or_that.png`. Do not return the missing custom path or rely on the
+game to recover from its load error.
+
+The 2026-07-17 `CanaryEvent` proof entered the real event room, observed the displayed
+`%Portrait.Texture.ResourcePath` at the mod path and logical size 3440×1613, captured a
+headed screenshot with the option UI over the custom portrait, clicked the option, and
+passed strict Tier 2 with no fresh error block.
+
+This does not cover a separate `_phobia_mode.png`, later-page portrait changes,
+portrait-anchored VFX, custom layouts, or Ancient background scenes. Keep those as explicit
+gaps rather than emitting guessed assets. Prompt composition and acquisition rules are in
+`reference/art-contract.md`; event art keeps its focal subject left and UI space on the
+right, unlike a centered card portrait.
 
 ## Type + Scenario proof (`MapNode`)
 
@@ -180,5 +196,8 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
 - [ ] `Option(Method)` slug exactly matches its `EventOptionLoc` key
 - [ ] option effect uses public Cmds and logs after the state change
 - [ ] event ends with `SetEventFinished` or deliberately advances with `SetEventState`
-- [ ] `CustomInitialPortraitPath` uses the verified placeholder until custom art is grounded
+- [ ] `CustomInitialPortraitPath` checks the mod portrait and falls back to
+      `res://images/events/this_or_that.png`
+- [ ] generated event portrait, when selected, is one opaque `3440×1613`
+      `images/events/<slug>.png`; no guessed phobia/VFX/layout files
 - [ ] `MapNode` proof enters room, reads nested loc, clicks UI, and asserts a run-state delta

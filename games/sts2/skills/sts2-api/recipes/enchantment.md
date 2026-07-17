@@ -22,6 +22,7 @@ enchantment unless the existing enchantment is the same stackable type. Override
 ```csharp
 using System.Threading.Tasks;
 using BaseLib.Abstracts;
+using Godot;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 
@@ -29,6 +30,12 @@ namespace <ModName>.<ModName>Code.Enchantments;
 
 public sealed class <Name> : CustomEnchantmentModel
 {
+    public static string ModIconPath =>
+        $"{MainFile.ResPath}/images/enchantments/<slug>.png";
+
+    protected override string? CustomIconPath =>
+        ResourceLoader.Exists(ModIconPath) ? ModIconPath : null;
+
     public override bool HasExtraCardText => true; // only when extraCardText loc exists
     public override bool ShowAmount => true;       // if Amount should render
 
@@ -60,12 +67,17 @@ Use `localization/eng/enchantments.json`. `CardModifierLoc` establishes required
 
 ## Icon
 
-BaseLib patches custom enchantments to `CustomIconPath`. Override it for a mod-relative
-resource path; otherwise the model falls back to the game's missing-enchantment icon.
-BaseLib documents the default convention as
-`res://images/enchantments/modid-enchantment_name.png`, but open-mod should use the mod's
-own resource root consistently. Extracted vanilla icons are 64×64; do not advertise a
-custom art path as verified until a live render check is recorded.
+BaseLib patches custom enchantments to the protected `CustomIconPath`. The supported
+contract is one transparent **64×64** loose PNG at
+`res://<ModName>/images/enchantments/<slug>.png`; generate/import it with
+`gen_sprite.py --spec enchantment`, then rebuild the `.pck`. Use `/` in `res://` URIs,
+including on Windows.
+
+Keep the existence check in the skeleton. Returning `null` when the mod PNG is absent lets
+the original `EnchantmentModel.IconPath` resolution reach `MissingIconPath`; returning a
+missing custom path directly bypasses that fallback. The same `EnchantmentModel.Icon`
+texture feeds both the visible `NCard` enchantment tab/amount and the card's hover tooltip;
+there is no separate `big/` file.
 
 ## Type + Scenario proof
 
@@ -74,9 +86,15 @@ custom art path as verified until a live render check is recorded.
    `card.Enchantment is T` and the expected Amount.
 3. **Behavior (`CombatPlayer`):** drive the Card by its real card driver, then assert the
    enchantment hook's state delta and successful terminal marker.
+4. **Art (when generated):** in a real card holder, assert the custom path and 64×64 size
+   on `%Enchantment/Icon`, focus/hover that holder, and assert the same texture in its real
+   `NHoverTipSet`. Capture both together; a model getter or path log alone is insufficient.
 
 Known-good live canary (2026-07-10): `Guarded` attached to `Etched Strike` with Amount 5,
-then `OnPlay` logged `attached=True amount=5 block 0 -> 5`.
+then `OnPlay` logged `attached=True amount=5 block 0 -> 5`. The 2026-07-17 art expansion
+reused that canary and rendered one custom 64×64 icon in both the hand-card tab and hover
+tooltip, captured them together, preserved Block `0 -> 5`, and passed strict Tier 2 with
+no fresh error block.
 
 ## Checklist
 
@@ -85,4 +103,5 @@ then `OnPlay` logged `attached=True amount=5 block 0 -> 5`.
 - [ ] title/description and optional extraCardText loc are exact
 - [ ] `CardCmd.Enchant<T>` attaches the mutable instance
 - [ ] attachment **and** altered behavior are independently observed
-- [ ] icon claim stays provisional until rendered live
+- [ ] `CustomIconPath` uses the mod-root 64×64 PNG when it exists and returns `null` when absent
+- [ ] generated icon is visibly checked in both the card tab and hover tooltip

@@ -14,8 +14,9 @@ instructions.
 
 ## Current status
 
-**M6 gameplay/programming core is complete. Direct next: M6 Art Expansion research and
-implementation. M7 follows after that presentation pass.**
+**M6 gameplay/programming core is complete. Direct next: M6 Static Art Expansion research
+and implementation. M7 follows after that presentation pass. Animation is a later,
+non-blocking expansion.**
 
 Current pipeline-supported surfaces include:
 
@@ -26,17 +27,25 @@ Current pipeline-supported surfaces include:
 - combat resource with explicit all-or-nothing payment and generic live counter;
 - bounded ordered **semantic** card-play buffer with visible state and deterministic output;
 - stateful relic cadence for combat-local and run-persistent counters;
-- placeholder or generated art for card/relic/power/potion. Custom acquisition prefers a
+- placeholder or generated art for card/relic/power/potion, enchantment/orb icons, one
+  static monster combat+bestiary body, and the normal event initial portrait, plus
+  live-grounded text-only keyword card/tooltip
+  presentation. Custom acquisition prefers a
   callable host-native raster image tool (`runtime-imagegen`; Codex `image_gen`), then the
   existing Vofy, BYO HTTP, or local-image routes; every source converges on
-  `gen_sprite.py import`.
+  `gen_sprite.py import`. Reference-capable routes use separate real-game pools for
+  card/relic/power/potion/enchantment/orb/monster and randomly sample three type-matched
+  images; event awaits its own bundled pool and must not borrow another family's
+  references. An ignored local baseline currently inventories 56 deduplicated wiki.gg
+  event PNGs as curation candidates; they are not pipeline samples until reviewed and
+  attributed under `art-samples/event`.
 
 Host-native image generation is an optional runtime capability, not a bundled model. Do
 not infer it from the text-model name or the presence of an `imagegen` skill file: the
 tool itself must be callable and return a local image. If it is absent or fails, keep the
 placeholder unless the user explicitly selects another route. Never silently switch to a
-paid backend. This route applies only to the four already-grounded static specs and does
-not advance any M6 Art Expansion family.
+paid backend. This route applies only to the eight already-grounded static specs and does
+not advance any other M6 Static Art Expansion family.
 
 Important correction from the real Wayfinder player run:
 
@@ -51,16 +60,30 @@ Still unsupported: editing vanilla content, retained-card zone UI, alternative-e
 engine hooks, production character art/animation, run-persistent character resources,
 remote-player character UI, novel C/D patch targets, and one-click Workshop publishing.
 
-## Direct next: M6 Art Expansion
+## Direct next: M6 Static Art Expansion
 
-M5.5 custom art is live-supported only for card portraits and relic/power/potion icons.
-The content families added in M6 still rely on provisional or fallback presentation:
+M5.5 custom art covered card portraits and relic/power/potion icons. M6 Static Art Expansion now
+also live-supports one normal event initial portrait at 3440x1613 and one 64x64
+enchantment icon shared by the card tab and hover tooltip, plus one 100x100 orb icon shared
+by the smart tooltip and trigger flash, all with checked fallbacks. Orb icon support is
+deliberately separate from its persistent combat body: the latter still uses an explicit
+Frost Spine scene and matching channel-SFX fallback.
+Keyword presentation is also complete: the real hand card renders its auto-positioned
+keyword text, its hover tooltip renders the localized title/description with an intentional
+null icon, and the hosted proof preserves the keyword's behavior. A keyword owns no bitmap,
+so it has no `gen_sprite.py` spec. Static monster art is also complete for the normal
+profile: one checked 360x360 PNG feeds both combat and the default bestiary layout through
+BaseLib's non-Spine factory, with correct bounds/intent placement and an explicit built-in
+scene fallback. Finish the remaining M6 presentation work in this order:
 
-- keyword/enchantment/orb presentation;
-- monster scenes and Spine animation;
-- event portraits/scenes;
-- character select/combat art and animation;
-- character resource and ordered-buffer UI beyond the fallback Label.
+- event reference curation, prompt maturity, phobia/later-page portraits, and non-animated
+  custom/Ancient layouts;
+- character select/static combat art and other non-animated character assets;
+- richer character resource and ordered-buffer UI beyond the fallback Label.
+
+All animation-bearing work is postponed to a later expansion: orb Spine bodies; monster
+Spine and attack/hurt/cast/death/phobia/bestiary previews; character animation, trails, and
+animated transitions; event portrait VFX; and optional UI motion. None blocks M6 or M7.
 
 Do not reopen the completed M6 behavior canaries or jump to M7. First inventory the real
 asset/scene contracts for these families, then extend the source-independent acquisition ->
@@ -68,12 +91,13 @@ normalization -> placement -> `.pck` path only where grounded. Reuse the existin
 suites; do not require one project per asset type. Art support advances only after the real
 headed game renders the intended asset with visual evidence. A model path, successful build,
 or fallback visual is not enough. Record exact blockers and keep an honest fallback for any
-Spine/scene family that cannot yet be generated safely.
+static scene family that cannot yet be generated safely. Do not reopen animation work.
 
-The `runtime-imagegen` edge may be reused for card/relic/power/potion because their import
-and headed render contracts are already live-grounded. A universal first-party Codex
-native-tool claim still requires a dedicated acceptance run; the current third-party Codex
-route exposes the instructions but not a callable `image_gen` tool.
+The `runtime-imagegen` edge may be reused for card/relic/power/potion, enchantment/orb
+icons, a static monster body, and a normal event initial portrait because their import and headed render contracts are
+live-grounded. A universal first-party Codex native-tool claim still requires a dedicated
+acceptance run; the current third-party Codex route exposes the instructions but not a
+callable `image_gen` tool.
 
 ## Architecture
 

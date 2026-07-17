@@ -1,6 +1,6 @@
 # art-samples — attribution & purpose
 
-These 36 images are **© Mega Crit**, extracted from *Slay the Spire 2*. They are included
+These 64 images are **© Mega Crit**, extracted from *Slay the Spire 2*. They are included
 **solely as visual style references** for the art pipeline (`reference/art-contract.md` →
 `tools/gen_sprite.py --reference`): they are shown to a user-configured image model as
 few-shot examples so a generated custom sprite matches the game's art style. They are
@@ -11,9 +11,9 @@ Source: extracted/rendered via `ptrlrd/spire-codex` (GDRE unpack), which mirrors
 grounding method.
 
 The set is split into **one subdirectory per sprite spec** so the few-shot references
-match the target sprite's visual language (a card portrait, a relic icon, a power icon, and
-a potion icon look nothing alike). `gen_sprite.py --reference <this dir>` auto-picks the
-subdir matching `--spec`; the kinds are never mixed.
+match the target visual language. Both acquisition tools auto-pick the subdir matching
+`--spec` and randomly sample three distinct files when the pool is larger; kinds are never
+mixed.
 
 If Mega Crit requests removal, delete this directory — the pipeline falls back to the
 text-only style descriptor in `art-contract.md` (which needs no images).
@@ -40,3 +40,17 @@ corruption. (Filenames strip the game's `_power` suffix.)
 Chosen for bottle-shape / liquid-colour range (a corked flask on transparency):
 block_potion, fire_potion, blood_potion, energy_potion, fairy_in_a_bottle,
 explosive_ampoule.
+
+## `enchantment/` — 20 normal enchantment icons (native 64×64)
+All normal-size non-placeholder icons from the pinned game. The `missing_enchantment`
+placeholder and the three special 160×152 assets (`favored`, `slumbering_essence`,
+`souls_power`) are excluded because they do not match the supported normal profile.
+
+## `orb/` — 5 orb icons (native 100×100)
+Dark, Frost, Glass, Lightning, and Plasma. `empty_orb` is excluded because it is a slot
+placeholder rather than an authored orb icon.
+
+## `monster/` — 3 full-body monster renders (native 512×512)
+The fixed type-matched set requested for static monster generation: Axebot, Ceremonial
+Beast, and Crossbow Ruby Raider. These are rendered creature stills, not individual Spine
+source textures or animation frames.

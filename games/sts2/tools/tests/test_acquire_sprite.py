@@ -213,6 +213,31 @@ class AcquireSpriteTests(unittest.TestCase):
         for token in ("'--yes'", "'--n', '1'", "'--image'", "'--aspect-ratio', '4:3'"):
             self.assertIn(token, calls)
 
+    def test_reference_root_selects_matching_spec_and_randomly_caps_at_three(self) -> None:
+        root = self.root / "art-samples"
+        pool = root / "orb"
+        pool.mkdir(parents=True)
+        for index in range(5):
+            (pool / f"orb-{index}.png").write_bytes(base64.b64decode(PNG))
+        decoy = root / "card"
+        decoy.mkdir()
+        (decoy / "card.png").write_bytes(base64.b64decode(PNG))
+
+        result = self.run_tool(
+            *self.create_args("orb"), "--reference", str(root), "--yes"
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        calls = [ast.literal_eval(line) for line in self.record.read_text(
+            encoding="utf-8"
+        ).splitlines()]
+        create = next(args for args in calls if args[:2] == ["image", "create"])
+        references = [Path(create[index + 1]) for index, value in enumerate(create) if value == "--image"]
+        self.assertEqual(3, len(references))
+        self.assertEqual(3, len(set(references)))
+        self.assertTrue(all(path.parent == pool.resolve() for path in references))
+        self.assertIn("[acquire_sprite] selected references:", result.stdout)
+
     def test_cutout_uses_import_chroma_and_emits_both_relic_paths(self) -> None:
         result = self.run_tool(*self.create_args("relic"), "--yes")
         self.assertEqual(0, result.returncode, result.stderr)
@@ -223,6 +248,41 @@ class AcquireSpriteTests(unittest.TestCase):
             self.assertEqual("RGBA", image.mode)
         with Image.open(big) as image:
             self.assertEqual((256, 256), image.size)
+
+    def test_event_uses_opaque_import_and_emits_one_portrait(self) -> None:
+        result = self.run_tool(*self.create_args("event"), "--yes")
+        self.assertEqual(0, result.returncode, result.stderr)
+        destination = self.out / "events" / "paid-art.png"
+        with Image.open(destination) as image:
+            self.assertEqual((3440, 1613), image.size)
+        self.assertEqual([destination], list(self.out.rglob("*.png")))
+
+    def test_enchantment_emits_one_exact_icon(self) -> None:
+        result = self.run_tool(*self.create_args("enchantment"), "--yes")
+        self.assertEqual(0, result.returncode, result.stderr)
+        destination = self.out / "enchantments" / "paid-art.png"
+        with Image.open(destination) as image:
+            self.assertEqual((64, 64), image.size)
+            self.assertEqual("RGBA", image.mode)
+        self.assertEqual([destination], list(self.out.rglob("*.png")))
+
+    def test_orb_emits_one_exact_icon(self) -> None:
+        result = self.run_tool(*self.create_args("orb"), "--yes")
+        self.assertEqual(0, result.returncode, result.stderr)
+        destination = self.out / "orbs" / "paid-art.png"
+        with Image.open(destination) as image:
+            self.assertEqual((100, 100), image.size)
+            self.assertEqual("RGBA", image.mode)
+        self.assertEqual([destination], list(self.out.rglob("*.png")))
+
+    def test_monster_emits_one_exact_static_body(self) -> None:
+        result = self.run_tool(*self.create_args("monster"), "--yes")
+        self.assertEqual(0, result.returncode, result.stderr)
+        destination = self.out / "monsters" / "paid-art.png"
+        with Image.open(destination) as image:
+            self.assertEqual((360, 360), image.size)
+            self.assertEqual("RGBA", image.mode)
+        self.assertEqual([destination], list(self.out.rglob("*.png")))
 
 
 if __name__ == "__main__":

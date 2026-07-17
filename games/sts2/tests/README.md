@@ -17,9 +17,9 @@ Do not require one canary project per capability.
 
 | Host | Current canonical coverage |
 |---|---|
-| `CombatPlayer` | basic content matrix, interaction, keyword, enchantment, orb, cadence |
-| `CombatEnemy` | encounter and monster move vocabulary |
-| `MapNode` | event option UI and consequence |
+| `CombatPlayer` | basic content matrix, interaction, keyword card-text/no-icon tooltip, enchantment tab/tooltip icon, orb tooltip/flash icon plus fallback scene and behavior, cadence |
+| `CombatEnemy` | encounter/move vocabulary plus static monster body in combat and bestiary |
+| `MapNode` | event option UI/consequence plus normal initial-portrait art |
 | `RunStart` / Character | Wayfinder selection, pools/starters, resource/UI, semantic route buffer, dynamic output |
 
 Wayfinder supersedes the isolated Foundation/resource/kernel composition path for current
@@ -37,6 +37,8 @@ setup -> enter real host -> drive real source -> observe post-state -> terminal
 - A trigger/preview log or terminal marker alone never proves behavior.
 - Custom presentation requires a player-visible invariant; model state alone is
   insufficient.
+- Text-only presentation still requires headed evidence of every real consumer; it does
+  not justify inventing a bitmap contract.
 
 The direct M6 art follow-up reuses these same hosts. An art claim additionally requires the
 exact packed resource/scene to render in the headed game, with a screenshot or equivalent

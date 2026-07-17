@@ -15,16 +15,21 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > with live fallback UI, and ordered semantic card-play buffers that create deterministic dynamic
 > output. It proves both that the
 > mod **loads** and that its **effect actually fires** in-game, repairs common build
-> errors automatically, and supports placeholder or generated art for the four core
-> element types. When the agent runtime exposes a native image tool, open-mod can use it
+> errors automatically, and supports placeholder or generated art for card portraits,
+> relic/power/potion/enchantment/orb icons, a static monster combat+bestiary body, and a
+> normal event's initial portrait. Keyword
+> card text and hover-tooltip presentation are also live-verified; keywords intentionally
+> own no bitmap. When the
+> agent runtime exposes a native image tool, open-mod can use it
 > without a separate image API key; otherwise the existing BYO/managed/local routes remain
 > available and missing art stays on the placeholder. Stateful relic timing now covers
 > both counters that continue across combats/save-resume and turn numbers that reset each
 > combat. Enemy encounters support
 > rich deterministic/conditional move cycles with multi-turn behavior proof. A fresh
 > Wayfinder character composed the advanced resource/UI and spatial-route mechanics and
-> passed build plus two-combat live verification. The direct next step is extending the
-> art pipeline to the M6 content families that still use fallback presentation; M7's
+> passed build plus two-combat live verification. The direct next step is Event static
+> art, followed by Character static assets and then richer character-mechanic UI;
+> animation is a later expansion, and M7's
 > proactive beginner interview follows that pass. Vanilla editing and one-click Steam
 > Workshop publishing also remain out of scope.
 > See [Current limits](#current-limits).
@@ -159,6 +164,10 @@ open-mod is still young. Today it does the following well, and is honest about t
 - ✅ **Custom card mechanics** — keywords (shared, reusable card rules), card
   enchantments (a persistent modification attached to a card), and orbs (a channeled
   passive/evoke mechanic). Each is proven to actually change combat state, not just load.
+  Keyword text is also verified on the real hand card and hover tooltip; its tooltip has
+  no icon by design, so keyword support does not create an image asset.
+  Orb icon art is verified separately in its smart tooltip and trigger flash; the
+  persistent combat body still uses an explicit vanilla Spine scene/SFX fallback.
 - ✅ **Load verification** — it proves the mod loads in-game, not just "it compiled".
 - ✅ **Effect verification (automated)** — the mod carries an in-process self-test
   that drives itself into the required hosted scenario and confirms the effect fires, with no dev-console
@@ -166,27 +175,33 @@ open-mod is still young. Today it does the following well, and is honest about t
   self-test can't reach its scenario.
 - ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
   failures, then re-verifies.
-- ✅ **Custom art for the original four types** — card portraits and relic/power/potion icons
-  are live-verified. Placeholder art remains the zero-setup default. Generation prefers a
+- ✅ **Custom art for grounded static surfaces** — card portraits,
+  relic/power/potion/enchantment/orb icons, one static monster body, and a normal event's initial portrait are
+  live-verified. Placeholder art remains the zero-setup default. Generation prefers a
   callable host-native image tool (Codex `image_gen` when exposed), then supports Vofy,
   your own compatible image backend, or a local image. Every route uses the same
-  deterministic STS2 normalizer and falls back safely if unavailable.
+  deterministic STS2 normalizer and falls back safely if unavailable. Reference-capable
+  generation randomly selects three real, type-matched STS2 samples for every grounded
+  family except event, whose dedicated reference pool is the next art slice.
 - ✅ **Enemy encounters and rich move cycles** — a plain-English request can produce a
   custom monster plus its encounter, including self custom-Powers, player debuffs,
   Block/Heal, multi-attacks, combined actions, deterministic cycles, and conditional
   branches. Multi-turn verification observes exact move history, hit count, and
   player/monster HP/Block/Power state; a fresh one-sentence run passed build + both live
-  tiers with zero repair on 2026-07-15. Custom monster *art* (an animated scene) remains
-  provisional, so custom enemies use an explicit built-in fallback appearance for now.
+  tiers with zero repair on 2026-07-15. A checked 360x360 static body now renders in both
+  combat and bestiary with an explicit built-in fallback; Spine and move animation are a
+  later expansion.
 - ✅ **Map events / World Nodes** — a plain-English request can produce a custom event
   with nested page/option text and a real run-state consequence. The pipeline enters the
-  event room, clicks its real option UI, and independently observes the result. Custom
-  event art remains provisional, so events use a verified vanilla portrait placeholder.
+  event room, clicks its real option UI, and independently observes the result. A normal
+  event's custom initial portrait is live-supported with a verified vanilla fallback;
+  phobia/later-page portraits, portrait VFX, and custom/Ancient scenes remain provisional.
 - ✅ **Character Foundation** — a plain-English request can produce a selectable minimal
   character with character-scoped card/relic/potion pools, exact starter deck/relic, HP,
   standard 3 energy, and one public/BaseLib starter mechanic. Verification clicks the real
   character button, starts the run, checks the starter ecosystem, and observes the combat
-  effect. Character art/animation uses template/built-in placeholders for now.
+  effect. Character static art still uses template/built-in placeholders; character
+  animation is assigned to the later animation expansion.
 - ✅ **Advanced Character composition** — combat-only resources use explicit payment and
   a live generic counter; bounded ordered semantic buffers produce configured output cards
   while source cards use STS2's normal result piles.
@@ -196,9 +211,12 @@ open-mod is still young. Today it does the following well, and is honest about t
   version-gated B-risk postfix now has build, load, real UI-host, typed-state, conflict,
   idempotence, and two-combat lifetime proof. It is deliberately not advertised as a
   gameplay mechanic and has not been extracted into `OpenMod.Runtime`.
-- ⏭️ **Direct next: M6 Art Expansion** — ground and live-verify the asset contracts for
-  M6 mechanics, enemies, events, and characters, then extend the existing source-independent
-  generation/import pipeline without mistaking fallback visuals for support.
+- ⏭️ **Direct next: M6 Static Art Expansion** — first curate the Event reference pool and
+  ground the remaining non-animated Event contracts; next cover Character static assets;
+  then improve character-mechanic UI beyond its fallback Label. Extend the existing
+  source-independent generation/import pipeline only with headed proof, without mistaking
+  fallback visuals for support. All Spine, move animation, animated VFX, and animated
+  transitions are postponed to a later expansion and do not block M7.
 - ⏳ **After the art pass:** M7's proactive beginner interview. **Not yet:** retained-card
   custom zone UI, unverified advanced character families,
   nonstandard character energy,

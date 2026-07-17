@@ -195,20 +195,33 @@ This is the top failure mode; the card recipe's `.Targeting()` does not transfer
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BaseLib.Abstracts;
+using BaseLib.Utils.NodeFactories;
+using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 
 namespace <ModName>.<ModName>Code.Monsters;
 
 public sealed class <Name> : CustomMonsterModel
 {
+    public static string FallbackVisualPath =>
+        SceneHelper.GetScenePath("creature_visuals/fallback");
+    public static string ModVisualPath =>
+        $"{MainFile.ResPath}/images/monsters/<slug>.png";
+
     public override int MinInitialHp => <hp>;
     public override int MaxInitialHp => <hp>;
-    public override string CustomVisualPath =>
-        SceneHelper.GetScenePath("creature_visuals/fallback");
+    public override string CustomVisualPath => FallbackVisualPath;
+    public override bool HasDeathSfx => false;
+
+    public override NCreatureVisuals? CreateCustomVisuals()
+        => ResourceLoader.Exists(ModVisualPath)
+            ? NodeFactory<NCreatureVisuals>.CreateFromResource(ModVisualPath)
+            : null;
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
     {
@@ -260,23 +273,50 @@ other type (`Id.Entry = "<NS_UPPER>-<SLUG>"`):
   "CANARYENCOUNTER-CANARY_MITE_ENCOUNTER.loss": "The canary has fallen." }
 ```
 
-## Art contract (explicit placeholder; custom art provisional)
+## Art contract (one static body; animation deferred)
 
-A monster's visual is a Godot **scene** (Spine animation), not a loose PNG. `CustomMonsterModel`
-exposes `CustomVisualPath`, plus `CreateCustomVisuals()` / `SetupCustomAnimationStates()` for
-full control. Until a custom Spine scene is authored, explicitly override:
+A normal generated monster owns one transparent `images/monsters/<slug>.png`, normalized
+to **360x360** with `contain` fit and chroma-key on. This is open-mod's medium static-body
+profile, not a game-wide requirement: BaseLib renders the texture one-to-one, so its pixel
+dimensions intentionally define the combat and bestiary footprint.
+
+Do not put the PNG in `CustomVisualPath`; that property normally names a Godot scene. Use
+BaseLib's resource factory from `CreateCustomVisuals()` and keep `CustomVisualPath` pointed
+at the checked fallback scene:
 
 ```csharp
-public override string CustomVisualPath =>
+public static string FallbackVisualPath =>
     SceneHelper.GetScenePath("creature_visuals/fallback");
+public static string ModVisualPath =>
+    $"{MainFile.ResPath}/images/monsters/<slug>.png";
+
+public override string CustomVisualPath => FallbackVisualPath;
+public override bool HasDeathSfx => false;
+
+public override NCreatureVisuals? CreateCustomVisuals()
+    => ResourceLoader.Exists(ModVisualPath)
+        ? NodeFactory<NCreatureVisuals>.CreateFromResource(ModVisualPath)
+        : null;
 ```
 
-Do **not** leave `CustomVisualPath` null as the placeholder strategy. BaseLib then asks the
-game for `res://scenes/creature_visuals/<mod>-<class>.tscn`; a missing file logs a fresh
-resource error before the game recovers to its error scene, so strict Tier 2 correctly fails.
-The explicit built-in fallback loads without that error. **Do not advertise custom monster
-art** until an authored scene renders live; the mechanic proof uses this placeholder and
-claims only behavior.
+When the PNG exists, `NodeFactory<NCreatureVisuals>` creates a foot-aligned `Sprite2D`,
+`Bounds`, `%CenterPos`, and `IntentPos`. `NCreature` sees no Spine body and safely skips
+animator setup. When it is absent, `CreateCustomVisuals()` returns `null`; the original
+loader resumes and uses `FallbackVisualPath` without probing a missing custom-id scene.
+Do **not** leave `CustomVisualPath` null as the fallback strategy.
+
+The same `MonsterModel.CreateVisuals()` path feeds combat and the default bestiary layout,
+so both reuse this one PNG. `CanaryMonsterVocabulary` rendered the custom 360x360 texture in
+both real consumers on 2026-07-17. The generated factory layout was 396x396, with intent at
+`(0,-466)` above the body; headed screenshots showed correct floor alignment and no crop.
+Strict `CombatEnemy` Tier 2 also preserved the full two-cycle move behavior with no fresh
+error block.
+
+This contract is deliberately static. Attack/hurt/death/cast triggers do not animate;
+death uses the game's non-Spine fade, and `HasDeathSfx => false` avoids a nonexistent
+custom-id death event. There is no separate phobia body, so phobia mode retains the same
+static texture. Spine skeleton/atlas/animation, animated move previews, and distinct phobia
+skins are later extensions, not M6 gates.
 
 ## Type + Scenario proof (`CombatEnemy`)
 
@@ -307,8 +347,11 @@ See `reference/selftest-harness.md` § CombatEnemy for both driver shapes.
 - [ ] Monster: `CustomMonsterModel`; no `[Pool]`; `MinInitialHp`/`MaxInitialHp`/`GenerateMoveStateMachine`
 - [ ] Encounter: `CustomEncounterModel(RoomType.Monster)`; `IsValidForAct`/`AllPossibleMonsters`/`GenerateMonsters`
 - [ ] No manual `AddEncounter` — the base constructor does it
-- [ ] Placeholder visual explicitly overrides `CustomVisualPath` with
-      `SceneHelper.GetScenePath("creature_visuals/fallback")`; no missing-resource error
+- [ ] Static visual checks `images/monsters/<slug>.png` in `CreateCustomVisuals()` and uses
+      `NodeFactory<NCreatureVisuals>.CreateFromResource` only when it exists
+- [ ] `CustomVisualPath` always names `creature_visuals/fallback`; missing PNG produces no
+      missing custom-id resource error
+- [ ] `HasDeathSfx => false`; static death uses the non-Spine fade without a missing audio event
 - [ ] Monster attack uses `.FromMonster(this).Execute(null)` — **never `.Targeting()`**
 - [ ] `monsters.json` (name) + `encounters.json` (title + loss) with derived ids
 - [ ] Every move has matching intent(s), awaited Cmd effect(s), and an explicit successor
@@ -316,4 +359,4 @@ See `reference/selftest-harness.md` § CombatEnemy for both driver shapes.
 - [ ] Multi-hit intent repeat matches `.WithHitCount`; Tier 2 asserts history result count
 - [ ] Self buff/custom Power is observed on the monster and changes a later result
 - [ ] `CombatEnemy` proves encounter + monster plus every advertised move/branch state invariant
-- [ ] custom monster art (Spine scene) claims remain provisional until rendered live
+- [ ] custom static body is checked in combat and bestiary; no Spine/animation/phobia claim

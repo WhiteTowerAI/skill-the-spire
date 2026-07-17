@@ -5,8 +5,9 @@
 
 ## Status
 
-**M0-M6 gameplay/programming gates are complete. Direct next: M6 Art Expansion. M7 follows
-after the new M6 content surfaces have grounded, honest art/presentation contracts.**
+**M0-M6 gameplay/programming gates are complete. Direct next: M6 Static Art Expansion.
+M7 follows after the new M6 content surfaces have grounded, honest static art/presentation
+contracts. Animation is a later, non-blocking expansion.**
 
 The current pipeline supports the bounded surfaces listed in `../AGENTS.md` and
 `../games/sts2/tests/content-capability-graph.md`. The player-found Wayfinder correction is
@@ -85,11 +86,31 @@ If open-mod takes ownership of UI, animation, card placement, or cleanup, player
 state is part of the proof. Model state alone cannot advance support. Prefer native game
 lifecycle plus semantic state over custom presentation ownership.
 
-## M6 Art Expansion: direct next
+## M6 Static Art Expansion: direct next
 
 M5.5 proved source-independent acquisition, normalization, placement, packaging, and live
 visual inspection for four static families: card portraits plus relic/power/potion icons.
-It does not cover the content families introduced by M6.
+The first M6 Static Art Expansion slices added the normal event initial portrait, enchantment
+icon, and keyword presentation proof. Event proof covers one opaque 3440x1613 PNG, checked
+vanilla fallback, real `%Portrait` path/size, headed screenshot, and strict `MapNode` Tier 2.
+Enchantment proof
+covers one transparent 64x64 PNG, checked missing-icon fallback, the same custom path in
+the real card tab and hover tooltip, headed screenshot, preserved Block behavior, and
+strict `CombatPlayer` Tier 2. Keyword proof covers `AutoKeywordPosition.After` text on the
+real hand card, localized hover title/description, an intentional null tooltip icon, headed
+screenshot, and preserved Block behavior. It adds no bitmap or `gen_sprite.py` spec. All
+three passed on 2026-07-17. The orb slice then promoted one transparent 100x100 icon: the
+same custom path rendered in the real smart tooltip and trigger flash, while the persistent
+body remained the explicit Frost Spine scene/channel-SFX fallback. Passive/evoke behavior
+stayed Block `0 -> 2 -> 7`, strict `CombatPlayer` Tier 2 passed, and custom Spine scene
+generation is assigned to the later animation expansion. The monster slice then promoted
+one transparent 360x360 static body through BaseLib's `NCreatureVisuals` factory. The same
+custom path rendered in combat and a real default bestiary layout with non-Spine 396x396
+bounds, correct floor/intent placement, and no crop; the full two-cycle behavior proof
+remained green with no fresh error. Missing art uses the explicit built-in scene fallback.
+Direct next after this completed monster slice: curate the Event reference pool and finish
+the remaining static event portrait/layout sub-surfaces, followed by character static
+assets and then richer character-mechanic UI.
 
 ### Research inventory
 
@@ -98,10 +119,12 @@ runtime skill:
 
 | Surface | Current fallback | Research target |
 |---|---|---|
-| keyword / enchantment / orb | tooltip behavior, provisional icon/sprite | whether each owns a bitmap, atlas entry, material, or scene; exact path/size/render host |
-| monster + encounter | built-in fallback creature | monster scene and Spine skeleton/atlas/animation requirements |
-| event / World Node | verified vanilla portrait | custom portrait/scene ownership, dimensions, path, and room rendering lifecycle |
-| character Foundation | template/built-in visuals | select icons, portraits, combat scene, Spine/animation, and any character frame assets |
+| keyword | live text-only card/tooltip presentation; no bitmap/icon | maintain auto-positioned card text plus localized no-icon tooltip across generated mods |
+| enchantment | custom 64x64 icon; missing-icon fallback | maintain the shared card-tab/tooltip consumer contract across generated mods |
+| orb | custom 100x100 tooltip/flash icon; Frost Spine scene/SFX fallback | no remaining M6 static work; custom body is later animation expansion |
+| monster + encounter | custom 360x360 static combat+bestiary body; built-in scene fallback | maintain checked factory/fallback and no-animation boundary |
+| event / World Node | custom normal initial portrait; vanilla fallback | remaining static phobia/later-page portraits and custom/Ancient layouts; animated VFX later |
+| character Foundation | template/built-in visuals | select icons, portraits, static combat body, backgrounds, and frame assets; animation later |
 | resource / ordered buffer UI | generic fallback Label | grounded native or open-mod-owned visual host, layout, lifecycle, and cleanup |
 
 This is maintainer research: decompile/query the pinned game and BaseLib as needed, but do
@@ -112,7 +135,7 @@ not make runtime `/modmaker` sessions inspect local game assemblies.
 1. Extend the capability graph with exact asset registration, host, fallback, and proof for
    every M6 family.
 2. Group by real asset shape rather than content name: static bitmap/icon first, then
-   packed UI/scene assets, then Spine/animated actors.
+   non-animated packed UI/scene assets. Do not open animation work in M6.
 3. Reuse `acquire_sprite.py` and `gen_sprite.py import` only where their bitmap contract
    actually fits. Add a new normalizer/spec only after the target format is grounded.
 4. Wire source skill routing only after one type-matched hosted proof; regenerate plugin and
@@ -121,11 +144,32 @@ not make runtime `/modmaker` sessions inspect local game assemblies.
    vanilla/template fallback as generated custom art.
 
 The optional host-native acquisition edge (`runtime-imagegen`; Codex `image_gen`) applies
-only to the four already-live static specs: card, relic, power, and potion. It produces a
-local source file and reuses `gen_sprite.py import`; it does not advance any new M6 art
-family. Detect the callable tool itself rather than a model name or installed skill file,
-and keep the placeholder when the tool is absent or fails. A universal native-tool claim
-still requires acceptance on the specific first-party runtime surface.
+only to the eight live static specs: card, relic, power, potion, enchantment, orb icon,
+monster body, and the normal event initial portrait. It produces a local source file and reuses `gen_sprite.py import`; it does not
+advance any other M6 art family. Detect the callable tool itself rather than a model name
+or installed skill file, and keep the placeholder when the tool is absent or fails. A
+universal native-tool claim still requires acceptance on the specific first-party runtime
+surface.
+
+Reference-capable acquisition now has separate real-game pools for card, relic, power,
+potion, enchantment, orb, and monster. The tools select by `--spec` and randomly sample
+three distinct images; monster's fixed pool is Axebot, Ceremonial Beast, and Crossbow Ruby
+Raider. Enchantment, orb, and monster also own independent, source-observed prompt
+templates rather than inheriting Card composition. Event remains the only live static spec
+without a bundled type-matched reference pool.
+
+The ignored local baseline at
+`baselines/spire-codex/backend/static/images/events/` currently contains 56 canonical,
+deduplicated wiki.gg PNGs plus a download manifest. These are research candidates, not
+shipped pipeline samples: the Event slice must review their contracts and attribution,
+then promote only the appropriate pool into `reference/art-samples/event` before wiring
+three-reference sampling or claiming Card-level acquisition maturity.
+
+A three-image `seedream-5.0-lite` acceptance on 2026-07-17 exercised those pools and prompts
+for an enchantment, orb, and monster. All three produced visually type-appropriate exact-size
+RGBA previews. The orb exposed nonuniform chroma debris, so the new three cut-out profiles
+now apply centered-subject fragment cleanup before their final fit. This advances acquisition
+quality only; the prior headed game proofs remain the support evidence for real consumers.
 
 ### Verification and exit bar
 
@@ -138,10 +182,12 @@ still requires acceptance on the specific first-party runtime surface.
   scene/toolchain risk, with no numerical project limit.
 - Finish with every M6 surface either pipeline-supported for art or explicitly deferred with
   a grounded blocker and verified fallback. Do not leave a provisional claim ambiguous.
+- Animation is not an M6 exit requirement. Keep every animation-bearing surface on its
+  current fallback and list it under the later expansion.
 
 ## M7: proactive interview for non-programmers
 
-M7 is the next product milestone after M6 Art Expansion, not the direct current task.
+M7 is the next product milestone after M6 Static Art Expansion, not the direct current task.
 
 ### Experience goal
 
@@ -194,6 +240,14 @@ read or choose within the mechanic.
   code editing.
 
 ## Later work
+
+### Animation expansion
+
+Animation is deliberately postponed and does not block M6 or M7. Its scope is custom orb
+Spine bodies; monster skeleton/atlas and attack/hurt/cast/death/phobia/bestiary previews;
+character combat animation, trails, and animated select transitions; event portrait VFX
+or animation-bearing layouts; and optional UI motion. Until this expansion is opened,
+static art or the documented built-in/template fallback is the supported result.
 
 M6 Extras remain non-blocking and should be added by user value and host reuse:
 

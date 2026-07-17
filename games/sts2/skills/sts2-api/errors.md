@@ -305,8 +305,23 @@
   `Encountered exception loading the creature visuals ... Falling back to error scene`.
   The monster may still fight on the error visual, but strict verification fails.
 - **Cause:** a `CustomMonsterModel` left `CustomVisualPath` null while no convention-named
-  custom Spine scene exists. BaseLib lets the vanilla path convention run; the game logs
+  custom scene exists. BaseLib lets the vanilla path convention run; the game logs
   the failed load before recovering.
-- **Fix:** for the supported placeholder-art path, explicitly override
-  `CustomVisualPath => SceneHelper.GetScenePath("creature_visuals/fallback")`. Custom art
-  remains provisional until a real scene is authored and live-rendered.
+- **Fix:** keep `CustomVisualPath => SceneHelper.GetScenePath("creature_visuals/fallback")`.
+  For supported static art, existence-check `images/monsters/<slug>.png` in
+  `CreateCustomVisuals()` and return
+  `NodeFactory<NCreatureVisuals>.CreateFromResource(ModVisualPath)` only when present;
+  otherwise return `null` so the explicit scene fallback loads. Do not point
+  `CustomVisualPath` at the PNG. See `recipes/monster.md`.
+
+### Custom orb channels but logs missing `debug_audio/<custom-id>_channel.mp3`
+- **Signature:** channeling succeeds, but strict verification finds `No loader found for
+  resource: res://debug_audio/<custom-id>_channel.mp3` from
+  `OrbModel.PlayChannelSfx -> OrbCmd.Channel`.
+- **Cause:** a `CustomOrbModel` left `CustomChannelSfx` null/empty. Channeling always plays
+  SFX; the base class then probes a convention-named debug file that a packaged mod does
+  not ship.
+- **Fix:** set `CustomChannelSfx` to a verified vanilla fallback event alongside the
+  explicit vanilla `CustomSpritePath`. The supported Frost fallback is
+  `event:/sfx/characters/defect/defect_frost_channel`. Also existence-check the custom
+  100x100 `CustomIconPath` and return the Frost icon when absent. See `recipes/orb.md`.

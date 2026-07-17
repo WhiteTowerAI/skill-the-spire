@@ -95,7 +95,8 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - description: <hover text; use {Damage:diff()} style placeholders for scaling numbers>
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below;
-  generate is wired for all four types: `card` / `relic` / `power` / `potion`)
+  generate is wired for `card` / `relic` / `power` / `potion` / `enchantment` / `orb` /
+  `monster` / normal-event initial portrait)
 - **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
@@ -158,7 +159,7 @@ Query `reference/stateful-mechanics.md` before authoring or verifying this block
 
 **Enemy encounter** (a monster + the encounter that spawns it — always authored as one
 slice; scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
-art is a Spine scene and stays placeholder — custom monster art is not yet supported):
+generated art is one static body shared by combat and bestiary; animation is later):
 
 ```markdown
 # SPEC — <Mod Name>
@@ -187,8 +188,11 @@ art is a Spine scene and stays placeholder — custom monster art is not yet sup
   - multi-attack: `CreatureAttackedEntry.DamageResults.Count` equals the repeat count
   - composite action: every effect from the same move is observed
   - branch: each advertised outcome is forced by its real condition and observed
-- **art**: explicit built-in placeholder (`SceneHelper.GetScenePath("creature_visuals/fallback")`;
-  custom monster Spine scene not yet supported)
+- **art**: placeholder | generate: <one full creature in a neutral combat-ready pose>
+- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
+- **art boundary**: one checked `images/monsters/<slug>.png`, 360x360, shared by combat and
+  bestiary; `CustomVisualPath` remains the explicit built-in fallback scene; no
+  Spine/attack/hurt/death animation or separate phobia body
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - monster Id.Entry: `<NS_UPPER>-<MONSTER_SLUG>`; loc key (table `monsters`): `<NS_UPPER>-<MONSTER_SLUG>.name`
   - encounter Id.Entry: `<NS_UPPER>-<ENCOUNTER_SLUG>`; loc keys (table `encounters`): `<NS_UPPER>-<ENCOUNTER_SLUG>.{title,loss}`
@@ -202,7 +206,7 @@ move. A multi-move enemy must fill the compact move/branch contract above before
 an intent label or a green build is not behavior proof.
 
 **Event / World Node** (one `CustomEventModel` with nested pages/options; scenario is
-`MapNode`; custom event art is provisional and stays on the verified vanilla placeholder):
+`MapNode`; normal initial portrait generation is supported, while event scenes/VFX are not):
 
 ```markdown
 # SPEC — <Mod Name>
@@ -222,7 +226,11 @@ an intent label or a green build is not behavior proof.
     result page: <key + result description>
 - **scenario**: MapNode
 - **observe**: custom event room entered; formatted title/option/result loc; real option UI clicked; run-state consequence
-- **art**: placeholder (verified vanilla `res://images/events/this_or_that.png`; custom event art not yet supported)
+- **art**: placeholder | generate (normal initial portrait only: one opaque
+  `3440×1613` `images/events/<slug>.png`)
+- **art source**: runtime-imagegen | vofy | byo-http | local-image (generate only)
+- **art subject/style**: <opening situation; focal subject left, darker UI space right>
+- **art fallback**: verified vanilla `res://images/events/this_or_that.png`
 - **derived ids**:
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - code loc keys: `<ID>.title`, `<ID>.pages.INITIAL.description`,
@@ -380,12 +388,17 @@ Rules for this round:
 - **Placeholder is the default and needs no backend, no key, no dev box.** If the user
   didn't ask for custom art, leave it placeholder — this is exactly the current,
   already-verified behavior (no regression).
-- **`generate` is wired for all four element types — `card`, `relic`, `power`, `potion`**
-  (all live-verified — card 1000×760; relic/power/potion 256×256 loose PNGs;
+- **`generate` is wired for eight static specs — `card`, `relic`, `power`, `potion`,
+  `enchantment`, `orb`, `monster`, `event`** (all live-verified — card 1000×760;
+  relic/power/potion 256×256; enchantment 64×64; orb icon 100×100; normal event initial
+  portrait 3440×1613; static monster body 360×360;
   `reference/art-contract.md`).
-- **Event, enemy-encounter, and character art stays placeholder.** Do not call
-  `gen_sprite.py` for them; their scene/portrait/animation contracts have not been
-  live-grounded.
+- **Orb generation is icon-only.** Keep the recipe's explicit Frost icon/Spine scene/
+  channel-SFX fallbacks; `gen_sprite.py` does not emit a combat scene.
+- **Enemy generation is static-body only.** One 360×360 PNG feeds combat and bestiary
+  through `CreateCustomVisuals()`; keep the explicit fallback scene. Character art stays
+  placeholder. Event support does not include phobia, later-page, VFX, custom-layout, or
+  Ancient assets. All Spine/animation work is a later expansion.
 - **`generate` has four source routes:** a host-native raster image tool that is actually
   callable in the current runtime (`runtime-imagegen`; Codex calls it `image_gen`), an
   already-installed/authenticated Vofy CLI (managed credits), a user-supplied OpenAI-
@@ -440,7 +453,7 @@ Show a **plain-language** summary and get a yes before scaffolding:
 >
 > (event) I'll build **<Title>**, a map event available in <all acts / the chosen acts>.
 > The player sees <opening>, can choose <option summary>, and that choice <consequence>.
-> It will use a placeholder event portrait for now. Sound right?
+> <art line> Sound right?
 >
 > (character) I'll build **<Title>**, a selectable character with <HP> HP, standard
 > 3 energy, <starter deck summary>, and <starter relic/effect>. The first build uses
