@@ -37,9 +37,20 @@ checked 360×360 static monster body is supported in combat and bestiary, with a
 built-in fallback when absent. Spine and move animation are later extensions.
 An **event** is a normal map event with nested pages/options, authored as one
 `CustomEventModel` and proven through the **`MapNode`** scenario (enter the event room,
-read its localized option, click it, and observe the run-state consequence). Its normal
-initial portrait can be generated as one 3440×1613 loose PNG with an existence-checked
-vanilla fallback. Phobia/later-page portraits, VFX, and custom/Ancient scenes remain out.
+read its localized options, drive every independent SPEC outcome, and observe exact state,
+page, overlay, combat, and map results). Supported outcomes include public Cmd
+combinations, conditional/locked multi-page choices, blocking card-selection and custom-
+reward overlays, plus one resumable or terminal special combat per mutable Event instance.
+Special combat may carry extra rewards and always uses an explicit resume-vs-map branch;
+direct merchant/rest/treasure room transitions remain unsupported. Its normal
+initial portrait and explicitly authored later-page portraits can be generated as
+3440×1613 loose PNGs. Initial art has an existence-checked vanilla fallback; missing page
+art retains the current portrait. Normal-layout Events may also emit the one live-verified
+code-native `portrait_halo` VFX profile with Fast Mode handling and explicit cleanup across
+page, portrait, combat, and finish transitions. Page and option descriptions may also use
+the live-verified bounded vanilla Event rich-text vocabulary (emphasis, semantic colors,
+`jitter`, and `sine`) through the native label, with no generated VFX node. Custom phobia
+art, arbitrary VFX, and custom/Ancient scenes remain out.
 A **Character Foundation** uses the Alchyr character template plus BaseLib's
 `PlaceholderCharacterModel`. It appears in the real character-select UI, starts a run
 with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
@@ -69,7 +80,7 @@ previous-turn memory, and limited run uses have grounded patterns but remain pro
 until their scenario canaries. A counter is state on its real element, not a new element
   type. **Custom static art** is now wired and live-verified for **eight specs — card
   portraits, relic icons, power icons, potion icons, enchantment icons, orb icons, static monster bodies, and normal-event
-  initial portraits** (each a loose PNG the game loads directly; no `.tres` atlas authoring)
+  initial/page portrait slots** (each a loose PNG the game loads directly; no `.tres` atlas authoring)
   — orb support is icon-only and retains its explicit vanilla Spine scene/channel-SFX
   fallbacks. The
 user picks placeholder (default, fast) or custom art. When the current agent runtime
@@ -121,7 +132,8 @@ User: one sentence ("a relic that ...")
     manifest, uncomment PckPacker.
     |
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
-    monster+encounter/event/character, plus power.md if the effect needs a custom buff/debuff),
+    monster+encounter/event/character, plus the Event outcome/VFX/rich-text references or power.md
+    when selected by SPEC),
     write the Custom*Model
     subclass filling ONLY the effect logic, add localization JSON, inject the load +
     diagnostic [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness

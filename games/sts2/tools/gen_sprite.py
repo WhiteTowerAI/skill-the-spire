@@ -63,12 +63,11 @@ except ImportError:
 # notification all render correctly). potion 256×256 also live-verified (2026-07-08,
 # canary-potion "Fizz") — BaseLib DOES accept a loose PNG via CustomPackedImagePath (no
 # .tres atlas needed); potion has ONE image texture (no big/), drawn tilted ~45° right.
-# event is the first M6 Static Art Expansion candidate: the current .pck and multiple normal-event
-# samples agree on a 3440x1613 initial portrait. Its single loose PNG reaches
-# EventModel.CreateInitialPortrait through CustomEventModel.CustomInitialPortraitPath. The
-# contract was live-verified in the real MapNode host on 2026-07-17: the displayed
-# TextureRect used the mod path at 3440x1613 and the headed screenshot excluded the
-# vanilla fallback.
+# Every normal-event portrait slot is a 3440x1613 loose PNG. The initial slot reaches
+# EventModel.CreateInitialPortrait through CustomEventModel.CustomInitialPortraitPath;
+# authored later-page slots reach the same TextureRect through NEventRoom.SetPortrait.
+# The initial contract was live-verified on 2026-07-17, and the reused MapNode run verified
+# a second page slot plus missing-phobia fallback and portrait-child cleanup on 2026-07-20.
 # enchantment is one 64x64 loose icon. The 2026-07-17 CanaryEnchantment headed run
 # observed the same custom resource in both the real NCard enchantment tab and the card's
 # hover tooltip, then preserved the attached enchantment's Block behavior.

@@ -5,9 +5,11 @@
 
 ## Status
 
-**M0-M6 gameplay/programming gates are complete. Direct next: M6 Static Art Expansion.
-M7 follows after the new M6 content surfaces have grounded, honest static art/presentation
-contracts. Animation is a later, non-blocking expansion.**
+**M0-M6 gameplay/programming gates and the Event static-art/outcome/bounded-VFX/rich-text
+slices are complete. Direct next: the inserted six-item M6 native-presentation pass, then
+Character static assets and richer character-mechanic UI. M7 follows after the new M6
+content surfaces have grounded, honest static art/presentation contracts. Animation is a
+later, non-blocking expansion.**
 
 The current pipeline supports the bounded surfaces listed in `../AGENTS.md` and
 `../games/sts2/tests/content-capability-graph.md`. The player-found Wayfinder correction is
@@ -86,7 +88,7 @@ If open-mod takes ownership of UI, animation, card placement, or cleanup, player
 state is part of the proof. Model state alone cannot advance support. Prefer native game
 lifecycle plus semantic state over custom presentation ownership.
 
-## M6 Static Art Expansion: direct next
+## M6 Static Art Expansion: current work
 
 M5.5 proved source-independent acquisition, normalization, placement, packaging, and live
 visual inspection for four static families: card portraits plus relic/power/potion icons.
@@ -108,9 +110,68 @@ one transparent 360x360 static body through BaseLib's `NCreatureVisuals` factory
 custom path rendered in combat and a real default bestiary layout with non-Spine 396x396
 bounds, correct floor/intent placement, and no crop; the full two-cycle behavior proof
 remained green with no fresh error. Missing art uses the explicit built-in scene fallback.
-Direct next after this completed monster slice: curate the Event reference pool and finish
-the remaining static event portrait/layout sub-surfaces, followed by character static
-assets and then richer character-mechanic UI.
+The Event runtime/static follow-up completed on 2026-07-20: the six
+reviewed wiki.gg samples now form the attributed Event reference pool and the prompt now
+matches their environment-specific visual language. The existing `CanaryEvent` room and
+option click verified an explicit later-page 3440x1613 portrait, phobia fallback to the
+current custom portrait, and cleanup of portrait children. Custom phobia art, custom
+layouts, and Ancient backgrounds are explicitly deferred behind the grounded blockers
+below. One explicitly approved three-reference `seedream-5.0-lite` generation on
+2026-07-20 completed the Event acquisition gate: its inspected `21:9`/`2K` source
+normalized to 3440x1613, packed into `CanaryEvent`, rendered behind the real option UI,
+and passed strict Tier 2 with no fresh error. Direct work now moves to character static
+assets, followed by richer character-mechanic UI.
+
+The requested Event behavior/VFX follow-up then inventoried all 68 vanilla Event classes
+and promoted the complete normal-Event outcome vocabulary: ordered public Cmd effects,
+multi-page and locked options, blocking add/remove/upgrade/transform/enchant selection,
+blocking custom rewards, and one special combat that either resumes a named Event page or
+continues to the map, with optional extra combat rewards. Events that change rooms are
+shared. Each mutable Event instance is limited to one special combat; direct merchant/
+rest/treasure transitions remain unsupported. The same pass promoted one bounded code-
+native `portrait_halo` VFX profile for the normal layout. Its final headed canary drove
+page Cmd, upgrade selection, resumable combat, custom reward, terminal combat from a fresh
+Event instance, and VFX cleanup; expected/observed families matched, `resumes=1/0`,
+`selftest done`, and no fresh error. Four inspected screenshots showed settled initial,
+page, combat, and resumed states.
+
+The bounded Event rich-text follow-up reused that same `CanaryEvent` suite. Normal page and
+option descriptions now support the vanilla-observed subset of the existing
+`MegaRichTextLabel`: `b`; seven semantic colors; and short `jitter`/`sine` spans. Titles
+remain plain and no VFX node, Shader, font, or cleanup code is generated. The headed proof
+resolved the real BBCode host and every required effect type, showed styled initial text,
+waited for the later page's native opacity/`VisibleRatio` animation to settle, proved the
+old tagged text was replaced, added `richText` to the existing identical expected/observed
+marker, reached `selftest done`, and had no fresh error.
+
+The disposable `CanaryEvent` work directory and installed mod were retired after this
+evidence was recorded. Recreate or extend a `MapNode` acceptance mod only when the next
+candidate reaches headed verification; do not keep an armed harness installed between
+passes.
+
+### Inserted M6 native-presentation pass (direct next)
+
+Before Character static art, promote these six currently unsupported candidates in order:
+
+1. **Cross-content bounded rich text:** ground per-surface tags and prove the real Card body
+   plus standard card/relic/potion/power Hover Tips, including SmartFormat and auto-keyword
+   composition.
+2. **Event option Hover Tips and relic-image options:** route typed
+   `HoverTipFactory`/`RelicOption<T>` presentation through generated options and prove the
+   real hover/icon consumers.
+3. **Native lethal-choice warnings:** attach exact HP/Max HP costs through
+   `ThatDoesDamage`/`ThatDecreasesMaxHp` and prove the warning appears only when lethal.
+4. **Native Card/relic acquisition previews:** preserve the semantic outcome, then prove
+   the matching original-game preview without duplicate grants or blocking-order errors.
+5. **Bounded one-shot screen shake:** define allowed strengths/triggers, respect the game
+   preference, and prove it terminates without obscuring Event text.
+6. **Curated built-in noncombat Event VFX:** promote only verified asset profiles with fixed
+   host, placement, pause behavior, and cleanup. This does not generalize arbitrary VFX.
+
+For each item, reuse the closest hosted suite and require one proof per independent
+semantic/presentation invariant. Do not create six projects or re-run unrelated Event
+outcome branches merely to make the evidence denser. After all six, resume Character
+static assets, Ancient opening name-banner/Architect presentation, and richer Character UI.
 
 ### Research inventory
 
@@ -123,8 +184,8 @@ runtime skill:
 | enchantment | custom 64x64 icon; missing-icon fallback | maintain the shared card-tab/tooltip consumer contract across generated mods |
 | orb | custom 100x100 tooltip/flash icon; Frost Spine scene/SFX fallback | no remaining M6 static work; custom body is later animation expansion |
 | monster + encounter | custom 360x360 static combat+bestiary body; built-in scene fallback | maintain checked factory/fallback and no-animation boundary |
-| event / World Node | custom normal initial portrait; vanilla fallback | remaining static phobia/later-page portraits and custom/Ancient layouts; animated VFX later |
-| character Foundation | template/built-in visuals | select icons, portraits, static combat body, backgrounds, and frame assets; animation later |
+| event / World Node | custom normal initial/page portraits, code-native `portrait_halo`, and bounded native rich text; checked portrait fallback | maintain portrait/outcome/VFX/text replacement contracts; custom phobia/layout/Ancient assets and arbitrary VFX deferred |
+| character Foundation | template/built-in visuals | select icons, portraits, static combat body, backgrounds, frame assets, and dedicated Ancient opening name-banner/Architect presentation research; animation later |
 | resource / ordered buffer UI | generic fallback Label | grounded native or open-mod-owned visual host, layout, lifecycle, and cleanup |
 
 This is maintainer research: decompile/query the pinned game and BaseLib as needed, but do
@@ -145,31 +206,66 @@ not make runtime `/modmaker` sessions inspect local game assemblies.
 
 The optional host-native acquisition edge (`runtime-imagegen`; Codex `image_gen`) applies
 only to the eight live static specs: card, relic, power, potion, enchantment, orb icon,
-monster body, and the normal event initial portrait. It produces a local source file and reuses `gen_sprite.py import`; it does not
+monster body, and normal event portrait slots. It produces a local source file and reuses `gen_sprite.py import`; it does not
 advance any other M6 art family. Detect the callable tool itself rather than a model name
 or installed skill file, and keep the placeholder when the tool is absent or fails. A
 universal native-tool claim still requires acceptance on the specific first-party runtime
 surface.
 
 Reference-capable acquisition now has separate real-game pools for card, relic, power,
-potion, enchantment, orb, and monster. The tools select by `--spec` and randomly sample
+potion, enchantment, orb, monster, and event. The tools select by `--spec` and randomly sample
 three distinct images; monster's fixed pool is Axebot, Ceremonial Beast, and Crossbow Ruby
-Raider. Enchantment, orb, and monster also own independent, source-observed prompt
-templates rather than inheriting Card composition. Event remains the only live static spec
-without a bundled type-matched reference pool.
+Raider. Enchantment, orb, monster, and event also own independent, source-observed prompt
+templates rather than inheriting Card composition.
 
 The ignored local baseline at
-`baselines/spire-codex/backend/static/images/events/` currently contains 56 canonical,
-deduplicated wiki.gg PNGs plus a download manifest. These are research candidates, not
-shipped pipeline samples: the Event slice must review their contracts and attribution,
-then promote only the appropriate pool into `reference/art-samples/event` before wiring
-three-reference sampling or claiming Card-level acquisition maturity.
+`baselines/spire-codex/backend/static/images/events/` currently contains 55 PNGs plus the
+older 56-entry download manifest; `fake_merchant_rug.png` was intentionally removed. Six
+files whose local SHA-1 matches the wiki.gg API were reviewed and promoted to
+`reference/art-samples/event`, with source-page attribution. They are square style
+previews, not runtime-size claims; `gen_sprite.py` still owns the 3440x1613 output contract.
+
+The deferred Event surfaces now have exact blockers. Phobia art resolves through a private
+engine path with no BaseLib mod-relative override; the headed toggle proof confirms the
+current custom portrait remains visible when that optional texture is absent. A custom
+layout resolves a fixed global scene and requires a complete `ICustomEventNode`, so it has
+no checked default-layout fallback and would make open-mod own focus, input, options, and
+cleanup. `NAncientEventLayout` requires an actual `AncientEventModel` and instantiates its
+background scene; BaseLib has no custom Ancient recipe that a normal `CustomEventModel`
+can safely reuse. The supported fallback for both layout requests is therefore the normal
+event layout, clearly labeled rather than presented as custom art.
+
+Event VFX is promoted only for the bounded `portrait_halo` profile. BaseLib 3.3.5/3.3.6
+expose an unused `CustomVfxPath`; overriding it does nothing. The supported public route is
+`OnRoomEnter` plus native Godot nodes through
+`NEventLayout.AddVfxAnchoredToPortrait`. The emitted helper owns two arcs, nine motes, a
+restrained pulse, per-page anchors/colors, static Instant mode, shorter Fast mode, and
+explicit `QueueFreeSafely` cleanup. `RemoveNodesOnPortrait` alone only detaches nodes and is
+not sufficient. Arbitrary VFX, shaders/audio, and animation-bearing custom/Ancient layouts
+remain later work.
+
+Adjacent Event presentation inventory is recorded in
+`games/sts2/skills/sts2-api/reference/event-text-effects.md`. Its first six candidates are
+now the ordered direct-next pass above. The Ancient opening banner remains explicitly
+assigned to the following Character presentation phase and is not implied by normal Event
+rich text.
 
 A three-image `seedream-5.0-lite` acceptance on 2026-07-17 exercised those pools and prompts
 for an enchantment, orb, and monster. All three produced visually type-appropriate exact-size
 RGBA previews. The orb exposed nonuniform chroma debris, so the new three cut-out profiles
 now apply centered-subject fragment cleanup before their final fit. This advances acquisition
 quality only; the prior headed game proofs remain the support evidence for real consumers.
+
+A separate one-image Event acceptance on 2026-07-20 used the curated Event pool and
+randomly selected `this_or_that.png`, `drowning_beacon.png`, and
+`doors_of_light_and_dark.png`. The `21:9`/`2K` source contained no text or borrowed
+composition, preserved the prompt's left-third focal subject and dark UI area, and
+normalized to the exact 3440x1613 opaque profile. The imported image then rendered from
+the rebuilt `CanaryEvent.pck`; the same headed run visibly showed its portrait-anchored VFX,
+changed Gold by 25 through the real option, switched to the later-page portrait, cleaned
+up the VFX, and passed strict Tier 2 with no fresh error. This closes the Event static-art
+slice; the later outcome/VFX acceptance separately promoted the bounded halo, not general
+VFX generation.
 
 ### Verification and exit bar
 
@@ -245,9 +341,10 @@ read or choose within the mechanic.
 
 Animation is deliberately postponed and does not block M6 or M7. Its scope is custom orb
 Spine bodies; monster skeleton/atlas and attack/hurt/cast/death/phobia/bestiary previews;
-character combat animation, trails, and animated select transitions; event portrait VFX
-or animation-bearing layouts; and optional UI motion. Until this expansion is opened,
-static art or the documented built-in/template fallback is the supported result.
+character combat animation, trails, and animated select transitions; general event
+portrait VFX or animation-bearing layouts; and optional UI motion. The normal-layout
+`portrait_halo` is the sole supported Event VFX exception. Until this expansion is opened,
+other Event VFX and animation use the documented fallback/boundary.
 
 M6 Extras remain non-blocking and should be added by user value and host reuse:
 
@@ -260,6 +357,13 @@ M6 Extras remain non-blocking and should be added by user value and host reuse:
 Other deferred work after the art-coverage decisions: retained-card zone UI,
 alternative-energy hooks, vanilla editing, macOS/Linux live verification, registry
 discoverability, and Workshop publishing.
+
+### Future outlook (no current delivery plan)
+
+Positioned speech/thought bubbles in normal portrait Events are intentionally excluded from
+M6 and M7. `TalkCmd` requires a real `Creature` speaker and the normal Event layout provides
+no safe portrait speaker/anchor contract; preserve such requests as future gaps rather than
+approximating them with floating labels.
 
 ## Publish and regression
 

@@ -325,3 +325,18 @@
   explicit vanilla `CustomSpritePath`. The supported Frost fallback is
   `event:/sfx/characters/defect/defect_frost_channel`. Also existence-check the custom
   100x100 `CustomIconPath` and return the Frost icon when absent. See `recipes/orb.md`.
+
+### A resumed Event starts a second special combat and `RecordInitialState` fails
+- **Signature:** `InvalidOperationException: RecordInitialState must be called first`
+  from `CombatReplayWriter`, after a special combat has already returned to the same
+  mutable Event instance.
+- **Cause:** the Event calls `EnterCombatWithoutExitingEvent` a second time from the same
+  instance. The grounded Event replay/lifecycle supports one special combat per mutable
+  Event; the first resumable or terminal transition works, while the second leaves replay
+  setup inconsistent.
+- **Fix:** generate at most one special-combat transition per Event instance. After a
+  resumable fight, continue with Cmd/page/selection/reward outcomes and finish the Event.
+  If verification must exercise an independent terminal-combat branch, click Proceed/open
+  the map and `EnterRoomDebug` a **fresh** canonical Event instance. See
+  `reference/event-outcomes.md` and the extended `MapNode` section of
+  `reference/selftest-harness.md`.

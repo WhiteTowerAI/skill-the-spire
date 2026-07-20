@@ -96,7 +96,7 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below;
   generate is wired for `card` / `relic` / `power` / `potion` / `enchantment` / `orb` /
-  `monster` / normal-event initial portrait)
+  `monster` / normal-event portrait slots)
 - **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 - **derived ids** (compute now, using the recipe's loc-key rule):
   - Id.Entry: `<NS_UPPER>-<SLUG>`
@@ -206,7 +206,10 @@ move. A multi-move enemy must fill the compact move/branch contract above before
 an intent label or a green build is not behavior proof.
 
 **Event / World Node** (one `CustomEventModel` with nested pages/options; scenario is
-`MapNode`; normal initial portrait generation is supported, while event scenes/VFX are not):
+`MapNode`; supported outcomes include blocking selections/rewards and one resumable or
+terminal special combat per mutable Event instance; normal portraits and the bounded
+`portrait_halo` profile plus bounded vanilla description rich text are supported, while
+custom phobia art, arbitrary VFX, and custom/Ancient scenes are not):
 
 ```markdown
 # SPEC — <Mod Name>
@@ -222,15 +225,31 @@ an intent label or a green build is not behavior proof.
     key: <UPPER_SNAKE derived from method, e.g. FOLLOW_THE_SIGN>
     title: <button title>
     description: <button consequence text>
-    effect: <precise Cmd consequence with numbers>
-    result page: <key + result description>
+    effect: <ordered public-Cmd consequence with numbers, including any blocking overlay>
+    next: finish <RESULT_KEY> | page <PAGE_KEY> | special combat <ENCOUNTER>
+- **special combat**: none | <encounter class + monster/group HP and grounded move cycle>
+- **combat completion**: resume page <PAGE_KEY> | map (exactly one when combat exists)
+- **extra combat rewards**: none | <owned reward types and amounts>
 - **scenario**: MapNode
-- **observe**: custom event room entered; formatted title/option/result loc; real option UI clicked; run-state consequence
-- **art**: placeholder | generate (normal initial portrait only: one opaque
-  `3440×1613` `images/events/<slug>.png`)
+- **observe**: custom event room entered; formatted loc and real option UI; exact Cmd/
+  selection/reward post-state; encounter identity; expected Resume page or direct map
+- **art**: placeholder | generate (normal/default layout only; every selected slot is an
+  opaque `3440×1613` `images/events/<slot-slug>.png`)
+- **portrait slots**:
+  - initial: `<event-slug>`
+  - `<PAGE_KEY>`: `<event-slug>_<page-key-lower>` (only when explicitly requested)
 - **art source**: runtime-imagegen | vofy | byo-http | local-image (generate only)
 - **art subject/style**: <opening situation; focal subject left, darker UI space right>
-- **art fallback**: verified vanilla `res://images/events/this_or_that.png`
+- **art fallback**: initial uses verified vanilla `res://images/events/this_or_that.png`;
+  absent page art retains the current portrait
+- **event VFX**: none | `portrait_halo`
+- **VFX pages**: <PAGE_KEY -> unique node name, color/mood; normal layout only>
+- **VFX cleanup**: free owned named nodes before page/portrait/combat/finish transitions;
+  Instant Fast Mode is static
+- **event text effects**: none | vanilla
+- **text spans**: <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis, aqua/blue/
+  gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
+- **unsupported transitions**: merchant, rest site, and treasure room
 - **derived ids**:
   - Id.Entry: `<NS_UPPER>-<SLUG>`
   - code loc keys: `<ID>.title`, `<ID>.pages.INITIAL.description`,
@@ -239,7 +258,18 @@ an intent label or a green build is not behavior proof.
 ```
 
 `Option(Method)` slugifies the method name, so its derived `<OPTION_KEY>` must exactly
-match `EventOptionLoc`. `author.md` dispatches `element: event` to `recipes/event.md`.
+match `EventOptionLoc`. If special combat exists, the spec also owns the custom monster +
+encounter dependency from `recipes/monster.md`; do not leave `<ENCOUNTER>` abstract.
+`author.md` dispatches Event mechanics to `recipes/event.md`, full outcomes to
+`reference/event-outcomes.md`, the optional halo to `reference/event-vfx.md`, and bounded
+description styling to `reference/event-text-effects.md`.
+
+The current M6 plan schedules six additional native-presentation families, but they are
+**not pipeline-supported yet**: cross-content Card/Hover Tip rich text, Event option Hover
+Tips/relic images, lethal-choice warnings, Card/relic acquisition previews, bounded screen
+shake, and curated built-in noncombat Event VFX. Until each family is promoted, preserve a
+user request under `**presentation gaps**` and do not emit guessed code. Positioned Event
+speech/thought bubbles are future outlook only and remain a gap with no M6/M7 plan.
 
 **Character Foundation** (one selectable character shell plus its starter ecosystem;
 scenarios are `RunStart` + `CombatPlayer`; selected advanced capabilities use the
@@ -390,15 +420,17 @@ Rules for this round:
   already-verified behavior (no regression).
 - **`generate` is wired for eight static specs — `card`, `relic`, `power`, `potion`,
   `enchantment`, `orb`, `monster`, `event`** (all live-verified — card 1000×760;
-  relic/power/potion 256×256; enchantment 64×64; orb icon 100×100; normal event initial
-  portrait 3440×1613; static monster body 360×360;
+  relic/power/potion 256×256; enchantment 64×64; orb icon 100×100; normal event portrait
+  slots 3440×1613; static monster body 360×360;
   `reference/art-contract.md`).
 - **Orb generation is icon-only.** Keep the recipe's explicit Frost icon/Spine scene/
   channel-SFX fallbacks; `gen_sprite.py` does not emit a combat scene.
 - **Enemy generation is static-body only.** One 360×360 PNG feeds combat and bestiary
   through `CreateCustomVisuals()`; keep the explicit fallback scene. Character art stays
-  placeholder. Event support does not include phobia, later-page, VFX, custom-layout, or
-  Ancient assets. All Spine/animation work is a later expansion.
+  placeholder. Event raster support includes only the initial and explicitly authored
+  later-page portraits; it does not include custom phobia, custom-layout, or Ancient
+  assets. The separate code-native `portrait_halo` profile has no raster generation step.
+  All other VFX and Spine/animation work is a later expansion.
 - **`generate` has four source routes:** a host-native raster image tool that is actually
   callable in the current runtime (`runtime-imagegen`; Codex calls it `image_gen`), an
   already-installed/authenticated Vofy CLI (managed credits), a user-supplied OpenAI-

@@ -40,6 +40,7 @@ class GenSpriteTests(unittest.TestCase):
             "enchantment": (20, (64, 64)),
             "orb": (5, (100, 100)),
             "monster": (3, (512, 512)),
+            "event": (6, (1616, 1616)),
         }
 
         for spec, (count, size) in expected.items():

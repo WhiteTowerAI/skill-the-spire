@@ -169,8 +169,16 @@ The skill is responsible for the entire pipeline (per §6):
 Art remains a required product capability. It was deliberately non-gating during the M6
 gameplay/programming phase, so M6 canaries used built-in/fallback visuals, generated nodes,
 or generic open-mod-owned scenes while behavior contracts were proven. Those contracts are
-now live-green. The remaining presentation pass is ordered: finish Event static art first,
-then Character static assets, then richer character-mechanic UI before starting M7.
+now live-green. Event runtime/static contracts are also closed at their grounded boundary:
+normal initial and explicit page portraits are supported, while phobia/custom/Ancient
+surfaces retain honest fallbacks. A three-reference generation/inspection plus real headed
+render closed Event acquisition on 2026-07-20. The same host now supports the bounded
+code-native `portrait_halo` VFX plus Cmd/page/selection/reward outcomes and one resumable
+or terminal special combat per Event instance, plus vanilla-observed emphasis/color/
+`jitter`/`sine` spans in normal page and option descriptions. The remaining presentation
+pass is ordered: the six native-presentation quick wins below; Character static assets and
+Ancient opening name-banner/Architect presentation; then richer character-mechanic UI
+before starting M7.
 
 Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
 the art decision explicit and the result source-independent:
@@ -213,7 +221,7 @@ then rebuild the `.pck`. The exact sprite **path + size contract** (a normal car
 portrait is `1000×760`; 606×852 full art is Ancient-only, out of scope;
 relic/power/potion icons are 256×256 loose PNGs; an enchantment icon is one 64×64 PNG; an
 orb icon is one 100×100 PNG; a static monster body is one 360×360 PNG shared by combat and
-bestiary; and a normal event initial portrait is one opaque 3440×1613 PNG; all eight static specs are
+bestiary; and every normal event initial/page portrait slot is one opaque 3440×1613 PNG; all eight static specs are
 live-verified) is recorded in
 `art-contract.md`. `gen_sprite.py` also has an `import` mode for a
 user-supplied local image. Placeholder stays the default (a missing sprite falls back to
@@ -222,11 +230,11 @@ local intermediate and then reuses `import`; it does not replace `art-contract.m
 Vofy credentials to `art-backend.json`. A callable host-native route likewise produces a
 local intermediate and reuses `import`; if the host exposes no local image tool or file,
 the skill keeps the placeholder rather than silently choosing a paid backend. Card,
-relic, power, potion, enchantment, orb, and monster each own a real-game reference pool;
-reference-capable routes select the matching family and randomly sample three distinct
-images. Event remains text-template-only until its dedicated samples are grounded. An
-ignored local baseline inventories 56 deduplicated wiki.gg Event PNGs as candidates; they
-must still be reviewed, attributed, and promoted into the committed Event sample pool. See
+relic, power, potion, enchantment, orb, monster, and event each own a real-game reference
+pool; reference-capable routes select the matching family and randomly sample three
+distinct images. Event's six reviewed, attributed samples were selected from the actual
+55-image local wiki.gg inventory; the retained manifest still records the removed 56th
+file. See
 `BASELINE_RESEARCH.md` and
 `history/IMPLEMENTATION_PLAN_THROUGH_M6.md` M5.5 follow-up for its exact boundary and proof gate.
 
@@ -245,6 +253,42 @@ Static monster art is deliberately separate from animation. A headed `CombatEnem
 both combat and a real default bestiary layout, including generated bounds/intent placement
 and the explicit missing-file scene fallback. Spine, move animation, phobia variants, and
 animated bestiary previews are postponed to the later animation expansion.
+
+Normal Event static art now covers the initial portrait and explicitly authored page
+changes with the same checked 3440x1613 profile. The reused `MapNode` proof also verified
+that phobia mode retains the current custom portrait when no custom phobia file exists.
+One approved `seedream-5.0-lite` Event request used three curated references, produced an
+inspected wide source, normalized through `gen_sprite.py`, and rendered from the rebuilt
+`.pck` behind the real option UI with strict Tier 2 and no fresh error.
+Custom phobia art has no BaseLib mod-relative hook; custom layouts require full
+`ICustomEventNode` ownership; and Ancient layouts require `AncientEventModel`, so the
+normal layout is the honest fallback for those requests. One bounded Event VFX profile is
+now supported: `portrait_halo` uses public `OnRoomEnter`/portrait-child nodes, native
+Tweens, Fast Mode behavior, and explicit named-node cleanup. BaseLib's advertised
+`CustomVfxPath` is unused in both 3.3.5 and 3.3.6, so arbitrary VFX remains later work.
+
+Normal Event text effects require no generated VFX code. Both the page description and
+option text use `MegaRichTextLabel`; the pipeline emits only a bounded, balanced subset of
+the tags observed in vanilla Event localization and keeps titles plain. The reused headed
+suite proved the required host effect types, settled initial/later-page presentation,
+replacement of old tagged text, strict Tier 2, and no fresh error. Ancient opening banner
+text uses a dedicated node/effect and is assigned to the Character presentation phase.
+
+The Event outcome vocabulary is also live-closed at its current boundary. A single hosted
+suite drove page Cmd, upgrade selection, a resumable custom encounter, blocking custom
+reward, and a terminal custom encounter from a fresh Event instance. It proved
+`resumes=1/0`, direct map return, VFX cleanup, `selftest done`, and no fresh error. Events
+may carry extra combat rewards through the public API, but they must be shared and may
+start at most one special combat per mutable instance. Direct merchant/rest/treasure room
+transitions have no vanilla production precedent and remain unsupported.
+
+Before Character work resumes, M6 will promote six currently unsupported native-host
+candidates in order: rich text across Card bodies/standard Hover Tips; Event option Hover
+Tips/relic images; lethal-choice warnings; Card/relic acquisition previews; bounded
+one-shot screen shake; and curated built-in noncombat Event VFX. Each needs a bounded SPEC
+and headed consumer proof. The disposable `CanaryEvent` project and installed mod were
+retired after the current evidence was recorded; a new/extended acceptance mod is created
+only when the next candidate is ready to verify.
 
 ## 8. Out of scope (for now)
 
@@ -265,6 +309,9 @@ animated bestiary previews are postponed to the later animation expansion.
   playable characters and large mechanic changes are now in scope when they can be
   expressed as verified capability modules; "BaseLib has no wrapper" is not by itself an
   out-of-scope reason.
+- **Positioned speech/thought bubbles in normal portrait Events** are future outlook only,
+  with no M6/M7 delivery plan. The native command needs a real `Creature` speaker and the
+  normal Event layout has no safe portrait-speaker contract.
 
 ## 9. Constraints & assumptions
 

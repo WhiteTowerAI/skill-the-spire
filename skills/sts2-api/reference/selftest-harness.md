@@ -888,14 +888,21 @@ route text `- -> N>E>S>W -> -`, rejected overflow, generated history `1`, config
 actual Block `20`, and a distinct empty second-combat state. Retained-card custom piles
 are not covered by this supported path.
 
-## The `MapNode` scenario (event / World Node — earned seam, live 2026-07-13)
+## The `MapNode` scenario (event / World Node — extended live 2026-07-20)
 
 An event is not proven by registration alone. The harness must enter its real `EventRoom`,
 wait for the nested event UI, click an actual `NEventOptionButton`, and observe the option's
 run-state consequence. Reuse the fixed menu-to-run navigation and `NRun.GlobalUi` timing
-gate; replace the combat entry/driver with this body:
+gate. Before debug-entering an Event, wait until the normal startup has generated its map
+and created its first room; this prevents terminal Event/combat paths from opening a half-
+initialized `NMapScreen`:
 
 ```csharp
+await WaitHelper.Until(
+    () => RunManager.Instance.DebugOnlyGetState()?.Map is not NullActMap &&
+          (NRun.Instance?.EventRoom?.Layout != null || NRun.Instance?.MapRoom != null),
+    ct, TimeSpan.FromSeconds(30), "initial map and room did not finish loading");
+
 var canonical = ModelDb.Event<<Name>>();
 await RunManager.Instance.EnterRoomDebug(RoomType.Event, MapPointType.Unknown, canonical);
 
@@ -950,17 +957,79 @@ Required namespaces beyond the fixed scaffold: the event type; `MegaCrit.Sts2.Co
 `MegaCrit.Sts2.Core.Rooms`. `System.Linq` is already used by the navigation code.
 
 Select the button by the SPEC option's formatted title, not merely "the only unlocked
-option"; multi-option events are valid and the scenario drives one specified consequence.
+option". The fast path drives one specified consequence; the extended path below drives
+each independent outcome family declared by SPEC.
 The event option method logs its own `option chosen:` marker **after** the Cmd changes run
 state. The harness independently asserts the same state and emits `state proof:`. Verify
 with a pattern such as `"event gold.*observed=25"`; the verifier still requires the exact
 load marker and `selftest done`.
 
-> **Live-proven (`CanaryEvent`, tier-2 PASS):** `GildedSignpost` entered through
-> `EnterRoomDebug(..., ModelDb.Event<GildedSignpost>())`; formatted title and option loc
-> resolved; `UiHelper.Click` selected `Follow the sign`; the event and harness independently
-> observed gold `99 -> 124` (`delta=25`); the result page resolved; zero mod-named errors.
-> The portrait is the provisional vanilla `This or That?` placeholder, not custom event art.
+### Extended outcomes, special combat, VFX, and rich text
+
+When SPEC uses the full Event vocabulary, read `reference/event-outcomes.md` and drive one
+real UI path per independent semantic invariant. Do not create one harness project per
+outcome. The supported combined shape is:
+
+1. immediate Cmd and `SetEventState`;
+2. a blocking `CardSelectCmd` overlay, then its exact deck mutation;
+3. a resumable special combat, then the named `Resume` page;
+4. a blocking `RewardsCmd.OfferCustom` overlay, then its exact reward state;
+5. click the standard proceed option and confirm the real map opens;
+6. enter a fresh mutable Event instance for a terminal special-combat branch;
+7. finish combat and confirm the map opens without `Resume`.
+
+Each mutable Event instance starts at most one special combat. This is a runtime boundary,
+not just a test simplification.
+
+Wait for the standard Event completion option by semantics, never localized English text:
+
+```csharp
+NEventOptionButton? proceed = null;
+await WaitHelper.Until(() =>
+{
+    var eventRoom = NEventRoom.Instance;
+    if (eventRoom == null)
+        return false;
+    proceed = UiHelper.FindAll<NEventOptionButton>(eventRoom)
+        .SingleOrDefault(button => button.Option.IsProceed);
+    return proceed is { IsEnabled: true, Visible: true };
+}, ct, TimeSpan.FromSeconds(30), "event proceed option not available");
+await UiHelper.Click(proceed!);
+```
+
+For a resumable combat, retain the first mutable Event reference and require all of:
+
+```csharp
+await WaitHelper.Until(
+    () => RunManager.Instance.DebugOnlyGetState()?.CurrentRoom is EventRoom &&
+          NEventRoom.Instance?.Layout != null &&
+          mutableEvent.ResumeCount == 1,
+    ct, TimeSpan.FromSeconds(30), "event did not resume after special combat");
+```
+
+For a terminal branch, require an open map, zero resumes on the fresh Event instance, and
+no live `NEventRoom`. Identify every combat through its mutable custom encounter type; a
+generic `CombatRoom` is not proof of the requested fight.
+
+If SPEC selects `portrait_halo`, follow `reference/event-vfx.md`. Assert the named root is
+visible and animating (or intentionally static in Instant mode), then prove it is freed on
+page/combat transitions. Delay screenshots until the option UI and room fade are visibly
+settled; a node path or near-black transition frame is not visual evidence.
+
+If SPEC selects bounded Event rich text, follow `reference/event-text-effects.md` in this
+same `MapNode` run. Resolve `%EventDescription` as a BBCode-enabled `MegaRichTextLabel`,
+assert every required allowed host effect type is installed and the exact balanced tags reached its raw text,
+then switch to a second authored page and prove the same label contains the new tags but
+none of the prior page's tagged span. Capture both settled player-visible states; do not
+create a text-only Event project or re-run the other outcome families separately.
+
+> **Live-proven (`CanaryEvent`, strict tier-2 PASS, 2026-07-20):** one hosted run drove
+> page Cmd, upgrade selection, resumable custom combat, custom Gold reward, terminal custom
+> combat from a fresh Event instance, and VFX cleanup. The structured proof reported
+> `expected=pageCmd+cardSelection+resumableCombat+customReward+terminalCombat+vfxCleanup`
+> with the identical observed value, `resumes=1/0`, `selftest done`, and no fresh error.
+> Headed screenshots showed the initial/page/resumed portrait halos and the actual special
+> combat after its room fade.
 
 ## Deferred: the headless / menu-skip path (design seam, not built in M5)
 
@@ -976,7 +1045,7 @@ need their own mod-reachability grounding first.
 
 - [ ] `SelfTest.cs` emitted in `<ModName>Code/`, in the same namespace as `MainFile.cs` (`<ModName>.<ModName>Code`) so `MainFile.Logger` resolves.
 - [ ] `MainFile.Initialize()` has, after the load marker: `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();`
-- [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + option UI click); multi-element interactions reuse that real source driver and add observations.
+- [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + all independent option outcomes); multi-element interactions reuse that real source driver and add observations.
 - [ ] `<PREFIX>-<SLUG>` ids match the element's real `Id.Entry` (SPEC's derived ids).
 - [ ] The element's own type-specific marker (author.md step 2) is present for diagnosis.
 - [ ] The harness snapshots concrete state, asserts the SPEC's exact post-state, and calls

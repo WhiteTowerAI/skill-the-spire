@@ -4,6 +4,12 @@
 > room plus at least one consequential option: register it, enter it through the
 > `MapNode` scenario, click a real option, and observe the resulting run-state change.
 
+For the full option-result vocabulary (blocking card selections, custom rewards,
+conditional pages, and resumable/terminal special combat), also read
+`reference/event-outcomes.md`. When SPEC selects the bounded normal-layout
+`portrait_halo` profile, read `reference/event-vfx.md`. When page or option descriptions
+use styled/animated vanilla text, read `reference/event-text-effects.md`.
+
 ## Registration (automatic, no `[Pool]`)
 
 Subclass `BaseLib.Abstracts.CustomEventModel`. Its default constructor calls
@@ -30,7 +36,9 @@ using System.Threading.Tasks;
 using BaseLib.Abstracts;
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Events;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
 
 namespace <ModName>.<ModName>Code.Events;
 
@@ -100,6 +108,16 @@ relative key with the real `Id.Entry`, so do not include `<PREFIX>-<SLUG>` yours
 If these names disagree, the room can load but the UI shows missing/raw option text. This
 method-name-to-loc relationship is the event equivalent of the usual `Id.Entry` footgun.
 
+### Bounded rich text
+
+Normal Event page descriptions and option descriptions are rendered by the game's existing
+`MegaRichTextLabel`. They may use the vanilla-observed bounded tags from
+`reference/event-text-effects.md`: `b`; `aqua`, `blue`, `gold`, `green`, `orange`,
+`purple`, `red`; and the short motion tags `jitter` and `sine`.
+
+Keep titles plain, balance/nest every tag, and do not emit arbitrary BBCode or parameters.
+This path needs no C# helper or cleanup code; page changes replace the host label's text.
+
 The recipe uses code localization because BaseLib already provides the nested EventLoc
 types and the analyzer does not define an STS001 required-key row for `EventModel`. A mod
 may instead ship `events.json`, but it must use the exact fully-prefixed keys above.
@@ -119,14 +137,22 @@ run. Read it inside option methods / lifecycle hooks, never from the canonical i
 Use game `Cmd`s for consequences (`PlayerCmd.GainGold`, card/relic/potion Cmds, creature
 Cmds); do not mutate run fields directly.
 
-## Art contract: normal initial portrait
+This fast-path recipe shows one immediate effect. `reference/event-outcomes.md` is the
+authoritative contract for composed effects, selection/reward overlays, locked options,
+special-combat entry, `Resume`, optional combat rewards, and the one-combat-per-Event-
+instance boundary. It also records that merchant/rest/treasure room transitions remain
+unsupported.
 
-Normal/default-layout event initial portraits are pipeline-supported as one loose opaque
-PNG: `res://<ModName>/images/events/<slug>.png`, exactly **3440×1613**. Generate/import it
-with `gen_sprite.py --spec event`; the `.pck` rebuild is required. The concrete event must
-use the existence-checked override in the skeleton above because BaseLib returns
-`CustomInitialPortraitPath` directly and does not provide the template fallback helper used
-by cards/relics.
+## Art contract: normal and later-page portraits
+
+Normal/default-layout event portraits are pipeline-supported as loose opaque PNGs, each
+exactly **3440×1613**. The initial slot is
+`res://<ModName>/images/events/<event-slug>.png`; an authored page slot uses
+`res://<ModName>/images/events/<event-slug>_<page-key-lower>.png`. Generate/import each
+selected slot with `gen_sprite.py --spec event`; every art change requires a `.pck`
+rebuild. The concrete event must use the existence-checked initial override in the
+skeleton above because BaseLib returns `CustomInitialPortraitPath` directly and does not
+provide the template fallback helper used by cards/relics.
 
 Placeholder remains the silent default: when the mod PNG is absent, return the live-proven
 `res://images/events/this_or_that.png`. Do not return the missing custom path or rely on the
@@ -137,11 +163,51 @@ The 2026-07-17 `CanaryEvent` proof entered the real event room, observed the dis
 headed screenshot with the option UI over the custom portrait, clicked the option, and
 passed strict Tier 2 with no fresh error block.
 
-This does not cover a separate `_phobia_mode.png`, later-page portrait changes,
-portrait-anchored VFX, custom layouts, or Ancient background scenes. Keep those as explicit
-gaps rather than emitting guessed assets. Prompt composition and acquisition rules are in
-`reference/art-contract.md`; event art keeps its focal subject left and UI space on the
-right, unlike a centered card portrait.
+The 2026-07-20 extension kept that same room and click, then replaced the portrait with a
+second mod PNG on the result page. The replacement path and 3440×1613 size were asserted,
+the headed screenshot showed the new image, attached initial-page VFX had been removed,
+and the same strict Tier 2 proof remained green. Use this bounded page-switch pattern:
+
+The same date's acquisition acceptance submitted one approved `seedream-5.0-lite`
+`21:9`/`2K` request with three randomly selected Event references. Its inspected wide
+source normalized to 3440×1613, packed into this canary, rendered behind the real option
+UI, and passed the same strict proof with no fresh error. This closes the reference-prompt
+path for normal Event portraits; it does not extend the deferred scene/VFX surfaces.
+
+```csharp
+public static string ResultPortraitPath =>
+    $"{MainFile.ResPath}/images/events/<event-slug>_<page-key-lower>.png";
+
+private void ShowResultPortraitIfPresent()
+{
+    if (!LocalContext.IsMe(Owner) || !ResourceLoader.Exists(ResultPortraitPath))
+        return;
+
+    var room = NEventRoom.Instance;
+    room?.Layout?.RemoveNodesOnPortrait();
+    room?.SetPortrait(ResourceLoader.Load<Texture2D>(ResultPortraitPath));
+}
+```
+
+Call it from the option method immediately before `SetEventState` or
+`SetEventFinished`. If the PNG is absent, do nothing and retain the current portrait.
+This does not cover a separate `_phobia_mode.png`, custom layouts, or Ancient background
+scenes. Prompt composition and acquisition rules are in `reference/art-contract.md`;
+event art keeps its focal subject left and UI space on the right, unlike a centered card
+portrait.
+
+### Bounded VFX profile
+
+Normal/default-layout Events may select the pipeline-supported `portrait_halo` profile in
+`reference/event-vfx.md`. It uses public code-native Godot nodes through `OnRoomEnter` and
+`NEventLayout.AddVfxAnchoredToPortrait`; it does not use an image backend or a `.pck` VFX
+scene. The headed acceptance proved initial, later-page, combat cleanup, and resumed-page
+presentation with Fast Mode handling and no fresh error.
+
+Only that bounded profile is supported. BaseLib 3.3.5/3.3.6 declares
+`CustomEventModel.CustomVfxPath` but does not consume it, so never override it as a route.
+Arbitrary VFX, shaders, audio, custom/Ancient-layout animation, and other animation-bearing
+families remain outside this recipe.
 
 ## Type + Scenario proof (`MapNode`)
 
@@ -172,6 +238,12 @@ The harness also reads the formatted title, option title/description, and result
 so registration plus a gold mutation cannot hide broken nested localization. See
 `reference/selftest-harness.md` section `MapNode` for the full driver contract.
 
+For an Event with blocking overlays or special combat, use the extended `MapNode` driver
+from `reference/event-outcomes.md`: execute only SPEC's independent branches, identify the
+custom encounter, prove `Resume` or direct-map behavior, and emit one structured outcome-
+family marker. Any Event VFX claim additionally follows `reference/event-vfx.md` and
+requires headed screenshots plus explicit owned-node cleanup assertions.
+
 Known-good live canary (2026-07-13, `CanaryEvent`): build 0/0, custom room entered,
 `Gilded Signpost` and `Follow the sign` rendered from nested loc, the real option button was
 clicked, gold changed `99 -> 124` (`delta=25`), result page resolved, and `selftest done`
@@ -198,6 +270,15 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
 - [ ] event ends with `SetEventFinished` or deliberately advances with `SetEventState`
 - [ ] `CustomInitialPortraitPath` checks the mod portrait and falls back to
       `res://images/events/this_or_that.png`
-- [ ] generated event portrait, when selected, is one opaque `3440×1613`
-      `images/events/<slug>.png`; no guessed phobia/VFX/layout files
-- [ ] `MapNode` proof enters room, reads nested loc, clicks UI, and asserts a run-state delta
+- [ ] every selected initial/page portrait is an opaque `3440×1613`
+      `images/events/<slot-slug>.png`; absent page art retains the current portrait
+- [ ] Event/page option titles are plain; description rich text uses only balanced bounded
+      tags from `reference/event-text-effects.md`
+- [ ] blocking selection/reward Cmds are awaited before changing Event state
+- [ ] every room-changing Event is shared; each mutable Event instance enters at most one
+      special combat; `shouldResumeAfterCombat` matches the authored post-combat branch
+- [ ] no guessed phobia/layout files and no merchant/rest/treasure room transitions
+- [ ] VFX is `none` or the bounded normal-layout `portrait_halo`; every owned named node is
+      explicitly freed before page/portrait/combat transitions
+- [ ] `MapNode` proof enters the real room, drives every independent SPEC outcome family,
+      reads nested loc, and asserts exact post-state plus visible presentation

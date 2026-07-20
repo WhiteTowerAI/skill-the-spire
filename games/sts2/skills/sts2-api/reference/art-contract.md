@@ -84,10 +84,11 @@ Source-verified against the decompile after a live in-game run (do not re-derive
 | `enchantment` | `enchantments/<slug>.png` | **64×64** (verified live) | cut-out icon; **ONE file** — card tab/amount and hover tooltip reuse it |
 | `orb` | `orbs/<slug>.png` | **100×100** (verified live) | cut-out icon; **ONE file** — smart tooltip and trigger flash reuse it. Combat body is a separate Spine scene |
 | `monster` | `monsters/<slug>.png` | **360×360** (verified live profile) | transparent static body; **ONE file** — combat and bestiary reuse it. No animation/phobia variant |
-| `event` | `events/<slug>.png` | **3440×1613 wide landscape** (verified live) | opaque full-bleed initial portrait; **ONE file**. Normal/default-layout events only |
+| `event` | `events/<slot-slug>.png` | **3440×1613 wide landscape** (verified live) | opaque full-bleed portrait; one file per initial/page slot. Normal/default-layout events only |
 
-**A relic and a power each need TWO files; every other live spec needs ONE
-(`gen_sprite.py` handles the count automatically).** Relic/power/potion were confirmed live
+**A relic and a power each need TWO files; every other invocation writes ONE
+(`gen_sprite.py` handles the count automatically). An event may invoke the same spec once
+per selected portrait slot.** Relic/power/potion were confirmed live
 by Bauble, Smolder, and Fizz on 2026-07-08; enchantment by Guarded and the orb icon by
 Shelter on 2026-07-17; the monster combat/bestiary body by Canary Sentinel on 2026-07-17.
 Relic/power read the icon from two separate loose-PNG getters — writing only the first
@@ -112,6 +113,9 @@ leaves the other on the placeholder:
   `NBestiaryLayoutDefault` both call the same `MonsterModel.CreateVisuals()` path. BaseLib
   builds a non-Spine `NCreatureVisuals` around the texture, including bounds and intent
   anchors; there is no second bestiary file.
+- **event portrait**: `events/<slot-slug>.png` **only** for each selected slot. The initial
+  slot is resolved by `CustomInitialPortraitPath`; authored page slots are loaded and
+  passed to `NEventRoom.SetPortrait` by the event option method.
 `gen_sprite.py` writes the same normalized image to every path a spec needs, so you don't
 manage them by hand. (`card`'s outer `card_portraits/<slug>.png` is dead code under BaseLib —
 only `big/` is written.)
@@ -270,14 +274,15 @@ body, and phobia mode retains the same texture.
 
 ## The normal-event portrait contract
 
-A pipeline-supported normal event has exactly one generated art asset: its initial
-portrait at `images/events/<slug>.png`, normalized to **3440×1613** with opaque `cover`
-fit and chroma-key off. Eleven current normal/phobia portrait samples in the pinned game
-pack use that logical size. The 2026-07-17 `CanaryEvent` headed run then proved the mod
-path in the real `MapNode` host: `%Portrait.Texture.ResourcePath` was
-`res://CanaryEvent/images/events/gilded_signpost.png`, its logical size was 3440×1613,
-the option UI rendered over the custom image, the option changed Gold by 25, and strict
-Tier 2 passed with no fresh error block.
+A pipeline-supported normal event has an initial portrait at
+`images/events/<event-slug>.png` and may have additional page portraits at
+`images/events/<event-slug>_<page-key-lower>.png`. Every slot is independently normalized
+with `--spec event` to **3440×1613**, opaque `cover` fit, and chroma-key off. Eleven current
+normal/phobia portrait samples in the pinned game pack use that logical size. The
+2026-07-17 `CanaryEvent` headed run proved the initial mod path in the real `MapNode` host.
+The 2026-07-20 extension reused the same room and option click to switch to a second mod
+portrait after the consequence: both textures reported 3440×1613, the result screenshot
+showed the replacement, Gold changed by 25, and strict Tier 2 passed with no fresh error.
 
 Unlike card/relic template bases, `CustomEventModel.CustomInitialPortraitPath` does not
 check whether the returned path exists. Use an explicit fallback in every generated event:
@@ -292,15 +297,36 @@ public override string? CustomInitialPortraitPath =>
     ResourceLoader.Exists(ModPortraitPath) ? ModPortraitPath : FallbackPortraitPath;
 ```
 
-The one-file claim is deliberately narrow:
+For a page portrait, check the mod path before loading it. When it is absent, do not call
+`SetPortrait`; the current portrait is the verified fallback. `NEventRoom.SetPortrait`
+accepts the loose `Texture2D` directly. If the old portrait owns attached nodes, call
+`NEventLayout.RemoveNodesOnPortrait()` before switching, as vanilla `Trial` does. Generated
+owned VFX is stricter: `RemoveNodesOnPortrait()` only detaches it, so first locate every
+named owned root and call `QueueFreeSafely()` as required by `reference/event-vfx.md`.
 
-- the optional phobia portrait is a separate inferred `<full-id>_phobia_mode.png` path;
-- a later page may replace the portrait through `NEventRoom.SetPortrait`;
-- portrait-anchored VFX use a separate scene;
-- custom-layout and Ancient events own scene/background contracts.
+The remaining boundaries are explicit:
 
-Those consumers remain deferred. Do not generate extra files for them or describe the
-normal initial-portrait proof as event scene/VFX support.
+- phobia uses the private engine path `<full-id>_phobia_mode.png`; BaseLib 3.3.5 exposes
+  no mod-relative override. With no phobia texture, the default layout keeps the current
+  custom portrait. The 2026-07-20 headed run toggled phobia mode and verified that fallback;
+- `EventLayoutType.Custom` resolves a fixed global scene path and requires a complete
+  `ICustomEventNode`, including focus, input, options, lifecycle, and cleanup. There is no
+  checked standard-layout fallback;
+- `NAncientEventLayout` casts the model to `AncientEventModel` and instantiates its
+  background scene. BaseLib has no custom Ancient model recipe, and the normal
+  `CustomEventModel` cannot safely select this layout;
+- raster portrait generation does not create VFX. The separate code-native
+  `portrait_halo` profile is pipeline-supported through `reference/event-vfx.md`; arbitrary
+  VFX remains later work.
+
+The promoted bounded VFX proof used only public/native pieces: `EventModel.OnRoomEnter`,
+`NEventLayout.AddVfxAnchoredToPortrait`, native `Node2D`/`Line2D`/`Polygon2D`, a looping
+`Tween`, Fast Mode handling, and explicit `QueueFreeSafely` cleanup. The real headed run
+observed rotation advance plus visible initial/page/resumed states, then proved cleanup on
+combat entry. BaseLib 3.3.5 and 3.3.6 declare
+`CustomEventModel.CustomVfxPath` but do not patch the engine's private VFX path, so that
+property is not a usable route. Only `portrait_halo` is supported; arbitrary scenes,
+shaders, audio, or other generated motion remain outside the static-art contract.
 
 ## Making a generated portrait actually match STS2 (read before writing the prompt)
 
@@ -337,9 +363,10 @@ stronger).**
 Pass `--reference <sts2-api>/reference/art-samples` to either acquisition tool — always the
 **root** samples dir, not a subdir. It contains `card/` (18 portraits), `relic/` (6 icons),
 `power/` (6 icons), `potion/` (6 icons), `enchantment/` (20 normal 64x64 icons), `orb/`
-(5 non-empty icons), and `monster/` (the Axebot, Ceremonial Beast, and Crossbow Ruby Raider
-renders). The tool **auto-selects the subdir matching `--spec`** and randomly samples three
-distinct images when the pool is larger. Monster's fixed three are always all supplied.
+(5 non-empty icons), `monster/` (the Axebot, Ceremonial Beast, and Crossbow Ruby Raider
+renders), and `event/` (six reviewed wiki.gg previews). The tool **auto-selects the subdir
+matching `--spec`** and randomly samples three distinct images when the pool is larger.
+Monster's fixed three are always all supplied.
 Never mix families merely to fill the reference list; their visual languages differ.
 
 The Images transport sends the selected files as multipart `image[]` inputs to
@@ -350,9 +377,8 @@ through the runtime's normal local-image mechanism, and label each one STYLE REF
 ONLY. If the route cannot consume local references, use the type-specific text prompt
 alone. (All © Mega Crit, reference-only — see `art-samples/ATTRIBUTION.md`.)
 
-Only `event` lacks a bundled reference-image set in the current static pipeline. It remains
-text-template-only until a type-matched pool is grounded. If any reference set is removed,
-the corresponding detailed text template remains the fallback.
+If any reference set is removed, the corresponding detailed text template remains the
+fallback.
 
 ## The card portrait prompt template — three segments
 
@@ -540,13 +566,16 @@ replace the card composition paragraph with this fixed event structure:
 ```
 [① fixed event style]:
    Original wide environment illustration for a deck-building game's event room.
-   Flat 2D shapes, hard-edged cel shading, clean dark outlines, cool atmospheric
-   background, and one clearly readable focal situation.
+   Match the reference images' graphic 2D environment painting: large angular silhouettes,
+   simplified polygonal forms, hard-edged two-to-four-step shading, selective clean dark
+   outlines, deep cool atmospheric shadows, and one restrained saturated or emissive
+   accent. Use sparse detail and broad negative space outside the focal situation. Do not
+   reuse the card prompt's radial burst, centered hero pose, or warm rim-light formula.
 [② generated situation]:
    Two-to-four sentences showing the event title/opening as one concrete moment.
 [③ fixed event composition/negative constraints]:
    Very wide ~2.13:1 landscape. Place the focal subject in the left third.
-   Keep the center-right and lower-right darker, lower-detail, and low-contrast so the
+   Keep the center-right and lower-right dark, low-detail, and low-contrast so the
    game's title, description, and option buttons remain readable. Full-bleed opaque scene.
    No text, letters, numbers, logos, border, UI, card frame, or watermark.
    NOT photorealistic, NOT a 3D render, NOT pixel art.
@@ -599,6 +628,18 @@ passed locally without regeneration. This acceptance proves reference delivery, 
 shaping, and deterministic normalization. It does not replace the existing headed
 combat/tooltip/bestiary consumer proofs.
 
+On 2026-07-20, one separately approved `seedream-5.0-lite` Event request used the curated
+Event pool and randomly selected `this_or_that.png`, `drowning_beacon.png`, and
+`doors_of_light_and_dark.png`. The `21:9`/`2K` source preserved the requested left-third
+focal subject and dark center-right UI area without text or borrowed reference objects.
+It normalized to the exact opaque 3440×1613 profile, packed into `CanaryEvent.pck`, and
+rendered behind the real Event option UI. The same headed run changed Gold by 25, switched
+to the later-page portrait, removed the initial portrait VFX, and passed strict Tier 2 with
+no fresh error. This closes reference-prompt acquisition for the normal Event portrait
+profile; it does not promote custom layouts, phobia art, Ancient backgrounds, or general
+VFX generation. The later Event outcome/VFX acceptance separately promoted the bounded
+code-native halo without adding a raster asset type.
+
 ## Using the tool
 
 ```
@@ -611,7 +652,8 @@ python ${GAME_TOOLS_DIR}/gen_sprite.py import \
 
 # For relic/power/potion/enchantment/orb/monster native sources, use the same import command with --chroma.
 # Keep the raw source on a perfectly flat #FF00FF background until this import step.
-# For a normal event use --spec event with no --chroma; it writes events/<slug>.png.
+# For each selected normal-event slot use --spec event with no --chroma; it writes
+# events/<slot-slug>.png.
 
 # managed credits — Vofy is acquisition only. The user installs/logs in themselves;
 # preflight prints no account/credit details. Inspect live model capabilities separately:

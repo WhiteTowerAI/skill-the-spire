@@ -1,0 +1,111 @@
+# Normal Event Rich Text
+
+Normal/default-layout Events may use the same bounded rich-text vocabulary as vanilla
+Event descriptions. This is host-native presentation: localization supplies balanced
+BBCode tags and the existing `MegaRichTextLabel` parses and animates them. Generated mods
+do not create a VFX node, Tween, Shader, font, or scene for this feature.
+
+## Supported vocabulary
+
+The pinned vanilla Event localization uses exactly this authored subset:
+
+| Kind | Allowed tags | Use |
+|---|---|---|
+| emphasis | `b` | short static emphasis |
+| color | `aqua`, `blue`, `gold`, `green`, `orange`, `purple`, `red` | semantic or atmospheric color |
+| motion | `jitter`, `sine` | short shaking or wave-like spans |
+
+Use tags only in normal Event **page descriptions** and **option descriptions**. Keep the
+Event title and option titles plain: titles also identify buttons, metrics/history entries,
+and self-test choices.
+
+Every tag must be balanced and nested in reverse closing order. Prefer one short animated
+span at a time. These are known-good vanilla shapes:
+
+```text
+A [jitter][gold]golden sign[/gold][/jitter] points onward.
+The [sine][purple]darkness breathes[/purple][/sine].
+[b]CLANG! CLANG!!![/b]
+```
+
+Do not emit arbitrary Godot BBCode, tag parameters, custom colors, or user-supplied raw
+markup. In particular, `fade_in`, `fly_in`, `thinky_dots`, and `pink` exist in the global
+host control but are not part of the vanilla Event-localization subset promoted here.
+`ancient_banner` is installed only by the dedicated Ancient name-banner node and is not a
+normal Event tag.
+
+## Why no generated code is needed
+
+`NEventLayout` resolves `%EventDescription` as `MegaRichTextLabel` and calls
+`SetDescription(formattedText)` whenever Event state changes. `NEventOptionButton` also
+renders its combined title/description through `MegaRichTextLabel`. That class enables
+BBCode and installs the built-in effect set. A page transition replaces the label text, so
+there are no owned children or cleanup hooks to emit.
+
+The animation implementations read the game's text-effects preference directly where the
+host supports it. They do not use Fast Mode. Do not add custom timing or preference logic,
+and do not promise that every vanilla effect responds identically to the setting.
+
+## Authoring contract
+
+SPEC records only the intended spans, not literal source markup:
+
+```text
+event text effects: vanilla
+text spans:
+  INITIAL: "golden sign" -> jitter + gold
+  FOLLOWED: "darkness breathes" -> sine + purple
+```
+
+At author time, apply only the allowed tags to the exact phrase in the corresponding
+`EventPageLoc` or `EventOptionLoc` description. Do not translate the tags themselves and
+do not duplicate them around a whole paragraph merely because the user requested
+"dramatic text."
+
+## Verification
+
+Reuse the Event `MapNode` suite. One headed run is sufficient:
+
+1. enter the real normal Event and resolve `%EventDescription` as a BBCode-enabled
+   `MegaRichTextLabel` with every required allowed effect type installed;
+2. assert the formatted localization reaches the label with the intended balanced tags;
+3. capture a settled page where the short colored/moving spans are visibly distinct;
+4. change to a second authored page, assert the same label contains only the new page's
+   tags, and capture it;
+5. keep the Event's existing structured outcome proof, `selftest done`, and no fresh error
+   block. Do not re-run unrelated outcome branches in a separate rich-text project.
+
+## Planned M6 native-presentation pass (not yet supported)
+
+Complete these six candidates in order before returning to Character static art. Each item
+must get its own bounded SPEC vocabulary, generated consumer, existing-host extension, and
+headed evidence before it becomes pipeline-supported:
+
+1. **Cross-content bounded rich text:** Card bodies and standard Hover Tips. Real card,
+   relic, potion, and power localization already contains many of the same tags;
+   `NCard.%DescriptionLabel` and `NHoverTipSet.%Description` are `MegaRichTextLabel`.
+   Ground a per-surface allowed subset and prove the real Card body plus hover consumers,
+   including SmartFormat and auto-keyword composition.
+2. **Event option Hover Tips and relic-image options:** BaseLib already forwards
+   `IHoverTip` values from `Option`/`LockedOption`, and vanilla has typed
+   `HoverTipFactory` helpers plus `RelicOption<T>`.
+3. **Lethal-choice affordance:** public `EventOption.ThatDoesDamage` and
+   `ThatDecreasesMaxHp` drive the native kill-warning glow instead of relying on red text.
+4. **Native Card/relic acquisition previews:** vanilla Events reuse public
+   `CardCmd.Preview`, `PreviewCardPileAdd`, and normal relic acquisition presentation.
+5. **Bounded one-shot native screen shake:** the call is public and self-terminating, but
+   strength, accessibility preference behavior, and visual proof need a fixed profile.
+6. **Curated built-in noncombat Event VFX:** use the Event `VfxContainer`, but verify asset
+   path, placement, pause behavior, and scene-owned cleanup per allowed profile. This is not
+   arbitrary VFX support.
+
+After these six, resume Character static presentation, including the Ancient opening name
+banner and Ancient dialogue presentation. `RichTextAncientBanner` is installed by
+`NAncientNameBanner`, not by the normal Event label, so it remains a dedicated
+Character/Architect item.
+
+## Future outlook (not planned)
+
+Positioned speech/thought bubbles are intentionally not part of the M6 or M7 plan.
+`TalkCmd` needs a real `Creature` speaker, while normal portrait Events do not provide one;
+keep requests for this as an explicit future gap.

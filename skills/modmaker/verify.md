@@ -103,6 +103,12 @@ requires the exact load marker and `selftest done`.
 - For an ordered semantic buffer/dynamic output, require exact source/compile-card result
   piles, visible order, capacity and overflow behavior, one generated-history entry, exact
   configured output/effect, and a distinct empty state/UI in combat 2.
+- For an Event, require one real UI path per independent SPEC outcome family. Blocking
+  card/reward overlays must finish before their post-state assertion. A special combat must
+  identify the custom encounter and prove exactly one authored completion path: named
+  `Resume` page or direct map. Use a fresh Event instance if SPEC independently exercises
+  both forms; never start two combats from one mutable Event. The final structured marker
+  lists identical expected/observed outcome families.
 
 ### Custom-art headed acceptance
 
@@ -117,7 +123,12 @@ assertion plus visual inspection. In particular:
 - orb icon: smart tooltip and trigger flash (the Frost combat body remains fallback);
 - monster: static body in combat with unobscured intent/floor alignment, then the same
   custom body in bestiary with title/move list and no crop;
-- event: the normal initial portrait behind the real option UI.
+- event: the normal initial portrait behind the real option UI, then every selected
+  later-page portrait after its real option transition; missing optional page art must
+  visibly retain the current portrait. When `portrait_halo` is selected, also capture every
+  configured page after its UI fade, observe motion (or static Instant-mode behavior), and
+  prove the prior named root is freed across page/portrait/combat/finish transitions. A
+  near-black room-transition frame is not evidence.
 
 If a secondary view cannot be reached, report behavior Tier 2 separately and label the art
 unverified; do not infer it from a resource path, `.pck` build, or primary view.
@@ -156,7 +167,12 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
    **card** → play it (target an enemy for an attack; `energy 3` first for headroom);
    **enemy encounter** → end enough turns to traverse the declared cycle; confirm every
    move's visible intent and exact HP/Block/Power change, and drive each conditional outcome;
-   **event** → choose the specified option and confirm its run-state consequence.
+   **event** → choose the specified options and confirm each exact Cmd/selection/reward
+    consequence. For special combat, confirm the requested custom encounter and then the
+    named return page or direct map. For `portrait_halo`, visually inspect configured pages
+    and confirm no stale overlay survives a page switch or combat entry. For vanilla Event
+    text effects, inspect the named colored/moving phrase on each authored page and confirm
+    the prior page's text is gone after the transition.
    **character** → confirm HP, starter deck/relic, and standard 3 energy after run start;
    enter combat and observe the named starter mechanic's exact state delta.
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the

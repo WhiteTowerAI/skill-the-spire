@@ -68,8 +68,22 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      those are the recipe's job.
    - **Event / World Node**: resolve the event's opening situation, the option(s) the
      player can choose, and each option's concrete consequence (gold/HP/card/relic/etc.).
-     A one-option event is valid for the fast path. Ask which acts only if the user cares;
-     default is all acts. Do not ask about `EventLoc`, room nodes, or registration.
+     Record whether each option finishes, opens another choice page, blocks on a card/
+     reward selection, or enters special combat. For combat, resolve whether victory
+     returns to a named Event page or proceeds directly to the map, plus any extra reward.
+     Also capture the special encounter's monster/group, HP, visible moves, and order or
+     branch condition using the enemy-encounter defaults above; "special combat" is not a
+     complete encounter spec by itself.
+     One mutable Event instance supports at most one special combat. A one-option event is
+     valid for the fast path. Ask which acts only if the user cares; default is all acts.
+     If the user explicitly asks for Event VFX, offer the bounded portrait halo and capture
+     which normal pages use it plus a plain-language color/mood; default is no VFX. Do not
+     ask about `EventLoc`, room nodes, anchors, or registration. If the user asks for words
+     that shake, wave, change color, or look emphatic, infer bounded vanilla Event rich text
+     and capture only the exact phrase plus plain-language effect; never ask for BBCode.
+     Event option Hover Tips/relic images, lethal-choice warnings, acquisition previews,
+     screen shake, and built-in noncombat VFX are scheduled but not supported yet; preserve
+     explicit requests as presentation gaps. Speech/thought bubbles are future outlook only.
    - **Character**: resolve the character's identity/theme, starting HP,
      exact starter deck counts, starter relic, and one starter card/relic mechanic that
      public/BaseLib APIs can prove in combat. Default to standard 3 energy and placeholder
@@ -90,9 +104,11 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    generate for the mod, asked **once** no matter how many cards/sprites it has. Do NOT
    ask per sprite. If they want custom art:
    - **Eight static specs — card portraits, relic icons, power icons, potion icons,
-     enchantment icons, orb icons, static monster bodies, and a normal event's initial portrait** can be generated
-     (all live-verified as loose PNGs; orb support is icon-only, and event support does not
-     include phobia, later-page, VFX, or custom-layout assets).
+     enchantment icons, orb icons, static monster bodies, and normal-event portrait slots** can be generated
+     (all live-verified as loose PNGs; orb support is icon-only, and Event raster support
+     does not include custom phobia or custom-layout assets). Generate the initial event
+     portrait plus only later-page portraits the user's concept explicitly calls for; do
+     not turn every result page into another image spend.
    - Prefer a **host-native image generator** when the current runtime actually exposes
      one. In Codex this is the built-in `image_gen` tool governed by the installed
      `imagegen` skill and it needs no separate `OPENAI_API_KEY`. Do not infer availability
@@ -112,9 +128,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      requests for Spine bodies, attack/hurt/cast/death animation, phobia variants, or
      bestiary move previews as later-animation gaps. Characters use the template/built-in
      placeholder shell; state that limitation if custom character visuals are requested and
-     continue only if the user accepts it. For an event, offer only the normal initial
-     portrait; preserve any request for phobia, later-page, VFX, custom-layout, or Ancient
-     art as a gap.
+     continue only if the user accepts it. For an event, offer the normal initial portrait
+     and any explicitly requested later-page image change. The separate code-native
+     `portrait_halo` needs no image backend. Preserve requests for custom phobia art,
+     arbitrary VFX, custom-layout, or Ancient art as gaps.
 
 ## Defaults (apply silently unless the user specified otherwise)
 
@@ -132,6 +149,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
+- **Event VFX**: none unless explicitly requested; then use only `portrait_halo` on named
+  normal-layout pages.
+- **Event text effects**: none unless explicitly requested or clearly described; then use
+  only the bounded vanilla rich-text vocabulary on named page/option description phrases.
 - **Character Foundation**: 70 HP, standard 3 energy, a 10-card Basic starter deck,
   one Starter relic, valid character-scoped card/relic/potion pools, and template/built-in
   placeholder visuals. Derive starter effects from the user's stated theme.
@@ -150,7 +171,7 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
   proactively ask about art. Only switch to `generate` if the user's sentence asks for a
   custom look (e.g. "a card showing a red phoenix", "make it look like…"). Eight static
   specs — card / relic / power / potion / enchantment / orb icon / monster body /
-  normal-event initial portrait — can be generated (see step 4). It is a
+  normal-event portrait slots — can be generated (see step 4). It is a
   **single mod-level choice**, asked at most once regardless of sprite count. Custom
   generation prefers a callable host-native image tool, then can use an already-
   authenticated Vofy CLI or a BYO HTTP backend; an existing local image uses the same
@@ -226,11 +247,17 @@ element: event
 name: <proposed>
 opening: <short situation/initial page>
 options:
-  - <option title> -> <precise consequence with numbers>
+  - <option title> -> <precise consequence with numbers>; next: finish | page <KEY> |
+    special combat <encounter>, then resume page <KEY> | special combat, then map
 acts: all | <specified acts>
 art: placeholder | generate: <opening scene; focal subject left, dark UI space right>
+page portraits: none | <PAGE_KEY>: <replacement scene>  (only when explicitly requested)
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
-art boundary: normal initial portrait only; no phobia/later-page/VFX/custom-layout assets
+event VFX: none | portrait_halo on <page keys>; <color/mood>
+event text effects: none | vanilla; <PAGE/OPTION_KEY>: "<exact phrase>" -> <emphasis/color/jitter/sine>
+art boundary: normal initial plus explicit page portraits; no custom phobia/custom-layout assets;
+  VFX boundary: one code-native portrait_halo profile, no arbitrary VFX;
+  text boundary: descriptions only, bounded vanilla tags, plain titles
 ```
 
 For a **character**:

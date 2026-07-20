@@ -19,12 +19,17 @@ Do not require one canary project per capability.
 |---|---|
 | `CombatPlayer` | basic content matrix, interaction, keyword card-text/no-icon tooltip, enchantment tab/tooltip icon, orb tooltip/flash icon plus fallback scene and behavior, cadence |
 | `CombatEnemy` | encounter/move vocabulary plus static monster body in combat and bestiary |
-| `MapNode` | event option UI/consequence plus normal initial-portrait art |
+| `MapNode` | Event Cmd/page/selection/reward outcomes, resumable and terminal special combat, normal initial/page portraits, bounded portrait-halo VFX, bounded native rich text, and cleanup/fallback presentation |
 | `RunStart` / Character | Wayfinder selection, pools/starters, resource/UI, semantic route buffer, dynamic output |
 
 Wayfinder supersedes the isolated Foundation/resource/kernel composition path for current
 character regression. The retired real-card `CustomPile` canary remains historical evidence
 only; it does not represent player-facing support.
+
+`CanaryEvent` was a disposable hosted acceptance mod. Its work directory and installed copy
+were retired after the 2026-07-20 outcome/VFX/rich-text evidence was recorded. The `MapNode`
+row above is the durable host contract, not a requirement to keep an armed mod installed;
+recreate or extend an Event acceptance project only when the next candidate is ready.
 
 ## Proof rule
 
@@ -45,6 +50,13 @@ exact packed resource/scene to render in the headed game, with a screenshot or e
 visual assertion that distinguishes it from the fallback. Build success and resource-path
 logs alone do not prove art. Extend a hosted suite when practical; there is still no
 one-project-per-art-type rule.
+
+For Event screenshots, wait until option/page fades and combat room transitions settle.
+Visible node existence is not enough; a blank page or near-black transition frame is not
+acceptance evidence.
+For rich text, wait for both description opacity and `VisibleRatio` to settle; assert the
+required host effect types rather than an exact `CustomEffects` array length because the
+real Event scene contributes one additional entry beyond `MegaRichTextLabel`'s own table.
 
 Run only one armed harness mod at a time because `--t2selftest` arms every loaded harness.
 

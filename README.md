@@ -16,8 +16,8 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > output. It proves both that the
 > mod **loads** and that its **effect actually fires** in-game, repairs common build
 > errors automatically, and supports placeholder or generated art for card portraits,
-> relic/power/potion/enchantment/orb icons, a static monster combat+bestiary body, and a
-> normal event's initial portrait. Keyword
+> relic/power/potion/enchantment/orb icons, a static monster combat+bestiary body, and
+> normal event initial/explicit page portraits. Keyword
 > card text and hover-tooltip presentation are also live-verified; keywords intentionally
 > own no bitmap. When the
 > agent runtime exposes a native image tool, open-mod can use it
@@ -27,8 +27,13 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > combat. Enemy encounters support
 > rich deterministic/conditional move cycles with multi-turn behavior proof. A fresh
 > Wayfinder character composed the advanced resource/UI and spatial-route mechanics and
-> passed build plus two-combat live verification. The direct next step is Event static
-> art, followed by Character static assets and then richer character-mechanic UI;
+> passed build plus two-combat live verification. The Event slice now includes immediate,
+> page, selection, reward, resumable-combat, and terminal-combat outcomes plus one bounded
+> code-native portrait-halo VFX profile and native vanilla-style colored/moving description
+> text. Its final headed suite passed strict Tier 2 with
+> no fresh error. Event static art also includes one three-reference generation and real
+> headed render acceptance. The direct next step is six bounded native-presentation
+> follow-ups, followed by Character static assets and richer character-mechanic UI;
 > animation is a later expansion, and M7's
 > proactive beginner interview follows that pass. Vanilla editing and one-click Steam
 > Workshop publishing also remain out of scope.
@@ -176,13 +181,13 @@ open-mod is still young. Today it does the following well, and is honest about t
 - ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
   failures, then re-verifies.
 - ✅ **Custom art for grounded static surfaces** — card portraits,
-  relic/power/potion/enchantment/orb icons, one static monster body, and a normal event's initial portrait are
+  relic/power/potion/enchantment/orb icons, one static monster body, and normal event initial/page portraits are
   live-verified. Placeholder art remains the zero-setup default. Generation prefers a
   callable host-native image tool (Codex `image_gen` when exposed), then supports Vofy,
   your own compatible image backend, or a local image. Every route uses the same
   deterministic STS2 normalizer and falls back safely if unavailable. Reference-capable
   generation randomly selects three real, type-matched STS2 samples for every grounded
-  family except event, whose dedicated reference pool is the next art slice.
+  family, including Event's six reviewed and attributed references.
 - ✅ **Enemy encounters and rich move cycles** — a plain-English request can produce a
   custom monster plus its encounter, including self custom-Powers, player debuffs,
   Block/Heal, multi-attacks, combined actions, deterministic cycles, and conditional
@@ -192,10 +197,21 @@ open-mod is still young. Today it does the following well, and is honest about t
   combat and bestiary with an explicit built-in fallback; Spine and move animation are a
   later expansion.
 - ✅ **Map events / World Nodes** — a plain-English request can produce a custom event
-  with nested page/option text and a real run-state consequence. The pipeline enters the
-  event room, clicks its real option UI, and independently observes the result. A normal
-  event's custom initial portrait is live-supported with a verified vanilla fallback;
-  phobia/later-page portraits, portrait VFX, and custom/Ancient scenes remain provisional.
+  with nested page/option text; ordered public Cmd effects; locked choices; blocking card
+  selections and custom rewards; and one special combat that either resumes a named Event
+  page or proceeds directly to the map. The pipeline enters the real room, drives every
+  independent SPEC branch through actual UI, identifies the custom encounter, and observes
+  exact state/page/map results. A normal
+  event's custom initial and explicit page portraits are live-supported with checked
+  fallbacks. Custom phobia art and custom/Ancient scenes remain deferred behind grounded
+  engine/BaseLib blockers. The bounded code-native `portrait_halo` VFX is supported with
+  Fast Mode behavior and explicit cleanup. Page and option descriptions also support the
+  vanilla-observed bounded `b`/color/`jitter`/`sine` vocabulary through the native label;
+  titles remain plain and no generated VFX node is involved. Arbitrary VFX remains later. A 2026-07-20
+  three-reference generation acceptance
+  also normalized, packed, and rendered a new 3440x1613 Event portrait in the real room.
+  Direct merchant/rest/treasure room transitions and a second combat from the same Event
+  instance remain unsupported.
 - ✅ **Character Foundation** — a plain-English request can produce a selectable minimal
   character with character-scoped card/relic/potion pools, exact starter deck/relic, HP,
   standard 3 energy, and one public/BaseLib starter mechanic. Verification clicks the real
@@ -211,17 +227,21 @@ open-mod is still young. Today it does the following well, and is honest about t
   version-gated B-risk postfix now has build, load, real UI-host, typed-state, conflict,
   idempotence, and two-combat lifetime proof. It is deliberately not advertised as a
   gameplay mechanic and has not been extracted into `OpenMod.Runtime`.
-- ⏭️ **Direct next: M6 Static Art Expansion** — first curate the Event reference pool and
-  ground the remaining non-animated Event contracts; next cover Character static assets;
-  then improve character-mechanic UI beyond its fallback Label. Extend the existing
+- ⏭️ **Direct next: M6 native presentation, then Static Art Expansion** — promote, in
+  order: cross-content rich text; Event option Hover Tips/relic images; lethal-choice
+  warnings; Card/relic acquisition previews; bounded screen shake; and curated built-in
+  noncombat Event VFX. Then cover Character static assets and the Ancient opening
+  name-banner/Architect presentation before improving Character UI. Extend the existing
   source-independent generation/import pipeline only with headed proof, without mistaking
-  fallback visuals for support. All Spine, move animation, animated VFX, and animated
-  transitions are postponed to a later expansion and do not block M7.
+  fallback visuals for support. All Spine, move animation, arbitrary animated VFX, and
+  animated transitions are postponed to a later expansion and do not block M7; the bounded
+  normal-Event portrait halo is already supported.
 - ⏳ **After the art pass:** M7's proactive beginner interview. **Not yet:** retained-card
   custom zone UI, unverified advanced character families,
   nonstandard character energy,
   editing existing vanilla content, production-size character card pools, and one-click
-  Steam Workshop publishing.
+  Steam Workshop publishing. Positioned Event speech/thought bubbles are future outlook
+  only and have no M6/M7 delivery plan.
 - ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
   on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but
   those combinations have not yet been live-verified. Registry directory listing is

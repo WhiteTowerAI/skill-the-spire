@@ -31,8 +31,11 @@ localization JSON, and inject the self-test marker. Everything structural
   `elements` + an interaction. Keep the recipe's checked static-body factory plus explicit
   fallback scene; animation is outside this pass. For an **event / World Node** (`element: event`),
   read `recipes/event.md`: author one `CustomEventModel`, nested `EventLoc` pages/options,
-  a public-Cmd consequence, and a `SetEventFinished` result page; no `[Pool]` or manual
-  `AddEvent`. For a **Character Foundation** (`element: character`), read
+  public-Cmd consequences, and explicit page/finish flow; no `[Pool]` or manual `AddEvent`.
+  Also read `reference/event-outcomes.md` when SPEC includes selections, rewards,
+  conditional pages, or special combat; read `reference/event-vfx.md` when it selects
+  `portrait_halo`; read `reference/event-text-effects.md` when descriptions select bounded
+  vanilla text effects. For a **Character Foundation** (`element: character`), read
   `recipes/character.md`: keep the character template's `PlaceholderCharacterModel` and
   three pool bases, fill exact starters/HP/loc, and never call `AddCharacter` manually.
   If SPEC selects a character resource, read `reference/character-resource.md`; if it
@@ -137,14 +140,30 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
 - Override `Localization` with `EventLoc` containing the title, `INITIAL` page, every
   `EventOptionLoc`, and every result page. The key for `Option(Method)` must be the exact
   upper-snake slug of the method name.
-- `GenerateInitialOptions()` returns `Option(<Method>)`. The method uses confirmed public
-  Cmds against `Owner`, logs the observed state delta, then calls
-  `SetEventFinished(PageDescription("<RESULT_KEY>"))` (or deliberately `SetEventState` for
-  another choice page).
-- Override `CustomInitialPortraitPath` with the recipe's existence check: use the one
-  generated `images/events/<slug>.png` when present, otherwise the verified vanilla
-  `this_or_that.png` fallback. This supports only the normal initial portrait, not phobia,
-  per-page, VFX, custom-layout, or Ancient background assets.
+- `GenerateInitialOptions()` returns the authored options. Each method uses the confirmed
+  public Cmd/selection/reward vocabulary against `Owner`, awaits blocking overlays, logs
+  the observed state delta, then follows SPEC with `SetEventFinished`, `SetEventState`, or
+  one special-combat transition.
+- If any option enters combat, author its monster + encounter dependency from
+  `recipes/monster.md`, set `IsShared => true`, and call
+  `EnterCombatWithoutExitingEvent<TEncounter>(extraRewards, shouldResumeAfterCombat)`.
+  A resumable branch overrides `Resume(AbstractRoom)` and restores its exact named page;
+  a terminal branch proceeds to the map. Never emit a second combat from the same mutable
+  Event instance or a direct merchant/rest/treasure room transition.
+- Override `CustomInitialPortraitPath` with the recipe's existence check: use the generated
+  `images/events/<event-slug>.png` when present, otherwise the verified vanilla
+  `this_or_that.png` fallback. For every explicitly requested page portrait, check
+  `images/events/<event-slug>_<page-key-lower>.png` and call `NEventRoom.SetPortrait`
+  immediately before the page transition; when absent, retain the current portrait. Clean
+  owned portrait child nodes before a switch.
+- When SPEC selects `portrait_halo`, emit the exact bounded helper from
+  `reference/event-vfx.md`, attach page profiles through `OnRoomEnter`/the portrait host,
+  honor Instant/Fast mode, and explicitly `QueueFreeSafely` every owned named root before
+  page, portrait, combat, or finish transitions. Do not use `CustomVfxPath`. Custom phobia
+  art, arbitrary VFX, custom layouts, and Ancient background assets remain unsupported.
+- When SPEC selects vanilla Event text effects, apply only the exact bounded tags from
+  `reference/event-text-effects.md` around the named phrases in `EventPageLoc` and
+  `EventOptionLoc` descriptions. Keep titles plain; emit no helper node or cleanup code.
 
 **Character Foundation** — use the classes scaffolded by `alchyrsts2charmod` and
 `recipes/character.md`:
@@ -230,8 +249,13 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    remain observable).
    **event** → the **`MapNode`** variant: enter the canonical custom event with
    `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, ModelDb.Event<T>())`, wait for its
-   real `NEventOptionButton`, read formatted nested loc, click it with `UiHelper.Click`, and
-   assert the SPEC's run-state consequence plus result page.
+   real `NEventOptionButton`, read formatted nested loc, and drive every independent SPEC
+   outcome family through real UI. Await card/reward overlays; identify the special
+   encounter; prove the named `Resume` page or direct map branch; assert one combat per
+   Event instance. For `portrait_halo`, assert movement/static Fast Mode behavior, visible
+   headed pages, and explicit cleanup across page/combat transitions. For bounded rich
+   text, assert the real `%EventDescription` host, installed effects, exact tagged
+   localization, and a second page replacing the first page's tagged text.
    **character** → the **`RunStart` + `CombatPlayer`** variant: locate the real custom
    character button by normalized icon resource path, click it and Confirm, wait for
    `NRun.GlobalUi`, assert runtime HP/pools/starter multisets, enter combat, then assert
@@ -385,11 +409,14 @@ placeholders and do not call `gen_sprite.py` for them.
   `NCreature` and default bestiary layout.** The concrete monster must use the recipe's
   existence-checked `CreateCustomVisuals()` factory and keep `CustomVisualPath` on the
   built-in scene fallback. This does not add Spine, move animation, or a phobia variant.
-- **`--spec event`** — the normal/default-layout event's one opaque **3440×1613** initial
-  portrait, `fit: cover`, chroma-key OFF, written to `events/<slug>.png`. **Live-verified
-  in the real MapNode host.** The event class must retain the recipe's existence-checked
-  vanilla fallback. This does not generate a phobia variant, later-page portrait, VFX,
-  custom layout, or Ancient background scene.
+- **`--spec event`** — one opaque **3440×1613** normal/default-layout portrait slot per
+  invocation, `fit: cover`, chroma-key OFF, written to `events/<slot-slug>.png`.
+  **Live-verified in the real MapNode host for the initial and a later page.** Generate the
+  initial slot plus only the later-page slots explicitly listed in SPEC. The event class
+  must retain the checked initial fallback and keep the current portrait when optional
+  page art is absent. This does not generate a phobia variant, custom layout, or Ancient
+  background scene. The optional code-native `portrait_halo` is authored from
+  `reference/event-vfx.md` and has no `gen_sprite.py` invocation.
 
 1. **Build the prompt (three segments — see `art-contract.md`).** For card and the M5.5
    `relic`/`power`/`potion` icon specs,
@@ -501,9 +528,8 @@ placeholders and do not call `gen_sprite.py` for them.
    ```
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
    point it at the **root** `art-samples` dir (as shown). The tool auto-picks the matching
-   `card`/`relic`/`power`/`potion`/`enchantment`/`orb`/`monster` subdir and randomly samples
-   three distinct files; families are never mixed. Event has no bundled pool yet, so omit
-   `--reference` for event unless the user supplies type-matched references. Backends
+   `card`/`relic`/`power`/`potion`/`enchantment`/`orb`/`monster`/`event` subdir and randomly
+   samples three distinct files; families are never mixed. Backends
    that accept reference images (gpt-image edits or Gemini/nano-banana) imitate the
    game style far better, and plain text-to-image backends just ignore it.
    The tool POSTs to the user's backend, then chroma-keys (per spec — OFF for a full-bleed

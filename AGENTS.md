@@ -14,31 +14,32 @@ instructions.
 
 ## Current status
 
-**M6 gameplay/programming core is complete. Direct next: M6 Static Art Expansion research
-and implementation. M7 follows after that presentation pass. Animation is a later,
-non-blocking expansion.**
+**M6 gameplay/programming core and the Event static-art/outcome/VFX/rich-text slice are
+complete. Direct next: the six-item M6 native-presentation pass below, then Character
+static assets and richer character-mechanic UI. M7 follows after the remaining presentation
+pass. Animation is a later, non-blocking expansion.**
 
 Current pipeline-supported surfaces include:
 
 - relic, potion, card, power, keyword, enchantment, and orb;
 - monster + encounter, including deterministic/conditional move vocabulary;
-- event / World Node;
+- event / World Node, including Cmd/page/selection/reward outcomes, resumable or terminal
+  special combat, bounded normal-layout `portrait_halo` VFX, and vanilla-observed rich
+  text in page/option descriptions;
 - playable Character Foundation;
 - combat resource with explicit all-or-nothing payment and generic live counter;
 - bounded ordered **semantic** card-play buffer with visible state and deterministic output;
 - stateful relic cadence for combat-local and run-persistent counters;
 - placeholder or generated art for card/relic/power/potion, enchantment/orb icons, one
-  static monster combat+bestiary body, and the normal event initial portrait, plus
+  static monster combat+bestiary body, and normal event initial/explicit page portraits, plus
   live-grounded text-only keyword card/tooltip
   presentation. Custom acquisition prefers a
   callable host-native raster image tool (`runtime-imagegen`; Codex `image_gen`), then the
   existing Vofy, BYO HTTP, or local-image routes; every source converges on
   `gen_sprite.py import`. Reference-capable routes use separate real-game pools for
-  card/relic/power/potion/enchantment/orb/monster and randomly sample three type-matched
-  images; event awaits its own bundled pool and must not borrow another family's
-  references. An ignored local baseline currently inventories 56 deduplicated wiki.gg
-  event PNGs as curation candidates; they are not pipeline samples until reviewed and
-  attributed under `art-samples/event`.
+  card/relic/power/potion/enchantment/orb/monster/event and randomly sample three
+  type-matched images. Event's six reviewed samples were promoted from the actual local
+  inventory of 55 deduplicated wiki.gg PNGs and are attributed under `art-samples/event`.
 
 Host-native image generation is an optional runtime capability, not a bundled model. Do
 not infer it from the text-model name or the presence of an `imagegen` skill file: the
@@ -58,12 +59,14 @@ Important correction from the real Wayfinder player run:
 
 Still unsupported: editing vanilla content, retained-card zone UI, alternative-energy
 engine hooks, production character art/animation, run-persistent character resources,
-remote-player character UI, novel C/D patch targets, and one-click Workshop publishing.
+remote-player character UI, novel C/D patch targets, direct Event transitions to merchant/
+rest/treasure rooms, more than one special combat per mutable Event instance, arbitrary
+Event VFX/custom/Ancient layouts, and one-click Workshop publishing.
 
-## Direct next: M6 Static Art Expansion
+## Direct next: M6 native presentation quick wins
 
 M5.5 custom art covered card portraits and relic/power/potion icons. M6 Static Art Expansion now
-also live-supports one normal event initial portrait at 3440x1613 and one 64x64
+also live-supports normal event initial/explicit page portraits at 3440x1613 and one 64x64
 enchantment icon shared by the card tab and hover tooltip, plus one 100x100 orb icon shared
 by the smart tooltip and trigger flash, all with checked fallbacks. Orb icon support is
 deliberately separate from its persistent combat body: the latter still uses an explicit
@@ -74,16 +77,49 @@ null icon, and the hosted proof preserves the keyword's behavior. A keyword owns
 so it has no `gen_sprite.py` spec. Static monster art is also complete for the normal
 profile: one checked 360x360 PNG feeds both combat and the default bestiary layout through
 BaseLib's non-Spine factory, with correct bounds/intent placement and an explicit built-in
-scene fallback. Finish the remaining M6 presentation work in this order:
+scene fallback. The Event runtime/static contract is also complete: six attributed
+references feed its source-grounded prompt; initial and explicit page portraits share the
+checked 3440x1613 profile; phobia mode retains the current portrait; and custom phobia,
+custom layout, and Ancient assets are explicitly deferred behind grounded BaseLib/scene
+blockers. That acquisition gate closed on 2026-07-20: one approved
+`seedream-5.0-lite` `21:9`/`2K` request used three randomly selected Event references,
+produced an inspected 3440x1613 portrait, and rendered from the rebuilt `.pck` in the real
+Event room with strict Tier 2 and no fresh error. Before returning to Character work,
+promote these currently unsupported candidates in order, one bounded headed proof each:
 
-- event reference curation, prompt maturity, phobia/later-page portraits, and non-animated
-  custom/Ancient layouts;
-- character select/static combat art and other non-animated character assets;
+1. bounded rich text in Card bodies and standard Hover Tips;
+2. Event option Hover Tips and relic-image options;
+3. native lethal-choice warnings for HP/Max HP costs;
+4. native Card/relic acquisition previews;
+5. a bounded one-shot native screen-shake profile;
+6. curated built-in noncombat Event VFX profiles with verified placement and cleanup.
+
+After all six, finish the remaining M6 presentation work in this order:
+
+- character select/static combat art and other non-animated character assets, plus the
+  Ancient opening name-banner/Architect presentation research requested for this phase;
 - richer character resource and ordered-buffer UI beyond the fallback Label.
 
-All animation-bearing work is postponed to a later expansion: orb Spine bodies; monster
-Spine and attack/hurt/cast/death/phobia/bestiary previews; character animation, trails, and
-animated transitions; event portrait VFX; and optional UI motion. None blocks M6 or M7.
+The Event outcome/VFX follow-up is also complete. One final headed `CanaryEvent` run drove
+page Cmd, upgrade selection, resumable custom combat, custom Gold reward, terminal custom
+combat from a fresh Event instance, and explicit VFX cleanup. Its expected/observed outcome
+families matched, `resumes=1/0`, `selftest done`, and no fresh error. The supported VFX is
+one code-native normal-layout `portrait_halo` with Fast Mode handling; BaseLib's
+`CustomVfxPath` remains unused.
+
+The same hosted Event suite now also proves normal-layout rich text without generated VFX
+code. Page and option descriptions may use the vanilla Event subset: `b`; `aqua`, `blue`,
+`gold`, `green`, `orange`, `purple`, `red`; and `jitter`/`sine`. Titles stay plain. The
+headed proof resolved the real BBCode label and required effect types, showed the initial
+styled text, replaced it on a later page, and passed the existing strict outcome proof with
+`richText` added and no fresh error. Ancient name-banner text is not part of this support;
+it is a dedicated Character-phase presentation item.
+
+All other animation-bearing work is postponed to a later expansion: orb Spine bodies;
+monster Spine and attack/hurt/cast/death/phobia/bestiary previews; character animation,
+trails and animated transitions; arbitrary Event VFX/animation-bearing layouts; and
+optional UI motion. Positioned speech/thought bubbles are future outlook only and are not
+planned for M6 or M7. None blocks M6 or M7.
 
 Do not reopen the completed M6 behavior canaries or jump to M7. First inventory the real
 asset/scene contracts for these families, then extend the source-independent acquisition ->
@@ -94,7 +130,7 @@ or fallback visual is not enough. Record exact blockers and keep an honest fallb
 static scene family that cannot yet be generated safely. Do not reopen animation work.
 
 The `runtime-imagegen` edge may be reused for card/relic/power/potion, enchantment/orb
-icons, a static monster body, and a normal event initial portrait because their import and headed render contracts are
+icons, a static monster body, and normal event portrait slots because their import and headed render contracts are
 live-grounded. A universal first-party Codex native-tool claim still requires a dedicated
 acceptance run; the current third-party Codex route exposes the instructions but not a
 callable `image_gen` tool.
