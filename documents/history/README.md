@@ -31,6 +31,7 @@ Current sources of truth:
 - `canary-matrix-through-m6.md`
 - `canary-results-through-m6.md`
 - `content-capability-graph-through-m6.md`
+- `M6_NATIVE_PRESENTATION_RESULTS.md`
 
 The final canary-results section records the player-found Wayfinder lifecycle correction:
 the semantic ordered buffer supersedes the retained-card `CustomPile` claim.

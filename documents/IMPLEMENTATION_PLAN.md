@@ -5,11 +5,11 @@
 
 ## Status
 
-**M0-M6 gameplay/programming gates and the Event static-art/outcome/bounded-VFX/rich-text
-slices are complete. Direct next: the inserted six-item M6 native-presentation pass, then
-Character static assets and richer character-mechanic UI. M7 follows after the new M6
-content surfaces have grounded, honest static art/presentation contracts. Animation is a
-later, non-blocking expansion.**
+**M0-M6 gameplay/programming gates, the Event static-art/outcome/bounded-VFX/rich-text
+slices, and native-presentation items 1-3 are complete. Direct next: item 4, native Card/
+relic acquisition previews, then items 5-6, Character static assets, and richer character-
+mechanic UI. M7 follows after the new M6 content surfaces have grounded, honest static art/
+presentation contracts. Animation is a later, non-blocking expansion.**
 
 The current pipeline supports the bounded surfaces listed in `../AGENTS.md` and
 `../games/sts2/tests/content-capability-graph.md`. The player-found Wayfinder correction is
@@ -119,8 +119,8 @@ layouts, and Ancient backgrounds are explicitly deferred behind the grounded blo
 below. One explicitly approved three-reference `seedream-5.0-lite` generation on
 2026-07-20 completed the Event acquisition gate: its inspected `21:9`/`2K` source
 normalized to 3440x1613, packed into `CanaryEvent`, rendered behind the real option UI,
-and passed strict Tier 2 with no fresh error. Direct work now moves to character static
-assets, followed by richer character-mechanic UI.
+and passed strict Tier 2 with no fresh error. Direct work continues through the remaining
+native-presentation items before character static assets and richer character-mechanic UI.
 
 The requested Event behavior/VFX follow-up then inventoried all 68 vanilla Event classes
 and promoted the complete normal-Event outcome vocabulary: ordered public Cmd effects,
@@ -144,24 +144,36 @@ waited for the later page's native opacity/`VisibleRatio` animation to settle, p
 old tagged text was replaced, added `richText` to the existing identical expected/observed
 marker, reached `selftest done`, and had no fresh error.
 
+The first three inserted native-presentation items closed in one disposable
+`CanaryPresentation` suite on 2026-07-20. Cross-content proof rendered bounded authored
+colors in the real Card body and typed Card/relic/potion/power Hover Tips while preserving
+SmartFormat, the auto keyword, and Block `0 -> 7`. Event proof rendered enabled typed tips,
+confirmed locked-tip suppression, and showed normal `RelicOption<T>` text/metadata with no
+normal-layout image. Two settled pages then showed native glow alpha `0.00/0.50` for safe/
+inclusive-lethal HP and Max HP costs. All structured state proofs reached `selftest done`
+with no fresh error. This promotes the supported portions through interview, SPEC, author,
+recipe, and verification routing; locked tips and the Ancient-only relic image remain
+explicit gaps.
+
 The disposable `CanaryEvent` work directory and installed mod were retired after this
 evidence was recorded. Recreate or extend a `MapNode` acceptance mod only when the next
 candidate reaches headed verification; do not keep an armed harness installed between
 passes.
 
-### Inserted M6 native-presentation pass (direct next)
+### Inserted M6 native-presentation pass (items 1-3 complete)
 
-Before Character static art, promote these six currently unsupported candidates in order:
+Before Character static art, complete the remaining candidates in order. The first three
+are retained here as closed contracts so their boundaries stay visible:
 
-1. **Cross-content bounded rich text:** ground per-surface tags and prove the real Card body
+1. **Complete - cross-content bounded rich text:** per-surface tags render in the real Card body
    plus standard card/relic/potion/power Hover Tips, including SmartFormat and auto-keyword
    composition.
-2. **Event option Hover Tips and relic-image options:** route typed
-   `HoverTipFactory`/`RelicOption<T>` presentation through generated options and prove the
-   real hover/icon consumers.
-3. **Native lethal-choice warnings:** attach exact HP/Max HP costs through
-   `ThatDoesDamage`/`ThatDecreasesMaxHp` and prove the warning appears only when lethal.
-4. **Native Card/relic acquisition previews:** preserve the semantic outcome, then prove
+2. **Complete at the normal-layout boundary - Event option presentation:** enabled typed
+   `HoverTipFactory` values and `RelicOption<T>` text/metadata render natively. Locked tips
+   are suppressed; relic option images are Ancient-only and remain deferred.
+3. **Complete - native lethal-choice warnings:** exact HP/Max HP costs through
+   `ThatDoesDamage`/`ThatDecreasesMaxHp` warn only at the inclusive lethal boundary.
+4. **Direct next - native Card/relic acquisition previews:** preserve the semantic outcome, then prove
    the matching original-game preview without duplicate grants or blocking-order errors.
 5. **Bounded one-shot screen shake:** define allowed strengths/triggers, respect the game
    preference, and prove it terminates without obscuring Event text.
@@ -170,7 +182,7 @@ Before Character static art, promote these six currently unsupported candidates 
 
 For each item, reuse the closest hosted suite and require one proof per independent
 semantic/presentation invariant. Do not create six projects or re-run unrelated Event
-outcome branches merely to make the evidence denser. After all six, resume Character
+outcome branches merely to make the evidence denser. After items 4-6, resume Character
 static assets, Ancient opening name-banner/Architect presentation, and richer Character UI.
 
 ### Research inventory
@@ -245,8 +257,8 @@ not sufficient. Arbitrary VFX, shaders/audio, and animation-bearing custom/Ancie
 remain later work.
 
 Adjacent Event presentation inventory is recorded in
-`games/sts2/skills/sts2-api/reference/event-text-effects.md`. Its first six candidates are
-now the ordered direct-next pass above. The Ancient opening banner remains explicitly
+`games/sts2/skills/sts2-api/reference/event-text-effects.md`. It records completed items
+1-3 and the ordered remaining items 4-6 above. The Ancient opening banner remains explicitly
 assigned to the following Character presentation phase and is not implied by normal Event
 rich text.
 

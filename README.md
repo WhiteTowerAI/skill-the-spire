@@ -32,8 +32,11 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > code-native portrait-halo VFX profile and native vanilla-style colored/moving description
 > text. Its final headed suite passed strict Tier 2 with
 > no fresh error. Event static art also includes one three-reference generation and real
-> headed render acceptance. The direct next step is six bounded native-presentation
-> follow-ups, followed by Character static assets and richer character-mechanic UI;
+> headed render acceptance. The first three bounded native-presentation follow-ups now
+> cover Card/standard-tip rich text, enabled Event option typed tips and relic metadata,
+> and native exact-lethal HP/Max HP warnings. Direct next is native Card/relic acquisition
+> previews, followed by screen shake, curated built-in Event VFX, Character static assets,
+> and richer character-mechanic UI;
 > animation is a later expansion, and M7's
 > proactive beginner interview follows that pass. Vanilla editing and one-click Steam
 > Workshop publishing also remain out of scope.
@@ -212,6 +215,11 @@ open-mod is still young. Today it does the following well, and is honest about t
   also normalized, packed, and rendered a new 3440x1613 Event portrait in the real room.
   Direct merchant/rest/treasure room transitions and a second combat from the same Event
   instance remain unsupported.
+- ✅ **Native presentation 1-3** — Card descriptions and standard Card/relic/potion/power
+  Hover Tips support bounded per-surface vanilla colors. Enabled Event options support
+  typed Hover Tips and normal relic-backed text/metadata; locked tips remain suppressed and
+  normal-layout relic images remain deferred. Exact HP/Max HP costs can drive the native
+  inclusive-lethal warning glow. All consumers passed headed strict Tier 2 on 2026-07-20.
 - ✅ **Character Foundation** — a plain-English request can produce a selectable minimal
   character with character-scoped card/relic/potion pools, exact starter deck/relic, HP,
   standard 3 energy, and one public/BaseLib starter mechanic. Verification clicks the real
@@ -227,10 +235,9 @@ open-mod is still young. Today it does the following well, and is honest about t
   version-gated B-risk postfix now has build, load, real UI-host, typed-state, conflict,
   idempotence, and two-combat lifetime proof. It is deliberately not advertised as a
   gameplay mechanic and has not been extracted into `OpenMod.Runtime`.
-- ⏭️ **Direct next: M6 native presentation, then Static Art Expansion** — promote, in
-  order: cross-content rich text; Event option Hover Tips/relic images; lethal-choice
-  warnings; Card/relic acquisition previews; bounded screen shake; and curated built-in
-  noncombat Event VFX. Then cover Character static assets and the Ancient opening
+- ⏭️ **Direct next: finish M6 native presentation, then Static Art Expansion** — items
+  1-3 are complete. Next promote Card/relic acquisition previews, bounded screen shake,
+  and curated built-in noncombat Event VFX. Then cover Character static assets and the Ancient opening
   name-banner/Architect presentation before improving Character UI. Extend the existing
   source-independent generation/import pipeline only with headed proof, without mistaking
   fallback visuals for support. All Spine, move animation, arbitrary animated VFX, and

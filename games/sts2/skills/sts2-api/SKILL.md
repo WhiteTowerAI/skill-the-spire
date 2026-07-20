@@ -27,7 +27,9 @@ not dump entire files into the response.
    `${STS2_API_SKILL_DIR}/reference/event-vfx.md` only when SPEC selects the bounded
    normal-layout `portrait_halo` profile. Read
    `${STS2_API_SKILL_DIR}/reference/event-text-effects.md` when Event page/option
-   descriptions use the bounded vanilla rich-text vocabulary.
+   descriptions use the bounded vanilla rich-text vocabulary. Read
+   `${STS2_API_SKILL_DIR}/reference/event-option-presentation.md` when enabled Event
+   options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP costs.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
    character template, constructor auto-registration, three pools, starters, two-table
    localization, placeholder shell, and `RunStart` + `CombatPlayer` proof.
@@ -43,7 +45,8 @@ not dump entire files into the response.
    is not permission to invent other patch targets, C/D patches, or `OpenMod.Runtime`.
    Cards/powers/keywords/enchantments/orbs also read
    `${STS2_API_SKILL_DIR}/reference/mechanics.md` first (scaling numbers, SmartFormat
-   descriptions, shared enums).
+   descriptions, shared enums). When Card/relic/potion/power descriptions select bounded
+   vanilla colors, also read `${STS2_API_SKILL_DIR}/reference/content-text-effects.md`.
    For any effect that remembers progress (every N events, once per combat, previous
    turn, limited run uses), read `${STS2_API_SKILL_DIR}/reference/stateful-mechanics.md`.
 2. For error signatures → fix, read `${STS2_API_SKILL_DIR}/errors.md`.
@@ -75,7 +78,9 @@ not dump entire files into the response.
 | `recipes/character.md` | Character Foundation (`alchyrsts2charmod`, `PlaceholderCharacterModel`, constructor auto-`AddCharacter`, card/relic/potion pools, starter deck/relic, exact character+Architect loc, placeholder visuals, `RunStart` + `CombatPlayer` proof) | Authoring a minimal playable custom character shell |
 | `reference/event-outcomes.md` | Full normal-Event outcome vocabulary: immediate Cmd combinations, multi-page/locked options, blocking card selections, custom rewards, resumable/terminal special combat, extra combat rewards, one-combat-per-instance boundary, and unsupported room transitions | Authoring an Event beyond the one-Cmd fast path |
 | `reference/event-vfx.md` | Bounded code-native normal-layout `portrait_halo`: page parameters, Fast Mode behavior, `OnRoomEnter`/portrait host, explicit named-node cleanup, and headed acceptance contract | Authoring the supported Event portrait VFX profile |
-| `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, the ordered six-item M6 native-presentation pass, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
+| `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation items 1-3, remaining items 4-6, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
+| `reference/content-text-effects.md` | Per-surface vanilla rich-text allowlists for Card bodies/Card previews and standard relic/potion/power Hover Tips; SmartFormat and auto-keyword composition; headed proof contract | Authoring styled Card/relic/potion/power descriptions |
+| `reference/event-option-presentation.md` | Enabled Event option typed Hover Tips, normal `RelicOption<T>` text/metadata plus its Ancient-only image blocker, and native exact-lethal HP/Max HP warning glow | Authoring those normal-layout Event option presentation contracts |
 | `reference/character-resource.md` | 6d combat resource contract: `PlayerCombatState` ownership, nonnegative gain/affordability/all-or-nothing spend, second-combat reset, card-hosted payoff, generic live Label, and selection of the exact 6c combat-UI adapter | Authoring a character resource and explicit-payoff loop |
 | `reference/ordered-card-buffer.md` | Ordered combat-buffer contract: `PlayerCombatState` semantic values, native source-card Discard, visible state text, bounded order/overflow, deterministic per-instance output, `CardGeneratedEntry`, and combat reset; retained-card `CustomPile` gameplay is explicitly unsupported | Authoring an ordered card-play record and dynamic output |
 | `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, version/MVID-gated patch registry with zero-target/failure/owned/foreign diagnostics, and the scenario-verified B-risk `NCombatUi.Activate(CombatState)` postfix. Self-contained only; no `OpenMod.Runtime`, unverified patch target, Publicizer, or transpiler support | Maintaining or emitting a specifically grounded advanced capability after public/BaseLib cannot expose its host seam |
@@ -138,6 +143,10 @@ Harmony patching and is deferred. The recipes make **new** elements.
   save/resume, and never duplicate the combat turn counter.
 - **Potions fire in `OnUse`** (they're actively used) — no combat hook. Self-buff potions target `AnyPlayer`, not `Self`. Damage/block use `ValueProp.Unpowered`.
 - **Cards fire in `OnPlay`**; a card targeting the player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions). Numbers come from `DynamicVars` (scaling), not literals; attacks use the `DamageCmd.Attack(...)` fluent builder. Loc table `cards`, no separate upgrade key (SmartFormat `:diff()` handles it).
+- **Content rich text is per surface:** Card descriptions author only `gold`/`purple`
+  (SmartFormat may emit `green`/`red`); relic descriptions allow
+  `blue`/`gold`/`green`/`purple`/`red`; potion descriptions allow
+  `blue`/`gold`/`green`; power descriptions allow `blue`/`gold`. Titles stay plain.
 - **Counter Power amounts need a SPEC domain** (nonnegative by default). To consume a
   nonnegative Counter, find its existing instance, clamp the spend, and call
   `PowerCmd.ModifyAmount`; never consume with a negative `PowerCmd.Apply<T>` because a

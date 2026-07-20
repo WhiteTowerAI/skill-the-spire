@@ -74,6 +74,10 @@ prefixed** — this is the #1 silent-failure footgun (see the ID rule below):
 }
 ```
 
+If SPEC selects vanilla text effects, read `reference/content-text-effects.md`. Relic
+descriptions may author balanced `blue`, `gold`, `green`, `purple`, and `red` spans; the
+standard relic Hover Tip renders that same description. Keep title and flavor plain.
+
 ## The ID / loc-key derivation rule (MEMORIZE — silent failure if wrong)
 
 The final `Id.Entry` a relic gets, and therefore its loc keys and icon name:

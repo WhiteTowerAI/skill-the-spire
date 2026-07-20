@@ -58,6 +58,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      what it changes. If a Card/relic/power channels a persistent orb, record the orb's
      **passive** and **evoke** effects separately. Do not call either a run modifier, and
      never ask about enum fields or APIs.
+     If the user asks for colored words in a Card, relic, potion, or Power description,
+     infer bounded vanilla rich text and capture only the exact phrase plus plain-language
+     color intent. Never ask for or preserve raw BBCode. Use the per-surface allowlist;
+     SmartFormat owns Card upgrade highlighting, and titles remain plain.
    - **Enemy encounter**: an enemy is fought inside its encounter, so treat them as one
      unit. Resolve only what genuinely shapes the fight: the monster's **HP**, whether it
      is alone or in a group, and each move's visible warning, exact effect, and what comes
@@ -79,11 +83,17 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      If the user explicitly asks for Event VFX, offer the bounded portrait halo and capture
      which normal pages use it plus a plain-language color/mood; default is no VFX. Do not
      ask about `EventLoc`, room nodes, anchors, or registration. If the user asks for words
-     that shake, wave, change color, or look emphatic, infer bounded vanilla Event rich text
-     and capture only the exact phrase plus plain-language effect; never ask for BBCode.
-     Event option Hover Tips/relic images, lethal-choice warnings, acquisition previews,
-     screen shake, and built-in noncombat VFX are scheduled but not supported yet; preserve
-     explicit requests as presentation gaps. Speech/thought bubbles are future outlook only.
+      that shake, wave, change color, or look emphatic, infer bounded vanilla Event rich text
+      and capture only the exact phrase plus plain-language effect; never ask for BBCode.
+      If an enabled option should preview known generated content, capture the exact Card
+      (and upgrade state), relic, potion, or Power (and amount) for its typed Hover Tips.
+      Locked-option tips do not render natively, so preserve that request as a presentation
+      gap. A normal relic-backed option may show its native title/description and metadata,
+      but its image is Ancient-only and remains a gap. For any HP or Max HP cost, capture the
+      exact cost so the author can attach the native inclusive lethal warning to the same
+      value used by the consequence. Acquisition previews, screen shake, and built-in
+      noncombat VFX are scheduled but not supported yet; preserve explicit requests as
+      presentation gaps. Speech/thought bubbles are future outlook only.
    - **Character**: resolve the character's identity/theme, starting HP,
      exact starter deck counts, starter relic, and one starter card/relic mechanic that
      public/BaseLib APIs can prove in combat. Default to standard 3 energy and placeholder

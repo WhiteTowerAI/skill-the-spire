@@ -253,6 +253,13 @@ and prefixed**, same ID derivation as relic/potion (`<PREFIX>-<SLUG>`):
 class-name key (`{StrengthPower}`, `{VulnerablePower}`). **Flat string keys, not nested
 JSON.** No `.flavor` for cards (relics only).
 
+### Bounded rich text
+
+If SPEC selects vanilla text effects, read `reference/content-text-effects.md`. Card
+descriptions may author only balanced `gold` and `purple` spans. Preserve SmartFormat
+placeholders; `:diff()` owns its automatic green/red preview highlighting. The same
+description renders in the real Card body and typed Card Hover Tip preview.
+
 ## ID / loc-key derivation (same rule as relics/potions — MEMORIZE)
 
 `Id.Entry = "<PREFIX>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split →

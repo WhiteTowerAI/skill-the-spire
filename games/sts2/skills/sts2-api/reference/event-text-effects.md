@@ -75,22 +75,25 @@ Reuse the Event `MapNode` suite. One headed run is sufficient:
 5. keep the Event's existing structured outcome proof, `selftest done`, and no fresh error
    block. Do not re-run unrelated outcome branches in a separate rich-text project.
 
-## Planned M6 native-presentation pass (not yet supported)
+## M6 native-presentation pass
 
-Complete these six candidates in order before returning to Character static art. Each item
-must get its own bounded SPEC vocabulary, generated consumer, existing-host extension, and
+The first three ordered candidates are now pipeline-supported with headed evidence:
+
+1. **Cross-content bounded rich text:** `reference/content-text-effects.md` owns the
+   per-surface Card/relic/potion/power allowlists, SmartFormat/keyword composition, and the
+   real Card plus standard Hover Tip proof.
+2. **Event option presentation:** `reference/event-option-presentation.md` owns enabled
+   typed Hover Tips and normal `RelicOption<T>` title/description/metadata. Locked tips are
+   natively suppressed, and the normal-layout relic image is explicitly deferred because
+   its button consumer is Ancient-only.
+3. **Native lethal-choice warnings:** that same reference owns exact-cost
+   `ThatDoesDamage`/`ThatDecreasesMaxHp`, including safe and inclusive-lethal HP/Max HP
+   headed proof.
+
+Complete the remaining candidates in order before returning to Character static art. Each
+still needs bounded SPEC vocabulary, generated consumer, an existing-host extension, and
 headed evidence before it becomes pipeline-supported:
 
-1. **Cross-content bounded rich text:** Card bodies and standard Hover Tips. Real card,
-   relic, potion, and power localization already contains many of the same tags;
-   `NCard.%DescriptionLabel` and `NHoverTipSet.%Description` are `MegaRichTextLabel`.
-   Ground a per-surface allowed subset and prove the real Card body plus hover consumers,
-   including SmartFormat and auto-keyword composition.
-2. **Event option Hover Tips and relic-image options:** BaseLib already forwards
-   `IHoverTip` values from `Option`/`LockedOption`, and vanilla has typed
-   `HoverTipFactory` helpers plus `RelicOption<T>`.
-3. **Lethal-choice affordance:** public `EventOption.ThatDoesDamage` and
-   `ThatDecreasesMaxHp` drive the native kill-warning glow instead of relying on red text.
 4. **Native Card/relic acquisition previews:** vanilla Events reuse public
    `CardCmd.Preview`, `PreviewCardPileAdd`, and normal relic acquisition presentation.
 5. **Bounded one-shot native screen shake:** the call is public and self-terminating, but
@@ -99,7 +102,7 @@ headed evidence before it becomes pipeline-supported:
    path, placement, pause behavior, and scene-owned cleanup per allowed profile. This is not
    arbitrary VFX support.
 
-After these six, resume Character static presentation, including the Ancient opening name
+After items 4-6, resume Character static presentation, including the Ancient opening name
 banner and Ancient dialogue presentation. `RichTextAncientBanner` is installed by
 `NAncientNameBanner`, not by the normal Event label, so it remains a dedicated
 Character/Architect item.

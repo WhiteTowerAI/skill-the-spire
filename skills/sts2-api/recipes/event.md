@@ -8,7 +8,9 @@ For the full option-result vocabulary (blocking card selections, custom rewards,
 conditional pages, and resumable/terminal special combat), also read
 `reference/event-outcomes.md`. When SPEC selects the bounded normal-layout
 `portrait_halo` profile, read `reference/event-vfx.md`. When page or option descriptions
-use styled/animated vanilla text, read `reference/event-text-effects.md`.
+use styled/animated vanilla text, read `reference/event-text-effects.md`. When enabled
+options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings, read
+`reference/event-option-presentation.md`.
 
 ## Registration (automatic, no `[Pool]`)
 
@@ -132,6 +134,34 @@ may instead ship `events.json`, but it must use the exact fully-prefixed keys ab
 - `SetEventState(description, options)` is the vanilla pattern for a multi-page event that
   presents another choice instead of finishing.
 
+### Native option presentation
+
+Enabled normal-Event options may pass typed Card/relic/potion/power tips through
+`Option(Method, pageKey, tips)`. Construct only the selected types with the grounded
+`HoverTipFactory` helpers in `reference/event-option-presentation.md`; the real option
+button owns focus, display, and cleanup. `LockedOption` retains its tip data but the native
+button deliberately does not display it, so never promise locked-option tooltips or emit a
+custom workaround.
+
+Use `RelicOption<T>` when SPEC selects relic-backed presentation. It provides the normal
+relic title, description, and metadata. The actual obtain effect remains a separate awaited
+`RelicCmd.Obtain<T>` consequence. Normal-layout Event buttons do not render the relic image:
+that consumer is gated to `AncientEventModel`, so preserve a requested normal-layout image
+as a presentation gap rather than opening an Ancient layout.
+
+For a choice whose consequence pays HP or Max HP, attach the exact cost when generating
+the option:
+
+```csharp
+Option(PayHp).ThatDoesDamage(damage);
+Option(PayMaxHp).ThatDecreasesMaxHp(maxHpLoss);
+```
+
+The later Cmd still owns payment. These helpers only drive the native warning and use
+inclusive lethal boundaries: `CurrentHp <= damage` and `MaxHp <= maxHpLoss`. The value
+must exactly match the decimal cost resolved for the Cmd; do not round, estimate, or use
+red localization text as a substitute.
+
 `Owner` is null on the canonical model and non-null only after the mutable event enters a
 run. Read it inside option methods / lifecycle hooks, never from the canonical instance.
 Use game `Cmd`s for consequences (`PlayerCmd.GainGold`, card/relic/potion Cmds, creature
@@ -238,6 +268,12 @@ The harness also reads the formatted title, option title/description, and result
 so registration plus a gold mutation cannot hide broken nested localization. See
 `reference/selftest-harness.md` section `MapNode` for the full driver contract.
 
+When SPEC selects native option presentation, extend that same headed `MapNode` run as
+specified in `reference/event-option-presentation.md`: focus and unfocus enabled typed
+tips, preserve the locked-tip suppression boundary, inspect normal `RelicOption<T>`
+metadata without claiming an image, and compare safe versus exact-lethal HP/Max HP native
+glow before driving the semantic consequence.
+
 For an Event with blocking overlays or special combat, use the extended `MapNode` driver
 from `reference/event-outcomes.md`: execute only SPEC's independent branches, identify the
 custom encounter, prove `Resume` or direct-map behavior, and emit one structured outcome-
@@ -266,6 +302,12 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
 - [ ] decide all-act default vs. explicit `Acts`; add `IsAllowed` only when needed
 - [ ] `EventLoc` includes title, `INITIAL`, every option, and every result page
 - [ ] `Option(Method)` slug exactly matches its `EventOptionLoc` key
+- [ ] enabled typed Hover Tips use only grounded factories; locked-option tips remain an
+      explicit presentation gap
+- [ ] `RelicOption<T>` is paired with the real obtain Cmd when acquisition is intended;
+      normal-layout relic images are not claimed
+- [ ] every HP/Max HP warning uses the exact Cmd cost and the matching native helper;
+      inclusive exact-lethal boundaries are preserved
 - [ ] option effect uses public Cmds and logs after the state change
 - [ ] event ends with `SetEventFinished` or deliberately advances with `SetEventState`
 - [ ] `CustomInitialPortraitPath` checks the mod portrait and falls back to
@@ -281,4 +323,5 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
 - [ ] VFX is `none` or the bounded normal-layout `portrait_halo`; every owned named node is
       explicitly freed before page/portrait/combat transitions
 - [ ] `MapNode` proof enters the real room, drives every independent SPEC outcome family,
-      reads nested loc, and asserts exact post-state plus visible presentation
+      reads nested loc, and asserts exact post-state plus every selected visible option
+      presentation state

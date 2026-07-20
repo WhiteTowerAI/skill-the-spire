@@ -14,10 +14,11 @@ instructions.
 
 ## Current status
 
-**M6 gameplay/programming core and the Event static-art/outcome/VFX/rich-text slice are
-complete. Direct next: the six-item M6 native-presentation pass below, then Character
-static assets and richer character-mechanic UI. M7 follows after the remaining presentation
-pass. Animation is a later, non-blocking expansion.**
+**M6 gameplay/programming core, the Event static-art/outcome/VFX/rich-text slice, and native-
+presentation items 1-3 are complete. Direct next: item 4, native Card/relic acquisition
+previews, followed by items 5-6, Character static assets, and richer character-mechanic UI.
+M7 follows after the remaining presentation pass. Animation is a later, non-blocking
+expansion.**
 
 Current pipeline-supported surfaces include:
 
@@ -25,7 +26,10 @@ Current pipeline-supported surfaces include:
 - monster + encounter, including deterministic/conditional move vocabulary;
 - event / World Node, including Cmd/page/selection/reward outcomes, resumable or terminal
   special combat, bounded normal-layout `portrait_halo` VFX, and vanilla-observed rich
-  text in page/option descriptions;
+  text in page/option descriptions; enabled typed option Hover Tips, normal relic-backed
+  title/description/metadata, and native exact-lethal HP/Max HP warnings;
+- bounded per-surface rich text in Card bodies and standard Card/relic/potion/power Hover
+  Tips, including SmartFormat and auto-keyword composition;
 - playable Character Foundation;
 - combat resource with explicit all-or-nothing payment and generic live counter;
 - bounded ordered **semantic** card-play buffer with visible state and deterministic output;
@@ -61,7 +65,8 @@ Still unsupported: editing vanilla content, retained-card zone UI, alternative-e
 engine hooks, production character art/animation, run-persistent character resources,
 remote-player character UI, novel C/D patch targets, direct Event transitions to merchant/
 rest/treasure rooms, more than one special combat per mutable Event instance, arbitrary
-Event VFX/custom/Ancient layouts, and one-click Workshop publishing.
+Event VFX/custom/Ancient layouts, locked-option Hover Tips, relic images in normal Event
+options, and one-click Workshop publishing.
 
 ## Direct next: M6 native presentation quick wins
 
@@ -84,17 +89,19 @@ custom layout, and Ancient assets are explicitly deferred behind grounded BaseLi
 blockers. That acquisition gate closed on 2026-07-20: one approved
 `seedream-5.0-lite` `21:9`/`2K` request used three randomly selected Event references,
 produced an inspected 3440x1613 portrait, and rendered from the rebuilt `.pck` in the real
-Event room with strict Tier 2 and no fresh error. Before returning to Character work,
-promote these currently unsupported candidates in order, one bounded headed proof each:
+Event room with strict Tier 2 and no fresh error. The first three native-presentation
+candidates closed on 2026-07-20; continue the remaining items in order, one bounded headed
+proof each:
 
-1. bounded rich text in Card bodies and standard Hover Tips;
-2. Event option Hover Tips and relic-image options;
-3. native lethal-choice warnings for HP/Max HP costs;
-4. native Card/relic acquisition previews;
+1. **complete:** bounded rich text in Card bodies and standard Hover Tips;
+2. **complete at the normal-layout boundary:** enabled Event option Hover Tips and normal
+   relic-backed text/metadata; locked tips are suppressed and relic images are Ancient-only;
+3. **complete:** native exact-lethal warnings for HP/Max HP costs;
+4. **direct next:** native Card/relic acquisition previews;
 5. a bounded one-shot native screen-shake profile;
 6. curated built-in noncombat Event VFX profiles with verified placement and cleanup.
 
-After all six, finish the remaining M6 presentation work in this order:
+After items 4-6, finish the remaining M6 presentation work in this order:
 
 - character select/static combat art and other non-animated character assets, plus the
   Ancient opening name-banner/Architect presentation research requested for this phase;
@@ -114,6 +121,15 @@ headed proof resolved the real BBCode label and required effect types, showed th
 styled text, replaced it on a later page, and passed the existing strict outcome proof with
 `richText` added and no fresh error. Ancient name-banner text is not part of this support;
 it is a dedicated Character-phase presentation item.
+
+The disposable `CanaryPresentation` suite then proved the first three native-presentation
+items. A real hand Card and standard typed Card/relic/potion/power Hover Tips rendered their
+surface-specific bounded colors while preserving SmartFormat and keyword composition.
+Enabled Event options displayed typed tips; locked options kept tip data but did not render
+it; normal `RelicOption<T>` displayed text/metadata but no image. Separate settled HP and
+Max HP pages showed native red glow only at the inclusive exact-lethal boundary. All three
+structured proofs reached `selftest done` with no fresh error. The source was retired after
+durable evidence was recorded.
 
 All other animation-bearing work is postponed to a later expansion: orb Spine bodies;
 monster Spine and attack/hurt/cast/death/phobia/bestiary previews; character animation,

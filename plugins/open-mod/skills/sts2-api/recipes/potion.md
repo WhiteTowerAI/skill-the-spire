@@ -176,6 +176,10 @@ Keys are **FLAT and prefixed**, same derivation as relics, plus one potion-only 
 `selectionScreenPrompt` is only needed if the effect prompts a choice (card select,
 etc.); harmless to include a short one otherwise.
 
+If SPEC selects vanilla text effects, read `reference/content-text-effects.md`. Potion
+descriptions may author balanced `blue`, `gold`, and `green` spans; the standard potion
+Hover Tip renders that same description. Keep title and selection prompt plain.
+
 ## ID / loc-key derivation (same rule as relics — MEMORIZE)
 
 `Id.Entry = "<PREFIX>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split +

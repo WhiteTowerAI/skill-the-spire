@@ -10,7 +10,9 @@ localization JSON, and inject the self-test marker. Everything structural
 - Query the **sts2-api** skill for the recipe matching SPEC's **element**:
   `recipes/relic.md` for a relic, `recipes/potion.md` for a potion, `recipes/card.md`
   for a card. For a **card or power**, also read `reference/mechanics.md` first
-  (DynamicVars, SmartFormat descriptions, shared enums). If the effect needs a
+  (DynamicVars, SmartFormat descriptions, shared enums). If a Card/relic/potion/power
+  display selects bounded vanilla text effects, also read
+  `reference/content-text-effects.md` and apply only its per-surface allowlist. If the effect needs a
   buff/debuff no vanilla power covers, read `recipes/power.md` and author the custom
   power as a dependency. If SPEC declares custom keywords, also read
   `recipes/keyword.md`: emit the generated enum field and `card_keywords.json`, attach
@@ -35,7 +37,9 @@ localization JSON, and inject the self-test marker. Everything structural
   Also read `reference/event-outcomes.md` when SPEC includes selections, rewards,
   conditional pages, or special combat; read `reference/event-vfx.md` when it selects
   `portrait_halo`; read `reference/event-text-effects.md` when descriptions select bounded
-  vanilla text effects. For a **Character Foundation** (`element: character`), read
+  vanilla text effects; read `reference/event-option-presentation.md` when enabled options
+  select typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings. For a
+  **Character Foundation** (`element: character`), read
   `recipes/character.md`: keep the character template's `PlaceholderCharacterModel` and
   three pool bases, fill exact starters/HP/loc, and never call `AddCharacter` manually.
   If SPEC selects a character resource, read `reference/character-resource.md`; if it
@@ -164,6 +168,15 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
 - When SPEC selects vanilla Event text effects, apply only the exact bounded tags from
   `reference/event-text-effects.md` around the named phrases in `EventPageLoc` and
   `EventOptionLoc` descriptions. Keep titles plain; emit no helper node or cleanup code.
+- When an enabled option selects typed Hover Tips, pass the exact grounded
+  `HoverTipFactory` values through `Option`; do not emit a locked-option workaround. For
+  relic-backed presentation, use `RelicOption<T>` for native title/description/metadata and
+  keep semantic acquisition in a separate awaited `RelicCmd.Obtain<T>`. Preserve the
+  normal-layout relic image as a presentation gap rather than generating an Ancient Event.
+- When a choice pays HP or Max HP, apply `ThatDoesDamage` or `ThatDecreasesMaxHp` to the
+  generated option using the exact decimal cost used by its Cmd. The helper is warning-only,
+  and its exact-cost boundary is inclusive; never substitute differently rounded values or
+  warning-colored text.
 
 **Character Foundation** — use the classes scaffolded by `alchyrsts2charmod` and
 `recipes/character.md`:
@@ -308,6 +321,12 @@ user launch never arms it — no menu driving, fully inert. It ships dormant ins
 — that path is unreachable (private field); the page explains why.
 
 ## 3. Write localization
+
+When display `text effects` is `vanilla`, apply semantic `text spans` only after the plain
+description and SmartFormat placeholders are correct. Validate every tag against
+`reference/content-text-effects.md`, keep tags balanced, do not wrap `:diff()` values in
+another color, and never copy user-supplied raw markup. Titles, flavor, and selection
+prompts stay plain.
 
 For a **character**, use `CharacterLoc` for the 14 character values and
 `ancients.json` for the four exact `THE_ARCHITECT.talk.<CHAR_ID>` keys in

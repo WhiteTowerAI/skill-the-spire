@@ -175,10 +175,12 @@ surfaces retain honest fallbacks. A three-reference generation/inspection plus r
 render closed Event acquisition on 2026-07-20. The same host now supports the bounded
 code-native `portrait_halo` VFX plus Cmd/page/selection/reward outcomes and one resumable
 or terminal special combat per Event instance, plus vanilla-observed emphasis/color/
-`jitter`/`sine` spans in normal page and option descriptions. The remaining presentation
-pass is ordered: the six native-presentation quick wins below; Character static assets and
-Ancient opening name-banner/Architect presentation; then richer character-mechanic UI
-before starting M7.
+`jitter`/`sine` spans in normal page and option descriptions. Native-presentation items
+1-3 are also live-closed: bounded Card/standard-tip rich text, enabled Event option typed
+tips plus normal relic text/metadata, and exact-lethal HP/Max HP warnings. The remaining
+pass is ordered: acquisition previews, screen shake, and curated built-in Event VFX;
+Character static assets and Ancient opening name-banner/Architect presentation; then
+richer character-mechanic UI before starting M7.
 
 Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
 the art decision explicit and the result source-independent:
@@ -282,13 +284,14 @@ may carry extra combat rewards through the public API, but they must be shared a
 start at most one special combat per mutable instance. Direct merchant/rest/treasure room
 transitions have no vanilla production precedent and remain unsupported.
 
-Before Character work resumes, M6 will promote six currently unsupported native-host
-candidates in order: rich text across Card bodies/standard Hover Tips; Event option Hover
-Tips/relic images; lethal-choice warnings; Card/relic acquisition previews; bounded
-one-shot screen shake; and curated built-in noncombat Event VFX. Each needs a bounded SPEC
-and headed consumer proof. The disposable `CanaryEvent` project and installed mod were
-retired after the current evidence was recorded; a new/extended acceptance mod is created
-only when the next candidate is ready to verify.
+Native-presentation items 1-3 are pipeline-supported after the 2026-07-20 headed
+`CanaryPresentation` run. Cross-content rich text rendered in the real Card and standard
+typed tips; enabled Event option tips rendered while locked tips remained suppressed;
+normal relic-backed options exposed text/metadata but no Ancient-only image; and safe versus
+inclusive-lethal HP/Max HP costs drove native glow alpha `0.00/0.50`. The direct next item
+is native Card/relic acquisition previews, followed by bounded one-shot screen shake and
+curated built-in noncombat Event VFX. Each remaining item needs a bounded SPEC and headed
+consumer proof before Character work resumes.
 
 ## 8. Out of scope (for now)
 

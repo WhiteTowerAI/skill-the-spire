@@ -246,6 +246,10 @@ identical to `.description`:
 }
 ```
 
+If SPEC selects vanilla text effects, read `reference/content-text-effects.md`. Power
+`.description` and `.smartDescription` may author balanced `blue` and `gold` spans. Apply
+the same spans to both when their prose is identical, and keep the title plain.
+
 Icon: the template base wires the power icon to a loose PNG under `images/powers/`
 (`Exists()` + fallback to `missing_power.png`), so with no custom art it loads on the
 default — not a failure. To ship art, drop a 256×256 PNG at `powers/<slug>.png` **and**

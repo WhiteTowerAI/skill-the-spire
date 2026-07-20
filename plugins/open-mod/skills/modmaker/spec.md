@@ -29,6 +29,8 @@ Use the block for the element type. **Relic:**
   - title: <shown name>
   - description: <hover text the player reads>
   - flavor: <flavor line>
+  - text effects: none | vanilla
+  - text spans: <description phrase -> blue/gold/green/purple/red; see per-surface allowlist>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below; `relic`
   icons are wired for generate, 256×256, live-verified)
 - **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only; never record credentials,
@@ -58,6 +60,8 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
   - title: <shown name>
   - description: <hover text the player reads>
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
+  - text effects: none | vanilla
+  - text spans: <description phrase -> blue/gold/green; selection prompt stays plain>
 - **art**: placeholder | generate (a `potion` icon is a loose 256×256 PNG, generate-wired
   and live-verified — same as relic/power; see `reference/art-contract.md`)
 - **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
@@ -94,6 +98,8 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - title: <shown name>
   - description: <hover text; use {Damage:diff()} style placeholders for scaling numbers>
   - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
+  - text effects: none | vanilla
+  - text spans: <description phrase -> gold/purple; SmartFormat owns green/red differences>
 - **art**: placeholder | generate  (one mod-level choice — see "Art plan" below;
   generate is wired for `card` / `relic` / `power` / `potion` / `enchantment` / `orb` /
   `monster` / normal-event portrait slots)
@@ -119,6 +125,8 @@ for every authored custom Power):
   - title: <shown name>
   - description: <hover text using {Amount}>
   - smartDescription: <usually the same text; required>
+  - text effects: none | vanilla
+  - text spans: <description phrase -> blue/gold; apply to smartDescription too>
 - **art**: placeholder | generate
 - **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 - **derived ids**:
@@ -226,6 +234,10 @@ custom phobia art, arbitrary VFX, and custom/Ancient scenes are not):
     title: <button title>
     description: <button consequence text>
     effect: <ordered public-Cmd consequence with numbers, including any blocking overlay>
+    hover tips: none | enabled-only <Card class + upgrade state; relic class; potion class;
+      Power class + amount>
+    relic presentation: none | <relic class; normal title/description/metadata; image gap>
+    lethal warning: none | HP cost <exact decimal> | Max HP cost <exact decimal>
     next: finish <RESULT_KEY> | page <PAGE_KEY> | special combat <ENCOUNTER>
 - **special combat**: none | <encounter class + monster/group HP and grounded move cycle>
 - **combat completion**: resume page <PAGE_KEY> | map (exactly one when combat exists)
@@ -249,6 +261,7 @@ custom phobia art, arbitrary VFX, and custom/Ancient scenes are not):
 - **event text effects**: none | vanilla
 - **text spans**: <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis, aqua/blue/
   gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
+- **option presentation gaps**: <locked-option tips, normal-layout relic image, or none>
 - **unsupported transitions**: merchant, rest site, and treasure room
 - **derived ids**:
   - Id.Entry: `<NS_UPPER>-<SLUG>`
@@ -262,14 +275,18 @@ match `EventOptionLoc`. If special combat exists, the spec also owns the custom 
 encounter dependency from `recipes/monster.md`; do not leave `<ENCOUNTER>` abstract.
 `author.md` dispatches Event mechanics to `recipes/event.md`, full outcomes to
 `reference/event-outcomes.md`, the optional halo to `reference/event-vfx.md`, and bounded
-description styling to `reference/event-text-effects.md`.
+description styling to `reference/event-text-effects.md`. Enabled typed option tips,
+normal relic-backed text/metadata, and exact HP/Max HP warnings route to
+`reference/event-option-presentation.md`. The warning cost must be identical to the later
+Cmd cost; a `RelicOption<T>` does not itself grant the relic.
 
-The current M6 plan schedules six additional native-presentation families, but they are
-**not pipeline-supported yet**: cross-content Card/Hover Tip rich text, Event option Hover
-Tips/relic images, lethal-choice warnings, Card/relic acquisition previews, bounded screen
-shake, and curated built-in noncombat Event VFX. Until each family is promoted, preserve a
-user request under `**presentation gaps**` and do not emit guessed code. Positioned Event
-speech/thought bubbles are future outlook only and remain a gap with no M6/M7 plan.
+The first three native-presentation families are pipeline-supported: cross-content Card/
+standard-Hover-Tip rich text; enabled Event option Hover Tips plus normal relic-backed
+text/metadata with an explicit image blocker; and native exact-lethal HP/Max HP warnings.
+The remaining scheduled families are not yet supported: Card/relic acquisition previews,
+bounded screen shake, and curated built-in noncombat Event VFX. Preserve those requests
+under `**presentation gaps**` until their individual contracts are promoted. Positioned
+Event speech/thought bubbles are future outlook only and remain a gap with no M6/M7 plan.
 
 **Character Foundation** (one selectable character shell plus its starter ecosystem;
 scenarios are `RunStart` + `CombatPlayer`; selected advanced capabilities use the

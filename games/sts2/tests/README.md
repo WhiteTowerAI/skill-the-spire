@@ -19,7 +19,7 @@ Do not require one canary project per capability.
 |---|---|
 | `CombatPlayer` | basic content matrix, interaction, keyword card-text/no-icon tooltip, enchantment tab/tooltip icon, orb tooltip/flash icon plus fallback scene and behavior, cadence |
 | `CombatEnemy` | encounter/move vocabulary plus static monster body in combat and bestiary |
-| `MapNode` | Event Cmd/page/selection/reward outcomes, resumable and terminal special combat, normal initial/page portraits, bounded portrait-halo VFX, bounded native rich text, and cleanup/fallback presentation |
+| `MapNode` | Event Cmd/page/selection/reward outcomes, resumable and terminal special combat, normal initial/page portraits, bounded portrait-halo VFX, bounded native rich text, enabled typed option tips, normal relic-backed text/metadata, exact-lethal HP/Max HP warnings, and cleanup/fallback presentation |
 | `RunStart` / Character | Wayfinder selection, pools/starters, resource/UI, semantic route buffer, dynamic output |
 
 Wayfinder supersedes the isolated Foundation/resource/kernel composition path for current
@@ -30,6 +30,13 @@ only; it does not represent player-facing support.
 were retired after the 2026-07-20 outcome/VFX/rich-text evidence was recorded. The `MapNode`
 row above is the durable host contract, not a requirement to keep an armed mod installed;
 recreate or extend an Event acceptance project only when the next candidate is ready.
+
+`CanaryPresentation` was a disposable `CombatPlayer` + `MapNode` acceptance mod. Its 2026-07-20
+headed run promoted native-presentation items 1-3: Card/standard-tip rich text, enabled typed
+Event option tips with locked-tip suppression and normal relic-backed text/metadata, and
+inclusive exact-lethal HP/Max HP warning glow. It was retired after the structured proofs,
+`selftest done`, screenshots, and no-fresh-error checks were recorded. The next host proof is
+item 4, native Card/relic acquisition previews.
 
 ## Proof rule
 
