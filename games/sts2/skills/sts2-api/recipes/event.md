@@ -10,7 +10,8 @@ conditional pages, and resumable/terminal special combat), also read
 `portrait_halo` profile, read `reference/event-vfx.md`. When page or option descriptions
 use styled/animated vanilla text, read `reference/event-text-effects.md`. When enabled
 options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings, read
-`reference/event-option-presentation.md`.
+`reference/event-option-presentation.md`. When a custom Quest Card should force this Event
+in one specified act, read `reference/forced-followup-event.md`.
 
 ## Registration (automatic, no `[Pool]`)
 
@@ -27,6 +28,11 @@ it. Do **not** add `[Pool]` and do not call `AddEvent` manually.
 
 The canary uses the default all-act placement. Its scenario enters the event directly by
 canonical model, so map RNG cannot make the proof flaky.
+
+The bounded forced-follow-up exception deliberately overrides natural placement: its
+target returns false from `IsAllowed`, and the carried Quest Card replaces both an Unknown
+room roll and the following Event pull. Follow `reference/forced-followup-event.md`; do not
+combine that target with ordinary pool placement.
 
 ## Known-good skeleton
 
@@ -300,6 +306,8 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
 
 - [ ] subclass `CustomEventModel`; no `[Pool]`; no manual `AddEvent`
 - [ ] decide all-act default vs. explicit `Acts`; add `IsAllowed` only when needed
+- [ ] a forced follow-up target uses `IsAllowed(...) => false`; its unplayable Quest token
+      owns the two public hook overrides and is consumed by one named completion option
 - [ ] `EventLoc` includes title, `INITIAL`, every option, and every result page
 - [ ] `Option(Method)` slug exactly matches its `EventOptionLoc` key
 - [ ] enabled typed Hover Tips use only grounded factories; locked-option tips remain an

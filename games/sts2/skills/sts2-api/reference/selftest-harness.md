@@ -1031,6 +1031,35 @@ create a text-only Event project or re-run the other outcome families separately
 > Headed screenshots showed the initial/page/resumed portrait halos and the actual special
 > combat after its room fade.
 
+### Bounded forced follow-up Event variant
+
+When SPEC selects `reference/forced-followup-event.md`, replace direct canonical Event
+entry with one compact real-map proof. Reuse the same run/map startup gate above, then:
+
+1. call `Hook.ModifyUnknownMapPointRoomTypes` and `Hook.ModifyNextEvent` without the Quest
+   token and require unchanged inputs;
+2. add one run-created token to `PileType.Deck` with `skipVisuals: true` as proof setup;
+3. require unchanged inputs in the wrong act;
+4. enter the specified act and require `{ RoomType.Event }` plus the target canonical
+   Event from the two hooks;
+5. call `EnterMapPointInternal(..., MapPointType.Unknown, ..., saveGame: false)`, wait for
+   the target mutable Event and real option button, then capture one settled screenshot;
+6. click the completion option, require the token count to become zero, and require both
+   hooks to return their ordinary inputs again.
+
+Do not debug-enter the target Event: that skips both invariants this variant exists to
+prove. Keep all guards, the real room, UI click, consumption, and restoration in one headed
+run and one structured marker. Required additional namespaces are
+`MegaCrit.Sts2.Core.Hooks`, `MegaCrit.Sts2.Core.Models.Events`, and the Quest Card/target
+Event types.
+
+> **Live-proven (`CanaryForcedEvent`, strict Tier-2 PASS, 2026-07-20):** one successful
+> 37.5-second headed run reported `noToken=True wrongAct=True roomForced=True
+> eventForced=True entered=True seals=1->0 restored=True`, reached `selftest done`, and had
+> no fresh error. The screenshot showed the real `Sealed Archive` room and `Break the seal`
+> option. Two earlier setup-only timeouts exposed an incomplete startup gate; reuse the
+> existing map/room gate rather than adding retries or repeating headed behavior proofs.
+
 ## Deferred: the headless / menu-skip path (design seam, not built in M5)
 
 The fragile part is `NavigateToRunAsync` (scene-tree paths shift across versions). The
@@ -1045,7 +1074,7 @@ need their own mod-reachability grounding first.
 
 - [ ] `SelfTest.cs` emitted in `<ModName>Code/`, in the same namespace as `MainFile.cs` (`<ModName>.<ModName>Code`) so `MainFile.Logger` resolves.
 - [ ] `MainFile.Initialize()` has, after the load marker: `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();`
-- [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + all independent option outcomes); multi-element interactions reuse that real source driver and add observations.
+- [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + all independent option outcomes); a forced follow-up Event enters through one real Unknown MapPoint instead of direct canonical entry; multi-element interactions reuse that real source driver and add observations.
 - [ ] `<PREFIX>-<SLUG>` ids match the element's real `Id.Entry` (SPEC's derived ids).
 - [ ] The element's own type-specific marker (author.md step 2) is present for diagnosis.
 - [ ] The harness snapshots concrete state, asserts the SPEC's exact post-state, and calls

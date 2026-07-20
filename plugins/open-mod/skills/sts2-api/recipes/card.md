@@ -23,12 +23,17 @@ gives…", "a power that…", "costs 1 energy and…". Cards fire their effect i
 when the player plays them, and their numbers can **scale** (Strength, upgrades) — so
 they use `DynamicVar`s + SmartFormat, not the literal amounts relics/potions get away with.
 
+The bounded forced-follow-up Quest token is the one exception to this normal play-from-
+hand classification. It is an unplayable dependency of an Event composition; route it to
+`reference/forced-followup-event.md` instead of giving it `OnPlay` behavior.
+
 ## Card types (pick from SPEC — sets the frame + where it slots)
 
 `CardType` (`Entities.Cards`, see `mechanics.md` §3): **`Attack`** (deals damage),
 **`Skill`** (block / utility / non-attack effect), **`Power`** (a permanent buff played
 once, consumed into a power). `Status`/`Curse`/`Quest` are special — not for a normal
-custom card. Most requests are `Attack` or `Skill`.
+custom card. The only current Quest exception is the bounded unplayable token in
+`reference/forced-followup-event.md`. Most requests are `Attack` or `Skill`.
 
 ## Scaffold: the card base class is FREE (unlike potions)
 
@@ -295,6 +300,9 @@ Pools (`MegaCrit.Sts2.Core.Models.CardPools`):
 - [ ] All `Cmd`s `await`ed.
 - [ ] `[T2MOD-SELFTEST]` diagnostic marker logged in `OnPlay`; load marker in MainFile;
       `SelfTest` independently asserts post-state.
+- [ ] A Quest Card is emitted only for the bounded forced-follow-up contract: cost `-1`,
+      Quest rarity/type, unplayable, no upgrades, one act/target, and unchanged hook inputs
+      outside that act.
 
 ## Full worked examples (verified vanilla, copy-adapt)
 

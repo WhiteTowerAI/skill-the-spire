@@ -25,6 +25,7 @@ Support levels:
 | monster move vocabulary | multi-turn `CombatEnemy` | every declared cycle/branch and independent effect | deterministic/conditional branches |
 | bounded content rich text | `CombatPlayer` | real Card body plus typed Card/relic/potion/power Hover Tip consumers; SmartFormat and auto-keyword composition | per-surface vanilla allowlists; titles/flavor/prompts plain; arbitrary markup deferred |
 | event / World Node | `MapNode` | real UI for Cmd/page/selection/reward outcomes; custom encounter plus Resume/map semantics; visible portrait/VFX lifecycle; native rich-text host and page replacement; enabled typed option tips; exact-lethal HP/Max HP warning glow | one special combat per Event instance; normal portraits, bounded `portrait_halo`, description rich text, typed enabled tips, and lethal warnings supported; locked tips suppressed; normal-layout relic image, phobia/custom-layout/Ancient and arbitrary VFX deferred |
+| bounded forced follow-up Event | `MapNode` via real Unknown MapPoint | no-token/wrong-act pass-through; forced room and target Event; visible target option; Quest token consumption; restored hook outputs | solo; one custom unplayable Quest Card, target Event, and specified act; target excluded from random pool; no arbitrary chains, fixed-node ordering, multiplayer, duplicate-token rewards, vanilla edits, or new save-roundtrip claim |
 | character Foundation | `RunStart` + `CombatPlayer` | selection, pools/starters, HP/energy, hosted mechanic | placeholder character visuals |
 | character resource/payment/UI | Character suite | gain/affordability/spend/rejection/reset and live Label | combat-only, explicit payoff; not alternate Energy |
 | ordered semantic buffer + dynamic output | Character suite | native source/compile destinations, visible order, overflow, output/history/effect/reset | semantic values only; source cards use native result piles |
@@ -52,6 +53,10 @@ selected from the actual 55-image local wiki.gg inventory.
 Spine, move animation, arbitrary animated VFX, and animated transitions belong to the
 later animation expansion and do not block M6 or M7. The one code-native normal-Event
 `portrait_halo` profile is already promoted through its existing `MapNode` host.
+
+The separate `CanaryForcedEvent` proof added only the bounded public-hook follow-up row
+above. It does not change the presentation ordering: native Card/relic acquisition previews
+remain direct next.
 
 Each promoted static family needs a copyable path/size/format contract, deterministic import and
 placement into the `.pck`, and real headed visual proof in its existing host. If a dynamic
@@ -125,6 +130,8 @@ the normal portrait layout has no verified `Creature` speaker/anchor contract.
 - Act generation as part of the current Character/Core promise.
 - direct Event transitions into merchant, rest-site, or treasure rooms;
 - more than one special combat from the same mutable Event instance.
+- arbitrary forced Event chains, fixed-node ordering guarantees, multiplayer ownership, or
+  a save-roundtrip claim for the bounded Quest Card follow-up.
 
 ## Current regression ownership
 

@@ -261,6 +261,14 @@ custom phobia art, arbitrary VFX, and custom/Ancient scenes are not):
 - **event text effects**: none | vanilla
 - **text spans**: <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis, aqua/blue/
   gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
+- **forced follow-up**: none | Quest token <class> -> target Event <class>
+- **forced act**: none | <exact zero-based act index plus player-facing act name>
+- **forced trigger**: carrying one token; next entered Unknown MapPoint in the forced act
+- **target pool rule**: target `IsAllowed` is false; token hook is its only supported route
+- **token completion**: <named target option> calls `CompleteQuest`, removes all matching
+  tokens from the deck, and restores ordinary room/Event hook outputs
+- **forced-follow-up boundary**: solo; one token class/target/act; no arbitrary chains,
+  vanilla edits, duplicate-token rewards, multiplayer, or new save-roundtrip claim
 - **option presentation gaps**: <locked-option tips, normal-layout relic image, or none>
 - **unsupported transitions**: merchant, rest site, and treasure room
 - **derived ids**:
@@ -277,7 +285,9 @@ encounter dependency from `recipes/monster.md`; do not leave `<ENCOUNTER>` abstr
 `reference/event-outcomes.md`, the optional halo to `reference/event-vfx.md`, and bounded
 description styling to `reference/event-text-effects.md`. Enabled typed option tips,
 normal relic-backed text/metadata, and exact HP/Max HP warnings route to
-`reference/event-option-presentation.md`. The warning cost must be identical to the later
+`reference/event-option-presentation.md`. A selected forced follow-up routes to
+`reference/forced-followup-event.md` and adds the custom Quest Card plus target Event to
+this same bounded Event composition. The warning cost must be identical to the later
 Cmd cost; a `RelicOption<T>` does not itself grant the relic.
 
 The first three native-presentation families are pipeline-supported: cross-content Card/

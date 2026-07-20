@@ -33,6 +33,8 @@ not dump entire files into the response.
    descriptions use the bounded vanilla rich-text vocabulary. Read
    `./reference/event-option-presentation.md` when enabled Event
    options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP costs.
+   Read `./reference/forced-followup-event.md` when a custom Quest
+   Card should force one custom Event in a specified act.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
    character template, constructor auto-registration, three pools, starters, two-table
    localization, placeholder shell, and `RunStart` + `CombatPlayer` proof.
@@ -84,6 +86,7 @@ not dump entire files into the response.
 | `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation items 1-3, remaining items 4-6, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
 | `reference/content-text-effects.md` | Per-surface vanilla rich-text allowlists for Card bodies/Card previews and standard relic/potion/power Hover Tips; SmartFormat and auto-keyword composition; headed proof contract | Authoring styled Card/relic/potion/power descriptions |
 | `reference/event-option-presentation.md` | Enabled Event option typed Hover Tips, normal `RelicOption<T>` text/metadata plus its Ancient-only image blocker, and native exact-lethal HP/Max HP warning glow | Authoring those normal-layout Event option presentation contracts |
+| `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
 | `reference/character-resource.md` | 6d combat resource contract: `PlayerCombatState` ownership, nonnegative gain/affordability/all-or-nothing spend, second-combat reset, card-hosted payoff, generic live Label, and selection of the exact 6c combat-UI adapter | Authoring a character resource and explicit-payoff loop |
 | `reference/ordered-card-buffer.md` | Ordered combat-buffer contract: `PlayerCombatState` semantic values, native source-card Discard, visible state text, bounded order/overflow, deterministic per-instance output, `CardGeneratedEntry`, and combat reset; retained-card `CustomPile` gameplay is explicitly unsupported | Authoring an ordered card-play record and dynamic output |
 | `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, version/MVID-gated patch registry with zero-target/failure/owned/foreign diagnostics, and the scenario-verified B-risk `NCombatUi.Activate(CombatState)` postfix. Self-contained only; no `OpenMod.Runtime`, unverified patch target, Publicizer, or transpiler support | Maintaining or emitting a specifically grounded advanced capability after public/BaseLib cannot expose its host seam |
@@ -119,6 +122,11 @@ Harmony patching and is deferred. The recipes make **new** elements.
   from `reference/event-text-effects.md`; titles stay plain. Custom phobia art, arbitrary
   VFX, custom/Ancient layouts, and direct merchant/rest/treasure room transitions remain
   unsupported.
+- **Forced Event follow-up:** one unplayable custom Quest Card may use
+  `ModifyUnknownMapPointRoomTypes` plus `ModifyNextEvent` to force one custom Event while
+  carried in one specified act. The target returns false from `IsAllowed`, and its named
+  completion option completes/removes the token. This is solo, Unknown-map-point only;
+  arbitrary chains, vanilla edits, multiplayer, and save-roundtrip claims remain out.
 - **Character Foundation:** scaffold with `alchyrsts2charmod`; inherit
   `PlaceholderCharacterModel`; its `CustomCharacterModel` constructor already calls
   `AddCharacter(this)`, so never call it manually. Supply all three custom pool models,

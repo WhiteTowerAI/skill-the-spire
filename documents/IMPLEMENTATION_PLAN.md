@@ -5,8 +5,9 @@
 
 ## Status
 
-**M0-M6 gameplay/programming gates, the Event static-art/outcome/bounded-VFX/rich-text
-slices, and native-presentation items 1-3 are complete. Direct next: item 4, native Card/
+**M0-M6 gameplay/programming gates, the Event static-art/outcome/bounded-VFX/rich-text and
+bounded forced-follow-up slices, and native-presentation items 1-3 are complete. Direct
+next: item 4, native Card/
 relic acquisition previews, then items 5-6, Character static assets, and richer character-
 mechanic UI. M7 follows after the new M6 content surfaces have grounded, honest static art/
 presentation contracts. Animation is a later, non-blocking expansion.**
@@ -69,7 +70,7 @@ Reuse the nearest existing host:
 |---|---|
 | `CombatPlayer` | card/relic/potion/power, keywords, enchantments, orbs, cadence |
 | `CombatEnemy` | monster/encounter and move vocabulary |
-| `MapNode` | events and real option UI |
+| `MapNode` | events, real option UI, and bounded Quest Card -> forced Event follow-up |
 | `RunStart` / Character | character selection, pools/starters, resource/UI, ordered semantic buffers |
 
 A separate project remains allowed when it is simpler or isolates a genuinely different
@@ -134,6 +135,19 @@ page Cmd, upgrade selection, resumable combat, custom reward, terminal combat fr
 Event instance, and VFX cleanup; expected/observed families matched, `resumes=1/0`,
 `selftest done`, and no fresh error. Four inspected screenshots showed settled initial,
 page, combat, and resumed states.
+
+The bounded forced-follow-up Event pass closed on 2026-07-20 without reopening those
+branches. Grounding found the public `UnknownMapPointOdds.Roll` ->
+`Hook.ModifyUnknownMapPointRoomTypes` and `Act.PullNextEvent` -> `Hook.ModifyNextEvent`
+chain used by vanilla `LanternKey`. One custom unplayable Quest Card now owns those two
+overrides for one specified act, while one custom target Event stays outside random pools
+with `IsAllowed == false`; its named option completes/removes the token. A single successful
+37.5-second headed run proved no-token/wrong-act pass-through, real Unknown room and Event
+forcing, visible target UI, token `1 -> 0`, restored hooks, `selftest done`, and no fresh
+error. Two earlier setup-only timeouts led to reuse of the established MapNode startup
+gate and are not behavior attempts. The promoted boundary is solo, one token/target/act,
+Unknown MapPoints only; arbitrary chains, fixed-node ordering, multiplayer, duplicate-token
+reward semantics, vanilla edits, and a new save-roundtrip claim remain unsupported.
 
 The bounded Event rich-text follow-up reused that same `CanaryEvent` suite. Normal page and
 option descriptions now support the vanilla-observed subset of the existing

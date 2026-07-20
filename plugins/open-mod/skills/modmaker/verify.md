@@ -61,7 +61,8 @@ The `--tier2-pattern` selects the SPEC invariant from structured
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
 `"cadence cross-combat threshold.*observed=0/4"`,
 `"enemy attack.*observed=6"`, `"monster vocabulary complete.*observed=all"`,
-`"event gold.*observed=25"`, or
+`"event gold.*observed=25"`,
+`"forcedFollowUp.*restored=True"`, or
 `"character foundation complete.*observed=all"`,
 `"resource UI complete.*observed=all"`, or
 `"ordered buffer complete.*observed=all"`. A maintainer capability-kernel canary
@@ -129,6 +130,9 @@ assertion plus visual inspection. In particular:
   configured page after its UI fade, observe motion (or static Instant-mode behavior), and
   prove the prior named root is freed across page/portrait/combat/finish transitions. A
   near-black room-transition frame is not evidence.
+- forced follow-up Event: one settled target Event room reached through the real Unknown
+  MapPoint path. The title/description/completion option must be visibly usable; direct
+  `event <ID>` entry skips the forcing behavior and is not acceptance evidence.
 
 If a secondary view cannot be reached, report behavior Tier 2 separately and label the art
 unverified; do not infer it from a resource path, `.pck` build, or primary view.
@@ -173,6 +177,8 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
     and confirm no stale overlay survives a page switch or combat entry. For vanilla Event
     text effects, inspect the named colored/moving phrase on each authored page and confirm
     the prior page's text is gone after the transition.
+    A forced follow-up cannot be proved by the `event` console shortcut; if its automated
+    real-Unknown driver cannot run, report Tier 1 rather than claiming the hook behavior.
    **character** → confirm HP, starter deck/relic, and standard 3 energy after run start;
    enter combat and observe the named starter mechanic's exact state delta.
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the

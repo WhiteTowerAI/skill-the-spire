@@ -284,6 +284,15 @@ may carry extra combat rewards through the public API, but they must be shared a
 start at most one special combat per mutable instance. Direct merchant/rest/treasure room
 transitions have no vanilla production precedent and remain unsupported.
 
+A bounded forced Event follow-up is now live-closed separately. One custom unplayable Quest
+Card may force the Unknown-room type and next Event pull in one specified act through the
+same public model hooks used by vanilla `LanternKey`; the custom target remains outside
+ordinary pools and completes/removes the token through one named option. The 2026-07-20
+headed proof covered both pass-through guards, real Unknown MapPoint entry, target UI,
+token `1 -> 0`, and restored hooks in 37.5 seconds with strict Tier 2 and no fresh error.
+This is not a general Event-chain, multiplayer, duplicate-token, fixed-node-order, or
+save-roundtrip system.
+
 Native-presentation items 1-3 are pipeline-supported after the 2026-07-20 headed
 `CanaryPresentation` run. Cross-content rich text rendered in the real Card and standard
 typed tips; enabled Event option tips rendered while locked tips remained suppressed;

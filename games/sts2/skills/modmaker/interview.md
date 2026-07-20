@@ -80,6 +80,11 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      complete encounter spec by itself.
      One mutable Event instance supports at most one special combat. A one-option event is
      valid for the fast path. Ask which acts only if the user cares; default is all acts.
+     If the request says an earlier choice/card should guarantee a later special Event,
+     capture one custom Quest Card token, one custom target Event, the exact target act,
+     and the target option that completes the token. Offer the supported default: carrying
+     the token forces the next entered Unknown MapPoint in that act. Do not broaden this
+     into an arbitrary chain or promise multiplayer/save behavior.
      If the user explicitly asks for Event VFX, offer the bounded portrait halo and capture
      which normal pages use it plus a plain-language color/mood; default is no VFX. Do not
      ask about `EventLoc`, room nodes, anchors, or registration. If the user asks for words
@@ -163,6 +168,9 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
   normal-layout pages.
 - **Event text effects**: none unless explicitly requested or clearly described; then use
   only the bounded vanilla rich-text vocabulary on named page/option description phrases.
+- **Forced Event follow-up**: none unless explicitly described; then one custom Quest Card
+  forces one custom target Event from an Unknown MapPoint in one specified act, and one
+  named target option consumes the token.
 - **Character Foundation**: 70 HP, standard 3 energy, a 10-card Basic starter deck,
   one Starter relic, valid character-scoped card/relic/potion pools, and template/built-in
   placeholder visuals. Derive starter effects from the user's stated theme.
@@ -265,6 +273,8 @@ page portraits: none | <PAGE_KEY>: <replacement scene>  (only when explicitly re
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 event VFX: none | portrait_halo on <page keys>; <color/mood>
 event text effects: none | vanilla; <PAGE/OPTION_KEY>: "<exact phrase>" -> <emphasis/color/jitter/sine>
+forced follow-up: none | quest token <name>; target Event <name>; target act <exact act>;
+  completion option <name>; trigger next entered Unknown MapPoint in that act
 art boundary: normal initial plus explicit page portraits; no custom phobia/custom-layout assets;
   VFX boundary: one code-native portrait_halo profile, no arbitrary VFX;
   text boundary: descriptions only, bounded vanilla tags, plain titles

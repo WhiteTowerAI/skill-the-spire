@@ -30,7 +30,9 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > passed build plus two-combat live verification. The Event slice now includes immediate,
 > page, selection, reward, resumable-combat, and terminal-combat outcomes plus one bounded
 > code-native portrait-halo VFX profile and native vanilla-style colored/moving description
-> text. Its final headed suite passed strict Tier 2 with
+> text. A bounded solo Quest Card can also force one custom Event from an Unknown MapPoint
+> in one specified act, then be completed/removed by that Event. Its headed proof and the
+> final general Event suite passed strict Tier 2 with
 > no fresh error. Event static art also includes one three-reference generation and real
 > headed render acceptance. The first three bounded native-presentation follow-ups now
 > cover Card/standard-tip rich text, enabled Event option typed tips and relic metadata,
@@ -213,8 +215,13 @@ open-mod is still young. Today it does the following well, and is honest about t
   titles remain plain and no generated VFX node is involved. Arbitrary VFX remains later. A 2026-07-20
   three-reference generation acceptance
   also normalized, packed, and rendered a new 3440x1613 Event portrait in the real room.
+  A bounded delayed follow-up may use one custom unplayable Quest Card to force one custom
+  Event from an Unknown MapPoint in one specified act; the target stays out of ordinary
+  pools and its completion option consumes the token. One headed run proved both guards,
+  real room/Event forcing, visible UI, consumption, and restored normal hooks.
   Direct merchant/rest/treasure room transitions and a second combat from the same Event
-  instance remain unsupported.
+  instance remain unsupported, as do arbitrary forced chains, multiplayer semantics, and
+  a new save-roundtrip claim for this capability.
 - ✅ **Native presentation 1-3** — Card descriptions and standard Card/relic/potion/power
   Hover Tips support bounded per-surface vanilla colors. Enabled Event options support
   typed Hover Tips and normal relic-backed text/metadata; locked tips remain suppressed and

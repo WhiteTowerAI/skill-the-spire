@@ -38,7 +38,9 @@ localization JSON, and inject the self-test marker. Everything structural
   conditional pages, or special combat; read `reference/event-vfx.md` when it selects
   `portrait_halo`; read `reference/event-text-effects.md` when descriptions select bounded
   vanilla text effects; read `reference/event-option-presentation.md` when enabled options
-  select typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings. For a
+  select typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings; read
+  `reference/forced-followup-event.md` when SPEC selects its Quest Card -> target Event
+  composition. For a
   **Character Foundation** (`element: character`), read
   `recipes/character.md`: keep the character template's `PlaceholderCharacterModel` and
   three pool bases, fill exact starters/HP/loc, and never call `AddCharacter` manually.
@@ -141,6 +143,11 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
 
 - Extend `CustomEventModel`; no `[Pool]` and no manual `AddEvent` (the base constructor
   registers it). Leave `Acts` empty for the default all-act placement unless SPEC scopes it.
+- For a forced follow-up, also author the one unplayable Quest Card exactly from
+  `reference/forced-followup-event.md`: Quest type/rarity, cost `-1`, no upgrades, and the
+  two public hook overrides guarded by the exact act. The target Event returns false from
+  `IsAllowed`; do not place it in the ordinary Event pool. The source grant rejects a
+  duplicate, and the named target option completes/removes all matching tokens.
 - Override `Localization` with `EventLoc` containing the title, `INITIAL` page, every
   `EventOptionLoc`, and every result page. The key for `Option(Method)` must be the exact
   upper-snake slug of the method name.
@@ -269,6 +276,10 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    headed pages, and explicit cleanup across page/combat transitions. For bounded rich
    text, assert the real `%EventDescription` host, installed effects, exact tagged
    localization, and a second page replacing the first page's tagged text.
+   For a bounded forced follow-up, use that reference's variant instead of direct canonical
+   entry: prove no-token and wrong-act pass-through, force both hooks in the target act,
+   enter one real Unknown MapPoint, click the target option, and prove token consumption
+   plus restored hook outputs in the same headed run.
    **character** → the **`RunStart` + `CombatPlayer`** variant: locate the real custom
    character button by normalized icon resource path, click it and Confirm, wait for
    `NRun.GlobalUi`, assert runtime HP/pools/starter multisets, enter combat, then assert

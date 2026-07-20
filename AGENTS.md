@@ -14,8 +14,9 @@ instructions.
 
 ## Current status
 
-**M6 gameplay/programming core, the Event static-art/outcome/VFX/rich-text slice, and native-
-presentation items 1-3 are complete. Direct next: item 4, native Card/relic acquisition
+**M6 gameplay/programming core, the Event static-art/outcome/VFX/rich-text and bounded
+forced-follow-up slices, and native-presentation items 1-3 are complete. Direct next:
+item 4, native Card/relic acquisition
 previews, followed by items 5-6, Character static assets, and richer character-mechanic UI.
 M7 follows after the remaining presentation pass. Animation is a later, non-blocking
 expansion.**
@@ -27,7 +28,8 @@ Current pipeline-supported surfaces include:
 - event / World Node, including Cmd/page/selection/reward outcomes, resumable or terminal
   special combat, bounded normal-layout `portrait_halo` VFX, and vanilla-observed rich
   text in page/option descriptions; enabled typed option Hover Tips, normal relic-backed
-  title/description/metadata, and native exact-lethal HP/Max HP warnings;
+  title/description/metadata, native exact-lethal HP/Max HP warnings, and a solo bounded
+  Quest Card that forces one custom Event from an Unknown MapPoint in one specified act;
 - bounded per-surface rich text in Card bodies and standard Card/relic/potion/power Hover
   Tips, including SmartFormat and auto-keyword composition;
 - playable Character Foundation;
@@ -66,7 +68,8 @@ engine hooks, production character art/animation, run-persistent character resou
 remote-player character UI, novel C/D patch targets, direct Event transitions to merchant/
 rest/treasure rooms, more than one special combat per mutable Event instance, arbitrary
 Event VFX/custom/Ancient layouts, locked-option Hover Tips, relic images in normal Event
-options, and one-click Workshop publishing.
+options, arbitrary forced Event chains/multiplayer/save-roundtrip claims, and one-click
+Workshop publishing.
 
 ## Direct next: M6 native presentation quick wins
 
@@ -113,6 +116,15 @@ combat from a fresh Event instance, and explicit VFX cleanup. Its expected/obser
 families matched, `resumes=1/0`, `selftest done`, and no fresh error. The supported VFX is
 one code-native normal-layout `portrait_halo` with Fast Mode handling; BaseLib's
 `CustomVfxPath` remains unused.
+
+The bounded forced-follow-up Event composition is also complete. One custom unplayable
+Quest Card may override the public Unknown-room and next-Event hooks only in one specified
+act; its custom target Event stays out of ordinary pools with `IsAllowed == false`, and one
+named option completes/removes the token. A single successful 37.5-second headed
+`CanaryForcedEvent` run proved no-token/wrong-act pass-through, real Unknown MapPoint room
+and Event forcing, visible target UI, token `1 -> 0`, restored hook outputs, `selftest done`,
+and no fresh error. This does not generalize arbitrary chains, multiplayer, duplicate-token
+rewards, fixed-node ordering, or save/resume.
 
 The same hosted Event suite now also proves normal-layout rich text without generated VFX
 code. Page and option descriptions may use the vanilla Event subset: `b`; `aqua`, `blue`,
