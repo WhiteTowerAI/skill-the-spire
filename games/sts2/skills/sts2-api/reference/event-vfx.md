@@ -211,4 +211,6 @@ The headed `MapNode` proof must inspect player-visible state, not only model/nod
 5. if combat resumes the Event, capture the return page and its configured profile;
 6. require the structured Event outcome proof, `selftest done`, and no fresh error block.
 
-The supported claim is only this `portrait_halo` profile on the normal Event layout.
+This reference supports only the generated `portrait_halo` profile on the normal Event
+layout. The separately grounded built-in `trial_noble` profile is documented in
+`event-native-presentation.md`; neither contract generalizes arbitrary Event VFX.

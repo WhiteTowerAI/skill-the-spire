@@ -50,7 +50,10 @@ code-native `portrait_halo` VFX profile with Fast Mode handling and explicit cle
 page, portrait, combat, and finish transitions. Page and option descriptions may also use
 the live-verified bounded vanilla Event rich-text vocabulary (emphasis, semantic colors,
 `jitter`, and `sine`) through the native label, with no generated VFX node. Custom phobia
-art, arbitrary VFX, and custom/Ancient scenes remain out.
+art, arbitrary VFX, and custom/Ancient scenes remain out. Normal Events also support native
+Card/relic acquisition presentation, one preference-respecting `weak_short` screen shake,
+and the curated built-in `trial_noble` VFX at its vanilla host/placement with explicit
+cleanup.
 One additional bounded Event composition is pipeline-supported: a solo custom Quest Card
 may force one custom Event from an Unknown MapPoint in one specified act. The target stays
 out of ordinary Event pools and one named option completes/removes the token. This public-
@@ -138,7 +141,7 @@ User: one sentence ("a relic that ...")
     |
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
     monster+encounter/event/character, plus the selected Event outcome/VFX/rich-text/
-    forced-follow-up references or power.md
+    native-presentation/forced-follow-up references or power.md
     when selected by SPEC),
     write the Custom*Model
     subclass filling ONLY the effect logic, add localization JSON, inject the load +

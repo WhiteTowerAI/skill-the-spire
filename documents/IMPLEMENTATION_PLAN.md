@@ -6,11 +6,11 @@
 ## Status
 
 **M0-M6 gameplay/programming gates, the Event static-art/outcome/bounded-VFX/rich-text and
-bounded forced-follow-up slices, and native-presentation items 1-3 are complete. Direct
-next: item 4, native Card/
-relic acquisition previews, then items 5-6, Character static assets, and richer character-
-mechanic UI. M7 follows after the new M6 content surfaces have grounded, honest static art/
-presentation contracts. Animation is a later, non-blocking expansion.**
+bounded forced-follow-up slices, and native-presentation items 1-6 are complete. Direct
+next: Character static assets and Ancient opening name-banner/Architect presentation
+research, then richer character-mechanic UI. M7 follows after the new M6 content surfaces
+have grounded, honest static art/presentation contracts. Animation is a later,
+non-blocking expansion.**
 
 The current pipeline supports the bounded surfaces listed in `../AGENTS.md` and
 `../games/sts2/tests/content-capability-graph.md`. The player-found Wayfinder correction is
@@ -120,8 +120,8 @@ layouts, and Ancient backgrounds are explicitly deferred behind the grounded blo
 below. One explicitly approved three-reference `seedream-5.0-lite` generation on
 2026-07-20 completed the Event acquisition gate: its inspected `21:9`/`2K` source
 normalized to 3440x1613, packed into `CanaryEvent`, rendered behind the real option UI,
-and passed strict Tier 2 with no fresh error. Direct work continues through the remaining
-native-presentation items before character static assets and richer character-mechanic UI.
+and passed strict Tier 2 with no fresh error. The native-presentation pass is now complete;
+direct work continues with character static assets and richer character-mechanic UI.
 
 The requested Event behavior/VFX follow-up then inventoried all 68 vanilla Event classes
 and promoted the complete normal-Event outcome vocabulary: ordered public Cmd effects,
@@ -169,15 +169,25 @@ with no fresh error. This promotes the supported portions through interview, SPE
 recipe, and verification routing; locked tips and the Ancient-only relic image remain
 explicit gaps.
 
+The remaining three items closed together in one disposable `CanaryNativePresentation`
+suite on 2026-07-21. One final 35-second headed `MapNode` run rendered the real Card
+acquisition preview and native relic inventory acquisition with exact deck/relic deltas
+`1/1`; observed the bounded `weak_short` screen shake move and return at preference index
+2; and rendered `res://scenes/vfx/events/trial_noble_vfx.tscn` at its vanilla
+portrait-local `(292,68)` position with inherited process mode. Three settled screenshots
+showed the initial VFX, Card preview plus top-bar relic, and clean result page. Preview/VFX
+cleanup, `selftest done`, strict Tier 2, and no fresh error all passed. The preliminary
+generic `VfxContainer` candidate was replaced by Trial's actual production
+`AddVfxAnchoredToPortrait` contract.
+
 The disposable `CanaryEvent` work directory and installed mod were retired after this
 evidence was recorded. Recreate or extend a `MapNode` acceptance mod only when the next
 candidate reaches headed verification; do not keep an armed harness installed between
 passes.
 
-### Inserted M6 native-presentation pass (items 1-3 complete)
+### Inserted M6 native-presentation pass (items 1-6 complete)
 
-Before Character static art, complete the remaining candidates in order. The first three
-are retained here as closed contracts so their boundaries stay visible:
+All six contracts are retained here so their boundaries stay visible:
 
 1. **Complete - cross-content bounded rich text:** per-surface tags render in the real Card body
    plus standard card/relic/potion/power Hover Tips, including SmartFormat and auto-keyword
@@ -187,16 +197,17 @@ are retained here as closed contracts so their boundaries stay visible:
    are suppressed; relic option images are Ancient-only and remain deferred.
 3. **Complete - native lethal-choice warnings:** exact HP/Max HP costs through
    `ThatDoesDamage`/`ThatDecreasesMaxHp` warn only at the inclusive lethal boundary.
-4. **Direct next - native Card/relic acquisition previews:** preserve the semantic outcome, then prove
+4. **Complete - native Card/relic acquisition previews:** one semantic add/obtain reuses
    the matching original-game preview without duplicate grants or blocking-order errors.
-5. **Bounded one-shot screen shake:** define allowed strengths/triggers, respect the game
-   preference, and prove it terminates without obscuring Event text.
-6. **Curated built-in noncombat Event VFX:** promote only verified asset profiles with fixed
-   host, placement, pause behavior, and cleanup. This does not generalize arbitrary VFX.
+5. **Complete - bounded one-shot screen shake:** `weak_short` respects the native player
+   multiplier, fires once, and terminates without obscuring Event text.
+6. **Complete - curated built-in noncombat Event VFX:** `trial_noble` owns one exact asset
+   path, portrait host, vanilla placement, inherited process mode, and explicit cleanup.
+   This does not generalize arbitrary VFX.
 
 For each item, reuse the closest hosted suite and require one proof per independent
 semantic/presentation invariant. Do not create six projects or re-run unrelated Event
-outcome branches merely to make the evidence denser. After items 4-6, resume Character
+outcome branches merely to make the evidence denser. Direct work now resumes Character
 static assets, Ancient opening name-banner/Architect presentation, and richer Character UI.
 
 ### Research inventory
@@ -210,7 +221,7 @@ runtime skill:
 | enchantment | custom 64x64 icon; missing-icon fallback | maintain the shared card-tab/tooltip consumer contract across generated mods |
 | orb | custom 100x100 tooltip/flash icon; Frost Spine scene/SFX fallback | no remaining M6 static work; custom body is later animation expansion |
 | monster + encounter | custom 360x360 static combat+bestiary body; built-in scene fallback | maintain checked factory/fallback and no-animation boundary |
-| event / World Node | custom normal initial/page portraits, code-native `portrait_halo`, and bounded native rich text; checked portrait fallback | maintain portrait/outcome/VFX/text replacement contracts; custom phobia/layout/Ancient assets and arbitrary VFX deferred |
+| event / World Node | custom normal initial/page portraits, code-native `portrait_halo`, curated built-in `trial_noble`, native acquisition/`weak_short`, and bounded native rich text; checked portrait fallback | maintain portrait/outcome/VFX/text/native-presentation replacement and cleanup contracts; custom phobia/layout/Ancient assets and arbitrary VFX deferred |
 | character Foundation | template/built-in visuals | select icons, portraits, static combat body, backgrounds, frame assets, and dedicated Ancient opening name-banner/Architect presentation research; animation later |
 | resource / ordered buffer UI | generic fallback Label | grounded native or open-mod-owned visual host, layout, lifecycle, and cleanup |
 
@@ -261,18 +272,19 @@ background scene; BaseLib has no custom Ancient recipe that a normal `CustomEven
 can safely reuse. The supported fallback for both layout requests is therefore the normal
 event layout, clearly labeled rather than presented as custom art.
 
-Event VFX is promoted only for the bounded `portrait_halo` profile. BaseLib 3.3.5/3.3.6
-expose an unused `CustomVfxPath`; overriding it does nothing. The supported public route is
-`OnRoomEnter` plus native Godot nodes through
+Generated Event VFX is promoted only for the bounded `portrait_halo` profile. BaseLib
+3.3.5/3.3.6 expose an unused `CustomVfxPath`; overriding it does nothing. The supported
+public route is `OnRoomEnter` plus native Godot nodes through
 `NEventLayout.AddVfxAnchoredToPortrait`. The emitted helper owns two arcs, nine motes, a
 restrained pulse, per-page anchors/colors, static Instant mode, shorter Fast mode, and
 explicit `QueueFreeSafely` cleanup. `RemoveNodesOnPortrait` alone only detaches nodes and is
-not sufficient. Arbitrary VFX, shaders/audio, and animation-bearing custom/Ancient layouts
-remain later work.
+not sufficient. A separate curated built-in `trial_noble` contract reuses the same portrait
+host at its exact vanilla placement. Arbitrary VFX, shaders/audio, and animation-bearing
+custom/Ancient layouts remain later work.
 
 Adjacent Event presentation inventory is recorded in
-`games/sts2/skills/sts2-api/reference/event-text-effects.md`. It records completed items
-1-3 and the ordered remaining items 4-6 above. The Ancient opening banner remains explicitly
+`games/sts2/skills/sts2-api/reference/event-text-effects.md`, with items 4-6 owned by
+`reference/event-native-presentation.md`. All six items are complete. The Ancient opening banner remains explicitly
 assigned to the following Character presentation phase and is not implied by normal Event
 rich text.
 
@@ -369,8 +381,9 @@ Animation is deliberately postponed and does not block M6 or M7. Its scope is cu
 Spine bodies; monster skeleton/atlas and attack/hurt/cast/death/phobia/bestiary previews;
 character combat animation, trails, and animated select transitions; general event
 portrait VFX or animation-bearing layouts; and optional UI motion. The normal-layout
-`portrait_halo` is the sole supported Event VFX exception. Until this expansion is opened,
-other Event VFX and animation use the documented fallback/boundary.
+`portrait_halo` and the curated built-in `trial_noble` profile are the only supported
+Event VFX exceptions. Until this expansion is opened, other Event VFX and animation use
+the documented fallback/boundary.
 
 M6 Extras remain non-blocking and should be added by user value and host reuse:
 

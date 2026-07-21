@@ -325,8 +325,10 @@ The promoted bounded VFX proof used only public/native pieces: `EventModel.OnRoo
 observed rotation advance plus visible initial/page/resumed states, then proved cleanup on
 combat entry. BaseLib 3.3.5 and 3.3.6 declare
 `CustomEventModel.CustomVfxPath` but do not patch the engine's private VFX path, so that
-property is not a usable route. Only `portrait_halo` is supported; arbitrary scenes,
-shaders, audio, or other generated motion remain outside the static-art contract.
+property is not a usable route. `portrait_halo` is the only generated VFX profile; the
+separate exact built-in `trial_noble` profile is documented in
+`reference/event-native-presentation.md`. Arbitrary scenes, shaders, audio, or other
+generated motion remain outside the static-art contract.
 
 ## Making a generated portrait actually match STS2 (read before writing the prompt)
 

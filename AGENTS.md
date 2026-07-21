@@ -15,11 +15,10 @@ instructions.
 ## Current status
 
 **M6 gameplay/programming core, the Event static-art/outcome/VFX/rich-text and bounded
-forced-follow-up slices, and native-presentation items 1-3 are complete. Direct next:
-item 4, native Card/relic acquisition
-previews, followed by items 5-6, Character static assets, and richer character-mechanic UI.
-M7 follows after the remaining presentation pass. Animation is a later, non-blocking
-expansion.**
+forced-follow-up slices, and native-presentation items 1-6 are complete. Direct next:
+Character static assets and Ancient opening name-banner/Architect presentation research,
+followed by richer character-mechanic UI. M7 follows after the remaining presentation
+pass. Animation is a later, non-blocking expansion.**
 
 Current pipeline-supported surfaces include:
 
@@ -28,8 +27,10 @@ Current pipeline-supported surfaces include:
 - event / World Node, including Cmd/page/selection/reward outcomes, resumable or terminal
   special combat, bounded normal-layout `portrait_halo` VFX, and vanilla-observed rich
   text in page/option descriptions; enabled typed option Hover Tips, normal relic-backed
-  title/description/metadata, native exact-lethal HP/Max HP warnings, and a solo bounded
-  Quest Card that forces one custom Event from an Unknown MapPoint in one specified act;
+  title/description/metadata, native exact-lethal HP/Max HP warnings, Card/relic acquisition
+  presentation, preference-respecting `weak_short` screen shake, curated built-in
+  `trial_noble` VFX, and a solo bounded Quest Card that forces one custom Event from an
+  Unknown MapPoint in one specified act;
 - bounded per-surface rich text in Card bodies and standard Card/relic/potion/power Hover
   Tips, including SmartFormat and auto-keyword composition;
 - playable Character Foundation;
@@ -71,7 +72,7 @@ Event VFX/custom/Ancient layouts, locked-option Hover Tips, relic images in norm
 options, arbitrary forced Event chains/multiplayer/save-roundtrip claims, and one-click
 Workshop publishing.
 
-## Direct next: M6 native presentation quick wins
+## Completed: M6 native presentation quick wins
 
 M5.5 custom art covered card portraits and relic/power/potion icons. M6 Static Art Expansion now
 also live-supports normal event initial/explicit page portraits at 3440x1613 and one 64x64
@@ -93,18 +94,19 @@ blockers. That acquisition gate closed on 2026-07-20: one approved
 `seedream-5.0-lite` `21:9`/`2K` request used three randomly selected Event references,
 produced an inspected 3440x1613 portrait, and rendered from the rebuilt `.pck` in the real
 Event room with strict Tier 2 and no fresh error. The first three native-presentation
-candidates closed on 2026-07-20; continue the remaining items in order, one bounded headed
-proof each:
+candidates closed on 2026-07-20; items 4-6 closed together in one compact headed proof on
+2026-07-21:
 
 1. **complete:** bounded rich text in Card bodies and standard Hover Tips;
 2. **complete at the normal-layout boundary:** enabled Event option Hover Tips and normal
    relic-backed text/metadata; locked tips are suppressed and relic images are Ancient-only;
 3. **complete:** native exact-lethal warnings for HP/Max HP costs;
-4. **direct next:** native Card/relic acquisition previews;
-5. a bounded one-shot native screen-shake profile;
-6. curated built-in noncombat Event VFX profiles with verified placement and cleanup.
+4. **complete:** native Card/relic acquisition previews with exact single-grant ordering;
+5. **complete:** the preference-respecting `weak_short` one-shot screen-shake profile;
+6. **complete:** the curated built-in `trial_noble` noncombat Event VFX with exact
+   placement, inherited process mode, and cleanup.
 
-After items 4-6, finish the remaining M6 presentation work in this order:
+Finish the remaining M6 presentation work in this order:
 
 - character select/static combat art and other non-animated character assets, plus the
   Ancient opening name-banner/Architect presentation research requested for this phase;
@@ -113,8 +115,8 @@ After items 4-6, finish the remaining M6 presentation work in this order:
 The Event outcome/VFX follow-up is also complete. One final headed `CanaryEvent` run drove
 page Cmd, upgrade selection, resumable custom combat, custom Gold reward, terminal custom
 combat from a fresh Event instance, and explicit VFX cleanup. Its expected/observed outcome
-families matched, `resumes=1/0`, `selftest done`, and no fresh error. The supported VFX is
-one code-native normal-layout `portrait_halo` with Fast Mode handling; BaseLib's
+families matched, `resumes=1/0`, `selftest done`, and no fresh error. That suite's generated
+VFX is one code-native normal-layout `portrait_halo` with Fast Mode handling; BaseLib's
 `CustomVfxPath` remains unused.
 
 The bounded forced-follow-up Event composition is also complete. One custom unplayable
@@ -134,7 +136,7 @@ styled text, replaced it on a later page, and passed the existing strict outcome
 `richText` added and no fresh error. Ancient name-banner text is not part of this support;
 it is a dedicated Character-phase presentation item.
 
-The disposable `CanaryPresentation` suite then proved the first three native-presentation
+The disposable `CanaryPresentation` suite proved the first three native-presentation
 items. A real hand Card and standard typed Card/relic/potion/power Hover Tips rendered their
 surface-specific bounded colors while preserving SmartFormat and keyword composition.
 Enabled Event options displayed typed tips; locked options kept tip data but did not render
@@ -142,6 +144,15 @@ it; normal `RelicOption<T>` displayed text/metadata but no image. Separate settl
 Max HP pages showed native red glow only at the inclusive exact-lethal boundary. All three
 structured proofs reached `selftest done` with no fresh error. The source was retired after
 durable evidence was recorded.
+
+The disposable `CanaryNativePresentation` suite then closed items 4-6 in one final
+35-second headed `MapNode` run. It rendered a real Card acquisition preview and native
+relic inventory acquisition with exact deck/relic deltas `1/1`; observed the `weak_short`
+shake move and return at preference index 2; and rendered the exact built-in
+`trial_noble` scene at its vanilla portrait-local position with inherited process mode.
+Three settled screenshots showed the initial VFX, Card preview plus top-bar relic, and the
+clean result page. Preview/VFX cleanup, `selftest done`, strict Tier 2, and no fresh error
+all passed.
 
 All other animation-bearing work is postponed to a later expansion: orb Spine bodies;
 monster Spine and attack/hurt/cast/death/phobia/bestiary previews; character animation,

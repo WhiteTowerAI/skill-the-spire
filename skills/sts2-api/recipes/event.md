@@ -11,7 +11,9 @@ conditional pages, and resumable/terminal special combat), also read
 use styled/animated vanilla text, read `reference/event-text-effects.md`. When enabled
 options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings, read
 `reference/event-option-presentation.md`. When a custom Quest Card should force this Event
-in one specified act, read `reference/forced-followup-event.md`.
+in one specified act, read `reference/forced-followup-event.md`. When an option selects
+native Card/relic acquisition presentation, the bounded one-shot screen shake, or the
+curated built-in `trial_noble` VFX, read `reference/event-native-presentation.md`.
 
 ## Registration (automatic, no `[Pool]`)
 
@@ -168,6 +170,15 @@ inclusive lethal boundaries: `CurrentHp <= damage` and `MaxHp <= maxHpLoss`. The
 must exactly match the decimal cost resolved for the Cmd; do not round, estimate, or use
 red localization text as a substitute.
 
+### Native acquisition and adjacent presentation
+
+When a known Card is added to the deck, pass the exact awaited `CardPileCmd.Add` result to
+`CardCmd.PreviewCardPileAdd`; do not grant or preview a second Card. A relic acquisition
+uses exactly one awaited `RelicCmd.Obtain<T>` call, which already owns the inventory
+animation. A named option may additionally select the one preference-respecting
+`weak_short` screen shake. See `reference/event-native-presentation.md` for exact ordering,
+allowed values, and the combined headed proof.
+
 `Owner` is null on the canonical model and non-null only after the mutable event enters a
 run. Read it inside option methods / lifecycle hooks, never from the canonical instance.
 Use game `Cmd`s for consequences (`PlayerCmd.GainGold`, card/relic/potion Cmds, creature
@@ -232,7 +243,7 @@ scenes. Prompt composition and acquisition rules are in `reference/art-contract.
 event art keeps its focal subject left and UI space on the right, unlike a centered card
 portrait.
 
-### Bounded VFX profile
+### Bounded VFX profiles
 
 Normal/default-layout Events may select the pipeline-supported `portrait_halo` profile in
 `reference/event-vfx.md`. It uses public code-native Godot nodes through `OnRoomEnter` and
@@ -240,7 +251,12 @@ Normal/default-layout Events may select the pipeline-supported `portrait_halo` p
 scene. The headed acceptance proved initial, later-page, combat cleanup, and resumed-page
 presentation with Fast Mode handling and no fresh error.
 
-Only that bounded profile is supported. BaseLib 3.3.5/3.3.6 declares
+The separately grounded built-in `trial_noble` profile is also supported through
+`reference/event-native-presentation.md`. It preloads the exact vanilla Trial scene,
+instantiates one inherited-process node at the vanilla portrait-local position, and frees
+that owned node before transitions. It does not open other built-in scenes.
+
+Only those two bounded profiles are supported. BaseLib 3.3.5/3.3.6 declares
 `CustomEventModel.CustomVfxPath` but does not consume it, so never override it as a route.
 Arbitrary VFX, shaders, audio, custom/Ancient-layout animation, and other animation-bearing
 families remain outside this recipe.
@@ -283,8 +299,10 @@ glow before driving the semantic consequence.
 For an Event with blocking overlays or special combat, use the extended `MapNode` driver
 from `reference/event-outcomes.md`: execute only SPEC's independent branches, identify the
 custom encounter, prove `Resume` or direct-map behavior, and emit one structured outcome-
-family marker. Any Event VFX claim additionally follows `reference/event-vfx.md` and
-requires headed screenshots plus explicit owned-node cleanup assertions.
+family marker. Any Event VFX claim additionally follows its owning reference and requires
+headed screenshots plus explicit owned-node cleanup assertions. Native acquisition,
+screen-shake, or `trial_noble` claims use the combined proof in
+`reference/event-native-presentation.md`.
 
 Known-good live canary (2026-07-13, `CanaryEvent`): build 0/0, custom room entered,
 `Gilded Signpost` and `Follow the sign` rendered from nested loc, the real option button was
@@ -316,6 +334,10 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
       normal-layout relic images are not claimed
 - [ ] every HP/Max HP warning uses the exact Cmd cost and the matching native helper;
       inclusive exact-lethal boundaries are preserved
+- [ ] every Card/relic acquisition uses one semantic Cmd and its matching native preview;
+      no duplicate grant or custom holder/card node is emitted
+- [ ] screen shake is `none` or one `weak_short` call on a named successful option and
+      never changes the player's setting/multiplier
 - [ ] option effect uses public Cmds and logs after the state change
 - [ ] event ends with `SetEventFinished` or deliberately advances with `SetEventState`
 - [ ] `CustomInitialPortraitPath` checks the mod portrait and falls back to
@@ -328,8 +350,8 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
 - [ ] every room-changing Event is shared; each mutable Event instance enters at most one
       special combat; `shouldResumeAfterCombat` matches the authored post-combat branch
 - [ ] no guessed phobia/layout files and no merchant/rest/treasure room transitions
-- [ ] VFX is `none` or the bounded normal-layout `portrait_halo`; every owned named node is
-      explicitly freed before page/portrait/combat transitions
+- [ ] VFX is `none`, `portrait_halo`, or the curated built-in `trial_noble`; every owned
+      named node is explicitly freed before page/portrait/combat transitions
 - [ ] `MapNode` proof enters the real room, drives every independent SPEC outcome family,
       reads nested loc, and asserts exact post-state plus every selected visible option
       presentation state

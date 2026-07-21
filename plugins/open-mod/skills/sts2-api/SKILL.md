@@ -33,6 +33,9 @@ not dump entire files into the response.
    descriptions use the bounded vanilla rich-text vocabulary. Read
    `${CLAUDE_PLUGIN_ROOT}/skills/sts2-api/reference/event-option-presentation.md` when enabled Event
    options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP costs.
+   Read `${CLAUDE_PLUGIN_ROOT}/skills/sts2-api/reference/event-native-presentation.md` when an Event
+   option acquires a Card/relic with native presentation, selects the bounded one-shot
+   screen shake, or uses the curated `trial_noble` built-in VFX profile.
    Read `${CLAUDE_PLUGIN_ROOT}/skills/sts2-api/reference/forced-followup-event.md` when a custom Quest
    Card should force one custom Event in a specified act.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
@@ -83,9 +86,10 @@ not dump entire files into the response.
 | `recipes/character.md` | Character Foundation (`alchyrsts2charmod`, `PlaceholderCharacterModel`, constructor auto-`AddCharacter`, card/relic/potion pools, starter deck/relic, exact character+Architect loc, placeholder visuals, `RunStart` + `CombatPlayer` proof) | Authoring a minimal playable custom character shell |
 | `reference/event-outcomes.md` | Full normal-Event outcome vocabulary: immediate Cmd combinations, multi-page/locked options, blocking card selections, custom rewards, resumable/terminal special combat, extra combat rewards, one-combat-per-instance boundary, and unsupported room transitions | Authoring an Event beyond the one-Cmd fast path |
 | `reference/event-vfx.md` | Bounded code-native normal-layout `portrait_halo`: page parameters, Fast Mode behavior, `OnRoomEnter`/portrait host, explicit named-node cleanup, and headed acceptance contract | Authoring the supported Event portrait VFX profile |
-| `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation items 1-3, remaining items 4-6, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
+| `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation inventory, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
 | `reference/content-text-effects.md` | Per-surface vanilla rich-text allowlists for Card bodies/Card previews and standard relic/potion/power Hover Tips; SmartFormat and auto-keyword composition; headed proof contract | Authoring styled Card/relic/potion/power descriptions |
 | `reference/event-option-presentation.md` | Enabled Event option typed Hover Tips, normal `RelicOption<T>` text/metadata plus its Ancient-only image blocker, and native exact-lethal HP/Max HP warning glow | Authoring those normal-layout Event option presentation contracts |
+| `reference/event-native-presentation.md` | Native Card/relic acquisition presentation, the preference-respecting `weak_short` screen shake, and the curated built-in `trial_noble` Event VFX path/host/placement/pause/cleanup contract | Authoring native presentation items 4-6 for a normal Event |
 | `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
 | `reference/character-resource.md` | 6d combat resource contract: `PlayerCombatState` ownership, nonnegative gain/affordability/all-or-nothing spend, second-combat reset, card-hosted payoff, generic live Label, and selection of the exact 6c combat-UI adapter | Authoring a character resource and explicit-payoff loop |
 | `reference/ordered-card-buffer.md` | Ordered combat-buffer contract: `PlayerCombatState` semantic values, native source-card Discard, visible state text, bounded order/overflow, deterministic per-instance output, `CardGeneratedEntry`, and combat reset; retained-card `CustomPile` gameplay is explicitly unsupported | Authoring an ordered card-play record and dynamic output |
@@ -117,8 +121,11 @@ Harmony patching and is deferred. The recipes make **new** elements.
   normal initial/page portrait is one opaque
   3440×1613 PNG. `CustomInitialPortraitPath` must check the mod path and fall back to
   `this_or_that.png`; missing page art retains the current portrait. Normal-layout Event
-  VFX supports only the code-native `portrait_halo` profile with explicit named-node
-  cleanup. Page and option descriptions may use only the bounded vanilla rich-text tags
+  VFX supports the code-native `portrait_halo` and the one curated built-in
+  `trial_noble` profile, both with explicit named-node cleanup. Native Card/relic
+  acquisition and `weak_short` screen shake follow `event-native-presentation.md` and
+  never duplicate the semantic Cmd or override the player's shake multiplier. Page and
+  option descriptions may use only the bounded vanilla rich-text tags
   from `reference/event-text-effects.md`; titles stay plain. Custom phobia art, arbitrary
   VFX, custom/Ancient layouts, and direct merchant/rest/treasure room transitions remain
   unsupported.

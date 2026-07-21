@@ -39,6 +39,8 @@ localization JSON, and inject the self-test marker. Everything structural
   `portrait_halo`; read `reference/event-text-effects.md` when descriptions select bounded
   vanilla text effects; read `reference/event-option-presentation.md` when enabled options
   select typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings; read
+  `reference/event-native-presentation.md` when options select native Card/relic
+  acquisition presentation, `weak_short` screen shake, or built-in `trial_noble` VFX; read
   `reference/forced-followup-event.md` when SPEC selects its Quest Card -> target Event
   composition. For a
   **Character Foundation** (`element: character`), read
@@ -184,6 +186,15 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
   generated option using the exact decimal cost used by its Cmd. The helper is warning-only,
   and its exact-cost boundary is inclusive; never substitute differently rounded values or
   warning-colored text.
+- When a choice acquires a Card, await one `CardPileCmd.Add` and pass that exact successful
+  result to `CardCmd.PreviewCardPileAdd`; when it acquires a relic, emit exactly one awaited
+  `RelicCmd.Obtain<T>`. Do not create duplicate models or custom preview holders.
+- When SPEC selects `weak_short`, call `NGame.Instance?.ScreenShake(ShakeStrength.Weak,
+  ShakeDuration.Short)` once after the named successful consequence and before its page
+  transition. Never read or replace the player's multiplier.
+- When SPEC selects `trial_noble`, emit the exact preloaded scene/portrait-host helper from
+  `reference/event-native-presentation.md`, keep its vanilla `(292,68)` placement and
+  inherited process mode, and `QueueFreeSafely` the owned named root before transitions.
 
 **Character Foundation** — use the classes scaffolded by `alchyrsts2charmod` and
 `recipes/character.md`:
@@ -276,6 +287,10 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    headed pages, and explicit cleanup across page/combat transitions. For bounded rich
    text, assert the real `%EventDescription` host, installed effects, exact tagged
    localization, and a second page replacing the first page's tagged text.
+   For native acquisition, `weak_short`, or `trial_noble`, use the combined headed proof
+   from `reference/event-native-presentation.md`: exact Card/relic deltas, real preview and
+   relic-inventory consumers, preference-aware shake movement/return, settled Event text,
+   exact built-in scene host/position/process mode, and complete preview/VFX cleanup.
    For a bounded forced follow-up, use that reference's variant instead of direct canonical
    entry: prove no-token and wrong-act pass-through, force both hooks in the target act,
    enter one real Unknown MapPoint, click the target option, and prove token consumption

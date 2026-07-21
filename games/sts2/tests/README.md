@@ -19,7 +19,7 @@ Do not require one canary project per capability.
 |---|---|
 | `CombatPlayer` | basic content matrix, interaction, keyword card-text/no-icon tooltip, enchantment tab/tooltip icon, orb tooltip/flash icon plus fallback scene and behavior, cadence |
 | `CombatEnemy` | encounter/move vocabulary plus static monster body in combat and bestiary |
-| `MapNode` | Event Cmd/page/selection/reward outcomes, resumable and terminal special combat, normal initial/page portraits, bounded portrait-halo VFX, bounded native rich text, enabled typed option tips, normal relic-backed text/metadata, exact-lethal HP/Max HP warnings, bounded Quest Card -> forced Event follow-up, and cleanup/fallback presentation |
+| `MapNode` | Event Cmd/page/selection/reward outcomes, resumable and terminal special combat, normal initial/page portraits, bounded portrait-halo VFX, bounded native rich text, enabled typed option tips, normal relic-backed text/metadata, exact-lethal HP/Max HP warnings, native Card/relic acquisition presentation, `weak_short` screen shake, curated `trial_noble` VFX, bounded Quest Card -> forced Event follow-up, and cleanup/fallback presentation |
 | `RunStart` / Character | Wayfinder selection, pools/starters, resource/UI, semantic route buffer, dynamic output |
 
 Wayfinder supersedes the isolated Foundation/resource/kernel composition path for current
@@ -35,8 +35,14 @@ recreate or extend an Event acceptance project only when the next candidate is r
 headed run promoted native-presentation items 1-3: Card/standard-tip rich text, enabled typed
 Event option tips with locked-tip suppression and normal relic-backed text/metadata, and
 inclusive exact-lethal HP/Max HP warning glow. It was retired after the structured proofs,
-`selftest done`, screenshots, and no-fresh-error checks were recorded. The next host proof is
-item 4, native Card/relic acquisition previews.
+`selftest done`, screenshots, and no-fresh-error checks were recorded.
+
+`CanaryNativePresentation` was the disposable `MapNode` acceptance mod for items 4-6. Its
+final 35-second headed run proved native Card/relic acquisition with exact `+1/+1` deltas,
+the preference-respecting `weak_short` shake moving and returning at preference index 2,
+the exact built-in `trial_noble` scene/host/position/inherited process mode, and complete
+preview/VFX cleanup. Three settled screenshots, `selftest done`, and strict no-fresh-error
+Tier 2 closed the remaining native-presentation pass on 2026-07-21.
 
 `CanaryForcedEvent` was a disposable `MapNode` acceptance mod for the bounded solo
 follow-up contract. Its one successful 37.5-second headed run proved no-token/wrong-act

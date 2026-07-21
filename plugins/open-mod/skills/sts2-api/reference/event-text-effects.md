@@ -77,7 +77,8 @@ Reuse the Event `MapNode` suite. One headed run is sufficient:
 
 ## M6 native-presentation pass
 
-The first three ordered candidates are now pipeline-supported with headed evidence:
+All six ordered native-presentation candidates are now pipeline-supported with headed
+evidence:
 
 1. **Cross-content bounded rich text:** `reference/content-text-effects.md` owns the
    per-surface Card/relic/potion/power allowlists, SmartFormat/keyword composition, and the
@@ -90,21 +91,18 @@ The first three ordered candidates are now pipeline-supported with headed eviden
    `ThatDoesDamage`/`ThatDecreasesMaxHp`, including safe and inclusive-lethal HP/Max HP
    headed proof.
 
-Complete the remaining candidates in order before returning to Character static art. Each
-still needs bounded SPEC vocabulary, generated consumer, an existing-host extension, and
-headed evidence before it becomes pipeline-supported:
+4. **Native Card/relic acquisition previews:** `reference/event-native-presentation.md`
+   owns exact add/obtain ordering, native consumers, duplicate prevention, and cleanup.
+5. **Bounded one-shot native screen shake:** that reference owns the single `weak_short`
+   profile and preserves the game's player-configured multiplier, including off.
+6. **Curated built-in noncombat Event VFX:** that reference owns only `trial_noble`, using
+   the vanilla-observed portrait host, exact scene/position, inherited process mode, and
+   scene-owned cleanup. The preliminary `VfxContainer` candidate was superseded by the
+   actual Trial production contract; this is not arbitrary VFX support.
 
-4. **Native Card/relic acquisition previews:** vanilla Events reuse public
-   `CardCmd.Preview`, `PreviewCardPileAdd`, and normal relic acquisition presentation.
-5. **Bounded one-shot native screen shake:** the call is public and self-terminating, but
-   strength, accessibility preference behavior, and visual proof need a fixed profile.
-6. **Curated built-in noncombat Event VFX:** use the Event `VfxContainer`, but verify asset
-   path, placement, pause behavior, and scene-owned cleanup per allowed profile. This is not
-   arbitrary VFX support.
-
-After items 4-6, resume Character static presentation, including the Ancient opening name
-banner and Ancient dialogue presentation. `RichTextAncientBanner` is installed by
-`NAncientNameBanner`, not by the normal Event label, so it remains a dedicated
+With items 4-6 complete, direct work resumes Character static presentation, including the
+Ancient opening name banner and Ancient dialogue presentation. `RichTextAncientBanner` is
+installed by `NAncientNameBanner`, not by the normal Event label, so it remains a dedicated
 Character/Architect item.
 
 ## Future outlook (not planned)

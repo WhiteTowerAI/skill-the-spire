@@ -1023,6 +1023,21 @@ then switch to a second authored page and prove the same label contains the new 
 none of the prior page's tagged span. Capture both settled player-visible states; do not
 create a text-only Event project or re-run the other outcome families separately.
 
+If SPEC selects native Card/relic acquisition, `weak_short`, or built-in `trial_noble`,
+follow `reference/event-native-presentation.md` in this same `MapNode` run. Wait for the
+initial Event description to reach full `VisibleRatio` and opacity, assert the exact
+built-in scene parent/position/inherited process mode, then click the real option. Observe
+the matching `NCard` in the native preview container and the matching
+`NRelicInventoryHolder`; assert exact deck/relic deltas and no duplicates. Sample the
+public shake target until it moves and returns when the preference is nonzero, or remains
+still at preference index zero. Finish only after the Card preview and owned VFX are gone
+and the result page is readable. One marker may cover all selected profiles.
+
+> **Live-proven (`CanaryNativePresentation`, strict Tier-2 PASS, 2026-07-21):** one
+> 35-second headed run observed `cardDelta=1 relicDelta=1`, preference index `2` with
+> movement and return, exact `trial_noble` scene/host/position/process mode, Card-preview
+> and VFX cleanup, three settled screenshots, `selftest done`, and no fresh error.
+
 > **Live-proven (`CanaryEvent`, strict tier-2 PASS, 2026-07-20):** one hosted run drove
 > page Cmd, upgrade selection, resumable custom combat, custom Gold reward, terminal custom
 > combat from a fresh Event instance, and VFX cleanup. The structured proof reported
@@ -1075,6 +1090,9 @@ need their own mod-reachability grounding first.
 - [ ] `SelfTest.cs` emitted in `<ModName>Code/`, in the same namespace as `MainFile.cs` (`<ModName>.<ModName>Code`) so `MainFile.Logger` resolves.
 - [ ] `MainFile.Initialize()` has, after the load marker: `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();`
 - [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + all independent option outcomes); a forced follow-up Event enters through one real Unknown MapPoint instead of direct canonical entry; multi-element interactions reuse that real source driver and add observations.
+- [ ] Native Event presentation proves the real Card/relic consumers, preference-aware
+      shake movement/return, settled text, exact built-in VFX placement/process mode, and
+      preview/VFX cleanup in one `MapNode` run.
 - [ ] `<PREFIX>-<SLUG>` ids match the element's real `Id.Entry` (SPEC's derived ids).
 - [ ] The element's own type-specific marker (author.md step 2) is present for diagnosis.
 - [ ] The harness snapshots concrete state, asserts the SPEC's exact post-state, and calls

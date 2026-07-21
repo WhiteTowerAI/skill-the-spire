@@ -21,9 +21,10 @@ save-roundtrip claims, or deterministic composition with another mod that rewrit
 same hooks. A generated source should grant at most one token. The target completion path
 removes every matching token defensively so the forcing hooks cannot remain active.
 
-The Quest Card's acquisition preview is not part of this contract. Adding it to the deck
-is a semantic outcome; native Card/relic acquisition presentation remains the next M6
-presentation item and needs its own headed proof.
+The Quest Card's acquisition preview is not implicit in this contract. If the same option
+should show native acquisition presentation, compose the exact add-result contract from
+`event-native-presentation.md`. Adding it to the deck is a semantic outcome; the preview
+must reuse that same successful add result and must not grant a second Card.
 
 ## Why this works
 

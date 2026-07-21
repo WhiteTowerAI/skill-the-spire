@@ -175,12 +175,13 @@ surfaces retain honest fallbacks. A three-reference generation/inspection plus r
 render closed Event acquisition on 2026-07-20. The same host now supports the bounded
 code-native `portrait_halo` VFX plus Cmd/page/selection/reward outcomes and one resumable
 or terminal special combat per Event instance, plus vanilla-observed emphasis/color/
-`jitter`/`sine` spans in normal page and option descriptions. Native-presentation items
-1-3 are also live-closed: bounded Card/standard-tip rich text, enabled Event option typed
-tips plus normal relic text/metadata, and exact-lethal HP/Max HP warnings. The remaining
-pass is ordered: acquisition previews, screen shake, and curated built-in Event VFX;
-Character static assets and Ancient opening name-banner/Architect presentation; then
-richer character-mechanic UI before starting M7.
+`jitter`/`sine` spans in normal page and option descriptions. All six native-presentation
+items are live-closed: bounded Card/standard-tip rich text, enabled Event option typed tips
+plus normal relic text/metadata, exact-lethal HP/Max HP warnings, native Card/relic
+acquisition presentation, the preference-respecting `weak_short` screen shake, and the
+curated built-in `trial_noble` Event VFX. The remaining pass is ordered: Character static
+assets and Ancient opening name-banner/Architect presentation, then richer character-
+mechanic UI before starting M7.
 
 Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
 the art decision explicit and the result source-independent:
@@ -264,9 +265,9 @@ inspected wide source, normalized through `gen_sprite.py`, and rendered from the
 `.pck` behind the real option UI with strict Tier 2 and no fresh error.
 Custom phobia art has no BaseLib mod-relative hook; custom layouts require full
 `ICustomEventNode` ownership; and Ancient layouts require `AncientEventModel`, so the
-normal layout is the honest fallback for those requests. One bounded Event VFX profile is
-now supported: `portrait_halo` uses public `OnRoomEnter`/portrait-child nodes, native
-Tweens, Fast Mode behavior, and explicit named-node cleanup. BaseLib's advertised
+normal layout is the honest fallback for those requests. One bounded generated Event VFX
+profile is now supported: `portrait_halo` uses public `OnRoomEnter`/portrait-child nodes,
+native Tweens, Fast Mode behavior, and explicit named-node cleanup. BaseLib's advertised
 `CustomVfxPath` is unused in both 3.3.5 and 3.3.6, so arbitrary VFX remains later work.
 
 Normal Event text effects require no generated VFX code. Both the page description and
@@ -297,10 +298,11 @@ Native-presentation items 1-3 are pipeline-supported after the 2026-07-20 headed
 `CanaryPresentation` run. Cross-content rich text rendered in the real Card and standard
 typed tips; enabled Event option tips rendered while locked tips remained suppressed;
 normal relic-backed options exposed text/metadata but no Ancient-only image; and safe versus
-inclusive-lethal HP/Max HP costs drove native glow alpha `0.00/0.50`. The direct next item
-is native Card/relic acquisition previews, followed by bounded one-shot screen shake and
-curated built-in noncombat Event VFX. Each remaining item needs a bounded SPEC and headed
-consumer proof before Character work resumes.
+inclusive-lethal HP/Max HP costs drove native glow alpha `0.00/0.50`. Items 4-6 closed in
+one 35-second headed `CanaryNativePresentation` run on 2026-07-21: native Card/relic
+acquisition produced exact `1/1` deltas, `weak_short` moved and returned at preference index
+2, and the exact `trial_noble` scene rendered at its vanilla portrait host/placement before
+explicit cleanup. Direct work now resumes Character static presentation.
 
 ## 8. Out of scope (for now)
 

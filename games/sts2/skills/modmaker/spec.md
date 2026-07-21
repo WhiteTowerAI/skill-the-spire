@@ -238,6 +238,8 @@ custom phobia art, arbitrary VFX, and custom/Ancient scenes are not):
       Power class + amount>
     relic presentation: none | <relic class; normal title/description/metadata; image gap>
     lethal warning: none | HP cost <exact decimal> | Max HP cost <exact decimal>
+    acquisition presentation: none | native Card <class> to Deck | native relic <class>
+    screen shake: none | `weak_short`
     next: finish <RESULT_KEY> | page <PAGE_KEY> | special combat <ENCOUNTER>
 - **special combat**: none | <encounter class + monster/group HP and grounded move cycle>
 - **combat completion**: resume page <PAGE_KEY> | map (exactly one when combat exists)
@@ -254,10 +256,10 @@ custom phobia art, arbitrary VFX, and custom/Ancient scenes are not):
 - **art subject/style**: <opening situation; focal subject left, darker UI space right>
 - **art fallback**: initial uses verified vanilla `res://images/events/this_or_that.png`;
   absent page art retains the current portrait
-- **event VFX**: none | `portrait_halo`
+- **event VFX**: none | `portrait_halo` | `trial_noble`
 - **VFX pages**: <PAGE_KEY -> unique node name, color/mood; normal layout only>
 - **VFX cleanup**: free owned named nodes before page/portrait/combat/finish transitions;
-  Instant Fast Mode is static
+  Instant Fast Mode is static for `portrait_halo`; `trial_noble` inherits host process mode
 - **event text effects**: none | vanilla
 - **text spans**: <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis, aqua/blue/
   gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
@@ -287,16 +289,17 @@ description styling to `reference/event-text-effects.md`. Enabled typed option t
 normal relic-backed text/metadata, and exact HP/Max HP warnings route to
 `reference/event-option-presentation.md`. A selected forced follow-up routes to
 `reference/forced-followup-event.md` and adds the custom Quest Card plus target Event to
-this same bounded Event composition. The warning cost must be identical to the later
+this same bounded Event composition. Native Card/relic acquisition presentation,
+`weak_short` screen shake, and `trial_noble` route to
+`reference/event-native-presentation.md`. The warning cost must be identical to the later
 Cmd cost; a `RelicOption<T>` does not itself grant the relic.
 
-The first three native-presentation families are pipeline-supported: cross-content Card/
-standard-Hover-Tip rich text; enabled Event option Hover Tips plus normal relic-backed
-text/metadata with an explicit image blocker; and native exact-lethal HP/Max HP warnings.
-The remaining scheduled families are not yet supported: Card/relic acquisition previews,
-bounded screen shake, and curated built-in noncombat Event VFX. Preserve those requests
-under `**presentation gaps**` until their individual contracts are promoted. Positioned
-Event speech/thought bubbles are future outlook only and remain a gap with no M6/M7 plan.
+All six native-presentation families are pipeline-supported: cross-content Card/standard-
+Hover-Tip rich text; enabled Event option Hover Tips plus normal relic-backed text/metadata
+with an explicit image blocker; native exact-lethal HP/Max HP warnings; native Card/relic
+acquisition presentation; bounded `weak_short` screen shake; and the curated built-in
+`trial_noble` Event VFX. Locked-option tips, normal-layout relic images, and positioned
+Event speech/thought bubbles remain explicit gaps.
 
 **Character Foundation** (one selectable character shell plus its starter ecosystem;
 scenarios are `RunStart` + `CombatPlayer`; selected advanced capabilities use the

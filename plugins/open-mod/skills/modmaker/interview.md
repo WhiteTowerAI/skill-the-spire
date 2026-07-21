@@ -85,9 +85,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      and the target option that completes the token. Offer the supported default: carrying
      the token forces the next entered Unknown MapPoint in that act. Do not broaden this
      into an arbitrary chain or promise multiplayer/save behavior.
-     If the user explicitly asks for Event VFX, offer the bounded portrait halo and capture
-     which normal pages use it plus a plain-language color/mood; default is no VFX. Do not
-     ask about `EventLoc`, room nodes, anchors, or registration. If the user asks for words
+     If the user explicitly asks for Event VFX, offer either the bounded generated
+     `portrait_halo` or the curated built-in `trial_noble` profile and capture which normal
+     pages use it; default is no VFX. Do not ask about `EventLoc`, room nodes, anchors, or
+     registration. If the user asks for words
       that shake, wave, change color, or look emphatic, infer bounded vanilla Event rich text
       and capture only the exact phrase plus plain-language effect; never ask for BBCode.
       If an enabled option should preview known generated content, capture the exact Card
@@ -96,9 +97,12 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
       gap. A normal relic-backed option may show its native title/description and metadata,
       but its image is Ancient-only and remains a gap. For any HP or Max HP cost, capture the
       exact cost so the author can attach the native inclusive lethal warning to the same
-      value used by the consequence. Acquisition previews, screen shake, and built-in
-      noncombat VFX are scheduled but not supported yet; preserve explicit requests as
-      presentation gaps. Speech/thought bubbles are future outlook only.
+      value used by the consequence. When an option actually grants a known Card or relic,
+      infer its matching native acquisition presentation; this is separate from the typed
+      pre-choice Hover Tip. If the user asks for an impact/jolt on a successful option,
+      offer the single `weak_short` screen-shake profile. Do not ask for strengths,
+      durations, scene paths, or player preference values. Speech/thought bubbles are
+      future outlook only.
    - **Character**: resolve the character's identity/theme, starting HP,
      exact starter deck counts, starter relic, and one starter card/relic mechanic that
      public/BaseLib APIs can prove in combat. Default to standard 3 energy and placeholder
@@ -145,8 +149,8 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      placeholder shell; state that limitation if custom character visuals are requested and
      continue only if the user accepts it. For an event, offer the normal initial portrait
      and any explicitly requested later-page image change. The separate code-native
-     `portrait_halo` needs no image backend. Preserve requests for custom phobia art,
-     arbitrary VFX, custom-layout, or Ancient art as gaps.
+     `portrait_halo` and the built-in `trial_noble` profile need no image backend. Preserve
+     requests for custom phobia art, arbitrary VFX, custom-layout, or Ancient art as gaps.
 
 ## Defaults (apply silently unless the user specified otherwise)
 
@@ -164,8 +168,12 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
-- **Event VFX**: none unless explicitly requested; then use only `portrait_halo` on named
-  normal-layout pages.
+- **Event VFX**: none unless explicitly requested; then use only `portrait_halo` or
+  `trial_noble` on named normal-layout pages.
+- **Event acquisition presentation**: native whenever a successful option adds a known
+  Card to the Deck or obtains a known relic; never a second grant.
+- **Event screen shake**: none unless explicitly requested; then one `weak_short` call on
+  the named successful option, inheriting the player's preference.
 - **Event text effects**: none unless explicitly requested or clearly described; then use
   only the bounded vanilla rich-text vocabulary on named page/option description phrases.
 - **Forced Event follow-up**: none unless explicitly described; then one custom Quest Card
@@ -271,12 +279,15 @@ acts: all | <specified acts>
 art: placeholder | generate: <opening scene; focal subject left, dark UI space right>
 page portraits: none | <PAGE_KEY>: <replacement scene>  (only when explicitly requested)
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
-event VFX: none | portrait_halo on <page keys>; <color/mood>
+event VFX: none | portrait_halo on <page keys>; <color/mood> |
+  trial_noble on <page keys>
+acquisition presentation: none | native Card <name> to Deck | native relic <name>
+screen shake: none | weak_short on option <name>
 event text effects: none | vanilla; <PAGE/OPTION_KEY>: "<exact phrase>" -> <emphasis/color/jitter/sine>
 forced follow-up: none | quest token <name>; target Event <name>; target act <exact act>;
   completion option <name>; trigger next entered Unknown MapPoint in that act
 art boundary: normal initial plus explicit page portraits; no custom phobia/custom-layout assets;
-  VFX boundary: one code-native portrait_halo profile, no arbitrary VFX;
+  VFX boundary: code-native portrait_halo or curated built-in trial_noble, no arbitrary VFX;
   text boundary: descriptions only, bounded vanilla tags, plain titles
 ```
 

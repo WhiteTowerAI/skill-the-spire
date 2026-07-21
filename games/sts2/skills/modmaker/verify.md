@@ -133,6 +133,10 @@ assertion plus visual inspection. In particular:
 - forced follow-up Event: one settled target Event room reached through the real Unknown
   MapPoint path. The title/description/completion option must be visibly usable; direct
   `event <ID>` entry skips the forcing behavior and is not acceptance evidence.
+- native Event presentation: capture the settled `trial_noble` page, the real Card
+  acquisition preview with the acquired relic visible in the top bar, and the settled
+  result page. Assert preference-aware shake movement/return and preview/VFX cleanup in the
+  same `MapNode` run; a model delta without the native consumers is insufficient.
 
 If a secondary view cannot be reached, report behavior Tier 2 separately and label the art
 unverified; do not infer it from a resource path, `.pck` build, or primary view.
@@ -177,6 +181,9 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
     and confirm no stale overlay survives a page switch or combat entry. For vanilla Event
     text effects, inspect the named colored/moving phrase on each authored page and confirm
     the prior page's text is gone after the transition.
+    For native acquisition presentation, confirm the real Card preview and relic top-bar
+    animation, and for `trial_noble` confirm its exact initial-page placement and absence on
+    the result page. A `weak_short` shake must terminate and must honor a disabled setting.
     A forced follow-up cannot be proved by the `event` console shortcut; if its automated
     real-Unknown driver cannot run, report Tier 1 rather than claiming the hook behavior.
    **character** → confirm HP, starter deck/relic, and standard 3 energy after run start;
