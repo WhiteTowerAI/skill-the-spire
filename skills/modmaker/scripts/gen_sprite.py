@@ -120,6 +120,9 @@ except ImportError:
 # enchantment likewise has ONE icon getter. NCard contexts and the hover tooltip reuse the
 # same EnchantmentModel.Icon texture, so there is no big/ variant.
 # orb likewise has ONE icon getter, but its combat body remains a separate scene contract.
+# Character assets stay independent because BaseLib consumes different getters. Background,
+# rest, and merchant add raw text-scene wrappers after import; full energy uses five layers.
+# Static-profile verification is not a claim that a PNG can replace Spine animation.
 # (A relic also has PackedIconOutlinePath → relics/<slug>_outline.png, the hover outline; we
 # don't emit it yet — missing falls back to the template's relic_outline.png, which the user
 # confirmed looks fine. power has no outline. beta icon paths default null — ignore.)
@@ -132,8 +135,30 @@ SPECS: dict[str, dict] = {
     "enchantment": {"sub_path": "enchantments",         "extra_sub_paths": [],             "size": (64, 64),    "verified": True,  "fit": "contain", "chroma": True},
     "orb":        {"sub_path": "orbs",                 "extra_sub_paths": [],             "size": (100, 100),  "verified": True,  "fit": "contain", "chroma": True},
     "monster":    {"sub_path": "monsters",             "extra_sub_paths": [],             "size": (360, 360),  "verified": True,  "fit": "contain", "chroma": True},
+    "character_select": {"sub_path": "charui", "extra_sub_paths": [], "size": (132, 195), "verified": True, "fit": "cover", "chroma": False},
+    "character_select_locked": {"sub_path": "charui", "extra_sub_paths": [], "size": (132, 195), "verified": False, "fit": "cover", "chroma": False},
+    "character_icon": {"sub_path": "charui", "extra_sub_paths": [], "size": (88, 88), "verified": True, "fit": "contain", "chroma": True},
+    "character_map_marker": {"sub_path": "charui", "extra_sub_paths": [], "size": (49, 64), "verified": False, "fit": "contain", "chroma": True},
+    "character_background": {"sub_path": "charui", "extra_sub_paths": [], "size": (1920, 1200), "verified": True, "fit": "cover", "chroma": False},
+    "character_combat": {"sub_path": "charui", "extra_sub_paths": [], "size": (512, 512), "verified": True, "fit": "contain", "chroma": True},
+    "character_rest": {"sub_path": "charui", "extra_sub_paths": [], "size": (512, 512), "verified": True, "fit": "contain", "chroma": True},
+    "character_merchant": {"sub_path": "charui", "extra_sub_paths": [], "size": (512, 512), "verified": True, "fit": "contain", "chroma": True},
+    "character_energy": {"sub_path": "charui", "extra_sub_paths": [], "size": (256, 256), "verified": True, "fit": "contain", "chroma": True},
+    "character_energy_text": {"sub_path": "charui", "extra_sub_paths": [], "size": (24, 24), "verified": True, "fit": "contain", "chroma": True},
 }
 FRAGMENT_CLEANUP_SPECS = {"enchantment", "orb", "monster"}
+REFERENCE_FAMILIES = {
+    "character_select": "character_select",
+    "character_select_locked": "character_select",
+    "character_background": "character_select",
+    "character_icon": "character_icon",
+    "character_map_marker": "character_icon",
+    "character_energy": "character_icon",
+    "character_energy_text": "character_icon",
+    "character_combat": "character_combat",
+    "character_merchant": "character_combat",
+    "character_rest": "character_rest",
+}
 
 
 def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
@@ -560,10 +585,14 @@ def resolve_references(ref_arg: str, max_refs: int, log,
             continue
         p = Path(token)
         if p.is_dir():
-            spec_subdir = (p / spec) if spec else None
+            reference_family = REFERENCE_FAMILIES.get(spec, spec) if spec else None
+            spec_subdir = (p / reference_family) if reference_family else None
             if spec_subdir and spec_subdir.is_dir():
                 imgs = images_in(spec_subdir)
-                log(f"reference: using spec subdir {spec_subdir.name}/ ({len(imgs)} images)")
+                log(
+                    f"reference: using spec subdir {spec_subdir.name}/ "
+                    f"for {spec} ({len(imgs)} images)"
+                )
                 paths.extend(imgs)
             else:
                 paths.extend(images_in(p))

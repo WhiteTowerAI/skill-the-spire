@@ -329,7 +329,14 @@ separate contracts below):
   - runtime identity, HP, three pool types/members, exact deck/relic multisets
   - combat `MaxEnergy=3` plus the hosted mechanic's independent state delta
 - **advanced mechanic**: none | <selected verified capability or explicit pack gap>
-- **art**: character-template/built-in placeholders (custom character art not yet supported)
+- **art**: placeholder | generate (Character static profiles only; list each consumer)
+- **art source**: runtime-imagegen | vofy | byo-http | local-image (generate only)
+- **character art profiles**: none | selection | locked selection | top-panel icon |
+  map marker | select background | combat body | rest body | merchant body | energy |
+  compact energy icon (do not infer one profile from another; mark unsupported consumers
+  as explicit gaps per `reference/character-presentation.md`)
+- **Ancient presentation**: native banner/dialogue researched but unverified |
+  deferred (custom Ancient layout)
 - **derived ids**:
   - character Id.Entry: `<NS_UPPER>-<CHARACTER_SLUG>`
   - every starter content Id.Entry and flat loc keys
@@ -448,18 +455,29 @@ Rules for this round:
 - **Placeholder is the default and needs no backend, no key, no dev box.** If the user
   didn't ask for custom art, leave it placeholder — this is exactly the current,
   already-verified behavior (no regression).
-- **`generate` is wired for eight static specs — `card`, `relic`, `power`, `potion`,
+- **`generate` is wired for eight established static specs — `card`, `relic`, `power`, `potion`,
   `enchantment`, `orb`, `monster`, `event`** (all live-verified — card 1000×760;
   relic/power/potion 256×256; enchantment 64×64; orb icon 100×100; normal event portrait
   slots 3440×1613; static monster body 360×360;
-  `reference/art-contract.md`).
+  `reference/art-contract.md`) **plus eight promoted Character specs**:
+  `character_select`, `character_background`, `character_icon`, `character_combat`,
+  `character_rest`, `character_merchant`, `character_energy`, and
+  `character_energy_text`. `character_energy` means five 256x256 layer assets. Locked
+  selection and map marker remain explicit gaps until headed consumer proof passes.
 - **Orb generation is icon-only.** Keep the recipe's explicit Frost icon/Spine scene/
   channel-SFX fallbacks; `gen_sprite.py` does not emit a combat scene.
 - **Enemy generation is static-body only.** One 360×360 PNG feeds combat and bestiary
-  through `CreateCustomVisuals()`; keep the explicit fallback scene. Character art stays
-  placeholder. Event raster support includes only the initial and explicitly authored
-  later-page portraits; it does not include custom phobia, custom-layout, or Ancient
-  assets. The separate code-native `portrait_halo` profile has no raster generation step.
+  through `CreateCustomVisuals()`; keep the explicit fallback scene. Supported Character
+  generation is consumer-specific: selection portrait/background, top-panel icon, static
+  combat/rest/merchant bodies, five-layer full energy, and compact resource icon use the
+  exact profiles in `reference/art-contract.md`. Background/rest/merchant use bundled raw
+  scene packing without a Godot/MegaDot prerequisite; merchant also records the versioned
+  prefix and patch-failure fallback. Generated-mod authors do not manually install or run
+  PckPacker; the character template declares it and `build.py` owns both package paths.
+  Locked/map consumers need headed proof. Keep their fallback getters. Event raster
+  support includes only the initial and explicitly authored later-page portraits; it does
+  not include custom phobia, custom-layout, or Ancient assets. The separate code-native
+  `portrait_halo` profile has no raster generation step.
   All other VFX and Spine/animation work is a later expansion.
 - **`generate` has four source routes:** a host-native raster image tool that is actually
   callable in the current runtime (`runtime-imagegen`; Codex calls it `image_gen`), an

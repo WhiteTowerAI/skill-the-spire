@@ -7,17 +7,21 @@ and runs in-game.
 
 First supported game: **Slay the Spire 2 (STS2)**.
 
-> **Status: M6 Core complete.** open-mod reliably makes **relics, potions, cards, and
+> **Status: M0-M6 complete at their grounded support boundaries.** open-mod reliably makes **relics, potions, cards, and
 > custom powers** (including a card that applies its own power), **custom card
 > mechanics** (keywords, card enchantments, and orbs), **enemy encounters** (a custom
 > monster plus its encounter), **map events / World Nodes**, and bounded advanced
-> **playable characters**: selectable Foundation, valid pools/starters, combat resources
-> with live fallback UI, and ordered semantic card-play buffers that create deterministic dynamic
-> output. It proves both that the
+> **playable characters**. Character support includes a selectable Foundation, valid
+> pools/starters, combat resources, ordered semantic card-play buffers, a fixed icon+text
+> mechanic UI, and eight checked static art profiles: selection portrait/background,
+> top-panel icon, combat/rest/merchant bodies, five-layer full energy, and a compact
+> resource icon. It proves both that the
 > mod **loads** and that its **effect actually fires** in-game, repairs common build
 > errors automatically, and supports placeholder or generated art for card portraits,
 > relic/power/potion/enchantment/orb icons, a static monster combat+bestiary body, and
-> normal event initial/explicit page portraits. Keyword
+> normal event initial/explicit page portraits. Character scene-backed static art is
+> packaged by the bundled build tools, so mod authors do not install Godot or MegaDot.
+> Keyword
 > card text and hover-tooltip presentation are also live-verified; keywords intentionally
 > own no bitmap. When the
 > agent runtime exposes a native image tool, open-mod can use it
@@ -32,15 +36,13 @@ First supported game: **Slay the Spire 2 (STS2)**.
 > code-native portrait-halo VFX profile and native vanilla-style colored/moving description
 > text. A bounded solo Quest Card can also force one custom Event from an Unknown MapPoint
 > in one specified act, then be completed/removed by that Event. Its headed proof and the
-> final general Event suite passed strict Tier 2 with
-> no fresh error. Event static art also includes one three-reference generation and real
-> headed render acceptance. The first three bounded native-presentation follow-ups now
-> cover Card/standard-tip rich text, enabled Event option typed tips and relic metadata,
-> and native exact-lethal HP/Max HP warnings. Direct next is native Card/relic acquisition
-> previews, followed by screen shake, curated built-in Event VFX, Character static assets,
-> and richer character-mechanic UI;
-> animation is a later expansion, and M7's
-> proactive beginner interview follows that pass. Vanilla editing and one-click Steam
+> final general Event suite passed strict Tier 2 with no fresh error. Event static art also
+> includes one three-reference generation and real headed render acceptance. All six
+> bounded native-presentation follow-ups are complete: rich text and typed tips, native
+> exact-lethal warnings, Card/relic acquisition previews, preference-respecting screen
+> shake, and curated built-in Event VFX. **Direct next is M7's proactive beginner
+> interview.** Animation, materials, multiplayer presentation, and audio are later,
+> non-blocking tracks. Vanilla editing and one-click Steam
 > Workshop publishing also remain out of scope.
 > See [Current limits](#current-limits).
 
@@ -61,6 +63,10 @@ build STS2 mods:
    package also targets Codex, Cursor, OpenClaw, and other Agent Skills consumers.
 5. **Python 3**. On Windows, install Python from python.org — the `python3` command
    preinstalled by Windows may be a non-working Store placeholder.
+
+You do **not** need to install Godot, MegaDot, or PckPacker manually. The character
+template declares the upstream PckPacker package, and open-mod's bundled build wrapper
+automatically handles the raw static `.tscn` files that package skips.
 
 The very first time you make a mod, the skill will also install the STS2 project
 template (`dotnet new install Alchyr.Sts2.Templates`) if it isn't already present.
@@ -186,8 +192,11 @@ open-mod is still young. Today it does the following well, and is honest about t
 - ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
   failures, then re-verifies.
 - ✅ **Custom art for grounded static surfaces** — card portraits,
-  relic/power/potion/enchantment/orb icons, one static monster body, and normal event initial/page portraits are
-  live-verified. Placeholder art remains the zero-setup default. Generation prefers a
+  relic/power/potion/enchantment/orb icons, one static monster body, normal event
+  initial/page portraits, and eight Character profiles are live-verified. The Character
+  set covers selection portrait/background, top-panel icon, static combat/rest/merchant
+  bodies, five full-energy layers, and a compact resource icon. Placeholder art remains
+  the zero-setup default. Generation prefers a
   callable host-native image tool (Codex `image_gen` when exposed), then supports Vofy,
   your own compatible image backend, or a local image. Every route uses the same
   deterministic STS2 normalizer and falls back safely if unavailable. Reference-capable
@@ -222,35 +231,38 @@ open-mod is still young. Today it does the following well, and is honest about t
   Direct merchant/rest/treasure room transitions and a second combat from the same Event
   instance remain unsupported, as do arbitrary forced chains, multiplayer semantics, and
   a new save-roundtrip claim for this capability.
-- ✅ **Native presentation 1-3** — Card descriptions and standard Card/relic/potion/power
+- ✅ **Native presentation 1-6** — Card descriptions and standard Card/relic/potion/power
   Hover Tips support bounded per-surface vanilla colors. Enabled Event options support
   typed Hover Tips and normal relic-backed text/metadata; locked tips remain suppressed and
   normal-layout relic images remain deferred. Exact HP/Max HP costs can drive the native
-  inclusive-lethal warning glow. All consumers passed headed strict Tier 2 on 2026-07-20.
+  inclusive-lethal warning glow. Native Card/relic acquisition presentation, the
+  preference-respecting `weak_short` screen shake, and the curated built-in `trial_noble`
+  Event VFX are also supported with checked cleanup.
 - ✅ **Character Foundation** — a plain-English request can produce a selectable minimal
   character with character-scoped card/relic/potion pools, exact starter deck/relic, HP,
   standard 3 energy, and one public/BaseLib starter mechanic. Verification clicks the real
   character button, starts the run, checks the starter ecosystem, and observes the combat
-  effect. Character static art still uses template/built-in placeholders; character
-  animation is assigned to the later animation expansion.
+  effect. Its eight static art profiles have real selection, combat, RestSite, and Shop
+  render proof. Background/rest/merchant use minimal raw scenes packed without Godot or
+  MegaDot; full energy uses BaseLib's native five-layer counter. Locked selection, the map
+  marker, and native custom-Character Ancient presentation remain unverified and retain
+  explicit fallbacks.
 - ✅ **Advanced Character composition** — combat-only resources use explicit payment and
-  a live generic counter; bounded ordered semantic buffers produce configured output cards
-  while source cards use STS2's normal result piles.
+  a fixed 220x32 icon+text counter with text-only fallback; bounded ordered semantic
+  buffers produce configured output cards while source cards use STS2's normal result
+  piles.
   A fresh Wayfinder acceptance combined both into a spatial route mechanic and passed
   selection, run-start, payment, geometry, history, and two-combat reset proof.
 - 🧪 **Character capability kernel (maintainer infrastructure)** — a self-contained,
   version-gated B-risk postfix now has build, load, real UI-host, typed-state, conflict,
   idempotence, and two-combat lifetime proof. It is deliberately not advertised as a
   gameplay mechanic and has not been extracted into `OpenMod.Runtime`.
-- ⏭️ **Direct next: finish M6 native presentation, then Static Art Expansion** — items
-  1-3 are complete. Next promote Card/relic acquisition previews, bounded screen shake,
-  and curated built-in noncombat Event VFX. Then cover Character static assets and the Ancient opening
-  name-banner/Architect presentation before improving Character UI. Extend the existing
-  source-independent generation/import pipeline only with headed proof, without mistaking
-  fallback visuals for support. All Spine, move animation, arbitrary animated VFX, and
-  animated transitions are postponed to a later expansion and do not block M7; the bounded
-  normal-Event portrait halo is already supported.
-- ⏳ **After the art pass:** M7's proactive beginner interview. **Not yet:** retained-card
+- ⏭️ **Direct next: M7 proactive beginner interview.** M6 is closed at the exact
+  boundaries above; do not reopen its canaries while adding concern-aware questions,
+  recommended defaults, and character resource/archetype/run-rhythm guidance.
+- ⏳ **Later presentation expansion:** animation, materials, multiplayer presentation,
+  and audio each require their own Downfall/BaseLib/game inventory, fallback contract,
+  and headed proof. **Not yet:** retained-card
   custom zone UI, unverified advanced character families,
   nonstandard character energy,
   editing existing vanilla content, production-size character card pools, and one-click

@@ -58,7 +58,8 @@ during M1.
 ## Build / toolchain
 
 - **PckPacker ships commented out** in the template csproj. Uncomment it or you get
-  no `.pck` — and localization/images won't appear in-game. No MegaDot needed.
+  no `.pck` — and localization/images won't appear in-game. No MegaDot/Godot install is
+  needed: `build.py` repacks raw `.tscn` automatically when PckPacker skips them.
 - If passing MSBuild props on a `publish` command, use `--property:Name=Value`, not
   `/p:Name=Value` (the latter gets mangled by shell quoting → MSB1008). The normal
   `dotnet build -c Release` path needs no props.

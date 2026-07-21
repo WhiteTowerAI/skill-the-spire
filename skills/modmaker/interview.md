@@ -24,7 +24,11 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    - **A new selectable hero** with their own starting deck/relic and card identity →
      **character**. Supported composition includes a named nonnegative combat resource with
      an explicit payoff/live counter and a bounded ordered semantic record of card plays
-     with deterministic output. Source cards use their normal result piles.
+     with deterministic output. Source cards use their normal result piles. Character
+     presentation can additionally select the supported selection portrait/background,
+     top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact
+     resource icon. Locked selection and map marker remain grounded gaps with explicit
+     fallbacks.
    - **Supported now: relic, potion, card, enemy encounter, event, and bounded character composition.**
      (*Editing* an existing
      vanilla card/relic/potion is not yet supported — if that's the ask, say so and offer to
@@ -122,10 +126,13 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    implies a custom visual. This is a **single mod-level decision**: placeholder or
    generate for the mod, asked **once** no matter how many cards/sprites it has. Do NOT
    ask per sprite. If they want custom art:
-   - **Eight static specs — card portraits, relic icons, power icons, potion icons,
-     enchantment icons, orb icons, static monster bodies, and normal-event portrait slots** can be generated
-     (all live-verified as loose PNGs; orb support is icon-only, and Event raster support
-     does not include custom phobia or custom-layout assets). Generate the initial event
+   - **Eight established static specs plus eight Character specs** can be generated. The
+     established set is card portraits, relic/power/potion/enchantment/orb icons, static
+     monster bodies, and normal-event portrait slots. The Character set is selection
+     portrait/background, top-panel icon, static non-Spine combat/rest/merchant bodies,
+     five-layer full energy, and compact resource icon. Full energy is five image assets;
+     show that count before a paid route. All are live-verified static consumers; orb support is icon-only, and Event raster
+     support does not include custom phobia or custom-layout assets. Generate the initial event
      portrait plus only later-page portraits the user's concept explicitly calls for; do
      not turn every result page into another image spend.
    - Prefer a **host-native image generator** when the current runtime actually exposes
@@ -142,12 +149,13 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      style") once, for the mod. If the mod has several generated assets, take one overall
      style note here; `author.md` fills each asset's subject from its element SPEC when it
      generates — but you still only *ask* once.
-   - **Static monster bodies are supported; monster animation and character visuals are not.**
-     Monsters use one static combat/bestiary body or the built-in scene fallback. Preserve
+   - **Static monster bodies and the bounded Character subset are supported; animation is not.**
+     Monsters use one static combat/bestiary body or the built-in scene fallback. Character
+     generation supports selection/background, top-panel icon, static combat/rest/merchant
+     bodies, five-layer full energy, and compact resource icon; preserve only locked/map
+     requests as explicit gaps with inherited fallbacks. Preserve
      requests for Spine bodies, attack/hurt/cast/death animation, phobia variants, or
-     bestiary move previews as later-animation gaps. Characters use the template/built-in
-     placeholder shell; state that limitation if custom character visuals are requested and
-     continue only if the user accepts it. For an event, offer the normal initial portrait
+     bestiary move previews as later-animation gaps. For an event, offer the normal initial portrait
      and any explicitly requested later-page image change. The separate code-native
      `portrait_halo` and the built-in `trial_noble` profile need no image backend. Preserve
      requests for custom phobia art, arbitrary VFX, custom-layout, or Ancient art as gaps.
@@ -300,9 +308,16 @@ starting HP: <int, default 70>
 energy per turn: 3 (current grounded Foundation value)
 starter deck: <exact card names and counts, total 10>
 starter relic: <name + one public/BaseLib effect>
-pools: character-scoped card/relic/potion pools with at least one concrete member each
+pools: character-scoped card/relic/potion pools with at least one concrete member each;
+  if Shop/merchant is selected, at least 2 non-Basic Attacks, 2 Skills, and 1 Power
 scenario: RunStart + CombatPlayer
-art: character-template/built-in placeholders
+art: placeholder | generate: selected Character static profiles only
+art profiles: selection | background | top-panel icon | combat body | rest body |
+  merchant body | five-layer full energy | compact energy icon |
+  explicit gap: locked selection/map marker
+static merchant patch: selected only with merchant body; inherited fallback on mismatch
+Ancient presentation: native banner/dialogue researched but unverified |
+  deferred custom Ancient layout
 advanced mechanic: none | <unverified idea that remains beyond Foundation>
 ```
 

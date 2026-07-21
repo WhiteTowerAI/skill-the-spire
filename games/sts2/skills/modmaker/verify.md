@@ -97,7 +97,8 @@ requires the exact load marker and `selftest done`.
 - For a Character Foundation, the final proof is valid only after the harness has asserted
   one constructor-registered model, the real selection button, runtime identity/HP, three
   pool types and member models, exact starter deck/relic multisets, designed MaxEnergy,
-  and one hosted public/BaseLib mechanic delta through `CombatPlayer`.
+  and one hosted public/BaseLib mechanic delta through `CombatPlayer`. If Shop is selected,
+  the unlocked pool must also fill its two Attack, two Skill, and one Power colored slots.
 - For a character resource, require gain, affordable and unaffordable checks, one exact
   successful payoff, one rejected spend with no mutation/negative state, live counter
   values, and a distinct zero state/counter in combat 2.
@@ -137,6 +138,17 @@ assertion plus visual inspection. In particular:
   acquisition preview with the acquired relic visible in the top bar, and the settled
   result page. Assert preference-aware shake movement/return and preview/VFX cleanup in the
   same `MapNode` run; a model delta without the native consumers is insufficient.
+- character static presentation: the real character-select button/background, top-panel
+  icon, and static combat body must visibly use the normalized custom resources. The
+  compact icon must resolve at 24x24 inside the fixed 220x32 icon+text control. Enter real
+  RestSite and Shop hosts for selected static bodies; merchant also asserts the exact
+  versioned prefix `targets/owned prefix/postfix=1/1/0` and no Spine error. Full energy
+  asserts five 256x256 custom layers, native 128x128 root, and live number label. Locked
+  selection and map marker require their own visible-host evidence. Do not infer any
+  consumer from a path or successful build. Read `reference/character-presentation.md`.
+- Ancient presentation: enter the real Ancient/Architect flow and capture the native name
+  banner plus one character/Architect dialogue exchange. Assert the character localization,
+  speech-bubble color, and attack VFX selection; normal Event rich text is not a substitute.
 
 If a secondary view cannot be reached, report behavior Tier 2 separately and label the art
 unverified; do not infer it from a resource path, `.pck` build, or primary view.

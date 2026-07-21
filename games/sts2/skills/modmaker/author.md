@@ -46,11 +46,15 @@ localization JSON, and inject the self-test marker. Everything structural
   **Character Foundation** (`element: character`), read
   `recipes/character.md`: keep the character template's `PlaceholderCharacterModel` and
   three pool bases, fill exact starters/HP/loc, and never call `AddCharacter` manually.
+  If SPEC selects any Character art profile, richer resource/buffer presentation, or the
+  native Ancient/Architect flow, also read `reference/character-presentation.md` and obey
+  its per-consumer promotion/fallback boundary.
   If SPEC selects a character resource, read `reference/character-resource.md`; if it
   selects a bounded ordered semantic buffer/dynamic output, read
   `reference/ordered-card-buffer.md`.
-  Read `reference/capability-kernel.md` only when the selected resource UI needs its exact
-  verified combat-UI adapter. Prefer public/BaseLib, emit only selected self-contained
+  Read `reference/capability-kernel.md` when the selected resource UI needs its exact
+  combat-UI adapter or static merchant needs its exact `_Ready()` prefix. Prefer
+  public/BaseLib, emit only selected self-contained
   modules, and do not generalize the adapter into alternative-energy patches, visible
   zone UI, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
@@ -205,8 +209,12 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
   the BaseLib 3.3.5 `CustomCharacterModel` constructor owns registration.
 - Author concrete card/relic/potion members through the existing recipes while retaining
   the character template's inherited `[Pool(typeof(<ModName>*Pool))]` attributes.
+- If Shop/static merchant is selected, author enough unlocked non-Basic cards to provide
+  at least two Attacks, two Skills, and one Power after filters; the native merchant fills
+  those exact slots and otherwise throws before its UI appears.
 - Add all 14 `CharacterLoc` values and the four Architect keys from the character recipe.
-- Keep `PlaceholderCharacterModel` plus template icons; character art/animation is not a
+- Keep `PlaceholderCharacterModel` plus checked fallbacks; selected Character static
+  profiles may override the matching getters after headed proof, while animation is not a
   Foundation gate. A Foundation-only SPEC emits no capability-kernel code. A resource
   SPEC emits its named domain state/payment rules plus only the exact selected UI kernel.
   An ordered-buffer SPEC emits combat-scoped semantic state, native source-card result
@@ -298,8 +306,10 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    **character** → the **`RunStart` + `CombatPlayer`** variant: locate the real custom
    character button by normalized icon resource path, click it and Confirm, wait for
    `NRun.GlobalUi`, assert runtime HP/pools/starter multisets, enter combat, then assert
-   designed `MaxEnergy` and the starter mechanic's independent state delta. Never select
-   the first unlocked vanilla character.
+   designed `MaxEnergy` and the starter mechanic's independent state delta. When selected,
+   also enter real RestSite/Shop hosts and assert background/rest/merchant/full-energy
+   resources plus static-merchant patch status. Never select the first unlocked vanilla
+   character.
    **capability-kernel maintainer canary** → use the two-combat `CombatPlayer` proof in
    `reference/capability-kernel.md`: Tier 1 asserts exact version/MVID target resolution,
    one owned postfix and idempotence; combat 1 asserts typed dispatch/state/listener plus
@@ -409,14 +419,15 @@ SFX fallbacks; it must not rely on the custom-id path convention. Skip to §5.
 For an **enemy encounter**, the recipe checks `images/monsters/<slug>.png` and returns
 `null` from `CreateCustomVisuals()` when absent, so the explicit built-in fallback scene
 loads without a missing-resource error. Skip to §5.
-For a **character**, keep the character template's icon PNGs and built-in scene fallbacks;
-custom character sprite/animation generation is not supported in Foundation.
+For a **character**, keep the character template's PNG/scene fallbacks. Placeholder mode
+does not emit a Character asset. Custom animation and unpromoted static consumers are not
+supported by Foundation.
 
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
-Supported sprite specs (see `sts2-api` → `reference/art-contract.md` for the full
-contract). Characters are **not yet** supported sprite specs; keep their template
-placeholders and do not call `gen_sprite.py` for them.
+Supported sprite specs (see `sts2-api` → `reference/art-contract.md` and
+`reference/character-presentation.md` for the full contracts). Character generation covers
+eight promoted static profiles; locked selection and map marker remain explicit gaps.
 - **`--spec card`** — the one portrait a normal card loads, **1000×760 landscape**, full-
   bleed (chroma OFF), written to `card_portraits/big/<slug>.png`. **Live-verified in-game.**
   The 606×852 "full art" size is **Ancient-rarity only and out of scope — we never make it**.
@@ -462,6 +473,16 @@ placeholders and do not call `gen_sprite.py` for them.
   page art is absent. This does not generate a phobia variant, custom layout, or Ancient
   background scene. The optional code-native `portrait_halo` is authored from
   `reference/event-vfx.md` and has no `gen_sprite.py` invocation.
+- **`--spec character_select` / `character_background` / `character_icon` /
+  `character_combat` / `character_rest` / `character_merchant` / `character_energy` /
+  `character_energy_text`** — respectively opaque **132x195** and **1920x1200** assets,
+  transparent **88x88** and three **512x512** static bodies, five transparent **256x256**
+  full-energy layers, and one transparent **24x24** compact icon. These are live-proven in
+  real selection, top-panel, CombatPlayer, RestSite, Shop, and energy consumers. Author the
+  raw background/rest/merchant wrappers from `character-presentation.md`; `build.py` packs
+  them without Godot/MegaDot. Full energy uses five loose PNGs, and static merchant selects
+  the versioned `_Ready()` prefix. Keep checked template/text/patch fallbacks. Do not emit
+  locked selection or map-marker art as supported.
 
 1. **Build the prompt (three segments — see `art-contract.md`).** For card and the M5.5
    `relic`/`power`/`potion` icon specs,
@@ -496,6 +517,22 @@ placeholders and do not call `gen_sprite.py` for them.
    place the focal subject in the left third, and reserve darker low-detail center-right and
    lower-right space for the game's title, description, and options. Do not reuse the card
    prompt's centered-subject constraint or paint option reward numbers into the scene.
+**Character static art profiles.** When `SPEC.md` selects Character art, emit only the
+eight promoted profiles above. Selection and background are opaque (`--chroma` off); icon,
+combat/rest/merchant bodies, full-energy layers, and compact icon use `--chroma`.
+`CreateCustomVisuals()` consumes the checked combat PNG and returns `null` for the inherited
+fallback. Emit minimal raw scenes for background/rest/merchant. Gate the merchant getter on
+the exact static-merchant patch status. Override `CustomEnergyCounter` only when all five
+layers exist. Locked/map consumers remain explicit gaps with inherited getters.
+
+The character prompt must describe one original subject in the STS2 painterly style-only
+reference pool. Selection portraits are readable at 132x195; backgrounds reserve the
+information-panel area at 1920x1200; top-panel icons are bold at 88x88; static combat/rest/
+merchant bodies are centered on one baseline at 512x512; full energy requests five
+complementary layers; the compact resource icon is one legible 24x24 core. Do not request animation, trails, transition shaders, remote hands,
+phobia art, or a custom Ancient layout. The Ancient name-banner/Architect line is a
+separate native headed proof, not a normal Event rich-text shortcut.
+
 1a. **Respect the selected route's consent boundary.** For `runtime-imagegen`, the user's
    mod-level `generate` choice authorizes the initial one-image-per-asset native-tool run;
    it needs no separate API key, but follow any approval or usage warning presented by the
@@ -533,10 +570,13 @@ placeholders and do not call `gen_sprite.py` for them.
    image file. Pass that file through the existing normalizer:
    ```
    python ${GAME_TOOLS_DIR}/gen_sprite.py import \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event> --slug <slug> --input "<native-output.png>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --input "<native-output.png>" \
      --out "<work dir>/<ModName>/images" [--chroma]
    ```
-   Add `--chroma` only for `relic`, `power`, `potion`, `enchantment`, `orb`, and `monster`. The normalized project asset,
+   Add `--chroma` for `relic`, `power`, `potion`, `enchantment`, `orb`, `monster`, and
+   promoted Character icon/combat/rest/merchant/full-energy/compact-energy specs. Leave it
+   off for Character selection/background. For full energy, invoke five times with slugs
+   `orb_layer_1` through `orb_layer_5`. The normalized project asset,
    not the host's raw output, is what the mod references and packages.
 
    **Vofy managed credits:** the user installs/authenticates Vofy themselves. Never run
@@ -553,7 +593,7 @@ placeholders and do not call `gen_sprite.py` for them.
    step 1a's confirmation, submit exactly one synchronous paid task:
    ```
    python ${GAME_TOOLS_DIR}/acquire_sprite.py create \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --model <chosen-model> \
      [--aspect-ratio <confirmed-ratio>] [--resolution <confirmed-resolution>] \
      [--reference ${STS2_API_SKILL_DIR}/reference/art-samples] --yes
@@ -567,23 +607,24 @@ placeholders and do not call `gen_sprite.py` for them.
    **BYO HTTP backend:** run the existing generator:
    ```
    python ${GAME_TOOLS_DIR}/gen_sprite.py generate \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --config <path to art-backend.json> \
      --reference ${STS2_API_SKILL_DIR}/reference/art-samples
    ```
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
    point it at the **root** `art-samples` dir (as shown). The tool auto-picks the matching
-   `card`/`relic`/`power`/`potion`/`enchantment`/`orb`/`monster`/`event` subdir and randomly
-   samples three distinct files; families are never mixed. Backends
+   established family or `character_select`/`character_icon`/`character_combat`/
+   `character_rest` reference subdir and randomly samples three distinct files; families
+   are never mixed. Backends
    that accept reference images (gpt-image edits or Gemini/nano-banana) imitate the
    game style far better, and plain text-to-image backends just ignore it.
    The tool POSTs to the user's backend, then chroma-keys (per spec — OFF for a full-bleed
-   `card`/`event`, ON for a cut-out `relic`/`power`/`potion`/`enchantment`/`orb`/`monster`) / fits /
+   `card`/`event`/Character selection-background, ON for the cut-out icon/body/energy specs) / fits /
    resizes to the exact contract size and writes every required path: one
-   card/potion/enchantment/orb/monster/event file or two relic/power files. A relic's optional
+   card/potion/enchantment/orb/monster/event/Character asset or two relic/power files. A relic's optional
    `_outline.png` is not generated (see above).
    **Local image:** use `gen_sprite.py import --input <file> ...`; for a magenta-backed
-   relic/power/potion/enchantment/orb/monster source add `--chroma`.
+   relic/power/potion/enchantment/orb/monster or Character cut-out source add `--chroma`.
 4. **Unavailable/failure → bounded fallback, don't block.** A missing native image tool,
    native output with no local file, host-tool failure, missing Vofy/auth/credits,
    unsupported model flags, task failure/timeout, zero or multiple downloads, missing BYO

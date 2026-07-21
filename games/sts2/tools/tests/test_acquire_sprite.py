@@ -15,6 +15,8 @@ from PIL import Image
 
 TOOLS_DIR = Path(__file__).resolve().parents[1]
 ACQUIRE = TOOLS_DIR / "acquire_sprite.py"
+sys.path.insert(0, str(TOOLS_DIR))
+import acquire_sprite  # noqa: E402
 PNG = "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGP4z8DwH4QZGBgYGMAAAAD//wMAjQkH/QAAAABJRU5ErkJggg=="
 
 
@@ -238,6 +240,20 @@ class AcquireSpriteTests(unittest.TestCase):
         self.assertTrue(all(path.parent == pool.resolve() for path in references))
         self.assertIn("[acquire_sprite] selected references:", result.stdout)
 
+    def test_character_reference_alias_never_uses_unrelated_root_images(self) -> None:
+        root = self.root / "art-samples"
+        pool = root / "character_combat"
+        pool.mkdir(parents=True)
+        expected = pool / "combat.png"
+        expected.write_bytes(base64.b64decode(PNG))
+        (root / "wrong-family.png").write_bytes(base64.b64decode(PNG))
+
+        references = acquire_sprite.resolve_reference_inputs(
+            [str(root)], "character_merchant"
+        )
+
+        self.assertEqual([expected.resolve()], references)
+
     def test_cutout_uses_import_chroma_and_emits_both_relic_paths(self) -> None:
         result = self.run_tool(*self.create_args("relic"), "--yes")
         self.assertEqual(0, result.returncode, result.stderr)
@@ -283,6 +299,33 @@ class AcquireSpriteTests(unittest.TestCase):
             self.assertEqual((360, 360), image.size)
             self.assertEqual("RGBA", image.mode)
         self.assertEqual([destination], list(self.out.rglob("*.png")))
+
+    def test_character_icon_uses_chroma_import(self) -> None:
+        result = self.run_tool(*self.create_args("character_icon"), "--yes")
+        self.assertEqual(0, result.returncode, result.stderr)
+        destination = self.out / "charui" / "paid-art.png"
+        with Image.open(destination) as image:
+            self.assertEqual((88, 88), image.size)
+            self.assertEqual("RGBA", image.mode)
+        self.assertEqual([destination], list(self.out.rglob("*.png")))
+
+        log = (self.out / ".gen_sprite.log").read_text(encoding="utf-8")
+        self.assertIn("chroma=True", log)
+        self.assertIn("applied magenta chroma-key", log)
+
+    def test_character_background_keeps_opaque_full_bleed_import(self) -> None:
+        result = self.run_tool(*self.create_args("character_background"), "--yes")
+        self.assertEqual(0, result.returncode, result.stderr)
+        destination = self.out / "charui" / "paid-art.png"
+        with Image.open(destination) as image:
+            self.assertEqual((1920, 1200), image.size)
+            self.assertEqual("RGBA", image.mode)
+            self.assertEqual(255, image.getpixel((0, 0))[3])
+        self.assertEqual([destination], list(self.out.rglob("*.png")))
+
+        log = (self.out / ".gen_sprite.log").read_text(encoding="utf-8")
+        self.assertIn("chroma=False", log)
+        self.assertNotIn("applied magenta chroma-key", log)
 
 
 if __name__ == "__main__":

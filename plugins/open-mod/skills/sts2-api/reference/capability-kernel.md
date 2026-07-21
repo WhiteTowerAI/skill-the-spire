@@ -1,7 +1,8 @@
 # Capability kernel - typed state, hooks, UI hosts, and versioned patches
 
-Status: **scenario-verified for one B-risk postfix on STS2 0.107.1** by
-`CanaryPatchKernel` (2026-07-15). This page is a capability-module contract, not a
+Status: **scenario-verified for two B-risk adapters on STS2 0.107.1**: the combat-UI
+postfix by `CanaryPatchKernel` (2026-07-15), and the static-merchant prefix by
+`WayfinderAcceptance` (2026-07-21). This page is a capability-module contract, not a
 standalone content recipe. It does not make character resources, payment rules, custom
 zones, dynamic cards, vanilla editing, Publicizer access, or transpilers user-facing.
 `CanaryResourceUi` reused this exact self-contained adapter on 2026-07-16 and proved a
@@ -74,7 +75,7 @@ Before authoring, SPEC must carry these fields:
 | Type proof | 0/0 build, load marker, resolved/applied diagnostics |
 | Scenario proof | hosted state consequence; never patch-only |
 
-Only B-level structural prefix/postfix is verified here. C-level internal/Publicizer and
+Only the two listed B-level structural prefix/postfix targets are verified here. C-level internal/Publicizer and
 D-level transpiler modules need separate fingerprinted canaries before use.
 
 ## Semantic state primitive
@@ -195,7 +196,8 @@ internal sealed record PatchDescriptor(
     Type TargetModuleType,
     string ExactTarget,
     Func<IReadOnlyList<MethodBase>> ResolveTargets,
-    MethodInfo Postfix);
+    MethodInfo? Postfix = null,
+    MethodInfo? Prefix = null);
 ```
 
 Registry behavior is mandatory:
@@ -203,9 +205,9 @@ Registry behavior is mandatory:
 1. Return the stored status on a repeated id; never apply twice.
 2. Compare `TargetModuleType.Module.ModuleVersionId` before target resolution.
 3. Resolve by exact name and parameter types; require exactly one target.
-4. Apply one explicitly supplied prefix/postfix. Do not call assembly-wide `PatchAll`.
-5. Inspect `Harmony.GetPatchInfo(target)` and require exactly one patch owned by this
-   Harmony id; log foreign patches separately.
+4. Apply one explicitly supplied prefix or postfix. Do not call assembly-wide `PatchAll`.
+5. Inspect `Harmony.GetPatchInfo(target)` and require exactly one patch of the selected
+   kind owned by this Harmony id; log foreign prefixes/postfixes separately.
 6. Record version mismatch, resolver exception, zero/multiple targets, apply exception,
    and owned-count mismatch as `status=FAILED` with a one-line reason.
 
@@ -276,6 +278,32 @@ private static void Postfix(NCombatUi __instance, CombatState state)
 Initialization order is domain listener registration, patch install, intentional second
 install only in the canary's idempotence assertion, load marker, then optional self-test.
 A normal generated mod calls `Install` once.
+
+## Verified B adapter - static merchant startup
+
+BaseLib converts a one-`Sprite2D` raw scene to `NMerchantCharacter`, but STS2 0.107.1
+still constructs `MegaSprite(GetChild(0))` in `_Ready()`. Select this adapter only with the
+static merchant profile:
+
+| Contract | Verified value |
+|---|---|
+| STS2 | stable `0.107.1` |
+| target module MVID | `97f10687-c306-4798-ab75-8b9f23f34dfb` |
+| exact target | public `NMerchantCharacter._Ready()` |
+| patch kind | Harmony prefix (risk B) |
+| condition | skip original only when child 0 is `Sprite2D` |
+| conflict policy | conditional exclusive prefix; one foreign prefix composed in proof |
+| failure fallback | keep inherited Character merchant scene; never return static scene |
+
+```csharp
+private static bool Prefix(NMerchantCharacter __instance) =>
+    __instance.GetChildCount() == 0 || __instance.GetChild(0) is not Sprite2D;
+```
+
+Resolve the exact public zero-parameter method declared by `NMerchantCharacter`. Install
+the patch before model scene conversions, and gate `CustomMerchantAnimPath` on its applied
+status. Tier 2 enters a real Shop, asserts `targets/owned prefix/postfix=1/1/0`, identifies
+the exact 512x512 visible texture, reaches `selftest done`, and rejects any fresh error.
 
 ## Domain-module shape
 

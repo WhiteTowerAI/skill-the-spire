@@ -95,6 +95,11 @@ Tier 2 can prove that the potion pool resolves a real member. Requirements:
   the expected generated type(s);
 - at least one starter card or starter relic has a real public/BaseLib behavior that
   `CombatPlayer` can drive and observe independently.
+- before entering the native Shop, the unlocked non-Basic card pool must contain at least
+  two eligible Attacks, two eligible Skills, and one eligible Power. The merchant owns
+  exactly those five colored slots and excludes the first result before filling the second
+  same-type slot; an undersized Character pool throws before the room UI appears. Author
+  real Character cards for these slots rather than shipping no-op proof cards.
 
 The live canary uses a starter relic with the already-grounded combat-start energy
 pattern: `AfterSideTurnStart`, owner participant + turn-1 guards, then
@@ -148,6 +153,66 @@ transition, audio, and hand assets. The template's `CustomIcon` and character-se
 map icon overrides provide distinguishable mod-owned placeholder PNGs. Do not block
 Foundation on custom art or animation, and do not claim those built-in assets are custom.
 
+## Static presentation expansion (M6)
+
+Static Character art is an opt-in layer over the Foundation shell. Each getter has its
+own consumer and its own checked fallback. The source-independent asset pipeline writes
+these loose PNGs under `images/charui/`:
+
+Read `reference/character-presentation.md` for the current promotion matrix. As of
+2026-07-21, selection portrait/background, top-panel icon, static non-Spine combat/rest/
+merchant bodies, five-layer full energy, and compact resource icon are live-proven.
+Locked selection, map marker, and Ancient/Architect remain explicit gaps.
+
+| getter/consumer | spec | size | fallback |
+|---|---|---:|---|
+| selection portrait | `CustomCharacterSelectIconPath` | 132x195 | inherited portrait |
+| locked selection portrait | `CustomCharacterSelectLockedIconPath` | 132x195 | inherited locked portrait |
+| top-panel icon | `CustomIconTexturePath` | 88x88 | inherited top-panel icon |
+| map marker | `CustomMapMarkerPath` | 49x64 | inherited map marker |
+| select background | `CustomCharacterSelectBg` | 1920x1200 | inherited select scene |
+| static combat body | `CreateCustomVisuals()` | 512x512 | inherited creature scene |
+| static rest-site body | `CustomRestSiteAnimPath` | 512x512 | inherited rest-site scene |
+| static merchant body | `CustomMerchantAnimPath` | 512x512 | inherited merchant scene |
+| energy counter layers | `CustomEnergyCounter` | five 256x256 PNGs | inherited energy scene |
+| compact energy icon | card-pool `TextEnergyIconPath` | 24x24 | template icon |
+
+Selection/background files are opaque and use `fit: cover`; icon, marker, static-body,
+and energy files use `fit: contain` with the explicit magenta chroma-key import. A static
+body is not a Spine contract: leave `SetupCustomAnimationStates` null and retain the
+fallback for attack, hurt, cast, death, phobia, multiplayer, and animated transitions.
+
+`NCreatureVisualsFactory` accepts the checked combat PNG directly when
+`CreateCustomVisuals()` returns it. Background, rest-site, and merchant use the minimal raw
+`.tscn` wrappers from `reference/character-presentation.md`; `build.py` packs them without
+Godot/MegaDot. Merchant additionally selects the exact version-gated
+`NMerchantCharacter._Ready()` prefix and gates its getter on successful installation.
+Full energy overrides `CustomEnergyCounter` with five checked loose PNGs and does not use a
+scene. Every missing asset or failed patch retains the inherited template consumer.
+
+### Ancient opening and Architect boundary
+
+Character localization must include the four `THE_ARCHITECT.talk.<CHAR_ID>` keys listed
+above. The opening banner is not a normal Event label: the game creates a fixed vanilla
+`NAncientNameBanner` and its `RichTextAncientBanner` from `AncientEventModel.Title` and
+`AncientEventModel.Epithet`. Architect speech uses the character's
+`SpeechBubbleColor`; player attack presentation consumes `GetArchitectAttackVfx()`.
+This phase may research and prove those native consumers, but it does not authorize a
+custom Ancient layout or arbitrary Architect scene. A headed proof must identify the
+banner/dialogue and keep the static character fallback honest. The M6 research inventory
+is complete; native custom-Character support remains unverified until that headed proof.
+
+## Static Character checklist
+
+- [ ] each requested getter has a matching `character_*` spec and explicit fallback
+- [ ] generated PNGs pass `gen_sprite.py import` at the exact profile size
+- [ ] scene wrappers contain only grounded BaseLib nodes and are registered by the matching getter
+- [ ] selection/background, combat, rest, merchant, and energy consumers render the custom resource in a headed run
+- [ ] unlocked non-Basic pool has at least 2 Attack, 2 Skill, and 1 Power before Shop proof
+- [ ] static merchant prefix resolves exact version/MVID/target and its getter falls back on failure
+- [ ] Ancient banner/Architect dialogue is tested through the real Ancient host, not a normal Event surrogate
+- [ ] no Spine, transition material, trail, phobia, remote-hand, or arbitrary Ancient-layout claim is made
+
 ## Tier 2: `RunStart` + `CombatPlayer`
 
 Start from `reference/selftest-harness.md`, then use its Character Foundation variant.
@@ -163,7 +228,9 @@ The proof is one ordered vertical slice:
    models, exact deck multiset, and exact starter relic multiset.
 6. Enter a minimal combat and wait for `PlayerTurnPhase.Play`.
 7. Assert the designed `MaxEnergy` and the independent hosted mechanic state delta.
-8. Emit a final structured proof only after every assertion passes, for example:
+8. If static rest/merchant presentation is selected, finish combat and enter real RestSite
+   and Shop rooms; assert the exact textures and the static-merchant patch status.
+9. Emit a final structured proof only after every assertion passes, for example:
    `character foundation complete expected=all observed=all`.
 
 The trigger log (`TrailMarker fired`, card played, and so on) is diagnostic only.
@@ -178,6 +245,7 @@ markers.
 - [ ] exact HP and standard 3 energy recorded in SPEC
 - [ ] custom card/relic/potion pools resolve and contain expected types
 - [ ] starter deck/relic use exact SPEC counts and rarities
+- [ ] card pool can fill the native Shop's 2 Attack / 2 Skill / 1 Power colored slots
 - [ ] all 14 `CharacterLoc` values plus four Architect keys supplied
 - [ ] real character-select button located and clicked
 - [ ] RunStart asserts identity/HP/pools/starters

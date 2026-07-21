@@ -38,6 +38,10 @@ not dump entire files into the response.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
    character template, constructor auto-registration, three pools, starters, two-table
    localization, placeholder shell, and `RunStart` + `CombatPlayer` proof.
+   When Character SPEC selects static art, richer resource/buffer UI, or native
+   Ancient/Architect presentation, also read
+   `${STS2_API_SKILL_DIR}/reference/character-presentation.md`. It separates the four
+   live-proven loose-PNG consumers from scene-export and headed-Ancient blockers.
    For a combat-lifetime **character resource with explicit payment and a live counter**,
    read `${STS2_API_SKILL_DIR}/reference/character-resource.md`. For a **bounded ordered
    semantic card-play buffer with deterministic dynamic output**, read
@@ -80,7 +84,8 @@ not dump entire files into the response.
 | `recipes/orb.md` | Custom Orb pattern (`CustomOrbModel`, OrbLoc, Channel/Passive/Evoke, owner/slot behavior, one checked 100×100 icon shared by smart tooltip + trigger flash, explicit vanilla Spine scene/channel-SFX fallbacks, separate custom-scene boundary) | Authoring an orb plus its Card/relic/power host |
 | `recipes/monster.md` | Custom Monster + Encounter as one vertical slice: registration/loc, checked 360×360 static body shared by combat+bestiary, explicit scene fallback, grounded move vocabulary for self buff/custom Power, target debuff, block/heal, multi-hit, composite moves, explicit cycles, and conditional branches; animation deferred; multi-turn `CombatEnemy` proof; **monster attacks use `.FromMonster(this).Execute(null)`, never `.Targeting()`** | Authoring a fought enemy or its move cycle |
 | `recipes/event.md` | Custom Event / World Node pattern (`CustomEventModel` auto-`AddEvent`, all-act vs act-scoped placement, nested `EventLoc` pages/options, bounded description rich text, `Option(Method)` slug contract, Cmd consequence + `SetEventFinished`, checked initial/page portraits, `MapNode` UI-click proof) | Authoring a map event with at least one consequential option |
-| `recipes/character.md` | Character Foundation (`alchyrsts2charmod`, `PlaceholderCharacterModel`, constructor auto-`AddCharacter`, card/relic/potion pools, starter deck/relic, exact character+Architect loc, placeholder visuals, `RunStart` + `CombatPlayer` proof) | Authoring a minimal playable custom character shell |
+| `recipes/character.md` | Character Foundation (`alchyrsts2charmod`, `PlaceholderCharacterModel`, constructor auto-`AddCharacter`, Shop-viable card/relic/potion pools, starter deck/relic, exact character+Architect loc, `RunStart` + `CombatPlayer` proof) | Authoring a minimal playable custom character shell |
+| `reference/character-presentation.md` | Character getter/consumer matrix; eight live static profiles; no-editor raw-scene packing; five-layer full energy; static-merchant prefix/fallback; fixed 220x32 resource/buffer UI; native Ancient banner/Architect proof boundary | Authoring or verifying Character static/native presentation |
 | `reference/event-outcomes.md` | Full normal-Event outcome vocabulary: immediate Cmd combinations, multi-page/locked options, blocking card selections, custom rewards, resumable/terminal special combat, extra combat rewards, one-combat-per-instance boundary, and unsupported room transitions | Authoring an Event beyond the one-Cmd fast path |
 | `reference/event-vfx.md` | Bounded code-native normal-layout `portrait_halo`: page parameters, Fast Mode behavior, `OnRoomEnter`/portrait host, explicit named-node cleanup, and headed acceptance contract | Authoring the supported Event portrait VFX profile |
 | `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation inventory, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
@@ -88,7 +93,7 @@ not dump entire files into the response.
 | `reference/event-option-presentation.md` | Enabled Event option typed Hover Tips, normal `RelicOption<T>` text/metadata plus its Ancient-only image blocker, and native exact-lethal HP/Max HP warning glow | Authoring those normal-layout Event option presentation contracts |
 | `reference/event-native-presentation.md` | Native Card/relic acquisition presentation, the preference-respecting `weak_short` screen shake, and the curated built-in `trial_noble` Event VFX path/host/placement/pause/cleanup contract | Authoring native presentation items 4-6 for a normal Event |
 | `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
-| `reference/character-resource.md` | 6d combat resource contract: `PlayerCombatState` ownership, nonnegative gain/affordability/all-or-nothing spend, second-combat reset, card-hosted payoff, generic live Label, and selection of the exact 6c combat-UI adapter | Authoring a character resource and explicit-payoff loop |
+| `reference/character-resource.md` | 6d combat resource contract: `PlayerCombatState` ownership, nonnegative gain/affordability/all-or-nothing spend, second-combat reset, card-hosted payoff, bounded icon+text counter with text-only fallback, and selection of the exact 6c combat-UI adapter | Authoring a character resource and explicit-payoff loop |
 | `reference/ordered-card-buffer.md` | Ordered combat-buffer contract: `PlayerCombatState` semantic values, native source-card Discard, visible state text, bounded order/overflow, deterministic per-instance output, `CardGeneratedEntry`, and combat reset; retained-card `CustomPile` gameplay is explicitly unsupported | Authoring an ordered card-play record and dynamic output |
 | `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, version/MVID-gated patch registry with zero-target/failure/owned/foreign diagnostics, and the scenario-verified B-risk `NCombatUi.Activate(CombatState)` postfix. Self-contained only; no `OpenMod.Runtime`, unverified patch target, Publicizer, or transpiler support | Maintaining or emitting a specifically grounded advanced capability after public/BaseLib cannot expose its host seam |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
@@ -136,14 +141,22 @@ Harmony patching and is deferred. The recipes make **new** elements.
   `AddCharacter(this)`, so never call it manually. Supply all three custom pool models,
   exact starter deck/relic, 14 `CharacterLoc` values plus four Architect keys, then prove
   the real selection button and run state through `RunStart` + `CombatPlayer`.
+- **Character presentation:** selection `132x195`, background `1920x1200`, top-panel icon
+  `88x88`, static non-Spine combat/rest/merchant bodies `512x512`, five full-energy layers
+  `256x256`, and compact resource icon `24x24` are live-proven. `build.py` packs raw scene
+  wrappers without Godot/MegaDot; full energy uses `CustomEnergyCounter`; static merchant
+  selects the exact versioned `_Ready()` prefix. Locked selection, map marker, and native
+  Ancient/Architect presentation still need their own headed proof. Keep inherited
+  fallbacks and read `character-presentation.md`.
 - **Capability kernel:** it is not a gameplay recipe. Prefer public/BaseLib; otherwise use
   only a pack-grounded adapter with exact version/MVID/signature, one owned patch,
-  zero-target/failure markers, conflict policy, and a hosted state proof. The only verified
-  non-public seam is the B-risk `NCombatUi.Activate(CombatState)` postfix, now selected by
-  the scenario-verified character-resource UI contract. Keep it inside the generated mod;
+  zero-target/failure markers, conflict policy, and a hosted state proof. Verified
+  non-public seams are the B-risk `NCombatUi.Activate(CombatState)` postfix and the
+  static-only `NMerchantCharacter._Ready()` prefix. Keep them inside the generated mod;
   a maintainer canary is not the second generated consumer required for `OpenMod.Runtime`.
 - **Character resource:** combat-owned integer state is nonnegative; check affordability
-  before an all-or-nothing spend, refresh the generic counter after every change, and prove
+  before an all-or-nothing spend, refresh the bounded icon+text counter after every change,
+  retain its text-only fallback, and prove
   a distinct zero state in combat 2. This does not authorize alternative-energy patches.
 - **Ordered combat buffer:** record semantic values in combat-scoped state and let every
   source card use its native result pile; expose current order through grounded UI, enforce

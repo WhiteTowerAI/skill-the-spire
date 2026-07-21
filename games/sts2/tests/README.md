@@ -20,11 +20,18 @@ Do not require one canary project per capability.
 | `CombatPlayer` | basic content matrix, interaction, keyword card-text/no-icon tooltip, enchantment tab/tooltip icon, orb tooltip/flash icon plus fallback scene and behavior, cadence |
 | `CombatEnemy` | encounter/move vocabulary plus static monster body in combat and bestiary |
 | `MapNode` | Event Cmd/page/selection/reward outcomes, resumable and terminal special combat, normal initial/page portraits, bounded portrait-halo VFX, bounded native rich text, enabled typed option tips, normal relic-backed text/metadata, exact-lethal HP/Max HP warnings, native Card/relic acquisition presentation, `weak_short` screen shake, curated `trial_noble` VFX, bounded Quest Card -> forced Event follow-up, and cleanup/fallback presentation |
-| `RunStart` / Character | Wayfinder selection, pools/starters, resource/UI, semantic route buffer, dynamic output |
+| `RunStart` / Character | Wayfinder selection/background, pools/starters, resource/UI, semantic route buffer, dynamic output, static combat/rest/merchant bodies, and five-layer full energy; locked/map and Ancient/Architect remain unverified |
 
 Wayfinder supersedes the isolated Foundation/resource/kernel composition path for current
 character regression. The retired real-card `CustomPile` canary remains historical evidence
 only; it does not represent player-facing support.
+
+The 2026-07-21 Wayfinder tooling follow-up proved that generated Character authors need no
+Godot/MegaDot install. `build.py` invoked the bundled raw-scene packer, then one headed run
+rendered the exact 1920x1200 selection background, 512x512 rest and merchant bodies, and
+five 256x256 energy layers in the native 128x128 counter. Static merchant also proved the
+version-gated `NMerchantCharacter._Ready()` prefix and inherited fallback contract. The
+full two-combat suite, RestSite, Shop, `selftest done`, and no-fresh-error checks all passed.
 
 `CanaryEvent` was a disposable hosted acceptance mod. Its work directory and installed copy
 were retired after the 2026-07-20 outcome/VFX/rich-text evidence was recorded. The `MapNode`

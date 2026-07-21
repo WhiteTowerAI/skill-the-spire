@@ -1,8 +1,8 @@
 # Character resource - combat state, payment, and live counter
 
-Status: **pipeline-supported on STS2 0.107.1** by `CanaryResourceUi` plus the fresh
-`WayfinderAcceptance` composition (2026-07-16). This is a selected character capability,
-not a new content type.
+Status: **pipeline-supported on STS2 0.107.1** by `CanaryResourceUi` plus the
+`WayfinderAcceptance` composition, including its richer headed UI proof (2026-07-21).
+This is a selected character capability, not a new content type.
 
 ## Semantic contract
 
@@ -18,7 +18,7 @@ nonnegative resource during combat. SPEC must record:
 | affordability | `amount >= cost`, checked before payment |
 | spend | all-or-nothing `TrySpend`; a rejection leaves amount and payoff unchanged |
 | reset/save | combat reset; no run persistence or save claim |
-| UI | generic `Label` under `NCombatUi.EnergyCounterContainer`, refreshed after every change |
+| UI | fixed 220x32 icon+text control under `NCombatUi.EnergyCounterContainer`; checked text-only fallback; refreshed after every change |
 | scenario | gain, affordable/unaffordable checks, successful/rejected spend, UI refresh, second-combat reset |
 
 Do not reinterpret this contract as alternative energy payment. Patching
@@ -99,16 +99,19 @@ if (paid)
 The generated domain may expose the last payment result for Tier-2 observation, but it
 must not put canary counters or assertions into the reusable capability primitive.
 
-## Generic live counter
+## Bounded live counter
 
 Register one typed `CombatUiKernel.Activated` listener before installing the exact 6c
 descriptor. In the listener:
 
 1. resolve the local player with `LocalContext.GetMe(context.State)`;
 2. mount a `UiHostDescriptor` under `context.Ui.EnergyCounterContainer`;
-3. create a fallback `Label` named for the resource;
-4. render `<ResourceName>: <amount>` plus resource/lifetime metadata;
-5. retain only the current mounted label and refresh it after gain/spend.
+3. create the fixed `HBoxContainer` from `character-presentation.md`: optional checked
+   24x24 icon plus a minimum 188x32 `Label`, inside a minimum 220x32 root;
+4. render `<ResourceName>: <amount>` plus optional bounded mechanic state and retain
+   resource/lifetime metadata;
+5. if the icon is absent, keep the same live text and layout instead of failing mount;
+6. retain only the current mounted control/local player and refresh it after gain/spend.
 
 Visibility must guard the local player. The patch body only dispatches the typed UI
 context; resource rules never enter Harmony code. The verified adapter remains:
@@ -145,13 +148,17 @@ Only then emit:
 
 `CanaryResourceUi` observed amount `0 -> 3 -> 1`, affordability `true/false`,
 Block `+4` only for the successful spend, rejected-spend amount `1`, a real live
-`Charge: 0/3/1` Label, and distinct-combat amounts `1/0`.
+`Charge: 0/3/1` Label, and distinct-combat amounts `1/0`. The final Wayfinder proof
+additionally observed its checked 24x24 icon, fixed 220x32 root, composed
+`Ink: N | Route: ...` text, metadata, and the same distinct-combat reset. The plain Label
+remains the fallback when the optional icon/control presentation cannot be created.
 
 ## Unsupported extensions
 
 - run-persistent resources and save round trips;
 - partial/hybrid/alternative energy payment through engine cost hooks;
-- custom resource art or a top-bar host;
+- arbitrary resource art, top-bar hosting, or animated/custom-zone presentation beyond
+  the bounded icon+text control;
 - remote-player/multiplayer resource UI;
 - any patch target other than the exact 6c combat-UI postfix.
 

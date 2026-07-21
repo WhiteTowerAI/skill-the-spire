@@ -64,14 +64,17 @@ A **Character Foundation** uses the Alchyr character template plus BaseLib's
 with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
 3 energy, and one public/BaseLib starter mechanic through `RunStart` + `CombatPlayer`.
 The constructor already registers the character; generated code never calls
-`AddCharacter`. Custom character art/animation remains outside this Foundation boundary.
+`AddCharacter`. Static presentation is a separate opt-in layer: selection portrait,
+top-panel icon, non-Spine combat body, and compact resource icon are live-proven loose-PNG
+consumers. Other Character profiles keep their explicit fallbacks; animation remains
+outside the Foundation boundary. Read `reference/character-presentation.md` when selected.
 The **6c capability kernel** is separately scenario-verified as maintainer infrastructure:
 combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, and one
 version/MVID-gated B-risk combat-UI postfix. It is not a user-facing mechanic by itself.
 Two **advanced capability contracts are pipeline-supported through the corrected Wayfinder
 acceptance**: a combat-owned
 nonnegative resource with explicit gain/affordability/all-or-nothing spend/reset plus a
-generic live counter, and a bounded ordered semantic buffer whose source cards use native
+fixed icon+text counter with text-only fallback, and a bounded ordered semantic buffer whose source cards use native
 Discard while its snapshot creates a deterministic per-instance output card. Route only
 to `reference/character-resource.md` and `reference/ordered-card-buffer.md`; resource UI may
 select the exact 6c combat-UI adapter. Retaining played cards in a `CustomPile` is not
@@ -86,11 +89,14 @@ reads the current combat's `TurnNumber`. Tier-2 proves `N-1`, threshold, reset/c
 and the save round trip where applicable. Turn-local event counts, once-per-combat flags,
 previous-turn memory, and limited run uses have grounded patterns but remain provisional
 until their scenario canaries. A counter is state on its real element, not a new element
-  type. **Custom static art** is now wired and live-verified for **eight specs — card
+  type. **Custom static art** is now wired and live-verified for the established **eight specs — card
   portraits, relic icons, power icons, potion icons, enchantment icons, orb icons, static monster bodies, and normal-event
   initial/page portrait slots** (each a loose PNG the game loads directly; no `.tres` atlas authoring)
-  — orb support is icon-only and retains its explicit vanilla Spine scene/channel-SFX
-  fallbacks. The
+  plus eight Character profiles: selection portrait/background, top-panel icon, static
+  non-Spine combat/rest/merchant bodies, five-layer full energy, and compact resource icon.
+  Orb support is icon-only and retains its explicit vanilla Spine scene/channel-SFX
+  fallbacks. Locked Character selection and map-marker normalizers are grounded but not
+  promoted; see `reference/character-presentation.md`. The
 user picks placeholder (default, fast) or custom art. When the current agent runtime
 actually exposes a host-native raster image tool, prefer that route (Codex calls it
 `image_gen` and its built-in mode needs no `OPENAI_API_KEY`); otherwise use an already-

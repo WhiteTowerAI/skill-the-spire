@@ -14,11 +14,12 @@ instructions.
 
 ## Current status
 
-**M6 gameplay/programming core, the Event static-art/outcome/VFX/rich-text and bounded
-forced-follow-up slices, and native-presentation items 1-6 are complete. Direct next:
-Character static assets and Ancient opening name-banner/Architect presentation research,
-followed by richer character-mechanic UI. M7 follows after the remaining presentation
-pass. Animation is a later, non-blocking expansion.**
+**M0-M6 are complete at their grounded support boundaries. The final Character/tooling pass
+promoted eight static Character consumers and a richer icon+text mechanic UI, inventoried the
+wider Downfall/BaseLib surface, and completed the requested Ancient name-banner/Architect
+research without claiming an unrun native-host proof. Direct next: M7 proactive interview
+work. Animation, materials, multiplayer presentation, and audio are a later,
+non-blocking expansion.**
 
 Current pipeline-supported surfaces include:
 
@@ -34,9 +35,13 @@ Current pipeline-supported surfaces include:
 - bounded per-surface rich text in Card bodies and standard Card/relic/potion/power Hover
   Tips, including SmartFormat and auto-keyword composition;
 - playable Character Foundation;
-- combat resource with explicit all-or-nothing payment and generic live counter;
+- combat resource with explicit all-or-nothing payment and a fixed icon+text live counter
+  with checked text-only fallback;
 - bounded ordered **semantic** card-play buffer with visible state and deterministic output;
 - stateful relic cadence for combat-local and run-persistent counters;
+- Character static presentation for the 132x195 selection portrait, 1920x1200 selection
+  background, 88x88 top-panel icon, 512x512 non-Spine combat/rest/merchant bodies, five
+  256x256 full-energy layers, and 24x24 compact resource icon;
 - placeholder or generated art for card/relic/power/potion, enchantment/orb icons, one
   static monster combat+bestiary body, and normal event initial/explicit page portraits, plus
   live-grounded text-only keyword card/tooltip
@@ -44,7 +49,8 @@ Current pipeline-supported surfaces include:
   callable host-native raster image tool (`runtime-imagegen`; Codex `image_gen`), then the
   existing Vofy, BYO HTTP, or local-image routes; every source converges on
   `gen_sprite.py import`. Reference-capable routes use separate real-game pools for
-  card/relic/power/potion/enchantment/orb/monster/event and randomly sample three
+  card/relic/power/potion/enchantment/orb/monster/event and four Character reference families,
+  and randomly sample three
   type-matched images. Event's six reviewed samples were promoted from the actual local
   inventory of 55 deduplicated wiki.gg PNGs and are attributed under `art-samples/event`.
 
@@ -52,20 +58,23 @@ Host-native image generation is an optional runtime capability, not a bundled mo
 not infer it from the text-model name or the presence of an `imagegen` skill file: the
 tool itself must be callable and return a local image. If it is absent or fails, keep the
 placeholder unless the user explicitly selects another route. Never silently switch to a
-paid backend. This route applies only to the eight already-grounded static specs and does
-not advance any other M6 Static Art Expansion family.
+paid backend. This route applies to the eight established static specs plus the eight
+promoted Character specs; full energy uses five `character_energy` outputs. It does not
+advance an unverified consumer.
 
 Important correction from the real Wayfinder player run:
 
 - Direction cards now use STS2's normal Play -> Discard lifecycle.
 - The route stores only `RouteDirection` values in combat-scoped state and renders
-  `Ink: N | Route: ...` through the verified fallback Label.
+  `Ink: N | Route: ...` through the verified 220x32 icon+text control, with the live Label
+  retained as its checked fallback.
 - Retaining played card instances in a `CustomPile` is **not supported**. The earlier
   model-only proof missed overlapping/stale card views. Do not generate a no-UI custom
   pile, `Vector2.Zero` card layout, or `skipVisuals: true` lifecycle as a substitute.
 
 Still unsupported: editing vanilla content, retained-card zone UI, alternative-energy
-engine hooks, production character art/animation, run-persistent character resources,
+engine hooks, production character art/animation, native custom-Character Ancient presentation,
+run-persistent character resources,
 remote-player character UI, novel C/D patch targets, direct Event transitions to merchant/
 rest/treasure rooms, more than one special combat per mutable Event instance, arbitrary
 Event VFX/custom/Ancient layouts, locked-option Hover Tips, relic images in normal Event
@@ -106,11 +115,24 @@ candidates closed on 2026-07-20; items 4-6 closed together in one compact headed
 6. **complete:** the curated built-in `trial_noble` noncombat Event VFX with exact
    placement, inherited process mode, and cleanup.
 
-Finish the remaining M6 presentation work in this order:
+The final M6 Character pass completed on 2026-07-21. One headed Wayfinder run visibly
+proved the custom selection portrait/button, top-panel identity, exact 512x512 non-Spine
+combat body, and compact 24x24 icon inside the fixed resource/route control. Its full
+two-combat Foundation/resource/buffer suite reached `selftest done`, strict Tier 2, and no
+fresh error. A follow-up then proved raw `.tscn` selection-background/rest/merchant wrappers
+and BaseLib's five-layer full-energy factory without Godot/MegaDot. `build.py` automatically
+repacked the mod through the bundled `pack_pck.py`; real selection, CombatPlayer, RestSite,
+and Shop hosts rendered the exact resources. Static merchant requires the version/MVID-gated
+`NMerchantCharacter._Ready()` B-prefix because BaseLib 3.3.5 assumes Spine in that method;
+the getter retains its inherited fallback when the patch is unavailable. Locked selection
+and map marker still need visible-host proof.
 
-- character select/static combat art and other non-animated character assets, plus the
-  Ancient opening name-banner/Architect presentation research requested for this phase;
-- richer character resource and ordered-buffer UI beyond the fallback Label.
+The same pass completed the requested Ancient/Architect research: the native banner uses
+`NAncientNameBanner` plus `RichTextAncientBanner` for uppercase title/epithet; Architect
+dialogue and attacks consume Character speech color, four required loc keys, and
+`GetArchitectAttackVfx()`. No headed custom-Character Ancient run occurred, so native
+Ancient presentation and custom Ancient layouts remain unsupported. Vofy preflight stopped
+at status/auth before submission; no paid task ran and no credits were spent.
 
 The Event outcome/VFX follow-up is also complete. One final headed `CanaryEvent` run drove
 page Cmd, upgrade selection, resumable custom combat, custom Gold reward, terminal custom
@@ -154,23 +176,23 @@ Three settled screenshots showed the initial VFX, Card preview plus top-bar reli
 clean result page. Preview/VFX cleanup, `selftest done`, strict Tier 2, and no fresh error
 all passed.
 
-All other animation-bearing work is postponed to a later expansion: orb Spine bodies;
-monster Spine and attack/hurt/cast/death/phobia/bestiary previews; character animation,
-trails and animated transitions; arbitrary Event VFX/animation-bearing layouts; and
-optional UI motion. Positioned speech/thought bubbles are future outlook only and are not
-planned for M6 or M7. None blocks M6 or M7.
+The later Character presentation expansion has four independent tracks: animation
+(Spine bodies, combat/rest/merchant states, transitions, Event motion, optional UI motion),
+materials (card trails, transition materials, shaders and cleanup), multiplayer
+presentation (remote hands/identity/ownership/rebuild), and audio (voice/combat/energy/UI/
+scene cues, registration, mix, fallback and cleanup). Positioned speech/thought bubbles
+are future outlook only and are not planned for M6 or M7. None of these tracks blocks M6
+or M7, and proof in one track never promotes another.
 
-Do not reopen the completed M6 behavior canaries or jump to M7. First inventory the real
-asset/scene contracts for these families, then extend the source-independent acquisition ->
-normalization -> placement -> `.pck` path only where grounded. Reuse the existing hosted
-suites; do not require one project per asset type. Art support advances only after the real
-headed game renders the intended asset with visual evidence. A model path, successful build,
-or fallback visual is not enough. Record exact blockers and keep an honest fallback for any
-static scene family that cannot yet be generated safely. Do not reopen animation work.
+Do not reopen the completed M6 behavior canaries while starting M7. Character art support
+advances beyond the eight promoted static profiles only after the real headed game renders
+the intended consumer with visual evidence. A model path, successful build, or fallback
+visual is not enough. Preserve the Ancient blocker and inherited fallbacks. Do not open the
+animation/material/multiplayer/audio expansion during M7.
 
 The `runtime-imagegen` edge may be reused for card/relic/power/potion, enchantment/orb
-icons, a static monster body, and normal event portrait slots because their import and headed render contracts are
-live-grounded. A universal first-party Codex native-tool claim still requires a dedicated
+icons, a static monster body, normal event portrait slots, and the eight promoted Character
+static profiles because their import and headed render contracts are live-grounded. A universal first-party Codex native-tool claim still requires a dedicated
 acceptance run; the current third-party Codex route exposes the instructions but not a
 callable `image_gen` tool.
 

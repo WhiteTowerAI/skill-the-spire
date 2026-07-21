@@ -5,11 +5,11 @@
 
 ## Status
 
-**M0-M6 gameplay/programming gates, the Event static-art/outcome/bounded-VFX/rich-text and
-bounded forced-follow-up slices, and native-presentation items 1-6 are complete. Direct
-next: Character static assets and Ancient opening name-banner/Architect presentation
-research, then richer character-mechanic UI. M7 follows after the new M6 content surfaces
-have grounded, honest static art/presentation contracts. Animation is a later,
+**M0-M6 are complete at their grounded support boundaries. The final Character/tooling pass
+promoted eight static Character consumers and a richer icon+text mechanic UI, inventoried the
+wider Downfall/BaseLib surface, and completed the requested Ancient name-banner/Architect
+research without claiming an unrun native-host proof. Direct next: M7 proactive interview
+work. Animation, materials, multiplayer presentation, and audio are a later,
 non-blocking expansion.**
 
 The current pipeline supports the bounded surfaces listed in `../AGENTS.md` and
@@ -106,7 +106,7 @@ three passed on 2026-07-17. The orb slice then promoted one transparent 100x100 
 same custom path rendered in the real smart tooltip and trigger flash, while the persistent
 body remained the explicit Frost Spine scene/channel-SFX fallback. Passive/evoke behavior
 stayed Block `0 -> 2 -> 7`, strict `CombatPlayer` Tier 2 passed, and custom Spine scene
-generation is assigned to the later animation expansion. The monster slice then promoted
+generation is assigned to the later presentation expansion's animation track. The monster slice then promoted
 one transparent 360x360 static body through BaseLib's `NCreatureVisuals` factory. The same
 custom path rendered in combat and a real default bestiary layout with non-Spine 396x396
 bounds, correct floor/intent placement, and no crop; the full two-cycle behavior proof
@@ -121,7 +121,7 @@ below. One explicitly approved three-reference `seedream-5.0-lite` generation on
 2026-07-20 completed the Event acquisition gate: its inspected `21:9`/`2K` source
 normalized to 3440x1613, packed into `CanaryEvent`, rendered behind the real option UI,
 and passed strict Tier 2 with no fresh error. The native-presentation pass is now complete;
-direct work continues with character static assets and richer character-mechanic UI.
+the later Character closeout described below completes the remaining M6 gate.
 
 The requested Event behavior/VFX follow-up then inventoried all 68 vanilla Event classes
 and promoted the complete normal-Event outcome vocabulary: ordered public Cmd effects,
@@ -207,8 +207,8 @@ All six contracts are retained here so their boundaries stay visible:
 
 For each item, reuse the closest hosted suite and require one proof per independent
 semantic/presentation invariant. Do not create six projects or re-run unrelated Event
-outcome branches merely to make the evidence denser. Direct work now resumes Character
-static assets, Ancient opening name-banner/Architect presentation, and richer Character UI.
+outcome branches merely to make the evidence denser. The following Character pass closed
+the remaining M6 research/presentation gate at the explicit boundary recorded below.
 
 ### Research inventory
 
@@ -219,11 +219,11 @@ runtime skill:
 |---|---|---|
 | keyword | live text-only card/tooltip presentation; no bitmap/icon | maintain auto-positioned card text plus localized no-icon tooltip across generated mods |
 | enchantment | custom 64x64 icon; missing-icon fallback | maintain the shared card-tab/tooltip consumer contract across generated mods |
-| orb | custom 100x100 tooltip/flash icon; Frost Spine scene/SFX fallback | no remaining M6 static work; custom body is later animation expansion |
+| orb | custom 100x100 tooltip/flash icon; Frost Spine scene/SFX fallback | no remaining M6 static work; custom body is in the later presentation expansion's animation track |
 | monster + encounter | custom 360x360 static combat+bestiary body; built-in scene fallback | maintain checked factory/fallback and no-animation boundary |
 | event / World Node | custom normal initial/page portraits, code-native `portrait_halo`, curated built-in `trial_noble`, native acquisition/`weak_short`, and bounded native rich text; checked portrait fallback | maintain portrait/outcome/VFX/text/native-presentation replacement and cleanup contracts; custom phobia/layout/Ancient assets and arbitrary VFX deferred |
-| character Foundation | template/built-in visuals | select icons, portraits, static combat body, backgrounds, frame assets, and dedicated Ancient opening name-banner/Architect presentation research; animation later |
-| resource / ordered buffer UI | generic fallback Label | grounded native or open-mod-owned visual host, layout, lifecycle, and cleanup |
+| character Foundation | checked template fallbacks plus promoted selection/background, top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact resource icon | locked/map consumers need headed proof; native Ancient/Architect is researched but unverified; animation/material/multiplayer/audio tracks are later |
+| resource / ordered buffer UI | fixed 220x32 icon+text control with checked text-only fallback | maintain exact combat host, local-player lifecycle, refresh/reset, semantic buffer, and native card destinations |
 
 This is maintainer research: decompile/query the pinned game and BaseLib as needed, but do
 not make runtime `/modmaker` sessions inspect local game assemblies.
@@ -242,15 +242,16 @@ not make runtime `/modmaker` sessions inspect local game assemblies.
    vanilla/template fallback as generated custom art.
 
 The optional host-native acquisition edge (`runtime-imagegen`; Codex `image_gen`) applies
-only to the eight live static specs: card, relic, power, potion, enchantment, orb icon,
-monster body, and normal event portrait slots. It produces a local source file and reuses `gen_sprite.py import`; it does not
-advance any other M6 art family. Detect the callable tool itself rather than a model name
+to the eight established live static specs plus eight promoted Character specs: selection,
+background, top-panel icon, non-Spine combat/rest/merchant bodies, five-layer full energy,
+and compact resource icon. It produces local source files and reuses `gen_sprite.py import`;
+it does not advance an unverified Character consumer. Detect the callable tool itself rather than a model name
 or installed skill file, and keep the placeholder when the tool is absent or fails. A
 universal native-tool claim still requires acceptance on the specific first-party runtime
 surface.
 
 Reference-capable acquisition now has separate real-game pools for card, relic, power,
-potion, enchantment, orb, monster, and event. The tools select by `--spec` and randomly sample
+potion, enchantment, orb, monster, event, and four Character reference families. The tools select by `--spec` and randomly sample
 three distinct images; monster's fixed pool is Axebot, Ceremonial Beast, and Crossbow Ruby
 Raider. Enchantment, orb, monster, and event also own independent, source-observed prompt
 templates rather than inheriting Card composition.
@@ -305,6 +306,33 @@ up the VFX, and passed strict Tier 2 with no fresh error. This closes the Event 
 slice; the later outcome/VFX acceptance separately promoted the bounded halo, not general
 VFX generation.
 
+The final Character acceptance on 2026-07-21 reused the corrected Wayfinder composition.
+It visibly rendered the custom 132x195 selection portrait, 88x88 top-panel icon, exact
+512x512 non-Spine combat body, and 24x24 compact icon inside a fixed 220x32
+`Ink: N | Route: ...` control. The two-combat Foundation/resource/buffer proof reached
+`selftest done`, strict Tier 2, and no fresh error. Locked selection and map marker remain
+unpromoted because resource existence is not visible-host evidence. A follow-up used the
+bundled `pack_pck.py` fallback to package raw `.tscn` without Godot/MegaDot, then visibly
+rendered the exact 1920x1200 selection background and 512x512 rest/merchant bodies in their
+real hosts. Full energy used BaseLib's five 256x256 `CustomEnergyCounter` layers and native
+128x128 label/VFX factory, not a scene. Static merchant additionally required the exact
+version/MVID-gated `NMerchantCharacter._Ready()` B-prefix because BaseLib assumes Spine in
+that method; the getter falls back to the inherited scene if the patch is unavailable. The
+selection, CombatPlayer, RestSite, and Shop proofs all reached strict Tier 2 with settled
+screenshots and no fresh error.
+
+Downfall/BaseLib and decompiled-game research also resolved the native Ancient opening:
+`NAncientNameBanner` installs `RichTextAncientBanner` for uppercase title plus epithet,
+while Architect dialogue/attacks consume Character speech color, four localization keys,
+and `GetArchitectAttackVfx()`. No custom-Character headed Ancient run was completed, so
+that runtime claim and custom Ancient layouts remain unsupported. This satisfies M6's
+research gate, not a presentation proof.
+
+The user authorized Vofy credits for this pass, but `acquire_sprite.py preflight` stopped
+at Vofy status/auth before submission. No paid task ran and no credits were spent. The
+consumer contracts were proven with normalized acceptance assets; production Character
+art remains a separate authenticated acquisition.
+
 ### Verification and exit bar
 
 - Assert exact source dimensions/format and final `res://` path or scene reference.
@@ -316,12 +344,13 @@ VFX generation.
   scene/toolchain risk, with no numerical project limit.
 - Finish with every M6 surface either pipeline-supported for art or explicitly deferred with
   a grounded blocker and verified fallback. Do not leave a provisional claim ambiguous.
-- Animation is not an M6 exit requirement. Keep every animation-bearing surface on its
-  current fallback and list it under the later expansion.
+- Animation, materials, multiplayer presentation, and audio are not M6 exit requirements.
+  Keep every unproven consumer on its current fallback and list it under the later
+  presentation expansion.
 
 ## M7: proactive interview for non-programmers
 
-M7 is the next product milestone after M6 Static Art Expansion, not the direct current task.
+M7 is the direct next product milestone after the completed M6 Static Art Expansion.
 
 ### Experience goal
 
@@ -375,15 +404,32 @@ read or choose within the mechanic.
 
 ## Later work
 
-### Animation expansion
+### Future presentation expansion: animation, materials, multiplayer, and audio
 
-Animation is deliberately postponed and does not block M6 or M7. Its scope is custom orb
-Spine bodies; monster skeleton/atlas and attack/hurt/cast/death/phobia/bestiary previews;
-character combat animation, trails, and animated select transitions; general event
-portrait VFX or animation-bearing layouts; and optional UI motion. The normal-layout
-`portrait_halo` and the curated built-in `trial_noble` profile are the only supported
-Event VFX exceptions. Until this expansion is opened, other Event VFX and animation use
-the documented fallback/boundary.
+There is no current delivery plan for this expansion.
+
+These four tracks are deliberately postponed and do not block M6 or M7. They share the
+same acceptance discipline as static presentation, but one track does not automatically
+promote another:
+
+- **animation:** custom orb Spine bodies; monster skeleton/atlas and
+  attack/hurt/cast/death/phobia/bestiary previews; Character combat/rest/merchant
+  animation; animated select transitions; general Event portrait VFX; and optional UI
+  motion;
+- **materials:** Character card trails, select-transition materials, custom shaders, and
+  their resource ownership, parameter, fallback, replacement, and cleanup contracts;
+- **multiplayer presentation:** remote-player Character identity, hand textures, map/combat
+  indicators, local/remote ownership, reconnect/rebuild behavior, and deterministic
+  cleanup without claiming shared resource semantics;
+- **audio:** Character voice/dialogue, attack/hurt/death, energy/UI, rest/merchant, and
+  transition cues, including registration IDs, volume/mix behavior, preference handling,
+  missing-asset fallback, and one-shot/loop cleanup.
+
+Each track first inventories the real Downfall/BaseLib/game consumers, then establishes a
+source-independent asset/build path and checked fallback, and finally requires headed
+evidence for every promoted consumer. The normal-layout `portrait_halo` and curated
+`trial_noble` Event VFX remain the only current motion exceptions. Until this expansion is
+opened, all four tracks use the documented fallback/boundary.
 
 M6 Extras remain non-blocking and should be added by user value and host reuse:
 

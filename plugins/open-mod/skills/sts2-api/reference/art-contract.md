@@ -161,6 +161,118 @@ outline it can be added later (e.g. derived from the icon's alpha). `power` has 
 Ancient-rarity full art (606×852) is intentionally **out of scope** — we don't make
 Ancient cards.
 
+## Character static profiles (M6 Character phase)
+
+Character assets are separate contracts because BaseLib patches distinct
+`CharacterModel` getters and the game renders them in different hosts. The current
+profiles are source-grounded against STS2 0.107.1, BaseLib 3.3.5, the Alchyr character
+template, Downfall 0.0.30, and the local spire-codex character inventory. Each profile is
+promoted independently only after a real headed Character run shows the packed resource
+instead of the template fallback.
+
+| spec | output under `images/charui/` | size | presentation |
+|---|---|---:|---|
+| `character_select` | `<slug>.png` | 132x195 | opaque selection portrait/button |
+| `character_select_locked` | `<slug>.png` | 132x195 | opaque locked selection portrait; optional, template fallback is valid |
+| `character_icon` | `<slug>.png` | 88x88 | transparent top-panel icon and `CustomIcon` texture |
+| `character_map_marker` | `<slug>.png` | 49x64 | transparent map marker |
+| `character_background` | `<slug>.png` | 1920x1200 | opaque select background consumed by a minimal raw-scene wrapper |
+| `character_combat` | `<slug>.png` | 512x512 | transparent static body consumed directly by `NCreatureVisualsFactory` |
+| `character_rest` | `<slug>.png` | 512x512 | transparent static rest-site body consumed by an `NRestSiteCharacter` wrapper |
+| `character_merchant` | `<slug>.png` | 512x512 | transparent static merchant body consumed by an `NMerchantCharacter` wrapper |
+| `character_energy` | `orb_layer_<1..5>.png` | 256x256 each | five transparent layers consumed by BaseLib's native energy-counter factory |
+| `character_energy_text` | `<slug>.png` | 24x24 | transparent compact energy/card text icon |
+
+The final 2026-07-21 Wayfinder runs promoted `character_select`, `character_background`,
+`character_icon`, `character_combat`, `character_rest`, `character_merchant`,
+`character_energy`, and `character_energy_text`. Real selection, CombatPlayer, RestSite,
+and Shop hosts rendered the exact PNGs; the native energy counter retained its 128x128
+root and `4/3` label with five 256x256 layers. Strict Tier 2 and no-fresh-error checks
+passed. Locked selection and map marker remain unpromoted because resource existence is
+not visual proof for those consumers.
+
+`character_select` and `character_background` use `cover` with chroma off. The icon,
+marker, static body, and energy profiles use `contain` with chroma on and a flat pure
+`#FF00FF` source background. The normalizer writes only loose PNGs; author code creates
+the tiny raw `.tscn` wrappers for background/rest/merchant, and `build.py` packs them
+without Godot/MegaDot. Full energy uses BaseLib's loose-PNG `CustomEnergyCounter` factory.
+A static body is not
+an animation contract: `SetupCustomAnimationStates` remains null and the built-in
+animation/fallback path stays documented for attack, hurt, cast, death, phobia, and
+multiplayer views.
+
+Downfall's `char_select_locked.png` is a shared lock treatment, so generated mods may keep
+the template locked asset when no custom locked portrait is requested. `mp_*` hand
+textures, card trails, transition materials, and animated rest/merchant/energy scenes are
+separate later contracts; do not silently infer them from these PNGs.
+
+For static combat, pass the checked texture directly to `NCreatureVisualsFactory`; no scene
+is needed. A static rest-site wrapper is one `Sprite2D` root and BaseLib creates
+`ControlRoot`, `%Hitbox`, and thought/reticle anchors. A static merchant wrapper is one
+`Sprite2D` root named `Visuals`; the verified version-gated
+`NMerchantCharacter._Ready()` prefix skips only its Spine startup, and the getter retains
+the inherited scene when that patch is unavailable. Every wrapper keeps a checked fallback
+when its PNG or raw scene is missing. `pack_pck.py` still rejects `.gdshader`, `.gdscript`,
+and `.gdextension`.
+
+### Character prompt templates
+
+Selection portrait:
+
+```text
+Original opaque character-select portrait for a deck-building combat game. Match the
+provided STS2 selection references as STYLE ONLY. Show one original character in a clear,
+full-body or waist-up pose with a readable silhouette, restrained painterly 2D shading,
+and a calm neutral presentation suitable for a 132x195 button. No text, logo, UI, frame,
+watermark, or borrowed character design.
+```
+
+Top-panel icon/map marker:
+
+```text
+Original compact character emblem for a deck-building combat game. Match the provided
+references as STYLE ONLY. Use one bold readable silhouette or emblem with broad painterly
+forms, transparent cut-out edges, and no fine detail that disappears at 88x88 (or 49x64).
+Place it on a perfectly flat solid #FF00FF background. No text, border, badge, watermark,
+detached particles, or borrowed character design.
+```
+
+Static combat/rest/merchant body:
+
+```text
+Original full-body character render for a deck-building combat game. Match the provided
+references as STYLE ONLY: softly hand-painted 2D volume, readable broad value groups,
+controlled brush texture, and a neutral grounded pose. Show the entire original body on
+one baseline, centered and filling about 85-90% of a square. Use a perfectly flat solid
+#FF00FF background with no floor, shadow, attack effect, text, UI, watermark, or animation
+streak. This still is the static fallback body, not a Spine animation frame.
+```
+
+Select background:
+
+```text
+Original wide character-select background for a deck-building combat game. Match the
+provided references as STYLE ONLY. Create a broad environment that supports a live
+character-select information panel, with the focal atmosphere and subject weighted away
+from the panel's text area. Opaque 16:10 landscape, no text, logo, UI, border, watermark,
+or borrowed character design.
+```
+
+Energy icon:
+
+```text
+Original compact energy-core icon for a deck-building combat game. Match the provided
+references as STYLE ONLY. Use a single layered material core with clear value separation,
+centered at small size, and no numbers or UI. Put it on a perfectly flat solid #FF00FF
+background. No frame, text, watermark, detached particles, or borrowed design.
+```
+
+For the full counter, invoke `character_energy` five times with slugs `orb_layer_1`
+through `orb_layer_5`; request complementary background, rotating-ring, inner-glyph,
+foreground-rim, and highlight layers. The compact 24x24 icon remains one independent
+`character_energy_text` output. Show the user that full energy is five image assets before
+a paid acquisition route runs.
+
 ## The enchantment icon contract
 
 A generated enchantment owns one transparent `images/enchantments/<slug>.png`, normalized
@@ -366,8 +478,12 @@ Pass `--reference <sts2-api>/reference/art-samples` to either acquisition tool �
 **root** samples dir, not a subdir. It contains `card/` (18 portraits), `relic/` (6 icons),
 `power/` (6 icons), `potion/` (6 icons), `enchantment/` (20 normal 64x64 icons), `orb/`
 (5 non-empty icons), `monster/` (the Axebot, Ceremonial Beast, and Crossbow Ruby Raider
-renders), and `event/` (six reviewed wiki.gg previews). The tool **auto-selects the subdir
-matching `--spec`** and randomly samples three distinct images when the pool is larger.
+renders), `event/` (six reviewed wiki.gg previews), and four three-image Character pools:
+`character_select/`, `character_icon/`, `character_combat/`, and `character_rest/`.
+The tool **auto-selects the matching visual family** and randomly samples three distinct
+images when the pool is larger. Character aliases are explicit: locked/background use
+select, marker/energy use icon, merchant uses combat, and rest uses rest; a missing
+same-name directory never falls back to another content family's images.
 Monster's fixed three are always all supplied.
 Never mix families merely to fill the reference list; their visual languages differ.
 
@@ -698,8 +814,9 @@ keying, fit, resize, and final STS2 placement.
 status/credit output, or parses Vofy's normal stdout for a result filename. It runs one
 synchronous `vofy image create --yes --n 1` into a unique empty temporary directory,
 requires exactly one downloaded image, and invokes `gen_sprite.py import` for the real
-crop/fit/chroma/path contract. For relic/power/potion/enchantment/orb/monster it supplies import's
-`--chroma` automatically; event remains opaque. It prints the selected reference filenames
+crop/fit/chroma/path contract. For relic/power/potion/enchantment/orb/monster and Character
+icon/marker/combat/rest/merchant/energy profiles it supplies import's `--chroma`
+automatically; event and Character selection/background remain opaque. It prints the selected reference filenames
 so the random few-shot choice is auditable without exposing account data. For enchantment,
 orb, and monster, normalization also keeps the centered subject cluster and removes
 disconnected dark/chroma debris before the final `contain` fit; this is bounded to the new

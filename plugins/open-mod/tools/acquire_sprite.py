@@ -23,7 +23,24 @@ from pathlib import Path
 
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
-CHROMA_SPECS = {"relic", "power", "potion", "enchantment", "orb", "monster"}
+CHROMA_SPECS = {
+    "relic", "power", "potion", "enchantment", "orb", "monster",
+    "character_icon", "character_map_marker", "character_combat",
+    "character_rest", "character_merchant", "character_energy",
+    "character_energy_text",
+}
+REFERENCE_FAMILIES = {
+    "character_select": "character_select",
+    "character_select_locked": "character_select",
+    "character_background": "character_select",
+    "character_icon": "character_icon",
+    "character_map_marker": "character_icon",
+    "character_energy": "character_icon",
+    "character_energy_text": "character_icon",
+    "character_combat": "character_combat",
+    "character_merchant": "character_combat",
+    "character_rest": "character_rest",
+}
 
 
 class AcquisitionError(Exception):
@@ -110,7 +127,7 @@ def resolve_reference_inputs(items: list[str], spec: str) -> list[Path]:
             candidates.append(path)
             continue
 
-        spec_dir = path / spec
+        spec_dir = path / REFERENCE_FAMILIES.get(spec, spec)
         reference_dir = spec_dir if spec_dir.is_dir() else path
         candidates.extend(
             child for child in sorted(reference_dir.iterdir())
@@ -263,7 +280,13 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument(
         "--spec",
         required=True,
-        choices=("card", "relic", "power", "potion", "event", "enchantment", "orb", "monster"),
+        choices=(
+            "card", "relic", "power", "potion", "event", "enchantment", "orb", "monster",
+            "character_select", "character_select_locked", "character_icon",
+            "character_map_marker", "character_background", "character_combat",
+            "character_rest", "character_merchant", "character_energy",
+            "character_energy_text",
+        ),
     )
     create.add_argument("--slug", required=True)
     create.add_argument("--prompt", required=True)

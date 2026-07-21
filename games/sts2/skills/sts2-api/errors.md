@@ -21,6 +21,15 @@
   and rebuild. Plain `dotnet build -c Release` then emits both through PckPacker;
   no MegaDot step is needed.
 
+### PckPacker skips a mod that contains raw `.tscn`
+- **Signature:** `dotnet build` succeeds, PckPacker reports a skipped unsupported `.tscn`,
+  and the installed PCK is absent or stale.
+- **Cause:** upstream PckPacker 0.1.1 hardcodes `.tscn` as unsupported even though STS2
+  0.107.1 loads bounded raw text scenes from the same format-v3 PCK.
+- **Fix:** run `${GAME_TOOLS_DIR}/build.py`, not bare `dotnet build`/`publish`. It detects
+  `<project>/<ModName>/**/*.tscn` and invokes bundled `pack_pck.py` automatically. Do not
+  install Godot/MegaDot. `.gdshader`, `.gdscript`, and `.gdextension` remain unsupported.
+
 ### MSB1008 when passing MSBuild properties
 - **Signature:** `MSB1008: Only one project can be specified` on a `dotnet
   publish /p:GodotPath=...` command.
@@ -340,3 +349,25 @@
   the map and `EnterRoomDebug` a **fresh** canonical Event instance. See
   `reference/event-outcomes.md` and the extended `MapNode` section of
   `reference/selftest-harness.md`.
+
+### Static Character merchant logs `Expected BoundObject to be a SpineSprite`
+- **Signature:** the custom 512x512 merchant `Sprite2D` appears, but strict verification
+  finds `InvalidOperationException: Expected BoundObject to be a SpineSprite` from
+  `NMerchantCharacter._Ready()`.
+- **Cause:** BaseLib 3.3.5 converts the static raw scene to `NMerchantCharacter`, but the
+  game's `_Ready()` unconditionally constructs `MegaSprite(GetChild(0))` before BaseLib's
+  guarded `PlayAnimation` patch can help.
+- **Fix:** select the version/MVID-gated `NMerchantCharacter._Ready()` B-prefix from
+  `reference/capability-kernel.md`. Skip the original only when child 0 is `Sprite2D`, and
+  gate `CustomMerchantAnimPath` on successful patch status plus resource existence. On any
+  mismatch, keep the inherited Spine scene.
+
+### Custom Character cannot enter Shop: `Can't generate valid rarity for merchant card type`
+- **Signature:** `EnterRoomDebug(RoomType.Shop)` throws before the Shop UI, naming
+  `Attack`, `Skill`, or `Power` and an undersized custom card list.
+- **Cause:** the native colored merchant always fills `Attack, Attack, Skill, Skill,
+  Power`; it excludes Basic cards and excludes the first result before filling the second
+  same-type slot.
+- **Fix:** ensure the unlocked Character pool has at least two eligible non-Basic Attacks,
+  two eligible non-Basic Skills, and one eligible non-Basic Power. These should be real
+  authored cards, not no-op fillers. Then rerun the real Shop proof.

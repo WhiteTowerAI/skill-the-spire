@@ -179,9 +179,11 @@ or terminal special combat per Event instance, plus vanilla-observed emphasis/co
 items are live-closed: bounded Card/standard-tip rich text, enabled Event option typed tips
 plus normal relic text/metadata, exact-lethal HP/Max HP warnings, native Card/relic
 acquisition presentation, the preference-respecting `weak_short` screen shake, and the
-curated built-in `trial_noble` Event VFX. The remaining pass is ordered: Character static
-assets and Ancient opening name-banner/Architect presentation, then richer character-
-mechanic UI before starting M7.
+curated built-in `trial_noble` Event VFX. The final Character pass also live-closed eight
+static profiles and the fixed icon+text mechanic UI. Background/rest/merchant raw scenes
+are packed by open-mod's bundled Python fallback without Godot or MegaDot; full energy uses
+BaseLib's five-layer counter. Ancient name-banner/Architect integration is researched but
+still lacks a headed custom-Character proof. M7 proactive interview work is now direct next.
 
 Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
 the art decision explicit and the result source-independent:
@@ -209,7 +211,9 @@ the art decision explicit and the result source-independent:
   duplicate `big/` variant, or STS2 path.
 - **Correct output regardless of source.** Whether placeholder or generated, the
   asset must land at the right path and exact size the game expects (e.g. card
-  portrait 1000x760), so a `.pck` rebuild (Path A / PckPacker) picks it up.
+  portrait 1000x760), so a `.pck` rebuild picks it up. PckPacker remains the normal path;
+  when it skips raw `.tscn`, the bundled `pack_pck.py` fallback rebuilds the package from
+  the project tree. Generated-mod authors do not install Godot or MegaDot.
 - **Why required:** closes the one concrete feature gap vs. AgentTheSpire (which
   ships an art pipeline). Placeholder-first stays the default for speed; real
   generation is opt-in and source-pluggable so users aren't locked to our choice.
@@ -302,7 +306,16 @@ inclusive-lethal HP/Max HP costs drove native glow alpha `0.00/0.50`. Items 4-6 
 one 35-second headed `CanaryNativePresentation` run on 2026-07-21: native Card/relic
 acquisition produced exact `1/1` deltas, `weak_short` moved and returned at preference index
 2, and the exact `trial_noble` scene rendered at its vanilla portrait host/placement before
-explicit cleanup. Direct work now resumes Character static presentation.
+explicit cleanup.
+
+The 2026-07-21 Character closeout visibly proved the selection portrait/background,
+top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact
+resource icon in their real hosts. The fixed 220x32 icon+text resource/route control kept a
+checked text-only fallback. Raw scene wrappers were rebuilt by `pack_pck.py` without
+Godot/MegaDot; the static merchant used an exact version/MVID-gated
+`NMerchantCharacter._Ready()` prefix with inherited fallback. Locked selection and map
+marker remain unpromoted, and the researched Ancient/Architect surface still needs a
+headed custom-Character run.
 
 ## 8. Out of scope (for now)
 
@@ -384,7 +397,8 @@ along the way.
 
 - **R1 — CLI build and packaging: RESOLVED.** M0 proved a no-IDE build that emits
   `.dll` + `.pck` + manifest, and M1/M2 proved the same substrate through the skill
-  pipeline. PckPacker is the normal path; see `history/M0_RESULTS.md`,
+  pipeline. PckPacker is the normal path, and the 2026-07-21 Character closeout proved
+  open-mod's raw-`.tscn` fallback without Godot/MegaDot; see `history/M0_RESULTS.md`,
   `history/M1_RESULTS.md`, and `history/M2_RESULTS.md`.
 - **R2 — Automated in-game verification: RESOLVED.** Tier 1 reads the real game log;
   Tier 2 is an arg-gated in-process self-test that drives public game commands and

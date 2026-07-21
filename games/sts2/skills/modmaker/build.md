@@ -20,6 +20,9 @@ resolves the game + mods folders from the registry — no override needed on the
 - `0 warnings, 0 errors`.
 - `mods/<ModName>/` now holds `<ModName>.dll`, `<ModName>.pck`, `<ModName>.json`
   (and `.pdb`). The script lists them and warns if the `.pck` is missing.
+- If the project owns raw `.tscn`, output includes
+  `[build] packed raw .tscn without Godot/MegaDot`; the bundled packer replaces the
+  PckPacker-skipped PCK automatically. Do not run `dotnet publish` or request an editor.
 
 ## If it fails
 

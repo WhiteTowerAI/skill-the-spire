@@ -88,7 +88,8 @@ and images only reach the game through the `.pck`, so uncomment it in the csproj
 ```
 
 (This is errors.md's first entry — "no .pck produced". Do it now, not after a
-failed verify.) No MegaDot needed; plain `dotnet build` then emits the `.pck`.
+failed verify.) No MegaDot/Godot install is needed. PckPacker handles ordinary assets;
+`build.py` automatically replaces its skipped output when raw `.tscn` wrappers exist.
 
 ## 3. Manifest (`<ModName>.json`)
 

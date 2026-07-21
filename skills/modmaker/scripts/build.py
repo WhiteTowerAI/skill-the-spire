@@ -25,6 +25,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from pack_pck import PackError, pack_assets
+
 DIAG_RE = re.compile(r"error|warning|错误|警告|CS\d|MSB\d", re.IGNORECASE)
 
 
@@ -66,6 +68,17 @@ def locate_mods_dir(log_text: str, csproj: Path, mod_name: str) -> Path | None:
     except OSError:
         pass
     return None
+
+
+def pack_raw_text_scenes(project_dir: Path, mod_name: str, mods_dir: Path) -> bool:
+    """Replace PckPacker's skipped output when a standard mod owns raw .tscn files."""
+    source_dir = project_dir / mod_name
+    if not source_dir.is_dir() or not any(source_dir.rglob("*.tscn")):
+        return False
+    output = mods_dir / f"{mod_name}.pck"
+    pack_assets(source_dir, mod_name, output)
+    print(f"[build] packed raw .tscn without Godot/MegaDot -> {output.name}")
+    return True
 
 
 def main(argv: list[str]) -> int:
@@ -115,6 +128,13 @@ def main(argv: list[str]) -> int:
 
     mods_dir = locate_mods_dir(log_text, csproj, mod_name)
 
+    if mods_dir and mods_dir.is_dir():
+        try:
+            pack_raw_text_scenes(project_dir, mod_name, mods_dir)
+        except (OSError, PackError) as exc:
+            print(f"[build] scene-capable PCK FAILED: {exc}", file=sys.stderr)
+            return 1
+
     print()
     print(f"[build] OK. Artifacts for '{mod_name}':")
     if mods_dir and mods_dir.is_dir():
@@ -123,7 +143,8 @@ def main(argv: list[str]) -> int:
         has_pck = (mods_dir / f"{mod_name}.pck").is_file()
         if not has_pck:
             print(f"[build] WARNING: No .pck in mods folder. If localization/images don't "
-                  "show in-game, uncomment BSchneppe.StS2.PckPacker in the csproj (see errors.md).")
+                  "show in-game, uncomment BSchneppe.StS2.PckPacker in the csproj "
+                  "(see errors.md). Raw .tscn is handled automatically when present.")
         # Emit the resolved mods dir as the last line (callers parse this).
         print(str(mods_dir))
     else:

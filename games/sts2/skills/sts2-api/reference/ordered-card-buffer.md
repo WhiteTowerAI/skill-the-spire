@@ -21,7 +21,7 @@ a deterministic output. SPEC must record:
 | source destination | normal STS2 result, default `Discard`; never intercept `OnPlay` into a custom pile |
 | order | append order and whether it changes the result |
 | capacity | finite positive integer and non-destructive overflow behavior |
-| visibility | compact current-state text through an already grounded UI host |
+| visibility | compact current-state text in the bounded icon+text resource control, with a text-only fallback |
 | compile | exact trigger, snapshot, clear point, and deterministic formula |
 | output | one real mutable card added with `AddGeneratedCardToCombat` |
 | scenario | source destinations, order, capacity, overflow, UI refresh, output/history/effect, combat reset |
@@ -103,11 +103,13 @@ new model type at runtime or encode the result only in text/logs.
 
 An ordered mechanic must be legible. Render a compact value such as
 `Route: N>E>S>W` through an already verified UI host and refresh it after append, overflow
-(if feedback changes), compile, and combat reset. A hidden list with no player-readable
-state is not pipeline-supported.
+(if feedback changes), compile, and combat reset. The promoted Wayfinder form composes it
+with the named resource as `Ink: N | Route: ...` in the fixed 220x32 icon+text control from
+`character-presentation.md`; its checked failure mode keeps the same live text without the
+24x24 icon. A hidden list with no player-readable state is not pipeline-supported.
 
-This does not authorize custom zone art or a new Harmony target. Wayfinder composes the
-route text into the exact character-resource fallback Label under
+This does not authorize custom zone art or a new Harmony target. Wayfinder mounts the
+control under the exact character-resource host,
 `NCombatUi.EnergyCounterContainer`.
 
 ## Type and Scenario proof

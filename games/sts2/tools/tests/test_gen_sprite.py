@@ -41,6 +41,10 @@ class GenSpriteTests(unittest.TestCase):
             "orb": (5, (100, 100)),
             "monster": (3, (512, 512)),
             "event": (6, (1616, 1616)),
+            "character_select": (3, (132, 195)),
+            "character_icon": (3, (88, 88)),
+            "character_combat": (3, (512, 512)),
+            "character_rest": (3, (512, 512)),
         }
 
         for spec, (count, size) in expected.items():
@@ -55,6 +59,74 @@ class GenSpriteTests(unittest.TestCase):
             {"axebot.png", "ceremonial_beast.png", "crossbow_ruby_raider.png"},
             {path.name for path in (root / "monster").glob("*.png")},
         )
+
+    def test_character_specs_match_their_current_promotion_state(self) -> None:
+        expected = {
+            "character_select": ((132, 195), "cover", False, True),
+            "character_select_locked": ((132, 195), "cover", False, False),
+            "character_icon": ((88, 88), "contain", True, True),
+            "character_map_marker": ((49, 64), "contain", True, False),
+            "character_background": ((1920, 1200), "cover", False, True),
+            "character_combat": ((512, 512), "contain", True, True),
+            "character_rest": ((512, 512), "contain", True, True),
+            "character_merchant": ((512, 512), "contain", True, True),
+            "character_energy": ((256, 256), "contain", True, True),
+            "character_energy_text": ((24, 24), "contain", True, True),
+        }
+        for spec, (size, fit, chroma, verified) in expected.items():
+            with self.subTest(spec=spec):
+                info = gen_sprite.SPECS[spec]
+                self.assertEqual(size, info["size"])
+                self.assertEqual(fit, info["fit"])
+                self.assertEqual(chroma, info["chroma"])
+                self.assertEqual(verified, info["verified"])
+
+    def test_character_icon_import_writes_exact_transparent_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            Image.new("RGBA", (20, 30), (230, 40, 170, 255)).save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "character_icon", "--slug", "wayfinder_icon",
+                    "--input", str(source), "--out", str(out), "--chroma",
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            destination = out / "charui" / "wayfinder_icon.png"
+            self.assertTrue(destination.is_file())
+            with Image.open(destination) as image:
+                self.assertEqual((88, 88), image.size)
+                self.assertEqual("RGBA", image.mode)
+
+    def test_character_background_import_writes_opaque_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            Image.new("RGB", (20, 10), (20, 80, 160)).save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "character_background", "--slug", "wayfinder_bg",
+                    "--input", str(source), "--out", str(out),
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            destination = out / "charui" / "wayfinder_bg.png"
+            self.assertTrue(destination.is_file())
+            with Image.open(destination) as image:
+                self.assertEqual((1920, 1200), image.size)
+                self.assertEqual("RGBA", image.mode)
+                self.assertEqual(255, image.getpixel((0, 0))[3])
 
     def test_reference_pool_selects_spec_subdir_and_randomly_caps_at_three(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -79,6 +151,21 @@ class GenSpriteTests(unittest.TestCase):
 
             self.assertEqual(chosen, references)
             factory.return_value.sample.assert_called_once_with(expected_pool, 3)
+
+    def test_character_reference_alias_never_falls_back_to_the_root_pool(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pool = root / "character_icon"
+            pool.mkdir()
+            expected = pool / "icon.png"
+            expected.touch()
+            (root / "wrong-family.png").touch()
+
+            references = gen_sprite.resolve_references(
+                str(root), 3, lambda _message: None, spec="character_energy_text"
+            )
+
+            self.assertEqual([expected], references)
 
     def test_monster_import_writes_one_exact_static_body(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -267,7 +354,6 @@ class GenSpriteTests(unittest.TestCase):
         self.assertIn("orbs", orb_line)
         self.assertIn("100x100", orb_line)
         self.assertNotIn("*not live-verified", orb_line)
-        self.assertNotIn("requires headed in-game proof", result.stdout)
 
     def test_monster_static_contract_is_live_verified(self) -> None:
         result = subprocess.run(
