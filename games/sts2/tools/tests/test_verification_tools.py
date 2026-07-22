@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 
 TOOLS_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(TOOLS_DIR))
 
 
 def load_module(name: str, path: Path):
@@ -41,7 +42,8 @@ class GrepLogTests(unittest.TestCase):
     def baseline(self) -> list[str]:
         return [
             "RUNNING MODDED",
-            f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok",
+            f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
+            "framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1",
         ]
 
     def test_tier2_pass_requires_state_proof_and_done(self) -> None:
@@ -94,6 +96,14 @@ class GrepLogTests(unittest.TestCase):
             ["RUNNING MODDED", f"INFO [T2MOD-SELFTEST] {self.mod} selftest done"]
         )
         self.assertEqual(1, code)
+
+    def test_tier1_rejects_missing_framework_profile(self) -> None:
+        code, output = self.run_grep([
+            "RUNNING MODDED",
+            f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok",
+        ])
+        self.assertEqual(1, code)
+        self.assertIn("profile is missing or mismatched", output)
 
     def test_mod_named_exception_fails(self) -> None:
         code, output = self.run_grep(
@@ -182,9 +192,11 @@ class GrepLogTests(unittest.TestCase):
     def test_last_load_marker_starts_fresh_appended_run(self) -> None:
         code, output = self.run_grep(
             [
-                f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok",
+                f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
+                "framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1",
                 "[ERROR] failure from the previous appended run",
-                f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok",
+                f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
+                "framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1",
             ]
         )
         self.assertEqual(0, code)

@@ -18,6 +18,20 @@ agent: Explore
 This skill is a narrow reference tool. Answer only what the caller asked — do
 not dump entire files into the response.
 
+## Migration routing
+
+For generated content, the semantic contract is the product-level source of truth:
+read `./semantic-contract.md` before selecting an implementation.
+For the current migration target, lazily read `reference/ritsulib-adapter.md` next. It
+pins RitsuLib `0.4.62` against STS2 `0.107.1`, maps each semantic surface to one public
+registration/template and asset profile, and owns the framework/version diagnostic
+record. Only then load the surface recipe or reference needed for the request.
+
+The recipes below retain grounded game behavior and historical comparison details while
+the RitsuLib port is in progress. They are not a second active framework branch. Do not
+select a historical dependency, copy its scaffold, or infer a runtime dependency from a
+recipe name.
+
 ## How to answer
 
 1. Check `./recipes/` for the element or mechanic type (relic, potion,
@@ -51,7 +65,7 @@ not dump entire files into the response.
    `./reference/ordered-card-buffer.md`. Both are pipeline-supported
    through the live 6e Wayfinder composition acceptance.
    For a **grounded advanced capability that needs a non-public host seam**, read
-   `./reference/capability-kernel.md` after the public/BaseLib check.
+   `./reference/capability-kernel.md` after the public API check.
    It covers self-contained typed state/hooks/UI descriptors and the one verified B-risk
    combat-UI postfix. Resource UI may select that exact adapter through its own page; it
    is not permission to invent other patch targets, C/D patches, or `OpenMod.Runtime`.
@@ -78,16 +92,17 @@ not dump entire files into the response.
 
 | File | Content | When to read |
 |------|---------|--------------|
-| `recipes/relic.md` | Full known-good relic pattern (skeleton, hooks, energy Cmds, RNG, loc-key derivation, checklist, golden example) | Authoring a relic |
-| `recipes/potion.md` | Full known-good potion pattern (OnUse trigger, Rarity/Usage/TargetType, effect Cmds, loc table `potions`, checklist, worked examples) | Authoring a potion |
-| `recipes/card.md` | Full known-good card pattern (OnPlay, CardType/rarity/target, DamageCmd fluent builder + GainBlock + PowerCmd.Apply, DynamicVars/upgrade, loc table `cards`, `card <id>` console cmd, worked examples) | Authoring a card |
-| `recipes/power.md` | Full known-good custom-power pattern (Type/StackType, amount domains, trigger hooks, `PowerCmd.Apply` gain + guarded `ModifyAmount` consumption, loc table `powers`) — usually a dependency of a card/relic | Authoring or consuming a custom buff/debuff |
-| `recipes/keyword.md` | Custom `CardKeyword` pattern (`[CustomEnum]`, optional `[KeywordProperties]`, `card_keywords` loc, host attachment, behavior-vs-display boundary, live card-text + no-icon tooltip presentation, Type+Scenario proof); no bitmap spec | Authoring shared card-mechanic vocabulary |
-| `recipes/enchantment.md` | Custom Card Enchantment pattern (`CustomEnchantmentModel`, `CardCmd.Enchant`, CardModifierLoc/extraCardText, host restrictions, attachment + altered behavior, one checked 64×64 icon shared by card tab + tooltip); distinct from run `CustomModifierModel` | Authoring a persistent modifier attached to a Card |
-| `recipes/orb.md` | Custom Orb pattern (`CustomOrbModel`, OrbLoc, Channel/Passive/Evoke, owner/slot behavior, one checked 100×100 icon shared by smart tooltip + trigger flash, explicit vanilla Spine scene/channel-SFX fallbacks, separate custom-scene boundary) | Authoring an orb plus its Card/relic/power host |
-| `recipes/monster.md` | Custom Monster + Encounter as one vertical slice: registration/loc, checked 360×360 static body shared by combat+bestiary, explicit scene fallback, grounded move vocabulary for self buff/custom Power, target debuff, block/heal, multi-hit, composite moves, explicit cycles, and conditional branches; animation deferred; multi-turn `CombatEnemy` proof; **monster attacks use `.FromMonster(this).Execute(null)`, never `.Targeting()`** | Authoring a fought enemy or its move cycle |
-| `recipes/event.md` | Custom Event / World Node pattern (`CustomEventModel` auto-`AddEvent`, all-act vs act-scoped placement, nested `EventLoc` pages/options, bounded description rich text, `Option(Method)` slug contract, Cmd consequence + `SetEventFinished`, checked initial/page portraits, `MapNode` UI-click proof) | Authoring a map event with at least one consequential option |
-| `recipes/character.md` | Character Foundation (`alchyrsts2charmod`, `PlaceholderCharacterModel`, constructor auto-`AddCharacter`, Shop-viable card/relic/potion pools, starter deck/relic, exact character+Architect loc, `RunStart` + `CombatPlayer` proof) | Authoring a minimal playable custom character shell |
+| `reference/ritsulib-adapter.md` | Pinned RitsuLib compat profile, public registration/template routing, asset profiles, lifecycle/persistence/resource routes, and diagnostics | After the semantic SPEC and before a surface recipe |
+| `recipes/relic.md` | Relic trigger/effect/state behavior, localization fields, fallback, and proof obligations | Authoring a relic after adapter selection |
+| `recipes/potion.md` | Potion usage/target/effect behavior, localization fields, fallback, and proof obligations | Authoring a potion after adapter selection |
+| `recipes/card.md` | Card play/target/scaling/upgrade behavior, localization fields, fallback, and proof obligations | Authoring a card after adapter selection |
+| `recipes/power.md` | Power stack domains, trigger behavior, safe mutation, display fields, and proof obligations | Authoring or consuming a custom buff/debuff after adapter selection |
+| `recipes/keyword.md` | Keyword behavior-vs-display boundary, host attachment, text-only fallback, and proof | Authoring shared card-mechanic vocabulary after adapter selection |
+| `recipes/enchantment.md` | Enchantment host restrictions, persistent change, 64x64 icon consumers/fallback, and proof | Authoring a persistent Card modification after adapter selection |
+| `recipes/orb.md` | Orb channel/passive/evoke behavior, 100x100 icon consumers, explicit body/SFX fallbacks, and proof | Authoring an orb plus its host after adapter selection |
+| `recipes/monster.md` | Monster + Encounter as one vertical slice: grounded moves, cycles/branches, static combat+bestiary body, fallback, and `CombatEnemy` proof | Authoring a fought enemy or its move cycle after adapter selection |
+| `recipes/event.md` | Event / World Node pages/options, outcomes, checked portraits, and `MapNode` proof | Authoring a map event after adapter selection |
+| `recipes/character.md` | Character Foundation pools, starters, localization, selection/run behavior, fallbacks, and proof | Authoring a playable character shell after adapter selection |
 | `reference/character-presentation.md` | Character getter/consumer matrix; eight live static profiles; no-editor raw-scene packing; five-layer full energy; static-merchant prefix/fallback; fixed 220x32 resource/buffer UI; native Ancient banner/Architect proof boundary | Authoring or verifying Character static/native presentation |
 | `reference/event-outcomes.md` | Full normal-Event outcome vocabulary: immediate Cmd combinations, multi-page/locked options, blocking card selections, custom rewards, resumable/terminal special combat, extra combat rewards, one-combat-per-instance boundary, and unsupported room transitions | Authoring an Event beyond the one-Cmd fast path |
 | `reference/event-vfx.md` | Bounded code-native normal-layout `portrait_halo`: page parameters, Fast Mode behavior, `OnRoomEnter`/portrait host, explicit named-node cleanup, and headed acceptance contract | Authoring the supported Event portrait VFX profile |
@@ -98,10 +113,10 @@ not dump entire files into the response.
 | `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
 | `reference/character-resource.md` | 6d combat resource contract: `PlayerCombatState` ownership, nonnegative gain/affordability/all-or-nothing spend, second-combat reset, card-hosted payoff, bounded icon+text counter with text-only fallback, and selection of the exact 6c combat-UI adapter | Authoring a character resource and explicit-payoff loop |
 | `reference/ordered-card-buffer.md` | Ordered combat-buffer contract: `PlayerCombatState` semantic values, native source-card Discard, visible state text, bounded order/overflow, deterministic per-instance output, `CardGeneratedEntry`, and combat reset; retained-card `CustomPile` gameplay is explicitly unsupported | Authoring an ordered card-play record and dynamic output |
-| `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, version/MVID-gated patch registry with zero-target/failure/owned/foreign diagnostics, and the scenario-verified B-risk `NCombatUi.Activate(CombatState)` postfix. Self-contained only; no `OpenMod.Runtime`, unverified patch target, Publicizer, or transpiler support | Maintaining or emitting a specifically grounded advanced capability after public/BaseLib cannot expose its host seam |
+| `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat state, deterministic typed hooks, fallback UI, and version/fingerprint-gated patch diagnostics. Self-contained only; no `OpenMod.Runtime`, unverified target, Publicizer, or transpiler support | Maintaining a grounded capability after public APIs cannot expose its host seam |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
-| `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; turn/combat/run counter patterns; Happy Flower `[SavedProperty]` vs Stone Calendar `TurnNumber`; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
-| `reference/build-constraints.md` | What the toolchain refuses to BUILD/LOAD: full analyzer diagnostic set STS001–004 + the exact required-loc-key table per model type (cards/potions/relics/powers/…) + `[Pool]` rule | Before writing any element's loc keys + attributes; on any STS0NN build error |
+| `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
+| `reference/build-constraints.md` | Build/load constraints and required localization fields; adapter-specific analyzer/registration rules remain migration input until ported | Before writing resolved localization/registration output; on a build diagnostic |
 | `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact `res://` path + pixel size/profile for card `1000×760`, relic/power/potion `256×256`, enchantment `64×64`, orb icon `100×100`, static monster body `360×360`, and normal-event portrait slots `3440×1613` (all verified live loose PNGs); per-consumer file counts; checked fallbacks; animation boundaries; card/icon/monster/event prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | Type-matched real STS2 reference pools for card/relic/power/potion/enchantment/orb/monster/event (© Mega Crit, reference-only — see ATTRIBUTION.md); tools select the matching family and randomly sample three distinct images | Passed as the root `--reference` in the art step; never mix families |
@@ -114,73 +129,55 @@ Harmony patching and is deferred. The recipes make **new** elements.
 
 ## Key rules to remember (recite these when relevant)
 
-- **`[Pool]` is required** on every `CustomRelicModel` / `CustomPotionModel` / `CustomCardModel` subclass or BaseLib throws at registration. (Exceptions with **NO `[Pool]`**, auto-registered in their constructor: **power** `CustomPowerModel`, **orb** `CustomOrbModel`, **monster** `CustomMonsterModel`, **encounter** `CustomEncounterModel`, **event** `CustomEventModel`.)
-- **Monster + encounter are one slice.** `CustomMonsterModel` auto-registers via `RegisterType`; `CustomEncounterModel(RoomType.Monster)` auto-`AddEncounter` in its constructor (no manual register). Declare each move's intents/effects/successor; explicit `FollowUpState` cycles and exhaustive `ConditionalBranchState` predicates own sequencing. Multi-hit pairs `MultiAttackIntent(N, R)` with `.WithHitCount(R)`. A **monster attack uses `.FromMonster(this).Execute(null)` — NEVER `.Targeting()`** (that's the card pattern and it hangs the enemy turn). Static art is one checked 360×360 PNG through `CreateCustomVisuals()` and `NodeFactory<NCreatureVisuals>`, while `CustomVisualPath` remains the scene fallback; animation is later. Loc: `monsters.<ID>.name`, `encounters.<ID>.title`+`.loss`. See `recipes/monster.md`.
-- **Event/World Node:** `CustomEventModel` auto-`AddEvent`s (no `[Pool]`); default empty
-  `Acts` makes it available to every act. Prefer nested in-code `EventLoc`; the option
-  method name slug must match its `EventOptionLoc` key. Prove it through `MapNode` by
-  entering `ModelDb.Event<T>()`, driving every independent SPEC outcome through real UI,
-  and asserting exact state/page/room results. Selection and reward overlays must finish
-  before Event state changes. Special combat requires `IsShared`, chooses resume-vs-map
-  explicitly, and is limited to one combat per mutable Event instance. Every selected
-  normal initial/page portrait is one opaque
-  3440×1613 PNG. `CustomInitialPortraitPath` must check the mod path and fall back to
-  `this_or_that.png`; missing page art retains the current portrait. Normal-layout Event
-  VFX supports the code-native `portrait_halo` and the one curated built-in
-  `trial_noble` profile, both with explicit named-node cleanup. Native Card/relic
-  acquisition and `weak_short` screen shake follow `event-native-presentation.md` and
-  never duplicate the semantic Cmd or override the player's shake multiplier. Page and
-  option descriptions may use only the bounded vanilla rich-text tags
-  from `reference/event-text-effects.md`; titles stay plain. Custom phobia art, arbitrary
-  VFX, custom/Ancient layouts, and direct merchant/rest/treasure room transitions remain
+- **Adapter first:** resolve `reference/ritsulib-adapter.md` from the semantic SPEC before
+  reading a recipe. Registration, template bases, concrete ids, localization keys, and
+  asset paths are adapter output; do not place them in the semantic contract.
+- **Monster + encounter are one slice.** Declare every visible move, ordered successor,
+  exhaustive branch, hit count, and downstream state consequence. Keep one checked
+  360x360 body for combat and bestiary with the explicit built-in fallback; animation and
+  phobia variants remain later work.
+- **Event/World Node:** preserve real page/option UI, blocking overlay completion,
+  resume-vs-map choice, one special combat per mutable Event, and the bounded portrait,
+  rich-text, native presentation, and cleanup profiles. Direct merchant/rest/treasure
+  transitions, custom layouts, Ancient layouts, arbitrary VFX, and speech bubbles remain
   unsupported.
-- **Forced Event follow-up:** one unplayable custom Quest Card may use
-  `ModifyUnknownMapPointRoomTypes` plus `ModifyNextEvent` to force one custom Event while
-  carried in one specified act. The target returns false from `IsAllowed`, and its named
-  completion option completes/removes the token. This is solo, Unknown-map-point only;
-  arbitrary chains, vanilla edits, multiplayer, and save-roundtrip claims remain out.
-- **Character Foundation:** scaffold with `alchyrsts2charmod`; inherit
-  `PlaceholderCharacterModel`; its `CustomCharacterModel` constructor already calls
-  `AddCharacter(this)`, so never call it manually. Supply all three custom pool models,
-  exact starter deck/relic, 14 `CharacterLoc` values plus four Architect keys, then prove
-  the real selection button and run state through `RunStart` + `CombatPlayer`.
-- **Character presentation:** selection `132x195`, background `1920x1200`, top-panel icon
-  `88x88`, static non-Spine combat/rest/merchant bodies `512x512`, five full-energy layers
-  `256x256`, and compact resource icon `24x24` are live-proven. `build.py` packs raw scene
-  wrappers without Godot/MegaDot; full energy uses `CustomEnergyCounter`; static merchant
-  selects the exact versioned `_Ready()` prefix. Locked selection, map marker, and native
-  Ancient/Architect presentation still need their own headed proof. Keep inherited
-  fallbacks and read `character-presentation.md`.
-- **Capability kernel:** it is not a gameplay recipe. Prefer public/BaseLib; otherwise use
-  only a pack-grounded adapter with exact version/MVID/signature, one owned patch,
-  zero-target/failure markers, conflict policy, and a hosted state proof. Verified
-  non-public seams are the B-risk `NCombatUi.Activate(CombatState)` postfix and the
-  static-only `NMerchantCharacter._Ready()` prefix. Keep them inside the generated mod;
-  a maintainer canary is not the second generated consumer required for `OpenMod.Runtime`.
+- **Forced Event follow-up:** one token, one target Event, one act, one Unknown MapPoint
+  route, and one named completion option. Do not generalize it to arbitrary chains,
+  vanilla edits, multiplayer, or save-roundtrip claims.
+- **Character Foundation:** the adapter owns exactly-once registration, character-scoped
+  pools, exact starters, localization, and the real selection/run proof. Static consumers
+  remain separate profiles: selection `132x195`, background `1920x1200`, top icon `88x88`,
+  static bodies `512x512`, five energy layers `256x256`, and compact icon `24x24`.
+  Locked selection, map marker, and native Ancient/Architect presentation need separate
+  headed evidence.
+- **Capability kernel:** prefer the game or RitsuLib public API. A missing public seam may
+  use one selected, version/fingerprint-gated adapter with zero-target/failure markers,
+  conflict policy, fallback, and a hosted proof. Do not invent C/D targets or a shared
+  runtime binary.
 - **Character resource:** combat-owned integer state is nonnegative; check affordability
-  before an all-or-nothing spend, refresh the bounded icon+text counter after every change,
-  retain its text-only fallback, and prove
-  a distinct zero state in combat 2. This does not authorize alternative-energy patches.
-- **Ordered combat buffer:** record semantic values in combat-scoped state and let every
-  source card use its native result pile; expose current order through grounded UI, enforce
-  capacity before mutation, and add the configured output through
-  `AddGeneratedCardToCombat`. Retained-card `CustomPile`, persistence, and custom zone UI
-  remain unsupported.
-- **Loc-key derivation** (same for relics, potions, cards, powers): `Id.Entry = "<NS_UPPER>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split + UPPER_SNAKE). Keys are **flat strings**, not nested JSON. Table is `relics` / `potions` / `cards` / `powers` per type.
-- **Relic combat-start energy**: use `AfterSideTurnStart` + `TurnNumber <= 1` guard. `BeforeCombatStart()` is wrong — energy reset wipes it.
-- **Counter lifetime is a design decision:** "every N turns" defaults to run-persistent
-  Happy Flower semantics (`[SavedProperty]`); "on turn N of each combat" reads
-  `PlayerCombatState.TurnNumber`. Never use a plain field for state that must survive
-  save/resume, and never duplicate the combat turn counter.
-- **Potions fire in `OnUse`** (they're actively used) — no combat hook. Self-buff potions target `AnyPlayer`, not `Self`. Damage/block use `ValueProp.Unpowered`.
-- **Cards fire in `OnPlay`**; a card targeting the player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions). Numbers come from `DynamicVars` (scaling), not literals; attacks use the `DamageCmd.Attack(...)` fluent builder. Loc table `cards`, no separate upgrade key (SmartFormat `:diff()` handles it).
+  before an all-or-nothing spend, refresh the fixed icon+text counter, retain the text-only
+  fallback, and prove a distinct zero state in combat 2. This does not replace Energy.
+- **Ordered combat buffer:** record semantic values in combat state, send source cards
+  through their normal result pile, expose order through grounded UI, enforce capacity
+  before mutation, and create one deterministic output. Retained-card custom zones remain
+  unsupported.
+- **Localization keys:** derive concrete keys once in the adapter, keep them flat where the
+  selected host requires flat tables, and record the result in `MEMORY.md`; never infer a
+  framework prefix from a class or namespace inside SPEC.
+- **Relic combat-start energy:** trigger after the combat turn-start reset and guard the
+  first owner turn. A pre-combat energy grant is not equivalent because the reset erases it.
+- **Counter lifetime is semantic:** run-persistent progress uses the selected run-save
+  route; "on turn N of each combat" reads the native combat turn; never duplicate that
+  counter or silently shorten a run lifetime.
+- **Potions and cards:** model potion use as a use/target effect and card play as a play
+  effect. Self, one-enemy, and all-enemy targets stay semantic until adapter lowering.
+  Scaling values and upgrade deltas are data, not literals in the SPEC.
 - **Content rich text is per surface:** Card descriptions author only `gold`/`purple`
   (SmartFormat may emit `green`/`red`); relic descriptions allow
   `blue`/`gold`/`green`/`purple`/`red`; potion descriptions allow
   `blue`/`gold`/`green`; power descriptions allow `blue`/`gold`. Titles stay plain.
-- **Counter Power amounts need a SPEC domain** (nonnegative by default). To consume a
-  nonnegative Counter, find its existing instance, clamp the spend, and call
-  `PowerCmd.ModifyAmount`; never consume with a negative `PowerCmd.Apply<T>` because a
-  missing instance would be created negative.
-- **Never `System.Random`** for in-game RNG — use `MegaCrit.Sts2.Core.Random.Rng`.
+- **Counter Power amounts need a SPEC domain** (nonnegative by default). Consumption must
+  clamp to the existing amount and never create a missing instance with a negative value.
+- **Never use process-local random state** for in-game RNG; use the game's seeded random
+  source through the selected adapter.
 - **Don't guess an API** — if the recipe lacks it, check the rest of the pack (`reference/mechanics.md`, `reference/build-constraints.md`, snapshots, `errors.md`) per `grounding.md`. If it's genuinely not in the pack, report a pack gap rather than digging or guessing.

@@ -11,15 +11,20 @@ Support levels:
 - **grounded:** API/host contract is known but not promoted;
 - **unsupported:** preserve the idea as a pack gap.
 
+Migration status is tracked independently from semantic support. As of 2026-07-22, R0-R3
+are complete: the low-risk Card/Relic/Potion/Power/Keyword/Enchantment/Orb core has a
+RitsuLib-only hosted proof. Monster/Encounter, Event, Character, state/resource, and buffer
+rows retain their established semantic boundaries but are not RitsuLib-proven until R4/R5.
+
 ## Pipeline-supported
 
 | Capability | Host | Required proof | Current boundary |
 |---|---|---|---|
-| card / relic / potion / power | `CombatPlayer` | real source play/use/hook changes state | pooled registration rules; power auto-discovery |
+| card / relic / potion / power | `CombatPlayer` | real source play/use/hook changes state | RitsuLib content-pack registration and `Mod*Template`; explicit pool generic where applicable; checked asset-profile fallback |
 | interaction | source host | source and dependent observations in dependency order | directed SPEC edge, not a `combo` type |
-| keyword | `CombatPlayer` | membership, card text, no-icon hover tooltip, and named state change | text presentation supported; no owned bitmap/scene |
-| enchantment | `CombatPlayer` | attachment, altered host behavior, and custom icon in card tab + tooltip | one 64x64 loose PNG; checked missing-icon fallback |
-| orb | `CombatPlayer` | channel/passive/evoke plus custom icon in smart tooltip + trigger flash | one 100x100 loose icon; explicit Frost Spine scene/channel-SFX fallback |
+| keyword | `CombatPlayer` | membership, card text, no-icon hover tooltip, and named state change | RitsuLib-minted native keyword; text presentation supported; no owned bitmap/scene |
+| enchantment | `CombatPlayer` | attachment, altered host behavior, and custom icon in card tab + tooltip | RitsuLib template/registration; one 64x64 loose PNG; checked missing-icon fallback |
+| orb | `CombatPlayer` | channel/passive/evoke plus custom icon in smart tooltip + trigger flash | RitsuLib template/registration; one 100x100 loose icon; explicit Frost Spine scene/channel-SFX fallback |
 | stateful relic cadence | multi-combat `CombatPlayer` | threshold/lifetime boundary; save round trip for run state | integer/bool relic state only |
 | monster + encounter | `CombatEnemy` | encounter identity, move/history, exact state deltas, static body in combat+bestiary | one checked 360x360 loose PNG; explicit scene fallback; animation deferred |
 | monster move vocabulary | multi-turn `CombatEnemy` | every declared cycle/branch and independent effect | deterministic/conditional branches |

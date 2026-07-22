@@ -109,7 +109,7 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
       future outlook only.
    - **Character**: resolve the character's identity/theme, starting HP,
      exact starter deck counts, starter relic, and one starter card/relic mechanic that
-     public/BaseLib APIs can prove in combat. Default to standard 3 energy and placeholder
+     a grounded public game/framework API can prove in combat. Default to standard 3 energy and placeholder
      visuals. If it names a custom resource, capture its gain sources, spenders/payoff,
      floor, combat reset, and counter text. If it names a custom zone, capture accepted
      cards, order, capacity/overflow, compile trigger, deterministic formula, and output.
@@ -307,7 +307,7 @@ name: <display name>
 starting HP: <int, default 70>
 energy per turn: 3 (current grounded Foundation value)
 starter deck: <exact card names and counts, total 10>
-starter relic: <name + one public/BaseLib effect>
+starter relic: <name + one grounded public effect>
 pools: character-scoped card/relic/potion pools with at least one concrete member each;
   if Shop/merchant is selected, at least 2 non-Basic Attacks, 2 Skills, and 1 Power
 scenario: RunStart + CombatPlayer

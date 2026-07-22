@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Build an STS2 content mod (.dll + .pck + .json) into the game's mods/ folder.
+"""Build a pinned STS2/RitsuLib Mod into the game's mods/ folder.
 
-Wraps `dotnet build -c Release`. The Alchyr template's csproj auto-copies the
-.dll/.pdb/.json (CopyToModsFolderOnBuild) and, when BSchneppe.StS2.PckPacker is
-uncommented, the .pck (CopyQuickPck) into <game>/mods/<ModName>/. Game + mods paths
-auto-resolve via Sts2PathDiscovery.props, so no override is normally needed. This is
-the R1 build step used by modmaker's build.md.
+Validates the open-mod RitsuLib profile before MSBuild, then verifies the resolved
+NuGet asset and deployed artifacts. RitsuLib itself is installed separately and is
+never copied into the generated Mod's directory.
 
 On success prints the artifacts found in the mods folder. On failure prints the
 diagnostic lines from the dotnet output and exits non-zero (repair is handled by the
@@ -26,6 +24,15 @@ import sys
 from pathlib import Path
 
 from pack_pck import PackError, pack_assets
+from ritsu_profile import (
+    PROFILE,
+    RitsuProfileError,
+    find_manifest,
+    validate_host_version,
+    validate_project_contract,
+    validate_restore_assets,
+    validate_runtime_asset,
+)
 
 DIAG_RE = re.compile(r"error|warning|错误|警告|CS\d|MSB\d", re.IGNORECASE)
 
@@ -39,6 +46,20 @@ def find_csproj(project_dir: Path, mod_name: str | None) -> Path | None:
             if cs.stem == mod_name:
                 return cs
     return csprojs[0]
+
+
+def get_msbuild_property(csproj: Path, property_name: str) -> str | None:
+    try:
+        res = subprocess.run(
+            ["dotnet", "msbuild", str(csproj), f"-getProperty:{property_name}", "-nologo"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+        )
+    except OSError:
+        return None
+    if res.returncode != 0:
+        return None
+    lines = [line.strip() for line in res.stdout.splitlines() if line.strip()]
+    return lines[-1] if lines else None
 
 
 def locate_mods_dir(log_text: str, csproj: Path, mod_name: str) -> Path | None:
@@ -56,29 +77,42 @@ def locate_mods_dir(log_text: str, csproj: Path, mod_name: str) -> Path | None:
         if m:
             return Path(m.group(1))
 
-    try:
-        res = subprocess.run(
-            ["dotnet", "msbuild", str(csproj), "-getProperty:ModsPath", "-nologo"],
-            capture_output=True, text=True, encoding="utf-8", errors="replace",
-        )
-        if res.returncode == 0 and res.stdout.strip():
-            candidate = Path(res.stdout.strip()) / mod_name
-            if candidate.is_dir():
-                return candidate
-    except OSError:
-        pass
+    mods_root = get_msbuild_property(csproj, "ModsPath")
+    if mods_root:
+        candidate = Path(mods_root) / mod_name
+        if candidate.is_dir():
+            return candidate
     return None
 
 
-def pack_raw_text_scenes(project_dir: Path, mod_name: str, mods_dir: Path) -> bool:
-    """Replace PckPacker's skipped output when a standard mod owns raw .tscn files."""
+def pack_project_assets(project_dir: Path, mod_name: str, mods_dir: Path) -> bool:
+    """Pack the generated Mod resource tree without a framework-specific pack target."""
     source_dir = project_dir / mod_name
-    if not source_dir.is_dir() or not any(source_dir.rglob("*.tscn")):
+    if not source_dir.is_dir() or not any(path.is_file() for path in source_dir.rglob("*")):
         return False
     output = mods_dir / f"{mod_name}.pck"
     pack_assets(source_dir, mod_name, output)
-    print(f"[build] packed raw .tscn without Godot/MegaDot -> {output.name}")
+    print(f"[build] packed Mod resources -> {output.name}")
     return True
+
+
+def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path) -> None:
+    manifest = find_manifest(project_dir, mod_name)
+    deployed_manifest = mods_dir / manifest.name
+    required = (mods_dir / f"{mod_name}.dll", deployed_manifest)
+    missing = [path.name for path in required if not path.is_file()]
+    if missing:
+        raise RitsuProfileError(f"deployed Mod is missing: {', '.join(missing)}")
+    forbidden = (
+        mods_dir / PROFILE.runtime_dll,
+        mods_dir / "BaseLib.dll",
+        mods_dir / "BaseLib.pck",
+    )
+    present = [path.name for path in forbidden if path.exists()]
+    if present:
+        raise RitsuProfileError(
+            f"generated Mod directory contains a framework payload: {', '.join(present)}"
+        )
 
 
 def main(argv: list[str]) -> int:
@@ -88,6 +122,11 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--mod-name", default=None,
                     help="Mod name = csproj base name = mods/<ModName>/ folder. "
                          "Defaults to the single .csproj found in project-dir.")
+    ap.add_argument("--runtime-dir", default=None,
+                    help="Installed RitsuLib directory or release zip. Defaults to "
+                         "<resolved ModsPath>/STS2-RitsuLib.")
+    ap.add_argument("--skip-runtime-check", action="store_true",
+                    help="Compile-only escape hatch. Tier-1 verification must not use it.")
     args = ap.parse_args(argv)
 
     project_dir = Path(args.project_dir)
@@ -100,6 +139,25 @@ def main(argv: list[str]) -> int:
         print(f"No .csproj found in {project_dir}", file=sys.stderr)
         return 2
     mod_name = args.mod_name or csproj.stem
+
+    try:
+        summary = validate_project_contract(project_dir, mod_name)
+        print(f"[build] profile OK: {summary}")
+        if args.skip_runtime_check:
+            print("[build] WARNING: runtime/host validation skipped; this build cannot satisfy Tier 1")
+        else:
+            sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir")
+            mods_root_text = get_msbuild_property(csproj, "ModsPath")
+            if not sts2_dir_text or not mods_root_text:
+                raise RitsuProfileError(
+                    "MSBuild did not resolve Sts2Dir/ModsPath; set Sts2Dir in local.props"
+                )
+            print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
+            runtime = Path(args.runtime_dir) if args.runtime_dir else Path(mods_root_text) / PROFILE.runtime_mod_id
+            print(f"[build] runtime OK: {validate_runtime_asset(runtime)}")
+    except (OSError, RitsuProfileError) as exc:
+        print(f"[build] RitsuLib profile FAILED: {exc}", file=sys.stderr)
+        return 2
 
     print(f"[build] dotnet build -c Release  ({csproj.name})")
     res = subprocess.run(
@@ -126,13 +184,20 @@ def main(argv: list[str]) -> int:
         print(f"[build] dotnet build FAILED (exit {code}). Full log: {build_log}", file=sys.stderr)
         return code
 
+    try:
+        validate_restore_assets(project_dir)
+    except RitsuProfileError as exc:
+        print(f"[build] RitsuLib restore FAILED: {exc}", file=sys.stderr)
+        return 2
+
     mods_dir = locate_mods_dir(log_text, csproj, mod_name)
 
     if mods_dir and mods_dir.is_dir():
         try:
-            pack_raw_text_scenes(project_dir, mod_name, mods_dir)
-        except (OSError, PackError) as exc:
-            print(f"[build] scene-capable PCK FAILED: {exc}", file=sys.stderr)
+            pack_project_assets(project_dir, mod_name, mods_dir)
+            validate_deployed_artifacts(project_dir, mod_name, mods_dir)
+        except (OSError, PackError, RitsuProfileError) as exc:
+            print(f"[build] artifact packaging FAILED: {exc}", file=sys.stderr)
             return 1
 
     print()
@@ -140,16 +205,13 @@ def main(argv: list[str]) -> int:
     if mods_dir and mods_dir.is_dir():
         for f in sorted(p for p in mods_dir.iterdir() if p.is_file()):
             print(f"  {f.name}  ({f.stat().st_size:,} bytes)")
-        has_pck = (mods_dir / f"{mod_name}.pck").is_file()
-        if not has_pck:
-            print(f"[build] WARNING: No .pck in mods folder. If localization/images don't "
-                  "show in-game, uncomment BSchneppe.StS2.PckPacker in the csproj "
-                  "(see errors.md). Raw .tscn is handled automatically when present.")
         # Emit the resolved mods dir as the last line (callers parse this).
         print(str(mods_dir))
     else:
-        print(f"[build] WARNING: Build succeeded but could not locate mods/{mod_name}/ "
-              "from the log. Check Sts2PathDiscovery.props resolved the game path.")
+        print(f"[build] FAILED: Build succeeded but could not locate deployed "
+              f"mods/{mod_name}/. Check Sts2PathDiscovery.props and the copy target.",
+              file=sys.stderr)
+        return 1
     return 0
 
 

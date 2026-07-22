@@ -5,12 +5,22 @@
 
 ## Status
 
-**M0-M6 are complete at their grounded support boundaries. The final Character/tooling pass
-promoted eight static Character consumers and a richer icon+text mechanic UI, inventoried the
-wider Downfall/BaseLib surface, and completed the requested Ancient name-banner/Architect
-research without claiming an unrun native-host proof. Direct next: M7 proactive interview
-work. Animation, materials, multiplayer presentation, and audio are a later,
-non-blocking expansion.**
+**M0-M6 are complete at their grounded support boundaries. RitsuLib migration phases R0-R3
+closed on 2026-07-22: semantic contracts, the pinned stable scaffold/build profile, and the
+Card/Relic/Potion/Power/Keyword/Enchantment/Orb RitsuLib-only hosted proof are complete.
+Strategic next is Phase R4 world content and Character Foundation parity. No R4 source was
+changed in this checkpoint. M7 proactive interview work remains deferred until the full
+migration parity gate and first RitsuLib expansion slice close. Animation, materials,
+multiplayer presentation, and audio remain later, non-blocking expansions.**
+
+The active migration documents are `RITSULIB_MIGRATION_SPEC.md` and
+`RITSULIB_MIGRATION_PLAN.md`. They replace the former assumption that M7 is the immediate
+next implementation step. Completed M0-M6 records remain historical evidence and are not
+silently reclassified as RitsuLib proof.
+
+The exact R0-R3 dependency/API matrix and headed evidence are in
+`RITSULIB_MIGRATION_MATRIX.md`. A new session must continue from R4 rather than rebuilding
+the empty scaffold or reopening the low-risk content core.
 
 The current pipeline supports the bounded surfaces listed in `../AGENTS.md` and
 `../games/sts2/tests/content-capability-graph.md`. The player-found Wayfinder correction is
@@ -47,10 +57,10 @@ natural-language idea
 Files are state: `SPEC.md`, `PLAN.md`, and `MEMORY.md` allow resume after context
 compaction. The game pack is runtime knowledge; live decompilation remains maintainer-only.
 
-BaseLib/public commands are the default. A non-public adapter is eligible only when the
-pack records its exact version/fingerprint, conflict/failure behavior, and hosted proof.
-Do not create `OpenMod.Runtime` until multiple independent current consumers justify a
-shared boundary.
+RitsuLib/public commands and registries are the default after the migration gate. A
+non-public adapter is eligible only when the pack records its exact version/fingerprint,
+conflict/failure behavior, and hosted proof. Do not create `OpenMod.Runtime` until multiple
+independent current consumers justify a shared boundary.
 
 ## Verification architecture
 
@@ -350,7 +360,9 @@ art remains a separate authenticated acquisition.
 
 ## M7: proactive interview for non-programmers
 
-M7 is the direct next product milestone after the completed M6 Static Art Expansion.
+M7 remains the next interview milestone, but it is not the next implementation project.
+Start it only after the RitsuLib migration parity gate and the first separately scoped
+RitsuLib expansion slice close.
 
 ### Experience goal
 
@@ -425,7 +437,8 @@ promote another:
   transition cues, including registration IDs, volume/mix behavior, preference handling,
   missing-asset fallback, and one-shot/loop cleanup.
 
-Each track first inventories the real Downfall/BaseLib/game consumers, then establishes a
+Each track first inventories the real RitsuLib/game consumers and consults Downfall/BaseLib
+as historical implementation baselines, then establishes a
 source-independent asset/build path and checked fallback, and finally requires headed
 evidence for every promoted consumer. The normal-layout `portrait_halo` and curated
 `trial_noble` Event VFX remain the only current motion exceptions. Until this expansion is

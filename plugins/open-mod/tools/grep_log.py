@@ -28,6 +28,8 @@ import re
 import sys
 from pathlib import Path
 
+from ritsu_profile import PROFILE
+
 
 LOG_RECORD_RE = re.compile(
     r"^\s*(?:\d+\w*\s+)?\[(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\]",
@@ -45,6 +47,12 @@ ABANDON_MISSING_BACKUP_RE = re.compile(
 SENTRY_SHUTDOWN_RE = re.compile(
     r"^\s*ERROR:\s+Sentry: Failed to close native SDK cleanly\. Error code: 1\s*$",
     re.IGNORECASE,
+)
+PROFILE_FIELDS = (
+    "framework=RitsuLib",
+    f"frameworkVersion={PROFILE.framework_version}",
+    f"host={PROFILE.host_version}",
+    f"compat={PROFILE.host_version}",
 )
 
 
@@ -164,6 +172,7 @@ def main(argv: list[str]) -> int:
     load_match = load_matches[-1] if load_matches else None
     load_index = load_match[0] if load_match else None
     load_line = load_match[1] if load_match else None
+    profile_ok = load_line is not None and all(field in load_line for field in PROFILE_FIELDS)
     run_lines = lines[load_index:] if load_index is not None else lines
     done_line = next((ln for ln in run_lines if done_marker in ln), None)
     failed_line = next((ln for ln in run_lines if failed_marker in ln), None)
@@ -206,6 +215,7 @@ def main(argv: list[str]) -> int:
     print()
     print(f"RUNNING MODDED flag : {'YES' if modded else 'NOT SEEN (mod may not have loaded)'}")
     print(f"Tier-1 load marker  : {('FOUND => ' + load_line) if load_line else 'NOT FOUND -- mod did not log its init marker'}")
+    print(f"Framework profile   : {'MATCH' if profile_ok else 'MISSING/MISMATCHED -- expected ' + ' '.join(PROFILE_FIELDS)}")
     if tier2_pattern:
         if tier2_lines:
             print(f"Tier-2 state proof  : FOUND ({len(tier2_lines)}) => {tier2_lines[0]}")
@@ -231,7 +241,7 @@ def main(argv: list[str]) -> int:
         bool(tier2_lines) and done_line is not None and failed_line is None
     )
 
-    if load_line and not parsed_error_blocks and tier2_ok:
+    if load_line and profile_ok and not parsed_error_blocks and tier2_ok:
         if tier2_requested:
             print(f"[PASS] Tier-2 verified: {mod} loaded AND asserted post-state matched.")
         else:
@@ -239,7 +249,9 @@ def main(argv: list[str]) -> int:
         return 0
 
     if not load_line:
-        print("[FAIL] Load marker missing. Check: was PckPacker uncommented? did build copy to mods/? see errors.md.")
+        print("[FAIL] Load marker missing. Check the RitsuLib scaffold, build copy, and compat diagnostics.")
+    elif not profile_ok:
+        print("[FAIL] RitsuLib framework/host/compat profile is missing or mismatched.")
     if parsed_error_blocks:
         print("[FAIL] Fresh-run error block(s) found. See errors.md for known fixes.")
     if tier2_requested and not tier2_lines:

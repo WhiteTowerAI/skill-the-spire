@@ -13,7 +13,7 @@ import build  # noqa: E402
 
 
 class BuildTests(unittest.TestCase):
-    def test_raw_scene_pack_is_only_selected_when_tscn_exists(self) -> None:
+    def test_resource_pack_is_only_selected_when_assets_exist(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             assets = root / "Canary"
@@ -22,13 +22,11 @@ class BuildTests(unittest.TestCase):
             mods.mkdir(parents=True)
 
             with mock.patch.object(build, "pack_assets") as pack, mock.patch("builtins.print"):
-                self.assertFalse(build.pack_raw_text_scenes(root, "Canary", mods))
+                self.assertFalse(build.pack_project_assets(root, "Canary", mods))
                 pack.assert_not_called()
 
-                (assets / "scene.tscn").write_text(
-                    "[gd_scene format=3]\n", encoding="utf-8"
-                )
-                self.assertTrue(build.pack_raw_text_scenes(root, "Canary", mods))
+                (assets / "localization.json").write_text("{}\n", encoding="utf-8")
+                self.assertTrue(build.pack_project_assets(root, "Canary", mods))
                 pack.assert_called_once_with(
                     assets, "Canary", mods / "Canary.pck"
                 )

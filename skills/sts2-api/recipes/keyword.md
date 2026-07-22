@@ -1,124 +1,74 @@
 # Recipe: Custom Card Keyword
 
-> A grounded, copy-adaptable pattern for adding a named rule vocabulary to cards.
-> A keyword supplies the localized title/tooltip and a stable enum value; it does **not**
-> implement behavior by itself. The host Card/Power/helper must implement the rule, and
-> tier-2 must prove both keyword membership and the named state change.
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. RitsuLib mints a
+> deterministic `CardKeyword` value and stores it in the game's native Card keyword set;
+> the R3 proof checked membership, localization, and the named Card behavior.
 
-## When to use
+## Contract
 
-Use a custom keyword when several cards/mechanics should speak the same concise language
-(e.g. vanilla `Ethereal`, `Retain`, `Sly`). Do not create a keyword for a one-off sentence,
-and do not use a Power merely to obtain highlighted tooltip text.
-
-## Registration
-
-BaseLib generates a custom `CardKeyword` enum value from a static field:
+A keyword supplies shared vocabulary and tooltip text. It never implements gameplay by
+itself. Register one mod-qualified keyword from the content pack:
 
 ```csharp
-using BaseLib.Patches.Content;
-using MegaCrit.Sts2.Core.Entities.Cards;
+using STS2RitsuLib.Keywords;
 
-namespace <ModName>.<ModName>Code;
-
-public static class Keywords
-{
-    [CustomEnum]
-    [KeywordProperties(AutoKeywordPosition.After)]
-    public static CardKeyword <KeywordName>;
-}
+RitsuLibFramework.CreateContentPack(ModId)
+    .CardKeywordOwnedByLocNamespace(
+        "resonant",
+        iconPath: null,
+        ModKeywordCardDescriptionPlacement.AfterCardDescription,
+        includeInCardHoverTip: true)
+    .Apply();
 ```
 
-- `[CustomEnum]` is required. BaseLib assigns the value before ModelDb initialization.
-- The loc prefix is `<ROOT_NAMESPACE_UPPER>-<FIELD_OR_CUSTOM_NAME_UPPER>`.
-- `[KeywordProperties]` is optional. `Before`/`After` automatically inserts the keyword's
-  localized title around the card description; `None` keeps it tooltip-only/manual.
-- `RichKeyword` defaults true and enables rich tooltip formatting.
-- No `[Pool]`, model subclass, or manual registry call exists for keywords.
+The qualified id is `MOD_KEYWORD_STEM`, for example
+`RITSU_CARD_PROOF_KEYWORD_RESONANT`. Use `BeforeCardDescription`,
+`AfterCardDescription`, or `None` intentionally. Keywords own no bitmap in open-mod;
+keep `iconPath` null.
 
-## Localization
+## Attach to a Card
 
-Write `localization/eng/card_keywords.json`; the analyzer requires exactly `.title` and
-`.description` for every custom `CardKeyword`:
+Prefer the native canonical set:
+
+```csharp
+using MegaCrit.Sts2.Core.Entities.Cards;
+using STS2RitsuLib.Keywords;
+
+public const string KeywordId = "<MOD>_KEYWORD_<STEM>";
+
+public override IEnumerable<CardKeyword> CanonicalKeywords =>
+    new[] { KeywordId.GetModCardKeyword() };
+```
+
+For combat-time mutation, resolve the minted value once and use
+`card.AddModKeyword(value)` / `card.RemoveModKeyword(value)`. Do not generate a custom
+enum field or side-loaded keyword state.
+
+## Behavior and localization
+
+Keep behavior in the host Card/Power/helper and gate it from the same keyword value when
+the rule is conditional. Ship `localization/eng/card_keywords.json`:
 
 ```json
 {
-  "<MODNAME_UPPER>-<KEYWORD_UPPER>.title": "<Shown name>",
-  "<MODNAME_UPPER>-<KEYWORD_UPPER>.description": "<Plain-language shared rule>"
+  "<MOD>_KEYWORD_<STEM>.title": "Resonant",
+  "<MOD>_KEYWORD_<STEM>.description": "Plain-language shared rule."
 }
 ```
 
-## Attach it to a card
+`ModKeywordRegistry.GetTitle(id)` and `GetDescription(id)` expose the same localized
+strings. RitsuLib's hover tip uses a deliberate null icon when no icon path is registered.
 
-For an intrinsic keyword, override the host card's canonical set:
+## Verification
 
-```csharp
-public override IEnumerable<CardKeyword> CanonicalKeywords =>
-    new[] { Keywords.<KeywordName> };
-```
+Prove all three layers in the nearest real Card scenario:
 
-For a combat-time change, use `CardCmd.ApplyKeyword(card, Keywords.<KeywordName>)` and
-`CardCmd.RemoveKeyword(...)`. Other models may also override `TryModifyKeywordsInCombat`
-for a global, computed keyword; do that only when the rule really belongs to a persistent
-Power/Relic rather than the card itself.
+1. the Card's native `Keywords` contains the minted value;
+2. title/description localization resolves;
+3. the host's named state change occurs.
 
-## Implement the rule
-
-A custom enum plus tooltip has no automatic semantics. Put the real behavior in the host
-hook or a shared helper. Keep display and behavior tied to the same keyword field so the
-label cannot drift from the rule:
-
-```csharp
-bool active = Keywords.Contains(Keywords.<KeywordName>);
-if (active)
-    await <the real Cmd sequence>;
-```
-
-If multiple hosts share non-trivial behavior, extract a small mechanic helper; do not copy
-an entire Power into every card.
-
-## Presentation contract
-
-A keyword owns no bitmap, atlas, or scene. Do not add a keyword spec to `gen_sprite.py`.
-Its two player-visible consumers are both text:
-
-1. With `AutoKeywordPosition.Before` or `After`, `CardModel.GetDescriptionForPile` inserts
-   the localized keyword text into the real card description.
-2. `CardModel.HoverTips` routes the keyword through BaseLib's rich-keyword patch, which
-   creates a localized `HoverTip` with an intentional `Texture2D` null icon.
-
-Prove both consumers on the same real hand-card holder. Check `%DescriptionLabel` for the
-base effect and keyword title, focus the holder, then identify the keyword tooltip by its
-`%Title` rather than assuming it is the only tooltip. Assert `%Description` matches the
-localized rule and `%Icon.Texture` is null. Capture the card and tooltip together. Other
-tooltips, such as Block, may appear beside it and are not keyword-owned assets.
-
-## Type + Scenario proof
-
-A keyword is not complete when only localization loads.
-
-1. **Type proof:** clean build/package/load; exact `card_keywords` loc; host Card contains
-   the generated keyword value.
-2. **Scenario proof (`CombatPlayer`):** drive the host by its real type (normally Card),
-   assert keyword membership, then assert the rule's concrete state delta and terminal
-   marker.
-3. **Presentation proof (headed `CombatPlayer`):** assert the auto-positioned card text,
-   localized hover title/description, explicit null icon, and a screenshot containing the
-   real card plus tooltip. Presentation complements behavior; it never replaces the state
-   proof.
-
-Known-good live canary (2026-07-17): `Resonant Guard` rendered `Resonant` after `Gain 7
-Block.` on the real hand card, displayed the localized no-icon tooltip, captured both in
-one headed screenshot, verified `present=True`, then gained Block (`0 -> 7`). Strict Tier 2
-passed with no fresh error block.
-
-## Checklist
-
-- [ ] `[CustomEnum]` static `CardKeyword` field in the mod root namespace
-- [ ] optional `[KeywordProperties]` position chosen intentionally
-- [ ] `card_keywords.json` has prefixed `.title` + `.description`
-- [ ] host Card attaches the exact generated field
-- [ ] named behavior is implemented separately from display
-- [ ] headed card text and localized tooltip render; tooltip icon is explicitly null
-- [ ] no keyword bitmap/spec is generated
-- [ ] Type Canary build/load and Scenario Canary presentation + membership + state delta pass
+For full presentation support, also render the auto-positioned text and hover tip on the
+real hand Card and assert the icon is null. The R3 functional proof observed
+`RITSU_CARD_PROOF_KEYWORD_RESONANT`, title `Resonant`, membership true, and Jolt's exact
+6 damage. Historical M6 visible evidence remains regression input until re-run under
+RitsuLib.

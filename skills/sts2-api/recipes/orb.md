@@ -1,152 +1,110 @@
 # Recipe: Custom Orb
 
-> A grounded pattern for an STS2 Orb hosted by an orb-capable Player. A useful orb has
-> channel presence plus distinct passive and evoke behavior; prove all three rather than
-> merely registering the model.
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. The R3 proof registered
+> `ShelterOrb`, channeled it on a zero-slot Ironclad, proved passive and evoke Block,
+> and verified removal in a RitsuLib-only run.
 
-## Registration and localization
+## Contract and registration
 
-Subclass `BaseLib.Abstracts.CustomOrbModel`. ModelDb auto-discovers it and the constructor
-adds the canonical instance to BaseLib's custom-orb list; no `[Pool]` or manual registration.
-Return `OrbLoc(title, description, smartDescription)` from `Localization`:
+A useful Orb has four distinct invariants: registration, channel presence, passive
+behavior, and evoke behavior/removal. Register it once:
 
 ```csharp
-public override List<(string, string)> Localization =>
-    new OrbLoc("<Title>", "<fallback description>",
-        "[gold]Passive:[/gold] ... {Passive} ...\n[gold]Evoke:[/gold] ... {Evoke} ...");
+RitsuLibFramework.CreateContentPack(ModId)
+    .Orb<<Name>Orb>()
+    .Apply();
 ```
 
-`OrbLoc` requires title, description, and smartDescription. The smart tooltip receives
-`Passive`, `Evoke`, and `energyPrefix` at runtime.
+Use `ModOrbTemplate`; do not add `[Pool]` or rely on historical constructor discovery.
+RitsuLib derives `MOD_ORB_TYPENAME`, so `ShelterOrb` becomes
+`RITSU_CARD_PROOF_ORB_SHELTER_ORB`.
 
 ## Skeleton
 
 ```csharp
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using BaseLib.Abstracts;
 using Godot;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.ValueProps;
+using STS2RitsuLib.Scaffolding.Content;
 
-namespace <ModName>.<ModName>Code.Orbs;
+namespace <ModName>.Orbs;
 
-public sealed class <Name>Orb : CustomOrbModel
+public sealed class <Name>Orb : ModOrbTemplate
 {
-    public const string FallbackIconPath = "res://images/orbs/frost_orb.png";
-    public static string ModIconPath =>
-        $"{MainFile.ResPath}/images/orbs/<slug>.png";
-    public static string FallbackSpritePath =>
-        SceneHelper.GetScenePath("orbs/orb_visuals/frost_orb");
-
-    public override string? CustomIconPath =>
-        ResourceLoader.Exists(ModIconPath) ? ModIconPath : FallbackIconPath;
-    public override string? CustomSpritePath => FallbackSpritePath;
-    public override string? CustomChannelSfx =>
+    protected override string ChannelSfx =>
         "event:/sfx/characters/defect/defect_frost_channel";
 
-    public override decimal PassiveVal => ModifyOrbValue(<N>m);
-    public override decimal EvokeVal => ModifyOrbValue(<M>m);
-    public override Color DarkenedColor => new("<hex>");
-    public override List<(string, string)> Localization => new OrbLoc(...);
+    public override Color DarkenedColor => new("7860a7");
+    public override decimal PassiveVal => ModifyOrbValue(2m);
+    public override decimal EvokeVal => ModifyOrbValue(5m);
+    public override ModOrbValueDisplayMode ValueDisplayMode =>
+        ModOrbValueDisplayMode.Contextual;
 
-    public override async Task Passive(PlayerChoiceContext choiceContext, Creature? target)
+    public override OrbAssetProfile AssetProfile =>
+        ContentAssetProfiles.Orb("frost_orb");
+
+    public override Task BeforeTurnEndOrbTrigger(PlayerChoiceContext choiceContext) =>
+        Passive(choiceContext, null);
+
+    public override async Task Passive(
+        PlayerChoiceContext choiceContext, Creature? target)
     {
-        await <confirmed passive Cmd>;
+        if (target is not null)
+            throw new InvalidOperationException("This Orb does not target creatures");
+        Trigger();
+        await CreatureCmd.GainBlock(
+            Owner.Creature, PassiveVal, ValueProp.Unpowered, null);
     }
 
-    public override async Task<IEnumerable<Creature>> Evoke(PlayerChoiceContext choiceContext)
+    public override async Task<IEnumerable<Creature>> Evoke(
+        PlayerChoiceContext choiceContext)
     {
-        await <confirmed evoke Cmd>;
-        return new[] { Owner.Creature }; // or the creatures actually affected
+        await CreatureCmd.GainBlock(
+            Owner.Creature, EvokeVal, ValueProp.Unpowered, null);
+        return new[] { Owner.Creature };
     }
 }
 ```
 
-`Owner` exists only on the mutable channeled orb. `ModifyOrbValue` applies Focus/other orb
-value hooks. Optional `IncludeInRandomPool => true` makes the orb eligible for random-orb
-effects such as Chaos.
+`ContentAssetProfiles.Orb("frost_orb")` is the checked placeholder contract: Frost icon
+plus Frost Spine combat scene. A generated 100x100 icon may replace only `IconPath`; it
+does not promote a custom combat body. Keep the explicit native `ChannelSfx`, because
+channeling always plays one and an empty custom value probes a missing debug-audio file.
 
-## Host Card and commands
-
-A Card/relic/power normally channels the orb:
+## Host commands and domains
 
 ```csharp
-await OrbCmd.Channel<MyOrb>(choiceContext, player);
+await OrbCmd.Channel<<Name>Orb>(choiceContext, player);
+await OrbCmd.Passive(choiceContext, orb, null);
+await OrbCmd.EvokeNext(choiceContext, player);
 ```
 
-`OrbCmd.Channel` automatically adds one slot when a character has zero base slots and the
-current queue has zero capacity. A full queue evokes the next orb before enqueueing.
-Other confirmed commands:
+`Channel<T>` adds one slot when both base slots and queue capacity are zero. Clamp variable
+slot changes nonnegative before `AddSlots`/`RemoveSlots`; negative values can reverse the
+intended direction.
 
-- `OrbCmd.AddSlots(player, amount)` / `RemoveSlots`
-- `OrbCmd.Passive(choiceContext, orb, target)`
-- `OrbCmd.EvokeNext(...)` / `EvokeLast(...)`
+## Localization
 
-Slot amounts are a caller-owned nonnegative domain. Clamp a variable request first
-(`amount = Math.Max(0, amount)`) and skip the Cmd at zero. Do not pass a negative amount
-to `AddSlots` as a shortcut for removal or to `RemoveSlots` as a shortcut for addition:
-their internal upper-bound clamps do not reject negatives, so the operation can run in
-the opposite direction. `EvokeNext`/`EvokeLast` are safe on an empty queue (they check
-`Orbs.Count > 0`).
+Ship `localization/eng/orbs.json` using the exact public entry:
 
-## Presentation contract
+```json
+{
+  "<MOD>_ORB_<TYPE>.title": "Display Name",
+  "<MOD>_ORB_<TYPE>.description": "Passive and Evoke rules.",
+  "<MOD>_ORB_<TYPE>.smartDescription": "[gold]Passive:[/gold] {Passive}.\n[gold]Evoke:[/gold] {Evoke}."
+}
+```
 
-BaseLib exposes three custom seams:
+## Verification
 
-- `CustomIconPath` for the tooltip/icon Texture2D;
-- `CustomSpritePath` for a PackedScene used by the combat orb visual;
-- `CreateCustomSprite()` to construct a `Node2D` directly (takes precedence when non-null).
+The nearest `CombatPlayer` suite must assert queue capacity/presence after channel, the
+passive post-state, evoke post-state, and removal. The R3 proof observed capacity 1,
+channel count 1, Block `0 -> 2 -> 7`, remaining 0, and title `Shelter Orb`.
 
-These are two independent contracts. The **icon pipeline is supported**: one transparent
-`images/orbs/<slug>.png`, normalized to 100x100 with `contain` fit and chroma-key on. The
-existence-checked `CustomIconPath` above selects it when packed and otherwise returns the
-verified Frost icon. The same `OrbModel.Icon` feeds both:
-
-- the real orb smart hover tooltip (`HoverTip(orb, ...)`);
-- `NOrb/%Flash`, whose `CpuParticles2D.Texture` emits when `orb.Trigger()` fires.
-
-The **persistent combat body is still a separate Spine scene**, not a bitmap. `NOrb`
-unconditionally gets `SpineSkeleton` from `OrbModel.CreateSprite()` and starts
-`idle_loop`; a plain `Sprite2D` or the generated 100x100 icon is not a safe substitute.
-Keep the explicit Frost `CustomSpritePath` fallback. Custom skeleton/animation lifecycle
-belongs to the later animation expansion and does not block M6 or M7. Never describe an
-icon-only run as full custom orb art.
-
-The explicit `CustomChannelSfx` is also required for a clean placeholder path.
-`OrbCmd.Channel` always calls `PlayChannelSfx`; leaving the custom value null/empty makes
-the game probe `res://debug_audio/<custom-id>_channel.mp3`, producing a fresh global error
-even though channeling succeeds.
-
-## Type + Scenario proof
-
-1. **Type:** clean build/package/load and OrbLoc keys.
-2. **Channel:** drive the real host Card and assert the custom orb is present in
-   `player.PlayerCombatState.OrbQueue` (including capacity).
-3. **Passive:** call/advance the real passive lifecycle and assert its state delta.
-4. **Evoke:** evoke the queued orb and independently assert its state delta/removal.
-5. **Icon presentation (headed `CombatPlayer`):** identify the real `NOrb`, assert its
-   `%Flash.Texture` and hover-tooltip `%Icon.Texture` both use the custom 100x100 path,
-   trigger the flash, and capture the orb plus tooltip together. Separately assert the
-   rendered sprite is the declared fallback scene and contains `SpineSkeleton`.
-
-Known-good live canary (2026-07-17): `Take Shelter` channels custom `ShelterOrb`; the same
-custom 100x100 icon rendered in the real smart tooltip and trigger flash, while the combat
-body remained the explicit Frost Spine fallback. The headed screenshot captured both,
-queue capacity was 1, passive Block was `0 -> 2`, evoke Block was `2 -> 7`, and strict
-Tier 2 passed with no fresh error block. An earlier run exposed the required channel-SFX
-fallback through a missing `debug_audio/..._channel.mp3` error; the clean rerun fixed it.
-
-## Checklist
-
-- [ ] `CustomOrbModel`; no `[Pool]`
-- [ ] PassiveVal/EvokeVal/DarkenedColor and OrbLoc all supplied
-- [ ] behavior reads mutable `Owner`, not canonical state
-- [ ] host uses `OrbCmd.Channel<T>`
-- [ ] checked custom icon path with an explicit vanilla icon fallback
-- [ ] explicit Spine scene and channel-SFX fallbacks; no missing custom-id probes
-- [ ] any variable `AddSlots`/`RemoveSlots` amount is clamped nonnegative before the Cmd
-- [ ] channel + passive + evoke are separately observed
-- [ ] custom icon appears in tooltip + trigger flash at 100x100
-- [ ] combat scene remains labeled fallback; custom Spine body is later animation work
+Visible icon support additionally needs the real smart tooltip and trigger flash. The
+persistent body must remain labeled as the Frost fallback until a compatible custom Spine
+scene is separately proven.

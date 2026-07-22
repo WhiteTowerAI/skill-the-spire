@@ -5,8 +5,9 @@ which tier you reached; never claim the effect is verified when only load was.
 
 ## Tier-1 — does it load? (automated, guaranteed)
 
-Launch STS2 without Steam, wait, then grep the log for the load marker and fresh-run
-error blocks.
+Launch STS2 without Steam, wait, then grep the log for the framework profile, exact load
+marker, and fresh-run error blocks. The R2 scaffold and verifier enforce this before any
+RitsuLib runtime claim.
 
 ```bash
 python ${CLAUDE_PLUGIN_ROOT}/tools/launch.py
@@ -15,8 +16,10 @@ python ${CLAUDE_PLUGIN_ROOT}/tools/grep_log.py --mod-name <ModName>
 
 - `launch.py` ensures `steam_appid.txt` (=2868840) exists, launches the game,
   waits ~25s, and closes it.
-- `grep_log.py` reads the **current** `godot.log` in full and passes if it finds
-  `[T2MOD-SELFTEST] <ModName> loaded ok` **and** no error/exception block after that
+- `grep_log.py` reads the **current** `godot.log` in full. The migrated verifier passes
+  only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
+  `framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1`, with no
+  error/exception block after that
   boundary. It includes multiline stack context and global errors whose header does not
   name the mod. It also reports the `RUNNING MODDED` flag. Two exact, stack-qualified
   base-game cleanup blocks are reported but ignored: abandon deleting a nonexistent
@@ -32,12 +35,14 @@ python ${CLAUDE_PLUGIN_ROOT}/tools/grep_log.py --mod-name <ModName>
 **PASS** = marker found, no fresh-run error blocks. **FAIL** → go to `repair.md`. It
 distinguishes the two tier-1 failure modes and fixes accordingly:
 
-- **marker NOT FOUND but `RUNNING MODDED` = YES** → the mod loaded but logged no
-  marker: it wasn't injected into `MainFile.Initialize()` (author.md step 2), or
+- **framework marker missing/mismatched** → the selected compat profile did not resolve;
+  stop with the adapter's `missing-compat-asset` or `host-mismatch` diagnostic.
+- **load marker NOT FOUND but `RUNNING MODDED` = YES** → the mod loaded but logged no
+  marker: it wasn't injected by the selected adapter (author.md step 2), or
   the code change never rebuilt. (Distinct from the log-rotation false-FAIL, which
   errors.md already retired.)
-- **fresh error/exception block** → registration/load/runtime threw — e.g.
-  missing `[Pool]` throws; a raw-key title means the loc keys don't match `Id.Entry`.
+- **fresh error/exception block** → registration/load/runtime threw; use the selected
+  adapter's registration and localization diagnostics rather than guessing a fix.
 
 A code/csproj fix only reaches the game through a fresh build, so repair **rebuilds
 first**, then re-runs tier-1 — bounded to 3 attempts.
@@ -57,7 +62,9 @@ python ${CLAUDE_PLUGIN_ROOT}/tools/grep_log.py --mod-name <ModName> --tier2-patt
 ```
 
 The `--tier2-pattern` selects the SPEC invariant from structured
-`[T2MOD-SELFTEST] <ModName> state proof:` lines. Use concrete expected/observed vocabulary:
+`[T2MOD-SELFTEST] <ModName> state proof:` lines. Every migrated proof also records
+`framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1`. Use concrete
+expected/observed vocabulary:
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
 `"cadence cross-combat threshold.*observed=0/4"`,
 `"enemy attack.*observed=6"`, `"monster vocabulary complete.*observed=all"`,
@@ -89,7 +96,7 @@ requires the exact load marker and `selftest done`.
   only in stack context (or not at all).
 - For a stateful effect, one matching proof line is not the whole scenario contract. The
   harness must assert `N-1`, threshold, and reset/carry-over before it emits `selftest done`;
-  a run `[SavedProperty]` also asserts `SavedProperties.From`/`Fill`. Use the multi-combat
+  run-save state also asserts a real save/fill round trip. Use the multi-combat
   variant in `reference/selftest-harness.md`.
 - For a multi-move enemy, one HP delta is likewise insufficient. Before the terminal proof,
   the harness must execute every SPEC move/branch outcome and assert its move history,
@@ -97,7 +104,7 @@ requires the exact load marker and `selftest done`.
 - For a Character Foundation, the final proof is valid only after the harness has asserted
   one constructor-registered model, the real selection button, runtime identity/HP, three
   pool types and member models, exact starter deck/relic multisets, designed MaxEnergy,
-  and one hosted public/BaseLib mechanic delta through `CombatPlayer`. If Shop is selected,
+  and one hosted grounded public mechanic delta through `CombatPlayer`. If Shop is selected,
   the unlocked pool must also fill its two Attack, two Skill, and one Power colored slots.
 - For a character resource, require gain, affordable and unaffordable checks, one exact
   successful payoff, one rejected spend with no mutation/negative state, live counter

@@ -14,12 +14,15 @@ instructions.
 
 ## Current status
 
-**M0-M6 are complete at their grounded support boundaries. The final Character/tooling pass
-promoted eight static Character consumers and a richer icon+text mechanic UI, inventoried the
-wider Downfall/BaseLib surface, and completed the requested Ancient name-banner/Architect
-research without claiming an unrun native-host proof. Direct next: M7 proactive interview
-work. Animation, materials, multiplayer presentation, and audio are a later,
-non-blocking expansion.**
+**M0-M6 remain complete at their grounded support boundaries. RitsuLib migration phases
+R0-R3 are complete: the repository has one framework-neutral semantic contract, one pinned
+RitsuLib `0.4.62` / STS2 stable `0.107.1` scaffold/build profile, and hosted RitsuLib-only
+Tier 2 proofs for Card, Relic, Potion, Power, Keyword, Enchantment, and Orb. Direct next is
+Phase R4: Monster + Encounter, Event / World Node, and Character Foundation/static
+presentation parity. No R4 source was changed at the 2026-07-22 checkpoint. M7 proactive
+interview work remains deferred until the full migration parity gate and first RitsuLib
+expansion slice close. Animation, materials, multiplayer presentation, and audio remain
+later, non-blocking expansions.**
 
 Current pipeline-supported surfaces include:
 
@@ -184,11 +187,12 @@ scene cues, registration, mix, fallback and cleanup). Positioned speech/thought 
 are future outlook only and are not planned for M6 or M7. None of these tracks blocks M6
 or M7, and proof in one track never promotes another.
 
-Do not reopen the completed M6 behavior canaries while starting M7. Character art support
+Do not reopen the completed M6 behavior canaries except as the closest migration regression
+proof. Character art support
 advances beyond the eight promoted static profiles only after the real headed game renders
 the intended consumer with visual evidence. A model path, successful build, or fallback
 visual is not enough. Preserve the Ancient blocker and inherited fallbacks. Do not open the
-animation/material/multiplayer/audio expansion during M7.
+animation/material/multiplayer/audio expansion during the migration.
 
 The `runtime-imagegen` edge may be reused for card/relic/power/potion, enchantment/orb
 icons, a static monster body, normal event portrait slots, and the eight promoted Character
@@ -264,10 +268,15 @@ Verified Windows environment:
 
 - STS2 stable `0.107.1`
 - .NET SDK `9.0.300`
-- BaseLib `3.3.5`
+- BaseLib `3.3.5` for completed M6 live evidence; research checkout `3.3.8`
+- RitsuLib `0.4.62` with planned `0.107.1` compat target; no headed migration proof yet
 - Python 3
 
-Scaffold from a dedicated empty outer directory whose name differs from the mod name:
+The commands below describe the verified pre-migration BaseLib template path. They remain
+useful for reproducing historical M0-M6 evidence, but must not be used as the RitsuLib
+target until migration Phase R2 replaces or wraps the scaffold and its dependency logic.
+The RitsuLib target must be created from a dedicated empty outer directory whose name differs
+from the mod name:
 
 ```bash
 dotnet new install Alchyr.Sts2.Templates
@@ -296,6 +305,8 @@ Active planning/research:
 
 - `documents/PROJECT.md`
 - `documents/IMPLEMENTATION_PLAN.md`
+- `documents/RITSULIB_MIGRATION_SPEC.md`
+- `documents/RITSULIB_MIGRATION_PLAN.md`
 - `documents/BASELINE_RESEARCH.md`
 - `games/sts2/tests/README.md`
 - `games/sts2/tests/content-capability-graph.md`

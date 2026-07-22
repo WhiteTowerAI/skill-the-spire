@@ -38,7 +38,7 @@
 > is distilled here; no game asset ships.
 
 Custom keywords do not belong in the image contract below. Their presentation is localized
-card text plus a BaseLib rich hover tooltip whose icon is intentionally null. The headed
+card text plus a RitsuLib/native hover tooltip whose icon is intentionally null. The headed
 `CanaryKeyword` proof covers both text consumers; do not add a keyword image, asset path, or
 `gen_sprite.py` spec.
 
@@ -63,12 +63,9 @@ res://<ModName>/images/<sub-path>/<slug>.png
 **A card has exactly one portrait the game actually loads, and it is 1000×760.**
 Source-verified against the decompile after a live in-game run (do not re-derive):
 
-- BaseLib Harmony-patches the game's card-texture getter to use
-  `CustomCardModel.CustomPortraitPath` and nothing else. The Alchyr template maps that to
-  `images/card_portraits/**big/**<slug>.png`. So **`big/<slug>.png` is the only file that
-  reaches the card** — the outer `card_portraits/<slug>.png` (`PortraitPath`) is **dead
-  code** under Alchyr+BaseLib; don't generate it.
-- **`big/` is Alchyr's folder name, NOT a size cue.** A normal card's portrait is
+- RitsuLib's `CardAssetProfile.PortraitPath` resolves the card texture path.
+  `images/card_portraits/<slug>.png`; omit the profile to retain the checked placeholder
+  fallback. A normal card's portrait is
   **1000×760 landscape**. The 606×852 "full art" size is **Ancient-rarity only** (a
   different card layout / UI slot — `NCard.cs` switches on `Rarity == CardRarity.Ancient`).
   **We only make normal cards, so we only ever produce 1000×760.** Putting a 606×852
@@ -77,7 +74,7 @@ Source-verified against the decompile after a live in-game run (do not re-derive
 
 | spec | file(s) written (under `images/`) | size | notes |
 |------|-----------------------------------|------|-------|
-| `card` | `card_portraits/big/<slug>.png` | **1000×760 landscape** (verified live) | **the only card portrait to make** — normal-rarity cards |
+| `card` | `card_portraits/<slug>.png` | **1000×760 landscape** (profile contract) | **the only card portrait to make** — normal-rarity cards |
 | `relic` | `relics/<slug>.png` **+** `relics/big/<slug>.png` | **256×256** (verified live) | cut-out icon; **two files** — see below. Also has `<slug>_outline.png` (optional, we skip it) |
 | `power` | `powers/<slug>.png` **+** `powers/big/<slug>.png` | **256×256** (verified live) | cut-out icon; **two files** — see below. No outline file |
 | `potion` | `potions/<slug>.png` | **256×256** (verified live) | cut-out icon; **ONE file** — bar/hover/use all reuse the same texture, no `big/`. Tilt ~45° right (see below) |
@@ -94,11 +91,11 @@ Shelter on 2026-07-17; the monster combat/bestiary body by Canary Sentinel on 20
 Relic/power read the icon from two separate loose-PNG getters — writing only the first
 leaves the other on the placeholder:
 - **relic**: `relics/<slug>.png` = the relic-bar icon; `relics/big/<slug>.png` = the
-  **detail/inspect popup** (click a relic you own). Both patched by BaseLib to the template's
-  `PackedIconPath` / `BigIconPath`.
+  **detail/inspect popup** (click a relic you own). Both are selected by the
+  `RelicAssetProfile` paths.
 - **power**: `powers/<slug>.png` = the combat **status icon**; `powers/big/<slug>.png` = the
   big **apply/expire notification** that jumps out for a few seconds. Patched to
-  `CustomPackedIconPath` / `CustomBigIconPath`.
+  `PowerAssetProfile` paths.
 - **potion**: `potions/<slug>.png` **only**. `PotionModel` exposes a single image texture
   (`Image` ← `PackedImagePath`); the potion bar, the hover tooltip, and the throw/use VFX all
   reuse that one texture — there is **no separate `big/` file**. (Confirmed by enumerating
@@ -117,23 +114,20 @@ leaves the other on the placeholder:
   slot is resolved by `CustomInitialPortraitPath`; authored page slots are loaded and
   passed to `NEventRoom.SetPortrait` by the event option method.
 `gen_sprite.py` writes the same normalized image to every path a spec needs, so you don't
-manage them by hand. (`card`'s outer `card_portraits/<slug>.png` is dead code under BaseLib —
-only `big/` is written.)
+manage them by hand. The RitsuLib Card profile uses the single
+`card_portraits/<slug>.png` path.
 
 **Why these icon specs take a loose `.png` (no `.tres` authoring).** Vanilla STS2 loads every icon
 family from Godot `.tres` sprite-atlases (`atlases/relic_atlas.sprites/…`, `power_atlas`,
 `potion_atlas`, `relic_outline_atlas` — see `RelicModel`/`PowerModel`/`PotionModel` in the
 decompile). But the icon getters accept a plain `Texture2D` path, so a loose PNG works too:
-for **relic/power** the Alchyr template overrides the getters to `images/relics|powers/`
-(`Exists()`-check + fallback); for **potion**, BaseLib's `CustomPotionModel` itself patches
-`PotionModel.ImagePath` to `CustomPackedImagePath` (docstring: *"You may pass the path to a
-png"*), so we hand-add a `PotionImagePath` helper + override that getter in the mod's potion
-base (see `recipes/potion.md`). Either way a mod just drops a 256×256 PNG in — no atlas.
+for **relic/power/potion**, RitsuLib's asset profiles accept explicit loose PNG paths with
+an existence-checked fallback. Either way a mod just drops a 256×256 PNG in — no atlas.
 **This overturned an earlier belief that potion needed a `.tres` emitter** — it does not
 (live-verified 2026-07-08). The only reason vanilla potions *appear* to require an atlas is
 that the default (un-overridden) getter points at the atlas path, which a mod doesn't ship.
-Enchantment and orb BaseLib `CustomIconPath` patches likewise accept a loose PNG directly;
-their concrete classes own the existence check because the scaffold has no helper for them.
+Enchantment and Orb profiles likewise accept a loose PNG directly; omit the profile to keep
+the checked fallback.
 
 **Sizes.** All 324 vanilla relic + 271 power + 63 potion icons extracted from the game are a
 uniform **256×256**; live canary runs confirmed that size + all icon paths render correctly,
@@ -145,11 +139,10 @@ an open-mod **360×360 profile**: unlike the atlas-backed icons, this is a chose
 render footprint rather than an engine-mandated source size. BaseLib renders it one-to-one;
 the headed combat and bestiary proof verified the resulting 396×396 bounds.
 
-**A power subclass must extend the template base class (not `CustomPowerModel` directly).**
-The template's `<ModName>Power` base is what overrides `CustomPackedIconPath` /
-`CustomBigIconPath` to the loose-PNG paths. A power that inherits `CustomPowerModel`
-directly leaves those null → the icon silently falls back to the default even though the
-PNG exists. (Same holds for relic: extend the template `<ModName>Relic`.) See `recipes/power.md`.
+**A power subclass must extend `ModPowerTemplate` directly.** Its `PowerAssetProfile`
+controls the loose-PNG paths. A direct game-model subclass bypasses the adapter and leaves
+the checked fallback in place. (Same holds for relic: extend `ModRelicTemplate`.) See
+`recipes/power.md`.
 
 **The relic outline (`<slug>_outline.png`).** A relic has a third file — the white
 selection/hover outline — via its own `PackedIconOutlinePath` getter. It has a template
@@ -276,20 +269,16 @@ a paid acquisition route runs.
 ## The enchantment icon contract
 
 A generated enchantment owns one transparent `images/enchantments/<slug>.png`, normalized
-to **64×64** with `contain` fit and chroma-key on. Its concrete class must use an
-existence-checked protected `CustomIconPath`:
+to **64×64** with `contain` fit and chroma-key on. Its concrete class uses an
+`EnchantmentAssetProfile` when custom art is selected:
 
 ```csharp
-public static string ModIconPath =>
-    $"{MainFile.ResPath}/images/enchantments/<slug>.png";
-
-protected override string? CustomIconPath =>
-    ResourceLoader.Exists(ModIconPath) ? ModIconPath : null;
+public override EnchantmentAssetProfile AssetProfile => new(
+    IconPath: $"res://<ModName>/images/enchantments/<slug>.png");
 ```
 
-Use forward slashes in every `res://` URI. Returning `null` is the placeholder route:
-BaseLib resumes the original `EnchantmentModel.IconPath` getter, which ultimately uses
-`MissingIconPath`. Returning a missing mod path directly bypasses that fallback.
+Use forward slashes in every `res://` URI. Omit the profile override in placeholder mode so
+the template keeps the checked game fallback. Do not return a missing mod path directly.
 
 This is one shared texture, not two outputs. `NCard.UpdateEnchantmentVisuals` assigns
 `EnchantmentModel.Icon` to `%Enchantment/Icon` for hand, grid, reward, and inspect-style
@@ -307,16 +296,10 @@ with `contain` fit and chroma-key on. This spec is icon-only. Use a checked cust
 explicit matched vanilla fallbacks:
 
 ```csharp
-public const string FallbackIconPath = "res://images/orbs/frost_orb.png";
-public static string ModIconPath =>
-    $"{MainFile.ResPath}/images/orbs/<slug>.png";
-public static string FallbackSpritePath =>
-    SceneHelper.GetScenePath("orbs/orb_visuals/frost_orb");
+public override OrbAssetProfile AssetProfile =>
+    ContentAssetProfiles.Orb("frost_orb");
 
-public override string? CustomIconPath =>
-    ResourceLoader.Exists(ModIconPath) ? ModIconPath : FallbackIconPath;
-public override string? CustomSpritePath => FallbackSpritePath;
-public override string? CustomChannelSfx =>
+protected override string ChannelSfx =>
     "event:/sfx/characters/defect/defect_frost_channel";
 ```
 
@@ -326,13 +309,10 @@ and 100×100 size in both nodes, triggered the particle, captured the real orb a
 together, preserved passive/evoke Block `0 -> 2 -> 7`, and passed strict Tier 2 with no
 fresh error block.
 
-The combat body remains explicitly separate. `NOrb` calls `CreateSprite()`, gets child
-`SpineSkeleton`, and starts `idle_loop`. `gen_sprite.py --spec orb` does not emit a scene,
-atlas, skeleton, animation, or audio. The canary proved the Frost scene fallback was present
-and valid, not that the custom icon became the body. Leaving `CustomSpritePath` null probes
-a missing custom-id scene; leaving `CustomChannelSfx` empty probes a missing
-`debug_audio/<custom-id>_channel.mp3`. Keep both fallbacks; a custom Spine body belongs to
-the later animation expansion and does not block M6 or M7.
+The combat body remains explicitly separate. `gen_sprite.py --spec orb` emits no scene,
+atlas, skeleton, animation, or audio. The R3 proof verifies the Frost scene fallback and
+channel event, not that a custom icon becomes the body. Keep both fallbacks; a custom Spine
+body belongs to the later animation expansion and does not block the migration.
 
 ## The static monster-body contract
 

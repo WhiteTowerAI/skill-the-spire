@@ -35,8 +35,8 @@ includes self buff/custom Power with a downstream consequence, player debuff, bl
 multi-attack, composite actions, deterministic cycles, and conditional branches. One
 checked 360×360 static monster body is supported in combat and bestiary, with an explicit
 built-in fallback when absent. Spine and move animation are later extensions.
-An **event** is a normal map event with nested pages/options, authored as one
-`CustomEventModel` and proven through the **`MapNode`** scenario (enter the event room,
+An **event** is a normal map event with nested pages/options, authored as one semantic
+Event and proven through the **`MapNode`** scenario (enter the event room,
 read its localized options, drive every independent SPEC outcome, and observe exact state,
 page, overlay, combat, and map results). Supported outcomes include public Cmd
 combinations, conditional/locked multi-page choices, blocking card-selection and custom-
@@ -59,12 +59,11 @@ may force one custom Event from an Unknown MapPoint in one specified act. The ta
 out of ordinary Event pools and one named option completes/removes the token. This public-
 hook path does not authorize arbitrary chains, vanilla edits, multiplayer semantics, or a
 new save-roundtrip claim.
-A **Character Foundation** uses the Alchyr character template plus BaseLib's
-`PlaceholderCharacterModel`. It appears in the real character-select UI, starts a run
+A **Character Foundation** uses the selected framework adapter's character template. It
+appears in the real character-select UI, starts a run
 with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
-3 energy, and one public/BaseLib starter mechanic through `RunStart` + `CombatPlayer`.
-The constructor already registers the character; generated code never calls
-`AddCharacter`. Static presentation is a separate opt-in layer: selection portrait,
+3 energy, and one grounded public starter mechanic through `RunStart` + `CombatPlayer`.
+The adapter owns exactly-once registration. Static presentation is a separate opt-in layer: selection portrait,
 top-panel icon, non-Spine combat body, and compact resource icon are live-proven loose-PNG
 consumers. Other Character profiles keep their explicit fallbacks; animation remains
 outside the Foundation boundary. Read `reference/character-presentation.md` when selected.
@@ -84,7 +83,7 @@ Multi-element mods record real content nodes plus directed **interactions**; tie
 the source by its actual type and checks the dependent observation, so a card→power link
 cannot pass merely because both models loaded. “Combo” is not a content type.
 Two core **stateful relic** families are pipeline-supported: Happy Flower-style counters
-cross combats and save/resume through `[SavedProperty]`, while Stone Calendar-style timing
+cross combats and save/resume through run-save state, while Stone Calendar-style timing
 reads the current combat's `TurnNumber`. Tier-2 proves `N-1`, threshold, reset/carry-over,
 and the save round trip where applicable. Turn-local event counts, once-per-combat flags,
 previous-turn memory, and limited run uses have grounded patterns but remain provisional
@@ -118,13 +117,14 @@ Read each from `${MODMAKER_SKILL_DIR}/` only when you reach that stage.
 | File | Purpose | When to read |
 |------|---------|--------------|
 | `interview.md` | One short clarifying round → intake | Pipeline start (after resume check) |
+| `semantic-contract.md` | Framework-neutral SPEC envelope, adapter inputs, and diagnostic record | Before writing SPEC |
 | `spec.md` | Write `SPEC.md` (the design contract) | After interview |
-| `scaffold.md` | `dotnet new` + manifest + PckPacker wiring | After spec |
+| `scaffold.md` | Pinned RitsuLib project + manifest + compat wiring | After spec |
 | `author.md` | Write the C# element + localization + marker | After scaffold |
 | `build.md` | `dotnet build` → .dll/.pck/.json into mods/ | After author |
 | `verify.md` | Launch + log-assert load (tier-1) + automated tier-2 self-test (manual fallback) | After build |
 | `repair.md` | Bounded diagnose → fix → re-verify sub-loop | Whenever build/verify fails |
-| `quirks.md` | STS2/BaseLib gotchas | Before writing any C# |
+| `quirks.md` | STS2/selected-adapter gotchas | Before writing any C# |
 | *(sts2-api skill)* | Recipes, command APIs, error fixes | Whenever you need a concrete STS2 answer |
 
 ## Pipeline
@@ -138,28 +138,30 @@ User: one sentence ("a relic that ...")
  1. INTERVIEW (interview.md) — ONE short round, only for genuinely ambiguous
     things (element type? rarity? exact trigger?). Non-blocking defaults for the rest.
     |
- 2. SPEC (spec.md) — write SPEC.md: element type, name, type-specific host/starter contract, trigger, effect
-    in game terms, any state event/threshold/lifetime/reset/persistence, and art plan.
+ 2. SPEC (semantic-contract.md + spec.md) — write a framework-neutral SPEC: element type,
+    name, type-specific host/starter contract, trigger, effect in game terms, any state
+    event/threshold/lifetime/reset/persistence, fallback, proof, and art plan.
     Show the user a plain-language summary to confirm.
     |
- 3. SCAFFOLD (scaffold.md) — dotnet new from the Alchyr template (once), set the
-    manifest, uncomment PckPacker.
+ 3. SCAFFOLD (scaffold.md) — resolve the selected framework/host profile once, then emit
+    its project, manifest, and package wiring.
     |
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
     monster+encounter/event/character, plus the selected Event outcome/VFX/rich-text/
     native-presentation/forced-follow-up references or power.md
     when selected by SPEC),
-    write the Custom*Model
-    subclass filling ONLY the effect logic, add localization JSON, inject the load +
-    diagnostic [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
+    translate the same semantic SPEC through the selected adapter, add localization,
+    inject the shared framework/version and [T2MOD-SELFTEST] diagnostics, and emit the
+    arg-gated tier-2 self-test harness
     (SelfTest.cs, step 2.5 — reference/selftest-harness.md). Then the ART sub-step
     (author.md §4): per SPEC's art plan, leave placeholder (default) or generate a
     custom source through the selected route and pass it to tools/gen_sprite.py import. Art never
     blocks —
     a missing sprite falls back to the template default. Regenerate = re-run + rebuild.
     |
- 5. BUILD (build.md) — tools/build.py → .dll/.pck/.json into mods/ (the .pck rebuild is
-    what makes any custom art reach the game). On failure: go to REPAIR (repair.md).
+ 5. BUILD (build.md) — tools/build.py validates the pinned host/package/runtime profile,
+    deploys the Mod's own DLL/manifest, and packs its resource tree when present. On
+    failure: go to REPAIR (repair.md).
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
     and fresh-run error blocks (tier-1). Then run the tier-2 self-test unattended

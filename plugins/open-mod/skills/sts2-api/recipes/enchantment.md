@@ -1,107 +1,84 @@
 # Recipe: Card Enchantment
 
-> A grounded pattern for a custom STS2 Enchantment: a persistent modifier attached to one
-> Card. This is **not** BaseLib `CustomModifierModel` (that is a run-level Good/Bad
-> modifier). The host Card must be enchanted and its altered behavior observed.
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. The R3 proof registered
+> `Guarded`, attached it to a real Card at amount 5, and observed its `OnPlay` Block
+> consequence in a RitsuLib-only run.
 
-## Registration and host
+## Contract and registration
 
-Subclass `BaseLib.Abstracts.CustomEnchantmentModel`. ModelDb auto-discovers it; no `[Pool]`
-or manual registration. Apply it through the public command:
+An Enchantment is persistent state attached to one Card. Use the public template and
+register exactly once:
 
 ```csharp
-CardCmd.Enchant<MyEnchantment>(card, amount);
+RitsuLibFramework.CreateContentPack(ModId)
+    .Enchantment<<EnchantmentName>>()
+    .Apply();
 ```
 
-`EnchantmentModel.Card` is set only on the mutable attached instance. A card can hold one
-enchantment unless the existing enchantment is the same stackable type. Override
-`CanEnchantCardType`/`CanEnchant` only to add restrictions and preserve base restrictions.
+Do not add `[Pool]`, depend on auto-discovery, or substitute a run-level Modifier.
+RitsuLib derives `MOD_ENCHANTMENT_TYPENAME`.
 
 ## Skeleton
 
 ```csharp
 using System.Threading.Tasks;
-using BaseLib.Abstracts;
-using Godot;
+using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.ValueProps;
+using STS2RitsuLib.Scaffolding.Content;
 
-namespace <ModName>.<ModName>Code.Enchantments;
+namespace <ModName>.Enchantments;
 
-public sealed class <Name> : CustomEnchantmentModel
+public sealed class <EnchantmentName> : ModEnchantmentTemplate
 {
-    public static string ModIconPath =>
-        $"{MainFile.ResPath}/images/enchantments/<slug>.png";
+    public override bool HasExtraCardText => true;
+    public override bool ShowAmount => true;
 
-    protected override string? CustomIconPath =>
-        ResourceLoader.Exists(ModIconPath) ? ModIconPath : null;
+    public override EnchantmentAssetProfile AssetProfile => new(
+        IconPath: "res://<ModName>/images/enchantments/<slug>.png");
 
-    public override bool HasExtraCardText => true; // only when extraCardText loc exists
-    public override bool ShowAmount => true;       // if Amount should render
-
-    public override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay? cardPlay)
+    public override async Task OnPlay(
+        PlayerChoiceContext choiceContext, CardPlay? cardPlay)
     {
-        // Card = the attached mutable host; Amount = CardCmd.Enchant amount
-        await <confirmed Cmd sequence>;
+        ArgumentNullException.ThrowIfNull(cardPlay);
+        await CreatureCmd.GainBlock(
+            Card.Owner.Creature, Amount, ValueProp.Unpowered, null);
     }
 }
 ```
 
-Other useful hooks include `AfterCardPlayed`, `AfterCardDrawn`, and
-`AfterAutoPrePlayPhaseEntered`; copy the closest vanilla enchantment rather than guessing.
-Use `RecalculateValues()` when the enchantment changes Card/DynamicVar values after attach
-or deserialize.
+Omit `AssetProfile` in placeholder mode. The supported custom icon is one checked 64x64
+PNG at `images/enchantments/<slug>.png`, shared by the Card tab and hover tooltip.
+
+Attach through the public game command:
+
+```csharp
+CardCmd.Enchant<<EnchantmentName>>(card, amount);
+```
+
+After attachment, assert `card.Enchantment is <EnchantmentName>` and read `Amount` from
+that mutable instance. Preserve base restrictions when overriding `CanEnchant`.
 
 ## Localization
 
-Use `localization/eng/enchantments.json`. `CardModifierLoc` establishes required
-`.title` + `.description`; add `.extraCardText` iff `HasExtraCardText` is true:
+Ship `localization/eng/enchantments.json`:
 
 ```json
 {
-  "<PREFIX>-<SLUG>.title": "<Title>",
-  "<PREFIX>-<SLUG>.description": "<Tooltip using {Amount} or DynamicVars>",
-  "<PREFIX>-<SLUG>.extraCardText": "<Text appended to the host Card>"
+  "<MOD>_ENCHANTMENT_<TYPE>.title": "Display Name",
+  "<MOD>_ENCHANTMENT_<TYPE>.description": "When played, gain {Amount} Block.",
+  "<MOD>_ENCHANTMENT_<TYPE>.extraCardText": "Gain {Amount} Block."
 }
 ```
 
-## Icon
+Emit `.extraCardText` only when `HasExtraCardText` is true.
 
-BaseLib patches custom enchantments to the protected `CustomIconPath`. The supported
-contract is one transparent **64×64** loose PNG at
-`res://<ModName>/images/enchantments/<slug>.png`; generate/import it with
-`gen_sprite.py --spec enchantment`, then rebuild the `.pck`. Use `/` in `res://` URIs,
-including on Windows.
+## Verification
 
-Keep the existence check in the skeleton. Returning `null` when the mod PNG is absent lets
-the original `EnchantmentModel.IconPath` resolution reach `MissingIconPath`; returning a
-missing custom path directly bypasses that fallback. The same `EnchantmentModel.Icon`
-texture feeds both the visible `NCard` enchantment tab/amount and the card's hover tooltip;
-there is no separate `big/` file.
+The `CombatPlayer` proof must independently check registration/localization, attachment
+and amount, then drive the host Card and assert the changed outcome. The R3 proof observed
+`RITSU_CARD_PROOF_ENCHANTMENT_GUARDED`, amount 5, and Block `7 -> 12`.
 
-## Type + Scenario proof
-
-1. **Type:** clean build/package/load and exact enchantment localization.
-2. **Attachment:** create the host Card and call `CardCmd.Enchant<T>`; assert
-   `card.Enchantment is T` and the expected Amount.
-3. **Behavior (`CombatPlayer`):** drive the Card by its real card driver, then assert the
-   enchantment hook's state delta and successful terminal marker.
-4. **Art (when generated):** in a real card holder, assert the custom path and 64×64 size
-   on `%Enchantment/Icon`, focus/hover that holder, and assert the same texture in its real
-   `NHoverTipSet`. Capture both together; a model getter or path log alone is insufficient.
-
-Known-good live canary (2026-07-10): `Guarded` attached to `Etched Strike` with Amount 5,
-then `OnPlay` logged `attached=True amount=5 block 0 -> 5`. The 2026-07-17 art expansion
-reused that canary and rendered one custom 64×64 icon in both the hand-card tab and hover
-tooltip, captured them together, preserved Block `0 -> 5`, and passed strict Tier 2 with
-no fresh error block.
-
-## Checklist
-
-- [ ] `CustomEnchantmentModel`, not `CustomModifierModel`
-- [ ] host restrictions are intentional and preserve `base.CanEnchant`
-- [ ] title/description and optional extraCardText loc are exact
-- [ ] `CardCmd.Enchant<T>` attaches the mutable instance
-- [ ] attachment **and** altered behavior are independently observed
-- [ ] `CustomIconPath` uses the mod-root 64×64 PNG when it exists and returns `null` when absent
-- [ ] generated icon is visibly checked in both the card tab and hover tooltip
+Custom icon support still requires a headed render in both the Card tab and hover tooltip;
+a path getter alone does not promote visual support.

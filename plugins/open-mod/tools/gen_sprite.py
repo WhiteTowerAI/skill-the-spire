@@ -14,8 +14,9 @@ upstream; this tool only runs when the user chose a custom sprite):
 Both then NORMALIZE + PLACE identically: optional magenta (#FF00FF) chroma-key →
 fit/center to the exact contract size (reference/art-contract.md) → write <slug>.png at
 the exact sub-path under the mod's images/ dir. Dropping that file in and rebuilding the
-.pck (build.py) is the whole "install a custom sprite" operation — BaseLib's base class
-resolves it; a missing file falls back to the template default (= the placeholder).
+  .pck (build.py) is the whole "install a custom sprite" operation — the selected
+  framework asset profile resolves it; a missing file falls back to the template default
+  (= the placeholder).
 
 We do NOT bundle or default to any provider (§7.1: bring-your-own-backend). No key is
 committed. A missing/invalid config makes `generate` fail with a clear message and a
@@ -61,7 +62,7 @@ except ImportError:
 # card 1000×760 (2026-07-08); relic + power 256×256 (2026-07-08, canary-relic "Bauble" +
 # canary-power "Smolder" — bar/status icon, big detail-popup, and power's apply/expire
 # notification all render correctly). potion 256×256 also live-verified (2026-07-08,
-# canary-potion "Fizz") — BaseLib DOES accept a loose PNG via CustomPackedImagePath (no
+# canary-potion "Fizz") — RitsuLib's PotionAssetProfile accepts a loose PNG (no
 # .tres atlas needed); potion has ONE image texture (no big/), drawn tilted ~45° right.
 # Every normal-event portrait slot is a 3440x1613 loose PNG. The initial slot reaches
 # EventModel.CreateInitialPortrait through CustomEventModel.CustomInitialPortraitPath;
@@ -88,34 +89,25 @@ except ImportError:
 #         scene filling the frame window, not an object on transparency). Overridable
 #         per call with --chroma / --no-chroma.
 # ---------------------------------------------------------------------------
-# NOTE: `card` writes to card_portraits/**big**/<slug>.png — that is the ONLY portrait
-# BaseLib loads (it Harmony-patches the getter to CustomPortraitPath, which the Alchyr
-# template maps to big/). The outer card_portraits/<slug>.png is dead code, so we don't
-# emit it. A normal card is 1000×760 landscape; 606×852 "full art" is Ancient-rarity only
+# NOTE: RitsuLib's `CardAssetProfile.PortraitPath` resolves
+# card_portraits/<slug>.png. A normal card is 1000×760 landscape; 606×852 "full art" is
+# Ancient-rarity only
 # and we don't make Ancient cards (see reference/art-contract.md).
 #
-# relic/power/potion: vanilla STS2 loads these icons from Godot `.tres` sprite-atlases
-# (atlases/relic_atlas.sprites/<id>.tres, power_atlas, relic_outline_atlas, potion_atlas —
-# see RelicModel/PowerModel/PotionModel + CustomPotionModel in the decompile). BUT the icon
-# getters accept a loose PNG too: for relic/power the Alchyr template OVERRIDES the getters
-# to point at loose PNGs under images/relics|powers/ (Exists()+fallback); for potion BaseLib
-# itself patches PotionModel's image getter to CustomPotionModel.CustomPackedImagePath and
-# its docstring says "You may pass the path to a png" — so we hand-add a PotionImagePath
-# helper to the potion base and feed a plain 256×256 PNG, no atlas authoring. A relic also
+# relic/power/potion: RitsuLib's asset profiles accept loose PNGs and retain checked
+# fallbacks. Relic and power use small + big icons; potion uses one 256×256 icon. A relic also
 # has a `<slug>_outline.png` (hover/selection white outline); a missing outline falls back to
 # the template's relic_outline.png (confirmed fine live). power has NO outline; potion has an
-# optional CustomPackedOutlinePath we leave null (same fallback logic).
+# optional PotionAssetProfile.OutlinePath we leave null (same fallback logic).
 #
-# extra_sub_paths: relic AND power are each drawn from TWO loose-PNG getters the Alchyr
-# template overrides (both confirmed live + in the decompile — RelicModel/PowerModel patched
-# by BaseLib to the template's Custom*IconPath):
+# extra_sub_paths: relic AND power each use TWO loose-PNG profile paths:
 #   relic → relics/<slug>.png (relic-bar icon)  +  relics/big/<slug>.png (detail/inspect popup)
 #   power → powers/<slug>.png (combat status icon) + powers/big/<slug>.png (the big
 #           apply/expire NOTIFICATION popup that jumps out for a few seconds)
 # They're separate files (the template ships both <x>.png and big/<x>.png), so writing only
 # the small icon leaves the big popup on the placeholder. We write the same normalized image
-# to both. `card` writes only big/ (the outer bar path is dead code under BaseLib).
-# potion has only ONE image getter (CustomPackedImagePath); the detail/inspect view scales
+# to both. `card` writes only its single RitsuLib portrait path.
+# potion has only ONE image profile path; the detail/inspect view scales
 # that same texture up — there is no separate big/ file — so potion's extra_sub_paths is [].
 # enchantment likewise has ONE icon getter. NCard contexts and the hover tooltip reuse the
 # same EnchantmentModel.Icon texture, so there is no big/ variant.
@@ -127,7 +119,7 @@ except ImportError:
 # don't emit it yet — missing falls back to the template's relic_outline.png, which the user
 # confirmed looks fine. power has no outline. beta icon paths default null — ignore.)
 SPECS: dict[str, dict] = {
-    "card":       {"sub_path": "card_portraits/big",   "extra_sub_paths": [],             "size": (1000, 760), "verified": True,  "fit": "cover",   "chroma": False},
+    "card":       {"sub_path": "card_portraits",       "extra_sub_paths": [],             "size": (1000, 760), "verified": True,  "fit": "cover",   "chroma": False},
     "relic":      {"sub_path": "relics",               "extra_sub_paths": ["relics/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "power":      {"sub_path": "powers",               "extra_sub_paths": ["powers/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "potion":     {"sub_path": "potions",              "extra_sub_paths": [],             "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},

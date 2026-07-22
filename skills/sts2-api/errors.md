@@ -11,6 +11,10 @@
 
 ## Build-time (dotnet build / analyzer)
 
+> The PckPacker and STS001-STS004 entries in this section are pre-migration comparison
+> evidence. The active RitsuLib scaffold uses `build.py`, the pinned compat package, and
+> the current surface recipes; it does not reference the historical analyzer.
+
 ### No `.pck` is produced; only `.dll` copied to `mods/`
 - **Signature:** build succeeds but `mods/<ModName>/` has `.dll` + `.json` but no
   `.pck`; localization/images don't show in-game.
@@ -42,10 +46,10 @@
   `CS0246: The type or namespace name '<X>' could not be found`,
   `CS0117: '<Type>' does not contain a definition for '<member>'`, or
   `CS1061: '<Type>' does not contain a definition for '<method>'` — on an STS2 /
-  BaseLib symbol you wrote (a Cmd, model, enum, or hook).
+  selected-framework symbol you wrote (a Cmd, model, enum, or hook).
 - **Cause:** the API name was **guessed from memory**, not confirmed. STS2's Cmd
   and model names don't always match intuition (e.g. energy is `PlayerCmd.GainEnergy`,
-  not `EnergyCmd.Add`), and BaseLib wraps some of them.
+  not `EnergyCmd.Add`), and framework templates may wrap some of them.
 - **Fix:** do **not** guess a second name — that's how the repair loop burns its
   attempts. Ground the real symbol **in the pack**: query the **sts2-api** skill
   ("commands for <effect>" / "<Type>: real member for <X>"), check `recipes/relic.md`'s
@@ -105,7 +109,20 @@
   character's final `Id.Entry`, then rebuild. See `recipes/character.md` and
   `reference/build-constraints.md` section 2a.
 
-## Registration / load-time (godot.log)
+## RitsuLib content registration (godot.log)
+
+### R3 model does not appear in ModelDb / its registry
+- **Signature:** no `[<ModId>] [Content] Registered <surface>:` line; the self-test cannot
+  find the model by CLR type.
+- **Cause:** the model was not added to the scaffold's content pack, `.Apply()` was omitted,
+  or registration ran after RitsuLib froze content discovery.
+- **Fix:** add exactly one matching `.Card`, `.Relic`, `.Potion`, `.Power`,
+  `.Enchantment`, or `.Orb` step to `MainFile.Content.cs`; keywords use
+  `.CardKeywordOwnedByLocNamespace(...)`. Call `.Apply()` once during the Mod initializer
+  and remove any second registration path. Pool generics must derive from the matching
+  game pool base.
+
+## Historical BaseLib registration / load-time (comparison only)
 
 > These are the load-time twins of build §1. A card/potion/relic model
 > **self-registers in its constructor** (`CustomContentDictionary.AddModel(GetType())`),
@@ -145,28 +162,25 @@
 ## Localization
 
 ### Relic shows blank / raw-key title or description in-game
-- **Signature:** hover shows the loc key literally (e.g. `GAMBLERSCOIN-GAMBLERS_COIN.title`)
+- **Signature:** hover shows the loc key literally (e.g. `GAMBLERS_COIN_RELIC_GAMBLERS_COIN.title`)
   or empty text instead of the intended string.
 - **Cause:** the `relics.json` key doesn't match the relic's actual `Id.Entry`.
   Two common mistakes: (a) using nested JSON `{"MyRelic": {"title": ...}}` — the
-  `relics` LocTable is a **flat** `Dictionary<string,string>`; (b) forgetting the
-  BaseLib namespace prefix, or mis-deriving the CamelCase→UPPER_SNAKE slug.
-- **Fix:** keys must be flat and exactly `<PREFIX>-<SLUG>.title` where
-  `SLUG = Slugify(ClassName)` (CamelCase split + UPPERCASE) and
-  `PREFIX = <first-namespace-segment>.ToUpperInvariant()`. Worked example: class
-  `GamblersCoin` in namespace `GamblersCoin.*` → `GAMBLERSCOIN-GAMBLERS_COIN.title`.
-  See recipes/relic.md "ID / loc-key derivation rule". To pin an exact id, use
-  `[CustomID("...")]`.
+  `relics` LocTable is a flat dictionary; (b) deriving the historical hyphenated id
+  instead of RitsuLib's normalized public entry.
+- **Fix:** use the exact `MOD_RELIC_TYPENAME` reported by RitsuLib registration. Example:
+  mod id `GamblersCoin`, class `GamblersCoin` becomes
+  `GAMBLERS_COIN_RELIC_GAMBLERS_COIN.title`. Preserve a published entry with
+  `ModelPublicEntryOptions.FromStem(...)` in the content-pack registration.
 
 ### Relic icon is the generic placeholder, not the intended art
 - **Signature:** `godot.log` line `Could not find relic image path: .../<name>.png`;
   relic shows the fallback `relic.png`.
-- **Cause:** the icon file name must be the **prefix-stripped, lowercased** entry
-  (`RemovePrefix().ToLowerInvariant()`), not the class name.
-- **Fix:** place art at `images/relics/<slug>.png` where `<slug>` = the entry after
-  removing the `PREFIX-` (e.g. `gamblers_coin.png`), plus `<slug>_outline.png` and
-  `big/<slug>.png`. During early milestones, copying the template placeholder to
-  that exact name silences the warning.
+- **Cause:** `RelicAssetProfile` points at a missing/wrong `res://<ModName>/...` path, or
+  no custom profile was selected.
+- **Fix:** for custom art, use explicit checked paths for normal, outline, and big icons.
+  For placeholder mode, leave profile fields empty and retain the template/base-game
+  fallback; do not invent an id-derived path in the model.
 
 ## Behavior (tier-2 / effect logic)
 
@@ -323,17 +337,17 @@
   otherwise return `null` so the explicit scene fallback loads. Do not point
   `CustomVisualPath` at the PNG. See `recipes/monster.md`.
 
-### Custom orb channels but logs missing `debug_audio/<custom-id>_channel.mp3`
+### Custom Orb channels but logs missing `debug_audio/<custom-id>_channel.mp3`
 - **Signature:** channeling succeeds, but strict verification finds `No loader found for
   resource: res://debug_audio/<custom-id>_channel.mp3` from
   `OrbModel.PlayChannelSfx -> OrbCmd.Channel`.
-- **Cause:** a `CustomOrbModel` left `CustomChannelSfx` null/empty. Channeling always plays
-  SFX; the base class then probes a convention-named debug file that a packaged mod does
-  not ship.
-- **Fix:** set `CustomChannelSfx` to a verified vanilla fallback event alongside the
-  explicit vanilla `CustomSpritePath`. The supported Frost fallback is
-  `event:/sfx/characters/defect/defect_frost_channel`. Also existence-check the custom
-  100x100 `CustomIconPath` and return the Frost icon when absent. See `recipes/orb.md`.
+- **Cause:** a `ModOrbTemplate` subclass did not override the protected `ChannelSfx`.
+  Channeling always plays SFX; the inherited game path probes a convention-named debug
+  file that a packaged mod does not ship.
+- **Fix:** override `ChannelSfx` with the verified vanilla Frost event
+  `event:/sfx/characters/defect/defect_frost_channel` and keep
+  `ContentAssetProfiles.Orb("frost_orb")` as the checked icon/combat-body fallback. A
+  custom 100x100 icon may replace only the icon profile. See `recipes/orb.md`.
 
 ### A resumed Event starts a second special combat and `RecordInitialState` fails
 - **Signature:** `InvalidOperationException: RecordInitialState must be called first`

@@ -207,7 +207,7 @@ class AcquireSpriteTests(unittest.TestCase):
             "--yes",
         )
         self.assertEqual(0, result.returncode, result.stderr)
-        destination = self.out / "card_portraits" / "big" / "paid-art.png"
+        destination = self.out / "card_portraits" / "paid-art.png"
         with Image.open(destination) as image:
             self.assertEqual((1000, 760), image.size)
         calls = self.record.read_text(encoding="utf-8")

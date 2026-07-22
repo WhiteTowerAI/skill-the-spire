@@ -1,5 +1,9 @@
 # Repair — read the real error, fix one thing, re-verify
 
+> **RitsuLib migration boundary:** the R2 scaffold/build profile is active. Content-level
+> signatures below remain regression input until their R3-R5 adapter slice is migrated.
+> Never repair a new project by restoring BaseLib or a historical template workaround.
+
 Goal: a **bounded** sub-loop shared by `build.md` (5), `verify.md` tier-1 (6), and
 the tier-2 check (7). When a stage fails, come here, diagnose from the **real
 error** (never a guess), apply **one** fix, re-run **only the failed stage**, and
@@ -51,7 +55,10 @@ stage failed
 
 Read the artifact, not your memory of what you wrote.
 
-- **build (R1):** the diagnostic lines `build.py` prints on failure, and the full
+- **build:** first distinguish a `RitsuLib profile FAILED`/`RitsuLib restore FAILED`
+  contract error from compiler output. Profile failures are fixed in the package,
+  manifest, host, or runtime variant selected by `scaffold.md`; never enter a C# repair
+  loop for them. For compiler failures, use the diagnostic lines `build.py` prints and the full
   `<ProjectDir>/.build.log` if you need context. Key on the **compiler code +
   symbol** (`CS0246: type 'PlayerCmd' not found`), not the prose.
 - **verify tier-1 (load):** `grep_log.py`'s verdict plus the `godot.log` lines it
@@ -81,7 +88,7 @@ Read the artifact, not your memory of what you wrote.
   threshold passes but second-combat progress resets means `[SavedProperty]` is missing
   or a combat-end hook cleared it; a combat-local effect leaks into combat 2 when code
   duplicated the turn count instead of reading `PlayerCombatState.TurnNumber`; a failed
-  save round trip means the property type/holder or BaseLib cache injection is unsupported.
+  save round trip means the selected adapter's property type/holder or run-save bridge is unsupported.
   Fix that boundary, not the effect's numeric Cmd.
 
 ## Forming a hypothesis on a miss (no errors.md entry yet)

@@ -22,6 +22,13 @@ Do not require one canary project per capability.
 | `MapNode` | Event Cmd/page/selection/reward outcomes, resumable and terminal special combat, normal initial/page portraits, bounded portrait-halo VFX, bounded native rich text, enabled typed option tips, normal relic-backed text/metadata, exact-lethal HP/Max HP warnings, native Card/relic acquisition presentation, `weak_short` screen shake, curated `trial_noble` VFX, bounded Quest Card -> forced Event follow-up, and cleanup/fallback presentation |
 | `RunStart` / Character | Wayfinder selection/background, pools/starters, resource/UI, semantic route buffer, dynamic output, static combat/rest/merchant bodies, and five-layer full energy; locked/map and Ancient/Architect remain unverified |
 
+RitsuLib migration checkpoint (2026-07-22): the `CombatPlayer` R3 proof rebuilt the Card,
+Relic, Potion, Power, Keyword, Enchantment, and Orb functional contracts with only
+RitsuLib `0.4.62` on stable STS2 `0.107.1`. Every surface reached strict Tier 2 plus
+`selftest done` with no fresh error. Monster/Encounter, Event, and Character rows still use
+their M0-M6 regression evidence until R4 reruns each host; do not describe those rows as
+RitsuLib proof yet.
+
 Wayfinder supersedes the isolated Foundation/resource/kernel composition path for current
 character regression. The retired real-card `CustomPile` canary remains historical evidence
 only; it does not represent player-facing support.

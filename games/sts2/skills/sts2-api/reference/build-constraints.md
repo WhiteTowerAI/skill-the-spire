@@ -1,5 +1,25 @@
 # build-constraints.md — what the toolchain enforces at BUILD & LOAD time
 
+> **RitsuLib migration note:** sections 1-3 below record the historical analyzer/BaseLib
+> constraints used for M0-M6 regression comparison. They are not the active R3
+> generation contract. The pinned RitsuLib scaffold does not reference that analyzer or
+> package; use the current constraints immediately below and the selected surface recipe.
+
+## 0. Current RitsuLib R3 constraints
+
+- `tools/scaffold.py` pins `STS2.RitsuLib.Compat.0.107.1` `0.4.62`, exposes one partial
+  content hook, and emits no framework DLL.
+- R3 models extend their matching `Mod*Template` and register exactly once through the
+  content-pack Card/Relic/Potion/Power/Enchantment/Orb route; keywords use the public
+  keyword registration route. One `.Apply()` closes the pack.
+- The C# generic constraints enforce matching Card/Relic/Potion pool families.
+  Do not add a historical pool attribute.
+- Localization uses the exact flat `MOD_CATEGORY_TYPENAME` public entry printed by the
+  RitsuLib registration log. The hosted proof must resolve the real title/description
+  consumer; a successful build is insufficient.
+- Custom art uses explicit per-surface asset profiles. Empty fields retain the checked
+  template/base-game fallback.
+
 > **The third source of truth.** spire-codex answers "what content exists"; the
 > decompile answers "how to model it in C#"; **this page answers "what the toolchain
 > refuses to build or load."** These are stricter than runtime — an element can be

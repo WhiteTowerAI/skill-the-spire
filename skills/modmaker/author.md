@@ -1,8 +1,20 @@
 # Author — write the element, localization, and marker
 
-Goal: fill in ONLY the effect logic on top of the recipe skeleton, add the
-localization JSON, and inject the self-test marker. Everything structural
-(class skeleton, `[Pool]`, image paths) comes from the recipe — don't reinvent it.
+Goal: translate the accepted framework-neutral SPEC through the selected adapter,
+fill only the effect logic, add localization, and inject the shared diagnostics.
+Registration, model templates, localization-key derivation, and asset profiles come
+from the adapter rather than the user-facing SPEC.
+
+Read `semantic-contract.md` first, then read the selected framework reference
+(`sts2-api/reference/ritsulib-adapter.md` for the current target). RitsuLib-specific
+snippets live in that reference and the surface recipe it routes to; do not copy a
+second framework branch into this file.
+
+> **Migration guard (R3):** the pinned RitsuLib scaffold/build path is active. Card,
+> Relic, Potion, Power, Keyword, Enchantment, and Orb authoring use their migrated recipes.
+> Monster/Encounter, Event, Character, state, resource, and buffer notes remain regression
+> input until their R4/R5 recipe is explicitly ported; they do not authorize a
+> historical-framework Mod.
 
 ## 0. Read the quirks and the recipe first
 
@@ -18,9 +30,10 @@ localization JSON, and inject the self-test marker. Everything structural
   `recipes/keyword.md`: emit the generated enum field and `card_keywords.json`, attach
   it to each host Card, and implement the named rule separately from its tooltip. If SPEC
   declares a card enchantment, read `recipes/enchantment.md`, author
-  `CustomEnchantmentModel`, and attach it through `CardCmd.Enchant<T>`; never substitute
-  the unrelated run-level `CustomModifierModel`. If SPEC declares a custom orb, read
-  `recipes/orb.md`, author `CustomOrbModel`, and make the real host channel it via
+  `ModEnchantmentTemplate`, register it through `.Enchantment<T>()`, and attach it through
+  `CardCmd.Enchant<T>`; never substitute an unrelated run-level Modifier. If SPEC declares
+  a custom orb, read `recipes/orb.md`, author `ModOrbTemplate`, register it through
+  `.Orb<T>()`, and make the real host channel it via
   `OrbCmd.Channel<T>`; preserve separate passive and evoke observations, and keep the
   recipe's checked icon plus explicit Spine-scene/channel-SFX fallbacks. For an **enemy
   encounter** (`element: enemy encounter`), read `recipes/monster.md` and author BOTH the
@@ -54,7 +67,7 @@ localization JSON, and inject the self-test marker. Everything structural
   `reference/ordered-card-buffer.md`.
   Read `reference/capability-kernel.md` when the selected resource UI needs its exact
   combat-UI adapter or static merchant needs its exact `_Ready()` prefix. Prefer
-  public/BaseLib, emit only selected self-contained
+  the game or selected framework's public API, and emit only selected self-contained
   modules, and do not generalize the adapter into alternative-energy patches, visible
   zone UI, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
@@ -73,7 +86,8 @@ localization JSON, and inject the self-test marker. Everything structural
 **Relic** — add `<ModName>Code/Relics/<RelicName>.cs`. Use the recipe skeleton, then:
 
 - Set `Rarity` from SPEC.
-- Keep `[Pool(typeof(<Pool>))]` — **omitting it throws at registration** (errors.md).
+- Extend `ModRelicTemplate` and add exactly one `.Relic<TPool,TRelic>()` step to
+  `MainFile.Content.cs`. The content-pack pool generic is the availability contract.
 - Override the hook matching SPEC's trigger (recipe's "Trigger hooks" table). For
   combat-start: `AfterSideTurnStart` + `participants.Contains(Owner.Creature)` +
   `Owner.PlayerCombatState!.TurnNumber <= 1` guards.
@@ -84,40 +98,64 @@ localization JSON, and inject the self-test marker. Everything structural
   local fixed/periodic turns read `PlayerCombatState.TurnNumber`; turn/combat fields reset
   only at the SPEC boundary. Any visible setter calls `InvokeDisplayAmountChanged()`.
 
-**Potion** — the Alchyr template does **not** scaffold a `Potions/` folder or base
-class, so first create `<ModName>Code/Potions/` and the `<ModName>Potion` base class
-(recipe "Scaffold difference" section). Then add `<ModName>Code/Potions/<PotionName>.cs`:
+**Potion** — add `<ModName>Code/Potions/<PotionName>.cs` and extend
+`ModPotionTemplate`:
 
 - Override the three abstract props: `Rarity`, `Usage` (`CombatOnly`/`AnyTime`),
   `TargetType` (self-buff = `AnyPlayer`, not `Self`; one enemy = `AnyEnemy`).
-- Keep `[Pool(typeof(SharedPotionPool))]` — required, same as relics.
+- Add exactly one `.Potion<SharedPotionPool,TPotion>()` step to `MainFile.Content.cs`.
+  Use another pool only when SPEC makes the Potion character-specific; do not add a pool
+  attribute or a per-Mod Potion base.
 - Fill **only** the `OnUse` effect block with confirmed Cmds (`CreatureCmd.Damage/
   GainBlock/Heal`, `PowerCmd.Apply<T>`, `PlayerCmd.*`), using `ValueProp.Unpowered`
   for damage/block. `await` every Cmd; call `AssertValidForTargetedPotion(target)` first.
+- Put an optional loose PNG in `PotionAssetProfile`; omit the override for the checked
+  placeholder fallback.
 
-**Card** — the template **does** scaffold `Cards/` and the `<ModName>Card` base class,
-so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
+**Card** — add `<ModName>Code/Cards/<CardName>.cs` and extend `ModCardTemplate`:
 
 - Pass `cost, CardType, CardRarity, TargetType` to `base(...)`. A card that targets the
   player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions).
-- Keep `[Pool(typeof(ColorlessCardPool))]` — required, same as relics/potions.
+- Add exactly one `.Card<TPool,TCard>()` step to `MainFile.Content.cs`; use
+  `ColorlessCardPool` unless SPEC selects a character pool. Do not add a pool attribute.
 - Declare scaling numbers in `CanonicalVars` (`DamageVar`/`BlockVar`/`PowerVar<T>`),
   never literals; bump them in `OnUpgrade()`.
 - Fill **only** the `OnPlay` effect block with the recipe's confirmed Cmds
   (`DamageCmd.Attack(...).FromCard(this).Targeting(...).Execute(...)`, `CreatureCmd.GainBlock`
   with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
   targeted card. `await` every Cmd. If a custom power is needed, author it first
-  (`recipes/power.md`) — no `[Pool]` on the power.
+  (`recipes/power.md`) and register it once through `.Power<T>()`.
 
-**Custom orb** - add `<ModName>Code/Orbs/<OrbName>.cs` from `recipes/orb.md`:
+**Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend
+`ModPowerTemplate`:
 
-- Extend `CustomOrbModel`; no `[Pool]`. Implement channel, passive, and evoke as separate
-  behavior contracts through a real Card/relic/power host.
-- Keep the existence-checked `CustomIconPath`: generated art is one 100x100 icon shared by
-  the smart tooltip and trigger flash. Its missing-file branch returns the Frost icon.
-- Keep the explicit Frost `CustomSpritePath` and `CustomChannelSfx`. The icon is not the
-  persistent combat body; a custom Spine scene is later animation work, and null fallbacks
-  emit missing custom-id scene/audio errors.
+- Add exactly one `.Power<TPower>()` step to `MainFile.Content.cs`; do not rely on
+  reflection discovery or add a pool attribute.
+- Declare `Type`, `StackType`, and the SPEC amount domain. Clamp caller-owned changes and
+  use `PowerCmd.ModifyAmount` to consume an existing nonnegative Counter.
+- Emit `.title`, `.description`, and `.smartDescription` under the exact normalized public
+  entry. Use `PowerAssetProfile` only for checked icon paths.
+
+**Custom keyword** — register it once with
+`.CardKeywordOwnedByLocNamespace(...)`, keep `iconPath: null`, and attach the minted native
+`CardKeyword` through `CanonicalKeywords` or the runtime add/remove helpers. The keyword
+owns vocabulary and tooltip text only; implement its named behavior in the host.
+
+**Card enchantment** — extend `ModEnchantmentTemplate`, register it once through
+`.Enchantment<T>()`, and attach it with `CardCmd.Enchant<T>`. Keep amount, host restriction,
+and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
+`EnchantmentAssetProfile`; placeholder mode omits it.
+
+**Custom orb** - add `<ModName>Code/Orbs/<OrbName>.cs` from `recipes/orb.md` and extend
+`ModOrbTemplate`:
+
+- Add exactly one `.Orb<TOrb>()` step to `MainFile.Content.cs`. Implement channel,
+  passive, and evoke as separate behavior contracts through a real Card/relic/power host.
+- Generated art is one 100x100 icon shared by the smart tooltip and trigger flash. Use the
+  checked `OrbAssetProfile` Frost fallback when it is absent.
+- Override the protected `ChannelSfx` with the verified Frost event. The icon is not the
+  persistent combat body; `ContentAssetProfiles.Orb("frost_orb")` retains the Frost Spine
+  scene until custom animation is separately proven.
 
 **Enemy encounter** — author two classes as one slice (see `recipes/monster.md`), no
 `[Pool]` on either:
@@ -205,8 +243,8 @@ so extend it directly (unlike potions). Add `<ModName>Code/Cards/<CardName>.cs`:
 
 - Fill the `PlaceholderCharacterModel` subclass with exact `StartingHp`, Basic-card
   `StartingDeck`, Starter `StartingRelics`, and `ModelDb.*Pool<T>()` references.
-- Do not call `AddCharacter`, instantiate the character, or add manual registration;
-  the BaseLib 3.3.5 `CustomCharacterModel` constructor owns registration.
+- Do not instantiate the character or add a second registration path; the selected
+  adapter's registration plan owns exactly-once registration.
 - Author concrete card/relic/potion members through the existing recipes while retaining
   the character template's inherited `[Pool(typeof(<ModName>*Pool))]` attributes.
 - If Shop/static merchant is selected, author enough unlocked non-Basic cards to provide
@@ -243,13 +281,17 @@ Use the exact copyable sequence in `recipes/power.md`; do not treat `PowerVar<T>
 
 ## 2. Inject the load and diagnostic markers
 
-The Alchyr template's `MainFile.cs` does NOT log anything by
-default — you must add the **load** marker yourself, or tier-1 verify silently
-finds nothing. In `MainFile.Initialize()`, right after `harmony.PatchAll();`:
+The selected scaffold must emit the framework diagnostic and exact **load** marker, or
+tier-1 verify silently finds nothing. Use the shared envelope from
+`semantic-contract.md`:
 
 ```csharp
+Logger.Info("[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
 Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
+
+The adapter must derive these values from the selected compat profile. Do not hardcode
+a beta-facing fallback or emit `status=resolved` before the host/compat check succeeds.
 
 Then log a **diagnostic** marker inside the trigger showing what code ran
 (a relic's combat-start hook, a potion's `OnUse`, a card's `OnPlay`, an enemy's move body,
@@ -341,8 +383,9 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    mutating the property directly to simulate carry-over.
 3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
    post-state, then call the shared `StateProof(...)`. Its structured
-   `[T2MOD-SELFTEST] <ModName> state proof:` line must include expected and observed values;
-   a broad `played/fired/used` marker never qualifies.
+   `[T2MOD-SELFTEST] <ModName> state proof:` line must include the selected framework,
+   framework version, host, compat target, expected value, and observed value. A broad
+   `played/fired/used` marker never qualifies.
 4. Add the **gated arm line** to `MainFile.Initialize()`, right after the load marker:
 
 ```csharp
@@ -367,8 +410,8 @@ prompts stay plain.
 For a **character**, use `CharacterLoc` for the 14 character values and
 `ancients.json` for the four exact `THE_ARCHITECT.talk.<CHAR_ID>` keys in
 `recipes/character.md`. For an **event**, use the recipe's in-code `EventLoc` / `EventPageLoc` /
-`EventOptionLoc` inside the event class. Do not also add `events.json` for the same keys;
-BaseLib prefixes the relative nested keys with the real `Id.Entry` at `ModelDb.Init`.
+  `EventOptionLoc` inside the event class. Do not also add `events.json` for the same keys;
+the selected adapter owns the final Event id and nested localization-key derivation.
 
 For the JSON-backed types, add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
 relic, **`potions.json`** for a potion, **`cards.json`** for a card, **`powers.json`**
@@ -439,23 +482,21 @@ eight promoted static profiles; locked selection and map marker remain explicit 
   the big apply/expire notification). A **relic** also has an optional `<slug>_outline.png`
   hover outline — we don't generate it; a missing one harmlessly falls back to the
   template's default outline (looks fine). **power** has no outline.
-  **Prereq:** the relic/power subclass must extend the template base (`<ModName>Relic` /
-  `<ModName>Power`), NOT `CustomRelicModel`/`CustomPowerModel` directly — the template base
-  is what wires the loose-PNG icon paths, so a direct subclass shows the default icon even
-  with the PNG present (see `recipes/power.md`).
+  **Prereq:** the relic/power subclass must extend `ModRelicTemplate` / `ModPowerTemplate`
+  and expose the checked `RelicAssetProfile` / `PowerAssetProfile`. Direct game-model
+  subclasses bypass the adapter's asset fallback (see the surface recipes).
 - **`--spec potion`** — a **256×256** cut-out icon, `fit: contain`, magenta chroma-key ON
   (prompt asks for a solid flat `#FF00FF` background), a loose PNG like relic/power — **not**
   a `.tres` atlas. **Live-verified in-game.** Writes **ONE file**, `potions/<slug>.png` (the
   bar icon, hover tooltip, and use VFX all reuse that single texture — no `big/`). Art
   direction: draw the bottle **tilted ~45° leaning right** (STS2's potion display angle; see
-  `art-contract.md`). **Prereq:** the potion subclass must extend the template base
-  (`<ModName>Potion`), which the template does NOT scaffold — add it + a `PotionImagePath`
-  helper per `recipes/potion.md`; a direct `CustomPotionModel` subclass shows the default icon.
+  `art-contract.md`). **Prereq:** the potion subclass must extend `ModPotionTemplate` and
+  expose the checked `PotionAssetProfile`; omit that override in placeholder mode.
 - **`--spec enchantment`** — one **64×64** cut-out icon, `fit: contain`, magenta
   chroma-key ON, written to `enchantments/<slug>.png`. **Live-verified in the real hand-card
   tab and its hover tooltip.** Both consumers reuse the same `EnchantmentModel.Icon`; there
-  is no `big/` variant. The subclass must use the recipe's existence-checked
-  `CustomIconPath` so placeholder mode retains `MissingIconPath`.
+  is no `big/` variant. The subclass must use the recipe's checked
+  `EnchantmentAssetProfile`; omit it so placeholder mode retains the fallback.
 - **`--spec orb`** - one **100x100** cut-out icon, `fit: contain`, magenta chroma-key ON,
   written to `orbs/<slug>.png`. **Live-verified in the real smart tooltip and trigger
   flash.** This does not generate the persistent combat Spine scene; retain the recipe's

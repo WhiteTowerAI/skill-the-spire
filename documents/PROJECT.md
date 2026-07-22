@@ -9,6 +9,9 @@
 > Status: living brief; core decisions remain locked. The concrete skill/package shape
 > and one-command installation described below shipped in M5. Current execution status
 > lives in `../AGENTS.md` and `IMPLEMENTATION_PLAN.md`.
+> RitsuLib migration checkpoint (2026-07-22): R0-R3 are complete against stable STS2
+> `0.107.1` and RitsuLib `0.4.62`; R4 world content and Character parity is next. M7 remains
+> deferred until migration parity and the first RitsuLib expansion slice close.
 >
 > Decisions locked (2026-07-01):
 > - **First target game:** Slay the Spire 2.
@@ -155,9 +158,10 @@ The skill is responsible for the entire pipeline (per §6):
 - Interpreting the natural-language request into a concrete mod spec.
 - Scaffolding the mod in the game's correct format / structure.
 - Generating the code, config, and manifest to the game's conventions.
-- Preserving unusual mechanic ideas and compiling them through BaseLib-first capability
-  composition plus maintainer-grounded Harmony/Publicizer adapters when no public seam
-  exists. The user never configures patches, local game references, or decompilation.
+- Preserving unusual mechanic ideas and compiling them through the RitsuLib-first capability
+  composition planned in `RITSULIB_MIGRATION_SPEC.md`, plus maintainer-grounded
+  Harmony/Publicizer adapters when no public seam exists. The user never configures patches,
+  local game references, or decompilation.
 - Providing assets via the **art pipeline** (see §7.1): the user approves placeholder
   vs. custom art and the acquisition route; open-mod owns deterministic STS2 processing.
 - Packaging the mod and placing it where the game loads mods from.
@@ -182,8 +186,9 @@ acquisition presentation, the preference-respecting `weak_short` screen shake, a
 curated built-in `trial_noble` Event VFX. The final Character pass also live-closed eight
 static profiles and the fixed icon+text mechanic UI. Background/rest/merchant raw scenes
 are packed by open-mod's bundled Python fallback without Godot or MegaDot; full energy uses
-BaseLib's five-layer counter. Ancient name-banner/Architect integration is researched but
-still lacks a headed custom-Character proof. M7 proactive interview work is now direct next.
+BaseLib's five-layer counter in the completed M6 evidence. Ancient name-banner/Architect
+integration is researched but still lacks a headed custom-Character proof. The direct next
+project is the RitsuLib migration; M7 follows its parity gate and first expansion slice.
 
 Whenever a mod needs new sprites (relic icon, card portrait, etc.), the skill must keep
 the art decision explicit and the result source-independent:

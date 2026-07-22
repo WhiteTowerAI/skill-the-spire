@@ -1,34 +1,43 @@
-# Known Quirks — STS2 / BaseLib gotchas
+# Known Quirks — STS2 / RitsuLib gotchas
+
+> **Migration status (R3):** Card, Relic, Potion, Power, Keyword, Enchantment, and Orb rules
+> below are active for the pinned RitsuLib target. Later surfaces remain governed by the
+> adapter migration gate.
 
 Non-obvious behaviors that silently break STS2 mods. Read before writing any C#.
 These pair with the sts2-api `errors.md` (error signature → fix); this file is the
-"know it up front" version. Confirmed against decompiled `sts2.dll` + BaseLib 3.3.2
-during M1.
+"know it up front" version. The R3 rules were confirmed against STS2 `0.107.1`,
+RitsuLib `0.4.62`, and the hosted R3 proof.
 
 ## Registration
 
-- **Custom characters register in the BaseLib constructor.** In BaseLib 3.3.5,
-  `CustomCharacterModel()` calls `CustomContentDictionary.AddCharacter(this)`.
-  A class inheriting `PlaceholderCharacterModel` must not call `AddCharacter` manually.
-- **`[Pool(...)]` is mandatory** on every `CustomRelicModel` subclass. BaseLib
-  auto-registers custom models in their ctor and **throws at startup** without a
-  pool attribute. `using BaseLib.Utils;` for `[Pool]`,
-  `using MegaCrit.Sts2.Core.Models.RelicPools;` for the pool types
-  (`SharedRelicPool` = colorless default).
+- **R3 content registration is explicit and exactly once.** Add the matching `.Card`,
+  `.Relic`, `.Potion`, `.Power`, `.Enchantment`, or `.Orb` step to the scaffold's partial
+  content hook; keywords use `.CardKeywordOwnedByLocNamespace(...)`. Call `.Apply()` once
+  for the pack.
+- **Do not add `[Pool(...)]`.** The content-pack pool generic is the only availability
+  declaration. A second attribute/registration path risks duplicate ownership and ids.
+- `Apply()` queues registration for RitsuLib's discovery window. It is normal for the
+  actual `ModelDb` registration log to appear after the Mod initializer returns.
 
 ## Localization key derivation (the #1 silent failure)
 
-- The relic's real `Id.Entry` is **`<PREFIX>-<SLUG>`**, and loc keys / icon names
-  derive from it:
-  - `SLUG = Slugify(ClassName)` = CamelCase split + UPPER_SNAKE. `GamblersCoin` → `GAMBLERS_COIN`.
-  - `PREFIX = <first namespace segment>.ToUpperInvariant()`. Namespace `GamblersCoin.*` → `GAMBLERSCOIN`.
-  - Final: `GAMBLERSCOIN-GAMBLERS_COIN`.
-- `relics.json` keys are **flat strings** (`"<PREFIX>-<SLUG>.title"`), NOT nested
-  JSON. The `relics` LocTable is a flat `Dictionary<string,string>`.
+- R3 model `Id.Entry` is `MOD_CATEGORY_TYPENAME`, with each segment normalized to
+  uppercase snake case. `RitsuCardProof` + `Jolt` becomes
+  `RITSU_CARD_PROOF_CARD_JOLT`.
+- Surface localization keys are flat strings using that exact public entry. Power and Orb
+  CLR suffixes remain part of the type name; keyword entries use `MOD_KEYWORD_STEM`.
 - Get this wrong → the relic shows the raw key or blank text, with no error.
-- Pin an exact id with `[CustomID("EXACT-ID")]` if you must override the derivation.
-- Icon file = prefix-stripped, lowercased slug → `images/relics/<slug>.png`
-  (+ `_outline`, + `big/`); falls back to `relic.png` if missing.
+- Preserve an already-published id with `ModelPublicEntryOptions.FromStem(...)`; do not
+  create another naming system.
+- Custom art uses the matching explicit per-surface `*AssetProfile` resource paths.
+  Empty fields retain the checked template/base-game fallback.
+
+## Orb fallback
+
+- A custom Orb icon is not its combat body. `ContentAssetProfiles.Orb("frost_orb")`
+  preserves the Frost icon/Spine fallback, and the protected `ChannelSfx` must name the
+  verified Frost event until a custom scene/audio contract is separately proven.
 
 ## Combat hooks
 
@@ -57,9 +66,9 @@ during M1.
 
 ## Build / toolchain
 
-- **PckPacker ships commented out** in the template csproj. Uncomment it or you get
-  no `.pck` — and localization/images won't appear in-game. No MegaDot/Godot install is
-  needed: `build.py` repacks raw `.tscn` automatically when PckPacker skips them.
+- `build.py` packs the `<ModName>/` resource tree without a framework-specific pack
+  target. Missing localization or art usually means the files are outside that tree or
+  the public-entry key/path is wrong.
 - If passing MSBuild props on a `publish` command, use `--property:Name=Value`, not
   `/p:Name=Value` (the latter gets mangled by shell quoting → MSB1008). The normal
   `dotnet build -c Release` path needs no props.
