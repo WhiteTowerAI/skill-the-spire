@@ -93,5 +93,6 @@ The current product supports the surfaces in
 editing, arbitrary patching, retained-card zones, alternative Energy, multiplayer UI,
 production Character motion/audio, arbitrary Event layouts, or Workshop publishing.
 
-The next decision point is the lead's clean-workspace Codex acceptance. User feedback, not
-an automatic milestone transition, determines what follows.
+The next named content-quality milestone is M6.5 Character art and presentation, as scoped
+in `documents/IMPLEMENTATION_PLAN.md`. User feedback and explicit lead decisions may add
+later optimization work; no automatic milestone transition follows from M6.5.

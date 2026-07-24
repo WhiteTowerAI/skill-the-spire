@@ -24,9 +24,10 @@ and maintainer validation. The lead's subsequent clean-workspace Codex test prod
 working in-game Mod and passed external acceptance. The BaseLib-to-RitsuLib migration is
 complete at the supported boundary.
 
-Do not reopen migration proof projects, start M7, or open an expansion track unless the
-lead gives a later instruction. The next work is bug fixing and content-quality
-improvement from user-test feedback. Do not prepare or claim a GitHub release yet.
+Do not reopen migration proof projects or start M7. The lead has approved M6.5 Character
+content-quality work in `documents/IMPLEMENTATION_PLAN.md`; execute only its currently
+listed packages and keep unproved surfaces unsupported. Other expansion tracks still need
+a later lead instruction. Do not prepare or claim a GitHub release yet.
 
 ## Dependency Contract
 

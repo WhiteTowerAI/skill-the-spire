@@ -60,12 +60,64 @@ result is recorded.
 
 ## Current Work
 
-Triage and fix bugs found through real user testing, then improve the clarity and quality
-of generated content. Do not prepare a GitHub release until the lead explicitly decides
-that stabilization is sufficient.
+Triage and fix bugs found through real user testing while executing the lead-approved
+M6.5 Character content-quality milestone below. Do not prepare a GitHub release until the
+lead explicitly decides that stabilization is sufficient.
 
 The old plan's first recommended RitsuLib expansion slice was promotion of the Scry helper
 into the documented Card pipeline; R6 absorbed and completed that work. It is not a
 remaining migration gate. Do not automatically start M7, another expansion slice,
-animation, materials, multiplayer presentation, or audio. A later instruction must choose
-that scope after stabilization.
+multiplayer presentation, audio, or animation/material work outside the bounded M6.5
+packages. M6.5's non-Spine cues, pool frame material, and parameterized trail do not
+authorize broader production animation or custom-material work.
+
+## M6.5 - Character Content Quality
+
+M6.5 is the next approved content-quality milestone. It improves the existing RitsuLib-only
+Character pipeline; it does not reopen M6 migration work, revive R7, or imply that any item
+below is already supported. Promote each surface only after its own real consumer proof.
+
+Execute these work packages in order:
+
+1. **CharacterArtBundle and identity reference chain.** Define one structured bundle for
+   every Character art slot, including required/optional status, output path, dimensions,
+   alpha policy, fallback, and consumer. Establish one approved canonical identity image
+   or character sheet, then pass it as an identity reference to later portrait/body/icon
+   generations in addition to type-matched STS2 style references. Preserve the existing
+   per-paid-call consent boundary. Add bundle validation and a contact-sheet/composite
+   review; do not use a brittle image-similarity score as runtime acceptance. Generate the
+   five energy layers as one coordinated sub-bundle with common canvas geometry and a
+   composite preview rather than five unrelated images.
+2. **Character-wide card/UI theming.** Add a character card-pool frame material through
+   RitsuLib's supported pool material surface. Split the large pool energy icon from the
+   small text energy icon, grounding each size and consumer before implementation. Add the
+   top-panel outline asset and wire `IconOutlineTexturePath`. Prove the card frame, both
+   energy-icon consumers, normal top icon, and outlined top icon independently.
+3. **Locked selection, map marker, and parameterized trail.** Finish the existing
+   `character_select_locked` and `character_map_marker` routes, then visibly prove the real
+   locked-select and run-map hosts before promotion. Add a Character-specific card trail
+   first through RitsuLib `CharacterTrailStyle` parameters and existing supported trail
+   resources; custom trail scenes, shaders, and materials are not part of this slice.
+4. **Non-Spine combat cue sequences.** Add identity-consistent frame assets and RitsuLib
+   cue/state-machine wiring for `Idle`, `Attack`, `Cast`, `Hit`, and `Dead`. Verify trigger
+   routing, loop/one-shot behavior, timing, return-to-idle behavior, death delay, cleanup,
+   and fallback in a real combat. This work package does not authorize a Spine pipeline or
+   animated merchant/rest-site production assets.
+5. **Fresh acceptance and payload refresh.** After focused contract and hosted proofs pass,
+   generate one fresh natural-language Character Mod that exercises the complete M6.5
+   composition. Require exact load marker, structured post-state/presentation proof,
+   `selftest done`, settled screenshots for every visible host, and no fresh error block.
+   Record durable evidence, retire the acceptance Mod, and regenerate both committed
+   payloads from `games/sts2/`.
+
+M6.5 is complete only when all five work packages are pipeline-supported on STS2 `0.107.1`
+and RitsuLib `0.4.62`. A path existing in a profile, a successful PCK build, or a fallback
+image appearing does not close a package. RitsuLib Character presentation patches are
+non-critical, so each new route needs an exact-resource assertion plus visible headed
+evidence in its real host.
+
+Explicitly outside the current M6.5 scope are Spine authoring, custom transition
+materials/shaders, production audio, multiplayer hands/remote UI, native custom-Character
+Ancient presentation, animated merchant/rest-site production assets, and release work.
+The lead may add other content-quality items later; they are not inferred from this
+milestone and do not expand it automatically.
