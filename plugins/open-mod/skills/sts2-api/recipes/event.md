@@ -15,18 +15,17 @@ in one specified act, read `reference/forced-followup-event.md`. When an option 
 native Card/relic acquisition presentation, the bounded one-shot screen shake, or the
 curated built-in `trial_noble` VFX, read `reference/event-native-presentation.md`.
 
-## Registration (automatic, no `[Pool]`)
+## Registration (one content-pack route)
 
-Subclass `BaseLib.Abstracts.CustomEventModel`. Its default constructor calls
-`CustomContentDictionary.AddEvent(this)`, so instantiating the canonical model registers
-it. Do **not** add `[Pool]` and do not call `AddEvent` manually.
+Subclass `STS2RitsuLib.Scaffolding.Content.ModEventTemplate`. Register it exactly once
+through `.SharedEvent<T>()` for all-act placement or `.ActEvent<TAct,T>()` for an explicit
+act. Do **not** add `[Pool]`, instantiate the canonical model, call `AddEvent`, or create a
+second content pack for the same Event.
 
-`CustomEventModel.Acts` controls natural placement:
-
-- the default empty array makes it a BaseLib "shared custom event" available to every
-  act (this means shared across act pools, not multiplayer `EventModel.IsShared`);
-- a non-empty `Acts` array limits it to those acts;
-- override `IsAllowed(IRunState)` for run-state eligibility.
+`EventModel.IsShared` is the game's room/resume semantic and is separate from the content
+pack's shared-across-act registration. Override `IsAllowed(IRunState)` for run-state
+eligibility. Events that enter special combat still set `IsShared => true` as required by
+the public room lifecycle.
 
 The canary uses the default all-act placement. Its scenario enters the event directly by
 canonical model, so map RNG cannot make the proof flaky.
@@ -42,37 +41,40 @@ combine that target with ordinary pool placement.
 // <ModName>Code/Events/<Name>.cs
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using BaseLib.Abstracts;
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Events;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Runs;
+using STS2RitsuLib.Scaffolding.Content;
 
-namespace <ModName>.<ModName>Code.Events;
+namespace <ModName>.Events;
 
-public sealed class <Name> : CustomEventModel
+public sealed class <Name> : ModEventTemplate
 {
     public const string FallbackPortraitPath = "res://images/events/this_or_that.png";
     public static string ModPortraitPath =>
         $"{MainFile.ResPath}/images/events/<slug>.png";
 
-    public override string? CustomInitialPortraitPath =>
-        ResourceLoader.Exists(ModPortraitPath) ? ModPortraitPath : FallbackPortraitPath;
+    private string DefaultInitialPortraitPath =>
+        $"res://images/events/{Id.Entry.ToLowerInvariant()}.png";
 
-    public override List<(string, string)> Localization => new EventLoc(
-        "<Title>",
-        new EventPageLoc(
-            "INITIAL",
-            "<Initial description>",
-            new EventOptionLoc("<OPTION_KEY>", "<Option title>", "<Option description>")),
-        new EventPageLoc(
-            "<RESULT_PAGE_KEY>",
-            "<Result description>"));
+    public override EventAssetProfile AssetProfile => new(
+        InitialPortraitPath: ResourceLoader.Exists(ModPortraitPath)
+            ? ModPortraitPath
+            : FallbackPortraitPath);
+
+    public override IEnumerable<string> GetAssetPaths(IRunState runState) =>
+        base.GetAssetPaths(runState)
+            .Where(path => path != DefaultInitialPortraitPath);
 
     protected override IReadOnlyList<EventOption> GenerateInitialOptions()
-        => new[] { Option(<OptionMethod>) };
+        => new[]
+        {
+            new EventOption(this, <OptionMethod>, InitialOptionKey("<OPTION_KEY>")),
+        };
 
     private async Task <OptionMethod>()
     {
@@ -88,13 +90,18 @@ public sealed class <Name> : CustomEventModel
 }
 ```
 
-The live canary is `GildedSignpost`: `FollowTheSign` grants 25 gold, then finishes on the
-`FOLLOW_THE_SIGN` result page.
+Register the class in the existing content pack:
 
-## Nested localization (prefer `EventLoc`)
+```csharp
+RitsuLibFramework.CreateContentPack(ModId)
+    .SharedEvent<<Name>>()
+    .Apply();
+```
 
-Normal event localization is nested rather than the flat two/three-key shape used by
-cards/relics/potions. BaseLib's in-code helpers generate the exact `events` table keys:
+## Nested localization (`events.json`)
+
+Normal Event localization is a flat JSON table whose keys describe the nested page/option
+shape. RitsuLib's normalized entry is `<MOD>_EVENT_<TYPE>`:
 
 ```text
 <ID>.title
@@ -104,19 +111,11 @@ cards/relics/potions. BaseLib's in-code helpers generate the exact `events` tabl
 <ID>.pages.<RESULT_PAGE_KEY>.description
 ```
 
-`EventLoc` supplies the title, `EventPageLoc` supplies each page description, and
-`EventOptionLoc` supplies each option's title/description. `ModelLocPatch` prefixes every
-relative key with the real `Id.Entry`, so do not include `<PREFIX>-<SLUG>` yourself in the
-`EventLoc` tuples.
-
-`Option(SomeMethod)` derives its option key by `StringHelper.Slugify(SomeMethod.Method.Name)`:
-
-- method `FollowTheSign` -> key `FOLLOW_THE_SIGN`;
-- the matching `EventOptionLoc` key must therefore be `FOLLOW_THE_SIGN`;
-- `PageDescription("FOLLOW_THE_SIGN")` resolves the result page.
-
-If these names disagree, the room can load but the UI shows missing/raw option text. This
-method-name-to-loc relationship is the event equivalent of the usual `Id.Entry` footgun.
+`InitialOptionKey("FOLLOW_THE_SIGN")` and
+`ModOptionKey("PAGE", "OPTION")` build the exact namespaced key consumed by
+`EventOption`. `PageDescription("PAGE")` resolves the matching description. Keep the
+explicit upper-snake option name identical to the JSON segment; method names do not mint
+localization keys automatically.
 
 ### Bounded rich text
 
@@ -128,15 +127,14 @@ Normal Event page descriptions and option descriptions are rendered by the game'
 Keep titles plain, balance/nest every tag, and do not emit arbitrary BBCode or parameters.
 This path needs no C# helper or cleanup code; page changes replace the host label's text.
 
-The recipe uses code localization because BaseLib already provides the nested EventLoc
-types and the analyzer does not define an STS001 required-key row for `EventModel`. A mod
-may instead ship `events.json`, but it must use the exact fully-prefixed keys above.
+Ship `events.json` in the resource PCK; a DLL-only rebuild does not update it.
 
 ## Options and state transitions
 
 - `GenerateInitialOptions()` returns the options shown on the initial page.
-- `Option(Method)` creates an enabled option and binds the method as its effect.
-- `LockedOption(key)` creates a disabled option with loc at the same page/key shape.
+- `new EventOption(this, Method, InitialOptionKey(key))` creates an initial enabled option.
+- Use `ModOptionKey(page, key)` on later pages. Passing `null` as the callback creates a
+  locked option while retaining its typed data.
 - `SetEventFinished(PageDescription(key))` shows the result text and replaces choices with
   the standard Proceed button.
 - `SetEventState(description, options)` is the vanilla pattern for a multi-page event that
@@ -144,14 +142,14 @@ may instead ship `events.json`, but it must use the exact fully-prefixed keys ab
 
 ### Native option presentation
 
-Enabled normal-Event options may pass typed Card/relic/potion/power tips through
-`Option(Method, pageKey, tips)`. Construct only the selected types with the grounded
+Enabled normal-Event options may pass typed Card/relic/potion/power tips through the
+`EventOption` constructor. Construct only the selected types with the grounded
 `HoverTipFactory` helpers in `reference/event-option-presentation.md`; the real option
-button owns focus, display, and cleanup. `LockedOption` retains its tip data but the native
+button owns focus, display, and cleanup. A null-callback option retains its tip data but the native
 button deliberately does not display it, so never promise locked-option tooltips or emit a
 custom workaround.
 
-Use `RelicOption<T>` when SPEC selects relic-backed presentation. It provides the normal
+Use `CreateModRelicOption<T>` when SPEC selects relic-backed presentation. It provides the normal
 relic title, description, and metadata. The actual obtain effect remains a separate awaited
 `RelicCmd.Obtain<T>` consequence. Normal-layout Event buttons do not render the relic image:
 that consumer is gated to `AncientEventModel`, so preserve a requested normal-layout image
@@ -161,8 +159,10 @@ For a choice whose consequence pays HP or Max HP, attach the exact cost when gen
 the option:
 
 ```csharp
-Option(PayHp).ThatDoesDamage(damage);
-Option(PayMaxHp).ThatDecreasesMaxHp(maxHpLoss);
+new EventOption(this, PayHp, ModOptionKey("PAGE", "PAY_HP"))
+    .ThatDoesDamage(damage);
+new EventOption(this, PayMaxHp, ModOptionKey("PAGE", "PAY_MAX_HP"))
+    .ThatDecreasesMaxHp(maxHpLoss);
 ```
 
 The later Cmd still owns payment. These helpers only drive the native warning and use
@@ -196,10 +196,9 @@ Normal/default-layout event portraits are pipeline-supported as loose opaque PNG
 exactly **3440×1613**. The initial slot is
 `res://<ModName>/images/events/<event-slug>.png`; an authored page slot uses
 `res://<ModName>/images/events/<event-slug>_<page-key-lower>.png`. Generate/import each
-selected slot with `gen_sprite.py --spec event`; every art change requires a `.pck`
-rebuild. The concrete event must use the existence-checked initial override in the
-skeleton above because BaseLib returns `CustomInitialPortraitPath` directly and does not
-provide the template fallback helper used by cards/relics.
+selected slot with `gen_sprite.py --spec event`; every art or localization change requires
+a `.pck` rebuild. The concrete Event uses `EventAssetProfile.InitialPortraitPath` and
+filters the missing convention-derived path from `GetAssetPaths` as shown above.
 
 Placeholder remains the silent default: when the mod PNG is absent, return the live-proven
 `res://images/events/this_or_that.png`. Do not return the missing custom path or rely on the
@@ -256,10 +255,11 @@ The separately grounded built-in `trial_noble` profile is also supported through
 instantiates one inherited-process node at the vanilla portrait-local position, and frees
 that owned node before transitions. It does not open other built-in scenes.
 
-Only those two bounded profiles are supported. BaseLib 3.3.5/3.3.6 declares
-`CustomEventModel.CustomVfxPath` but does not consume it, so never override it as a route.
-Arbitrary VFX, shaders, audio, custom/Ancient-layout animation, and other animation-bearing
-families remain outside this recipe.
+Only those two bounded profiles are supported. RitsuLib exposes custom Event VFX/layout
+routes, but their presence does not promote arbitrary assets. Keep them unused unless a
+separate real-host proof expands this contract. Arbitrary VFX, shaders, audio,
+custom/Ancient-layout animation, and other animation-bearing families remain outside this
+recipe.
 
 ## Type + Scenario proof (`MapNode`)
 
@@ -292,7 +292,7 @@ so registration plus a gold mutation cannot hide broken nested localization. See
 
 When SPEC selects native option presentation, extend that same headed `MapNode` run as
 specified in `reference/event-option-presentation.md`: focus and unfocus enabled typed
-tips, preserve the locked-tip suppression boundary, inspect normal `RelicOption<T>`
+tips, preserve the locked-tip suppression boundary, inspect normal `CreateModRelicOption<T>`
 metadata without claiming an image, and compare safe versus exact-lethal HP/Max HP native
 glow before driving the semantic consequence.
 
@@ -304,17 +304,19 @@ headed screenshots plus explicit owned-node cleanup assertions. Native acquisiti
 screen-shake, or `trial_noble` claims use the combined proof in
 `reference/event-native-presentation.md`.
 
-Known-good live canary (2026-07-13, `CanaryEvent`): build 0/0, custom room entered,
-`Gilded Signpost` and `Follow the sign` rendered from nested loc, the real option button was
-clicked, gold changed `99 -> 124` (`delta=25`), result page resolved, and `selftest done`
-appeared with zero mod-named errors.
+R4 close (2026-07-23): one RitsuLib-only `MapNode` run registered every Event once,
+rendered the normal initial/later portrait and nested localization, drove core Cmd/page,
+option/lethal, native acquisition/shake/`trial_noble`, outcome/resume/terminal combat,
+`portrait_halo`, rich text, and the forced follow-up. Its final marker was
+`forcedFollowUp noToken=True wrongAct=True roomForced=True eventForced=True entered=true
+seals=1->0 restored=True`; the suite reached `selftest done` with no fresh error.
 
 ## Manual fallback
 
 During an active run, the dev-console command is:
 
 ```text
-event <PREFIX>-<SLUG>
+event <MOD>_EVENT_<TYPE>
 ```
 
 It is an exact uppercased `Id.Entry` match. In manual fallback, choose the option normally
@@ -322,15 +324,16 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
 
 ## Checklist
 
-- [ ] subclass `CustomEventModel`; no `[Pool]`; no manual `AddEvent`
-- [ ] decide all-act default vs. explicit `Acts`; add `IsAllowed` only when needed
+- [ ] subclass `ModEventTemplate`; register once with `.SharedEvent` or `.ActEvent`
+- [ ] no `[Pool]`, constructor registration, manual `AddEvent`, or second content pack
+- [ ] add `IsAllowed` only when run-state eligibility needs it
 - [ ] a forced follow-up target uses `IsAllowed(...) => false`; its unplayable Quest token
       owns the two public hook overrides and is consumed by one named completion option
-- [ ] `EventLoc` includes title, `INITIAL`, every option, and every result page
-- [ ] `Option(Method)` slug exactly matches its `EventOptionLoc` key
+- [ ] flat `events.json` includes the normalized Event title, `INITIAL`, every option, and every result page
+- [ ] every explicit `InitialOptionKey`/`ModOptionKey` segment matches JSON exactly
 - [ ] enabled typed Hover Tips use only grounded factories; locked-option tips remain an
       explicit presentation gap
-- [ ] `RelicOption<T>` is paired with the real obtain Cmd when acquisition is intended;
+- [ ] `CreateModRelicOption<T>` is paired with the real obtain Cmd when acquisition is intended;
       normal-layout relic images are not claimed
 - [ ] every HP/Max HP warning uses the exact Cmd cost and the matching native helper;
       inclusive exact-lethal boundaries are preserved
@@ -340,8 +343,8 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
       never changes the player's setting/multiplier
 - [ ] option effect uses public Cmds and logs after the state change
 - [ ] event ends with `SetEventFinished` or deliberately advances with `SetEventState`
-- [ ] `CustomInitialPortraitPath` checks the mod portrait and falls back to
-      `res://images/events/this_or_that.png`
+- [ ] `EventAssetProfile.InitialPortraitPath` checks the mod portrait, falls back to
+      `res://images/events/this_or_that.png`, and filters the missing derived path
 - [ ] every selected initial/page portrait is an opaque `3440×1613`
       `images/events/<slot-slug>.png`; absent page art retains the current portrait
 - [ ] Event/page option titles are plain; description rich text uses only balanced bounded

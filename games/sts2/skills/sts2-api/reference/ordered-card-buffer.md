@@ -1,140 +1,153 @@
 # Ordered combat buffer and deterministic dynamic output
 
-Status: **pipeline-supported on STS2 0.107.1** by the corrected
-`WayfinderAcceptance` flow (2026-07-16). The supported default stores semantic values in
-combat state while source cards use STS2's normal Play -> Discard lifecycle.
+Status: **RitsuLib pipeline-supported on STS2 0.107.1**. `RitsuResourceProof` proved the
+mechanic in isolation and `RitsuWayfinderProof` proved the final Character composition on
+2026-07-23. The buffer stores semantic values in combat-attached state while source cards
+use STS2's normal Play -> Discard lifecycle.
 
-This page does **not** support retaining played card instances in a `CustomPile`. The old
-model-only canary proved pile order and commands but missed overlapping/stale card visuals
-in real player use. That implementation is historical evidence, not a player-facing recipe.
+This page does not support retaining played card instances in a `CustomPile`. The retired
+model-only implementation missed overlapping/stale card views in real player use and is
+historical evidence only.
 
 ## Semantic contract
 
-Use this capability when ordered card plays contribute values or symbols that later create
-a deterministic output. SPEC must record:
+SPEC must record:
 
 | Field | Requirement |
 |---|---|
 | owner | one local `PlayerCombatState` |
 | lifetime | combat; a new combat starts empty |
 | recorded value | immutable semantic value such as direction, suit, or contribution |
-| source destination | normal STS2 result, default `Discard`; never intercept `OnPlay` into a custom pile |
+| source destination | normal STS2 result, default `Discard`; never intercept into a custom pile |
 | order | append order and whether it changes the result |
 | capacity | finite positive integer and non-destructive overflow behavior |
-| visibility | compact current-state text in the bounded icon+text resource control, with a text-only fallback |
+| visibility | compact state in the public resource UI attachment with text-only fallback |
 | compile | exact trigger, snapshot, clear point, and deterministic formula |
 | output | one real mutable card added with `AddGeneratedCardToCombat` |
-| scenario | source destinations, order, capacity, overflow, UI refresh, output/history/effect, combat reset |
+| scenario | destinations, order, overflow, UI, output/history/effect, and combat reset |
 
-If the user specifically wants physical cards to remain on screen, report a pack gap. A
-retained-card zone needs its own grounded UI container, stable layout, entry/exit animation,
-inspection behavior, and visual cleanup. Do not improvise it with `Vector2.Zero`,
-`CardShouldBeVisible(false)`, or `skipVisuals: true`.
+If the user wants physical played cards to remain on screen, report a pack gap. A retained
+zone needs its own grounded container, stable layout, animation, inspection, and cleanup.
+Do not improvise it with `Vector2.Zero`, hidden card views, or `skipVisuals: true`.
 
-## Combat-owned ordered state
+## Combat-attached semantic state
 
-Scope the buffer to `PlayerCombatState` with the existing `ScopedState` primitive:
+Use RitsuLib `AttachedState<PlayerCombatState,TState>` and key it by the current combat:
 
 ```csharp
-internal sealed class BufferState<TValue>
+using STS2RitsuLib.Utils;
+
+internal sealed class RouteState
 {
-    public List<TValue> Values { get; } = new();
+    public List<RouteDirection> Directions { get; } = [];
 }
 
-private static readonly ScopedState<PlayerCombatState, BufferState<TValue>> States =
-    new(StateLifetime.Combat, () => new BufferState<TValue>());
+private static readonly AttachedState<PlayerCombatState, RouteState> States =
+    new(() => new RouteState());
 
-private static BufferState<TValue> State(Player player) =>
-    States.Get(player.PlayerCombatState ??
-        throw new InvalidOperationException("ordered buffer requires combat state"));
+public static RouteState GetState(Player player) =>
+    States.GetOrCreate(player.PlayerCombatState ??
+        throw new InvalidOperationException("route requires combat state"));
 ```
 
-Reject overflow before mutation, append the semantic value, then refresh the mounted UI:
+Do not add a process-wide list, custom `ScopedState`, run-save holder, or explicit combat
+reset. A distinct `PlayerCombatState` owns a distinct attached value.
+
+Reject overflow before mutating the buffer or any coupled resource. Append the semantic
+value first, then apply the accepted-play consequence:
 
 ```csharp
-public static bool TryAppend(Player player, TValue value)
+public static async Task<bool> TryPlot(
+    Player player, RouteDirection direction)
 {
-    var state = State(player);
-    if (state.Values.Count >= Capacity) return false;
-    state.Values.Add(value);
-    Refresh(player);
+    var state = GetState(player);
+    if (state.Directions.Count >= Capacity)
+        return false;
+
+    state.Directions.Add(direction);
+    await InkResource.Gain(player, 1);
     return true;
 }
 ```
 
-The source card does not move itself. Returning from `OnPlay` lets the engine complete its
-normal result-pile lifecycle:
+The source Card records only its semantic value. Returning from `OnPlay` lets STS2 finish
+the normal result-pile lifecycle:
 
 ```csharp
-protected override Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+protected override async Task OnPlay(
+    PlayerChoiceContext choiceContext, CardPlay cardPlay)
 {
-    Accepted = OrderedBuffer.TryAppend(Owner, Value);
-    return Task.CompletedTask;
+    PlotAccepted = await RouteBuffer.TryPlot(Owner, Direction);
 }
 ```
 
 Do not call `CardPileCmd.Add(this, customPile, ...)` from this path.
 
-## Snapshot and dynamic output
+## Snapshot and output
 
-Snapshot the ordered values, clear state at the specified compile point, refresh UI, then
-configure one real output instance:
+At the configured compile point, require the exact capacity, snapshot in append order,
+clear the live buffer, refresh the shared UI, and create one real output:
 
 ```csharp
-var state = State(player);
-if (state.Values.Count != Capacity) return null;
+var state = GetState(player);
+if (state.Directions.Count != Capacity)
+    return null;
 
-TValue[] values = state.Values.ToArray();
-state.Values.Clear();
-Refresh(player);
+RouteDirection[] snapshot = state.Directions.ToArray();
+state.Directions.Clear();
+InkResource.Refresh(player);
 
 var combat = CombatManager.Instance.DebugOnlyGetState()
     ?? throw new InvalidOperationException("combat state missing");
-var output = combat.CreateCard<TOutputCard>(player);
-output.Configure(values);
+var output = combat.CreateCard<MappedRoute>(player);
+output.Configure(snapshot);
 await CardPileCmd.AddGeneratedCardToCombat(output, PileType.Hand, player);
 return output;
 ```
 
-Store the snapshot and configured `DynamicVars` on the mutable output card. Do not create a
-new model type at runtime or encode the result only in text/logs.
+Store the snapshot and configured `DynamicVars` on the mutable output Card. Do not create
+a model type at runtime or encode the result only in UI/log text.
+
+The proven Wayfinder formula interprets `N>E>S>W` as a closed path with three right turns
+and computes Block `5 + 3 * rightTurns + leftTurns + (closed ? 6 : 0) = 20`. This exact
+formula is proof data, not a universal buffer rule; a generated Mod uses its SPEC formula.
 
 ## Player-visible state
 
-An ordered mechanic must be legible. Render a compact value such as
-`Route: N>E>S>W` through an already verified UI host and refresh it after append, overflow
-(if feedback changes), compile, and combat reset. The promoted Wayfinder form composes it
-with the named resource as `Ink: N | Route: ...` in the fixed 220x32 icon+text control from
-`character-presentation.md`; its checked failure mode keeps the same live text without the
-24x24 icon. A hidden list with no player-readable state is not pipeline-supported.
+Render a compact value such as `Route: N>E>S>W` through the `RegisterCombatUi` route in
+`character-resource.md`. The promoted composition renders `Ink: N | Route: ...` in the
+fixed 220x32 control at offset `(160,0)`, with a checked 24x24 icon and the same live text
+when that icon is missing. Refresh after append/resource mutation, compile/clear, and
+combat reset. Overflow must leave both state and UI unchanged.
 
-This does not authorize custom zone art or a new Harmony target. Wayfinder mounts the
-control under the exact character-resource host,
-`NCombatUi.EnergyCounterContainer`.
+This does not authorize custom zone art, a Harmony patch, or a new UI host.
 
-## Type and Scenario proof
+## Required Tier 2 proof
 
-Reuse the owning host suite; do not create a new project merely because a buffer was added.
-The live proof asserts:
+Reuse the owning `CombatPlayer` or Character suite and assert:
 
-- every source card reaches its specified normal result pile;
-- accepted values preserve exact order and refresh visible state;
-- overflow leaves order/resource unchanged and the source still resolves normally;
-- the compile card resolves normally, clears the buffer, and creates exactly one output
-  `CardGeneratedEntry`;
-- output fields/`DynamicVars` match the deterministic formula and its real effect fires;
-- a second combat has a distinct empty state and reset UI.
+1. state and visible route start empty;
+2. every source Card reaches its normal result pile;
+3. accepted values preserve exact order and coupled resource changes;
+4. overflow leaves order/resource/UI unchanged while its source still resolves normally;
+5. the compile Card reaches its normal pile, clears the buffer, and creates exactly one
+   output in Hand plus one `CardGeneratedEntry`;
+6. output fields/`DynamicVars` match the deterministic formula and its real effect fires;
+7. rejected output payment changes neither resource nor payoff;
+8. combat 2 has a distinct attached state, empty route, reset resource, and reset UI.
 
-`WayfinderAcceptance` observed four direction cards plus `Survey` in `Discard`, route text
-`- -> N>E>S>W -> -`, capacity-4 overflow without mutation, one configured output/history
-entry, exact geometry Block `20`, and a distinct empty second-combat route state.
+The final `RitsuWayfinderProof` observed direction and Survey Cards in Discard, route
+`- -> N>E>S>W -> -`, capacity-4 overflow without mutation, one generated `MappedRoute`,
+Block `20`, successful Ink `4 -> 0`, rejected payment at `0`, and combat-2 Ink `0` / Route
+`-`. It reached `wayfinder R5 parity complete expected=all observed=all`, `selftest done`,
+strict Tier 2, and no fresh error with only the declared RitsuLib runtime dependency.
 
 ## Unsupported extensions
 
 - retained real-card `CustomPile` gameplay, visible or hidden;
-- custom pile buttons, slots, counters, card layouts, or bespoke zone art;
+- custom pile buttons, slots, counters, layouts, or bespoke zone art;
 - run-persistent buffer contents or save serialization;
-- custom draw lifecycle and hand replacement;
+- custom draw lifecycle or hand replacement;
 - cross-player or shared multiplayer buffers.
 
 Preserve these as explicit pack gaps until a real player-facing implementation is grounded.

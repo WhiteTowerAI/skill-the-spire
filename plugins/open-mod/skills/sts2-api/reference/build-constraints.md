@@ -1,188 +1,76 @@
-# build-constraints.md — what the toolchain enforces at BUILD & LOAD time
+# Build and load constraints
 
-> **RitsuLib migration note:** sections 1-3 below record the historical analyzer/BaseLib
-> constraints used for M0-M6 regression comparison. They are not the active R3
-> generation contract. The pinned RitsuLib scaffold does not reference that analyzer or
-> package; use the current constraints immediately below and the selected surface recipe.
+Use this page before authoring registration/localization output and when a build/profile
+diagnostic fails. The active toolchain is the pinned open-mod RitsuLib profile.
 
-## 0. Current RitsuLib R3 constraints
+## Pinned Profile
 
-- `tools/scaffold.py` pins `STS2.RitsuLib.Compat.0.107.1` `0.4.62`, exposes one partial
-  content hook, and emits no framework DLL.
-- R3 models extend their matching `Mod*Template` and register exactly once through the
-  content-pack Card/Relic/Potion/Power/Enchantment/Orb route; keywords use the public
-  keyword registration route. One `.Apply()` closes the pack.
-- The C# generic constraints enforce matching Card/Relic/Potion pool families.
-  Do not add a historical pool attribute.
-- Localization uses the exact flat `MOD_CATEGORY_TYPENAME` public entry printed by the
-  RitsuLib registration log. The hosted proof must resolve the real title/description
-  consumer; a successful build is insufficient.
-- Custom art uses explicit per-surface asset profiles. Empty fields retain the checked
-  template/base-game fallback.
+- host: STS2 stable `0.107.1`;
+- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.4.62`;
+- `Sts2ApiCompat`: `0.107.1`;
+- runtime dependency: `STS2-RitsuLib >= 0.4.62`;
+- `RitsuLibAutoCopy`: `false`;
+- no framework DLL inside the generated Mod directory.
 
-> **The third source of truth.** spire-codex answers "what content exists"; the
-> decompile answers "how to model it in C#"; **this page answers "what the toolchain
-> refuses to build or load."** These are stricter than runtime — an element can be
-> correct C# that *runs* fine and still fail here (the classic: a power runs without
-> `.smartDescription` because it falls back to `.description`, but the analyzer
-> **hard-fails the build** without it). Read this before authoring any element's
-> localization + attributes; it is the single place that prevents STS001–004 and the
-> BaseLib registration `throw`s.
->
-> Facts below were mined from the actual validators, not guessed: the analyzer
-> `Sts2ModAnalyzers.dll` v0.1.9 (§1–2, decompiled) and BaseLib's registration path
-> `BaseLib` v3.3.2 (§3, decompiled — `CustomContentDictionary.AddModel`). A
-> **game/analyzer/BaseLib version bump can add rows** — re-mine on upgrade (see
-> "Re-mining" at the bottom).
+Run `scaffold.py` and `build.py`; do not substitute a generic template or bare publish
+flow. The validators reject a floating/beta-facing RitsuLib package, a wrong compat
+variant, a wrong host, extra framework references, a malformed manifest, and a framework
+DLL copied into the generated Mod.
 
-## 1. The analyzer diagnostics — the COMPLETE set is STS001–STS004
+## Registration
 
-The analyzer defines exactly four real diagnostics (confirmed against every
-`DiagnosticDescriptor` in the decompiled source — there is no STS005+; `STS999` is an
-internal logging-only descriptor, not a rule you can hit). Two are build **errors**
-(fail the build), two are **warnings**.
+- Add each selected model exactly once through the scaffold's partial content hook.
+- Call one content-pack `.Apply()` after all selected registrations.
+- Use the matching `Mod*Template` and pool generic. Do not add pool attributes or
+  constructor auto-registration.
+- Register Monster and Encounter together. Select the Event's shared/act route explicitly.
+- Register a Character with its three typed pools, exact members, starters, and supporting
+  models in the same content pack.
+- Treat the public registration entry printed by RitsuLib as the localization identity.
 
-| ID | Severity | Category | Fires when… | Fix |
-|----|----------|----------|-------------|-----|
-| **STS001** | **Error** | Localization | A model type is missing one of its **required localization keys** (table in §2). | Add every required key for that model type to its loc table. This is the one with an auto-fix (`FixableDiagnosticIds = STS001`). |
-| **STS002** | Warning | Localization | Localization files were **not registered as analyzer additional files**, so the analyzer can't verify loc → it can't *prove* STS001 is satisfied. | Ensure the `.json` loc files are `AdditionalFiles` for analysis (the Alchyr template wires this; if you moved files, restore it). Fires at `CompilationEnd`. |
-| **STS003** | Warning | Localization | A type looks like a game model but **does not inherit a `CustomModel`** base. | Inherit the correct `Custom*Model` (e.g. `CustomCardModel`), so BaseLib registers it and loc resolves. |
-| **STS004** | Warning | Usage | A **poolable** model (`CustomCardModel` / `CustomPotionModel` / `CustomRelicModel`) has **no `[Pool]` attribute** (checked up the base-class chain). | Add `[Pool(typeof(<XPool>))]` (e.g. `ColorlessCardPool`, `SharedPotionPool`, `SharedRelicPool`). **Powers are NOT in this list** — a `CustomPowerModel` needs no `[Pool]` (BaseLib auto-discovers powers). |
+## Localization
 
-Note STS004 is a *warning*, not an error — but a pooled model that isn't in a pool
-won't appear in game, so treat it as load-bearing. STS004 recurses into base classes,
-so `[Pool]` on a shared base class satisfies subclasses; abstract/static types are
-exempt.
+The default entry is `MOD_CATEGORY_TYPENAME`, normalized to uppercase snake case. Preserve
+an already-published entry only through the documented public-entry override.
 
-## 2. RequiredLocalization — which loc keys each model type MUST ship (drives STS001)
+Common flat keys:
 
-`SYMBOLID` = the element's full id `<PREFIX>-<SLUG>` uppercased (e.g.
-`FIREBOLT-FIREBOLT`). Keys are flat entries in the named loc table (the JSON filename
-column). **Missing any of these = STS001 build error.** This is the exact table the
-analyzer checks (`NamedTypeLocData`), transcribed verbatim.
+| Surface | Required authored values |
+|---|---|
+| Card | title, description |
+| Potion | title, description |
+| Relic | title, description, flavor |
+| Power | title, description, smart description |
+| Orb | title, description, smart description |
+| Keyword | title, description |
+| Monster | name |
+| Encounter | title, loss |
 
-| Model type | Loc table (json) | Required keys (suffix on `SYMBOLID`) |
-|------------|------------------|--------------------------------------|
-| **CardModel** | `cards` | `.title`, `.description` |
-| **PotionModel** | `potions` | `.title`, `.description` |
-| **PowerModel** | `powers` | `.title`, `.description`, **`.smartDescription`** ← the one that bit us |
-| **RelicModel** | `relics` | `.title`, `.description`, `.flavor` |
-| **CharacterModel** | `characters` (+ `ancients`) | many — `.title`, `.titleObject`, `.description`, pronoun set, `.goldMonologue`, … (see §2a) |
-| **AncientEventModel** | `ancients` | `.title`, `.epithet`, `.talk.firstVisitEver.0-0.ancient`, `.talk.ANY.0-0r.ancient` |
+Events use the explicit nested `events.json` page/option shape documented in
+`recipes/event.md`; option keys must exactly match `InitialOptionKey`/`ModOptionKey`.
 
-Enum-keyed loc (not a model but the analyzer checks it too):
+Characters use the 14 fields documented in `recipes/character.md` plus the four Architect
+keys when that presentation is selected. A build can succeed while the visible title is a
+raw key, so Tier 1/Tier 2 must resolve the real consumer.
 
-| Enum type | Loc table | Required keys |
-|-----------|-----------|---------------|
-| **CardKeyword** | `card_keywords` | `.title`, `.description` |
+## Resources And Packaging
 
-**Mnemonic for the four common element types:** cards & potions = **title +
-description**; relics = **+ flavor**; powers = **+ smartDescription**. Powers and
-relics each add exactly one extra key, but a *different* one — don't cross them.
+- Put localization, loose images, and raw scenes under `<project>/<ModName>/`.
+- `build.py` packs that resource tree after the C# build.
+- Asset profiles must check custom paths and retain the documented fallback.
+- Do not claim a custom image from the fallback path; verify the real consumer.
+- The deployed Mod directory must contain its DLL, JSON manifest, and PCK when resources
+  exist. It must not contain `STS2-RitsuLib.dll` or another framework payload.
 
-### 2a. CharacterModel (only if you ever add a playable character — large)
+## Runtime Variant
 
-`characters` table keys: `.title`, `.titleObject`, `.description`, `.pronounObject`,
-`.possessiveAdjective`, `.pronounPossessive`, `.pronounSubject`, `.goldMonologue`,
-`.eventDeathPrevention`, `.aromaPrinciple`, `.cardsModifierTitle`,
-`.cardsModifierDescription`, `.banter.alive.endTurnPing`, `.banter.dead.endTurnPing`.
-BaseLib's `CharacterLoc` constructor emits exactly those 14 suffixes.
+The installed RitsuLib runtime must expose the `0.107.1` compat DLL and marker/hash through
+its variant manifest, or be a direct `0.107.1` compat asset. A missing or mismatched variant
+is a hard actionable failure. Never skip runtime/host validation for Tier 1.
 
-The `ancients` table additionally requires four flat Architect keys for each character
-`<ID>` (live-confirmed by `CanaryCharacter`'s first analyzer run on 2026-07-15):
+## Re-Grounding
 
-```text
-THE_ARCHITECT.talk.<ID>.0-0r.char
-THE_ARCHITECT.talk.<ID>.0-0r.next
-THE_ARCHITECT.talk.<ID>.0-1r.ancient
-THE_ARCHITECT.talk.<ID>.0-attack
-```
-
-See `recipes/character.md` for the code-side `CharacterLoc` order and JSON shape.
-
-### 2b. Code-side localization classes (`*Loc`) — same key sets, cross-check
-
-The analyzer also carries a `CodeLocalizationData` map for the code-level `*Loc`
-classes, which agrees with the model table above and is a useful cross-check:
-`PowerLoc` = title+description+**smartDescription**, `RelicLoc` = title+description+
-**flavor**, `OrbLoc` = title+description+**smartDescription**, `CardLoc`/`PotionLoc`/
-`ModifierLoc`/`CardModifierLoc` = title+description, `MonsterLoc` = `name`,
-`ActLoc` = `title`, `EncounterLoc` = title+`loss`.
-
-`EventModel` has no `NamedTypeLocData` row in analyzer v0.1.9, so STS001 does not define
-a flat required-key set for it. BaseLib's in-code `EventLoc` helpers generate nested keys
-under the model's real `Id.Entry`: `.title`, `.pages.<PAGE>.description`, and
-`.pages.<PAGE>.options.<OPTION>.{title,description}`. `Option(Method)` slugifies the method
-name, so that slug must match the corresponding `EventOptionLoc` key. See
-`recipes/event.md`; a clean analyzer run alone cannot prove this event UI localization.
-
-### 2c. Power override-satisfy escape hatch
-
-For `PowerModel`, the analyzer's `OverrideIgnores` lets a power satisfy the loc
-requirement by **overriding the C# members** `Title` / `Description` /
-`SmartDescriptionLocKey` instead of shipping the loc keys. The recipe path (ship the
-three loc keys) is simpler and what `recipes/power.md` uses — but if you see STS001 on
-a power that *does* override these, that's why.
-
-## 3. BaseLib registration-time constraints (load-time throws)
-
-These fire at **mod load**, not at build — the analyzer (§1) cannot see them. The
-registration path is short and deterministic: **every `Custom{Card,Potion,Relic}Model`
-registers itself in its own constructor** (`autoAdd: true` by default) by calling
-`CustomContentDictionary.AddModel(GetType())`. So "instantiate the model" *is*
-"register it" — these throws happen the moment BaseLib news up your element during
-load, aborting that mod's initialization. `AddModel` (+ its `IsValidPool` helper) is
-the **only** place in the registration path that throws; the throw set below is
-complete for it.
-
-| Throw message (verbatim) | Fires when… | Fix |
-|--------------------------|-------------|-----|
-| `Model <FullName> must be marked with a PoolAttribute to determine which pool to add it to.` | The model type has **no `[Pool]`**. | Add `[Pool(typeof(<XPool>))]`. **This is the load-time twin of build warning STS004** — see the note below on why both exist. |
-| `Model <FullName> is assigned to incorrect type of pool <PoolFullName>.` | The `[Pool]` points at a real pool family, but the **model's type doesn't match that family** (e.g. a `CustomCardModel` given a relic pool). | Point `[Pool]` at the pool that matches the element type: cards → a `CardPoolModel` subclass (e.g. `ColorlessCardPool`), potions → a `PotionPoolModel` subclass (e.g. `SharedPotionPool`), relics → a `RelicPoolModel` subclass (e.g. `SharedRelicPool`). |
-| `Model <FullName> is assigned to <PoolFullName> which is not a valid pool type.` | The `[Pool]` type is **not in any pool family at all** — walking its base classes never reaches `CardPoolModel` / `RelicPoolModel` / `PotionPoolModel`. | Use an actual pool class (one deriving from a `*PoolModel` base), not an arbitrary type. |
-
-### Why STS004 (warning) *and* a load-time throw both exist for missing `[Pool]`
-
-STS004 is a **build warning** — it does not fail the build. BaseLib then **hard-throws
-at load** on the same condition. So a `Custom{Card,Potion,Relic}Model` with no `[Pool]`
-compiles (with a yellow squiggle), ships, and then **aborts its mod's load**. Treat
-STS004 as load-bearing, exactly as §1 says. **Powers are exempt on both sides**:
-`CustomPowerModel`'s constructor does **not** call `AddModel` (powers are auto-discovered,
-no pool), so none of these three throws can hit a power — consistent with STS004
-covering only the three poolable types.
-
-### What is NOT a throw here (guess corrected by the decompile)
-
-**Registering the same type twice is a silent no-op, not a throw.** `RegisterType`
-is a `HashSet<Type>.Add`; the second `AddModel` for a type returns early. So there is
-**no "duplicate id" load-time throw** in this path (the original plan guessed one).
-Duplicate *ids* across different types are a content/authoring concern, not a
-registration throw.
-
-### Advanced: code-inline localization (only if you skip JSON loc tables)
-
-If an element supplies loc via C# (`ILocalizationProvider.Localization` non-null)
-instead of the JSON loc tables the recipes use, BaseLib's `AddModelLoc` can throw
-`Override LocTable in your ILocalizationProvider.` (no `LocTable` given and the model's
-category has no default table) or `Failed to get localization dictionary.`. **The
-recipe path ships JSON loc tables and never hits this** — listed only so a mod that
-opts into inline loc knows where these come from.
-
-## Re-mining (maintainer)
-
-This page is generated from the analyzer DLL + BaseLib decompile, which gain rows on
-version bumps. To refresh:
-- **§1–2 (analyzer):** decompile the current
-  `alchyr.sts2.modanalyzers/<ver>/analyzers/dotnet/cs/Sts2ModAnalyzers.dll` with
-  `ilspycmd`, re-read `NamedTypeLocData` (the §2 table) and every `DiagnosticDescriptor`
-  (the §1 set), and diff against the above.
-- **§3 (BaseLib):** decompile the current `alchyr.sts2.baselib/<ver>` DLL, re-read
-  `CustomContentDictionary.AddModel` + `IsValidPool` and confirm the throw set, and
-  check whether the `Custom*Model` constructors still self-register via `AddModel`
-  (the registration entry point). §3 above was mined at BaseLib **v3.3.2**.
-
-Deliverable is this re-runnable habit, not a one-time dump. See `grounding.md` (three
-sources) and `errors.md` (STS001 entry).
-
----
-*Analyzer data © its authors (Alchyr `Sts2ModAnalyzers`); transcribed for grounding.*
+When STS2 or RitsuLib changes, maintainers must re-check the package id/version, compat
+metadata, public template/registry signatures, manifest schema, localization consumers,
+runtime variant manifest, and one stable-host load proof. `$modmaker` sessions read this
+pack; they do not live-decompile assemblies or invent a replacement API.

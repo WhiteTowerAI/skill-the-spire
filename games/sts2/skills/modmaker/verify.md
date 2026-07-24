@@ -6,7 +6,7 @@ which tier you reached; never claim the effect is verified when only load was.
 ## Tier-1 — does it load? (automated, guaranteed)
 
 Launch STS2 without Steam, wait, then grep the log for the framework profile, exact load
-marker, and fresh-run error blocks. The R2 scaffold and verifier enforce this before any
+marker, and fresh-run error blocks. The pinned scaffold and verifier enforce this before any
 RitsuLib runtime claim.
 
 ```bash
@@ -16,7 +16,7 @@ python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName>
 
 - `launch.py` ensures `steam_appid.txt` (=2868840) exists, launches the game,
   waits ~25s, and closes it.
-- `grep_log.py` reads the **current** `godot.log` in full. The migrated verifier passes
+- `grep_log.py` reads the **current** `godot.log` in full. The verifier passes
   only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
   `framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1`, with no
   error/exception block after that
@@ -62,7 +62,7 @@ python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "<stat
 ```
 
 The `--tier2-pattern` selects the SPEC invariant from structured
-`[T2MOD-SELFTEST] <ModName> state proof:` lines. Every migrated proof also records
+`[T2MOD-SELFTEST] <ModName> state proof:` lines. Every proof also records
 `framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1`. Use concrete
 expected/observed vocabulary:
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
@@ -70,11 +70,11 @@ expected/observed vocabulary:
 `"enemy attack.*observed=6"`, `"monster vocabulary complete.*observed=all"`,
 `"event gold.*observed=25"`,
 `"forcedFollowUp.*restored=True"`, or
-`"character foundation complete.*observed=all"`,
+`"character foundation/static-presentation.*observed=all"`,
 `"resource UI complete.*observed=all"`, or
-`"ordered buffer complete.*observed=all"`. A maintainer capability-kernel canary
-uses `"patch kernel complete.*observed=all"` only after its patch, typed state, hosted UI,
-and lifetime assertions. The verifier ignores all
+`"ordered buffer complete.*observed=all"`, or
+`"wayfinder R5 parity complete.*observed=all"`, or
+`"R6 scry helper complete.*observed=all"`. The verifier ignores all
 ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
 requires the exact load marker and `selftest done`.
 
@@ -102,16 +102,26 @@ requires the exact load marker and `selftest done`.
   the harness must execute every SPEC move/branch outcome and assert its move history,
   concrete creature/Power state, downstream buff consequence, and multi-hit result count.
 - For a Character Foundation, the final proof is valid only after the harness has asserted
-  one constructor-registered model, the real selection button, runtime identity/HP, three
-  pool types and member models, exact starter deck/relic multisets, designed MaxEnergy,
-  and one hosted grounded public mechanic delta through `CombatPlayer`. If Shop is selected,
-  the unlocked pool must also fill its two Attack, two Skill, and one Power colored slots.
+  exactly one content-pack-registered model, the real selected/unlocked button, runtime
+  identity and exact SPEC HP/Max HP, exact typed Card/Relic/Potion pools and member models,
+  every independently registered supporting Power, exact starter deck/relic multisets, and
+  designed MaxEnergy. The unlocked Card pool must also fill Shop's native colored Attack,
+  Skill, and Power slots without falling back to another character's pool. The live
+  Wayfinder regression is exactly `72/72`, cards/relic/potion/power `7/1/1/1`, five Strike
+  plus five Guard, and one Wayfinder Compass.
 - For a character resource, require gain, affordable and unaffordable checks, one exact
   successful payoff, one rejected spend with no mutation/negative state, live counter
-  values, and a distinct zero state/counter in combat 2.
+  values, public `RegisterCombatUi` attachment, the fixed 220x32 control at offset 160,
+  a disjoint native-Energy global rect, and a distinct zero state/counter in combat 2.
 - For an ordered semantic buffer/dynamic output, require exact source/compile-card result
   piles, visible order, capacity and overflow behavior, one generated-history entry, exact
-  configured output/effect, and a distinct empty state/UI in combat 2.
+  configured output/effect, `AttachedState` ownership, and a distinct empty state/UI in
+  combat 2. Reject retained-card, hidden-zone, and `skipVisuals` substitutions.
+- For a Scry Card, follow `reference/scry-helper.md`: require one visible native selector
+  and a pending Card play task before
+  confirmation, plus zero/empty/short/full cases, exact seen/discarded/unselected order,
+  source result pile, one history/hook dispatch per discarded Card, and an explicit
+  singleplayer restriction. Do not require another headed run after this combined proof.
 - For an Event, require one real UI path per independent SPEC outcome family. Blocking
   card/reward overlays must finish before their post-state assertion. A special combat must
   identify the custom encounter and prove exactly one authored completion path: named
@@ -146,13 +156,15 @@ assertion plus visual inspection. In particular:
   result page. Assert preference-aware shake movement/return and preview/VFX cleanup in the
   same `MapNode` run; a model delta without the native consumers is insufficient.
 - character static presentation: the real character-select button/background, top-panel
-  icon, and static combat body must visibly use the normalized custom resources. The
-  compact icon must resolve at 24x24 inside the fixed 220x32 icon+text control. Enter real
-  RestSite and Shop hosts for selected static bodies; merchant also asserts the exact
-  versioned prefix `targets/owned prefix/postfix=1/1/0` and no Spine error. Full energy
-  asserts five 256x256 custom layers, native 128x128 root, and live number label. Locked
-  selection and map marker require their own visible-host evidence. Do not infer any
-  consumer from a path or successful build. Read `reference/character-presentation.md`.
+  icon, and static combat body must visibly use the normalized custom resources. Assert the
+  exact 132x195 portrait, 1920x1200 background, 88x88 top-panel icon, and 512x512 non-Spine
+  combat body in their real hosts. Full energy asserts one native counter with five 256x256
+  custom layers and its live number label; prove the 24x24 compact icon independently in a
+  real hand card's `NCard.EnergyIcon`. Enter real RestSite and Shop hosts and assert their
+  512x512 static bodies; the RitsuLib route requires no merchant prefix. Capture one settled
+  screenshot for selection, combat/top-panel/energy, RestSite, and Shop. Locked selection
+  and map marker require their own visible-host evidence. Do not infer any consumer from a
+  path or successful build. Read `reference/character-presentation.md`.
 - Ancient presentation: enter the real Ancient/Architect flow and capture the native name
   banner plus one character/Architect dialogue exchange. Assert the character localization,
   speech-bubble color, and attack VFX selection; normal Event rich text is not a substitute.

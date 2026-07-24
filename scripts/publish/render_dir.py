@@ -3,7 +3,7 @@
 Vendored from htdt/godogen (scripts/publish/render_dir.py, MIT) unchanged —
 it is a generic token replacer with no godogen-specific logic. Used by
 publish.sh to turn the skill source (with ${MODMAKER_SKILL_DIR} etc.) into a
-runtime-specific layout under .claude/skills/.
+runtime-specific skill layout.
 """
 
 from __future__ import annotations

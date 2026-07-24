@@ -84,7 +84,7 @@ evidence:
    per-surface Card/relic/potion/power allowlists, SmartFormat/keyword composition, and the
    real Card plus standard Hover Tip proof.
 2. **Event option presentation:** `reference/event-option-presentation.md` owns enabled
-   typed Hover Tips and normal `RelicOption<T>` title/description/metadata. Locked tips are
+   typed Hover Tips and normal `CreateModRelicOption<T>` title/description/metadata. Locked tips are
    natively suppressed, and the normal-layout relic image is explicitly deferred because
    its button consumer is Ancient-only.
 3. **Native lethal-choice warnings:** that same reference owns exact-cost
@@ -107,6 +107,6 @@ Character/Architect item.
 
 ## Future outlook (not planned)
 
-Positioned speech/thought bubbles are intentionally not part of the M6 or M7 plan.
+Positioned speech/thought bubbles remain an unsupported future idea.
 `TalkCmd` needs a real `Creature` speaker, while normal portrait Events do not provide one;
 keep requests for this as an explicit future gap.

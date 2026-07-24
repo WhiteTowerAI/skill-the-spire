@@ -66,6 +66,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      infer bounded vanilla rich text and capture only the exact phrase plus plain-language
      color intent. Never ask for or preserve raw BBCode. Use the per-surface allowlist;
      SmartFormat owns Card upgrade highlighting, and titles remain plain.
+     If a Card looks at the top X cards of the draw pile and discards any number, record
+     the amount and upgrade delta as **Scry** semantics. The supported helper is
+     singleplayer-only; preserve multiplayer/replay requests as an explicit gap rather
+     than asking the user about APIs or inventing a fallback.
    - **Enemy encounter**: an enemy is fought inside its encounter, so treat them as one
      unit. Resolve only what genuinely shapes the fight: the monster's **HP**, whether it
      is alone or in a group, and each move's visible warning, exact effect, and what comes
@@ -91,7 +95,7 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      into an arbitrary chain or promise multiplayer/save behavior.
      If the user explicitly asks for Event VFX, offer either the bounded generated
      `portrait_halo` or the curated built-in `trial_noble` profile and capture which normal
-     pages use it; default is no VFX. Do not ask about `EventLoc`, room nodes, anchors, or
+     pages use it; default is no VFX. Do not ask about localization key builders, room nodes, anchors, or
      registration. If the user asks for words
       that shake, wave, change color, or look emphatic, infer bounded vanilla Event rich text
       and capture only the exact phrase plus plain-language effect; never ask for BBCode.
@@ -111,8 +115,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      exact starter deck counts, starter relic, and one starter card/relic mechanic that
      a grounded public game/framework API can prove in combat. Default to standard 3 energy and placeholder
      visuals. If it names a custom resource, capture its gain sources, spenders/payoff,
-     floor, combat reset, and counter text. If it names a custom zone, capture accepted
-     cards, order, capacity/overflow, compile trigger, deterministic formula, and output.
+     floor, combat reset, and counter text. If it describes an ordered card-play record,
+     capture semantic values, normal source destination, order, capacity/overflow, compile
+     trigger, deterministic formula, and output. If physical played Cards must remain in a
+     custom zone, preserve that as an explicit unsupported gap.
      Ask only for missing semantics and offer the verified defaults below. Any other
      Harmony/Publicizer seam stays an explicit pack gap; do not silently flatten it.
 3. **Effect**: what exactly happens, in game terms (energy, damage, block, draw,
@@ -174,6 +180,9 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Target** (card): damage → one enemy (`AnyEnemy`); block/self-buff → `Self`. Only
   ask if genuinely unclear.
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
+- **Scry** (only when requested): inspect the top X Draw cards, choose zero through X to
+  discard, preserve the order of all unselected cards, and await the choice. Singleplayer
+  only; no global modifier/completion hooks.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
 - **Event VFX**: none unless explicitly requested; then use only `portrait_halo` or
@@ -191,10 +200,12 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
   one Starter relic, valid character-scoped card/relic/potion pools, and template/built-in
   placeholder visuals. Derive starter effects from the user's stated theme.
 - **Character resource** (only when requested): combat lifetime, starts at 0, nonnegative
-  integer, all-or-nothing spend, generic text counter, and no alternative-energy payment.
-- **Custom card zone** (only when requested): combat lifetime, hidden/no-art, finite
-  capacity, reject overflow without mutation, preserve insertion order, and create one
-  deterministic real output card.
+  integer, all-or-nothing spend, fixed 220x32 icon+text counter with text-only fallback,
+  offset from native Energy, and no alternative-energy payment.
+- **Ordered semantic buffer** (only when requested): combat lifetime, normal Play ->
+  Discard source lifecycle, finite capacity, reject overflow without mutation, preserve
+  semantic insertion order, show compact state, and create one deterministic real output
+  Card. Retained-card zone UI is unsupported.
 - **Monster move order**: moves repeat in the order stated. Do not invent random choice;
   add a conditional branch only when the concept names a condition or the user confirms it.
 - **State lifetime**: "every N turns" on a relic continues across combats in the current
@@ -223,7 +234,7 @@ rarity: Common
 trigger: start of combat (turn 1)
 effect: <plain-language, with numbers>
 state: none | event=<what advances>; threshold=<N>; lifetime=turn|combat|run;
-  reset=<exact boundary>; persistence=field|SavedProperty
+  reset=<exact boundary>; persistence=field|AttachedState|SavedAttachedState
 art: placeholder | generate: <subject/style, if requested>
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
@@ -321,12 +332,12 @@ Ancient presentation: native banner/dialogue researched but unverified |
 advanced mechanic: none | <unverified idea that remains beyond Foundation>
 ```
 
-When the idea selects a verified 6d capability, replace `advanced mechanic` with one or
+When the idea selects a supported advanced capability, replace `advanced mechanic` with one or
 both compact semantic blocks:
 
 ```text
 resource: <name>; gain <sources/amounts>; spend <cost/payoff>; floor 0; reset combat; UI <counter text>
-zone: <name>; accepts <cards>; order <rule>; capacity <N>; overflow reject; compile <trigger/formula/output>
+buffer: <name>; values <semantic values>; source destination Discard; order <rule>; capacity <N>; overflow reject; compile <trigger/formula/output>
 ```
 
 Do not write files here — `spec.md` does that. If nothing was ambiguous, skip

@@ -45,14 +45,13 @@ The token is registered like any custom Card but is not a normal playable Card:
 
 ```csharp
 using System.Collections.Generic;
-using BaseLib.Utils;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.Rooms;
+using STS2RitsuLib.Scaffolding.Content;
 
-[Pool(typeof(ColorlessCardPool))]
-public sealed class <QuestToken> : <ModName>Card
+public sealed class <QuestToken> : ModCardTemplate
 {
     public const int TargetActIndex = <zero-based act index>;
 
@@ -67,7 +66,7 @@ public sealed class <QuestToken> : <ModName>Card
     public override IReadOnlySet<RoomType> ModifyUnknownMapPointRoomTypes(
         IReadOnlySet<RoomType> roomTypes)
     {
-        if (Owner.RunState.CurrentActIndex != TargetActIndex)
+        if (Owner?.RunState.CurrentActIndex != TargetActIndex)
             return roomTypes;
 
         return new HashSet<RoomType> { RoomType.Event };
@@ -75,13 +74,17 @@ public sealed class <QuestToken> : <ModName>Card
 
     public override EventModel ModifyNextEvent(EventModel currentEvent)
     {
-        if (Owner.RunState.CurrentActIndex != TargetActIndex)
+        if (Owner?.RunState.CurrentActIndex != TargetActIndex)
             return currentEvent;
 
         return ModelDb.Event<<TargetEvent>>();
     }
 }
 ```
+
+Register the token exactly once through
+`.Card<ColorlessCardPool, <QuestToken>>()`; do not add a pool attribute or a second
+registration path.
 
 Return the original hook input unchanged outside the target act. Do not cache `Owner`, the
 run state, or the target mutable Event. The canonical target from `ModelDb.Event<T>()` is
@@ -109,11 +112,12 @@ Author the target with the normal Event recipe, plus these exclusions and comple
 rules:
 
 The target file needs `System`, `System.Linq`, `System.Threading.Tasks`,
-`BaseLib.Abstracts`, `MegaCrit.Sts2.Core.Commands`, `MegaCrit.Sts2.Core.Runs`, and the Quest
-Card namespace in addition to the normal Event recipe imports.
+`MegaCrit.Sts2.Core.Commands`, `MegaCrit.Sts2.Core.Runs`,
+`STS2RitsuLib.Scaffolding.Content`, and the Quest Card namespace in addition to the normal
+Event recipe imports.
 
 ```csharp
-public sealed class <TargetEvent> : CustomEventModel
+public sealed class <TargetEvent> : ModEventTemplate
 {
     public override bool IsShared => true;
 
@@ -138,8 +142,9 @@ public sealed class <TargetEvent> : CustomEventModel
 ```
 
 `IsAllowed(...) => false` is intentional: natural Event selection must never surface the
-target before the token condition. Do not add the target to `Acts` as a substitute, patch
-the Event pool, or return a mutable Event instance from `ModifyNextEvent`.
+target before the token condition. Register the canonical model once with
+`.SharedEvent<<TargetEvent>>()`, but do not add ordinary eligibility, patch the Event pool,
+or return a mutable Event instance from `ModifyNextEvent`.
 
 ## Verification contract
 
@@ -163,16 +168,12 @@ The proof must enter through `MapPointType.Unknown`, not debug-enter the target 
 Event directly, because the room-type and Event-replacement hooks are the behavior under
 test.
 
-Live proof (`CanaryForcedEvent`, 2026-07-20, STS2 0.107.1/BaseLib 3.3.5): one 37.5-second
-headed run rendered `Sealed Archive`, its description, and its real `Break the seal`
-option. Strict Tier 2 reported:
+R4 live proof (2026-07-23, STS2 `0.107.1` / RitsuLib `0.4.62`): the combined Event headed
+run rendered `Sealed Archive`, its description, and its real `Break the seal` option
+through an Unknown MapPoint. Strict Tier 2 reported:
 
 ```text
-forcedFollowUp noToken=True wrongAct=True roomForced=True eventForced=True entered=True seals=1->0 restored=True
+forcedFollowUp noToken=True wrongAct=True roomForced=True eventForced=True entered=true seals=1->0 restored=True
 selftest done
 Fresh-run errors: none
 ```
-
-The first two attempts stopped in setup before the Event because an incomplete startup
-gate timed out; they are not behavior runs and prompted reuse of the already proven
-`MapNode` map/room gate. Do not repeat the headed proof merely to accumulate evidence.

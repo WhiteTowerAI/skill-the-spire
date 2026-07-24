@@ -7,7 +7,7 @@
 > must show the *current* number. This file grounds the three mechanisms that make
 > that work, so each recipe can reference it instead of re-deriving it.
 >
-> Every signature below was confirmed against the STS2 + BaseLib decompile by the
+> Every signature below was confirmed against the pinned STS2/RitsuLib API surface by the
 > maintainer, not guessed. When a recipe needs a number/description/enum concept, it
 > points here.
 
@@ -146,8 +146,9 @@ new amount, re-read the retained instance, and assert/log those post-hook values
 DynamicVars and Power amounts are not a general lifecycle contract. When an effect
 remembers turns/cards/uses, route to `stateful-mechanics.md` and specify the advancing
 event, threshold phase, `turn|combat|run` lifetime, reset, persistence, and boundary
-proof. In particular, a run-persistent relic counter uses `[SavedProperty]`, while a
-combat-local turn trigger reads `PlayerCombatState.TurnNumber`.
+proof. In particular, a run-persistent relic counter uses RitsuLib
+`SavedAttachedState<SpecificRelic, int/bool>`, while a combat-local turn trigger reads
+`PlayerCombatState.TurnNumber`.
 
 ## Where each recipe leans on this file
 

@@ -8,26 +8,37 @@
 
 The player never touches a `MonsterModel` directly. The reachable host is the **encounter**:
 the map/room enters an encounter, the encounter generates its monsters, the monsters take
-turns. So the recipe pairs exactly one `CustomEncounterModel` with the `CustomMonsterModel`(s)
-it spawns, and the proof drives a real combat where the monster acts.
+turns. So the recipe pairs exactly one `ModEncounterTemplate` with the
+`ModMonsterTemplate`(s) it spawns, registers both through one RitsuLib content pack, and
+proves them in a real combat where the monster acts.
 
-## Registration (both auto-register — no `[Pool]`)
+## Registration (one explicit RitsuLib content pack)
 
-- **Monster:** subclass `BaseLib.Abstracts.CustomMonsterModel`. The constructor calls
-  `CustomContentDictionary.RegisterType(GetType())` — instantiating the type registers it.
-  No `[Pool]` (like powers, unlike card/relic/potion).
-- **Encounter:** subclass `BaseLib.Abstracts.CustomEncounterModel`; its constructor is
-  `protected CustomEncounterModel(RoomType roomType, bool autoAdd = true)`. With the default
-  `autoAdd: true` the constructor calls `CustomContentDictionary.AddEncounter(this)` — do
-  **not** also register it manually in `Initialize()`; that is redundant.
+- **Monster:** subclass `STS2RitsuLib.Scaffolding.Content.ModMonsterTemplate` and register
+  it once with `.Monster<TMonster>()`.
+- **Encounter:** subclass `ModEncounterTemplate`, override `RoomType`, and register it once
+  with `.ActEncounter<TAct,TEncounter>()` for one act or `.GlobalEncounter<TEncounter>()`
+  for every act. `IsValidForAct` remains the runtime filter for global registrations.
+- Put every step in the scaffold's single `RegisterContent()` content pack. Do not add a
+  historical pool attribute, constructor auto-registration, or a second registry call.
+
+```csharp
+RitsuLibFramework.CreateContentPack(MainFile.ModId)
+    .Power<<CustomBuff>>()              // only when the monster owns this dependency
+    .Monster<<Name>>()
+    .ActEncounter<Glory, <Name>Encounter>()
+    .Apply();
+```
 
 ## Required overrides
 
-**Monster** (`CustomMonsterModel`):
+**Monster** (`ModMonsterTemplate`):
 - `public override int MinInitialHp` / `MaxInitialHp` — set both (equal = deterministic HP).
 - `protected override MonsterMoveStateMachine GenerateMoveStateMachine()` — the move AI.
 
-**Encounter** (`CustomEncounterModel`):
+**Encounter** (`ModEncounterTemplate`):
+- `public override RoomType RoomType => RoomType.Monster` — declare the room type on the
+  RitsuLib template rather than inferring it from registration.
 - `public override bool IsValidForAct(ActModel act)` — which acts it can appear in. Acts:
   `Glory`, `Hive`, `Overgrowth`, `Underdocks` (namespace `MegaCrit.Sts2.Core.Models.Acts`).
   `=> true` makes it valid everywhere (fine for a test; scope it for shipped content).
@@ -194,8 +205,6 @@ This is the top failure mode; the card recipe's `.Targeting()` does not transfer
 // <ModName>Code/Monsters/<Name>.cs
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using BaseLib.Abstracts;
-using BaseLib.Utils.NodeFactories;
 using Godot;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
@@ -203,10 +212,12 @@ using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using STS2RitsuLib.Scaffolding.Content;
+using STS2RitsuLib.Scaffolding.Godot;
 
-namespace <ModName>.<ModName>Code.Monsters;
+namespace <ModName>.Monsters;
 
-public sealed class <Name> : CustomMonsterModel
+public sealed class <Name> : ModMonsterTemplate
 {
     public static string FallbackVisualPath =>
         SceneHelper.GetScenePath("creature_visuals/fallback");
@@ -215,12 +226,13 @@ public sealed class <Name> : CustomMonsterModel
 
     public override int MinInitialHp => <hp>;
     public override int MaxInitialHp => <hp>;
-    public override string CustomVisualPath => FallbackVisualPath;
+    public override MonsterAssetProfile AssetProfile => new(FallbackVisualPath);
     public override bool HasDeathSfx => false;
 
-    public override NCreatureVisuals? CreateCustomVisuals()
+    protected override NCreatureVisuals? TryCreateCreatureVisuals()
         => ResourceLoader.Exists(ModVisualPath)
-            ? NodeFactory<NCreatureVisuals>.CreateFromResource(ModVisualPath)
+            ? RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>(
+                ResourceLoader.Load<Texture2D>(ModVisualPath))
             : null;
 
     protected override MonsterMoveStateMachine GenerateMoveStateMachine()
@@ -238,17 +250,17 @@ public sealed class <Name> : CustomMonsterModel
 ```csharp
 // <ModName>Code/Encounters/<Name>Encounter.cs
 using System.Collections.Generic;
-using BaseLib.Abstracts;
-using <ModName>.<ModName>Code.Monsters;
+using <ModName>.Monsters;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Acts;
 using MegaCrit.Sts2.Core.Rooms;
+using STS2RitsuLib.Scaffolding.Content;
 
-namespace <ModName>.<ModName>Code.Encounters;
+namespace <ModName>.Encounters;
 
-public sealed class <Name>Encounter : CustomEncounterModel
+public sealed class <Name>Encounter : ModEncounterTemplate
 {
-    public <Name>Encounter() : base(RoomType.Monster) { }
+    public override RoomType RoomType => RoomType.Monster;
     public override bool IsValidForAct(ActModel act) => act is Glory;   // scope as needed
     public override IEnumerable<MonsterModel> AllPossibleMonsters => new[] { ModelDb.Monster<<Name>>() };
     protected override IReadOnlyList<(MonsterModel, string?)> GenerateMonsters()
@@ -260,29 +272,29 @@ public sealed class <Name>Encounter : CustomEncounterModel
 
 Two JSON loc tables (the `AdditionalFiles` glob in the csproj already picks up any new
 `localization/eng/*.json`). Keys are flat, prefixed, and derived by the same rule as every
-other type (`Id.Entry = "<NS_UPPER>-<SLUG>"`):
+other type (`Id.Entry = "<MOD>_<CATEGORY>_<TYPE>"`):
 
-- `monsters.json`: `<NS_UPPER>-<SLUG>.name` — **one key** (`MonsterLoc = name`).
-- `encounters.json`: `<NS_UPPER>-<SLUG>.title` + `.loss` — **two keys** (`EncounterLoc = title + loss`).
+- `monsters.json`: `<MOD>_MONSTER_<TYPE>.name` — **one key**.
+- `encounters.json`: `<MOD>_ENCOUNTER_<TYPE>.title` + `.loss` — **two keys**.
 
 ```json
 // monsters.json
-{ "CANARYENCOUNTER-CANARY_MITE.name": "Canary Mite" }
+{ "CANARY_ENCOUNTER_MONSTER_CANARY_MITE.name": "Canary Mite" }
 // encounters.json
-{ "CANARYENCOUNTER-CANARY_MITE_ENCOUNTER.title": "Canary Mite",
-  "CANARYENCOUNTER-CANARY_MITE_ENCOUNTER.loss": "The canary has fallen." }
+{ "CANARY_ENCOUNTER_ENCOUNTER_CANARY_MITE_ENCOUNTER.title": "Canary Mite",
+  "CANARY_ENCOUNTER_ENCOUNTER_CANARY_MITE_ENCOUNTER.loss": "The canary has fallen." }
 ```
 
 ## Art contract (one static body; animation deferred)
 
 A normal generated monster owns one transparent `images/monsters/<slug>.png`, normalized
 to **360x360** with `contain` fit and chroma-key on. This is open-mod's medium static-body
-profile, not a game-wide requirement: BaseLib renders the texture one-to-one, so its pixel
+profile, not a game-wide requirement: RitsuLib renders the texture one-to-one, so its pixel
 dimensions intentionally define the combat and bestiary footprint.
 
-Do not put the PNG in `CustomVisualPath`; that property normally names a Godot scene. Use
-BaseLib's resource factory from `CreateCustomVisuals()` and keep `CustomVisualPath` pointed
-at the checked fallback scene:
+Do not put the PNG in `MonsterAssetProfile.VisualsScenePath`; that field names a Godot
+scene. Override `TryCreateCreatureVisuals()` and use RitsuLib's public resource factory,
+while the profile retains the checked fallback scene:
 
 ```csharp
 public static string FallbackVisualPath =>
@@ -290,24 +302,25 @@ public static string FallbackVisualPath =>
 public static string ModVisualPath =>
     $"{MainFile.ResPath}/images/monsters/<slug>.png";
 
-public override string CustomVisualPath => FallbackVisualPath;
+public override MonsterAssetProfile AssetProfile => new(FallbackVisualPath);
 public override bool HasDeathSfx => false;
 
-public override NCreatureVisuals? CreateCustomVisuals()
+protected override NCreatureVisuals? TryCreateCreatureVisuals()
     => ResourceLoader.Exists(ModVisualPath)
-        ? NodeFactory<NCreatureVisuals>.CreateFromResource(ModVisualPath)
+        ? RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>(
+            ResourceLoader.Load<Texture2D>(ModVisualPath))
         : null;
 ```
 
-When the PNG exists, `NodeFactory<NCreatureVisuals>` creates a foot-aligned `Sprite2D`,
+When the PNG exists, `RitsuGodotNodeFactories` creates a foot-aligned `Sprite2D`,
 `Bounds`, `%CenterPos`, and `IntentPos`. `NCreature` sees no Spine body and safely skips
-animator setup. When it is absent, `CreateCustomVisuals()` returns `null`; the original
+animator setup. When it is absent, `TryCreateCreatureVisuals()` returns `null`; the original
 loader resumes and uses `FallbackVisualPath` without probing a missing custom-id scene.
-Do **not** leave `CustomVisualPath` null as the fallback strategy.
+Do **not** leave the profile path null as the fallback strategy.
 
 The same `MonsterModel.CreateVisuals()` path feeds combat and the default bestiary layout,
-so both reuse this one PNG. `CanaryMonsterVocabulary` rendered the custom 360x360 texture in
-both real consumers on 2026-07-17. The generated factory layout was 396x396, with intent at
+so both reuse this one PNG. `RitsuMonsterProof` rendered the custom 360x360 texture in both
+real consumers on 2026-07-22 using only RitsuLib. The generated factory layout was 396x396, with intent at
 `(0,-466)` above the body; headed screenshots showed correct floor alignment and no crop.
 Strict `CombatEnemy` Tier 2 also preserved the full two-cycle move behavior with no fresh
 error block.
@@ -316,7 +329,7 @@ This contract is deliberately static. Attack/hurt/death/cast triggers do not ani
 death uses the game's non-Spine fade, and `HasDeathSfx => false` avoids a nonexistent
 custom-id death event. There is no separate phobia body, so phobia mode retains the same
 static texture. Spine skeleton/atlas/animation, animated move previews, and distinct phobia
-skins are later extensions, not M6 gates.
+skins are later extensions, not R4 gates.
 
 ## Type + Scenario proof (`CombatEnemy`)
 
@@ -335,21 +348,24 @@ skins are later extensions, not M6 gates.
    - force each conditional outcome by changing its real input state, then observe the
      selected move; never call the move body or `ForceCurrentState` as proof
 
-The minimal 2026-07-10 `CanaryEncounter` proved one `PECK`/6-damage turn. The 2026-07-15
-`CanaryMonsterVocabulary` then live-proved the multi-turn contract: custom self Power
-`2 -> 4` with later attack scaling, Weak `2`, two-hit history, healthy Block `+5`, wounded
-HP/Block `+3/+4`, both conditional outcomes, and a complete explicit cycle. A separate
-one-sentence `EmberWarden` mod repeated the pipeline with different numbers and zero repair.
-See `reference/selftest-harness.md` § CombatEnemy for both driver shapes.
+The 2026-07-22 RitsuLib-only `RitsuMonsterProof` is the current hosted proof. It
+registered the Power, Monster, and global Encounter through one content pack, then
+live-proved custom self Power `2 -> 4` with later attack scaling, Weak `2`, two-hit history,
+healthy Block `+5`, wounded HP/Block `+3/+4`, both conditional outcomes, and a complete
+explicit cycle. It also rendered the same static body in combat and the default bestiary,
+reached `selftest done`, and passed strict Tier 2 with no fresh error.
+
+See `reference/selftest-harness.md` § CombatEnemy for the driver shape.
 
 ## Checklist
 
-- [ ] Monster: `CustomMonsterModel`; no `[Pool]`; `MinInitialHp`/`MaxInitialHp`/`GenerateMoveStateMachine`
-- [ ] Encounter: `CustomEncounterModel(RoomType.Monster)`; `IsValidForAct`/`AllPossibleMonsters`/`GenerateMonsters`
-- [ ] No manual `AddEncounter` — the base constructor does it
-- [ ] Static visual checks `images/monsters/<slug>.png` in `CreateCustomVisuals()` and uses
-      `NodeFactory<NCreatureVisuals>.CreateFromResource` only when it exists
-- [ ] `CustomVisualPath` always names `creature_visuals/fallback`; missing PNG produces no
+- [ ] Monster: `ModMonsterTemplate`; `MinInitialHp`/`MaxInitialHp`/`GenerateMoveStateMachine`
+- [ ] Encounter: `ModEncounterTemplate`; explicit `RoomType.Monster`; `IsValidForAct`/
+      `AllPossibleMonsters`/`GenerateMonsters`
+- [ ] One `.Monster<T>()` plus one `.ActEncounter<TAct,T>()` or `.GlobalEncounter<T>()`
+- [ ] Static visual checks `images/monsters/<slug>.png` in `TryCreateCreatureVisuals()` and uses
+      `RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>` only when it exists
+- [ ] `MonsterAssetProfile` always names `creature_visuals/fallback`; missing PNG produces no
       missing custom-id resource error
 - [ ] `HasDeathSfx => false`; static death uses the non-Spine fade without a missing audio event
 - [ ] Monster attack uses `.FromMonster(this).Execute(null)` — **never `.Targeting()`**

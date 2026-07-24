@@ -24,7 +24,7 @@ later use `<project-dir>/<ModName>/`.
 
 ```powershell
 dotnet --version
-python scripts/scaffold.py `
+python ../modmaker/scripts/scaffold.py `
   --project-dir <absolute-empty-outer-directory> `
   --mod-name <ModName> `
   --author <Author>

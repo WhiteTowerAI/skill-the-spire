@@ -67,9 +67,12 @@ internal save reports a global error even if the caller catches an exception.
 
 For a Character Foundation `RunStart` driver, keep one further ordering constraint:
 after character-select Confirm and `RunManager.Instance.IsInProgress`, wait for
-`NRun.Instance?.GlobalUi != null` **before** `LocalContext.GetMe(...)`. The canary's
-second live attempt proved that the run-state flag can become true while the local player
-is still unavailable. Also normalize `\\` to `/` on both the template's character-select
+`NRun.Instance?.GlobalUi != null`, then continue polling until
+`LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())` is non-null. A single read
+after the UI gate is still racy: the R6 Scry proof's first setup attempt reached a ready
+`GlobalUi` before the local Player was injected. The earlier Character canary likewise
+proved that the run-state flag can become true while the local player is unavailable. Also
+normalize `\\` to `/` on both the template's character-select
 icon path and Godot's texture `ResourcePath`; Windows template helpers may return a mixed
 separator `res://` path even though the correct button is present.
 
@@ -315,7 +318,7 @@ private static async Task FinishCombat(CancellationToken ct)
 ```
 
 **Run-persistent periodic counter (Happy Flower shape):** let the first combat
-advance the real `[SavedProperty]` progress to `N - 1`, verify no effect, serialize and
+advance the real `SavedAttachedState` progress to `N - 1`, verify no effect, serialize and
 fill a fresh mutable instance, then let turn 1 of the second combat cross the threshold.
 For `N=3` and an energy effect:
 
@@ -539,6 +542,21 @@ playing the consumer only once. If N is 1, zero is also the only fewer-than-N in
 keep the zero case plus an at-least-N remainder case. The successful terminal marker still
 comes only after all boundary assertions pass.
 
+### Scry card - one focused visible-selector run
+
+When the Card selects the R6 Scry helper, use the exact driver contract in
+`scry-helper.md` instead of proving only its final pile. In one `CombatPlayer` run, assert
+zero and empty Draw no-ops; use `CardSelectCmd.UseSelector` for the short-Draw case; then
+play the real Card without immediately awaiting its task. Wait for a visible
+`NSimpleCardSelectScreen`, assert the play task is incomplete, select known
+`NGridCardHolder`s, capture one screenshot, confirm, and await completion. The terminal
+assertion covers seen/discarded/unselected order, source result pile, exact
+`CardDiscardedEntry` count, and a known `AfterCardDiscarded` consequence.
+
+Assert `NetGameType.Singleplayer` before the scenario. Do not simulate remote ownership,
+add a local multiplayer fallback, or promote global Scry hooks. The accepted marker is
+`R6 scry helper complete expected=all observed=all` followed by `selftest done`.
+
 ## The `CombatEnemy` scenario (monster + encounter; one- and multi-move live)
 
 Enemy-side content (monster + encounter) does not fit the card/relic/potion drivers above:
@@ -758,15 +776,14 @@ Adapt move ids, numbers, Power types, and branch setup to SPEC. The important in
 - drive every advertised branch through its real predicate and traverse enough turns to
   demonstrate the explicit cycle.
 
-> **Live-proven (`CanaryMonsterVocabulary` + fresh `EmberWarden`, 2026-07-15):** both
-> projects built 0/0 and passed strict Tier 1 + Tier 2 through eight enemy turns. The
-> canary observed self Power `2 -> 4`, later attack damage `5 -> 7`, two-hit totals
-> `8 -> 12`, Weak, healthy Block `+5`, wounded HP/Block `+3/+4`, and both branch exits.
-> The independent one-sentence mod used different numbers (`6/10 -> 8/14`, Block `+6`,
-> HP/Block `+5/+4`) and passed with zero repair. Strict verification also established two
-> setup rules: never call `SaveManager.SetFtuesEnabled` from initialization, and point a
-> placeholder monster directly at `SceneHelper.GetScenePath("creature_visuals/fallback")`
-> so no missing custom-scene error is logged before fallback.
+> **RitsuLib hosted proof (`RitsuMonsterProof`, 2026-07-22):** the consumer registered
+> `BattleFocus`, `CanarySentinel`, and its global encounter through one content pack using
+> `ModPowerTemplate`, `ModMonsterTemplate`, and `ModEncounterTemplate`. A headed
+> RitsuLib-only run observed Power `2 -> 4`, attack/debuff `5/2 -> 7/2`, two-hit totals
+> `8 -> 12`, healthy Block `+5`, wounded HP/Block `+3/+4`, both branch exits, and the
+> complete two-cycle marker. The same checked 360x360 PNG rendered with 396x396 bounds and
+> intent `(0,-466)` in combat and the default bestiary. It reached `selftest done`, passed
+> strict Tier 2, and had no fresh error.
 
 > **Live-proven (`CanaryEncounter`, tier-2 PASS):** the `PlayerCmd.EndTurn` gate is the same
 > as `CombatRoomHandler`'s AutoSlay loop — after the enemy turn, control returns to the
@@ -776,7 +793,7 @@ Adapt move ids, numbers, Power types, and branch setup to SPEC. The important in
 > phase not resumed after enemy turn`). `recipes/monster.md` documents this.
 > Needs `using MegaCrit.Sts2.Core.Map;` for `MapPointType`.
 
-## The `RunStart` + `CombatPlayer` scenario (Character Foundation, live 2026-07-15)
+## The `RunStart` + `CombatPlayer` scenario (Character Foundation, RitsuLib live 2026-07-23)
 
 A character is not proven by `ModelDb` registration alone. The harness must select its
 real UI button, start a run as it, assert the starter ecosystem, then enter combat and
@@ -785,16 +802,18 @@ prove one hosted mechanic. Replace the baseline's first-unlocked selection with:
 ```csharp
 var registered = ModelDb.AllCharacters.OfType<<CharacterName>>().ToList();
 StateProof(registered.Count == 1,
-    $"constructor auto-registration expected=1 observed={registered.Count}");
+    $"content-pack registration expected=1 observed={registered.Count}");
 var canonical = registered.Single();
-var expectedIconPath = canonical.CustomCharacterSelectIconPath.Replace('\\', '/');
+var expectedIconPath = <CharacterName>.CharacterUi("<select-file>.png")
+    .Replace('\\', '/');
 var buttons = UiHelper.FindAll<NCharacterSelectButton>(
     charSelect!.GetNode("CharSelectButtons/ButtonContainer"));
 var pick = buttons.SingleOrDefault(button =>
     button.GetNodeOrNull<TextureRect>("%Icon")?.Texture?.ResourcePath.Replace('\\', '/') ==
     expectedIconPath);
-StateProof(pick != null,
-    $"character select expected icon={expectedIconPath} observed={(pick == null ? "missing" : "present")}");
+StateProof(pick?.Character is <CharacterName> && !pick.IsLocked,
+    $"character select expected=<CharacterName>/unlocked " +
+    $"observed={(pick == null ? "missing" : pick.Character.GetType().Name + "/locked=" + pick.IsLocked)}");
 pick!.UnlockIfPossible();
 pick.Select();
 await Task.Delay(100, ct);
@@ -826,16 +845,27 @@ a turn-1 starter relic:
 var combat = player.PlayerCombatState!;
 StateProof(combat.MaxEnergy == 3 && combat.Energy == 4,
     $"combat energy expected max/current=3/4 observed={combat.MaxEnergy}/{combat.Energy}");
-StateProof(true, "character foundation complete expected=all observed=all");
+StateProof(true,
+    "character foundation/static-presentation expected=<selected-contract> observed=all");
 ```
 
-> **Live-proven (`CanaryCharacter`, build 0/0 + Tier 1 + Tier 2 PASS):** BaseLib
-> constructor registration count was 1; the custom icon button was present and selected;
-> the run started as the custom character at HP `72/72`; card/relic/potion pools contained
-> their expected models; deck/relic counts were `10/5/5/1`; and `TrailMarker` changed
-> Energy `3 -> 4` while `MaxEnergy` remained 3. No manual `AddCharacter` call exists.
+When static presentation is selected, do not stop at model properties. In the same run,
+assert the visible 132x195 selection portrait and 1920x1200 background; 512x512 non-Spine
+combat body; 88x88 top-panel icon; one native counter with five 256x256 energy layers; and
+the 24x24 compact icon in a real hand card. Then finish combat and enter RestSite and Shop
+to assert the real `NRestSiteCharacter` and `NMerchantCharacter` with their 512x512 bodies.
+Capture settled selection, combat/top-panel/energy, RestSite, and Shop screenshots.
 
-## Advanced `CombatPlayer` capabilities (6d, live 2026-07-16)
+> **R4 live-proven (Wayfinder, build 0/0 + strict Tier 2 PASS, 2026-07-23):** RitsuLib
+> content-pack registration count was 1; the exact custom icon button was selected; the run
+> started at HP `72/72`, Gold `99`, exact pools `7/1/1/1`, starter deck `5 Strike + 5
+> Guard`, and one Compass. Combat observed Energy `3/4`, the exact non-Spine body,
+> top-panel icon, five layers, and compact icon. Selection, combat, RestSite, and Shop all
+> produced settled screenshots; the final marker reported
+> `character foundation/static-presentation ... observed=all`, followed by `selftest done`
+> and no fresh error.
+
+## Advanced `CombatPlayer` capabilities (R5 RitsuLib live 2026-07-23)
 
 The Character Foundation checks still run for a generated character, but they do not
 replace each selected capability's own invariant. Read the capability page and add its
@@ -843,15 +873,18 @@ driver after combat reaches `PlayerTurnPhase.Play`.
 
 ### Resource/UI
 
-Use `reference/character-resource.md`. Drive the real gain and spender cards, then enter
-a second combat. Before the terminal marker assert all of:
+Use `reference/character-resource.md`. Resolve the public RitsuLib attachment, drive the
+real gain and spender cards, then enter a second combat. Before the terminal marker assert
+all of:
 
-1. the exact 6c UI patch is applied once and the generic Label starts at zero;
-2. gain changes state and counter;
-3. one affordable and one unaffordable check return the expected values;
-4. successful spend changes amount and payoff exactly once;
-5. rejected spend changes neither amount nor payoff and never creates debt;
-6. combat 2 has a distinct resource state at zero and a reset counter.
+1. `RegisterCombatUi` mounted the control and `SecondaryResourceCmd.Get` starts at zero;
+2. the checked icon path/24x24 size or text-only fallback, 220x32 root, 188x32 Label,
+   `(160,0)` offset, and non-intersection with native Energy are exact;
+3. gain changes state and counter;
+4. one affordable and one unaffordable check return the expected values;
+5. successful spend changes amount and payoff exactly once;
+6. rejected spend changes neither amount nor payoff and never creates debt;
+7. combat 2 has a distinct `PlayerCombatState`, amount zero, and reset counter.
 
 Finish with:
 
@@ -859,8 +892,10 @@ Finish with:
 StateProof(true, "resource UI complete expected=all observed=all");
 ```
 
-The live canary observed amount `0 -> 3 -> 1`, Block `+4` only on payment, a rejected
-second cost at amount `1`, Label text `Charge: 0/3/1`, and distinct-combat amounts `1/0`.
+`RitsuResourceProof` observed amount `0 -> 3 -> 1`, Block `+4` only on payment, a rejected
+second cost at amount `1`, and distinct-combat amounts `1/0`. The final
+`RitsuWayfinderProof` observed Ink `0 -> 4 -> 0`, resource rect `(260,828,220,32)` disjoint
+from energy rect `(100,828,128,128)`, and combat-2 Ink `0` with native Energy `3/4`.
 
 ### Ordered semantic buffer/dynamic output
 
@@ -868,14 +903,15 @@ Use `reference/ordered-card-buffer.md`. Drive real source cards through normal v
 pile behavior, compile through the generated domain method, play the produced card, and
 enter a second combat. Assert all of:
 
-1. the combat-scoped buffer and player-visible state start empty;
+1. the `AttachedState<PlayerCombatState,TState>` buffer and player-visible state start empty;
 2. accepted semantic values preserve exact order and every source reaches its normal
    result pile;
 3. capacity overflow leaves the buffer/resource unchanged while its source still resolves;
 4. the compile card resolves normally, clears state, and refreshes visible text;
 5. the output stores the ordered snapshot and exact deterministic `DynamicVars`;
 6. exactly one matching `CardGeneratedEntry` exists and the output effect fires;
-7. combat 2 owns a distinct empty state and reset UI.
+7. rejected output payment leaves amount and payoff unchanged;
+8. combat 2 owns a distinct attached state, empty route, reset resource, and reset UI.
 
 Finish with:
 
@@ -883,12 +919,14 @@ Finish with:
 StateProof(true, "ordered buffer complete expected=all observed=all");
 ```
 
-The corrected Wayfinder suite observed four source cards plus the compile card in Discard,
-route text `- -> N>E>S>W -> -`, rejected overflow, generated history `1`, configured/
-actual Block `20`, and a distinct empty second-combat state. Retained-card custom piles
-are not covered by this supported path.
+The final Wayfinder suite observed four source Cards plus the compile Card in Discard,
+route text `- -> N>E>S>W -> -`, rejected overflow, generated history `1`, configured and
+actual Block `20`, successful Ink `4 -> 0`, rejected payment at `0`, and a distinct empty
+second-combat state. Finish the composed suite with
+`wayfinder R5 parity complete expected=all observed=all`. Retained-card custom piles are
+not covered by this supported path.
 
-## The `MapNode` scenario (event / World Node — extended live 2026-07-20)
+## The `MapNode` scenario (event / World Node - RitsuLib live 2026-07-23)
 
 An event is not proven by registration alone. The harness must enter its real `EventRoom`,
 wait for the nested event UI, click an actual `NEventOptionButton`, and observe the option's
@@ -1046,6 +1084,11 @@ and the result page is readable. One marker may cover all selected profiles.
 > Headed screenshots showed the initial/page/resumed portrait halos and the actual special
 > combat after its room fade.
 
+> **R4 close (RitsuLib `0.4.62`, strict Tier-2 PASS, 2026-07-23):** one combined headed
+> run repeated core pages/Cmds, option/lethal/native presentation, outcomes, rich text,
+> portrait-halo lifecycle, and forced follow-up against stable `0.107.1`. It reached every
+> structured family marker, `selftest done`, and no fresh error.
+
 ### Bounded forced follow-up Event variant
 
 When SPEC selects `reference/forced-followup-event.md`, replace direct canonical Event
@@ -1068,12 +1111,10 @@ run and one structured marker. Required additional namespaces are
 `MegaCrit.Sts2.Core.Hooks`, `MegaCrit.Sts2.Core.Models.Events`, and the Quest Card/target
 Event types.
 
-> **Live-proven (`CanaryForcedEvent`, strict Tier-2 PASS, 2026-07-20):** one successful
-> 37.5-second headed run reported `noToken=True wrongAct=True roomForced=True
-> eventForced=True entered=True seals=1->0 restored=True`, reached `selftest done`, and had
-> no fresh error. The screenshot showed the real `Sealed Archive` room and `Break the seal`
-> option. Two earlier setup-only timeouts exposed an incomplete startup gate; reuse the
-> existing map/room gate rather than adding retries or repeating headed behavior proofs.
+> **R4 live-proven (strict Tier-2 PASS, 2026-07-23):** the combined RitsuLib Event run
+> reported `noToken=True wrongAct=True roomForced=True eventForced=True entered=true
+> seals=1->0 restored=True`, reached `selftest done`, and had no fresh error. The screenshot
+> showed the real `Sealed Archive` room and `Break the seal` option.
 
 ## Deferred: the headless / menu-skip path (design seam, not built in M5)
 

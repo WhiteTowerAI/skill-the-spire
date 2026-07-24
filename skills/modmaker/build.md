@@ -6,7 +6,7 @@ artifacts to the stable host.
 ## Run
 
 ```bash
-python scripts/build.py --project-dir <project path from MEMORY.md> --mod-name <ModName>
+python ../modmaker/scripts/build.py --project-dir <project path from MEMORY.md> --mod-name <ModName>
 ```
 
 Before MSBuild, the tool verifies:

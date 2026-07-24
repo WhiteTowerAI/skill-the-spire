@@ -1,17 +1,13 @@
 # Known Quirks — STS2 / RitsuLib gotchas
 
-> **Migration status (R3):** Card, Relic, Potion, Power, Keyword, Enchantment, and Orb rules
-> below are active for the pinned RitsuLib target. Later surfaces remain governed by the
-> adapter migration gate.
-
 Non-obvious behaviors that silently break STS2 mods. Read before writing any C#.
 These pair with the sts2-api `errors.md` (error signature → fix); this file is the
-"know it up front" version. The R3 rules were confirmed against STS2 `0.107.1`,
-RitsuLib `0.4.62`, and the hosted R3 proof.
+"know it up front" version. These rules were confirmed against STS2 `0.107.1`,
+RitsuLib `0.4.62`, and hosted proofs.
 
 ## Registration
 
-- **R3 content registration is explicit and exactly once.** Add the matching `.Card`,
+- **Content registration is explicit and exactly once.** Add the matching `.Card`,
   `.Relic`, `.Potion`, `.Power`, `.Enchantment`, or `.Orb` step to the scaffold's partial
   content hook; keywords use `.CardKeywordOwnedByLocNamespace(...)`. Call `.Apply()` once
   for the pack.
@@ -22,7 +18,7 @@ RitsuLib `0.4.62`, and the hosted R3 proof.
 
 ## Localization key derivation (the #1 silent failure)
 
-- R3 model `Id.Entry` is `MOD_CATEGORY_TYPENAME`, with each segment normalized to
+- Model `Id.Entry` is `MOD_CATEGORY_TYPENAME`, with each segment normalized to
   uppercase snake case. `RitsuCardProof` + `Jolt` becomes
   `RITSU_CARD_PROOF_CARD_JOLT`.
 - Surface localization keys are flat strings using that exact public entry. Power and Orb

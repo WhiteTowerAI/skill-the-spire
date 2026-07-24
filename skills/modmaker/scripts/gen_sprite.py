@@ -76,10 +76,10 @@ except ImportError:
 # by the hover tooltip and NOrb flash particles. CanaryOrb live-verified both consumers on
 # 2026-07-17. The persistent combat body is a separate Spine scene and is never emitted by
 # this raster normalizer.
-# monster is a static-body profile, not an animation contract. BaseLib renders the loose
-# texture one-to-one through NCreatureVisualsFactory, so the normalized pixel dimensions
-# also define the combat/bestiary footprint. CanaryMonsterVocabulary live-verified the
-# 360x360 texture in both consumers with generated bounds/intent nodes on 2026-07-17.
+# monster is a static-body profile, not an animation contract. RitsuLib renders the loose
+# texture one-to-one through RitsuGodotNodeFactories, so the normalized pixel dimensions
+# also define the combat/bestiary footprint. RitsuMonsterProof live-verified the 360x360
+# texture in both consumers with generated bounds/intent nodes on 2026-07-22.
 # fit: "cover"   = fill the whole rect, crop overflow (a full-bleed illustration the
 #                  game frames itself, e.g. a card portrait). Opaque.
 #      "contain" = fit inside with transparent padding (a cut-out object on a keyed
@@ -112,7 +112,7 @@ except ImportError:
 # enchantment likewise has ONE icon getter. NCard contexts and the hover tooltip reuse the
 # same EnchantmentModel.Icon texture, so there is no big/ variant.
 # orb likewise has ONE icon getter, but its combat body remains a separate scene contract.
-# Character assets stay independent because BaseLib consumes different getters. Background,
+# Character assets stay independent because their RitsuLib profiles feed different consumers. Background,
 # rest, and merchant add raw text-scene wrappers after import; full energy uses five layers.
 # Static-profile verification is not a claim that a PNG can replace Spine animation.
 # (A relic also has PackedIconOutlinePath → relics/<slug>_outline.png, the hover outline; we

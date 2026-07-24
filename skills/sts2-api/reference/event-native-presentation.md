@@ -49,7 +49,7 @@ await RelicCmd.Obtain<MyRelic>(owner);
 player, marks it seen, then awaits `AfterObtained`. Do not call `AnimateRelic`, add a
 second mutable Relic, or create a custom holder.
 
-`RelicOption<T>` remains option text/metadata only. When the option actually grants that
+`CreateModRelicOption<T>` remains option text/metadata only. When the option actually grants that
 Relic, pair it with one awaited `RelicCmd.Obtain<T>` call. Normal-layout option images are
 still Ancient-only and remain unsupported.
 
@@ -128,7 +128,7 @@ entering combat, or finishing onto a page without the profile. `RemoveNodesOnPor
 only detaches children and is not sufficient cleanup.
 
 Do not promote the other Trial scenes, arbitrary built-in scenes, custom transforms,
-audio, shaders, or `CustomVfxPath` from this one proof. The existing code-native
+audio, shaders, or arbitrary custom-VFX routes from this one proof. The existing code-native
 `portrait_halo` remains a separate supported profile in `event-vfx.md`.
 
 ## Verification
@@ -150,3 +150,7 @@ The 2026-07-21 `CanaryNativePresentation` run completed this combined proof in 3
 It observed Card/Relic deltas `1/1`, shake preference index `2` with movement and return,
 the exact Trial scene/path/position/inherited process mode, settled initial/acquisition/
 result screenshots, preview/VFX cleanup, strict Tier 2, and no fresh error.
+
+The 2026-07-23 RitsuLib-only R4 Event run repeated these native consumers inside the
+combined `MapNode` suite and again reached strict Tier 2, `selftest done`, and no fresh
+error. The older canary remains regression history rather than the active framework proof.

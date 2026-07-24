@@ -21,9 +21,9 @@
 > A concrete orb must check its custom icon and return a matched vanilla icon when absent;
 > it must also declare a vanilla Spine scene and channel-SFX fallback. The raster tool owns
 > only the orb icon, never its combat scene.
-> A concrete monster must check its static PNG in `CreateCustomVisuals()` and pass it to
-> BaseLib's `NodeFactory<NCreatureVisuals>`; `CustomVisualPath` remains the explicit built-in
-> fallback scene. Never return the PNG as a scene path.
+> A concrete monster must check its static PNG in `TryCreateCreatureVisuals()` and pass its
+> texture to RitsuLib's `RitsuGodotNodeFactories`; `MonsterAssetProfile` retains the explicit
+> built-in fallback scene. Never put the PNG in the profile's scene path.
 >
 > **Acquisition is source-independent.** When the current agent runtime exposes a
 > callable host-native raster image tool, it may create the source PNG without a separate
@@ -107,11 +107,11 @@ leaves the other on the placeholder:
   particle reuse `OrbModel.Icon`. The persistent combat body is not a second PNG; it is a
   separate Spine `PackedScene` and remains on the explicit vanilla fallback.
 - **monster**: `monsters/<slug>.png` **only**. Combat `NCreature` and
-  `NBestiaryLayoutDefault` both call the same `MonsterModel.CreateVisuals()` path. BaseLib
+  `NBestiaryLayoutDefault` both call the same `MonsterModel.CreateVisuals()` path. RitsuLib
   builds a non-Spine `NCreatureVisuals` around the texture, including bounds and intent
   anchors; there is no second bestiary file.
 - **event portrait**: `events/<slot-slug>.png` **only** for each selected slot. The initial
-  slot is resolved by `CustomInitialPortraitPath`; authored page slots are loaded and
+  slot is resolved by `EventAssetProfile.InitialPortraitPath`; authored page slots are loaded and
   passed to `NEventRoom.SetPortrait` by the event option method.
 `gen_sprite.py` writes the same normalized image to every path a spec needs, so you don't
 manage them by hand. The RitsuLib Card profile uses the single
@@ -136,7 +136,7 @@ so relic/power/potion are all `verified: True`. `card` is 1000×760, also live-v
 (2026-07-17). Normal orb icons are 100×100 and live-verified in the smart tooltip and
 trigger flash (2026-07-17); this does not verify a custom combat scene. Static monsters use
 an open-mod **360×360 profile**: unlike the atlas-backed icons, this is a chosen consistent
-render footprint rather than an engine-mandated source size. BaseLib renders it one-to-one;
+render footprint rather than an engine-mandated source size. RitsuLib renders it one-to-one;
 the headed combat and bestiary proof verified the resulting 396×396 bounds.
 
 **A power subclass must extend `ModPowerTemplate` directly.** Its `PowerAssetProfile`
@@ -154,41 +154,40 @@ outline it can be added later (e.g. derived from the icon's alpha). `power` has 
 Ancient-rarity full art (606×852) is intentionally **out of scope** — we don't make
 Ancient cards.
 
-## Character static profiles (M6 Character phase)
+## Character static profiles
 
-Character assets are separate contracts because BaseLib patches distinct
-`CharacterModel` getters and the game renders them in different hosts. The current
-profiles are source-grounded against STS2 0.107.1, BaseLib 3.3.5, the Alchyr character
-template, Downfall 0.0.30, and the local spire-codex character inventory. Each profile is
-promoted independently only after a real headed Character run shows the packed resource
-instead of the template fallback.
+Character assets are separate contracts because `CharacterAssetProfile` maps distinct
+game hosts. The active profiles are re-grounded against STS2 `0.107.1` and RitsuLib
+`0.4.62`; archived framework inventories are style/consumer research only.
+Each profile is promoted independently only after a real headed Character run shows the
+packed resource instead of the resolved fallback.
 
 | spec | output under `images/charui/` | size | presentation |
 |---|---|---:|---|
 | `character_select` | `<slug>.png` | 132x195 | opaque selection portrait/button |
 | `character_select_locked` | `<slug>.png` | 132x195 | opaque locked selection portrait; optional, template fallback is valid |
-| `character_icon` | `<slug>.png` | 88x88 | transparent top-panel icon and `CustomIcon` texture |
+| `character_icon` | `<slug>.png` | 88x88 | transparent top-panel icon through both RitsuLib UI icon fields |
 | `character_map_marker` | `<slug>.png` | 49x64 | transparent map marker |
 | `character_background` | `<slug>.png` | 1920x1200 | opaque select background consumed by a minimal raw-scene wrapper |
-| `character_combat` | `<slug>.png` | 512x512 | transparent static body consumed directly by `NCreatureVisualsFactory` |
+| `character_combat` | `<slug>.png` | 512x512 | transparent static body consumed directly by `Scenes.VisualsPath` |
 | `character_rest` | `<slug>.png` | 512x512 | transparent static rest-site body consumed by an `NRestSiteCharacter` wrapper |
 | `character_merchant` | `<slug>.png` | 512x512 | transparent static merchant body consumed by an `NMerchantCharacter` wrapper |
-| `character_energy` | `orb_layer_<1..5>.png` | 256x256 each | five transparent layers consumed by BaseLib's native energy-counter factory |
+| `character_energy` | `orb_layer_<1..5>.png` | 256x256 each | five transparent layers referenced by one raw energy-counter `.tscn` |
 | `character_energy_text` | `<slug>.png` | 24x24 | transparent compact energy/card text icon |
 
-The final 2026-07-21 Wayfinder runs promoted `character_select`, `character_background`,
+The 2026-07-23 RitsuLib-only Wayfinder run re-proved `character_select`, `character_background`,
 `character_icon`, `character_combat`, `character_rest`, `character_merchant`,
 `character_energy`, and `character_energy_text`. Real selection, CombatPlayer, RestSite,
-and Shop hosts rendered the exact PNGs; the native energy counter retained its 128x128
-root and `4/3` label with five 256x256 layers. Strict Tier 2 and no-fresh-error checks
-passed. Locked selection and map marker remain unpromoted because resource existence is
-not visual proof for those consumers.
+and Shop hosts rendered the exact PNGs; one native energy counter exposed five 256x256
+layers and the real hand Card rendered the separate 24x24 icon. Strict Tier 2 and
+no-fresh-error checks passed. Locked selection and map marker remain unpromoted because
+resource existence is not visual proof for those consumers.
 
 `character_select` and `character_background` use `cover` with chroma off. The icon,
 marker, static body, and energy profiles use `contain` with chroma on and a flat pure
 `#FF00FF` source background. The normalizer writes only loose PNGs; author code creates
-the tiny raw `.tscn` wrappers for background/rest/merchant, and `build.py` packs them
-without Godot/MegaDot. Full energy uses BaseLib's loose-PNG `CustomEnergyCounter` factory.
+the tiny raw `.tscn` wrappers for background/rest/merchant/energy, and `build.py` packs them
+without Godot/MegaDot. Full energy references all five layers from that one energy scene.
 A static body is not
 an animation contract: `SetupCustomAnimationStates` remains null and the built-in
 animation/fallback path stays documented for attack, hurt, cast, death, phobia, and
@@ -199,12 +198,11 @@ the template locked asset when no custom locked portrait is requested. `mp_*` ha
 textures, card trails, transition materials, and animated rest/merchant/energy scenes are
 separate later contracts; do not silently infer them from these PNGs.
 
-For static combat, pass the checked texture directly to `NCreatureVisualsFactory`; no scene
-is needed. A static rest-site wrapper is one `Sprite2D` root and BaseLib creates
-`ControlRoot`, `%Hitbox`, and thought/reticle anchors. A static merchant wrapper is one
-`Sprite2D` root named `Visuals`; the verified version-gated
-`NMerchantCharacter._Ready()` prefix skips only its Spine startup, and the getter retains
-the inherited scene when that patch is unavailable. Every wrapper keeps a checked fallback
+For static combat, pass the checked PNG directly to
+`CharacterAssetProfile.Scenes.VisualsPath`; RitsuLib creates `NCreatureVisuals`. Static
+rest-site and merchant wrappers are each one `Sprite2D` root. The R4 real
+`NMerchantCharacter` rendered the merchant wrapper without a versioned prefix. Every
+wrapper keeps a checked profile fallback
 when its PNG or raw scene is missing. `pack_pck.py` still rejects `.gdshader`, `.gdscript`,
 and `.gdextension`.
 
@@ -312,7 +310,7 @@ fresh error block.
 The combat body remains explicitly separate. `gen_sprite.py --spec orb` emits no scene,
 atlas, skeleton, animation, or audio. The R3 proof verifies the Frost scene fallback and
 channel event, not that a custom icon becomes the body. Keep both fallbacks; a custom Spine
-body belongs to the later animation expansion and does not block the migration.
+body belongs to the later animation expansion and does not block current static support.
 
 ## The static monster-body contract
 
@@ -322,38 +320,41 @@ combat-ready pose, feet on a clear shared baseline, with the silhouette filling 
 85-90% of the frame. Do not add ground, cast shadow, scenery, text, particles, or effects
 that imply a one-time attack; the same still image remains visible for every move.
 
-`CustomVisualPath` is a scene seam, not the loose-PNG seam. Wire the static body through
-the public BaseLib resource factory and retain an explicit checked fallback:
+`MonsterAssetProfile.VisualsScenePath` is a scene seam, not the loose-PNG seam. Wire the
+static body through the public RitsuLib resource factory and retain an explicit checked
+fallback:
 
 ```csharp
-using BaseLib.Utils.NodeFactories;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes.Combat;
+using STS2RitsuLib.Scaffolding.Content;
+using STS2RitsuLib.Scaffolding.Godot;
 
 public static string FallbackVisualPath =>
     SceneHelper.GetScenePath("creature_visuals/fallback");
 public static string ModVisualPath =>
     $"{MainFile.ResPath}/images/monsters/<slug>.png";
 
-public override string CustomVisualPath => FallbackVisualPath;
+public override MonsterAssetProfile AssetProfile => new(FallbackVisualPath);
 public override bool HasDeathSfx => false;
 
-public override NCreatureVisuals? CreateCustomVisuals()
+protected override NCreatureVisuals? TryCreateCreatureVisuals()
     => ResourceLoader.Exists(ModVisualPath)
-        ? NodeFactory<NCreatureVisuals>.CreateFromResource(ModVisualPath)
+        ? RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>(
+            ResourceLoader.Load<Texture2D>(ModVisualPath))
         : null;
 ```
 
-When present, `NCreatureVisualsFactory` creates a foot-aligned `Sprite2D`, expands the
+When present, `RitsuGodotNodeFactories` creates a foot-aligned `Sprite2D`, expands the
 360×360 texture to 396×396 bounds, and generates `%CenterPos` plus `IntentPos` at
 `(0,-466)`. `NCreature` sees no `SpineBody`, skips animator creation, and keeps its normal
-hitbox/intent/fade lifecycle. When absent, `CreateCustomVisuals()` returns `null`; the
+hitbox/intent/fade lifecycle. When absent, `TryCreateCreatureVisuals()` returns `null`; the
 original scene loader resumes at `FallbackVisualPath` without first logging a missing
 custom-id scene. `HasDeathSfx => false` avoids the default nonexistent custom-id death
 audio event while the non-Spine death fade remains available.
 
-Combat and bestiary are independent visible consumers of the same getter. The 2026-07-17
-`CanaryMonsterVocabulary` headed run asserted the same custom resource path, 360×360 size,
+Combat and bestiary are independent visible consumers of the same getter. The 2026-07-22
+RitsuLib-only `RitsuMonsterProof` headed run asserted the same custom resource path, 360×360 size,
 non-Spine body, 396×396 bounds, and intent position in the real combat `NCreature` and a
 real `NBestiary` default layout; it captured both and passed strict Tier 2 with no fresh
 error block. The combat screenshot showed correct floor/health-bar alignment and an
@@ -375,9 +376,11 @@ normal/phobia portrait samples in the pinned game pack use that logical size. Th
 The 2026-07-20 extension reused the same room and option click to switch to a second mod
 portrait after the consequence: both textures reported 3440×1613, the result screenshot
 showed the replacement, Gold changed by 25, and strict Tier 2 passed with no fresh error.
+The 2026-07-23 RitsuLib-only combined Event run re-proved both portrait consumers, every
+selected Event family, `selftest done`, and no fresh error.
 
-Unlike card/relic template bases, `CustomEventModel.CustomInitialPortraitPath` does not
-check whether the returned path exists. Use an explicit fallback in every generated event:
+Use an explicit checked `EventAssetProfile` fallback in every generated Event. Also remove
+the convention-derived missing path from preloading when the profile uses a different name:
 
 ```csharp
 public const string FallbackPortraitPath = "res://images/events/this_or_that.png";
@@ -385,8 +388,17 @@ public const string FallbackPortraitPath = "res://images/events/this_or_that.png
 public static string ModPortraitPath =>
     $"{MainFile.ResPath}/images/events/<slug>.png";
 
-public override string? CustomInitialPortraitPath =>
-    ResourceLoader.Exists(ModPortraitPath) ? ModPortraitPath : FallbackPortraitPath;
+private string DefaultInitialPortraitPath =>
+    $"res://images/events/{Id.Entry.ToLowerInvariant()}.png";
+
+public override EventAssetProfile AssetProfile => new(
+    InitialPortraitPath: ResourceLoader.Exists(ModPortraitPath)
+        ? ModPortraitPath
+        : FallbackPortraitPath);
+
+public override IEnumerable<string> GetAssetPaths(IRunState runState) =>
+    base.GetAssetPaths(runState)
+        .Where(path => path != DefaultInitialPortraitPath);
 ```
 
 For a page portrait, check the mod path before loading it. When it is absent, do not call
@@ -398,15 +410,13 @@ named owned root and call `QueueFreeSafely()` as required by `reference/event-vf
 
 The remaining boundaries are explicit:
 
-- phobia uses the private engine path `<full-id>_phobia_mode.png`; BaseLib 3.3.5 exposes
-  no mod-relative override. With no phobia texture, the default layout keeps the current
-  custom portrait. The 2026-07-20 headed run toggled phobia mode and verified that fallback;
+- phobia uses a private engine path and has no promoted RitsuLib consumer proof; keep the
+  normal portrait/fallback and do not generate a phobia claim;
 - `EventLayoutType.Custom` resolves a fixed global scene path and requires a complete
   `ICustomEventNode`, including focus, input, options, lifecycle, and cleanup. There is no
   checked standard-layout fallback;
 - `NAncientEventLayout` casts the model to `AncientEventModel` and instantiates its
-  background scene. BaseLib has no custom Ancient model recipe, and the normal
-  `CustomEventModel` cannot safely select this layout;
+  background scene. A normal `ModEventTemplate` is not an Ancient presentation proof;
 - raster portrait generation does not create VFX. The separate code-native
   `portrait_halo` profile is pipeline-supported through `reference/event-vfx.md`; arbitrary
   VFX remains later work.
@@ -415,9 +425,8 @@ The promoted bounded VFX proof used only public/native pieces: `EventModel.OnRoo
 `NEventLayout.AddVfxAnchoredToPortrait`, native `Node2D`/`Line2D`/`Polygon2D`, a looping
 `Tween`, Fast Mode handling, and explicit `QueueFreeSafely` cleanup. The real headed run
 observed rotation advance plus visible initial/page/resumed states, then proved cleanup on
-combat entry. BaseLib 3.3.5 and 3.3.6 declare
-`CustomEventModel.CustomVfxPath` but do not patch the engine's private VFX path, so that
-property is not a usable route. `portrait_halo` is the only generated VFX profile; the
+combat entry. RitsuLib exposes broader custom Event VFX/layout routes, but they remain
+unpromoted. `portrait_halo` is the only generated VFX profile; the
 separate exact built-in `trial_noble` profile is documented in
 `reference/event-native-presentation.md`. Arbitrary scenes, shaders, audio, or other
 generated motion remain outside the static-art contract.

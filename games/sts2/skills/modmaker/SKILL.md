@@ -1,8 +1,5 @@
 ---
 name: modmaker
-display_name: STS2 Mod Maker
-short_description: Turn one sentence into a working Slay the Spire 2 mod
-default_prompt: "Use /${MODMAKER_COMMAND} to build a Slay the Spire 2 mod from a natural-language description."
 description: |
   Build a working Slay the Spire 2 mod from a one-sentence natural-language
   description. Use when the user wants ${AGENT_NAME} to create, generate, or
@@ -16,7 +13,7 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now — core elements; Character Foundation; scenario-verified resource/UI and zone/dynamic capabilities; interaction-aware two-tier verify
+## Scope right now — core elements; Character Foundation; RitsuLib resource/UI and ordered semantic buffer; interaction-aware two-tier verify
 
 This skill turns one sentence into a known-good **relic, potion, card, enemy encounter,
 World Node/event, or minimal playable character Foundation** end to end, including custom card keywords, card enchantments,
@@ -63,27 +60,31 @@ A **Character Foundation** uses the selected framework adapter's character templ
 appears in the real character-select UI, starts a run
 with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
 3 energy, and one grounded public starter mechanic through `RunStart` + `CombatPlayer`.
-The adapter owns exactly-once registration. Static presentation is a separate opt-in layer: selection portrait,
-top-panel icon, non-Spine combat body, and compact resource icon are live-proven loose-PNG
-consumers. Other Character profiles keep their explicit fallbacks; animation remains
-outside the Foundation boundary. Read `reference/character-presentation.md` when selected.
-The **6c capability kernel** is separately scenario-verified as maintainer infrastructure:
-combat-scoped state, deterministic typed hooks, descriptor-based fallback UI, and one
-version/MVID-gated B-risk combat-UI postfix. It is not a user-facing mechanic by itself.
-Two **advanced capability contracts are pipeline-supported through the corrected Wayfinder
-acceptance**: a combat-owned
-nonnegative resource with explicit gain/affordability/all-or-nothing spend/reset plus a
-fixed icon+text counter with text-only fallback, and a bounded ordered semantic buffer whose source cards use native
-Discard while its snapshot creates a deterministic per-instance output card. Route only
-to `reference/character-resource.md` and `reference/ordered-card-buffer.md`; resource UI may
-select the exact 6c combat-UI adapter. Retaining played cards in a `CustomPile` is not
-supported. Do not invent alternative-energy patches, zone UI, persistence, C/D access, or
+The adapter owns exactly-once registration. Static presentation is a separate opt-in layer
+with eight promoted profiles: selection portrait/background, top-panel icon, non-Spine
+combat/rest/merchant bodies, five-layer energy, and compact resource icon. Locked selection,
+map marker, Ancient, and animation retain explicit boundaries. Read
+`reference/character-presentation.md` when selected.
+Two **advanced capability contracts are RitsuLib pipeline-supported**:
+a combat-owned nonnegative resource using `SecondaryResourceCmd` with explicit
+gain/affordability/all-or-nothing spend/reset plus public `RegisterCombatUi`, and a bounded
+ordered semantic buffer using combat-attached semantic values while source Cards use native
+Play -> Discard. The fixed 220x32 icon+text control keeps a text-only fallback and a 160px
+offset from native Energy. Route only to `reference/character-resource.md` and
+`reference/ordered-card-buffer.md`. Retaining played Cards in a `CustomPile` is unsupported.
+Do not invent alternative-energy patches, zone UI, persistence, C/D access, or
 `OpenMod.Runtime`.
+The **Scry helper** is also pipeline-supported for a Card that inspects the top X Draw
+cards and discards any number. It is generated-Mod-local, uses the native visible selector
+and discard lifecycle, returns a structured result, and is explicitly singleplayer-only.
+Route it only to `reference/scry-helper.md`; do not add BaseLib, global Scry hooks, or a
+multiplayer fallback.
 Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
 the source by its actual type and checks the dependent observation, so a card→power link
 cannot pass merely because both models loaded. “Combo” is not a content type.
 Two core **stateful relic** families are pipeline-supported: Happy Flower-style counters
-cross combats and save/resume through run-save state, while Stone Calendar-style timing
+cross combats and save/resume through `SavedAttachedState<SpecificRelic,int/bool>`, while
+Stone Calendar-style timing
 reads the current combat's `TurnNumber`. Tier-2 proves `N-1`, threshold, reset/carry-over,
 and the save round trip where applicable. Turn-local event counts, once-per-combat flags,
 previous-turn memory, and limited run uses have grounded patterns but remain provisional
@@ -106,8 +107,8 @@ normalization contract; native-tool, Vofy, and local-file outputs call its `impo
 command. See `author.md` §4 and `sts2-api` → `reference/art-contract.md`. The
 managed-credit route is live-verified through Vofy + an in-game `.pck` on Windows;
 host-native tool availability is runtime-dependent, and macOS/Linux remains best-effort.
-*Editing existing* vanilla content is still out; the verified 6c lifecycle bridge is not
-a general vanilla-editing recipe.
+*Editing existing* vanilla content is still out; historical capability bridges are not a
+general vanilla-editing recipe.
 If a request needs what isn't wired, say so plainly rather than half-doing it.
 
 ## Stage files
@@ -148,7 +149,7 @@ User: one sentence ("a relic that ...")
     |
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
     monster+encounter/event/character, plus the selected Event outcome/VFX/rich-text/
-    native-presentation/forced-follow-up references or power.md
+    native-presentation/forced-follow-up/Scry references or power.md
     when selected by SPEC),
     translate the same semantic SPEC through the selected adapter, add localization,
     inject the shared framework/version and [T2MOD-SELFTEST] diagnostics, and emit the

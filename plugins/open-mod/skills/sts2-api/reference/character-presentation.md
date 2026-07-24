@@ -1,75 +1,71 @@
 # Character static and native presentation
 
-Status: **pipeline-supported for eight static profiles on STS2 0.107.1 / BaseLib 3.3.5**
-by the 2026-07-21 `WayfinderAcceptance` headed runs. Selection portrait/background,
-top-panel icon, non-Spine combat/rest/merchant bodies, full energy, and compact resource
-icon are live-proven. Locked selection, map marker, and the native Ancient/Architect flow
-remain unverified and keep their inherited fallbacks.
+Status: **pipeline-supported for eight static profiles on STS2 `0.107.1` /
+RitsuLib `0.4.62`** by the 2026-07-23 Wayfinder headed proof. Selection
+portrait/background, top-panel icon, non-Spine combat/rest/merchant bodies, five-layer
+energy, and the compact card-energy icon are live-proven. Locked selection, map marker,
+and native Ancient/Architect presentation remain unverified.
 
-Use this page together with `recipes/character.md` and `reference/art-contract.md` when a
-Character SPEC selects static presentation. The Foundation remains valid with template
-assets when no custom profile is selected.
+Use this page with `recipes/character.md` and `reference/art-contract.md`. Treat every
+consumer independently: a valid path or successful PCK build is not render evidence.
 
-## Getter and consumer matrix
+## Profile and consumer matrix
 
-Treat every row independently. A working resource path does not prove that its real host
-rendered it.
-
-| profile | Character/BaseLib surface | real consumer | status and fallback |
+| profile | RitsuLib surface | real consumer | status |
 |---|---|---|---|
-| selection portrait, 132x195 | `CustomCharacterSelectIconPath` | `NCharacterSelectButton.%Icon` and selected-character panel | **live-proven loose PNG**; inherit the template portrait when absent |
-| locked portrait, 132x195 | `CustomCharacterSelectLockedIconPath` | locked character-select view | grounded, not live-proven; inherit the template locked portrait |
-| top-panel icon, 88x88 | `CustomIconTexturePath` plus `CustomIcon` | selected-character identity/global UI | **live-proven loose PNG**; inherit the template icon when absent |
-| map marker, 49x64 | `CustomMapMarkerPath` | map player marker | grounded, not live-proven; inherit the template marker |
-| select background, 1920x1200 | `CustomCharacterSelectBg` | character-select background scene | **live-proven raw `.tscn` + PNG**; inherit the template scene when either asset is absent |
-| combat body, 512x512 | `CreateCustomVisuals()` | `NCreatureVisualsFactory` / player `NCreature` | **live-proven loose PNG**, static and non-Spine; return `null` to retain the inherited scene when absent |
-| rest body, 512x512 | `CustomRestSiteAnimPath` | rest-site Character scene | **live-proven raw `.tscn` + PNG**; inherit the template scene when absent |
-| merchant body, 512x512 | `CustomMerchantAnimPath` | merchant Character scene | **live-proven raw `.tscn` + PNG** with the verified static-merchant prefix; use the inherited Spine scene if the patch or asset is unavailable |
-| full energy counter, five 256x256 layers | `CustomEnergyCounter` | native `NEnergyCounter` | **live-proven loose PNG factory**; return `null` unless every layer exists, retaining the inherited counter |
-| compact resource icon, 24x24 | card-pool `TextEnergyIconPath` or a checked `charui` texture | card text and the bounded resource counter | **live-proven loose PNG**; omit the texture and keep text-only UI when absent |
+| selection portrait, 132x195 | `AssetProfile.Ui.CharacterSelectIconPath` | `NCharacterSelectButton.%Icon` and selected panel | visible and screenshot-proven |
+| locked portrait, 132x195 | `AssetProfile.Ui.CharacterSelectLockedIconPath` | locked select view | grounded only |
+| top-panel icon, 88x88 | both `Ui.IconTexturePath` and `Ui.IconPath` | `NRun.GlobalUi.TopBar.Portrait` | visible and screenshot-proven |
+| map marker, 49x64 | `Ui.MapMarkerPath` | run map marker | grounded only |
+| select background, 1920x1200 | `Ui.CharacterSelectBgPath` | character-select background | visible raw-scene consumer |
+| combat body, 512x512 | `Scenes.VisualsPath` | player `NCreature.Visuals` | visible static non-Spine body |
+| rest body, 512x512 | `Scenes.RestSiteAnimPath` | `NRestSiteCharacter` | visible raw-scene consumer |
+| merchant body, 512x512 | `Scenes.MerchantAnimPath` | `NMerchantCharacter` | visible raw-scene consumer |
+| full energy, five 256x256 layers | `Scenes.EnergyCounterPath` | one native `NEnergyCounter` | all five layers visible |
+| compact energy, 24x24 | pool `BigEnergyIconPath` and `TextEnergyIconPath` | real hand `NCard.EnergyIcon` | visible checked texture |
 
-`CustomIcon` is a `Control`, not only a path. The proven implementation creates it from
-the checked texture and fills its parent:
+## Asset profile
+
+The promoted static profile is one declarative object:
 
 ```csharp
-public override Control CustomIcon
+public override CharacterAssetProfile AssetProfile => new()
 {
-    get
+    Scenes = new()
     {
-        var icon = NodeFactory<Control>.CreateFromResource(CustomIconTexturePath);
-        icon.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
-        return icon;
-    }
-}
+        VisualsPath = CharacterUi("combat.png"),
+        EnergyCounterPath = CharacterScene("energy.tscn"),
+        MerchantAnimPath = CharacterScene("merchant.tscn"),
+        RestSiteAnimPath = CharacterScene("rest.tscn"),
+    },
+    Ui = new()
+    {
+        IconTexturePath = CharacterUi("icon.png"),
+        IconPath = CharacterUi("icon.png"),
+        CharacterSelectBgPath = CharacterScene("background.tscn"),
+        CharacterSelectIconPath = CharacterUi("select.png"),
+        CharacterSelectLockedIconPath = CharacterUi("select_locked.png"),
+        MapMarkerPath = CharacterUi("map_marker.png"),
+    },
+};
 ```
 
-For the combat body, do not point a scene getter at the PNG. Let BaseLib construct the
-static visuals and retain `null` as the checked fallback:
+Set both icon fields. `IconTexturePath` feeds the top panel; the plain PNG in
+`IconPath` is accepted by RitsuLib's runtime factory for the Character icon control.
+For the combat body, pass the checked PNG directly in `VisualsPath`; RitsuLib creates the
+required `NCreatureVisuals`. The hosted node must report the exact 512x512 texture and
+`HasSpineAnimation == false`.
 
-```csharp
-public override NCreatureVisuals? CreateCustomVisuals()
-{
-    string path = CharacterUi("combat.png");
-    return ResourceLoader.Exists(path)
-        ? NodeFactory<NCreatureVisuals>.CreateFromResource(path)
-        : null;
-}
-```
+Missing/unused rows resolve against the template's placeholder/native profile. Do not
+invent a second getter path or patch. In particular, the RitsuLib Shop route does not need
+the historical `NMerchantCharacter._Ready()` prefix.
 
-The headed proof resolved a `Sprite2D` with the exact 512x512 custom texture and
-`HasSpineAnimation == false`. This does not support attack, hurt, cast, death, phobia,
-trail, transition, or remote-player animation.
+## Raw scene contract
 
-## No-editor scene and energy contract
+`build.py` packs raw Godot format-3 `.tscn` files through `pack_pck.py`; generated authors
+need no Godot/MegaDot install. Keep wrappers minimal.
 
-The upstream PckPacker package skips `.tscn`, but open-mod's bundled `build.py` detects a
-standard `<project>/<ModName>/**/*.tscn` tree and automatically rebuilds the PCK through
-`pack_pck.py`. The fallback writes Godot 4.5.1 format-v3 PCKs, PNG CTEX/import remaps, and
-raw text scenes. Generated-mod authors do not install Godot or MegaDot. `.gdshader`,
-`.gdscript`, and `.gdextension` remain rejected because their import/compile contracts are
-not implemented.
-
-Use the smallest wrapper matching the real consumer. Selection background:
+Selection background:
 
 ```ini
 [gd_scene load_steps=2 format=3]
@@ -86,8 +82,7 @@ expand_mode = 1
 stretch_mode = 6
 ```
 
-Rest and merchant wrappers are each one `Sprite2D`; BaseLib converts them to their native
-types:
+Rest and merchant are each one `Sprite2D` with the matching 512x512 texture:
 
 ```ini
 [gd_scene load_steps=2 format=3]
@@ -96,114 +91,66 @@ types:
 texture = ExtResource("1")
 ```
 
-Use `merchant.png` and name the merchant root `Visuals`. Check both the PNG and scene before
-returning their getter; otherwise return `base.Custom*Path`.
-
-BaseLib 3.3.5's merchant factory accepts the static node, but
-`NMerchantCharacter._Ready()` still assumes child 0 is Spine. Select the exact versioned
-B-prefix from `capability-kernel.md`; it skips only the static instance and leaves vanilla/
-Spine instances unchanged:
-
-```csharp
-private static bool Prefix(NMerchantCharacter __instance) =>
-    __instance.GetChildCount() == 0 || __instance.GetChild(0) is not Sprite2D;
-```
-
-Gate `CustomMerchantAnimPath` on successful patch status as well as resource existence.
-The exact target is public `NMerchantCharacter._Ready()`, STS2 `0.107.1`, MVID
-`97f10687-c306-4798-ab75-8b9f23f34dfb`; target mismatch keeps the inherited merchant scene.
-
-Full energy is not scene-backed. Normalize five `character_energy` outputs as
-`orb_layer_1.png` through `orb_layer_5.png`, each 256x256, and use BaseLib's legacy factory:
-
-```csharp
-public override CustomEnergyCounter? CustomEnergyCounter
-{
-    get
-    {
-        var paths = Enumerable.Range(1, 5).Select(EnergyLayer).ToArray();
-        return paths.All(path => ResourceLoader.Exists(path))
-            ? new CustomEnergyCounter(EnergyLayer, outlineColor, burstColor)
-            : null;
-    }
-}
-
-private static string EnergyLayer(int layer) =>
-    CharacterUi($"orb_layer_{layer}.png");
-```
-
-BaseLib builds the native 128x128 `NEnergyCounter`, number label, two rotating layers,
-darkened zero-energy state, and burst hooks. Do not replace this with `CustomEnergyCounterPath`
-for static art.
-
-## Bounded resource and buffer UI
-
-The supported richer UI remains under the exact verified
-`NCombatUi.EnergyCounterContainer` adapter from `capability-kernel.md`. It replaces the
-plain-label presentation with one fixed `HBoxContainer`:
+The energy scene is a 128x128 `Control` with these exact native names:
 
 ```text
-InkCounterControl (HBoxContainer, minimum 220x32, separation 6)
-  Icon (TextureRect, minimum 24x24, KeepAspectCentered)
-  ValueLabel (Label, minimum 188x32, vertically centered)
+EnergyVfxBack (Node2D, unique)
+Layers (Control, unique)
+  Layer1..Layer3 (TextureRect)
+RotationLayers (Control, unique)
+  Layer4..Layer5 (TextureRect)
+EnergyVfxFront (Node2D, unique)
+Label (Label, centered)
+StarAnchor (Node2D, unique)
 ```
 
-Use `MouseFilter.Ignore` on the root and children. Load the 24x24 icon only after
-`ResourceLoader.Exists`; the checked failure mode is the same live text without an icon.
-The label composes resource and optional ordered-buffer state, for example
-`Ink: 3 | Route: N>E>S`, and retains resource/lifetime metadata. Refresh after mount,
-gain, successful or rejected spend, append, overflow feedback, compile/clear, and combat
-reset. Guard refreshes with the local player and `IsInsideTree()`.
+Each layer fills its parent and references one distinct 256x256
+`character_energy` output. A successful scene load alone is insufficient: the headed
+proof must find one native counter and all five visible exact paths.
 
-The 2026-07-21 proof observed the exact custom icon path/size, root size, text, metadata,
-and two-combat reset while preserving the resource and ordered-buffer semantic contract.
-This is not a top-bar resource, alternative Energy, arbitrary custom-zone UI, animation,
-or remote-player presentation.
+The compact icon stays separate from full energy. The card pool checks its 24x24 texture
+before returning `BigEnergyIconPath` and `TextEnergyIconPath`; prove it in a real hand card.
+The static proof is independent from the public resource/control proof; read
+`character-resource.md` for its fixed control, offset, fallback, and non-overlap contract.
 
-## Ancient opening and Architect research
+## Ancient boundary
 
-The native opening is not normal Event rich text:
-
-- `NAncientEventLayout.InitializeVisuals()` creates the fixed Ancient background and an
-  `NAncientNameBanner` from `ui/ancient_name_banner`.
-- The banner installs `RichTextAncientBanner` and renders the uppercase
-  `AncientEventModel.Title` plus `AncientEventModel.Epithet`.
-- Architect dialogue uses the selected Character's `SpeechBubbleColor`.
-- Architect player attacks consume `CharacterModel.GetArchitectAttackVfx()`.
-- Generated Characters already supply the four required
-  `THE_ARCHITECT.talk.<CHAR_ID>` keys listed in `recipes/character.md`.
-
-These contracts are source-grounded but **not headed-proven for a custom Character**.
-Until a real Ancient/Architect acceptance enters that host and observes the banner,
-dialogue, color, and attack VFX selection, do not claim native Ancient presentation as
-pipeline-supported. Custom Ancient layouts/backgrounds remain deferred independently.
+`NAncientNameBanner`, Architect dialogue/speech color, and
+`CharacterModel.GetArchitectAttackVfx()` are source-grounded. The Character still supplies
+the abstract attack-VFX list and four Architect localization keys, but no headed custom-
+Character Ancient run occurred. Do not claim native Ancient presentation or a custom
+Ancient layout. The Foundation harness may initialize act 0 through the public test API
+when its starter Ancient intentionally produces no map; that bypass is not an Ancient
+consumer proof.
 
 ## Acceptance contract
 
-For each selected loose-PNG profile:
+For every selected visual:
 
 1. normalize the exact profile through `gen_sprite.py import` and retain its checked
    fallback;
-2. rebuild the `.pck` and enter the real Character consumer;
-3. assert the rendered node uses the exact custom resource and expected size;
-4. capture a settled headed screenshot that visibly excludes the fallback;
-5. keep the Foundation/resource/buffer structured Tier-2 marker and no fresh error.
+2. rebuild the PCK and enter the real consumer;
+3. assert exact resource path, dimensions, native consumer type, and visibility;
+4. capture a settled headed screenshot that visibly distinguishes it from fallback;
+5. emit the final Foundation/static marker only after selection, combat, RestSite, and Shop
+   all pass; then require `selftest done` and no fresh error.
 
-Wayfinder satisfies this contract for selection portrait/background, top-panel icon,
-static combat/rest/merchant bodies, full energy, and the compact resource icon/counter.
-Test locked selection, map marker, and Ancient/Architect separately before promoting them.
+The 2026-07-23 proof captured selection, combat, RestSite, and Shop. Structured state
+proved exactly one selected Wayfinder, HP `72/72`, exact pools and starters, one native
+energy counter/five layers, visible 24x24 card icon, `NRestSiteCharacter`, and
+`NMerchantCharacter`, then emitted
+`character foundation/static-presentation ... observed=all`. Strict RitsuLib-only Tier 2
+passed with no fresh error.
 
 ## Unsupported extensions
 
-- custom Character Spine animation, attacks, hurt/cast/death states, trails, and
-  animated transitions;
-- custom transition/card-trail materials, shaders, and material lifecycle;
-- remote-player/multiplayer hands, identity, ownership, and Character UI;
-- custom Character audio registration, dialogue/attack/energy cues, and fallback/mix
-  behavior;
-- shaders/scripts and editor-compiled scene resources outside the raw static wrappers;
+- locked selection and map-marker presentation until their real hosts are visibly proved;
+- custom Character Spine animation, combat states, trails, and animated transitions;
+- custom materials/shaders and their lifecycle;
+- remote-player hands, identity, ownership, rebuild, and Character UI;
+- custom audio registration, mix, fallback, and cleanup;
 - arbitrary top-bar or retained-card-zone UI;
-- custom Ancient layouts/backgrounds or an unproven native Architect presentation claim.
+- native custom-Character Ancient presentation and custom Ancient layouts.
 
-Animation, materials, multiplayer presentation, and audio are four explicit tracks in the
-later Character presentation expansion. None is implied by the current static profiles.
+Animation, materials, multiplayer presentation, and audio remain separate later tracks.
+None is implied by these static profiles.

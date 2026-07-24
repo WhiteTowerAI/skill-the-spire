@@ -6,35 +6,38 @@ does not create a button, tooltip scene, shader, or red-glow node.
 
 ## Typed option Hover Tips
 
-`CustomEventModel` inherits the public `Option` and `LockedOption` helpers. Supply typed
-`IHoverTip` values from the grounded factories:
+`ModEventTemplate` uses the public `EventOption` model. Supply typed `IHoverTip` values
+from the grounded factories:
 
 ```csharp
-Option(Inspect, "INITIAL",
+new EventOption(this, Inspect, InitialOptionKey("INSPECT"), new IHoverTip[]
+{
     HoverTipFactory.FromCard<MyPreview>(upgrade: true),
     HoverTipFactory.FromRelic<MyRelic>().First(),
     HoverTipFactory.FromPotion<MyPotion>(),
-    HoverTipFactory.FromPower<MyPower>(2));
+    HoverTipFactory.FromPower<MyPower>(2),
+});
 ```
 
 For an enabled option, the real `NEventOptionButton.OnFocus` passes `Option.HoverTips` to
 `NHoverTipSet`; Card previews and text descriptions then use their normal native consumers.
-`OnUnfocus` removes the set. A `LockedOption` retains the supplied data in its model, but
+`OnUnfocus` removes the set. A null-callback (locked) option retains the supplied data in
+its model, but
 the vanilla button deliberately skips focus and never creates a Hover Tip. Do not claim
 locked-option tooltip presentation or add a custom workaround.
 
 ## Relic-backed options and the image blocker
 
-`EventModel.RelicOption<T>` is a grounded protected helper available to a custom Event. It
+`ModEventTemplate.CreateModRelicOption<T>` is the RitsuLib helper for a custom Event. It
 sets the option's `Relic`, owner, title, description, and normal relic metadata. In a
 normal Event, the real button displays the relic title/description and its typed text
 consumer, but `NEventOptionButton` only creates `%RelicIcon` when
-`Event is AncientEventModel`. A normal `CustomEventModel` therefore has no supported
+`Event is AncientEventModel`. A normal `ModEventTemplate` therefore has no supported
 relic-image button consumer.
 
 Pipeline boundary:
 
-- supported: normal Event `RelicOption<T>` title/description and semantic acquisition
+- supported: normal Event `CreateModRelicOption<T>` title/description and semantic acquisition
   through a separate public `RelicCmd.Obtain<T>` consequence;
 - deferred: relic image inside a normal Event option;
 - deferred: generating an Ancient Event/layout solely to obtain that image, because custom
@@ -48,8 +51,10 @@ gap and keep the normal relic-backed option fallback visible.
 Attach the exact cost to the option before the Event room renders it:
 
 ```csharp
-Option(PayHp).ThatDoesDamage(damage);
-Option(PayMaxHp).ThatDecreasesMaxHp(maxHpLoss);
+new EventOption(this, PayHp, ModOptionKey("PAGE", "PAY_HP"))
+    .ThatDoesDamage(damage);
+new EventOption(this, PayMaxHp, ModOptionKey("PAGE", "PAY_MAX_HP"))
+    .ThatDecreasesMaxHp(maxHpLoss);
 ```
 
 These helpers only describe the warning; the option's Cmd still owns the actual cost. The
@@ -68,14 +73,15 @@ Reuse `MapNode` in one headed run:
 1. focus an enabled option with Card/relic/potion/power tips and prove the real
    `NHoverTipSet` consumers plus cleanup;
 2. assert a locked option retains tips but does not show them, and assert a normal
-   `RelicOption<T>` has metadata/title/description but no visible relic image;
+   `CreateModRelicOption<T>` has metadata/title/description but no visible relic image;
 3. show safe and exact-lethal HP options together, then a second settled page with safe and
    exact-lethal Max HP options; inspect `RedFlash` alpha and capture both states;
 4. drive a real enabled option to its Gold/page consequence and require the strict
    `state proof:` marker, `selftest done`, and no fresh error block.
 
-Live proof (`CanaryPresentation`, 2026-07-20): enabled typed tips rendered Card preview,
-Relic, Potion, and Power descriptions; locked tips remained hidden; normal RelicOption
-metadata rendered with `normalRelicIcon=False`; the real option changed Gold `99 -> 124`.
-HP and Max HP boundaries independently produced `0.00/0.50` safe/lethal glow alpha, with
-settled headed screenshots and strict Tier 2 proofs.
+The 2026-07-23 RitsuLib-only R4 `MapNode` proof repeated the established presentation
+contract in the same run as Event core/outcomes: enabled typed tips rendered Card preview,
+Relic, Potion, and Power descriptions; locked tips remained hidden; normal relic-backed
+metadata rendered without a normal-layout image; and HP/Max HP independently produced
+safe/exact-lethal native warning states. The full suite reached `selftest done` with no
+fresh error.

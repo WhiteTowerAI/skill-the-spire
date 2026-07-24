@@ -105,7 +105,7 @@ There is NO `ICombatHook` to implement; just override the method.
 |---|---|---|
 | "at the start of combat" | `AfterSideTurnStart(CombatSide, IReadOnlyList<Creature>, ICombatState)` | Guard `TurnNumber <= 1`. **This is the combat-start hook** — same one Lantern uses. Fires every turn otherwise. |
 | "at the start of each turn" | `AfterSideTurnStart(...)` | Same hook, no TurnNumber guard (still guard `participants.Contains(Owner.Creature)`). |
-| "every N turns" across combats | `AfterSideTurnStart(...)` | `[SavedProperty]` modulo progress; never clear it at combat end. See `stateful-mechanics.md`. |
+| "every N turns" across combats | `AfterSideTurnStart(...)` | `SavedAttachedState<SpecificRelic, int>` modulo progress; never clear it at combat end. See `stateful-mechanics.md`. |
 | "on turn N" / "every N turns this combat" | start: `AfterSideTurnStart(...)`; end: `BeforeSideTurnEnd(...)` | Read `Owner.PlayerCombatState.TurnNumber` (`== N` or `% N == 0`); no saved counter. |
 | "every N cards this turn" | `AfterCardPlayed(...)` + `BeforeSideTurnStart(...)` reset | Owner-card guard; ordinary turn-local field. |
 | "once per combat" | the real trigger + `AfterRoomEntered(CombatRoom)` reset | Ordinary bool; reset only on combat entry. |
@@ -178,7 +178,8 @@ Pools (`MegaCrit.Sts2.Core.Models.RelicPools`):
 - [ ] `Rarity` overridden.
 - [ ] Correct hook overridden; combat-start uses `AfterSideTurnStart` + `TurnNumber <= 1`.
 - [ ] If stateful: event/threshold/phase/lifetime/reset/persistence match SPEC; run state
-      uses `[SavedProperty]`, combat turns use `PlayerCombatState.TurnNumber`.
+      uses `SavedAttachedState<SpecificRelic, int/bool>` with a Mod-qualified name;
+      combat turns use `PlayerCombatState.TurnNumber`.
 - [ ] `participants.Contains(Owner.Creature)` guard present.
 - [ ] All `Cmd`/RNG calls `await`ed.
 - [ ] `relics.json` has `<MOD>_RELIC_<TYPE>.{title,description,flavor}` flat keys.

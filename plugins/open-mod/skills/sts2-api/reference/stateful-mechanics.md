@@ -1,207 +1,200 @@
-# Reference: stateful mechanics and counter lifetimes
+# Stateful mechanics - counters, phases, and persistence
 
-Use this page when an effect remembers progress: "every 3 turns", "the third card
-this turn", "once each combat", "if last turn...", or "3 uses this run". A counter
-is not a new content type. It is state owned by the real card/relic/power and advanced
-from that element's normal hook.
+Status: **RitsuLib pipeline-supported on STS2 0.107.1** for custom-relic run cadence
+with `int`/`bool` attached state and combat-local cadence based on the native turn number.
+`RitsuStateProof` passed the two-combat hosted proof on 2026-07-23 with RitsuLib 0.4.62.
 
-The design contract has six parts. Do not author code until all six are explicit:
+Use this page whenever an effect remembers progress, limits uses, compares turns, or
+changes behavior after a prior event. State is part of the mechanic, not an implementation
+detail.
 
-1. **event** -- the exact owned event that advances state (owner's turn start, an
-   Attack played by the owner, a room entered, and so on);
-2. **threshold and phase** -- `N`, plus whether the event advances state before the
-   threshold check or consumes/reset state after it;
-3. **lifetime** -- `turn`, `combat`, or `run`;
-4. **reset** -- the exact lifecycle boundary that resets it;
-5. **persistence** -- ordinary mutable field or `[SavedProperty]`;
-6. **proof** -- below threshold, at threshold, and the relevant reset/carry-over and
-   save round trip.
+## Semantic contract
 
-**Current support boundary:** custom-relic run cadence with `[SavedProperty] int/bool`
-and custom-relic combat turn cadence with `PlayerCombatState.TurnNumber` are
-pipeline-supported and live-proven. The turn-local, once-per-combat, previous-turn, and
-limited-run-use patterns below are grounded/copyable but remain provisional until their
-own scenario canaries. Card/Enchantment/Modifier holders and every advanced-save case are
-not promoted by the relic canary; see the maintainer audit for the exact ladder.
+SPEC must record all of these fields:
 
-## Choose the lifetime first
+1. **event** - the exact hook that advances or reads state;
+2. **threshold/phase** - whether the effect checks before or after increment/reset;
+3. **lifetime** - `turn`, `combat`, or `run`;
+4. **reset** - the exact boundary and value;
+5. **persistence** - runtime-only field, `AttachedState`, or `SavedAttachedState`;
+6. **owner** - which player/side/card may advance it;
+7. **UI meaning** - progress, current turn, uses remaining, or hidden;
+8. **proof** - below-threshold, threshold, lifetime boundary, and save round trip when run-persistent.
 
-| User meaning | Source of truth | Reset/persistence | Vanilla analog |
+Do not infer lifetime from the easiest C# field. Ask whether progress continues into the
+next fight when the request does not settle that choice.
+
+| Wording | Source of truth | Reset/persistence | Vanilla shape |
 |---|---|---|---|
-| Every Nth event **this turn** | ordinary `int` field | reset at the owner's `BeforeSideTurnStart` | `OrnamentalFan`, `LetterOpener` |
-| On turn N, or every N turns, **of each combat** | `Owner.PlayerCombatState!.TurnNumber` when possible | combat owns/reset its turn number; do not duplicate it | `StoneCalendar` |
-| Once per combat / N events this combat | ordinary `bool`/`int` field | reset when entering a `CombatRoom` | `Permafrost` |
-| What happened last turn | current + previous ordinary fields | shift current into previous, then clear current at owner's turn start | `Pocketwatch` |
-| Every N events **across combats in this run** | `[SavedProperty]` `int` property | never reset at combat end; run save/load restores it | `HappyFlower`, `Nunchaku`, `PenNib`, `TuningFork` |
-| N total uses in this run | `[SavedProperty]` `int`/`bool` property | never reset in combat; optionally expose `IsUsedUp` | `WingedBoots`, `Girya` |
+| Every N events across combats | `SavedAttachedState<SpecificRelic, int>` | never clear at combat end; normal run save restores it | Happy Flower, Nunchaku, Pen Nib |
+| Limited uses in this run | `SavedAttachedState<SpecificRelic, int/bool>` | mutate at the real use site; save with the relic model | Winged Boots, Girya |
+| On turn N / every N turns this combat | `PlayerCombatState.TurnNumber` | native combat state starts at turn 1 | Stone Calendar |
+| Every N cards this turn | ordinary field | reset at the owner's turn boundary | turn-local counter |
+| Once per combat | ordinary field | reset on combat entry only | combat-local flag |
 
-"Every 3 turns" and "on turn 3" are not synonyms. The former normally means a
-Happy Flower-style run cadence (`1, 2, trigger; next combat continues`). The latter
-means a Stone Calendar-style combat turn (`TurnNumber == 3`; every new combat begins
-at turn 1). If the user's wording does not settle carry-over, ask one plain question:
-"Should progress continue into the next fight, or restart each fight?" Offer the
-Happy Flower-style carry-over as the default for "every N turns".
+"Every 3 turns" and "on turn 3" are not synonyms. The former defaults to a run cadence
+that can continue `1, 2, trigger` across fights. The latter reads the current combat's turn
+number and restarts in every fight.
 
 Always scope side/card events to the owner. For a side hook, require
 `participants.Contains(Owner.Creature)`; for a card hook, require
-`cardPlay.Card.Owner == Owner`. Otherwise multiplayer or enemy turns advance the counter.
+`cardPlay.Card.Owner == Owner`.
 
-## Run-persistent periodic counter (Happy Flower shape)
+## Relic-owned run state
 
-This is the known-good shape for "every N owner turns across combats". It increments
-first, wraps with modulo, and triggers on zero. The public property is intentional:
-the run serializer and the self-test can inspect it.
+Use RitsuLib's public `SavedAttachedState<TKey,TValue>` when the saved value belongs to a
+specific relic instance. Keep the handle in a `private static readonly` field so RitsuLib's
+type discovery initializes it during Mod loading. Include the Mod id in the supplied name;
+RitsuLib also prefixes the concrete key type, and rejects duplicate saved names.
 
 ```csharp
-using MegaCrit.Sts2.Core.Saves.Runs;   // SavedProperty
+using STS2RitsuLib.Utils;
 
 private const int Threshold = 3;
-private int _progress;
 
-[SavedProperty]
-public int Progress
+private static readonly SavedAttachedState<MyRelic, int> ProgressState =
+    new($"{MainFile.ModId}_progress", () => 0);
+
+public int Progress => ProgressState[this];
+
+private void SetProgress(int value)
 {
-    get => _progress;
-    private set
-    {
-        AssertMutable();
-        _progress = value;
-        InvokeDisplayAmountChanged();
-    }
+    AssertMutable();
+    ProgressState[this] = value;
+    InvokeDisplayAmountChanged();
 }
 
 public override bool ShowCounter => true;
 public override int DisplayAmount => Progress;
 
-public override async Task AfterSideTurnStart(CombatSide side,
-    IReadOnlyList<Creature> participants, ICombatState combatState)
+public override async Task AfterSideTurnStart(
+    CombatSide side,
+    IReadOnlyList<Creature> participants,
+    ICombatState combatState)
 {
-    if (!participants.Contains(Owner.Creature))
-        return;
+    if (!participants.Contains(Owner.Creature)) return;
 
-    Progress = (Progress + 1) % Threshold;
-    Status = Progress == Threshold - 1 ? RelicStatus.Active : RelicStatus.Normal;
-    if (Progress != 0)
-        return;
+    SetProgress((Progress + 1) % Threshold);
+    Status = Progress == Threshold - 1
+        ? RelicStatus.Active
+        : RelicStatus.Normal;
+    if (Progress != 0) return;
 
     Status = RelicStatus.Normal;
     Flash();
-    await PlayerCmd.GainEnergy(1m, Owner);   // replace with the SPEC effect
+    await PlayerCmd.GainEnergy(1m, Owner); // replace with the SPEC effect
 }
 
 public override Task AfterCombatEnd(CombatRoom room)
 {
-    Status = RelicStatus.Normal;             // UI only; DO NOT clear Progress
+    Status = RelicStatus.Normal; // UI only; do not clear Progress
     return Task.CompletedTask;
 }
 ```
 
-Do not use a plain field for run lifetime. It appears to cross combats in one process
-but silently loses progress when the user saves and resumes. Do not reset the saved
-property in `AfterCombatEnd` or `AfterRoomEntered`.
+For a run-persistent bool, use a second typed handle and the same mutation discipline:
 
-## Combat-local turn cadence (Stone Calendar shape)
+```csharp
+private static readonly SavedAttachedState<MyRelic, bool> UsedState =
+    new($"{MainFile.ModId}_used", () => false);
 
-For "on turn N of each combat", read the game's own combat turn number instead of
-maintaining a second counter. This naturally starts at 1 in every combat and cannot leak
-into the next fight.
+public bool Used => UsedState[this];
+```
+
+Do not use a plain instance/static field for run lifetime. It can appear to cross combats
+in one process but loses state on save/resume. Do not clear attached run state in
+`AfterCombatEnd` or `AfterRoomEntered`.
+
+Do not put relic-owned cadence in `RunSavedDataStore`. That store is for data whose natural
+owner is the run or player rather than an already serialized model instance. The narrower
+attached-state route keeps ownership, cloning, and `SavedProperties` behavior aligned.
+
+## Combat-local cadence
+
+For "on turn N" or "every N turns in each combat", read the game's own turn number. Never
+maintain a second counter.
 
 ```csharp
 private const int TriggerTurn = 3;
 
-public override bool ShowCounter => CombatManager.Instance.IsInProgress && !IsCanonical;
-public override int DisplayAmount => ShowCounter
-    ? Owner.PlayerCombatState!.TurnNumber
-    : -1;
-
-public override async Task BeforeSideTurnEnd(PlayerChoiceContext choiceContext,
-    CombatSide side, IEnumerable<Creature> participants)
+public override async Task BeforeSideTurnEnd(
+    PlayerChoiceContext choiceContext,
+    CombatSide side,
+    IEnumerable<Creature> participants)
 {
     if (!participants.Contains(Owner.Creature) ||
         Owner.PlayerCombatState!.TurnNumber != TriggerTurn)
         return;
 
     Flash();
-    await CreatureCmd.Damage(choiceContext,
+    await CreatureCmd.Damage(
+        choiceContext,
         Owner.Creature.CombatState!.HittableEnemies,
-        5m, ValueProp.Unpowered, Owner.Creature);   // replace with the SPEC effect
-}
-
-public override Task AfterSideTurnStart(CombatSide side,
-    IReadOnlyList<Creature> participants, ICombatState combatState)
-{
-    if (participants.Contains(Owner.Creature))
-        InvokeDisplayAmountChanged();
-    return Task.CompletedTask;
+        5m,
+        ValueProp.Unpowered,
+        Owner.Creature); // replace with the SPEC effect
 }
 ```
 
-For "every N turns in each combat", use `TurnNumber % N == 0`. For an effect at the
-start rather than end of the turn, keep the same source of truth but move the equality/
-modulo check to `AfterSideTurnStart`. No `[SavedProperty]` belongs on combat-local state.
+For periodic combat timing, use `TurnNumber % N == 0`. For a start-of-turn effect, keep
+the same source of truth and move the check to `AfterSideTurnStart`. Combat-local state
+does not use saved attached state.
 
-## Other recurring state shapes
+## Other bounded shapes
 
-**Every N cards this turn:** ordinary `int`; reset it in the owner's
-`BeforeSideTurnStart`, increment in `AfterCardPlayed`, trigger when
-`count % N == 0`. This can trigger more than once in an unusually long turn. If the
-design says "only the first N", add a separate turn-local fired flag.
+**Every N cards this turn:** use an ordinary `int`; reset it in the owner's
+`BeforeSideTurnStart`, increment in `AfterCardPlayed`, and trigger on `count % N == 0`.
+Add a separate turn-local fired flag only when the design says "the first N".
 
-**Once per combat:** ordinary `bool`; reset only when `AfterRoomEntered(AbstractRoom
-room)` receives a `CombatRoom`, then guard/set it in the real trigger hook. Do not reset
-on every room or every turn.
+**Once per combat:** use an ordinary `bool`; reset only when entering a `CombatRoom`, then
+guard/set it at the real trigger. Do not reset on every room or every turn.
 
-**Previous-turn memory:** use ordinary `current` and `previous` fields. At the owner's
-`BeforeSideTurnStart`, assign `previous = current`, then `current = 0`; read `previous`
-for this turn's effect. Clear both in `AfterCombatEnd` unless the design explicitly says
-the memory crosses combats.
+**Previous-turn memory:** use ordinary `current` and `previous` fields. At the owner's turn
+start, assign `previous = current`, then `current = 0`; clear both at combat end unless the
+SPEC explicitly chooses run lifetime.
 
-**Limited run uses:** `[SavedProperty] public int TimesUsed`; increment at the real use
-site and derive remaining uses/`IsUsedUp` from it. A remaining-use counter in the UI is
-usually `limit - TimesUsed`, not the raw used count.
+**Limited run uses:** attach an `int` or `bool` to the concrete relic, mutate it at the real
+use site, and derive remaining uses/`IsUsedUp` from that saved value. UI usually shows
+`limit - used`, not raw uses consumed.
 
-## Save support boundary
+## Save boundary
 
-BaseLib 3.3.x scans mod types during post-mod initialization. If a supported custom
-holder declares a valid `[SavedProperty]`, BaseLib injects that type into
-`SavedPropertiesTypeCache`, so custom relic state participates in normal run saves.
+RitsuLib bridges `SavedAttachedState` through the model's normal `SavedProperties`
+serialization. Supported RitsuLib values include `int`, `bool`, `string`, `ModelId`,
+integer/enum arrays, and the vanilla serializable Card shapes. The active open-mod
+pipeline deliberately supports only concrete custom-relic `int`/`bool` state.
 
-Base-game `[SavedProperty]` supports `int`, `bool`, `string`, `ModelId`, `int[]`, enums/
-enum arrays, `SerializableCard`, `SerializableCard[]`, and `List<SerializableCard>`.
-Supported holder families are `RelicModel`, `CardModel`, `EnchantmentModel`, and
-`ModifierModel`. For this pipeline, run counters use the smallest fitting `int`/`bool`.
+Not supported by this page:
 
-The following are **not pipeline-supported** by this page:
+- profile/meta progression beyond the end of a run;
+- saved state attached to potions, powers, or arbitrary non-model owners;
+- arbitrary objects, dictionaries, floating-point values, or custom collections;
+- wall-clock timers;
+- run-persistent Character resources or multiplayer rejoin claims.
 
-- profile/meta progression that survives the end of a run;
-- `[SavedProperty]` on potions/powers or arbitrary holder classes;
-- arbitrary objects, dictionaries, floating-point state, or custom collections;
-- wall-clock/real-time timers.
+## UI rules
 
-BaseLib has advanced `SavedSpireField`/extended-save seams, but they need their own
-grounding and canary before the pipeline may advertise them. Do not quietly substitute
-one when `[SavedProperty]` warns that a type or holder is unsupported.
+- Override `ShowCounter` only when a visible count helps the player understand timing.
+- `DisplayAmount` must retain one meaning: progress, current turn, or uses remaining.
+- A mutation that changes visible state calls `AssertMutable()` and
+  `InvokeDisplayAmountChanged()` after updating the attached value.
+- `RelicStatus.Active` is feedback, not persistence. Resetting Status must never reset run
+  progress.
 
-## UI counter rules
+## Required Tier 2 proof
 
-- Override `ShowCounter` only when a visible counter helps the player understand timing.
-- `DisplayAmount` should show the same semantic the description implies: progress so far,
-  current combat turn, or uses remaining. Do not switch meanings between combats.
-- Every mutable setter that changes the shown value calls `AssertMutable()` and
-  `InvokeDisplayAmountChanged()`.
-- `RelicStatus.Active` is anticipation/feedback, not state. Resetting `Status` must never
-  reset a run-persistent counter.
+One trigger is not enough. Assert:
 
-## Required Tier-2 proof
+1. **below threshold:** exact progress at `N - 1` and no effect;
+2. **threshold:** one exact effect and the specified wrap/consume state;
+3. **lifetime:** a second combat proves carry-over or native reset;
+4. **persistence:** `SavedProperties.From(liveRelic)`, `Fill` a fresh mutable instance, and
+   assert the restored attached value.
 
-One successful trigger is insufficient for a stateful effect. The self-test must assert:
-
-1. **below threshold:** the effect has not fired at `N - 1` and progress is exact;
-2. **at threshold:** it fires once with the exact state delta and wraps/consumes as SPEC says;
-3. **lifetime boundary:** turn/combat state resets, or run state carries into a second combat;
-4. **run persistence:** for `[SavedProperty]`, call `SavedProperties.From(liveRelic)`, fill
-   a fresh mutable instance, and assert the restored property before claiming save support.
-
-`SavedProperties.From`/`Fill` are explicitly exposed for internal/tests. This round trip
-does not replace the two-combat hosted proof: one verifies serialization, the other verifies
-the gameplay lifecycle. See `reference/selftest-harness.md` for the cadence driver.
+The serialization round trip and two-combat hosted proof are independent requirements.
+`RitsuStateProof` observed progress `0 -> 1 -> 2` and `used=false -> true`,
+`SavedProperties.From/Fill` restoring `2/true`, a distinct second `PlayerCombatState`,
+second-combat progress `2 -> 0` with exactly one Energy gain `3 -> 4` while the bool
+one-shot stayed used, and the native combat-local turn/block boundary
+`turn 2 / Block 3 -> turn 1 / Block 0`. It reached `selftest done`, strict Tier 2, and no
+fresh error with only the declared RitsuLib runtime dependency.

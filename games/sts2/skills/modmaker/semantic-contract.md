@@ -89,6 +89,9 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Enemy encounter | HP, group, ordered moves, conditions, encounter placement | `CombatEnemy` |
 | Event | acts, pages/options, public outcomes, bounded presentation, combat completion | `MapNode` |
 | Character | identity, HP, starter content, pools, hosted mechanic, selected static profiles | `RunStart` + `CombatPlayer` |
+| Character combat resource | name, gain/spend/payoff, nonnegative domain, combat reset, fixed UI/fallback | two-combat Character / `CombatPlayer` |
+| Ordered semantic buffer | value/order, capacity/overflow, normal source destination, formula/output | two-combat Character / `CombatPlayer` |
+| Card Scry helper | top-X amount, discard-any choice, upgrade delta, singleplayer boundary | `CombatPlayer` with visible native selector |
 
 The adapter may require additional technical inputs internally, but those belong in
 the selected adapter reference and generated source, never in the semantic fields.
@@ -126,7 +129,7 @@ retained so current verification tools remain compatible.
 
 ## Simple gate examples
 
-The following two semantic descriptions are complete enough for R1 and contain no
+The following two semantic descriptions are complete and contain no
 framework vocabulary. The RitsuLib adapter reference maps them to implementation data.
 
 ```markdown

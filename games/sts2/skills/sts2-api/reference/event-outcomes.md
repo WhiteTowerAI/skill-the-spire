@@ -1,8 +1,8 @@
 # Event Outcome Vocabulary
 
-Grounded against STS2 0.107.1 by inventorying all 68 vanilla `EventModel` classes and by
-the 2026-07-20 `CanaryEvent` headed acceptance. This page extends `recipes/event.md`; it
-does not change event registration, localization, or portrait rules.
+Grounded against STS2 0.107.1 by inventorying all 68 vanilla `EventModel` classes and
+re-verified in the 2026-07-23 RitsuLib-only R4 `MapNode` run. This page extends
+`recipes/event.md`; it does not change event registration, localization, or portrait rules.
 
 ## Supported outcome families
 
@@ -10,7 +10,7 @@ does not change event registration, localization, or portrait rules.
 |---|---|---|
 | Immediate run-state effect | `PlayerCmd`, `CreatureCmd`, `CardPileCmd`, `CardCmd`, `RelicCmd`, `PotionCmd` | `await` asynchronous Cmds, then change the event page |
 | Multi-page choice | `SetEventState(description, options)` | Localize every page and every option key |
-| Conditional/locked option | condition plus `Option(...)` / `LockedOption(...)` | Decide from the mutable event owner/run, never the canonical model |
+| Conditional/locked option | condition plus an `EventOption` callback or null callback | Decide from the mutable event owner/run, never the canonical model |
 | Card-selection overlay | `CardSelectCmd.FromDeckFor*` | Await the selection screen before mutating the card or event state |
 | Custom reward overlay | `RewardsCmd.OfferCustom` | Await the reward screen before marking the event finished or advancing |
 | Special combat, then resume | `EnterCombatWithoutExitingEvent<T>(..., true)` plus `Resume` | Event must be shared; restore an explicit post-combat page |
@@ -130,12 +130,17 @@ Use `SetEventState` when the Event should remain active:
 ```csharp
 SetEventState(
     PageDescription("PREPARED"),
-    new[] { Option(ChallengeGuardian, "PREPARED") });
+    new[]
+    {
+        new EventOption(this, ChallengeGuardian,
+            ModOptionKey("PREPARED", "CHALLENGE_GUARDIAN")),
+    });
 ```
 
-BaseLib's optional page argument keeps `Option(Method, pageKey)` aligned with nested
-`EventLoc`. Generate a locked option when its precondition is false. Recompute conditions
-from `Owner` and its `RunState`; the canonical model has no owner.
+RitsuLib's `ModOptionKey(pageKey, optionKey)` keeps an explicit `EventOption` aligned with
+the flat nested localization key. Pass a null callback to generate a locked option when
+its precondition is false. Recompute conditions from `Owner` and its `RunState`; the
+canonical model has no owner.
 
 ## Special combat
 
@@ -165,7 +170,11 @@ public override Task Resume(AbstractRoom exitedRoom)
 
     SetEventState(
         PageDescription("RETURNED"),
-        new[] { Option(ClaimReward, "RETURNED") });
+        new[]
+        {
+            new EventOption(this, ClaimReward,
+                ModOptionKey("RETURNED", "CLAIM_REWARD")),
+        });
     return Task.CompletedTask;
 }
 ```

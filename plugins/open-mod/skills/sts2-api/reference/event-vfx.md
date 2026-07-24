@@ -2,8 +2,8 @@
 
 This is one bounded, pipeline-supported VFX profile for a normal/default-layout Event:
 a code-native portrait halo made from Godot `Node2D`, `Line2D`, and `Polygon2D` nodes. It
-was headed-live verified on 2026-07-20 across the initial page, a later portrait page,
-Event-to-combat cleanup, and the resumed post-combat page.
+was re-verified on RitsuLib `0.4.62` on 2026-07-23 across the initial page, a later
+portrait page, Event-to-combat cleanup, and the resumed post-combat page.
 
 This page does not authorize arbitrary VFX scenes, shader generation, custom/Ancient
 layouts, phobia assets, combat VFX paths, or animation on other content families.
@@ -13,8 +13,9 @@ layouts, phobia assets, combat VFX paths, or animation on other content families
 - `EventModel.OnRoomEnter()` is public.
 - `NEventLayout.AddVfxAnchoredToPortrait(Node)` is public and used by vanilla Events.
 - The normal layout exposes its `%Portrait` node for owned-child lookup and cleanup.
-- BaseLib 3.3.5/3.3.6 declares `CustomEventModel.CustomVfxPath` but does not consume it.
-  Do not override that property.
+- RitsuLib exposes optional custom Event VFX/layout routes, but those broader routes are
+  not promoted by this proof. The supported profile attaches only through this public
+  portrait host.
 
 The VFX is authored as code, not raster art. It has no `gen_sprite.py` spec and does not
 require an image backend.

@@ -1,0 +1,36 @@
+{
+  "name": "open-mod",
+  "version": "0.6.0",
+  "description": "Turn a plain-language idea into a built and verified Slay the Spire 2 mod.",
+  "author": {
+    "name": "WhiteTowerAI",
+    "url": "https://github.com/WhiteTowerAI"
+  },
+  "homepage": "https://github.com/WhiteTowerAI/open-mod",
+  "repository": "https://github.com/WhiteTowerAI/open-mod",
+  "license": "MIT",
+  "keywords": [
+    "slay-the-spire-2",
+    "modding",
+    "ritsulib",
+    "game-development"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "open-mod for Slay the Spire 2",
+    "shortDescription": "Build and verify STS2 mods from plain-language ideas.",
+    "longDescription": "open-mod interviews the user, writes a semantic spec, scaffolds a pinned RitsuLib project, authors the mod, builds it, and verifies it in Slay the Spire 2.",
+    "developerName": "WhiteTowerAI",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Local tools"
+    ],
+    "websiteURL": "https://github.com/WhiteTowerAI/open-mod",
+    "defaultPrompt": [
+      "Use $modmaker to build an STS2 relic from my idea.",
+      "Use $modmaker to create and verify an STS2 character mod."
+    ]
+  }
+}

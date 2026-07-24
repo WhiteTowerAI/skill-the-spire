@@ -1,16 +1,10 @@
 ---
 name: sts2-api
-display_name: STS2 API Lookup
-short_description: On-demand STS2 modding knowledge (recipes, commands, errors)
 description: |
   Query the STS2 game pack for concrete modding knowledge: element recipes,
   command APIs, localization rules, error fixes. Use when the main pipeline
   needs a specific answer (hook signature, Cmd name, loc-key rule) rather than
   loading the whole pack into context.
-allow_implicit_invocation: false
-context: fork
-model: sonnet
-agent: Explore
 ---
 
 # STS2 API Lookup
@@ -18,72 +12,71 @@ agent: Explore
 This skill is a narrow reference tool. Answer only what the caller asked — do
 not dump entire files into the response.
 
-## Migration routing
+## Adapter routing
 
 For generated content, the semantic contract is the product-level source of truth:
 read `./semantic-contract.md` before selecting an implementation.
-For the current migration target, lazily read `reference/ritsulib-adapter.md` next. It
+Lazily read `reference/ritsulib-adapter.md` next. It
 pins RitsuLib `0.4.62` against STS2 `0.107.1`, maps each semantic surface to one public
 registration/template and asset profile, and owns the framework/version diagnostic
 record. Only then load the surface recipe or reference needed for the request.
 
-The recipes below retain grounded game behavior and historical comparison details while
-the RitsuLib port is in progress. They are not a second active framework branch. Do not
-select a historical dependency, copy its scaffold, or infer a runtime dependency from a
-recipe name.
+RitsuLib is the only active adapter. Do not select a historical dependency, copy another
+scaffold, or infer a runtime dependency from a recipe name.
 
 ## How to answer
 
-1. Check `./recipes/` for the element or mechanic type (relic, potion,
+1. Check `../sts2-api/recipes/` for the element or mechanic type (relic, potion,
    card, power, keyword, enchantment, orb, monster+encounter, event, character). For a **fought enemy** read
    `recipes/monster.md` — it covers the monster AND its encounter as one vertical slice.
-   For a **World Node/event** read `recipes/event.md` — it covers registration, nested
-   `EventLoc`, the fast-path consequence, checked portraits, and the `MapNode` proof. Also
-   read `./reference/event-outcomes.md` when options use selections,
+   For a **World Node/event** read `recipes/event.md` — it covers RitsuLib registration,
+   flat nested `events.json`, explicit option keys, the fast-path consequence, checked
+   portraits, and the `MapNode` proof. Also
+   read `../sts2-api/reference/event-outcomes.md` when options use selections,
    custom rewards, conditional pages, or special combat. Read
-   `./reference/event-vfx.md` only when SPEC selects the bounded
+   `../sts2-api/reference/event-vfx.md` only when SPEC selects the bounded
    normal-layout `portrait_halo` profile. Read
-   `./reference/event-text-effects.md` when Event page/option
+   `../sts2-api/reference/event-text-effects.md` when Event page/option
    descriptions use the bounded vanilla rich-text vocabulary. Read
-   `./reference/event-option-presentation.md` when enabled Event
+   `../sts2-api/reference/event-option-presentation.md` when enabled Event
    options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP costs.
-   Read `./reference/event-native-presentation.md` when an Event
+   Read `../sts2-api/reference/event-native-presentation.md` when an Event
    option acquires a Card/relic with native presentation, selects the bounded one-shot
    screen shake, or uses the curated `trial_noble` built-in VFX profile.
-   Read `./reference/forced-followup-event.md` when a custom Quest
+   Read `../sts2-api/reference/forced-followup-event.md` when a custom Quest
    Card should force one custom Event in a specified act.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
-   character template, constructor auto-registration, three pools, starters, two-table
-   localization, placeholder shell, and `RunStart` + `CombatPlayer` proof.
+   RitsuLib typed template, one content-pack registration, three pools, starters, two-table
+   localization, static profile/fallback, and `RunStart` + `CombatPlayer` proof.
    When Character SPEC selects static art, richer resource/buffer UI, or native
    Ancient/Architect presentation, also read
-   `./reference/character-presentation.md`. It separates the four
+   `../sts2-api/reference/character-presentation.md`. It separates the four
    live-proven loose-PNG consumers from scene-export and headed-Ancient blockers.
    For a combat-lifetime **character resource with explicit payment and a live counter**,
-   read `./reference/character-resource.md`. For a **bounded ordered
+   read `../sts2-api/reference/character-resource.md`. For a **bounded ordered
    semantic card-play buffer with deterministic dynamic output**, read
-   `./reference/ordered-card-buffer.md`. Both are pipeline-supported
-   through the live 6e Wayfinder composition acceptance.
-   For a **grounded advanced capability that needs a non-public host seam**, read
-   `./reference/capability-kernel.md` after the public API check.
-   It covers self-contained typed state/hooks/UI descriptors and the one verified B-risk
-   combat-UI postfix. Resource UI may select that exact adapter through its own page; it
-   is not permission to invent other patch targets, C/D patches, or `OpenMod.Runtime`.
+   `../sts2-api/reference/ordered-card-buffer.md`. Both use the public RitsuLib
+   Secondary Resource/node-attachment APIs and are pipeline-supported by the final
+   Wayfinder composition. If a requested capability has no documented public game/RitsuLib
+   seam, report a pack gap; do not invent a patch target or `OpenMod.Runtime`.
    Cards/powers/keywords/enchantments/orbs also read
-   `./reference/mechanics.md` first (scaling numbers, SmartFormat
+   `../sts2-api/reference/mechanics.md` first (scaling numbers, SmartFormat
    descriptions, shared enums). When Card/relic/potion/power descriptions select bounded
-   vanilla colors, also read `./reference/content-text-effects.md`.
+   vanilla colors, also read `../sts2-api/reference/content-text-effects.md`.
+   When a Card looks at the top X Draw cards and discards any number, also read
+   `../sts2-api/reference/scry-helper.md`. It owns the singleplayer-only
+   open-mod helper, native selector/discard lifecycle, structured result, and proof.
    For any effect that remembers progress (every N events, once per combat, previous
-   turn, limited run uses), read `./reference/stateful-mechanics.md`.
-2. For error signatures → fix, read `./errors.md`.
+   turn, limited run uses), read `../sts2-api/reference/stateful-mechanics.md`.
+2. For error signatures → fix, read `../sts2-api/errors.md`.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a
-   symbol the recipe lacks, read `./grounding.md` and, for
-   potions, `./reference/potions-snapshot.md`.
+   symbol the recipe lacks, read `../sts2-api/grounding.md` and, for
+   potions, `../sts2-api/reference/potions-snapshot.md`.
 4. For the **tier-2 self-test harness** (`SelfTest.cs`, the automated effect check), read
-   `./reference/selftest-harness.md`.
+   `../sts2-api/reference/selftest-harness.md`.
 5. For **custom art** (a card portrait's path + size, the prompt template, host-native
    `image_gen` routing when callable, and `gen_sprite.py` usage), read
-   `./reference/art-contract.md`.
+   `../sts2-api/reference/art-contract.md`.
 6. Return only the relevant snippet (hook, Cmd, loc-key rule, error fix, one analog).
 
 **Never read all files at once.** Each file is loaded on demand.
@@ -103,22 +96,22 @@ recipe name.
 | `recipes/monster.md` | Monster + Encounter as one vertical slice: grounded moves, cycles/branches, static combat+bestiary body, fallback, and `CombatEnemy` proof | Authoring a fought enemy or its move cycle after adapter selection |
 | `recipes/event.md` | Event / World Node pages/options, outcomes, checked portraits, and `MapNode` proof | Authoring a map event after adapter selection |
 | `recipes/character.md` | Character Foundation pools, starters, localization, selection/run behavior, fallbacks, and proof | Authoring a playable character shell after adapter selection |
-| `reference/character-presentation.md` | Character getter/consumer matrix; eight live static profiles; no-editor raw-scene packing; five-layer full energy; static-merchant prefix/fallback; fixed 220x32 resource/buffer UI; native Ancient banner/Architect proof boundary | Authoring or verifying Character static/native presentation |
+| `reference/character-presentation.md` | RitsuLib Character profile/consumer matrix; eight live static profiles; no-editor raw-scene packing; five-layer energy scene; compact card icon; native Ancient/Architect proof boundary | Authoring or verifying Character static/native presentation |
 | `reference/event-outcomes.md` | Full normal-Event outcome vocabulary: immediate Cmd combinations, multi-page/locked options, blocking card selections, custom rewards, resumable/terminal special combat, extra combat rewards, one-combat-per-instance boundary, and unsupported room transitions | Authoring an Event beyond the one-Cmd fast path |
 | `reference/event-vfx.md` | Bounded code-native normal-layout `portrait_halo`: page parameters, Fast Mode behavior, `OnRoomEnter`/portrait host, explicit named-node cleanup, and headed acceptance contract | Authoring the supported Event portrait VFX profile |
 | `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation inventory, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
 | `reference/content-text-effects.md` | Per-surface vanilla rich-text allowlists for Card bodies/Card previews and standard relic/potion/power Hover Tips; SmartFormat and auto-keyword composition; headed proof contract | Authoring styled Card/relic/potion/power descriptions |
-| `reference/event-option-presentation.md` | Enabled Event option typed Hover Tips, normal `RelicOption<T>` text/metadata plus its Ancient-only image blocker, and native exact-lethal HP/Max HP warning glow | Authoring those normal-layout Event option presentation contracts |
+| `reference/event-option-presentation.md` | Enabled Event option typed Hover Tips, normal `CreateModRelicOption<T>` text/metadata plus its Ancient-only image blocker, and native exact-lethal HP/Max HP warning glow | Authoring those normal-layout Event option presentation contracts |
 | `reference/event-native-presentation.md` | Native Card/relic acquisition presentation, the preference-respecting `weak_short` screen shake, and the curated built-in `trial_noble` Event VFX path/host/placement/pause/cleanup contract | Authoring native presentation items 4-6 for a normal Event |
 | `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
-| `reference/character-resource.md` | 6d combat resource contract: `PlayerCombatState` ownership, nonnegative gain/affordability/all-or-nothing spend, second-combat reset, card-hosted payoff, bounded icon+text counter with text-only fallback, and selection of the exact 6c combat-UI adapter | Authoring a character resource and explicit-payoff loop |
-| `reference/ordered-card-buffer.md` | Ordered combat-buffer contract: `PlayerCombatState` semantic values, native source-card Discard, visible state text, bounded order/overflow, deterministic per-instance output, `CardGeneratedEntry`, and combat reset; retained-card `CustomPile` gameplay is explicitly unsupported | Authoring an ordered card-play record and dynamic output |
-| `reference/capability-kernel.md` | Character Systems 6c boundary: semantic combat state, deterministic typed hooks, fallback UI, and version/fingerprint-gated patch diagnostics. Self-contained only; no `OpenMod.Runtime`, unverified target, Publicizer, or transpiler support | Maintaining a grounded capability after public APIs cannot expose its host seam |
+| `reference/character-resource.md` | RitsuLib combat resource: `SecondaryResourceDefinition`/`SecondaryResourceCmd`, combat reset, all-or-nothing spend, public `RegisterCombatUi`, fixed 220x32 counter at offset 160, text fallback, and two-combat proof | Authoring a character resource and explicit-payoff loop |
+| `reference/ordered-card-buffer.md` | Ordered buffer: `AttachedState<PlayerCombatState,TState>`, native source-card Discard, visible order, non-destructive overflow, deterministic output/`CardGeneratedEntry`, and combat reset; retained-card `CustomPile` remains unsupported | Authoring an ordered card-play record and dynamic output |
+| `reference/scry-helper.md` | open-mod Scry helper: top-X native selector, structured result, normal Discard history/hooks, zero/empty/short/full boundaries, await proof, and explicit singleplayer restriction | Authoring a Card that looks at the top X Draw cards and discards any number |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
-| `reference/build-constraints.md` | Build/load constraints and required localization fields; adapter-specific analyzer/registration rules remain migration input until ported | Before writing resolved localization/registration output; on a build diagnostic |
+| `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
 | `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
-| `reference/art-contract.md` | Custom-sprite contract: exact `res://` path + pixel size/profile for card `1000×760`, relic/power/potion `256×256`, enchantment `64×64`, orb icon `100×100`, static monster body `360×360`, and normal-event portrait slots `3440×1613` (all verified live loose PNGs); per-consumer file counts; checked fallbacks; animation boundaries; card/icon/monster/event prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
+| `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and eight promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | Type-matched real STS2 reference pools for card/relic/power/potion/enchantment/orb/monster/event (© Mega Crit, reference-only — see ATTRIBUTION.md); tools select the matching family and randomly sample three distinct images | Passed as the root `--reference` in the art step; never mix families |
 | `grounding.md` | Where facts come from (three sources: content→spire-codex, C# signatures→decompile, build/load→validators) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine miss is a pack gap to report, not a dig | An answer the recipe lacks |
 | `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |
@@ -132,6 +125,10 @@ Harmony patching and is deferred. The recipes make **new** elements.
 - **Adapter first:** resolve `reference/ritsulib-adapter.md` from the semantic SPEC before
   reading a recipe. Registration, template bases, concrete ids, localization keys, and
   asset paths are adapter output; do not place them in the semantic contract.
+- **Scry helper:** use `OpenModScry.Execute` only for the bounded top-X/discard-any Card
+  effect. Await the native selector and every pile/hook command, preserve seen order, and
+  keep the result and hooks local to the generated Mod. Multiplayer/replay remains
+  unsupported; do not silently fall back to local selection.
 - **Monster + encounter are one slice.** Declare every visible move, ordered successor,
   exhaustive branch, hit count, and downstream state consequence. Keep one checked
   360x360 body for combat and bestiary with the explicit built-in fallback; animation and
@@ -155,12 +152,13 @@ Harmony patching and is deferred. The recipes make **new** elements.
   conflict policy, fallback, and a hosted proof. Do not invent C/D targets or a shared
   runtime binary.
 - **Character resource:** combat-owned integer state is nonnegative; check affordability
-  before an all-or-nothing spend, refresh the fixed icon+text counter, retain the text-only
-  fallback, and prove a distinct zero state in combat 2. This does not replace Energy.
+  before RitsuLib's all-or-nothing spend, use public `RegisterCombatUi`, refresh the fixed
+  icon+text counter, retain the text-only fallback, keep its offset disjoint from native
+  Energy, and prove a distinct zero state in combat 2. This does not replace Energy.
 - **Ordered combat buffer:** record semantic values in combat state, send source cards
-  through their normal result pile, expose order through grounded UI, enforce capacity
-  before mutation, and create one deterministic output. Retained-card custom zones remain
-  unsupported.
+  through their normal result pile, use `AttachedState<PlayerCombatState,TState>`, expose
+  order through grounded UI, enforce capacity before mutation, and create one deterministic
+  output. Retained-card custom zones remain unsupported.
 - **Localization keys:** derive concrete keys once in the adapter, keep them flat where the
   selected host requires flat tables, and record the result in `MEMORY.md`; never infer a
   framework prefix from a class or namespace inside SPEC.

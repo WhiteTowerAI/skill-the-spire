@@ -120,6 +120,7 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - target: one enemy | all enemies | self
   - cost: <energy integer, default 1>
   - sequence: <ordered game-term effect with exact values>
+  - helper: none | Scry top <X>, discard any number, singleplayer only
   - scaling: <named base values, e.g. damage 6; block 5; strength 2>
   - upgrade: <named value deltas, e.g. damage +3>
 - **state**: none | see the stateful-mechanic contract below
@@ -134,7 +135,9 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - scenario: CombatPlayer
   - driver: play the real card against its declared target
   - invariants: <exact expected/observed state, result pile, and dependent effects>
-  - boundary cases: <upgrade/state/relationship cases, or none>
+  - boundary cases: <upgrade/state/relationship cases; for Scry include
+    zero/empty/short/full, order, discard hooks/history, awaited selector, and
+    singleplayer restriction; or none>
 - **adapter output** (written to MEMORY after acceptance): resolved content id,
   localization keys, asset profile, and framework diagnostic record
 ```
@@ -319,7 +322,7 @@ normal relic-backed text/metadata, and exact HP/Max HP warnings route to
 this same bounded Event composition. Native Card/relic acquisition presentation,
 `weak_short` screen shake, and `trial_noble` route to
 `reference/event-native-presentation.md`. The warning cost must be identical to the later
-Cmd cost; a `RelicOption<T>` does not itself grant the relic.
+Cmd cost; a relic-backed Event option does not itself grant the relic.
 
 All six native-presentation families are pipeline-supported: cross-content Card/standard-
 Hover-Tip rich text; enabled Event option Hover Tips plus normal relic-backed text/metadata
@@ -373,26 +376,25 @@ separate contracts below):
 `author.md` dispatches `element: character` to `recipes/character.md`. Do not add a
 manual registration line or invent a nonstandard energy override. If `advanced mechanic`
 is not `none`, also record the envelope below. Author it only when the named semantic
-capability has its own scenario-verified pack contract; the 6c kernel alone does not make
-arbitrary advanced behavior supported. The scenario-verified 6d routes are exactly
-`reference/character-resource.md` and `reference/ordered-card-buffer.md`.
+capability has its own scenario-verified pack contract. The supported public framework
+routes are exactly `reference/character-resource.md` and
+`reference/ordered-card-buffer.md`.
 
 ```markdown
 - **capability module**: <family/name>
 - **semantic host**: <real owner/event>
 - **lifetime/reset/save**: <turn|combat|run; exact reset and persistence>
 - **public surface**: <semantic context/listener used by domain code>
-- **adapter route**: public-api | owned-adapter | gated-host-seam
-- **adapter constraints**: <risk, exact target, version/fingerprint; implementation-only>
+- **adapter route**: public-api | owned-adapter
+- **adapter constraints**: <exact supported version and implementation-only limits>
 - **multiplayer ordering**: <owner/local guard and deterministic order>
 - **UI host/fallback**: <host, visibility, refresh, generic fallback>
 - **conflict/failure**: <composition policy and fallback>
 - **scenario/invariant**: <real host plus exact expected/observed state>
 ```
 
-When `adapter route` is `gated-host-seam`, route AUTHOR to
-`reference/capability-kernel.md`. Never infer C/D access or a patch target from this
-envelope.
+If neither documented route can express the mechanic, mark it unsupported and report a
+pack gap. Never infer non-public access or a patch target from this envelope.
 
 For a selected **character resource**, also record:
 
@@ -403,9 +405,10 @@ For a selected **character resource**, also record:
 - **gain sources**: <source -> positive amount>
 - **spend/payoff**: <cost -> exact consequence>; all-or-nothing
 - **affordability boundary**: <one affordable and one unaffordable case>
-- **UI**: generic counter text `<name>: <amount>` under combat energy UI
-- **adapter route**: selected after SPEC; must preserve the fixed icon+text UI and fallback
-- **observe**: gain/spend/rejection/floor/counter plus distinct zero state in combat 2
+- **UI**: fixed 220x32 icon+text counter under combat energy UI; checked text-only fallback
+- **placement**: offset 160 from native Energy; the two global rects must not intersect
+- **adapter route**: public-api selected after SPEC; no private patch fallback
+- **observe**: gain/spend/rejection/floor/counter/non-overlap plus distinct zero state in combat 2
 ```
 
 For a selected **ordered semantic buffer**, also record:
@@ -422,8 +425,13 @@ For a selected **ordered semantic buffer**, also record:
   one CardGeneratedEntry, output state/effect, and distinct empty state in combat 2
 ```
 
-If the user requires real played-card instances to remain in a custom zone, preserve that
-idea as a pack gap. Do not silently generate a no-UI `CustomPile`.
+The adapter lowers the resource block to one framework-owned combat resource with
+all-or-nothing commands and a public UI attachment. It lowers the buffer block to combat-
+attached semantic state. These implementation records belong in `MEMORY.md`, not SPEC.
+
+Retained-card zone UI is unsupported. If the user requires real played-card instances to
+remain in a custom zone, preserve that idea as a pack gap. Do not silently generate a no-UI
+`CustomPile`.
 
 **Multi-element contract** (add only when the mod contains more than one authored element;
 omit it for the single-element fast path). `elements` are real content nodes. `interactions`
@@ -494,13 +502,14 @@ Rules for this round:
 - **Orb generation is icon-only.** Keep the recipe's explicit Frost icon/Spine scene/
   channel-SFX fallbacks; `gen_sprite.py` does not emit a combat scene.
 - **Enemy generation is static-body only.** One 360×360 PNG feeds combat and bestiary
-  through `CreateCustomVisuals()`; keep the explicit fallback scene. Supported Character
-  generation is consumer-specific: selection portrait/background, top-panel icon, static
-  combat/rest/merchant bodies, five-layer full energy, and compact resource icon use the
-  exact profiles in `reference/art-contract.md`. Background/rest/merchant use bundled raw
-  scene packing without a Godot/MegaDot prerequisite; merchant also records the versioned
-  prefix and patch-failure fallback. Generated-mod authors do not manually install or run
-  PckPacker; the character template declares it and `build.py` owns both package paths.
+  through RitsuLib's `TryCreateCreatureVisuals()` route; keep the explicit fallback scene.
+  Supported Character generation is consumer-specific: selection portrait/background,
+  top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact
+  resource icon use the exact profiles in `reference/art-contract.md`. Background/rest/
+  merchant use bundled raw scene packing without a Godot/MegaDot prerequisite. RitsuLib's
+  `CharacterAssetProfile` accepts the static Shop wrapper without a merchant prefix.
+  Generated-mod authors do not manually install or run PckPacker; the character template
+  declares it and `build.py` owns both package paths.
   Locked/map consumers need headed proof. Keep their fallback getters. Event raster
   support includes only the initial and explicitly authored later-page portraits; it does
   not include custom phobia, custom-layout, or Ancient assets. The separate code-native

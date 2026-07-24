@@ -15,6 +15,7 @@ Current sources of truth:
 
 - `M0_RESULTS.md` through `M4_RESULTS.md`
 - `R1_R2_FEASIBILITY.md`
+- `RITSULIB_MIGRATION_RESULTS.md` - final R0-R8 outcome; R7 is explicitly canceled
 - `IMPLEMENTATION_PLAN_THROUGH_M6.md`
 - `AGENTS_THROUGH_M6.md`
 - `CLAUDE_THROUGH_M6.md`

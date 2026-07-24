@@ -1,387 +1,174 @@
-# errors.md — STS2 mod error → fix catalog
+# STS2 Mod error catalog
 
-> **Append-only, compounding asset.** Every failure the
-> repair loop diagnoses becomes a permanent entry: an error *signature* (what you'd
-> grep for, or the wrong behavior observed) → the *fix*. Over time this makes the
-> repair loop faster and the game pack harder to replicate.
->
-> Format per entry: **Signature** (build error text, `godot.log` line, or observed
-> symptom) → **Cause** → **Fix**. Newest failures appended at the bottom of their
-> section. Seeded from M1 (hand-building Gambler's Coin) and the M0/M1 API dig.
+Match the exact signature, fix one cause, rebuild when code/resources changed, and rerun
+only the failed verification stage. Never repair a generated project by adding BaseLib or
+switching to an old template.
 
-## Build-time (dotnet build / analyzer)
+## Build And Profile
 
-> The PckPacker and STS001-STS004 entries in this section are pre-migration comparison
-> evidence. The active RitsuLib scaffold uses `build.py`, the pinned compat package, and
-> the current surface recipes; it does not reference the historical analyzer.
+### Required compile asset is `STS2.RitsuLib.Compat.0.107.1 0.4.62`
 
-### No `.pck` is produced; only `.dll` copied to `mods/`
-- **Signature:** build succeeds but `mods/<ModName>/` has `.dll` + `.json` but no
-  `.pck`; localization/images don't show in-game.
-- **Cause:** `BSchneppe.StS2.PckPacker` package reference is commented out in the
-  csproj (the template ships it commented).
-- **Fix:** uncomment
-  `<PackageReference Include="BSchneppe.StS2.PckPacker" Version="0.1.1" PrivateAssets="All" />`
-  and rebuild. Plain `dotnet build -c Release` then emits both through PckPacker;
-  no MegaDot step is needed.
+- **Cause:** the project selected a floating/default RitsuLib package, another compat
+  target, or an additional framework package.
+- **Fix:** regenerate with `scaffold.py` or restore the exact pinned `PackageReference`,
+  `Sts2ApiCompat`, `RitsuLibAutoCopy=false`, and single runtime manifest dependency.
 
-### PckPacker skips a mod that contains raw `.tscn`
-- **Signature:** `dotnet build` succeeds, PckPacker reports a skipped unsupported `.tscn`,
-  and the installed PCK is absent or stale.
-- **Cause:** upstream PckPacker 0.1.1 hardcodes `.tscn` as unsupported even though STS2
-  0.107.1 loads bounded raw text scenes from the same format-v3 PCK.
-- **Fix:** run `${CLAUDE_PLUGIN_ROOT}/tools/build.py`, not bare `dotnet build`/`publish`. It detects
-  `<project>/<ModName>/**/*.tscn` and invokes bundled `pack_pck.py` automatically. Do not
-  install Godot/MegaDot. `.gdshader`, `.gdscript`, and `.gdextension` remain unsupported.
+### Runtime asset does not contain the `0.107.1` compat DLL/marker
+
+- **Cause:** RitsuLib is missing, another host variant was installed, or its variant
+  manifest/hash does not match.
+- **Fix:** install RitsuLib `0.4.62` with `lib/0.107.1/STS2-RitsuLib.dll`; do not use
+  `--skip-runtime-check` for Tier 1.
+
+### Host version is not `0.107.1`
+
+- **Cause:** Steam updated/downgraded STS2 or the project points at another installation.
+- **Fix:** use the supported stable host or stop and re-ground the profile before changing
+  package versions.
+
+### No `.pck` is produced
+
+- **Cause:** resources are outside `<project>/<ModName>/`, or bare `dotnet build/publish`
+  bypassed open-mod's pack step.
+- **Fix:** place resource files under the Mod resource tree and run
+  `../modmaker/scripts/build.py`.
 
 ### MSB1008 when passing MSBuild properties
-- **Signature:** `MSB1008: Only one project can be specified` on a `dotnet
-  publish /p:GodotPath=...` command.
-- **Cause:** the `/p:Name=Value` form gets mangled by shell quoting on this setup.
-- **Fix:** use `--property:Name=Value` instead.
 
-### Unknown type / member: CS0103, CS0246, CS0117, CS1061 (a guessed API)
-- **Signature:** `CS0103: The name '<X>' does not exist in the current context`
-  (a bare fabricated name, e.g. `EnergyCmd` — confirmed in M3 testing),
-  `CS0246: The type or namespace name '<X>' could not be found`,
-  `CS0117: '<Type>' does not contain a definition for '<member>'`, or
-  `CS1061: '<Type>' does not contain a definition for '<method>'` — on an STS2 /
-  selected-framework symbol you wrote (a Cmd, model, enum, or hook).
-- **Cause:** the API name was **guessed from memory**, not confirmed. STS2's Cmd
-  and model names don't always match intuition (e.g. energy is `PlayerCmd.GainEnergy`,
-  not `EnergyCmd.Add`), and framework templates may wrap some of them.
-- **Fix:** do **not** guess a second name — that's how the repair loop burns its
-  attempts. Ground the real symbol **in the pack**: query the **sts2-api** skill
-  ("commands for <effect>" / "<Type>: real member for <X>"), check `recipes/relic.md`'s
-  "Effect building blocks", `reference/mechanics.md`, and `reference/build-constraints.md`.
-  Then use the exact name + namespace. Missing `using` for a confirmed type → add the
-  namespace from the recipe's import block, not a new guess. If the symbol is genuinely
-  absent from the pack, that's a **pack gap** — report it (the maintainer grounds new
-  symbols offline per `grounding.md`); don't invent one at runtime.
+- **Cause:** `/p:Name=Value` was rewritten by the Windows shell/tool boundary.
+- **Fix:** use `--property:Name=Value`, or use the normal pinned build wrapper without
+  manual properties.
 
-### Nullable warning CS8602 on `Owner.PlayerCombatState`
-- **Signature:** `warning CS8602: Dereference of a possibly null reference` on
-  `Owner.PlayerCombatState.Energy` (template has `<Nullable>enable</Nullable>`).
-- **Cause:** `Player.PlayerCombatState` is typed `PlayerCombatState?` (null outside
-  combat), but is guaranteed non-null inside a combat hook.
-- **Fix:** capture once with the null-forgiving operator:
-  `var combat = Owner.PlayerCombatState!;` then use `combat.Energy`, `combat.TurnNumber`.
+### CS0103 / CS0246 / CS0117 / CS1061 unknown API
 
-### STS001: Localization `<ID>.smartDescription` not found (a custom power)
-- **Signature:** build fails with `error STS001: Localization <PREFIX>-<SLUG>.smartDescription
-  not found for symbol '<PowerClass>'` — fires on `CustomPowerModel` subclasses, not
-  on cards/potions/relics. (Confirmed M4 card round: two powers, both hit this; the
-  two cards in the same mod did not.)
-- **Cause:** the Alchyr `Sts2ModAnalyzers` package enforces a **required loc-key set
-  per model type**, and **powers require three keys** — `.title`, `.description`,
-  **and `.smartDescription`**. Writing only `.title/.description` (correct for a card)
-  leaves a power short one key. At runtime `PowerModel.SmartDescription` falls back to
-  `.description`, but the *build-time* analyzer does not — it hard-fails. Required
-  keys by table (read from the analyzer DLL, v0.1.9):
+- **Cause:** an API name or signature was guessed.
+- **Fix:** use the exact recipe/reference signature. If the pack lacks it, report a pack
+  gap rather than spending more repair attempts on guesses.
 
-  | table | required keys |
-  |-------|---------------|
-  | `cards` | `.title`, `.description` |
-  | `potions` | `.title`, `.description` |
-  | `relics` | `.title`, `.description`, `.flavor` |
-  | **`powers`** | `.title`, `.description`, **`.smartDescription`** |
+### CS8602 on `Owner.PlayerCombatState`
 
-- **Fix:** add `<PREFIX>-<SLUG>.smartDescription` to `powers.json` for each custom
-  power (same text as `.description` is fine), then rebuild. See recipes/power.md
-  "Localization".
-- **Master reference:** the complete required-loc table (incl. characters/keywords)
-  and the full analyzer diagnostic set live in `reference/build-constraints.md`. The
-  analyzer defines exactly **STS001–STS004** (mined from `Sts2ModAnalyzers.dll` 0.1.9
-  — no STS005+): STS001 missing required loc key (this entry, the only *error* of the
-  loc rules), STS002 loc files not registered as analyzer additional files, STS003
-  model doesn't inherit a `CustomModel`, STS004 poolable model (card/potion/relic,
-  **not power**) missing `[Pool]` (see the PoolAttribute entry below).
+- **Cause:** the property is nullable outside combat.
+- **Fix:** inside a proven combat hook, capture once with
+  `var combat = Owner.PlayerCombatState!;`. Outside that boundary, guard null explicitly.
 
-### STS001: four `THE_ARCHITECT.talk.<CHAR_ID>` keys missing (a custom character)
-- **Signature:** build fails on the character symbol and lists
-  `THE_ARCHITECT.talk.<CHAR_ID>.0-0r.char`, `.0-0r.next`, `.0-1r.ancient`, and
-  `.0-attack` as missing, even when the 14 `characters` values are supplied through
-  `CharacterLoc`.
-- **Cause:** `CharacterModel` localization spans two tables. `CharacterLoc` satisfies
-  `characters`, but the analyzer independently requires four Architect conversation
-  entries from `ancients`.
-- **Fix:** add those exact four flat keys to `localization/eng/ancients.json`, using the
-  character's final `Id.Entry`, then rebuild. See `recipes/character.md` and
-  `reference/build-constraints.md` section 2a.
+## Registration And Localization
 
-## RitsuLib content registration (godot.log)
+### Model does not appear in ModelDb / registry
 
-### R3 model does not appear in ModelDb / its registry
-- **Signature:** no `[<ModId>] [Content] Registered <surface>:` line; the self-test cannot
-  find the model by CLR type.
-- **Cause:** the model was not added to the scaffold's content pack, `.Apply()` was omitted,
-  or registration ran after RitsuLib froze content discovery.
-- **Fix:** add exactly one matching `.Card`, `.Relic`, `.Potion`, `.Power`,
-  `.Enchantment`, or `.Orb` step to `MainFile.Content.cs`; keywords use
-  `.CardKeywordOwnedByLocNamespace(...)`. Call `.Apply()` once during the Mod initializer
-  and remove any second registration path. Pool generics must derive from the matching
-  game pool base.
+- **Cause:** the matching content-pack step is missing, registered twice through competing
+  paths, or `.Apply()` was omitted.
+- **Fix:** keep one matching `Mod*Template` registration in `RegisterContent()` and one
+  final `.Apply()`.
 
-## Historical BaseLib registration / load-time (comparison only)
+### Visible title/description is blank or a raw key
 
-> These are the load-time twins of build §1. A card/potion/relic model
-> **self-registers in its constructor** (`CustomContentDictionary.AddModel(GetType())`),
-> so BaseLib throws the moment the element is instantiated during load, aborting that
-> mod's init. The complete throw set + the STS004-vs-throw relationship is in
-> `reference/build-constraints.md` §3.
+- **Cause:** authored keys do not match the normalized public registration entry or are in
+  the wrong table/resource tree.
+- **Fix:** copy the exact public entry from registration diagnostics, use the recipe's
+  table/shape, rebuild the PCK, and verify the real consumer.
 
-### Exception at registration: model must be marked with a PoolAttribute
-- **Signature:** startup exception mentioning `Model <FullName> must be marked with a
-  PoolAttribute to determine which pool to add it to` (thrown from
-  `CustomContentDictionary.AddModel`).
-- **Cause:** a `CustomCardModel` / `CustomPotionModel` / `CustomRelicModel` subclass
-  has no `[Pool(...)]` attribute. BaseLib auto-registers these three poolable models in
-  their ctor and requires the pool to be declared. (Build warning **STS004** flags this
-  too but does not fail the build, so it can reach load — treat STS004 as load-bearing.
-  **Powers are exempt**: `CustomPowerModel` doesn't self-register, so it never throws
-  here.)
-- **Fix:** add the `[Pool(typeof(<XPool>))]` matching the element type — relic →
-  `[Pool(typeof(SharedRelicPool))]`, potion → `[Pool(typeof(SharedPotionPool))]`, card
-  → `[Pool(typeof(ColorlessCardPool))]` (or a character card pool). `using BaseLib.Utils;`
-  for the attribute; import the pool type from its namespace (e.g.
-  `using MegaCrit.Sts2.Core.Models.RelicPools;`).
+### Custom art shows the fallback
 
-### Exception at registration: model assigned to incorrect / invalid pool type
-- **Signature:** startup exception `Model <FullName> is assigned to incorrect type of
-  pool <PoolFullName>.` **or** `... is assigned to <PoolFullName> which is not a valid
-  pool type.` (both from `CustomContentDictionary.AddModel` / its `IsValidPool` check).
-- **Cause:** the `[Pool]` attribute is present but wrong. "Incorrect type" = the pool
-  belongs to a real family but the wrong one for this element (e.g. a card given a relic
-  pool). "Not a valid pool type" = the `[Pool]` points at a type that isn't a pool at
-  all (its base chain never reaches `CardPoolModel` / `RelicPoolModel` / `PotionPoolModel`).
-- **Fix:** point `[Pool]` at a pool class that (a) actually derives from a `*PoolModel`
-  base and (b) matches the element: cards → a `CardPoolModel` subclass, potions → a
-  `PotionPoolModel` subclass, relics → a `RelicPoolModel` subclass. Don't pass an
-  arbitrary type. See `reference/build-constraints.md` §3.
+- **Cause:** the file is missing/mis-sized, outside the packed tree, or the selected asset
+  profile points at another path.
+- **Fix:** run deterministic `gen_sprite.py import`, verify its destination, rebuild, and
+  identify the custom resource in the real consumer. Do not remove the fallback.
 
-## Localization
+## Behavior
 
-### Relic shows blank / raw-key title or description in-game
-- **Signature:** hover shows the loc key literally (e.g. `GAMBLERS_COIN_RELIC_GAMBLERS_COIN.title`)
-  or empty text instead of the intended string.
-- **Cause:** the `relics.json` key doesn't match the relic's actual `Id.Entry`.
-  Two common mistakes: (a) using nested JSON `{"MyRelic": {"title": ...}}` — the
-  `relics` LocTable is a flat dictionary; (b) deriving the historical hyphenated id
-  instead of RitsuLib's normalized public entry.
-- **Fix:** use the exact `MOD_RELIC_TYPENAME` reported by RitsuLib registration. Example:
-  mod id `GamblersCoin`, class `GamblersCoin` becomes
-  `GAMBLERS_COIN_RELIC_GAMBLERS_COIN.title`. Preserve a published entry with
-  `ModelPublicEntryOptions.FromStem(...)` in the content-pack registration.
+### Combat-start Energy disappears
 
-### Relic icon is the generic placeholder, not the intended art
-- **Signature:** `godot.log` line `Could not find relic image path: .../<name>.png`;
-  relic shows the fallback `relic.png`.
-- **Cause:** `RelicAssetProfile` points at a missing/wrong `res://<ModName>/...` path, or
-  no custom profile was selected.
-- **Fix:** for custom art, use explicit checked paths for normal, outline, and big icons.
-  For placeholder mode, leave profile fields empty and retain the template/base-game
-  fallback; do not invent an id-derived path in the model.
+- **Cause:** Energy was granted before STS2's turn-1 reset.
+- **Fix:** use the grounded side-turn-start hook, guard the owner/participant, and apply on
+  player combat turn 1.
 
-## Behavior (tier-2 / effect logic)
+### Relic effect fires for the wrong player or every turn
 
-### Energy granted at combat start disappears
-- **Signature:** relic meant to add energy at combat start has no effect; energy is
-  whatever the normal turn-1 amount is.
-- **Cause:** energy was granted in `BeforeCombatStart()`, which runs before the
-  turn-1 energy reset (`PlayerCombatState` resets to max at turn start) — the grant
-  is overwritten.
-- **Fix:** grant in `AfterSideTurnStart` guarded by `TurnNumber <= 1` instead. This
-  is exactly how vanilla `Lantern` does it.
+- **Cause:** the hook omitted participant/owner and phase/turn guards.
+- **Fix:** match the concrete owner and the semantic trigger boundary before mutating state.
 
-### Relic effect fires for the wrong player / every turn
-- **Signature:** in multiplayer the effect triggers off the wrong side; or a
-  "combat start" effect re-fires each turn.
-- **Cause:** missing guards in `AfterSideTurnStart` — the hook fires for every side
-  and every turn.
-- **Fix:** guard with both `participants.Contains(Owner.Creature)` (right owner) and
-  `Owner.PlayerCombatState!.TurnNumber <= 1` (combat start only).
+### Counter goes negative after consume-up-to-N
 
-### Nonnegative Counter appears at a negative amount after "consume up to N"
-- **Signature:** after the consumer runs at zero stacks, `godot.log` shows a first
-  application such as `[T2MOD-SELFTEST] Edge applied: -4 stacks`, followed by the
-  Power's effect using that value (live example: repeated `Edge fired: added -4 attack
-  damage`). Builds, Tier 1, and a happy-path Tier 2 with enough starting stacks can all
-  pass before this appears.
-- **Cause:** the consumer called `PowerCmd.Apply<Edge>(..., -4, ...)`. `Apply<T>` stacks
-  an existing instance, but when none exists it creates a mutable Power and applies the
-  negative amount directly. `PowerVar<T>` has no min/max API, and
-  `AllowNegative => false` controls removal after modifying an existing Power; neither
-  validates the first negative `Apply`.
-- **Fix:** declare every custom Counter's amount domain in SPEC (default
-  `[0, unbounded]`; signed only with explicit negative semantics). For nonnegative
-  consumption, call `target.GetPower<T>()`; if absent, spend zero. Otherwise clamp the
-  spend to `0..power.Amount` and pass the negative **clamped offset** to
-  `PowerCmd.ModifyAmount(choiceContext, power, -spent, applier, cardSource)`. Never use
-  a negative `PowerCmd.Apply<T>` to consume it. Tier 2 must cover zero, fewer than N,
-  and at least N, asserting after each case that no `Amount < 0` instance exists.
+- **Cause:** the requested amount was subtracted instead of the actual consumed amount.
+- **Fix:** compute `consumed = min(current, requested)`, subtract it once, and assert the
+  floor locally.
 
-### "Every N" relic loses progress after combat or save/resume
-- **Signature:** the counter advances and may trigger inside one combat, but the next
-  combat starts from zero; or an in-process `SavedProperties.From`/`Fill` round trip
-  restores the default instead of the observed progress.
-- **Cause:** run-lifetime state was stored in an ordinary field, was cleared from
-  `AfterCombatEnd`/`AfterRoomEntered`, or used an unsupported `[SavedProperty]` value/
-  holder. A plain field can look correct until the first save/resume.
-- **Fix:** for a supported custom relic counter, expose an `int`/`bool` property marked
-  `[SavedProperty]`, mutate it through an `AssertMutable()` setter, and never clear it at
-  combat boundaries. Keep UI `Status` reset separate. Tier 2 must prove `N-1` in combat 1,
-  carry-over/threshold in combat 2, and `SavedProperties.From`/`Fill`. See
-  `reference/stateful-mechanics.md`.
+### Run cadence resets after combat or save/resume
 
-### "On turn N" effect leaks across combats or fires on the wrong side
-- **Signature:** the effect fires early/late in a new fight, counts enemy turns, or a
-  second combat begins with a custom counter value from combat 1.
-- **Cause:** code duplicated combat turn state in a field or omitted the owner-side guard.
-- **Fix:** read `Owner.PlayerCombatState.TurnNumber` and compare `== N` (or `% N == 0`
-  for periodic combat timing), with `participants.Contains(Owner.Creature)`. Do not add
-  `[SavedProperty]`; the combat state owns the reset.
+- **Cause:** run-owned progress was stored in combat state or an unsaved field.
+- **Fix:** use the concrete-Relic saved attached-state contract and its exact
+  `SavedProperties.From`/`Fill` round trip.
 
-## Verification harness (launch / console)
+### Turn-N effect leaks across combats
 
-### Dev console won't open in-game
-- **Signature:** pressing the console key does nothing.
-- **Cause/Fix:** open with **`` ` `` (backtick)** — also `'`, `*`, `^`, or `Shift+8`;
-  close with `Esc`. Debug commands (like `relic add`) are only enabled when the
-  game is **running modded** (`ModManager.IsRunningModded()`), which is true whenever
-  at least one gameplay mod is loaded. If commands are missing, confirm the game
-  actually loaded a mod (grep log for `RUNNING MODDED`).
+- **Cause:** code duplicated a persistent turn counter.
+- **Fix:** read native `PlayerCombatState.TurnNumber` for combat-local cadence.
 
-### `relic add` says "Unable to create relic '<id>'"
-- **Signature:** dev console `relic add <id>` returns the not-found message.
-- **Cause:** the id doesn't match any `Id.Entry` (matching is `Contains`, uppercased).
-- **Fix:** use the derived entry, e.g. `relic add GAMBLERSCOIN-GAMBLERS_COIN` (or a
-  unique substring like `GAMBLERS`). Confirm the mod loaded first (grep log).
+### Resource payment rejects but payoff still fires
 
-### Tier-1 verify: marker NOT FOUND but `RUNNING MODDED` = YES (mod loaded, logged nothing)
-- **Signature:** `grep_log.py` reports `RUNNING MODDED flag : YES` and no
-  mod-named errors, yet `Tier-1 load marker : NOT FOUND`. The mod loaded fine — it
-  simply never logged `[T2MOD-SELFTEST] <ModName> loaded ok`.
-- **Cause:** the load marker was **not injected** into `MainFile.Initialize()`. The
-  Alchyr template's `MainFile.cs` logs nothing by default (this bit M2 — it was a
-  doc bug in author.md). A second cause: the marker WAS added in source but the code
-  change **wasn't rebuilt**, so the stale `.dll` in `mods/` has no marker.
-- **Fix:** add `Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");` at the end of
-  `MainFile.Initialize()` (right after `harmony.PatchAll();`), per author.md step 2,
-  then **rebuild** (`build.md`) so the fresh `.dll`/`.pck` reach `mods/`, and
-  re-verify. Distinct from the log-rotation false-FAIL below: there the marker is
-  present in the log but the grep sliced past it; here the marker was never written.
+- **Cause:** caller did not await `SecondaryResourceCmd.Spend` or ignored its bool result.
+- **Fix:** await spend and gate the payoff on success. Never maintain a duplicate amount.
 
-### Tier-1 verify reports [FAIL] "load marker missing" but the mod actually loaded
-- **Signature:** `grep_log.py` says the `[T2MOD-SELFTEST] ... loaded ok` marker is
-  missing, yet reading the raw `godot.log` shows the marker near the top and the mod
-  works in-game. A non-programmer would wrongly conclude their mod is broken.
-- **Cause:** slicing the log by a pre-launch **byte offset**. STS2 archives the
-  previous log to `godot<timestamp>.log` and starts a **fresh** `godot.log` on every
-  launch. An offset captured from the old file lands in the middle of the new file
-  (past the startup lines where the marker is), so the grep reads only the tail.
-  This bit us in two flavors: new file shorter than the offset (caught by a rotation
-  guard) AND new file longer (the guard missed it → false FAIL).
-- **Fix:** do NOT offset-slice. STS2's rotation guarantees the current `godot.log`
-  holds exactly one run, so read the **whole current file**. `grep_log.py` now takes
-  only `--mod-name` (no offset); `launch.py` no longer emits an offset.
+### Resource/buffer UI is stale or overlaps Energy
 
-### Self-test template fails to build: `TaskHelper` is unresolved
-- **Signature:** `CS0103: The name 'TaskHelper' does not exist in the current context`
-  on `TaskHelper.RunSafely(RunAsync())` in generated `SelfTest.cs`.
-- **Cause:** stable v0.107.1 **does** expose the public
-  `MegaCrit.Sts2.Core.Helpers.TaskHelper`; `CS0103` means its namespace/import was absent
-  from that generated file, not that the game lacks the API. The harness's `RunAsync()`
-  already catches and logs its own exceptions, so the helper is unnecessary here.
-- **Fix:** start the task with the standard C# discard form: `_ = RunAsync();`. This
-  remains fire-and-forget and does not block `Initialize()`. For other code that genuinely
-  needs `TaskHelper`, import `MegaCrit.Sts2.Core.Helpers` rather than inventing a replacement.
+- **Cause:** the public UI control was not refreshed after buffer-only mutation, or its
+  offset/size changed.
+- **Fix:** refresh the registered control and retain the 220x32 geometry at offset 160;
+  verify disjoint global rects and the text fallback.
 
-### Tier verify reports only the known abandon-backup or Sentry shutdown cleanup block
-- **Signature:** the only post-load error is either (a) deletion of
-  `modded/profileN\\saves\\current_run.save.backup: Failed` with the full
-  `RunSaveManager.DeleteCurrentRun → NMainMenu.AbandonRun → UiHelper.Click` stack, or
-  (b) `Sentry: Failed to close native SDK cleanly. Error code: 1` with native close +
-  `SentryService.Shutdown` stack.
-- **Cause:** headed self-test cleanup, not element behavior. STS2 asks Godot to remove a
-  backup that may not exist; the verification launcher also terminates the headed process
-  after the terminal marker.
-- **Fix:** none in generated mod code. Current `grep_log.py` reports and ignores only
-  those exact stack-qualified blocks. A lookalike, a different file/error, or any other
-  global/multiline error still fails and must be diagnosed normally.
+### Ordered buffer has stale Card views or leaks across combat
 
-### Self-test logs `InitProfileId must be called on SaveManager`
-- **Signature:** `[ERROR] Failed to save progress: System.InvalidOperationException:
-  InitProfileId must be called on SaveManager!`, with
-  `ProgressSaveManager.SetFtuesEnabled → SaveManager.SetFtuesEnabled` and the mod's
-  `SelfTest.RunAsync` in the stack. The harness may continue because the call was wrapped
-  in `try/catch`, but strict verification still fails the fresh error block.
-- **Cause:** `SelfTest.Arm()` runs during mod initialization, before profile state is ready.
-  Calling `SaveManager.SetFtuesEnabled(false)` attempts to persist a user setting and logs
-  the global save error before throwing to the caller.
-- **Fix:** remove the call. Tutorial state is not required by the menu navigation, and a
-  verification harness must not mutate a persistent user preference. Keep the run-UI
-  timing gates from `reference/selftest-harness.md` instead.
+- **Cause:** source Cards were retained/skipped visually, Card instances were stored, or
+  state used a non-combat owner.
+- **Fix:** store semantic values in `AttachedState<PlayerCombatState,TState>` and let every
+  source Card follow normal Play -> Discard.
 
-### Placeholder custom monster logs a missing `creature_visuals/<mod>-<class>.tscn`
-- **Signature:** Godot reports `Cannot open file` / `Failed loading resource` for
-  `res://scenes/creature_visuals/<mod>-<class>.tscn`, followed by
-  `Encountered exception loading the creature visuals ... Falling back to error scene`.
-  The monster may still fight on the error visual, but strict verification fails.
-- **Cause:** a `CustomMonsterModel` left `CustomVisualPath` null while no convention-named
-  custom scene exists. BaseLib lets the vanilla path convention run; the game logs
-  the failed load before recovering.
-- **Fix:** keep `CustomVisualPath => SceneHelper.GetScenePath("creature_visuals/fallback")`.
-  For supported static art, existence-check `images/monsters/<slug>.png` in
-  `CreateCustomVisuals()` and return
-  `NodeFactory<NCreatureVisuals>.CreateFromResource(ModVisualPath)` only when present;
-  otherwise return `null` so the explicit scene fallback loads. Do not point
-  `CustomVisualPath` at the PNG. See `recipes/monster.md`.
+### Scry overlay is missing, unawaited, or has wrong order/history
 
-### Custom Orb channels but logs missing `debug_audio/<custom-id>_channel.mp3`
-- **Signature:** channeling succeeds, but strict verification finds `No loader found for
-  resource: res://debug_audio/<custom-id>_channel.mp3` from
-  `OrbModel.PlayChannelSfx -> OrbCmd.Channel`.
-- **Cause:** a `ModOrbTemplate` subclass did not override the protected `ChannelSfx`.
-  Channeling always plays SFX; the inherited game path probes a convention-named debug
-  file that a packaged mod does not ship.
-- **Fix:** override `ChannelSfx` with the verified vanilla Frost event
-  `event:/sfx/characters/defect/defect_frost_channel` and keep
-  `ContentAssetProfiles.Orb("frost_orb")` as the checked icon/combat-body fallback. A
-  custom 100x100 icon may replace only the icon profile. See `recipes/orb.md`.
+- **Cause:** an empty/no-op boundary was reached; selector command was not awaited; code
+  iterated the selected set instead of the stable seen list; or discard history/hooks were
+  omitted.
+- **Fix:** follow `reference/scry-helper.md` exactly. Await selection and pile commands,
+  filter the stable seen list, record normal history/hooks once, and reject multiplayer.
 
-### A resumed Event starts a second special combat and `RecordInitialState` fails
-- **Signature:** `InvalidOperationException: RecordInitialState must be called first`
-  from `CombatReplayWriter`, after a special combat has already returned to the same
-  mutable Event instance.
-- **Cause:** the Event calls `EnterCombatWithoutExitingEvent` a second time from the same
-  instance. The grounded Event replay/lifecycle supports one special combat per mutable
-  Event; the first resumable or terminal transition works, while the second leaves replay
-  setup inconsistent.
-- **Fix:** generate at most one special-combat transition per Event instance. After a
-  resumable fight, continue with Cmd/page/selection/reward outcomes and finish the Event.
-  If verification must exercise an independent terminal-combat branch, click Proceed/open
-  the map and `EnterRoomDebug` a **fresh** canonical Event instance. See
-  `reference/event-outcomes.md` and the extended `MapNode` section of
-  `reference/selftest-harness.md`.
+### Resumed Event starts a second special combat
 
-### Static Character merchant logs `Expected BoundObject to be a SpineSprite`
-- **Signature:** the custom 512x512 merchant `Sprite2D` appears, but strict verification
-  finds `InvalidOperationException: Expected BoundObject to be a SpineSprite` from
-  `NMerchantCharacter._Ready()`.
-- **Cause:** BaseLib 3.3.5 converts the static raw scene to `NMerchantCharacter`, but the
-  game's `_Ready()` unconditionally constructs `MegaSprite(GetChild(0))` before BaseLib's
-  guarded `PlayAnimation` patch can help.
-- **Fix:** select the version/MVID-gated `NMerchantCharacter._Ready()` B-prefix from
-  `reference/capability-kernel.md`. Skip the original only when child 0 is `Sprite2D`, and
-  gate `CustomMerchantAnimPath` on successful patch status plus resource existence. On any
-  mismatch, keep the inherited Spine scene.
+- **Cause:** one mutable Event instance attempted another special combat.
+- **Fix:** redesign the second branch as a noncombat outcome or use a fresh Event instance.
 
-### Custom Character cannot enter Shop: `Can't generate valid rarity for merchant card type`
-- **Signature:** `EnterRoomDebug(RoomType.Shop)` throws before the Shop UI, naming
-  `Attack`, `Skill`, or `Power` and an undersized custom card list.
-- **Cause:** the native colored merchant always fills `Attack, Attack, Skill, Skill,
-  Power`; it excludes Basic cards and excludes the first result before filling the second
-  same-type slot.
-- **Fix:** ensure the unlocked Character pool has at least two eligible non-Basic Attacks,
-  two eligible non-Basic Skills, and one eligible non-Basic Power. These should be real
-  authored cards, not no-op fillers. Then rerun the real Shop proof.
+### Custom Orb logs missing channel audio
+
+- **Cause:** a custom/default audio id was inferred without a registered asset.
+- **Fix:** retain the verified Frost channel-SFX fallback until the audio track is opened.
+
+### Character Shop cannot generate a valid rarity
+
+- **Cause:** its pool lacks enough eligible non-Basic Attacks/Skills/Powers.
+- **Fix:** meet the Character recipe's minimum Shop ecosystem before claiming Shop support.
+
+## Verification
+
+### Load marker missing but `RUNNING MODDED` is true
+
+- **Cause:** initializer did not emit the exact marker, or the log window contains a stale
+  run.
+- **Fix:** keep the shared initializer marker, launch a fresh run, and use `grep_log.py`.
+
+### Self-test fails before reaching its host
+
+- **Cause:** navigation/timing/scene-tree setup failed.
+- **Fix:** repair the harness setup or increase the bounded wait. Do not change gameplay to
+  fit a navigation failure. Fall back to an honest Tier 1/manual report if needed.
+
+### `selftest done` appears without the structured state proof
+
+- **Cause:** the scenario completed but the required post-state was not established or the
+  proof marker is wrong.
+- **Fix:** use diagnostic trigger lines to localize source-vs-dependent behavior, repair the
+  failed invariant, rebuild, and rerun Tier 2.
+
+### Only a known unrelated shutdown/backup error appears
+
+- **Cause:** STS2 emitted an existing non-target cleanup block.
+- **Fix:** use the verifier's bounded ignore rule only when the block is byte-for-byte the
+  known unrelated signature. Any fresh target-Mod error fails the run.

@@ -10,11 +10,8 @@ Read `semantic-contract.md` first, then read the selected framework reference
 snippets live in that reference and the surface recipe it routes to; do not copy a
 second framework branch into this file.
 
-> **Migration guard (R3):** the pinned RitsuLib scaffold/build path is active. Card,
-> Relic, Potion, Power, Keyword, Enchantment, and Orb authoring use their migrated recipes.
-> Monster/Encounter, Event, Character, state, resource, and buffer notes remain regression
-> input until their R4/R5 recipe is explicitly ported; they do not authorize a
-> historical-framework Mod.
+> **Adapter guard:** the pinned RitsuLib scaffold/build path and its recipes are the only
+> active implementation. No historical-framework branch is available.
 
 ## 0. Read the quirks and the recipe first
 
@@ -37,16 +34,19 @@ second framework branch into this file.
   `OrbCmd.Channel<T>`; preserve separate passive and evoke observations, and keep the
   recipe's checked icon plus explicit Spine-scene/channel-SFX fallbacks. For an **enemy
   encounter** (`element: enemy encounter`), read `recipes/monster.md` and author BOTH the
-  `CustomMonsterModel` and the `CustomEncounterModel(RoomType.Monster)` it spawns as one
-  slice. Implement SPEC's compact move contract with `MoveState`, explicit `FollowUpState`,
+  RitsuLib `ModMonsterTemplate` and `ModEncounterTemplate` it spawns as one slice. Register
+  both exactly once through the scaffold's content pack, with an explicit encounter
+  `RoomType`. Implement SPEC's compact move contract with `MoveState`, explicit `FollowUpState`,
   and `ConditionalBranchState` only where declared. Use the recipe's grounded intent/effect
   patterns for buff/Power, debuff, block/heal, multi-hit, and composite actions. Monster
   attacks use `.FromMonster(this).Execute(null)` (**never** `.Targeting()`), and the
   diagnostic trigger marker goes on the enemy's move; do not model the pair as two
   `elements` + an interaction. Keep the recipe's checked static-body factory plus explicit
   fallback scene; animation is outside this pass. For an **event / World Node** (`element: event`),
-  read `recipes/event.md`: author one `CustomEventModel`, nested `EventLoc` pages/options,
-  public-Cmd consequences, and explicit page/finish flow; no `[Pool]` or manual `AddEvent`.
+  read `recipes/event.md`: author one `ModEventTemplate`, flat nested `events.json`,
+  explicit `EventOption` keys, public-Cmd consequences, and explicit page/finish flow;
+  register it once with `.SharedEvent<T>()` or `.ActEvent<TAct,T>()` and add no `[Pool]` or
+  manual `AddEvent`.
   Also read `reference/event-outcomes.md` when SPEC includes selections, rewards,
   conditional pages, or special combat; read `reference/event-vfx.md` when it selects
   `portrait_halo`; read `reference/event-text-effects.md` when descriptions select bounded
@@ -57,19 +57,19 @@ second framework branch into this file.
   `reference/forced-followup-event.md` when SPEC selects its Quest Card -> target Event
   composition. For a
   **Character Foundation** (`element: character`), read
-  `recipes/character.md`: keep the character template's `PlaceholderCharacterModel` and
-  three pool bases, fill exact starters/HP/loc, and never call `AddCharacter` manually.
+  `recipes/character.md`: use `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>` and
+  the three `TypeList*PoolModel` bases, fill exact starters/HP/Gold/loc, and register the
+  Character plus starters/members once through the content pack.
   If SPEC selects any Character art profile, richer resource/buffer presentation, or the
   native Ancient/Architect flow, also read `reference/character-presentation.md` and obey
   its per-consumer promotion/fallback boundary.
   If SPEC selects a character resource, read `reference/character-resource.md`; if it
   selects a bounded ordered semantic buffer/dynamic output, read
   `reference/ordered-card-buffer.md`.
-  Read `reference/capability-kernel.md` when the selected resource UI needs its exact
-  combat-UI adapter or static merchant needs its exact `_Ready()` prefix. Prefer
-  the game or selected framework's public API, and emit only selected self-contained
-  modules, and do not generalize the adapter into alternative-energy patches, visible
-  zone UI, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
+  A selected resource UI uses RitsuLib's public `RegisterCombatUi` route from
+  `reference/character-resource.md`. If another capability has no documented public
+  game/framework seam, report a pack gap. Do not invent alternative-energy patches,
+  visible zone UI, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. Do **not** guess API names — if
   the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
@@ -94,9 +94,10 @@ second framework branch into this file.
 - Fill **only** the effect block with the confirmed Cmds/RNG from the recipe. `await`
   every Cmd. Use `Rng`, never `System.Random`. Call `Flash()` when it visibly triggers.
 - For stateful relics, follow `reference/stateful-mechanics.md`: run-lifetime progress is
-  a supported `[SavedProperty]` `int`/`bool` and is never cleared at combat end; combat-
-  local fixed/periodic turns read `PlayerCombatState.TurnNumber`; turn/combat fields reset
-  only at the SPEC boundary. Any visible setter calls `InvokeDisplayAmountChanged()`.
+  a `SavedAttachedState<SpecificRelic, int/bool>` whose name includes the Mod id and is
+  never cleared at combat end; combat-local fixed/periodic turns read
+  `PlayerCombatState.TurnNumber`. Any visible mutation calls
+  `InvokeDisplayAmountChanged()` after updating the attached value.
 
 **Potion** — add `<ModName>Code/Potions/<PotionName>.cs` and extend
 `ModPotionTemplate`:
@@ -125,6 +126,10 @@ second framework branch into this file.
   with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
   targeted card. `await` every Cmd. If a custom power is needed, author it first
   (`recipes/power.md`) and register it once through `.Power<T>()`.
+- If SPEC selects Scry, read `reference/scry-helper.md`, emit its attributed
+  `<ModName>Code/Helpers/OpenModScry.cs`, and await `OpenModScry.Execute` from `OnPlay`
+  using the real `PlayerChoiceContext`, `Owner`, and a scaling `DynamicVar("Scry", X)`.
+  Do not add BaseLib, a global hook/service, or a multiplayer fallback.
 
 **Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend
 `ModPowerTemplate`:
@@ -160,7 +165,7 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
 **Enemy encounter** — author two classes as one slice (see `recipes/monster.md`), no
 `[Pool]` on either:
 
-- `<ModName>Code/Monsters/<Name>.cs` extends `CustomMonsterModel`: set `MinInitialHp`/
+- `<ModName>Code/Monsters/<Name>.cs` extends `ModMonsterTemplate`: set `MinInitialHp`/
   `MaxInitialHp` (equal for deterministic HP), then translate every SPEC move to one
   `MoveState` whose intent list matches every visible effect. Link deterministic order with
   explicit `.FollowUpState`; for a declared condition, add one `ConditionalBranchState`
@@ -171,30 +176,32 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
   effect in order. Every attack ends with `.FromMonster(this).Execute(null)` — **never
   `.Targeting()`** (that is the card pattern and it hangs the enemy turn).
 - Declare `ModVisualPath` at `images/monsters/<slug>.png`; existence-check it in
-  `CreateCustomVisuals()` and call `NodeFactory<NCreatureVisuals>.CreateFromResource` only
-  when present. Keep `CustomVisualPath` on `creature_visuals/fallback` for the missing-file
-  branch, and set `HasDeathSfx => false`. Never return the PNG from `CustomVisualPath`.
+  `TryCreateCreatureVisuals()` and call
+  `RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>` only when present. Keep
+  `MonsterAssetProfile` on `creature_visuals/fallback` for the missing-file branch, and set
+  `HasDeathSfx => false`. Never put the PNG in the profile's scene path.
 - If the monster needs a custom buff/debuff, author its power from `recipes/power.md` and
   include all three `powers.json` keys. A buff is not proven by attachment alone: SPEC and
   Tier 2 must observe its downstream effect on a later move.
-- `<ModName>Code/Encounters/<Name>Encounter.cs` extends `CustomEncounterModel`, calls
-  `base(RoomType.Monster)`, and overrides `IsValidForAct`, `AllPossibleMonsters`
+- `<ModName>Code/Encounters/<Name>Encounter.cs` extends `ModEncounterTemplate`, overrides
+  `RoomType => RoomType.Monster`, `IsValidForAct`, and `AllPossibleMonsters`
   (`ModelDb.Monster<T>()`), and `GenerateMonsters()` (`ModelDb.Monster<T>().ToMutable()` +
-  slot, `null` slot ok). Do **not** call `AddEncounter` manually — the base constructor does it.
+  slot, `null` slot ok). Add one `.Monster<T>()` plus one `.ActEncounter<TAct,T>()` or
+  `.GlobalEncounter<T>()` to `RegisterContent()`; do not add a second registration path.
 
 **Event / World Node** — create `<ModName>Code/Events/` and add `<Name>.cs` from
 `recipes/event.md`:
 
-- Extend `CustomEventModel`; no `[Pool]` and no manual `AddEvent` (the base constructor
-  registers it). Leave `Acts` empty for the default all-act placement unless SPEC scopes it.
+- Extend `ModEventTemplate`; no `[Pool]`, constructor/manual registration, or second content
+  pack. Use `.SharedEvent<T>()` for all-act placement or `.ActEvent<TAct,T>()` when scoped.
 - For a forced follow-up, also author the one unplayable Quest Card exactly from
   `reference/forced-followup-event.md`: Quest type/rarity, cost `-1`, no upgrades, and the
   two public hook overrides guarded by the exact act. The target Event returns false from
   `IsAllowed`; do not place it in the ordinary Event pool. The source grant rejects a
   duplicate, and the named target option completes/removes all matching tokens.
-- Override `Localization` with `EventLoc` containing the title, `INITIAL` page, every
-  `EventOptionLoc`, and every result page. The key for `Option(Method)` must be the exact
-  upper-snake slug of the method name.
+- Ship flat `events.json` keys for the normalized Event entry, `INITIAL`, every explicit
+  option key, and every result page. Use `InitialOptionKey`/`ModOptionKey`; callback method
+  names do not mint localization keys.
 - `GenerateInitialOptions()` returns the authored options. Each method uses the confirmed
   public Cmd/selection/reward vocabulary against `Owner`, awaits blocking overlays, logs
   the observed state delta, then follows SPEC with `SetEventFinished`, `SetEventState`, or
@@ -205,23 +212,25 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
   A resumable branch overrides `Resume(AbstractRoom)` and restores its exact named page;
   a terminal branch proceeds to the map. Never emit a second combat from the same mutable
   Event instance or a direct merchant/rest/treasure room transition.
-- Override `CustomInitialPortraitPath` with the recipe's existence check: use the generated
+- Fill `EventAssetProfile.InitialPortraitPath` with the recipe's existence check: use the generated
   `images/events/<event-slug>.png` when present, otherwise the verified vanilla
-  `this_or_that.png` fallback. For every explicitly requested page portrait, check
+  `this_or_that.png` fallback, and filter the missing convention-derived path from
+  `GetAssetPaths`. For every explicitly requested page portrait, check
   `images/events/<event-slug>_<page-key-lower>.png` and call `NEventRoom.SetPortrait`
   immediately before the page transition; when absent, retain the current portrait. Clean
   owned portrait child nodes before a switch.
 - When SPEC selects `portrait_halo`, emit the exact bounded helper from
   `reference/event-vfx.md`, attach page profiles through `OnRoomEnter`/the portrait host,
   honor Instant/Fast mode, and explicitly `QueueFreeSafely` every owned named root before
-  page, portrait, combat, or finish transitions. Do not use `CustomVfxPath`. Custom phobia
+  page, portrait, combat, or finish transitions. Do not promote RitsuLib's arbitrary custom
+  VFX/layout routes. Custom phobia
   art, arbitrary VFX, custom layouts, and Ancient background assets remain unsupported.
 - When SPEC selects vanilla Event text effects, apply only the exact bounded tags from
-  `reference/event-text-effects.md` around the named phrases in `EventPageLoc` and
-  `EventOptionLoc` descriptions. Keep titles plain; emit no helper node or cleanup code.
+  `reference/event-text-effects.md` around the named phrases in `events.json` page/option
+  descriptions. Keep titles plain; emit no helper node or cleanup code.
 - When an enabled option selects typed Hover Tips, pass the exact grounded
-  `HoverTipFactory` values through `Option`; do not emit a locked-option workaround. For
-  relic-backed presentation, use `RelicOption<T>` for native title/description/metadata and
+  `HoverTipFactory` values through `EventOption`; do not emit a locked-option workaround. For
+  relic-backed presentation, use `CreateModRelicOption<T>` for native title/description/metadata and
   keep semantic acquisition in a separate awaited `RelicCmd.Obtain<T>`. Preserve the
   normal-layout relic image as a presentation gap rather than generating an Ancient Event.
 - When a choice pays HP or Max HP, apply `ThatDoesDamage` or `ThatDecreasesMaxHp` to the
@@ -238,27 +247,26 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
   `reference/event-native-presentation.md`, keep its vanilla `(292,68)` placement and
   inherited process mode, and `QueueFreeSafely` the owned named root before transitions.
 
-**Character Foundation** — use the classes scaffolded by `alchyrsts2charmod` and
-`recipes/character.md`:
+**Character Foundation** - use the pinned scaffold and `recipes/character.md`:
 
-- Fill the `PlaceholderCharacterModel` subclass with exact `StartingHp`, Basic-card
-  `StartingDeck`, Starter `StartingRelics`, and `ModelDb.*Pool<T>()` references.
-- Do not instantiate the character or add a second registration path; the selected
-  adapter's registration plan owns exactly-once registration.
-- Author concrete card/relic/potion members through the existing recipes while retaining
-  the character template's inherited `[Pool(typeof(<ModName>*Pool))]` attributes.
+- Fill `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>` with every required public
+  abstract member. Extend the three public `TypeList*PoolModel` bases.
+- Register the Character, exact Basic starters, Starter relic, every concrete pool member,
+  and every supporting Power once through one content pack. Do not instantiate the
+  character, add pool attributes, or add a second registration path.
 - If Shop/static merchant is selected, author enough unlocked non-Basic cards to provide
   at least two Attacks, two Skills, and one Power after filters; the native merchant fills
   those exact slots and otherwise throws before its UI appears.
-- Add all 14 `CharacterLoc` values and the four Architect keys from the character recipe.
-- Keep `PlaceholderCharacterModel` plus checked fallbacks; selected Character static
-  profiles may override the matching getters after headed proof, while animation is not a
-  Foundation gate. A Foundation-only SPEC emits no capability-kernel code. A resource
-  SPEC emits its named domain state/payment rules plus only the exact selected UI kernel.
-  An ordered-buffer SPEC emits combat-scoped semantic state, native source-card result
-  piles, visible state text, and a configured output card. Never emit a retained-card
-  `CustomPile` without a separately grounded UI lifecycle. Keep proof-only observers and
-  assertions out of generated gameplay.
+- Add all 14 normalized `characters.json` values and the four Architect keys from the recipe.
+- Keep `CharacterAssetProfile` partial fallback semantics; selected Character static
+  profiles fill only the matching fields after headed proof, while animation is not a
+  Foundation gate. A Foundation-only SPEC emits no patch infrastructure. A resource SPEC
+  registers one `SecondaryResourceDefinition`, uses `SecondaryResourceCmd` for amount and
+  all-or-nothing payment, and mounts the fixed control through public `RegisterCombatUi`.
+  An ordered-buffer SPEC uses `AttachedState<PlayerCombatState,TState>`, native source-card
+  result piles, visible state text, and one configured output card. Never emit a retained-
+  card `CustomPile` without a separately grounded UI lifecycle. Keep proof-only observers
+  and assertions out of generated gameplay.
 
 **Counter Power amount-domain gate (applies to every source element)** — before writing
 any custom Counter mutation, read that Power's `amount domain` from SPEC. The default
@@ -350,20 +358,16 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    `NRun.GlobalUi`, assert runtime HP/pools/starter multisets, enter combat, then assert
    designed `MaxEnergy` and the starter mechanic's independent state delta. When selected,
    also enter real RestSite/Shop hosts and assert background/rest/merchant/full-energy
-   resources plus static-merchant patch status. Never select the first unlocked vanilla
-   character.
-   **capability-kernel maintainer canary** → use the two-combat `CombatPlayer` proof in
-   `reference/capability-kernel.md`: Tier 1 asserts exact version/MVID target resolution,
-   one owned postfix and idempotence; combat 1 asserts typed dispatch/state/listener plus
-   the real hosted UI node; combat 2 asserts a distinct combat-scoped state generation.
-   This route verifies infrastructure only and is not a substitute for the selected
-   capability's gameplay invariant.
+   resources through `CharacterAssetProfile`. Never select the first unlocked vanilla
+   character or require the historical static-merchant patch.
    **character resource** → use `reference/character-resource.md`: in combat 1 drive real
-   gain and spender cards, assert affordable/unaffordable cases, successful/rejected
-   payoff, floor, and live counter refresh; enter combat 2 and assert distinct zero state
-   plus reset counter. Finish with `resource UI complete ... observed=all`.
+   assert the public `RegisterCombatUi` attachment and `SecondaryResourceCmd` amount, then
+   drive real gain and spender cards, affordable/unaffordable cases, successful/rejected
+   payoff, floor, and live counter refresh. Assert the 220x32 control at offset 160 is
+   disjoint from native Energy, then enter combat 2 and assert distinct zero state plus
+   reset counter. Finish with `resource UI complete ... observed=all`.
    **ordered semantic buffer/dynamic output** → use `reference/ordered-card-buffer.md`: drive
-   real source cards through their native result piles, assert order/capacity/
+   real source cards through their native result piles, assert attached-state order/capacity/
    non-destructive overflow and visible state, compile/clear the ordered snapshot, assert
    one `CardGeneratedEntry`, play the configured output, then prove a distinct empty state
    in combat 2. Reuse the owning character or `CombatPlayer` suite; do not create a project
@@ -378,9 +382,15 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    driver body.
    A stateful source must instead use the page's **stateful cadence** variant: assert the
    `N-1` no-fire state, the exact threshold delta, and the reset/carry-over boundary. A
-   run-lifetime `[SavedProperty]` additionally round-trips through
+   run-lifetime `SavedAttachedState` additionally round-trips through
    `SavedProperties.From`/`Fill`; a run cadence must enter a second combat rather than
-   mutating the property directly to simulate carry-over.
+   mutating the attached value directly to simulate carry-over.
+   A **Scry card** selects the focused `CombatPlayer` variant in
+   `reference/scry-helper.md`: cover zero/empty/short with an automated selector, then
+   play the real Card and prove the visible `NSimpleCardSelectScreen`, pending play task,
+   selected/unselected order, normal source result pile, discard history, and one known
+   `AfterCardDiscarded` effect. Keep the whole matrix in one headed run and retain the
+   singleplayer assertion.
 3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
    post-state, then call the shared `StateProof(...)`. Its structured
    `[T2MOD-SELFTEST] <ModName> state proof:` line must include the selected framework,
@@ -407,22 +417,23 @@ description and SmartFormat placeholders are correct. Validate every tag against
 another color, and never copy user-supplied raw markup. Titles, flavor, and selection
 prompts stay plain.
 
-For a **character**, use `CharacterLoc` for the 14 character values and
-`ancients.json` for the four exact `THE_ARCHITECT.talk.<CHAR_ID>` keys in
-`recipes/character.md`. For an **event**, use the recipe's in-code `EventLoc` / `EventPageLoc` /
-  `EventOptionLoc` inside the event class. Do not also add `events.json` for the same keys;
-the selected adapter owns the final Event id and nested localization-key derivation.
+For a **character**, write the 14 normalized flat keys to `characters.json` and the four
+exact `THE_ARCHITECT.talk.<CHAR_ID>` keys to `ancients.json`, as listed in
+`recipes/character.md`. For an **event**, write the normalized title/page/option/result keys
+to `events.json`; `InitialOptionKey` and `ModOptionKey` must match those explicit segments.
 
 For the JSON-backed types, add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
 relic, **`potions.json`** for a potion, **`cards.json`** for a card, **`powers.json`**
-for a custom power, **`monsters.json`** + **`encounters.json`** for an enemy encounter.
+for a custom power, **`monsters.json`** + **`encounters.json`** for an enemy encounter,
+**`events.json`** for an Event, and **`characters.json`** + **`ancients.json`** for a
+Character.
 **Keys are FLAT and prefixed** (recipe's loc-key rule + errors.md "raw-key title"):
 
 ```json
 {
-  "<PREFIX>-<SLUG>.title": "<title from SPEC>",
-  "<PREFIX>-<SLUG>.description": "<hover text from SPEC>",
-  "<PREFIX>-<SLUG>.flavor": "<relic flavor — relics only>"
+  "<MOD>_<CATEGORY>_<TYPE>.title": "<title from SPEC>",
+  "<MOD>_<CATEGORY>_<TYPE>.description": "<hover text from SPEC>",
+  "<MOD>_<CATEGORY>_<TYPE>.flavor": "<relic flavor - relics only>"
 }
 ```
 
@@ -433,9 +444,9 @@ Relics take `.title/.description/.flavor`; potions take `.title/.description` (p
 for scaling numbers — `"Deal {Damage:diff()} damage."` not `"Deal 6 damage."` — so the
 upgraded value renders automatically (`reference/mechanics.md` §2). A **power** takes
 `.title/.description` with `{Amount}` for the stack count. An **enemy encounter** takes
-two tables: `monsters.json` with just `<PREFIX>-<MONSTER_SLUG>.name`, and `encounters.json`
-with `<PREFIX>-<ENCOUNTER_SLUG>.title` + `.loss`. Use the exact `<PREFIX>-<SLUG>`
-you derived in SPEC. Not nested JSON — a flat `Dictionary<string,string>`.
+two tables: `monsters.json` with just `<MOD>_MONSTER_<TYPE>.name`, and `encounters.json`
+with `<MOD>_ENCOUNTER_<TYPE>.title` + `.loss`. Use the exact normalized public entries
+produced by the RitsuLib adapter. Not nested JSON — a flat `Dictionary<string,string>`.
 
 ## 4. Art (per SPEC's art plan — placeholder or generate)
 
@@ -460,11 +471,11 @@ fallback.
 For an **orb**, placeholder mode keeps the recipe's Frost icon, Spine scene, and channel
 SFX fallbacks; it must not rely on the custom-id path convention. Skip to §5.
 For an **enemy encounter**, the recipe checks `images/monsters/<slug>.png` and returns
-`null` from `CreateCustomVisuals()` when absent, so the explicit built-in fallback scene
-loads without a missing-resource error. Skip to §5.
-For a **character**, keep the character template's PNG/scene fallbacks. Placeholder mode
-does not emit a Character asset. Custom animation and unpromoted static consumers are not
-supported by Foundation.
+`null` from `TryCreateCreatureVisuals()` when absent, so the explicit
+`MonsterAssetProfile` fallback scene loads without a missing-resource error. Skip to §5.
+For a **character**, leave optional `CharacterAssetProfile` rows unset so RitsuLib resolves
+the placeholder/native fallback. Placeholder mode emits no Character asset. Custom
+animation and unpromoted static consumers are not supported by Foundation.
 
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
@@ -504,8 +515,9 @@ eight promoted static profiles; locked selection and map marker remain explicit 
 - **`--spec monster`** - one **360x360** transparent static body, `fit: contain`, magenta
   chroma-key ON, written to `monsters/<slug>.png`. **Live-verified in both the real combat
   `NCreature` and default bestiary layout.** The concrete monster must use the recipe's
-  existence-checked `CreateCustomVisuals()` factory and keep `CustomVisualPath` on the
-  built-in scene fallback. This does not add Spine, move animation, or a phobia variant.
+  existence-checked `TryCreateCreatureVisuals()` factory and keep `MonsterAssetProfile`
+  on the built-in scene fallback. This does not add Spine, move animation, or a phobia
+  variant.
 - **`--spec event`** — one opaque **3440×1613** normal/default-layout portrait slot per
   invocation, `fit: cover`, chroma-key OFF, written to `events/<slot-slug>.png`.
   **Live-verified in the real MapNode host for the initial and a later page.** Generate the
@@ -520,9 +532,10 @@ eight promoted static profiles; locked selection and map marker remain explicit 
   transparent **88x88** and three **512x512** static bodies, five transparent **256x256**
   full-energy layers, and one transparent **24x24** compact icon. These are live-proven in
   real selection, top-panel, CombatPlayer, RestSite, Shop, and energy consumers. Author the
-  raw background/rest/merchant wrappers from `character-presentation.md`; `build.py` packs
-  them without Godot/MegaDot. Full energy uses five loose PNGs, and static merchant selects
-  the versioned `_Ready()` prefix. Keep checked template/text/patch fallbacks. Do not emit
+  raw background/rest/merchant/energy wrappers from `character-presentation.md`; `build.py`
+  packs them without Godot/MegaDot. Full energy uses five loose PNGs inside one raw scene;
+  RitsuLib's Shop profile needs no historical `_Ready()` prefix. Keep checked profile/text
+  fallbacks. Do not emit
   locked selection or map-marker art as supported.
 
 1. **Build the prompt (three segments — see `art-contract.md`).** For card and the M5.5
@@ -561,10 +574,10 @@ eight promoted static profiles; locked selection and map marker remain explicit 
 **Character static art profiles.** When `SPEC.md` selects Character art, emit only the
 eight promoted profiles above. Selection and background are opaque (`--chroma` off); icon,
 combat/rest/merchant bodies, full-energy layers, and compact icon use `--chroma`.
-`CreateCustomVisuals()` consumes the checked combat PNG and returns `null` for the inherited
-fallback. Emit minimal raw scenes for background/rest/merchant. Gate the merchant getter on
-the exact static-merchant patch status. Override `CustomEnergyCounter` only when all five
-layers exist. Locked/map consumers remain explicit gaps with inherited getters.
+`CharacterAssetProfile.Scenes.VisualsPath` consumes the checked combat PNG directly. Emit
+minimal raw scenes for background/rest/merchant and the five-layer energy counter; set both
+top-panel icon fields and the card-pool compact icon paths. Locked/map consumers remain
+explicit gaps with inherited profile fallbacks.
 
 The character prompt must describe one original subject in the STS2 painterly style-only
 reference pool. Selection portraits are readable at 132x195; backgrounds reserve the
@@ -584,7 +597,7 @@ separate native headed proof, not a normal Event rich-text shortcut.
    a new confirmation after the user sees the current result.
 2. **Locate the mod's images dir**: `<work dir>/<ModName>/images` (the resource subdir
    the template made; `<slug>` = lowercased prefix-stripped id, same as the loc keys).
-3. **Acquire through the SPEC's `art source`, then import** (`scripts` resolves
+3. **Acquire through the SPEC's `art source`, then import** (`../modmaker/scripts` resolves
    per install — same as `build.py`). Use the `--spec` matching SPEC's element.
 
    **Host-native image generation (`runtime-imagegen`):** use this route only when the
@@ -601,7 +614,7 @@ separate native headed proof, not a normal Event rich-text shortcut.
    remove it with a runtime-specific helper because `gen_sprite.py import --chroma` owns
    that deterministic step. When the native tool supports reference images, randomly choose
    up to three type-matched files from
-   `./reference/art-samples/<spec>/`, make them visible using the
+   `../sts2-api/reference/art-samples/<spec>/`, make them visible using the
    runtime's normal local-image viewing mechanism, and label them STYLE REFERENCE ONLY. If reference inputs
    are unavailable, use the fixed text style descriptor alone.
 
@@ -610,7 +623,7 @@ separate native headed proof, not a normal Event rich-text shortcut.
    assume that path for other runtimes). The route is unavailable if it produces no local
    image file. Pass that file through the existing normalizer:
    ```
-   python scripts/gen_sprite.py import \
+   python ../modmaker/scripts/gen_sprite.py import \
      --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --input "<native-output.png>" \
      --out "<work dir>/<ModName>/images" [--chroma]
    ```
@@ -624,7 +637,7 @@ separate native headed proof, not a normal Event rich-text shortcut.
    `vofy login`, inspect credential files, or put status/credit output in SPEC/MEMORY/logs.
    First run the read-only checks:
    ```
-   python scripts/acquire_sprite.py preflight --model <chosen-model>
+   python ../modmaker/scripts/acquire_sprite.py preflight --model <chosen-model>
    vofy models <chosen-model>
    ```
    Read the live model capabilities before choosing `--image`, `--aspect-ratio`, or
@@ -633,11 +646,11 @@ separate native headed proof, not a normal Event rich-text shortcut.
    `acquire_sprite.py` selects the matching spec and randomly samples three files. After
    step 1a's confirmation, submit exactly one synchronous paid task:
    ```
-   python scripts/acquire_sprite.py create \
+   python ../modmaker/scripts/acquire_sprite.py create \
      --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --model <chosen-model> \
      [--aspect-ratio <confirmed-ratio>] [--resolution <confirmed-resolution>] \
-     [--reference ./reference/art-samples] --yes
+     [--reference ../sts2-api/reference/art-samples] --yes
    ```
    `--yes` means the user approved this exact prompt/model/one-image spend. The tool reruns
    preflight, downloads into a unique empty directory, requires exactly one image, then
@@ -647,10 +660,10 @@ separate native headed proof, not a normal Event rich-text shortcut.
 
    **BYO HTTP backend:** run the existing generator:
    ```
-   python scripts/gen_sprite.py generate \
+   python ../modmaker/scripts/gen_sprite.py generate \
      --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --config <path to art-backend.json> \
-     --reference ./reference/art-samples
+     --reference ../sts2-api/reference/art-samples
    ```
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
    point it at the **root** `art-samples` dir (as shown). The tool auto-picks the matching
