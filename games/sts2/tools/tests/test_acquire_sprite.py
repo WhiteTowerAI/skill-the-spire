@@ -69,6 +69,8 @@ class AcquireSpriteTests(unittest.TestCase):
         )
         self.record = self.root / "calls.txt"
         self.out = self.root / "mod images"
+        self.identity = self.root / "character identity.png"
+        Image.new("RGB", (20, 20), (40, 80, 120)).save(self.identity)
 
     def tearDown(self) -> None:
         self.temp.cleanup()
@@ -87,7 +89,7 @@ class AcquireSpriteTests(unittest.TestCase):
         )
 
     def create_args(self, spec: str = "card") -> list[str]:
-        return [
+        args = [
             "create",
             "--model", "test-model",
             "--spec", spec,
@@ -95,6 +97,9 @@ class AcquireSpriteTests(unittest.TestCase):
             "--prompt", "one approved image",
             "--out", str(self.out),
         ]
+        if spec.startswith("character_") and spec != "character_select":
+            args.extend(["--identity-reference", str(self.identity)])
+        return args
 
     def test_preflight_hides_account_output(self) -> None:
         result = self.run_tool("preflight", "--model", "test-model")
@@ -156,6 +161,17 @@ class AcquireSpriteTests(unittest.TestCase):
         result = self.run_tool(*self.create_args())
         self.assertEqual(2, result.returncode)
         self.assertIn("Paid generation was not approved", result.stderr)
+        self.assertFalse(self.record.exists())
+
+    def test_later_character_art_requires_identity_before_cli_calls(self) -> None:
+        args = self.create_args("character_icon")
+        identity_index = args.index("--identity-reference")
+        del args[identity_index:identity_index + 2]
+
+        result = self.run_tool(*args, "--yes")
+
+        self.assertEqual(2, result.returncode)
+        self.assertIn("requires --identity-reference", result.stderr)
         self.assertFalse(self.record.exists())
 
     def test_whitespace_only_prompt_stops_before_cli_calls(self) -> None:
@@ -312,6 +328,9 @@ class AcquireSpriteTests(unittest.TestCase):
         log = (self.out / ".gen_sprite.log").read_text(encoding="utf-8")
         self.assertIn("chroma=True", log)
         self.assertIn("applied magenta chroma-key", log)
+        calls = self.record.read_text(encoding="utf-8")
+        self.assertIn(repr(str(self.identity.resolve())), calls)
+        self.assertIn("[acquire_sprite] identity reference:", result.stdout)
 
     def test_character_background_keeps_opaque_full_bleed_import(self) -> None:
         result = self.run_tool(*self.create_args("character_background"), "--yes")

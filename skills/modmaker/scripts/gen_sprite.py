@@ -45,6 +45,8 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 
+from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
+
 try:
     from PIL import Image
 except ImportError:
@@ -127,30 +129,10 @@ SPECS: dict[str, dict] = {
     "enchantment": {"sub_path": "enchantments",         "extra_sub_paths": [],             "size": (64, 64),    "verified": True,  "fit": "contain", "chroma": True},
     "orb":        {"sub_path": "orbs",                 "extra_sub_paths": [],             "size": (100, 100),  "verified": True,  "fit": "contain", "chroma": True},
     "monster":    {"sub_path": "monsters",             "extra_sub_paths": [],             "size": (360, 360),  "verified": True,  "fit": "contain", "chroma": True},
-    "character_select": {"sub_path": "charui", "extra_sub_paths": [], "size": (132, 195), "verified": True, "fit": "cover", "chroma": False},
-    "character_select_locked": {"sub_path": "charui", "extra_sub_paths": [], "size": (132, 195), "verified": False, "fit": "cover", "chroma": False},
-    "character_icon": {"sub_path": "charui", "extra_sub_paths": [], "size": (88, 88), "verified": True, "fit": "contain", "chroma": True},
-    "character_map_marker": {"sub_path": "charui", "extra_sub_paths": [], "size": (49, 64), "verified": False, "fit": "contain", "chroma": True},
-    "character_background": {"sub_path": "charui", "extra_sub_paths": [], "size": (1920, 1200), "verified": True, "fit": "cover", "chroma": False},
-    "character_combat": {"sub_path": "charui", "extra_sub_paths": [], "size": (512, 512), "verified": True, "fit": "contain", "chroma": True},
-    "character_rest": {"sub_path": "charui", "extra_sub_paths": [], "size": (512, 512), "verified": True, "fit": "contain", "chroma": True},
-    "character_merchant": {"sub_path": "charui", "extra_sub_paths": [], "size": (512, 512), "verified": True, "fit": "contain", "chroma": True},
-    "character_energy": {"sub_path": "charui", "extra_sub_paths": [], "size": (256, 256), "verified": True, "fit": "contain", "chroma": True},
-    "character_energy_text": {"sub_path": "charui", "extra_sub_paths": [], "size": (24, 24), "verified": True, "fit": "contain", "chroma": True},
 }
+SPECS.update(CHARACTER_ART_BUNDLE.sprite_specs())
 FRAGMENT_CLEANUP_SPECS = {"enchantment", "orb", "monster"}
-REFERENCE_FAMILIES = {
-    "character_select": "character_select",
-    "character_select_locked": "character_select",
-    "character_background": "character_select",
-    "character_icon": "character_icon",
-    "character_map_marker": "character_icon",
-    "character_energy": "character_icon",
-    "character_energy_text": "character_icon",
-    "character_combat": "character_combat",
-    "character_merchant": "character_combat",
-    "character_rest": "character_rest",
-}
+REFERENCE_FAMILIES = CHARACTER_ART_BUNDLE.reference_families()
 
 
 def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
@@ -174,7 +156,12 @@ def chroma_key_magenta(img: "Image.Image", threshold: int = 100) -> "Image.Image
     out = []
     for r, g, b, a in img.getdata():
         # squared distance to pure magenta (255, 0, 255)
-        if a != 0 and ((r - 255) ** 2 + g * g + (b - 255) ** 2) < thr_sq:
+        near_magenta = ((r - 255) ** 2 + g * g + (b - 255) ** 2) < thr_sq
+        generated_hot_pink = (
+            r >= 110 and b >= 60 and g <= 100
+            and r - g >= 50 and b - g >= 25 and abs(r - b) <= 150
+        )
+        if a != 0 and (near_magenta or generated_hot_pink):
             out.append((0, 0, 0, 0))
         else:
             out.append((r, g, b, a))
@@ -260,14 +247,15 @@ def remove_cutout_fragments(img: "Image.Image", alpha_threshold: int = 8) -> "Im
 
 
 def fit_into_rect(img: "Image.Image", size: tuple[int, int], fit: str,
-                  fill: float = 1.0) -> "Image.Image":
+                  fill: float = 1.0, crop_to_content: bool = True) -> "Image.Image":
     """Scale img to the exact contract rect. 'cover' fills and center-crops;
-    'contain' fits inside (× fill) on a transparent canvas. Crops to the
-    non-transparent bbox first so keyed art centers on the subject."""
+    'contain' fits inside (× fill) on a transparent canvas. By default, crop
+    to the non-transparent bbox first so keyed art centers on the subject."""
     img = img.convert("RGBA")
-    bbox = img.getbbox()
-    if bbox:
-        img = img.crop(bbox)
+    if crop_to_content:
+        bbox = img.getbbox()
+        if bbox:
+            img = img.crop(bbox)
     tw, th = size
     sw, sh = img.size
     if sw == 0 or sh == 0:
@@ -293,7 +281,9 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
         threshold = 180 if spec in FRAGMENT_CLEANUP_SPECS else 100
         img = chroma_key_magenta(img, threshold=threshold)
         log("applied magenta chroma-key")
-    img = fit_into_rect(img, size, fit)
+    img = fit_into_rect(
+        img, size, fit, crop_to_content=spec != "character_energy"
+    )
     if do_chroma and spec in FRAGMENT_CLEANUP_SPECS:
         img = remove_cutout_fragments(img)
         img = fit_into_rect(img, size, fit)
@@ -555,8 +545,9 @@ def make_logger(out_dir: Path):
 
 # --- few-shot reference images ---------------------------------------------
 
-def resolve_references(ref_arg: str, max_refs: int, log,
-                       spec: str | None = None) -> list[Path] | None:
+def resolve_references(ref_arg: str | None, max_refs: int, log,
+                       spec: str | None = None,
+                       identity_reference: str | None = None) -> list[Path] | None:
     """Turn --reference (a dir of style samples, or a comma-separated file list) into a
     randomly capped list of image Paths for the few-shot edit call. Returns None if nothing
     usable is found (caller falls back to plain text-to-image, never blocks).
@@ -570,8 +561,15 @@ def resolve_references(ref_arg: str, max_refs: int, log,
     def images_in(d: Path) -> list[Path]:
         return [f for f in sorted(d.iterdir()) if f.suffix.lower() in IMG_EXT]
 
+    try:
+        identity = CHARACTER_ART_BUNDLE.validate_identity_reference(
+            spec or "", Path(identity_reference) if identity_reference else None
+        )
+    except CharacterArtValidationError as exc:
+        raise SystemExit(f"[gen_sprite] {exc}") from exc
+
     paths: list[Path] = []
-    for token in str(ref_arg).split(","):
+    for token in str(ref_arg or "").split(","):
         token = token.strip()
         if not token:
             continue
@@ -592,11 +590,15 @@ def resolve_references(ref_arg: str, max_refs: int, log,
             paths.append(p)
         else:
             log(f"reference not found (skipped): {token}")
+    if max_refs and len(paths) > max_refs:
+        paths = random.SystemRandom().sample(paths, max_refs)
+    paths = list(dict.fromkeys(paths))
+    if identity and identity not in paths:
+        paths.append(identity)
+        log(f"identity reference: {identity.name}")
     if not paths:
         log("no usable reference images — falling back to text-to-image")
         return None
-    if max_refs and len(paths) > max_refs:
-        paths = random.SystemRandom().sample(paths, max_refs)
     log(f"using {len(paths)} reference image(s): {[p.name for p in paths]}")
     return paths
 
@@ -610,7 +612,10 @@ def cmd_generate(args: argparse.Namespace) -> int:
     size = resolve_size(args.spec, args.size)
     try:
         cfg = load_config(Path(args.config) if args.config else None)
-        refs = resolve_references(args.reference, args.max_refs, log, spec=args.spec) if args.reference else None
+        refs = resolve_references(
+            args.reference, args.max_refs, log, spec=args.spec,
+            identity_reference=args.identity_reference,
+        )
         src = call_backend(cfg, args.prompt, size, log, references=refs)
         # default follows the spec (cut-out icon → key; full-bleed illustration → don't);
         # explicit --chroma / --no-chroma override it.
@@ -689,7 +694,11 @@ def build_parser() -> argparse.ArgumentParser:
                    "Requires a backend that accepts reference images (e.g. gpt-image "
                    "edits or Gemini/nano-banana). Omit → plain text-to-image.")
     g.add_argument("--max-refs", type=int, default=3,
-                   help="randomly sample at most this many reference images (default 3)")
+                   help="randomly sample at most this many style references (default 3; identity is additional)")
+    g.add_argument(
+        "--identity-reference",
+        help="approved canonical Character identity image; required after character_select",
+    )
     g.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
     g.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")
     g.set_defaults(func=cmd_generate)

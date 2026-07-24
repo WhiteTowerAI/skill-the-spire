@@ -93,6 +93,8 @@ The current product supports the surfaces in
 editing, arbitrary patching, retained-card zones, alternative Energy, multiplayer UI,
 production Character motion/audio, arbitrary Event layouts, or Workshop publishing.
 
-The next named content-quality milestone is M6.5 Character art and presentation, as scoped
-in `documents/IMPLEMENTATION_PLAN.md`. User feedback and explicit lead decisions may add
-later optimization work; no automatic milestone transition follows from M6.5.
+M6.5 Character art and presentation is the active content-quality milestone, as scoped in
+`documents/IMPLEMENTATION_PLAN.md`. M6.5.1 (CharacterArtBundle and the identity reference
+chain) is complete; character-wide card/UI theming is next. User feedback and
+explicit lead decisions may add later optimization work; no automatic milestone transition
+follows from M6.5.

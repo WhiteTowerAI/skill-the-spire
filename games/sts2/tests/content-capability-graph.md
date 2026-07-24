@@ -42,6 +42,13 @@ Support levels:
 | Character identity/body | 88x88 top icon; 512x512 combat/rest/merchant | top panel and real hosts |
 | Character energy | five 256x256 layers plus 24x24 compact icon | native energy scene and real hand Card |
 
+Character custom-art acquisition uses one `CharacterArtBundle` as the source of dimensions,
+alpha policy, output path, fallback, consumer, and review metadata. Selection art may
+bootstrap the approved identity; every later Character acquisition requires that identity
+alongside its type-matched style references. Bundle validation produces a labeled contact
+sheet and a deterministic five-layer Energy composite outside runtime assets. This quality
+contract does not promote the optional locked-selection or map-marker slots.
+
 Every promoted family requires deterministic import, a checked fallback, packaging, and
 headed evidence in the real consumer. A path assertion or successful `.pck` is not visual
 proof. `gen_sprite.py` is framework-neutral; RitsuLib asset profiles own consumption.

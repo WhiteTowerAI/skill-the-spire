@@ -24,10 +24,15 @@ and maintainer validation. The lead's subsequent clean-workspace Codex test prod
 working in-game Mod and passed external acceptance. The BaseLib-to-RitsuLib migration is
 complete at the supported boundary.
 
+M6.5.1 (work package 1) completed the CharacterArtBundle and identity-reference chain with
+focused contract checks, regenerated payloads, a fresh MeridianProof build/load proof, and
+lead-accepted presentation in every promoted static Character host. Work package 2 is next;
+packages 2-5 are not complete.
+
 Do not reopen migration proof projects or start M7. The lead has approved M6.5 Character
-content-quality work in `documents/IMPLEMENTATION_PLAN.md`; execute only its currently
-listed packages and keep unproved surfaces unsupported. Other expansion tracks still need
-a later lead instruction. Do not prepare or claim a GitHub release yet.
+content-quality work in `documents/IMPLEMENTATION_PLAN.md`; execute its remaining packages
+in order and keep unproved surfaces unsupported. Other expansion tracks still need a later
+lead instruction. Do not prepare or claim a GitHub release yet.
 
 ## Dependency Contract
 
@@ -71,6 +76,10 @@ For the exact active inventory, read
 `gen_sprite.py` is framework-neutral. RitsuLib `*AssetProfile` consumers own runtime
 wiring. The verified Character profiles are selection portrait/background, top-panel
 icon, combat/rest/merchant static bodies, five full-energy layers, and the compact icon.
+`CharacterArtBundle` owns their shared acquisition metadata and review contract. Generate
+or approve selection identity first, pass it to later Character acquisitions, and keep the
+contact sheet and Energy composite outside runtime assets. Locked selection and map marker
+remain optional, unpromoted bundle slots.
 
 Host-native image generation is optional. Use it only when a callable raster tool returns
 a local image. Do not infer availability from a text-model name or installed skill, and do
