@@ -88,15 +88,6 @@ Execute these work packages in order:
    review; do not use a brittle image-similarity score as runtime acceptance. Generate the
    five energy layers as one coordinated sub-bundle with common canvas geometry and a
    composite preview rather than five unrelated images.
-   **M6.5.1 passed 2026-07-24.** The source bundle now owns 14 slots across 10 specs, with all 12
-   promoted static assets required for custom Character art and locked selection/map marker
-   retained as optional unpromoted slots. Selection bootstraps the approved identity;
-   later Character acquisitions require it in addition to type-matched style references.
-   Contract validation, the contact sheet, shared-canvas Energy composite, generated
-   payloads, and the 91-test tool suite passed. MeridianProof built with 0 warnings/errors,
-   passed the exact Tier 1 profile marker with no fresh error block, and the lead accepted
-   the real selection, combat/top-panel/Energy, RestSite, and Shop consumers. This closes
-   work package 1 only; work package 2 is next.
 2. **Character-wide card/UI theming.** Add a character card-pool frame material through
    RitsuLib's supported pool material surface. Split the large pool energy icon from the
    small text energy icon, grounding each size and consumer before implementation. Add the

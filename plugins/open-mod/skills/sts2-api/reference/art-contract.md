@@ -224,8 +224,7 @@ Top-panel icon/map marker:
 Original compact character emblem for a deck-building combat game. Match the provided
 references as STYLE ONLY. Use one bold readable silhouette or emblem with broad painterly
 forms, transparent cut-out edges, and no fine detail that disappears at 88x88 (or 49x64).
-Every background pixel must be uniform digital #FF00FF (RGB 255,0,255), with no shading
-or texture. No text, border, badge, watermark,
+Place it on a perfectly flat solid #FF00FF background. No text, border, badge, watermark,
 detached particles, or borrowed character design.
 ```
 
@@ -236,8 +235,7 @@ Original full-body character render for a deck-building combat game. Match the p
 references as STYLE ONLY: softly hand-painted 2D volume, readable broad value groups,
 controlled brush texture, and a neutral grounded pose. Show the entire original body on
 one baseline, centered and filling about 85-90% of a square. Use a perfectly flat solid
-#FF00FF background: every background pixel is RGB 255,0,255 with no lighting or texture.
-No floor, shadow, attack effect, text, UI, watermark, or animation
+#FF00FF background with no floor, shadow, attack effect, text, UI, watermark, or animation
 streak. This still is the static fallback body, not a Spine animation frame.
 ```
 
@@ -257,26 +255,14 @@ Energy icon:
 Original compact energy-core icon for a deck-building combat game. Match the provided
 references as STYLE ONLY. Use a single layered material core with clear value separation,
 centered at small size, and no numbers or UI. Put it on a perfectly flat solid #FF00FF
-background, with every background pixel at RGB 255,0,255 and no lighting or texture. No
-frame, text, watermark, detached particles, or borrowed design.
+background. No frame, text, watermark, detached particles, or borrowed design.
 ```
 
 For the full counter, invoke `character_energy` five times with slugs `orb_layer_1`
 through `orb_layer_5`; request complementary background, rotating-ring, inner-glyph,
 foreground-rim, and highlight layers. The compact 24x24 icon remains one independent
 `character_energy_text` output. Show the user that full energy is five image assets before
-a paid acquisition route runs. Energy normalization preserves the complete square source
-canvas instead of trimming each layer independently, so sparse layers retain shared geometry.
-
-### Character identity chain
-
-Approve one canonical Character identity image or sheet before generating later Character
-assets. The normalized selection portrait may serve as the bootstrap identity. Every later
-Character generation passes it as `--identity-reference` in addition to up to three type-
-matched STS2 style references: identity preserves the subject; style references guide only
-the rendering language. `character_select` is the sole bootstrap exception. After
-normalization, run `character_art.py` review to produce the labeled contact sheet and the
-five-layer Energy composite; these are review artifacts, not runtime assets.
+a paid acquisition route runs.
 
 ## The enchantment icon contract
 

@@ -21,17 +21,26 @@ import sys
 import tempfile
 from pathlib import Path
 
-from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
-
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 CHROMA_SPECS = {
     "relic", "power", "potion", "enchantment", "orb", "monster",
+    "character_icon", "character_map_marker", "character_combat",
+    "character_rest", "character_merchant", "character_energy",
+    "character_energy_text",
 }
-CHROMA_SPECS.update(
-    slot.spec for slot in CHARACTER_ART_BUNDLE.slots if slot.alpha == "transparent"
-)
-REFERENCE_FAMILIES = CHARACTER_ART_BUNDLE.reference_families()
+REFERENCE_FAMILIES = {
+    "character_select": "character_select",
+    "character_select_locked": "character_select",
+    "character_background": "character_select",
+    "character_icon": "character_icon",
+    "character_map_marker": "character_icon",
+    "character_energy": "character_icon",
+    "character_energy_text": "character_icon",
+    "character_combat": "character_combat",
+    "character_merchant": "character_combat",
+    "character_rest": "character_rest",
+}
 
 
 class AcquisitionError(Exception):
@@ -133,15 +142,6 @@ def resolve_reference_inputs(items: list[str], spec: str) -> list[Path]:
     return candidates
 
 
-def resolve_identity_reference(item: str | None, spec: str) -> Path | None:
-    try:
-        return CHARACTER_ART_BUNDLE.validate_identity_reference(
-            spec, Path(item) if item else None
-        )
-    except CharacterArtValidationError as exc:
-        raise AcquisitionError(str(exc), 2) from exc
-
-
 def single_line_prompt(prompt: str) -> str:
     """Keep the complete prompt while making it safe for Windows CLI shims."""
     return " ".join(prompt.split())
@@ -208,13 +208,8 @@ def cmd_create(args: argparse.Namespace) -> int:
         )
 
     references = resolve_reference_inputs(args.reference, args.spec)
-    identity = resolve_identity_reference(args.identity_reference, args.spec)
     if references:
         print(f"[acquire_sprite] selected references: {[path.name for path in references]}")
-    if identity:
-        print(f"[acquire_sprite] identity reference: {identity.name}")
-        if identity not in references:
-            references.append(identity)
 
     prefix = command_prefix(args.vofy_command)
     preflight(prefix, args.model, args.preflight_timeout)
@@ -287,7 +282,10 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         choices=(
             "card", "relic", "power", "potion", "event", "enchantment", "orb", "monster",
-            *CHARACTER_ART_BUNDLE.specs,
+            "character_select", "character_select_locked", "character_icon",
+            "character_map_marker", "character_background", "character_combat",
+            "character_rest", "character_merchant", "character_energy",
+            "character_energy_text",
         ),
     )
     create.add_argument("--slug", required=True)
@@ -298,10 +296,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         help="style image or art-samples root; directories auto-select the spec and randomly cap at three",
-    )
-    create.add_argument(
-        "--identity-reference",
-        help="approved canonical Character identity image; required after character_select",
     )
     create.add_argument("--aspect-ratio", help="only after confirming support with `vofy models <model>`")
     create.add_argument("--resolution", help="only after confirming support with `vofy models <model>`")

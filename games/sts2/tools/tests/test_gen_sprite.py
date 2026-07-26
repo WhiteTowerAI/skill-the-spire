@@ -18,19 +18,6 @@ import gen_sprite  # noqa: E402
 
 
 class GenSpriteTests(unittest.TestCase):
-    def test_chroma_key_accepts_generated_hot_pink_without_removing_subject(self) -> None:
-        image = Image.new("RGBA", (20, 20), (239, 15, 147, 255))
-        ImageDraw.Draw(image).rectangle((7, 5, 13, 17), fill=(145, 22, 18, 255))
-        image.putpixel((1, 1), (175, 70, 110, 180))
-        image.putpixel((2, 2), (123, 22, 75, 146))
-
-        keyed = gen_sprite.chroma_key_magenta(image)
-
-        self.assertEqual(0, keyed.getpixel((0, 0))[3])
-        self.assertEqual(0, keyed.getpixel((1, 1))[3])
-        self.assertEqual(0, keyed.getpixel((2, 2))[3])
-        self.assertEqual(255, keyed.getpixel((10, 10))[3])
-
     def test_cutout_fragment_cleanup_keeps_subject_cluster_and_removes_debris(self) -> None:
         image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
@@ -117,31 +104,6 @@ class GenSpriteTests(unittest.TestCase):
                 self.assertEqual((88, 88), image.size)
                 self.assertEqual("RGBA", image.mode)
 
-    def test_character_energy_import_preserves_shared_canvas_coordinates(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            source = root / "source.png"
-            out = root / "images"
-            image = Image.new("RGBA", (100, 100), (255, 0, 255, 255))
-            ImageDraw.Draw(image).rectangle((10, 10, 19, 19), fill=(220, 180, 80, 255))
-            image.save(source)
-
-            result = subprocess.run(
-                [
-                    sys.executable, str(GEN_SPRITE), "import",
-                    "--spec", "character_energy", "--slug", "orb_layer_4",
-                    "--input", str(source), "--out", str(out), "--chroma",
-                ],
-                capture_output=True, text=True, encoding="utf-8", check=False,
-            )
-
-            self.assertEqual(0, result.returncode, result.stderr)
-            destination = out / "charui" / "orb_layer_4.png"
-            with Image.open(destination) as normalized:
-                self.assertEqual((256, 256), normalized.size)
-                self.assertGreater(normalized.getpixel((38, 38))[3], 0)
-                self.assertEqual(0, normalized.getpixel((128, 128))[3])
-
     def test_character_background_import_writes_opaque_profile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -198,21 +160,12 @@ class GenSpriteTests(unittest.TestCase):
             expected = pool / "icon.png"
             expected.touch()
             (root / "wrong-family.png").touch()
-            identity = root / "identity.png"
-            Image.new("RGB", (20, 20), (40, 80, 120)).save(identity)
 
             references = gen_sprite.resolve_references(
-                str(root), 3, lambda _message: None, spec="character_energy_text",
-                identity_reference=str(identity),
+                str(root), 3, lambda _message: None, spec="character_energy_text"
             )
 
-            self.assertEqual([expected, identity.resolve()], references)
-
-    def test_later_character_reference_rejects_missing_identity(self) -> None:
-        with self.assertRaisesRegex(SystemExit, "requires --identity-reference"):
-            gen_sprite.resolve_references(
-                None, 3, lambda _message: None, spec="character_combat"
-            )
+            self.assertEqual([expected], references)
 
     def test_monster_import_writes_one_exact_static_body(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

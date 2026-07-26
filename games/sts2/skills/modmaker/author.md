@@ -587,11 +587,6 @@ complementary layers; the compact resource icon is one legible 24x24 core. Do no
 phobia art, or a custom Ancient layout. The Ancient name-banner/Architect line is a
 separate native headed proof, not a normal Event rich-text shortcut.
 
-Generate and approve `character_select` first as the canonical identity (or use an approved
-local character sheet). Pass it as `--identity-reference` for every later Character asset,
-alongside the type-matched style pool. Give all five Energy layers one shared subject,
-palette, center, scale, and canvas brief; vary only the named layer role.
-
 1a. **Respect the selected route's consent boundary.** For `runtime-imagegen`, the user's
    mod-level `generate` choice authorizes the initial one-image-per-asset native-tool run;
    it needs no separate API key, but follow any approval or usage warning presented by the
@@ -615,8 +610,7 @@ palette, center, scale, and canvas brief; vary only the named layer role.
    Issue one native image call per distinct asset with the assembled prompt. For a full-
    bleed card, request the landscape composition without a keyed background. For relic,
    power, potion, enchantment, orb icons, and monster bodies, keep the prompt's perfectly flat `#FF00FF`
-   background, explicitly requiring every background pixel to be RGB 255,0,255 without
-   lighting or texture; do not
+   background; do not
    remove it with a runtime-specific helper because `gen_sprite.py import --chroma` owns
    that deterministic step. When the native tool supports reference images, randomly choose
    up to three type-matched files from
@@ -656,8 +650,7 @@ palette, center, scale, and canvas brief; vary only the named layer role.
      --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --model <chosen-model> \
      [--aspect-ratio <confirmed-ratio>] [--resolution <confirmed-resolution>] \
-     [--reference ${STS2_API_SKILL_DIR}/reference/art-samples] \
-     [--identity-reference <approved-character-identity.png>] --yes
+     [--reference ${STS2_API_SKILL_DIR}/reference/art-samples] --yes
    ```
    `--yes` means the user approved this exact prompt/model/one-image spend. The tool reruns
    preflight, downloads into a unique empty directory, requires exactly one image, then
@@ -670,8 +663,7 @@ palette, center, scale, and canvas brief; vary only the named layer role.
    python ${GAME_TOOLS_DIR}/gen_sprite.py generate \
      --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --config <path to art-backend.json> \
-     --reference ${STS2_API_SKILL_DIR}/reference/art-samples \
-     [--identity-reference <approved-character-identity.png>]
+     --reference ${STS2_API_SKILL_DIR}/reference/art-samples
    ```
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
    point it at the **root** `art-samples` dir (as shown). The tool auto-picks the matching
@@ -687,14 +679,6 @@ palette, center, scale, and canvas brief; vary only the named layer role.
    `_outline.png` is not generated (see above).
    **Local image:** use `gen_sprite.py import --input <file> ...`; for a magenta-backed
    relic/power/potion/enchantment/orb/monster or Character cut-out source add `--chroma`.
-   After all required Character slots exist, validate and review them outside the runtime
-   asset directory:
-   ```
-   python ${GAME_TOOLS_DIR}/character_art.py \
-     --images-root <work dir>/<ModName>/images \
-     --identity-reference <approved-character-identity.png> \
-     --out-dir <work dir>/art-review
-   ```
 4. **Unavailable/failure → bounded fallback, don't block.** A missing native image tool,
    native output with no local file, host-tool failure, missing Vofy/auth/credits,
    unsupported model flags, task failure/timeout, zero or multiple downloads, missing BYO
