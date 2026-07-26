@@ -68,8 +68,8 @@ The old plan's first recommended RitsuLib expansion slice was promotion of the S
 into the documented Card pipeline; R6 absorbed and completed that work. It is not a
 remaining migration gate. Do not automatically start M7, another expansion slice,
 multiplayer presentation, audio, or animation/material work outside the bounded M6.5
-packages. M6.5's non-Spine cues, pool frame material, and parameterized trail do not
-authorize broader production animation or custom-material work.
+packages. M6.5's bounded non-Spine `Idle`/`Attack`/`Hit`/`Dead` cues and card-pool frame
+material do not authorize broader production animation or custom-material work.
 
 ## M6.5 - Character Content Quality
 
@@ -77,47 +77,91 @@ M6.5 is the next approved content-quality milestone. It improves the existing Ri
 Character pipeline; it does not reopen M6 migration work, revive R7, or imply that any item
 below is already supported. Promote each surface only after its own real consumer proof.
 
-Execute these work packages in order:
+M6.5 contains these work packages:
 
-1. **CharacterArtBundle and identity reference chain.** Define one structured bundle for
-   every Character art slot, including required/optional status, output path, dimensions,
-   alpha policy, fallback, and consumer. Establish one approved canonical identity image
-   or character sheet, then pass it as an identity reference to later portrait/body/icon
-   generations in addition to type-matched STS2 style references. Preserve the existing
-   per-paid-call consent boundary. Add bundle validation and a contact-sheet/composite
-   review; do not use a brittle image-similarity score as runtime acceptance. Generate the
-   five energy layers as one coordinated sub-bundle with common canvas geometry and a
-   composite preview rather than five unrelated images.
-2. **Character-wide card/UI theming.** Add a character card-pool frame material through
-   RitsuLib's supported pool material surface. Split the large pool energy icon from the
-   small text energy icon, grounding each size and consumer before implementation. Add the
-   top-panel outline asset and wire `IconOutlineTexturePath`. Prove the card frame, both
-   energy-icon consumers, normal top icon, and outlined top icon independently.
-3. **Locked selection, map marker, and parameterized trail.** Finish the existing
-   `character_select_locked` and `character_map_marker` routes, then visibly prove the real
-   locked-select and run-map hosts before promotion. Add a Character-specific card trail
-   first through RitsuLib `CharacterTrailStyle` parameters and existing supported trail
-   resources; custom trail scenes, shaders, and materials are not part of this slice.
-4. **Non-Spine combat cue sequences.** Add identity-consistent frame assets and RitsuLib
-   cue/state-machine wiring for `Idle`, `Attack`, `Cast`, `Hit`, and `Dead`. Verify trigger
-   routing, loop/one-shot behavior, timing, return-to-idle behavior, death delay, cleanup,
-   and fallback in a real combat. This work package does not authorize a Spine pipeline or
-   animated merchant/rest-site production assets.
-5. **Fresh acceptance and payload refresh.** After focused contract and hosted proofs pass,
-   generate one fresh natural-language Character Mod that exercises the complete M6.5
-   composition. Require exact load marker, structured post-state/presentation proof,
-   `selftest done`, settled screenshots for every visible host, and no fresh error block.
-   Record durable evidence, retire the acceptance Mod, and regenerate both committed
-   payloads from `games/sts2/`.
+- **CharacterArtBundle and role-based reference routing.** Define one structured bundle
+  for every Character art slot, including required/optional status, output path,
+  dimensions, alpha policy, fallback, and real consumer. Do not generate a separate
+  character sheet or any extra canonical identity image. Use the required selection
+  portrait as the identity reference only for identity-sensitive combat, rest, merchant,
+  and combat-cue assets, alongside the type-matched STS2 style references. Derive a concise
+  palette/motif brief from the user's description and selection portrait for card/UI,
+  energy, background, and icon work; those requests do not receive the portrait as an
+  image reference. Preserve the existing per-paid-call consent boundary. Add bundle
+  validation and a contact-sheet/composite review; do not use a brittle image-similarity
+  score as runtime acceptance.
 
-M6.5 is complete only when all five work packages are pipeline-supported on STS2 `0.107.1`
-and RitsuLib `0.4.62`. A path existing in a profile, a successful PCK build, or a fallback
-image appearing does not close a package. RitsuLib Character presentation patches are
-non-critical, so each new route needs an exact-resource assertion plus visible headed
-evidence in its real host.
+  Keep the checked 132x195 selection and 512x512 combat output dimensions, but add a
+  separate visible-subject footprint contract for each real host. Recalibrate selection
+  composition/normalization so the portrait is not over-zoomed or clipped in either its
+  button or selected panel. Recalibrate the transparent combat cut-out's fill fraction and
+  public RitsuLib visual scale/position so it is comparable to a grounded vanilla player
+  footprint rather than filling the 512x512 canvas one-to-one. Pin the reviewed content
+  box, baseline, and transform only after settled headed comparison; prove the visible
+  subject bounds and absence of UI/body clipping or overlap. Do not "fix" either problem
+  by changing the contract pixel dimensions.
 
-Explicitly outside the current M6.5 scope are Spine authoring, custom transition
-materials/shaders, production audio, multiplayer hands/remote UI, native custom-Character
-Ancient presentation, animated merchant/rest-site production assets, and release work.
-The lead may add other content-quality items later; they are not inferred from this
-milestone and do not expand it automatically.
+  The full-energy scene still consumes five 256x256 layers. When the generated-art route
+  is selected, make exactly one image-generation call for the Character-specific layer 1;
+  user import and the checked fallback remain valid alternatives. Layers 2-5 are copied
+  from four reviewed transparent PNG templates supplied by the human lead and committed
+  as source assets. Validate the dimensions, alpha policy, exact slot mapping, packed
+  paths, and five-layer composite. Do not generate per-Character replacements for
+  template layers 2-5, and do not invent placeholder templates before the lead supplies
+  the four PNGs.
+
+- **Character-wide card/UI theming.** Add a Character card-pool frame material through
+  RitsuLib's supported pool material surface. Turn the palette/motif brief into one
+  structured theme contract covering `NameColor`, `EnergyLabelOutlineColor`,
+  `DeckEntryCardColor`, `EnergyOutlineColor`, the card-frame base/HSV/material parameters,
+  and the large/text energy-icon palette. Prefer deterministic recoloring of one reviewed
+  fixed frame and material template; do not spend an image-generation call on a complete
+  card frame.
+  Split the large pool energy icon from the small text energy icon, grounding each size
+  and consumer before implementation. Deterministically derive the top-panel outline and
+  every generated Relic's 256x256 `relics/<slug>_outline.png` from the final transparent
+  main icon's alpha silhouette with one reviewed width/color rule; make no additional AI
+  call. Wire `IconOutlineTexturePath` and RitsuLib `RelicAssetProfile.IconOutlinePath`.
+  Reusing the unmodified main icon is only a fallback, not outline-quality acceptance.
+  Prove every named color/material consumer, both energy-icon consumers, normal/outlined
+  top icons, and the exact normal/outline Relic pair in their real hosts.
+
+- **Bounded non-Spine combat cue sequences.** Add identity-consistent frame assets and
+  RitsuLib cue/state-machine wiring for `Idle`, `Attack`, `Hit`, and `Dead`. Define one
+  stable visual baseline/pivot and readable bounds plus consumer-grounded intent, center,
+  orb, and talk anchors so animation frames cannot move the Character or its UI around.
+  Apply the same reviewed public `VisualNodeStyle` scale/position to every cue rather than
+  tuning frames independently. Contract each cue's frame order/duration. Verify trigger
+  routing, idle looping, one-shot attack/hit behavior, return to idle, death timing and
+  terminal behavior, cleanup, stable visible footprint/geometry/anchors, and missing-asset
+  fallback in a real combat. This package does not include a `Cast` cue, a Spine pipeline,
+  or animated merchant/rest-site assets.
+
+- **Fresh acceptance and payload refresh.** After the focused contract and hosted proofs
+  above pass, generate one fresh natural-language Character Mod that exercises the
+  complete M6.5 composition. Require the exact load marker, structured
+  post-state/presentation proof, `selftest done`, settled screenshots for every visible
+  host, and no fresh error block. Record durable evidence, retire the acceptance Mod, and
+  regenerate both committed payloads from `games/sts2/`.
+
+M6.5 is complete only when all listed work packages are pipeline-supported on STS2
+`0.107.1` and RitsuLib `0.4.62`. A path existing in a profile, a successful PCK build, or a
+fallback image appearing does not close a package. RitsuLib Character presentation
+patches are non-critical, so each new route needs an exact-resource assertion plus visible
+headed evidence in its real host.
+
+M6.5 does not generate, import, resize, pack, wire, or visibly prove a custom map marker.
+Keep the checked RitsuLib/game-native shared marker fallback. Because open-mod emits no
+custom marker PNG, the 49x64 custom-asset contract creates no normalization, packaging, or
+acceptance work.
+
+## Future Character Outlook
+
+Locked-selection presentation, Character-specific card trails (parameterized or custom),
+the `Cast` combat cue, and any additional combat cue states are not part of M6.5. Spine
+authoring, custom transition materials/shaders, production audio, multiplayer hands/remote
+UI, native custom-Character Ancient presentation, animated merchant/rest-site production
+assets, and release work also remain outside the milestone. These are future
+possibilities, not scheduled follow-up packages; none starts without a later explicit lead
+instruction. A custom map marker is not a future package; the product keeps the native
+shared marker.

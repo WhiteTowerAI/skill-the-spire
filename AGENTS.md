@@ -27,7 +27,13 @@ complete at the supported boundary.
 Do not reopen migration proof projects or start M7. The lead has approved M6.5 Character
 content-quality work in `documents/IMPLEMENTATION_PLAN.md`; execute only its currently
 listed packages and keep unproved surfaces unsupported. Other expansion tracks still need
-a later lead instruction. Do not prepare or claim a GitHub release yet.
+a later lead instruction. M6.5 has no separate character-sheet generation, locked-select
+route, custom map marker, Character trail, or `Cast` cue. Characters retain the checked
+native/shared map-marker fallback. Its full-energy acquisition creates only layer 1 per
+Character; layers 2-5 use four fixed PNG templates after the lead supplies them. M6.5 also
+corrects selection/combat visible footprint without changing contract pixel dimensions and
+derives top-icon/Relic outlines deterministically from alpha, with no extra AI call. Do
+not prepare or claim a GitHub release yet.
 
 ## Dependency Contract
 
@@ -38,6 +44,11 @@ a later lead instruction. Do not prepare or claim a GitHub release yet.
 - `baselines/BaseLib-StS2` and `baselines/downfall` are offline historical research only.
 - `baselines/STS2-RitsuLib` is the maintainer research checkout; generated Mods consume
   the pinned package/runtime profile instead of copying it.
+- `baselines/Sts2-YuWanCard` is a same-game-version Character/content-depth research
+  checkout pinned at `07d7daa`. Its gameplay and Character framework is self-built with
+  Harmony/Publicizer; RitsuLib is optional settings UI only. Use it to inventory consumers
+  and study product behavior, never as RitsuLib API authority or a source of shipped code,
+  art, audio, Spine, shader, or other assets.
 
 ## Supported Boundary
 
@@ -59,9 +70,10 @@ Preserve these important boundaries:
 - Scry is singleplayer and Mod-local; it is not a global interoperability service.
 - The fixed Character resource control is 220x32 at offset 160 with a text fallback and
   must remain disjoint from native Energy.
-- Locked selection, map marker, native custom-Character Ancient presentation, production
-  animation/material/audio, remote-player UI, alternative Energy, vanilla editing,
-  retained-card zones, and one-click Workshop publishing remain unsupported.
+- Custom locked-selection/map-marker presentation, native custom-Character Ancient
+  presentation, production animation/material/audio, remote-player UI, alternative
+  Energy, vanilla editing, retained-card zones, and one-click Workshop publishing remain
+  unsupported.
 
 For the exact active inventory, read
 `games/sts2/tests/content-capability-graph.md`.
@@ -98,8 +110,24 @@ Keep verification proportional:
 1. Contract checks for deterministic calculations and state rules.
 2. Reuse the closest hosted scenario (`CombatPlayer`, `CombatEnemy`, `MapNode`, or
    `RunStart`/Character) for live behavior.
-3. Use a fresh natural-language acceptance Mod for pipeline acceptance, then retire it
-   after durable evidence is recorded.
+3. For an ordinary feature or bug fix that affects generated-Mod behavior or presentation,
+   stop after the changed behavior is proved in the nearest real game host. Reuse a
+   maintained scenario when possible, or create one narrow disposable proof; do not run a
+   complete demo Mod after every change.
+4. Use a fresh natural-language acceptance Mod only when the current
+   `documents/IMPLEMENTATION_PLAN.md` explicitly schedules a full-pipeline gate or the
+   human lead asks for one. Record durable evidence, then retire the acceptance Mod.
+
+Do not turn a focused change into an unscheduled end-to-end acceptance exercise. Local
+documentation or tooling changes that cannot affect generated runtime behavior need only
+the proportionate non-game checks. Historical evidence stays immutable: do not modify an
+archived acceptance project or reopen a retired migration proof to test new work.
+
+Tests protect semantic behavior, generated artifacts, and dependency boundaries. Do not
+assert exact adapter API symbols or recipe wording merely to prove that a recipe uses
+RitsuLib rather than BaseLib; enforce that product contract at scaffold, build, manifest,
+and runtime-package boundaries. Assert a specific symbol or phrase only when it is itself
+a pinned compatibility or output contract.
 
 Tier 1 requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof plus `selftest done`. Trigger logs and model-only state do not

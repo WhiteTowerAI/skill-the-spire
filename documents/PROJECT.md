@@ -70,7 +70,8 @@ that establishes its independent invariant:
 - local assertions for pure calculations;
 - a hosted real-game scenario for lifecycle and behavior;
 - visible evidence when open-mod owns presentation;
-- a fresh natural-language Mod for end-to-end acceptance.
+- a fresh natural-language Mod only for an explicitly scheduled end-to-end acceptance
+  gate.
 
 Tier 1 means loaded with no fresh error. Tier 2 means a structured post-state marker plus
 `selftest done`. Evidence density is not a goal; one proof per independent invariant is.
@@ -91,8 +92,16 @@ directly.
 The current product supports the surfaces in
 `games/sts2/tests/content-capability-graph.md`. It deliberately does not imply vanilla
 editing, arbitrary patching, retained-card zones, alternative Energy, multiplayer UI,
-production Character motion/audio, arbitrary Event layouts, or Workshop publishing.
+Spine/production Character motion or audio, arbitrary Event layouts, or Workshop
+publishing.
 
-The next named content-quality milestone is M6.5 Character art and presentation, as scoped
-in `documents/IMPLEMENTATION_PLAN.md`. User feedback and explicit lead decisions may add
-later optimization work; no automatic milestone transition follows from M6.5.
+The next named content-quality milestone is M6.5 Character art and presentation. Its
+bounded scope is role-based identity references without a separate character sheet,
+selection/combat visible-footprint correction without changing contract pixel sizes,
+structured Character card/UI theming with a deterministic frame material and alpha-derived
+Character/Relic outlines, one per-Character energy layer plus four lead-supplied fixed
+templates, and geometry-stable non-Spine `Idle`/`Attack`/`Hit`/`Dead` combat cues.
+Characters keep the game-native shared map-marker fallback; no custom map marker is
+planned. Locked selection, Character card trails, and a `Cast` cue remain future outlook,
+as scoped in
+`documents/IMPLEMENTATION_PLAN.md`. No automatic milestone transition follows from M6.5.

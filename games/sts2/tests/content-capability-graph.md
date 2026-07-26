@@ -59,7 +59,7 @@ Do not generate it.
 - run-persistent or remote-player Character resources/UI;
 - multiplayer/replay Scry or global Scry modifiers/completion hooks;
 - vanilla content editing or ungrounded patch targets;
-- locked-selection/map-marker and native custom-Character Ancient presentation;
+- custom locked-selection/map-marker and native custom-Character Ancient presentation;
 - production animation, materials, multiplayer presentation, and audio;
 - arbitrary Event layouts/VFX, direct merchant/rest/treasure transitions, multiple
   special combats per mutable Event instance, or arbitrary forced chains;

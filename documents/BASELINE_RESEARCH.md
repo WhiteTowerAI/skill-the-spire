@@ -1,7 +1,8 @@
 # Current baseline
 
 This file records the references that still inform active design after the RitsuLib
-migration. It is intentionally short; Git history retains the earlier survey.
+migration. Git history retains the earlier survey; the sections below keep only current
+decisions and the evidence needed to apply them correctly.
 
 ## Active Runtime Baseline
 
@@ -16,6 +17,124 @@ open-mod targets:
 `baselines/STS2-RitsuLib` is the maintainer checkout for API and compat research. Runtime
 projects use the pinned package and installed runtime variant rather than copying that
 checkout.
+
+## YuWanCard Character Baseline
+
+The gitignored maintainer checkout `baselines/Sts2-YuWanCard` tracks
+<https://github.com/YuWan886/Sts2-YuWanCard> at commit
+`07d7daa64538e33137684a3af06e74e9b30e0678` (2026-07-25), Mod version `v0.5.11`, for
+STS2 `0.107.1`. The surveyed tree contains 688 C# files, 525 PNGs, 27 Godot scenes, Spine
+resources, audio, shaders, and custom UI. No automated test project was found. This makes
+it useful as a large, same-version product and Character-consumer baseline, not as proof
+that open-mod can generate or support those surfaces.
+
+### Correct framework classification
+
+YuWanCard is not a RitsuLib-authored Character implementation at the pinned revision:
+
+- `YuWanCard.csproj` has no RitsuLib package/reference, and `YuWanCard.json` declares no
+  RitsuLib runtime dependency;
+- its README calls RitsuLib optional and says installing it only enables the settings UI;
+- `ConfigRegistrar` detects RitsuLib at runtime and emits settings-provider types through
+  reflection;
+- Character registration, asset routing, energy icons, card-frame material, scenes, and
+  many other features are implemented by its own registries, Node conversion, Publicizer,
+  and Harmony patches.
+
+Therefore this checkout may answer "what does a mature Character Mod need to present?"
+and "what product patterns are worth researching?" It may not answer "which RitsuLib API
+should a generated Mod call?" The latter remains owned by the pinned
+`baselines/STS2-RitsuLib` checkout plus open-mod's focused live proofs.
+
+### Findings that refine M6.5
+
+1. **Treat theming as one structured Character contract.** `Pig`, `PigCardPool`, and the
+   pool patches coordinate `NameColor`, `EnergyLabelOutlineColor`,
+   `DeckEntryCardColor`, `EnergyOutlineColor`, a card-frame HSV color, and distinct large
+   and text energy icons. open-mod should derive these values from one palette/motif brief
+   instead of choosing each consumer independently.
+2. **Do not spend an image-generation call on a complete card frame.** YuWanCard applies
+   an HSV shader to a fixed frame material. The implementation is a private Harmony route
+   and must not be copied, but it supports a cheaper product design: use RitsuLib's public
+   pool-material surface with a reviewed deterministic frame/material template and theme
+   parameters.
+3. **Keep large and inline energy icons separate.** YuWanCard's
+   `BigEnergyIconPath` is a 256x256 image shared with the energy counter's identity layer;
+   `TextEnergyIconPath` is a separate 24x24 image. They have different consumers even
+   when their visual identity matches. This confirms that open-mod's currently proven
+   shared compact fallback is only a minimum and that the existing M6.5 split needs
+   independent sizing and hosted proofs.
+4. **The one-generated-energy-layer decision is credible, with a boundary.**
+   `pig_energy_counter.tscn` supplies only one Character-specific `Layer1` and reuses
+   vanilla Ironclad front/back VFX. This is evidence that the identity-bearing layer can
+   carry most of the customization. It is not proof for RitsuLib's checked five-layer
+   scene contract, so open-mod still keeps the lead-supplied fixed templates for layers
+   2-5 and proves all five actual consumers.
+5. **Animation needs geometry as well as cue names.** `Pig.CreateCreatureAnimator` uses a
+   looping idle, one-shot attack/hit states that return to idle, and a non-looping terminal
+   death state; missing states fall back to idle. Its combat scene also defines the visual
+   baseline, bounds, and `IntentPos`, `CenterPos`, `OrbPos`, and `TalkPos` anchors. M6.5
+   should contract frame order/duration, fallback and terminal behavior, plus stable
+   geometry/anchors so the body and game UI remain aligned.
+6. **A broad interface is an inventory, not presentation evidence.**
+   `IYuWanCharacter` enumerates combat visuals, trail, top icon/outline, full energy,
+   rest/merchant, selection portrait/background/locked portrait, map marker, transition,
+   multiplayer hands, SFX, animation, and the cookie icon. The concrete Pig does not
+   customize every row: map marker, locked selection, and trail fall back, while the
+   outline currently reuses the normal icon. Those rows identify future consumers but do
+   not justify a claim that the corresponding custom presentation works.
+7. **Pixel dimensions and visible footprint are different contracts.** YuWanCard's
+   selection portrait is the same 132x195 expected by open-mod and is assigned directly;
+   its subject occupies 128 of 132 horizontal pixels. Its combat Character instead uses a
+   scene with an explicit visual position, bounds, and UI anchors. This confirms that the
+   current over-large open-mod results should be corrected through subject composition,
+   transparent-canvas fill, and a public node transform, not smaller output files. The
+   Pig-specific numbers are not reusable; open-mod still grounds and visibly proves its
+   own selection/combat footprint against vanilla hosts.
+8. **Relic outline acquisition should be deterministic.** The surveyed YuWanCard tree has
+   66 relic PNGs and no separate outline PNGs; `YuWanRelicModel` returns the main icon path
+   for `PackedIconOutlinePath`. This shows that a second AI image is unnecessary, but
+   reusing an unchanged icon is not a real outline. RitsuLib exposes
+   `RelicAssetProfile.IconOutlinePath`, so open-mod should derive a white/approved-color
+   expanded silhouette from the normalized icon alpha and wire that distinct path.
+
+The immediate changes are limited to M6.5 planning. They do not reopen custom locked
+selection/map-marker presentation, trail, `Cast`, Spine, audio, multiplayer presentation,
+or any other future surface. M6.5 keeps the checked game-native shared map marker instead
+of copying or resizing one from a research Mod.
+
+### Future research value
+
+- **Mod settings:** the page/section/subpage model, toggles, sliders, custom entries,
+  localization, persistence, and immediate side effects form a useful product checklist.
+  Because open-mod already requires RitsuLib, any future recipe should use its pinned
+  public settings API directly rather than YuWanCard's reflection-emission bridge.
+- **Character skins:** the repository keeps a stable skin ID, persists the selection,
+  previews the real combat visuals on both normal and custom-run selection screens, and
+  resolves skin-specific combat, merchant, and icon assets with per-slot fallback. A
+  future open-mod design would need a declared skin bundle and explicit consumer coverage,
+  not merely a second combat image.
+- **Custom Rest Site options:** `RoastPorkRestSiteOption` shows the complete product shape:
+  eligibility supplied by an owned relic, localized title/description, custom icon,
+  asynchronous outcome, multiplayer-aware ownership, and card-acquisition preview.
+- **Multiplayer mechanics:** custom reliable messages, explicit serialization, targeted
+  run locations, request timeouts, disconnect cleanup, and host-authoritative content
+  settings demonstrate why multiplayer is a separate systems track. Singleplayer behavior
+  cannot simply be marked multiplayer-compatible.
+- **Custom target types, modifiers, badges, interoperability, and complex UI:** these are
+  useful inventories of the downstream patches, persistence, deterministic RNG,
+  localization, networking, and real-host UI work each feature can require. Each needs its
+  own bounded public-API research and hosted proof before it can enter the support graph.
+
+### What not to carry forward
+
+Do not copy YuWanCard's self-built `ContentRegistry`, Character getter patches,
+assembly-wide patch discovery, NodeFactory, Publicizer/private-member access, wildcard
+NuGet version, or optional reflection bridge into generated Mods. Do not add its telemetry
+or update checker to open-mod output. The repository's main source license is MIT, but its
+tree also records separately licensed third-party code/assets, and individual image,
+audio, Spine, and shader provenance cannot be inferred from the root license. Study
+behavior and code shape; do not redistribute or use those assets as generation references.
 
 ## Reused Design Ideas
 
@@ -33,8 +152,9 @@ The active architecture still borrows these durable ideas from the initial surve
 ## Archived Research
 
 `baselines/BaseLib-StS2` and `baselines/downfall` are retained only as offline historical
-research. They explain pre-migration behavior and implementation depth. They must not be
-used to scaffold, author, build, repair, or run a generated Mod.
+research. They explain pre-migration behavior and implementation depth. YuWanCard is a
+current same-version product-depth reference under the narrower rules above. None of these
+three may be used to scaffold, author, build, repair, or run a generated Mod.
 
 Claude-specific baseline repositories may remain locally for historical comparison, but
 the product and publish flow now target Codex. They are not required to build or install
