@@ -136,7 +136,8 @@ claim separate until the real headed game visibly excludes the fallback in every
 consumer named by `reference/art-contract.md`. Record a screenshot or an equivalent node
 assertion plus visual inspection. In particular:
 
-- relic: bar icon and clicked detail popup;
+- relic: exact 256x256 main/derived-outline pair in one real `NRelic`, plus the clicked
+  detail popup using the explicit big path;
 - power: status icon and big apply/expire notification;
 - enchantment: card tab and hover tooltip;
 - orb icon: smart tooltip and trigger flash (the Frost combat body remains fallback);
@@ -157,10 +158,13 @@ assertion plus visual inspection. In particular:
   same `MapNode` run; a model delta without the native consumers is insufficient.
 - character static presentation: the real character-select button/background, top-panel
   icon, and static combat body must visibly use the normalized custom resources. Assert the
-  exact 132x195 portrait, 1920x1200 background, 88x88 top-panel icon, and 512x512 non-Spine
+  exact 132x195 portrait, 1920x1200 background, normal and outlined 88x88 top-panel
+  textures under one `NTopBarPortrait`, and 512x512 non-Spine
   combat body in their real hosts. Full energy asserts one native counter with five 256x256
-  custom layers and its live number label; prove the 24x24 compact icon independently in a
-  real hand card's `NCard.EnergyIcon`. Enter real RestSite and Shop hosts and assert their
+  custom layers and its live number label. For the M6.5 theme, automatically assert all
+  four exact color values, frame shader target/brightness, distinct existing icon paths,
+  the 256x256 large icon in a real hand card's `NCard.%EnergyIcon`, and the 24x24 path in a
+  real `EnergyIconsFormatter` card-description result. Enter real RestSite and Shop hosts and assert their
   512x512 static bodies; the RitsuLib route requires no merchant prefix. Capture one settled
   screenshot for selection, combat/top-panel/energy, RestSite, and Shop. Locked selection
   and map marker require their own visible-host evidence. Do not infer any consumer from a

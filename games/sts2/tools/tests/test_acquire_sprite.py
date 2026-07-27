@@ -17,7 +17,7 @@ TOOLS_DIR = Path(__file__).resolve().parents[1]
 ACQUIRE = TOOLS_DIR / "acquire_sprite.py"
 sys.path.insert(0, str(TOOLS_DIR))
 import acquire_sprite  # noqa: E402
-PNG = "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGP4z8DwH4QZGBgYGMAAAAD//wMAjQkH/QAAAABJRU5ErkJggg=="
+PNG = "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGP4z8Dwn4GBgYGJAQoAHwUCAbo3z9UAAAAASUVORK5CYII="
 
 
 FAKE_VOFY = f"""
@@ -254,6 +254,59 @@ class AcquireSpriteTests(unittest.TestCase):
 
         self.assertEqual([expected.resolve()], references)
 
+    def test_character_background_uses_its_own_reference_pool(self) -> None:
+        root = self.root / "art-samples"
+        background_pool = root / "character_background"
+        background_pool.mkdir(parents=True)
+        expected = background_pool / "defect.png"
+        expected.write_bytes(base64.b64decode(PNG))
+        portrait_pool = root / "character_select"
+        portrait_pool.mkdir()
+        (portrait_pool / "wrong-small-portrait.png").write_bytes(base64.b64decode(PNG))
+
+        references = acquire_sprite.resolve_reference_inputs(
+            [str(root)], "character_background"
+        )
+
+        self.assertEqual([expected.resolve()], references)
+
+    def test_identity_sensitive_character_adds_selection_portrait_reference(self) -> None:
+        identity = self.root / "select.png"
+        Image.new("RGB", (132, 195), (80, 110, 140)).save(identity)
+
+        result = self.run_tool(
+            *self.create_args("character_combat"),
+            "--identity-reference", str(identity),
+            "--yes",
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        calls = [ast.literal_eval(line) for line in self.record.read_text(
+            encoding="utf-8"
+        ).splitlines()]
+        create = next(args for args in calls if args[:2] == ["image", "create"])
+        references = [Path(create[index + 1]) for index, value in enumerate(create) if value == "--image"]
+        self.assertEqual([identity.resolve()], references)
+        self.assertIn("identity reference: select.png", result.stdout)
+
+    def test_palette_character_rejects_identity_portrait_and_identity_asset_requires_one(self) -> None:
+        identity = self.root / "select.png"
+        Image.new("RGB", (132, 195), (80, 110, 140)).save(identity)
+
+        result = self.run_tool(
+            *self.create_args("character_icon"),
+            "--identity-reference", str(identity),
+            "--yes",
+        )
+        self.assertEqual(2, result.returncode)
+        self.assertIn("palette-only", result.stderr)
+        self.assertFalse(self.record.exists())
+
+        result = self.run_tool(*self.create_args("character_rest"), "--yes")
+        self.assertEqual(2, result.returncode)
+        self.assertIn("requires", result.stderr)
+        self.assertFalse(self.record.exists())
+
     def test_cutout_uses_import_chroma_and_emits_both_relic_paths(self) -> None:
         result = self.run_tool(*self.create_args("relic"), "--yes")
         self.assertEqual(0, result.returncode, result.stderr)
@@ -304,10 +357,14 @@ class AcquireSpriteTests(unittest.TestCase):
         result = self.run_tool(*self.create_args("character_icon"), "--yes")
         self.assertEqual(0, result.returncode, result.stderr)
         destination = self.out / "charui" / "paid-art.png"
+        outline = self.out / "charui" / "paid-art_outline.png"
         with Image.open(destination) as image:
             self.assertEqual((88, 88), image.size)
             self.assertEqual("RGBA", image.mode)
-        self.assertEqual([destination], list(self.out.rglob("*.png")))
+        with Image.open(outline) as image:
+            self.assertEqual((88, 88), image.size)
+            self.assertEqual("RGBA", image.mode)
+        self.assertEqual([destination, outline], list(self.out.rglob("*.png")))
 
         log = (self.out / ".gen_sprite.log").read_text(encoding="utf-8")
         self.assertIn("chroma=True", log)

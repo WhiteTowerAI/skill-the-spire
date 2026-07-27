@@ -1,6 +1,6 @@
 # art-samples — attribution & purpose
 
-These 82 images are **© Mega Crit**, derived from *Slay the Spire 2* art. They are included
+These 85 images are **© Mega Crit**, derived from *Slay the Spire 2* art. They are included
 **solely as visual style references** for the art pipeline (`reference/art-contract.md` →
 `tools/gen_sprite.py --reference`): they are shown to a user-configured image model as
 few-shot examples so a generated custom sprite matches the game's art style. They are
@@ -76,16 +76,17 @@ Source pages:
 ## Character static reference pools
 
 The Character pools are maintainer-only style references for the newly grounded static
-profiles. They are split by consumer because selection portraits, top-panel icons,
-combat bodies, and rest-site bodies have different composition contracts. The files were
+profiles. They are split by consumer because selection portraits, selection backgrounds,
+top-panel icons, combat bodies, and rest-site bodies have different composition contracts. The files were
 copied from the local `spire-codex` research checkout; they are not generated-mod assets
 and are never packed into a mod.
 
 - `character_select/`: Ironclad, Silent, and Regent 132x195 selection portraits.
+- `character_background/`: Defect, Ironclad, and Silent 2048x2048 native selection-background sources.
 - `character_icon/`: Ironclad, Defect, and Necrobinder 88x88 top-panel icons.
 - `character_combat/`: Ironclad, Silent, and Regent 512x512 static combat renders.
 - `character_rest/`: Ironclad, Silent, and Regent 512x512 rest-site renders.
 
 These files remain Mega Crit property and inherit the removal/fallback policy above.
-Merchant static references and character backgrounds intentionally use text-only prompts
-until a separate source-matched pool is reviewed.
+Merchant static references intentionally use the combat pool until a separate source-matched
+pool is reviewed.

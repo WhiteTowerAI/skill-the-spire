@@ -62,7 +62,7 @@ class GenSpriteTests(unittest.TestCase):
 
     def test_character_specs_match_their_current_promotion_state(self) -> None:
         expected = {
-            "character_select": ((132, 195), "cover", False, True),
+            "character_select": ((132, 195), "contain", False, True),
             "character_select_locked": ((132, 195), "cover", False, False),
             "character_icon": ((88, 88), "contain", True, True),
             "character_map_marker": ((49, 64), "contain", True, False),
@@ -71,6 +71,7 @@ class GenSpriteTests(unittest.TestCase):
             "character_rest": ((512, 512), "contain", True, True),
             "character_merchant": ((512, 512), "contain", True, True),
             "character_energy": ((256, 256), "contain", True, True),
+            "character_energy_large": ((256, 256), "contain", True, True),
             "character_energy_text": ((24, 24), "contain", True, True),
         }
         for spec, (size, fit, chroma, verified) in expected.items():
@@ -86,7 +87,7 @@ class GenSpriteTests(unittest.TestCase):
             root = Path(tmp)
             source = root / "source.png"
             out = root / "images"
-            Image.new("RGBA", (20, 30), (230, 40, 170, 255)).save(source)
+            Image.new("RGBA", (20, 30), (40, 160, 120, 255)).save(source)
 
             result = subprocess.run(
                 [
@@ -99,10 +100,94 @@ class GenSpriteTests(unittest.TestCase):
 
             self.assertEqual(0, result.returncode, result.stderr)
             destination = out / "charui" / "wayfinder_icon.png"
+            outline_path = out / "charui" / "wayfinder_icon_outline.png"
             self.assertTrue(destination.is_file())
+            self.assertTrue(outline_path.is_file())
             with Image.open(destination) as image:
                 self.assertEqual((88, 88), image.size)
                 self.assertEqual("RGBA", image.mode)
+                bounds = image.getchannel("A").getbbox()
+                self.assertGreaterEqual(bounds[0], 3)
+                self.assertGreaterEqual(bounds[1], 3)
+                self.assertLessEqual(bounds[2], 85)
+                self.assertLessEqual(bounds[3], 85)
+            with Image.open(outline_path) as outline:
+                self.assertEqual((88, 88), outline.size)
+                self.assertEqual("RGBA", outline.mode)
+                self.assertEqual(
+                    {(255, 255, 255)},
+                    {pixel[:3] for pixel in outline.getdata() if pixel[3]},
+                )
+
+    def test_alpha_outline_uses_exact_proportional_white_expansion(self) -> None:
+        image = Image.new("RGBA", (88, 88), (0, 0, 0, 0))
+        ImageDraw.Draw(image).rectangle((20, 30, 39, 49), fill=(30, 90, 170, 128))
+
+        outline = gen_sprite.derive_alpha_outline(image)
+
+        self.assertEqual((88, 88), outline.size)
+        self.assertEqual(3, gen_sprite.outline_expansion_radius(outline.size))
+        self.assertEqual(82 / 88, gen_sprite.outline_safe_fill(outline.size))
+        self.assertEqual((17, 27, 43, 53), outline.getchannel("A").getbbox())
+        self.assertEqual((255, 255, 255, 255), outline.getpixel((17, 27)))
+        self.assertEqual((255, 255, 255, 255), outline.getpixel((20, 30)))
+        self.assertEqual((255, 255, 255, 0), outline.getpixel((0, 0)))
+
+    def test_alpha_outline_rejects_an_empty_main_icon(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "empty final alpha"):
+            gen_sprite.derive_alpha_outline(
+                Image.new("RGBA", (88, 88), (0, 0, 0, 0))
+            )
+
+    def test_relic_import_writes_main_big_and_derived_outline(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            image = Image.new("RGBA", (80, 100), (0, 0, 0, 0))
+            ImageDraw.Draw(image).ellipse((10, 20, 69, 79), fill=(40, 160, 120, 255))
+            image.save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "relic", "--slug", "first_bearing",
+                    "--input", str(source), "--out", str(out),
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            main_path = out / "relics" / "first_bearing.png"
+            big_path = out / "relics" / "big" / "first_bearing.png"
+            outline_path = out / "relics" / "first_bearing_outline.png"
+            self.assertTrue(main_path.is_file())
+            self.assertTrue(big_path.is_file())
+            self.assertTrue(outline_path.is_file())
+            self.assertEqual(main_path.read_bytes(), big_path.read_bytes())
+            self.assertNotEqual(main_path.read_bytes(), outline_path.read_bytes())
+            with Image.open(main_path) as main, Image.open(outline_path) as outline:
+                self.assertEqual((256, 256), main.size)
+                self.assertEqual(main.size, outline.size)
+                self.assertEqual(8, gen_sprite.outline_expansion_radius(outline.size))
+                bounds = main.convert("RGBA").getchannel("A").getbbox()
+                self.assertGreaterEqual(bounds[0], 8)
+                self.assertGreaterEqual(bounds[1], 8)
+                self.assertLessEqual(bounds[2], 248)
+                self.assertLessEqual(bounds[3], 248)
+                main_alpha = main.convert("RGBA").getchannel("A")
+                outline_alpha = outline.convert("RGBA").getchannel("A")
+                self.assertTrue(all(
+                    not main_value or outline_value
+                    for main_value, outline_value in zip(
+                        main_alpha.getdata(), outline_alpha.getdata()
+                    )
+                ))
+                self.assertEqual(
+                    {(255, 255, 255)},
+                    {pixel[:3] for pixel in outline.convert("RGBA").getdata() if pixel[3]},
+                )
+                self.assertEqual(0, outline.getpixel((0, 0))[3])
 
     def test_character_background_import_writes_opaque_profile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -127,6 +212,62 @@ class GenSpriteTests(unittest.TestCase):
                 self.assertEqual((1920, 1200), image.size)
                 self.assertEqual("RGBA", image.mode)
                 self.assertEqual(255, image.getpixel((0, 0))[3])
+
+    def test_character_selection_import_preserves_source_inside_safe_box(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            image = Image.new("RGB", (132, 195), (20, 80, 160))
+            ImageDraw.Draw(image).rectangle(
+                (0, 0, 131, 194), outline=(240, 220, 40), width=3
+            )
+            image.save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "character_select", "--slug", "select",
+                    "--input", str(source), "--out", str(out),
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            with Image.open(out / "charui" / "select.png") as normalized:
+                self.assertEqual((132, 195), normalized.size)
+                self.assertEqual((255, 255), normalized.getchannel("A").getextrema())
+                self.assertNotEqual(
+                    normalized.getpixel((0, 0)), normalized.getpixel((6, 9))
+                )
+
+    def test_character_combat_import_pins_alpha_box_and_baseline(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            image = Image.new("RGBA", (240, 300), (0, 0, 0, 0))
+            ImageDraw.Draw(image).rectangle(
+                (40, 0, 199, 299), fill=(80, 160, 120, 255)
+            )
+            image.save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "character_combat", "--slug", "combat",
+                    "--input", str(source), "--out", str(out),
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            with Image.open(out / "charui" / "combat.png") as normalized:
+                bounds = normalized.getchannel("A").getbbox()
+                self.assertGreaterEqual(bounds[0], 26)
+                self.assertGreaterEqual(bounds[1], 26)
+                self.assertLessEqual(bounds[2], 486)
+                self.assertEqual(486, bounds[3])
 
     def test_reference_pool_selects_spec_subdir_and_randomly_caps_at_three(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -166,6 +307,96 @@ class GenSpriteTests(unittest.TestCase):
             )
 
             self.assertEqual([expected], references)
+
+    def test_character_background_uses_its_own_reference_pool(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            background_pool = root / "character_background"
+            background_pool.mkdir()
+            expected = background_pool / "defect.png"
+            expected.touch()
+            portrait_pool = root / "character_select"
+            portrait_pool.mkdir()
+            (portrait_pool / "wrong-small-portrait.png").touch()
+
+            references = gen_sprite.resolve_references(
+                str(root), 3, lambda _message: None, spec="character_background"
+            )
+
+            self.assertEqual([expected], references)
+
+    def test_character_identity_routing_adds_portrait_only_for_identity_sensitive_specs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            identity = root / "select.png"
+            Image.new("RGB", (132, 195), (80, 110, 140)).save(identity)
+            messages: list[str] = []
+
+            references = gen_sprite.resolve_references(
+                None,
+                3,
+                messages.append,
+                spec="character_combat",
+                identity_reference=str(identity),
+            )
+            self.assertEqual([identity.resolve()], references)
+
+            with self.assertRaisesRegex(SystemExit, "palette-only"):
+                gen_sprite.resolve_references(
+                    None,
+                    3,
+                    messages.append,
+                    spec="character_icon",
+                    identity_reference=str(identity),
+                )
+
+    def test_character_energy_import_preserves_shared_source_canvas(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            image = Image.new("RGBA", (100, 100), (255, 0, 255, 255))
+            ImageDraw.Draw(image).rectangle((40, 40, 59, 59), fill=(40, 160, 120, 255))
+            image.save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "character_energy", "--slug", "orb_layer_1",
+                    "--input", str(source), "--out", str(out), "--chroma",
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            with Image.open(out / "charui" / "orb_layer_1.png") as normalized:
+                bbox = normalized.getchannel("A").getbbox()
+                self.assertIsNotNone(bbox)
+                self.assertLess(bbox[2] - bbox[0], 100)
+                self.assertLess(bbox[3] - bbox[1], 100)
+
+    def test_character_large_and_text_energy_imports_write_distinct_sizes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            Image.new("RGBA", (80, 80), (40, 160, 120, 255)).save(source)
+
+            for spec, slug, expected_size in (
+                ("character_energy_large", "energy_large", (256, 256)),
+                ("character_energy_text", "energy_text", (24, 24)),
+            ):
+                result = subprocess.run(
+                    [
+                        sys.executable, str(GEN_SPRITE), "import",
+                        "--spec", spec, "--slug", slug,
+                        "--input", str(source), "--out", str(out),
+                    ],
+                    capture_output=True, text=True, encoding="utf-8", check=False,
+                )
+                self.assertEqual(0, result.returncode, result.stderr)
+                with Image.open(out / "charui" / f"{slug}.png") as normalized:
+                    self.assertEqual(expected_size, normalized.size)
 
     def test_monster_import_writes_one_exact_static_body(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

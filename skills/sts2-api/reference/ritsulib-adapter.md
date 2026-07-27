@@ -112,8 +112,9 @@ RitsuLibFramework.CreateContentPack(ModId)
 
 The normal combat hooks remain game model overrides. A combat-start Energy relic uses
 `AfterSideTurnStart`, the owner/participant guard, and `TurnNumber <= 1`; RitsuLib does
-not replace that semantic hook. Put explicit Mod icon paths in `RelicAssetProfile` and
-retain its empty-profile fallback.
+not replace that semantic hook. Put explicit main, derived-outline, and big Mod icon paths
+in `RelicAssetProfile`; RitsuLib checks each override and retains its fallback. Leave the
+profile empty in placeholder mode.
 
 For run-persistent state owned by a concrete relic instance, declare a
 `private static readonly SavedAttachedState<SpecificRelic, int/bool>` handle. Include
@@ -226,11 +227,28 @@ The model extends `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>`; the 
 no constructor auto-registration, pool attribute, or historical character template. Before
 Shop proof, register at least two eligible non-Basic Attacks, two Skills, and one Power.
 
-`CharacterAssetProfile` owns the promoted static paths. The R4 profile passes the checked
-combat PNG directly as `Scenes.VisualsPath`; raw `.tscn` wrappers own selection background,
-RestSite, Shop, and the five-layer native energy counter. Set both `Ui.IconTexturePath` and
-`Ui.IconPath` to the checked 88x88 top-panel icon. The card pool separately returns the
-checked 24x24 `BigEnergyIconPath`/`TextEnergyIconPath`.
+`CharacterAssetProfile` owns the promoted static fallback and scene paths. Leave
+`Scenes.VisualsPath` unset for a generated combat PNG; an existence-checked
+`TryCreateCreatureVisuals()` passes the texture and reviewed
+`VisualNodeStyle` (`scale=0.80`, `position=(0,-184)`) to RitsuLib's public resource factory,
+and returns `null` when absent so the resolved profile fallback resumes. Raw `.tscn`
+wrappers own the layered top icon, selection background, RestSite, Shop, and the five-layer
+native energy counter. Set `Ui.IconTexturePath` to `icon.png`,
+`Ui.IconOutlineTexturePath` to the deterministic 88x88 `icon_outline.png`, and
+`Ui.IconPath` to the raw icon scene that layers outline behind main. The card pool splits
+its Energy consumers through the same public pool model:
+`BigEnergyIconPath` checks a 256x256
+`energy_large.png`, while `TextEnergyIconPath` independently checks a 24x24
+`energy_text.png`. `EnergyIconHelper.GetPath` owns the large `NCard` consumer and
+`EnergyIconsFormatter` owns the rich-text consumer.
+
+For the bounded Character card-frame theme, `TypeListCardPoolModel` already implements
+`IModCardPoolFrameMaterial`. Return one cached
+`MaterialUtils.CreateReplaceHueShaderMaterial(r, g, b, brightness)` from
+`PoolFrameMaterial`; RitsuLib applies it to the pool's vanilla frame texture and ignores
+the path-based material while the direct material is non-null. Keep the four game-owned
+color properties and both icon paths in the same Character-local theme contract. Do not
+copy YuWanCard's private shader/patch route or add a custom shader.
 
 The 2026-07-23 RitsuLib-only Wayfinder run proved exactly one selected Character, HP
 `72/72`, exact Card/Relic/Potion pools plus one supporting Power, exact starter multisets,

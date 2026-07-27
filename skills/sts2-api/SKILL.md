@@ -96,7 +96,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `recipes/monster.md` | Monster + Encounter as one vertical slice: grounded moves, cycles/branches, static combat+bestiary body, fallback, and `CombatEnemy` proof | Authoring a fought enemy or its move cycle after adapter selection |
 | `recipes/event.md` | Event / World Node pages/options, outcomes, checked portraits, and `MapNode` proof | Authoring a map event after adapter selection |
 | `recipes/character.md` | Character Foundation pools, starters, localization, selection/run behavior, fallbacks, and proof | Authoring a playable character shell after adapter selection |
-| `reference/character-presentation.md` | RitsuLib Character profile/consumer matrix; eight live static profiles; no-editor raw-scene packing; five-layer energy scene; compact card icon; native Ancient/Architect proof boundary | Authoring or verifying Character static/native presentation |
+| `reference/character-presentation.md` | RitsuLib Character profile/consumer matrix; nine live static profiles; no-editor raw-scene packing; five-layer energy scene; split card/text Energy icons; bounded theme; native Ancient/Architect proof boundary | Authoring or verifying Character static/native presentation |
 | `reference/event-outcomes.md` | Full normal-Event outcome vocabulary: immediate Cmd combinations, multi-page/locked options, blocking card selections, custom rewards, resumable/terminal special combat, extra combat rewards, one-combat-per-instance boundary, and unsupported room transitions | Authoring an Event beyond the one-Cmd fast path |
 | `reference/event-vfx.md` | Bounded code-native normal-layout `portrait_halo`: page parameters, Fast Mode behavior, `OnRoomEnter`/portrait host, explicit named-node cleanup, and headed acceptance contract | Authoring the supported Event portrait VFX profile |
 | `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation inventory, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
@@ -111,7 +111,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
 | `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
-| `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and eight promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
+| `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and nine promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | Type-matched real STS2 reference pools for card/relic/power/potion/enchantment/orb/monster/event (© Mega Crit, reference-only — see ATTRIBUTION.md); tools select the matching family and randomly sample three distinct images | Passed as the root `--reference` in the art step; never mix families |
 | `grounding.md` | Where facts come from (three sources: content→spire-codex, C# signatures→decompile, build/load→validators) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine miss is a pack gap to report, not a dig | An answer the recipe lacks |
 | `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |
@@ -143,10 +143,12 @@ Harmony patching and is deferred. The recipes make **new** elements.
   vanilla edits, multiplayer, or save-roundtrip claims.
 - **Character Foundation:** the adapter owns exactly-once registration, character-scoped
   pools, exact starters, localization, and the real selection/run proof. Static consumers
-  remain separate profiles: selection `132x195`, background `1920x1200`, top icon `88x88`,
-  static bodies `512x512`, five energy layers `256x256`, and compact icon `24x24`.
-  Locked selection, map marker, and native Ancient/Architect presentation need separate
-  headed evidence.
+  remain separate profiles: selection `132x195`, background `1920x1200`, top icon main and
+  outline `88x88`, static bodies `512x512`, five energy layers `256x256`, and distinct
+  256x256 large/24x24 rich-text Energy icons. The bounded M6.5 pool-frame/color theme and
+  deterministic top-icon/generated-Relic outlines are pipeline-supported. Locked
+  selection, map marker, and native Ancient/Architect presentation need separate headed
+  evidence.
 - **Capability kernel:** prefer the game or RitsuLib public API. A missing public seam may
   use one selected, version/fingerprint-gated adapter with zero-target/failure markers,
   conflict policy, fallback, and a hosted proof. Do not invent C/D targets or a shared

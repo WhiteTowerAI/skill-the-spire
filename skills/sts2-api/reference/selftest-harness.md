@@ -851,10 +851,24 @@ StateProof(true,
 
 When static presentation is selected, do not stop at model properties. In the same run,
 assert the visible 132x195 selection portrait and 1920x1200 background; 512x512 non-Spine
-combat body; 88x88 top-panel icon; one native counter with five 256x256 energy layers; and
-the 24x24 compact icon in a real hand card. Then finish combat and enter RestSite and Shop
+combat body; normal and outlined 88x88 top-panel textures under the same real
+`NTopBarPortrait`; one native counter with five 256x256 energy layers; and the 24x24 compact
+icon in a real hand card. Also assert each generated Relic's exact 256x256 main/outline
+textures under the same real `NRelic`, plus its explicit big-icon path. Compare the
+CharacterModel main/outline texture properties to the same top-icon paths so a decorative
+proof-only node cannot hide broken RitsuLib wiring. Then finish combat and enter RestSite and Shop
 to assert the real `NRestSiteCharacter` and `NMerchantCharacter` with their 512x512 bodies.
 Capture settled selection, combat/top-panel/energy, RestSite, and Shop screenshots.
+
+For the M6.5 card/UI theme, replace the shared compact-icon assertion with two
+independent consumers. Assert the Character/card-pool properties equal all four theme
+colors; `PoolFrameMaterial` is the cached theme `ShaderMaterial` with exact
+`target_color`/`brightness`; `BigEnergyIconPath` and `TextEnergyIconPath` are distinct,
+existing, and load as 256x256/24x24 textures; a visible real `NCard.%EnergyIcon` uses the
+large path; and a real formatted card description embeds the text path. Emit
+`character theme expected=colors/frame/large-icon/text-icon observed=all` only after every
+assertion succeeds. Automatic node/property proof is required even when the maintainer
+chooses to perform the focused visual review manually.
 
 > **R4 live-proven (Wayfinder, build 0/0 + strict Tier 2 PASS, 2026-07-23):** RitsuLib
 > content-pack registration count was 1; the exact custom icon button was selected; the run

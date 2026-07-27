@@ -61,9 +61,11 @@ appears in the real character-select UI, starts a run
 with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
 3 energy, and one grounded public starter mechanic through `RunStart` + `CombatPlayer`.
 The adapter owns exactly-once registration. Static presentation is a separate opt-in layer
-with eight promoted profiles: selection portrait/background, top-panel icon, non-Spine
-combat/rest/merchant bodies, five-layer energy, and compact resource icon. Locked selection,
-map marker, Ancient, and animation retain explicit boundaries. Read
+with nine promoted profiles: selection portrait/background, top-panel icon, non-Spine
+combat/rest/merchant bodies, five-layer energy, and distinct 256x256 large/24x24 rich-text
+Energy icons. The M6.5 Character-wide color/frame contract is also pipeline-supported.
+Deterministic top-icon and generated-Relic outlines are pipeline-supported. Locked
+selection, map marker, Ancient, and animation retain explicit boundaries. Read
 `reference/character-presentation.md` when selected.
 Two **advanced capability contracts are RitsuLib pipeline-supported**:
 a combat-owned nonnegative resource using `SecondaryResourceCmd` with explicit
@@ -92,8 +94,9 @@ until their scenario canaries. A counter is state on its real element, not a new
   type. **Custom static art** is now wired and live-verified for the established **eight specs — card
   portraits, relic icons, power icons, potion icons, enchantment icons, orb icons, static monster bodies, and normal-event
   initial/page portrait slots** (each a loose PNG the game loads directly; no `.tres` atlas authoring)
-  plus eight Character profiles: selection portrait/background, top-panel icon, static
-  non-Spine combat/rest/merchant bodies, five-layer full energy, and compact resource icon.
+  plus nine Character profiles: selection portrait/background, top-panel icon, static
+  non-Spine combat/rest/merchant bodies, five-layer full energy, and distinct large/text
+  Energy icons.
   Orb support is icon-only and retains its explicit vanilla Spine scene/channel-SFX
   fallbacks. Locked Character selection and map-marker normalizers are grounded but not
   promoted; see `reference/character-presentation.md`. The

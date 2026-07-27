@@ -361,10 +361,25 @@ separate contracts below):
 - **advanced mechanic**: none | <selected verified capability or explicit pack gap>
 - **art**: placeholder | generate (Character static profiles only; list each consumer)
 - **art source**: runtime-imagegen | vofy | byo-http | local-image (generate only)
+- **character art bundle**: one `CharacterArtBundle` row per selected slot; record
+  required/optional, output path, dimensions, alpha policy, fallback, and real consumer
+- **character identity route**: selection portrait is the sole identity bootstrap;
+  combat/rest/merchant (and future combat cues) use identity + type-matched style;
+  background/icon/Energy use palette/motif brief + type-matched style only
+- **palette/motif brief**: concise colors, motif, material, and silhouette derived from
+  the user's description and reviewed selection portrait; never a second canonical image
+- **character theme contract**:
+  - name color: `<RRGGBB>`
+  - energy-label outline: `<RRGGBB>`
+  - deck-entry color: `<RRGGBB>`
+  - energy outline: `<RRGGBB>`
+  - card-frame target RGB: `<0..1, 0..1, 0..1>`
+  - card-frame brightness: `<0..2>`
+  - energy-icon palette: `<primary/accent/outline colors plus motif/material>`
 - **character art profiles**: none | selection | locked selection | top-panel icon |
   map marker | select background | combat body | rest body | merchant body | energy |
-  compact energy icon (do not infer one profile from another; mark unsupported consumers
-  as explicit gaps per `reference/character-presentation.md`)
+  large energy icon | text energy icon (do not infer one profile from another; mark
+  unsupported consumers as explicit gaps per `reference/character-presentation.md`)
 - **Ancient presentation**: native banner/dialogue researched but unverified |
   deferred (custom Ancient layout)
 - **derived ids** (adapter resolves after the semantic SPEC is accepted):
@@ -494,21 +509,25 @@ Rules for this round:
   `enchantment`, `orb`, `monster`, `event`** (all live-verified — card 1000×760;
   relic/power/potion 256×256; enchantment 64×64; orb icon 100×100; normal event portrait
   slots 3440×1613; static monster body 360×360;
-  `reference/art-contract.md`) **plus eight promoted Character specs**:
+  `reference/art-contract.md`) **plus nine promoted Character specs**:
   `character_select`, `character_background`, `character_icon`, `character_combat`,
-  `character_rest`, `character_merchant`, `character_energy`, and
-  `character_energy_text`. `character_energy` means five 256x256 layer assets. Locked
+  `character_rest`, `character_merchant`, `character_energy`, `character_energy_large`,
+  and `character_energy_text`. `character_energy` means five 256x256 layer assets. Locked
   selection and map marker remain explicit gaps until headed consumer proof passes.
+  `character_energy_large` is the distinct 256x256 pool icon, while
+  `character_energy_text` belongs exclusively to the 24x24 formatter consumer.
 - **Orb generation is icon-only.** Keep the recipe's explicit Frost icon/Spine scene/
   channel-SFX fallbacks; `gen_sprite.py` does not emit a combat scene.
 - **Enemy generation is static-body only.** One 360×360 PNG feeds combat and bestiary
   through RitsuLib's `TryCreateCreatureVisuals()` route; keep the explicit fallback scene.
   Supported Character generation is consumer-specific: selection portrait/background,
-  top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact
-  resource icon use the exact profiles in `reference/art-contract.md`. Background/rest/
+  top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and the
+  large/text Energy split use the exact profiles in `reference/art-contract.md`. Background/rest/
   merchant use bundled raw scene packing without a Godot/MegaDot prerequisite. RitsuLib's
   `CharacterAssetProfile` accepts the static Shop wrapper without a merchant prefix.
-  Generated-mod authors do not manually install or run PckPacker; the character template
+  Full energy generates only the Character-specific layer 1 once; layers 2-5 are installed
+  from the committed `reference/energy_template/layer_2.png` through `layer_5.png` templates
+  and are not generation targets. Generated-mod authors do not manually install or run PckPacker; the character template
   declares it and `build.py` owns both package paths.
   Locked/map consumers need headed proof. Keep their fallback getters. Event raster
   support includes only the initial and explicitly authored later-page portraits; it does

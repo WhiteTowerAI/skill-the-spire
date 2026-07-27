@@ -40,6 +40,14 @@ public sealed class <RelicName> : ModRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Common;
 
+    private static string RelicImage(string fileName) =>
+        "res://<ModName>/images/relics/" + fileName;
+
+    public override RelicAssetProfile AssetProfile => new(
+        RelicImage("<slug>.png"),
+        RelicImage("<slug>_outline.png"),
+        RelicImage("big/<slug>.png"));
+
     // Pick the hook that matches the trigger (see "Trigger hooks" below).
     public override async Task AfterSideTurnStart(CombatSide side,
         IReadOnlyList<Creature> participants, ICombatState combatState)
@@ -92,8 +100,11 @@ uppercase snake case. Mod id `GamblersCoin`, Relic class `GamblersCoin` becomes
 entry must survive a type rename, pass `ModelPublicEntryOptions.FromStem(...)` to the
 content-pack registration. Do not add another id mechanism.
 
-For custom icons, override `RelicAssetProfile` with explicit `res://<ModName>/...` paths.
-Leave the profile empty for the checked template/base-game fallback.
+For custom icons, override `RelicAssetProfile` with the exact main, outline, and big paths
+shown above. `gen_sprite.py` derives the 256x256 filled-white outline from final main alpha
+using the shared 3% rule (8 pixels) without another acquisition call. RitsuLib checks each
+path and retains its template/base-game fallback when a file is absent; leave the whole
+profile empty in placeholder mode.
 
 ## Trigger hooks (override the one matching the request)
 
@@ -183,7 +194,8 @@ Pools (`MegaCrit.Sts2.Core.Models.RelicPools`):
 - [ ] `participants.Contains(Owner.Creature)` guard present.
 - [ ] All `Cmd`/RNG calls `await`ed.
 - [ ] `relics.json` has `<MOD>_RELIC_<TYPE>.{title,description,flavor}` flat keys.
-- [ ] Icon at `images/relics/<slug>.png` (+ `_outline`, + `big/`) or placeholder left in place.
+- [ ] Main/derived-outline/big files exist at their exact paths and the three-field
+      `RelicAssetProfile` is wired, or the placeholder profile is left empty.
 - [ ] `[T2MOD-SELFTEST]` diagnostic marker logged on trigger; `SelfTest` asserts post-state.
 - [ ] Stateful SelfTest proves `N-1`, threshold, reset/carry-over, and a
       `SavedProperties.From`/`Fill` round trip for run-persistent state.

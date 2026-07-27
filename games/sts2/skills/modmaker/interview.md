@@ -132,13 +132,15 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    implies a custom visual. This is a **single mod-level decision**: placeholder or
    generate for the mod, asked **once** no matter how many cards/sprites it has. Do NOT
    ask per sprite. If they want custom art:
-   - **Eight established static specs plus eight Character specs** can be generated. The
+   - **Eight established static specs plus nine Character specs** can be generated. The
      established set is card portraits, relic/power/potion/enchantment/orb icons, static
      monster bodies, and normal-event portrait slots. The Character set is selection
      portrait/background, top-panel icon, static non-Spine combat/rest/merchant bodies,
-     five-layer full energy, and compact resource icon. Full energy is five image assets;
-     show that count before a paid route. All are live-verified static consumers; orb support is icon-only, and Event raster
-     support does not include custom phobia or custom-layout assets. Generate the initial event
+     five-layer full energy, a large pool Energy icon, and a small text Energy icon. Full
+     energy is five image assets; show that count before a paid route. The established
+     static specs and all nine Character output specs are live-verified. Orb support is
+     icon-only, and Event raster support does not include custom phobia or custom-layout
+     assets. Generate the initial event
      portrait plus only later-page portraits the user's concept explicitly calls for; do
      not turn every result page into another image spend.
    - Prefer a **host-native image generator** when the current runtime actually exposes
@@ -158,7 +160,7 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    - **Static monster bodies and the bounded Character subset are supported; animation is not.**
      Monsters use one static combat/bestiary body or the built-in scene fallback. Character
      generation supports selection/background, top-panel icon, static combat/rest/merchant
-     bodies, five-layer full energy, and compact resource icon; preserve only locked/map
+     bodies, five-layer full energy, and distinct large/text Energy icons; preserve only locked/map
      requests as explicit gaps with inherited fallbacks. Preserve
      requests for Spine bodies, attack/hurt/cast/death animation, phobia variants, or
      bestiary move previews as later-animation gaps. For an event, offer the normal initial portrait
@@ -324,8 +326,14 @@ pools: character-scoped card/relic/potion pools with at least one concrete membe
 scenario: RunStart + CombatPlayer
 art: placeholder | generate: selected Character static profiles only
 art profiles: selection | background | top-panel icon | combat body | rest body |
-  merchant body | five-layer full energy | compact energy icon |
-  explicit gap: locked selection/map marker
+merchant body | five-layer full energy | large energy icon | text energy icon |
+explicit gap: locked selection/map marker
+art bundle: one structured row per selected slot with required/optional, output path,
+dimensions, alpha policy, fallback, and real consumer
+identity route: selection portrait bootstrap; identity+style for combat/rest/merchant;
+palette/motif brief + style only for background/icon/Energy
+theme contract: four named UI colors | card-frame target RGB/brightness |
+  one shared motif/palette rendered separately at 256x256 and 24x24
 static merchant patch: selected only with merchant body; inherited fallback on mismatch
 Ancient presentation: native banner/dialogue researched but unverified |
   deferred custom Ancient layout

@@ -75,7 +75,7 @@ Source-verified against the decompile after a live in-game run (do not re-derive
 | spec | file(s) written (under `images/`) | size | notes |
 |------|-----------------------------------|------|-------|
 | `card` | `card_portraits/<slug>.png` | **1000×760 landscape** (profile contract) | **the only card portrait to make** — normal-rarity cards |
-| `relic` | `relics/<slug>.png` **+** `relics/big/<slug>.png` | **256×256** (verified live) | cut-out icon; **two files** — see below. Also has `<slug>_outline.png` (optional, we skip it) |
+| `relic` | `relics/<slug>.png` **+** `relics/<slug>_outline.png` **+** `relics/big/<slug>.png` | **256×256** | cut-out main/big icons plus deterministic outline; all three paths verified live |
 | `power` | `powers/<slug>.png` **+** `powers/big/<slug>.png` | **256×256** (verified live) | cut-out icon; **two files** — see below. No outline file |
 | `potion` | `potions/<slug>.png` | **256×256** (verified live) | cut-out icon; **ONE file** — bar/hover/use all reuse the same texture, no `big/`. Tilt ~45° right (see below) |
 | `enchantment` | `enchantments/<slug>.png` | **64×64** (verified live) | cut-out icon; **ONE file** — card tab/amount and hover tooltip reuse it |
@@ -144,12 +144,16 @@ controls the loose-PNG paths. A direct game-model subclass bypasses the adapter 
 the checked fallback in place. (Same holds for relic: extend `ModRelicTemplate`.) See
 `recipes/power.md`.
 
-**The relic outline (`<slug>_outline.png`).** A relic has a third file — the white
-selection/hover outline — via its own `PackedIconOutlinePath` getter. It has a template
-fallback (`relic_outline.png`), so **a missing outline does not break load and looks fine
-in-game** (confirmed live — the generic default outline around a custom icon is not
-jarring). `gen_sprite.py` deliberately does **not** emit it; if a mod ever wants a matching
-outline it can be added later (e.g. derived from the icon's alpha). `power` has no outline.
+**The relic outline (`<slug>_outline.png`).** A relic has a third file through
+`RelicAssetProfile.IconOutlinePath`. `gen_sprite.py` thresholds every nonzero final-main
+alpha pixel to opaque, expands that mask with an 8-pixel square max filter
+(`round(256 * 0.03)`), and writes a filled white RGBA silhouette. Relic normalization
+reserves the same 8-pixel inset on the fitted dimension before deriving the outline, so
+the expansion stays inside the unchanged 256x256 canvas. The main and big files remain
+identical to each other and no acquisition call is made. RitsuLib checks the custom path and
+retains the template outline fallback when it is absent. `power` has no outline. This
+M6.5 route passed exact path/texture assertions under a real `NRelic` and the maintainer's
+headed review in the 2026-07-27 Meridian proof.
 
 Ancient-rarity full art (606×852) is intentionally **out of scope** — we don't make
 Ancient cards.
@@ -166,14 +170,15 @@ packed resource instead of the resolved fallback.
 |---|---|---:|---|
 | `character_select` | `<slug>.png` | 132x195 | opaque selection portrait/button |
 | `character_select_locked` | `<slug>.png` | 132x195 | opaque locked selection portrait; optional, template fallback is valid |
-| `character_icon` | `<slug>.png` | 88x88 | transparent top-panel icon through both RitsuLib UI icon fields |
+| `character_icon` | `<slug>.png` + `<slug>_outline.png` | 88x88 each | transparent main icon plus deterministic white outline; raw icon scene layers both in the top panel |
 | `character_map_marker` | `<slug>.png` | 49x64 | transparent map marker |
 | `character_background` | `<slug>.png` | 1920x1200 | opaque select background consumed by a minimal raw-scene wrapper |
-| `character_combat` | `<slug>.png` | 512x512 | transparent static body consumed directly by `Scenes.VisualsPath` |
+| `character_combat` | `<slug>.png` | 512x512 | transparent static body consumed by an existence-checked public resource factory |
 | `character_rest` | `<slug>.png` | 512x512 | transparent static rest-site body consumed by an `NRestSiteCharacter` wrapper |
 | `character_merchant` | `<slug>.png` | 512x512 | transparent static merchant body consumed by an `NMerchantCharacter` wrapper |
 | `character_energy` | `orb_layer_<1..5>.png` | 256x256 each | five transparent layers referenced by one raw energy-counter `.tscn` |
-| `character_energy_text` | `<slug>.png` | 24x24 | transparent compact energy/card text icon |
+| `character_energy_large` | `<slug>.png` | 256x256 | transparent large card Energy icon |
+| `character_energy_text` | `<slug>.png` | 24x24 | transparent rich-text Energy icon |
 
 The 2026-07-23 RitsuLib-only Wayfinder run re-proved `character_select`, `character_background`,
 `character_icon`, `character_combat`, `character_rest`, `character_merchant`,
@@ -183,23 +188,99 @@ layers and the real hand Card rendered the separate 24x24 icon. Strict Tier 2 an
 no-fresh-error checks passed. Locked selection and map marker remain unpromoted because
 resource existence is not visual proof for those consumers.
 
-`character_select` and `character_background` use `cover` with chroma off. The icon,
+The 2026-07-27 M6.5 Meridian proof separately established the split consumers: a real
+hand `NCard` rendered the 256x256 large icon, and a formatted Card description rendered
+the distinct 24x24 text icon. The maintainer's headed review passed both consumers.
+
+`character_select` uses safe `contain` composition with chroma off; its full opaque source
+is preserved inside `(6,8)-(126,187)` on the unchanged 132x195 canvas.
+`character_background` remains exact 16:10 `cover` with chroma off. The icon,
 marker, static body, and energy profiles use `contain` with chroma on and a flat pure
 `#FF00FF` source background. The normalizer writes only loose PNGs; author code creates
-the tiny raw `.tscn` wrappers for background/rest/merchant/energy, and `build.py` packs them
+the tiny raw `.tscn` wrappers for icon/background/rest/merchant/energy, and `build.py` packs them
 without Godot/MegaDot. Full energy references all five layers from that one energy scene.
 A static body is not
 an animation contract: `SetupCustomAnimationStates` remains null and the built-in
 animation/fallback path stays documented for attack, hurt, cast, death, phobia, and
 multiplayer views.
 
+### CharacterArtBundle and reference routing
+
+`games/sts2/tools/character_art.py` owns one structured `CharacterArtBundle` for every
+Character static slot. Each row records required/optional status, normalized output path,
+exact dimensions, alpha policy, checked fallback, real consumer, style-reference family,
+fit mode, verification status, and any host-specific visible content box/baseline/public
+visual style. `gen_sprite.py` and `acquire_sprite.py` read this
+bundle instead of maintaining a second Character spec table. The optional locked
+selection and map-marker rows remain native/shared fallback rows; their presence in the
+inventory does not promote those consumers.
+
+The generated Character profile uses these stable bundle output names: `select.png`,
+`background.png`, `icon.png`, `icon_outline.png`, `combat.png`, `rest.png`, `merchant.png`,
+`orb_layer_1.png` through `orb_layer_5.png`, `energy_large.png`, and `energy_text.png`, all under
+`images/charui/`. Keep these role names when invoking the normalizer so the review tool
+and the generated `CharacterAssetProfile` resolve the same files.
+
+`icon_outline.png` is a required derived bundle row with zero generation calls. It uses
+the same opaque-white 3% max-filter rule as Relics, which resolves to a 3-pixel expansion
+on the 88x88 canvas; main normalization reserves the same 3-pixel inset. `Ui.IconOutlineTexturePath` points to it, while `Ui.IconPath` points
+to the raw icon scene that layers the outline behind the main texture in the supported
+top-panel host. The Meridian proof passed the exact model/resource/node assertions and the
+maintainer's headed review for this outline route.
+
+M6.5 splits `energy_large.png` into a 256x256 pool Energy icon while retaining
+`energy_text.png` as the 24x24 rich-text icon. They are separate required bundle rows,
+paths, normalization specs, and real consumers; neither path may stand in for the other.
+
+The source directory `reference/energy_template/` contains the four lead-supplied,
+transparent `256x256` PNGs `layer_2.png` through `layer_5.png`. They are fixed assets,
+not generation targets: `character_energy` layer 1 has one Character-specific generation
+call, while layers 2-5 have zero generation calls and are copied byte-for-byte to
+`orb_layer_2.png` through `orb_layer_5.png`. The bundle validates dimensions, alpha, exact
+slot mapping, and source presence before installation; it never resizes or invents a
+template.
+
+The required `selection_portrait` is the sole identity bootstrap. It is normalized first
+to `charui/select.png` and is the only approved identity image; open-mod does not create a
+separate Character sheet or canonical identity asset. Identity-sensitive
+`character_combat`, `character_rest`, and `character_merchant` acquisition passes that
+normalized portrait as `--identity-reference` in addition to up to three type-matched STS2
+style references. Background, top-panel icon, full-energy layers, and large/text Energy-icon
+acquisition use a palette/motif brief derived from the user's description and reviewed
+selection portrait, but deliberately do not receive the portrait as an image reference.
+Future combat cue assets use the same identity-sensitive route when that package is
+implemented.
+
+Run the bundle review after the selected required outputs are normalized:
+
+```powershell
+python ${GAME_TOOLS_DIR}/character_art.py \
+  --images-root <work dir>/<ModName>/images \
+  --install-energy-templates \
+  --out-dir <work dir>/art-review
+```
+
+The command validates exact dimensions, alpha policy, readable PNGs, required outputs,
+and the selection identity bootstrap, then writes a labeled contact sheet plus a
+deterministic five-layer Energy composite outside the runtime asset directory. These are
+human review artifacts; no brittle image-similarity score is used as runtime acceptance.
+
 Downfall's `char_select_locked.png` is a shared lock treatment, so generated mods may keep
 the template locked asset when no custom locked portrait is requested. `mp_*` hand
 textures, card trails, transition materials, and animated rest/merchant/energy scenes are
 separate later contracts; do not silently infer them from these PNGs.
 
-For static combat, pass the checked PNG directly to
-`CharacterAssetProfile.Scenes.VisualsPath`; RitsuLib creates `NCreatureVisuals`. Static
+For static combat, leave `CharacterAssetProfile.Scenes.VisualsPath` unset and override the
+existence-checked `TryCreateCreatureVisuals()` route. Load the checked PNG only when it
+exists, then pass its `Texture2D` plus
+`VisualNodeStyle.Empty.WithScale(0.80f).WithPosition(new Vector2(0f, -184f))` to the public
+`RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>` factory. Return `null` when
+the PNG is absent so RitsuLib resumes the resolved profile fallback. Normalize visible
+alpha inside `(26,26)-(486,486)` with exclusive baseline `486`; empty alpha, canvas-edge
+contact, overflow, an undersized subject, or a different baseline fails validation. The
+2026-07-27 Meridian host proof observed exact alpha `(64,26)-(447,486)`, screen bounds
+`(326.4,372)-(632.8,740)` in a `1920x1080` viewport, and no overlap with top/bottom UI,
+enemy lane, or turn banner. Static
 rest-site and merchant wrappers are each one `Sprite2D` root. The R4 real
 `NMerchantCharacter` rendered the merchant wrapper without a versioned prefix. Every
 wrapper keeps a checked profile fallback
@@ -214,7 +295,9 @@ Selection portrait:
 Original opaque character-select portrait for a deck-building combat game. Match the
 provided STS2 selection references as STYLE ONLY. Show one original character in a clear,
 full-body or waist-up pose with a readable silhouette, restrained painterly 2D shading,
-and a calm neutral presentation suitable for a 132x195 button. No text, logo, UI, frame,
+and a calm neutral presentation suitable for a 132x195 button. Keep the intended head,
+body, and held-object composition visible with breathing room on all sides; deterministic
+normalization preserves the complete source inside the reviewed safe box. No text, logo, UI, frame,
 watermark, or borrowed character design.
 ```
 
@@ -244,25 +327,33 @@ Select background:
 ```text
 Original wide character-select background for a deck-building combat game. Match the
 provided references as STYLE ONLY. Create a broad environment that supports a live
-character-select information panel, with the focal atmosphere and subject weighted away
-from the panel's text area. Opaque 16:10 landscape, no text, logo, UI, border, watermark,
-or borrowed character design.
+character-select information panel. Use a grounded vanilla-like close composition with the
+focal character on the right half, without cropping the head or identity-defining held
+object. Keep the left-center region calm and low-detail for the name, HP, description, and
+relic panel; keep the bottom strip and lower-right confirm-button region readable. Opaque
+16:10 landscape, no text, logo, UI, border, watermark, or borrowed character design.
 ```
 
-Energy icon:
+Energy icons:
 
 ```text
-Original compact energy-core icon for a deck-building combat game. Match the provided
-references as STYLE ONLY. Use a single layered material core with clear value separation,
-centered at small size, and no numbers or UI. Put it on a perfectly flat solid #FF00FF
+Original energy-core icon for a deck-building combat game. Match the provided references
+as STYLE ONLY and follow the Character theme's exact palette/motif brief. Use a single
+layered material core with clear value separation, centered for the requested consumer,
+and no numbers or UI. For `character_energy_large`, keep bold internal structure readable
+at 256x256. For `character_energy_text`, simplify the same motif to a broad silhouette and
+two or three value groups that survive at 24x24. Put it on a perfectly flat solid #FF00FF
 background. No frame, text, watermark, detached particles, or borrowed design.
 ```
 
-For the full counter, invoke `character_energy` five times with slugs `orb_layer_1`
-through `orb_layer_5`; request complementary background, rotating-ring, inner-glyph,
-foreground-rim, and highlight layers. The compact 24x24 icon remains one independent
-`character_energy_text` output. Show the user that full energy is five image assets before
-a paid acquisition route runs.
+For the full counter, invoke `character_energy` exactly once with slug `orb_layer_1`.
+Install the committed `energy_template/layer_2.png` through `layer_5.png` files as
+`orb_layer_2.png` through `orb_layer_5.png`; these four transparent 256x256 layers are
+fixed byte-for-byte and never generation targets. The 256x256 `character_energy_large`
+and 24x24 `character_energy_text` outputs are independently acquired and normalized from
+the same theme brief. Show the user that full energy is five image assets, with only layer
+1 eligible for generation, and that the two pool icons are separate assets before a paid
+acquisition route runs.
 
 ## The enchantment icon contract
 
@@ -468,10 +559,12 @@ Pass `--reference <sts2-api>/reference/art-samples` to either acquisition tool �
 `power/` (6 icons), `potion/` (6 icons), `enchantment/` (20 normal 64x64 icons), `orb/`
 (5 non-empty icons), `monster/` (the Axebot, Ceremonial Beast, and Crossbow Ruby Raider
 renders), `event/` (six reviewed wiki.gg previews), and four three-image Character pools:
-`character_select/`, `character_icon/`, `character_combat/`, and `character_rest/`.
+`character_select/`, `character_background/`, `character_icon/`, `character_combat/`, and
+`character_rest/`.
 The tool **auto-selects the matching visual family** and randomly samples three distinct
-images when the pool is larger. Character aliases are explicit: locked/background use
-select, marker/energy use icon, merchant uses combat, and rest uses rest; a missing
+images when the pool is larger. Character aliases are explicit: locked uses select,
+marker/energy use icon, merchant uses combat, and rest uses rest; background uses its own
+wide selection-scene pool. A missing
 same-name directory never falls back to another content family's images.
 Monster's fixed three are always all supplied.
 Never mix families merely to fill the reference list; their visual languages differ.

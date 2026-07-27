@@ -474,25 +474,27 @@ For an **enemy encounter**, the recipe checks `images/monsters/<slug>.png` and r
 `null` from `TryCreateCreatureVisuals()` when absent, so the explicit
 `MonsterAssetProfile` fallback scene loads without a missing-resource error. Skip to §5.
 For a **character**, leave optional `CharacterAssetProfile` rows unset so RitsuLib resolves
-the placeholder/native fallback. Placeholder mode emits no Character asset. Custom
-animation and unpromoted static consumers are not supported by Foundation.
+the placeholder/native fallback. The combat override returns `null` when its checked PNG
+is absent, so RitsuLib resumes that resolved profile fallback without a missing-resource
+load. Placeholder mode emits no Character asset. Custom animation and unpromoted static
+consumers are not supported by Foundation.
 
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
 Supported sprite specs (see `sts2-api` → `reference/art-contract.md` and
 `reference/character-presentation.md` for the full contracts). Character generation covers
-eight promoted static profiles; locked selection and map marker remain explicit gaps.
+nine promoted static profiles; locked selection and map marker remain explicit gaps.
 - **`--spec card`** — the one portrait a normal card loads, **1000×760 landscape**, full-
   bleed (chroma OFF), written to `card_portraits/big/<slug>.png`. **Live-verified in-game.**
   The 606×852 "full art" size is **Ancient-rarity only and out of scope — we never make it**.
 - **`--spec relic` / `--spec power`** — a **256×256** cut-out icon, `fit: contain`, magenta
   chroma-key ON (so the prompt must ask for a solid flat `#FF00FF` background — see the
-  contract). **Live-verified in-game.** Each writes **two files** (the tool does both
-  automatically): `relics/<slug>.png` + `relics/big/<slug>.png` for a relic (bar icon +
-  detail popup), `powers/<slug>.png` + `powers/big/<slug>.png` for a power (status icon +
-  the big apply/expire notification). A **relic** also has an optional `<slug>_outline.png`
-  hover outline — we don't generate it; a missing one harmlessly falls back to the
-  template's default outline (looks fine). **power** has no outline.
+  contract). **Live-verified in-game.** A relic writes the main and big icons plus
+  `relics/<slug>_outline.png`; a power writes only its main and big icons. The outline is
+  an opaque-white silhouette expanded by `round(3% * 256) = 8` pixels from the final main
+  icon alpha; main normalization reserves the same 8-pixel inset so the expansion cannot
+  be clipped by the fixed canvas. It is deterministic and spends no additional acquisition call. A missing
+  outline retains the adapter's checked fallback. **power** has no outline.
   **Prereq:** the relic/power subclass must extend `ModRelicTemplate` / `ModPowerTemplate`
   and expose the checked `RelicAssetProfile` / `PowerAssetProfile`. Direct game-model
   subclasses bypass the adapter's asset fallback (see the surface recipes).
@@ -528,11 +530,14 @@ eight promoted static profiles; locked selection and map marker remain explicit 
   `reference/event-vfx.md` and has no `gen_sprite.py` invocation.
 - **`--spec character_select` / `character_background` / `character_icon` /
   `character_combat` / `character_rest` / `character_merchant` / `character_energy` /
-  `character_energy_text`** — respectively opaque **132x195** and **1920x1200** assets,
+  `character_energy_large` / `character_energy_text`** — respectively opaque **132x195** and **1920x1200** assets,
   transparent **88x88** and three **512x512** static bodies, five transparent **256x256**
-  full-energy layers, and one transparent **24x24** compact icon. These are live-proven in
+  full-energy layers, one transparent **256x256** large Energy icon, and one transparent
+  **24x24** text Energy icon. Never point both pool getters at the same file. The existing
+  static profiles are live-proven in
   real selection, top-panel, CombatPlayer, RestSite, Shop, and energy consumers. Author the
-  raw background/rest/merchant/energy wrappers from `character-presentation.md`; `build.py`
+  raw icon/background/rest/merchant/energy wrappers and the existence-checked combat resource
+  factory from `character-presentation.md`; `build.py`
   packs them without Godot/MegaDot. Full energy uses five loose PNGs inside one raw scene;
   RitsuLib's Shop profile needs no historical `_Ready()` prefix. Keep checked profile/text
   fallbacks. Do not emit
@@ -572,20 +577,56 @@ eight promoted static profiles; locked selection and map marker remain explicit 
    lower-right space for the game's title, description, and options. Do not reuse the card
    prompt's centered-subject constraint or paint option reward numbers into the scene.
 **Character static art profiles.** When `SPEC.md` selects Character art, emit only the
-eight promoted profiles above. Selection and background are opaque (`--chroma` off); icon,
-combat/rest/merchant bodies, full-energy layers, and compact icon use `--chroma`.
-`CharacterAssetProfile.Scenes.VisualsPath` consumes the checked combat PNG directly. Emit
-minimal raw scenes for background/rest/merchant and the five-layer energy counter; set both
-top-panel icon fields and the card-pool compact icon paths. Locked/map consumers remain
-explicit gaps with inherited profile fallbacks.
+nine selected profiles above. Selection and background are opaque (`--chroma` off); icon,
+combat/rest/merchant bodies, full-energy layers, and large/text Energy icons use `--chroma`.
+Do not set `CharacterAssetProfile.Scenes.VisualsPath` to the combat PNG: the texture-only
+factory has no per-Character footprint style. Instead, existence-check the PNG in
+`TryCreateCreatureVisuals()` and call RitsuLib's public resource factory with the reviewed
+`VisualNodeStyle` scale/position; return `null` when absent so the resolved profile fallback
+continues normally. Emit minimal raw scenes for background/rest/merchant and the five-layer
+energy counter. The icon wrapper layers `icon_outline.png` behind `icon.png`; set
+`Ui.IconTexturePath`, `Ui.IconOutlineTexturePath`, and `Ui.IconPath` to the main PNG,
+outline PNG, and wrapper scene respectively. Return `energy_large.png` from
+`BigEnergyIconPath` and `energy_text.png` from `TextEnergyIconPath`, checking each resource
+independently before returning it.
+Locked/map consumers remain explicit gaps with inherited profile fallbacks.
 
 The character prompt must describe one original subject in the STS2 painterly style-only
-reference pool. Selection portraits are readable at 132x195; backgrounds reserve the
-information-panel area at 1920x1200; top-panel icons are bold at 88x88; static combat/rest/
+reference pool. Selection portraits keep the full source composition inside the reviewed
+132x195 safe box; backgrounds use the exact 16:10 host composition, place the focal
+character on the right, and reserve the calm left-center information-panel area at
+1920x1200; top-panel icons are bold at 88x88; static combat/rest/
 merchant bodies are centered on one baseline at 512x512; full energy requests five
-complementary layers; the compact resource icon is one legible 24x24 core. Do not request animation, trails, transition shaders, remote hands,
+complementary layers. The 256x256 large pool icon and 24x24 text icon share the SPEC's
+palette/motif but are normalized separately for their own consumers. Do not request animation, trails, transition shaders, remote hands,
 phobia art, or a custom Ancient layout. The Ancient name-banner/Architect line is a
 separate native headed proof, not a normal Event rich-text shortcut.
+
+**CharacterArtBundle routing.** Generate/import the required `character_select` asset
+first. Its normalized `charui/select.png` is the sole identity bootstrap; do not create a
+separate character sheet. For identity-sensitive `character_combat`, `character_rest`,
+and `character_merchant` assets, pass that selection portrait as
+`--identity-reference` alongside up to three type-matched STS2 style references. For the
+selection background, top-panel icon, five Energy layers, and large/text Energy icons,
+derive a concise palette/motif brief from the user's description and the reviewed
+selection portrait, but do not pass the portrait as an image reference. `character_icon`
+also writes `charui/icon_outline.png` as an opaque-white silhouette expanded by
+`round(3% * 88) = 3` pixels from final main alpha. This derived file and every Relic
+outline use the same rule; normalization reserves the matching main-icon inset, and the
+derivation never triggers an acquisition call. Future combat cue assets
+use the identity-sensitive route. Keep all generation/import calls at one acquired image;
+the existing explicit per-paid-call approval remains mandatory.
+
+**Character-wide theme contract.** Emit one Character-local theme class and copy every
+explicit value from SPEC into it: `NameColor`, `EnergyLabelOutlineColor`,
+`DeckEntryCardColor`, `EnergyOutlineColor`, the card-frame target RGB/brightness, both
+Energy-icon paths, and the shared icon palette/motif. The Character and card-pool models
+must delegate to that class instead of repeating literals. Use RitsuLib's public
+`MaterialUtils.CreateReplaceHueShaderMaterial` once and return the cached material from
+`TypeListCardPoolModel.PoolFrameMaterial`; do not ship a custom shader or generate a card
+frame image. The pool's missing-file fallback is per icon: one absent file must not disable
+the other route. The self-test asserts all four colors, shader parameters, distinct paths,
+exact 256x256/24x24 textures, and both real consumers before it emits the theme marker.
 
 1a. **Respect the selected route's consent boundary.** For `runtime-imagegen`, the user's
    mod-level `generate` choice authorizes the initial one-image-per-asset native-tool run;
@@ -624,14 +665,20 @@ separate native headed proof, not a normal Event rich-text shortcut.
    image file. Pass that file through the existing normalizer:
    ```
    python ${GAME_TOOLS_DIR}/gen_sprite.py import \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --input "<native-output.png>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --input "<native-output.png>" \
      --out "<work dir>/<ModName>/images" [--chroma]
    ```
    Add `--chroma` for `relic`, `power`, `potion`, `enchantment`, `orb`, `monster`, and
-   promoted Character icon/combat/rest/merchant/full-energy/compact-energy specs. Leave it
-   off for Character selection/background. For full energy, invoke five times with slugs
-   `orb_layer_1` through `orb_layer_5`. The normalized project asset,
-   not the host's raw output, is what the mod references and packages.
+   selected Character icon/combat/rest/merchant/full-energy/large-energy/text-energy specs. Leave it
+    off for Character selection/background. For full energy, invoke `character_energy`
+    exactly once with slug `orb_layer_1`. Install the lead-supplied
+    `reference/energy_template/layer_2.png` through `layer_5.png` with
+    `character_art.py --install-energy-templates`; those four normalized project assets
+    are fixed byte-for-byte and are what the mod references and packages. Never spend a
+    generation call on layers 2-5.
+   For the other Character slots use the bundle's stable slugs `select`, `background`,
+   `icon`, `combat`, `rest`, `merchant`, `energy_large`, and `energy_text`; do not invent a second identity
+   filename or a separate character sheet.
 
    **Vofy managed credits:** the user installs/authenticates Vofy themselves. Never run
    `vofy login`, inspect credential files, or put status/credit output in SPEC/MEMORY/logs.
@@ -647,10 +694,11 @@ separate native headed proof, not a normal Event rich-text shortcut.
    step 1a's confirmation, submit exactly one synchronous paid task:
    ```
    python ${GAME_TOOLS_DIR}/acquire_sprite.py create \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --model <chosen-model> \
      [--aspect-ratio <confirmed-ratio>] [--resolution <confirmed-resolution>] \
-     [--reference ${STS2_API_SKILL_DIR}/reference/art-samples] --yes
+     [--reference ${STS2_API_SKILL_DIR}/reference/art-samples] \
+     [--identity-reference <normalized-charui/select.png>] --yes
    ```
    `--yes` means the user approved this exact prompt/model/one-image spend. The tool reruns
    preflight, downloads into a unique empty directory, requires exactly one image, then
@@ -661,24 +709,39 @@ separate native headed proof, not a normal Event rich-text shortcut.
    **BYO HTTP backend:** run the existing generator:
    ```
    python ${GAME_TOOLS_DIR}/gen_sprite.py generate \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_text> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --config <path to art-backend.json> \
      --reference ${STS2_API_SKILL_DIR}/reference/art-samples
    ```
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
    point it at the **root** `art-samples` dir (as shown). The tool auto-picks the matching
-   established family or `character_select`/`character_icon`/`character_combat`/
-   `character_rest` reference subdir and randomly samples three distinct files; families
+   established family or `character_select`/`character_background`/`character_icon`/
+   `character_combat`/`character_rest` reference subdir and randomly samples three distinct files; families
    are never mixed. Backends
    that accept reference images (gpt-image edits or Gemini/nano-banana) imitate the
    game style far better, and plain text-to-image backends just ignore it.
+   Add `--identity-reference <normalized-charui/select.png>` only for
+   `character_combat`, `character_rest`, and `character_merchant`; omit it for
+   `character_background`, `character_icon`, `character_energy`, `character_energy_large`, and
+   `character_energy_text`.
    The tool POSTs to the user's backend, then chroma-keys (per spec — OFF for a full-bleed
    `card`/`event`/Character selection-background, ON for the cut-out icon/body/energy specs) / fits /
    resizes to the exact contract size and writes every required path: one
-   card/potion/enchantment/orb/monster/event/Character asset or two relic/power files. A relic's optional
-   `_outline.png` is not generated (see above).
+   card/potion/enchantment/orb/monster/event/Character main asset, two power files, or a
+   relic's main/big/derived-outline triplet. `character_icon` similarly adds its derived
+   outline beside the main PNG. Pass `--identity-reference` only for
+   identity-sensitive Character body assets; palette-driven Character background/icon/
+   Energy requests must omit it.
    **Local image:** use `gen_sprite.py import --input <file> ...`; for a magenta-backed
    relic/power/potion/enchantment/orb/monster or Character cut-out source add `--chroma`.
+   After all required Character slots are normalized, validate and review them outside the
+   runtime asset directory:
+   ```
+   python ${GAME_TOOLS_DIR}/character_art.py \
+     --images-root <work dir>/<ModName>/images \
+     --install-energy-templates \
+     --out-dir <work dir>/art-review
+   ```
 4. **Unavailable/failure → bounded fallback, don't block.** A missing native image tool,
    native output with no local file, host-tool failure, missing Vofy/auth/credits,
    unsupported model flags, task failure/timeout, zero or multiple downloads, missing BYO

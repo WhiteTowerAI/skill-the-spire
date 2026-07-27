@@ -1,12 +1,13 @@
 # Recipe: Character Foundation
 
 > Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.62` by the
-> 2026-07-23 Wayfinder R4 proof. This recipe covers exactly-once registration,
+> 2026-07-23 Wayfinder R4 proof and 2026-07-27 Meridian M6.5 proof. This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
-> and the eight promoted static presentation profiles. Selected R5 resource/buffer/UI
+> and the nine promoted static presentation profiles. Selected R5 resource/buffer/UI
 > capability details live in `reference/character-resource.md` and
 > `reference/ordered-card-buffer.md`; this Foundation recipe does not duplicate them or
-> promote Ancient, animation, materials, multiplayer presentation, or audio.
+> promote Ancient, animation, arbitrary custom materials, multiplayer presentation, or
+> audio. Its bounded M6.5 theme uses only RitsuLib's public pool-material helper.
 
 Read `reference/ritsulib-adapter.md` first. When static art is selected, also
 read `reference/character-presentation.md` and `reference/art-contract.md`.
@@ -53,7 +54,8 @@ public sealed class <CharacterName>
     public override CharacterGender Gender => CharacterGender.Neutral;
     public override int StartingHp => InitialHp;
     public override int StartingGold => <gold>;
-    public override Color NameColor => new("<hex>");
+    public override Color NameColor => <CharacterName>Theme.NameColor;
+    public override Color EnergyLabelOutlineColor => <CharacterName>Theme.EnergyLabelOutlineColor;
     public override float AttackAnimDelay => 0.15f;
     public override float CastAnimDelay => 0.25f;
     public override bool RequiresEpochAndTimeline => false;
@@ -82,7 +84,11 @@ public sealed class <CardPool> : TypeListCardPoolModel
 {
     public override string Title => "<Character> Cards";
     public override string EnergyColorName => "<color>";
-    public override Color DeckEntryCardColor => new("<hex>");
+    public override Color DeckEntryCardColor => <CharacterName>Theme.DeckEntryCardColor;
+    public override Color EnergyOutlineColor => <CharacterName>Theme.EnergyOutlineColor;
+    public override Material? PoolFrameMaterial => <CharacterName>Theme.CardFrameMaterial;
+    public override string? BigEnergyIconPath => <CharacterName>Theme.ExistingLargeEnergyIconPath;
+    public override string? TextEnergyIconPath => <CharacterName>Theme.ExistingTextEnergyIconPath;
     public override bool IsColorless => false;
 }
 
@@ -103,6 +109,52 @@ native Shop, the unlocked non-Basic pool must contain at least two eligible
 Attacks, two eligible Skills, and one eligible Power. The merchant excludes the
 first same-type result while filling the second slot, so a `1/1/1` pool throws
 before the Shop UI exists. Author real effect cards for all five slots.
+
+## Character-wide theme
+
+Keep all runtime theme values in one Character-local contract. Values come from the
+accepted SPEC; do not choose a second palette while authoring. RitsuLib's public
+pool-material surface applies one cached deterministic hue replacement to the vanilla
+card-frame texture, so no generated frame image, custom shader, or `.tres` file is needed:
+
+```csharp
+using Godot;
+using STS2RitsuLib.Utils;
+
+internal static class <CharacterName>Theme
+{
+    public static Color NameColor => new("<RRGGBB>");
+    public static Color EnergyLabelOutlineColor => new("<RRGGBB>");
+    public static Color DeckEntryCardColor => new("<RRGGBB>");
+    public static Color EnergyOutlineColor => new("<RRGGBB>");
+
+    public const float FrameRed = <0..1>f;
+    public const float FrameGreen = <0..1>f;
+    public const float FrameBlue = <0..1>f;
+    public const float FrameBrightness = <0..2>f;
+
+    private static ShaderMaterial? _cardFrameMaterial;
+    public static Material CardFrameMaterial => _cardFrameMaterial ??=
+        MaterialUtils.CreateReplaceHueShaderMaterial(
+            FrameRed, FrameGreen, FrameBlue, FrameBrightness);
+
+    public static string LargeEnergyIconPath =>
+        <CharacterName>.CharacterUi("energy_large.png");
+    public static string TextEnergyIconPath =>
+        <CharacterName>.CharacterUi("energy_text.png");
+
+    public static string? ExistingLargeEnergyIconPath =>
+        ResourceLoader.Exists(LargeEnergyIconPath) ? LargeEnergyIconPath : null;
+    public static string? ExistingTextEnergyIconPath =>
+        ResourceLoader.Exists(TextEnergyIconPath) ? TextEnergyIconPath : null;
+}
+```
+
+The large icon is a transparent 256x256 `character_energy_large` output consumed through
+`EnergyIconHelper.GetPath` by a real `NCard.%EnergyIcon`. The text icon is a separate
+transparent 24x24 `character_energy_text` output consumed by `EnergyIconsFormatter` in
+rich-text card descriptions. Both use the SPEC's shared palette/motif brief, but each is
+composed and normalized for its own size. Missing files fall back independently.
 
 Tier 2 asserts the exact pool sets, not only their counts, and separately asserts
 the exact starter deck/relic multisets. A non-starter pool card must never leak
@@ -148,18 +200,28 @@ Put the promoted paths in one `CharacterAssetProfile`:
 |---|---|---|
 | selection portrait | `Ui.CharacterSelectIconPath` | 132x195 PNG |
 | selection background | `Ui.CharacterSelectBgPath` | raw `.tscn` wrapping 1920x1200 PNG |
-| top-panel identity | both `Ui.IconTexturePath` and `Ui.IconPath` | 88x88 PNG |
-| combat body | `Scenes.VisualsPath` | 512x512 PNG; RitsuLib builds `NCreatureVisuals` |
+| top-panel identity | `Ui.IconTexturePath`, `Ui.IconOutlineTexturePath`, and `Ui.IconPath` | 88x88 main/derived-outline PNGs plus raw wrapper scene |
+| combat body | existence-checked `TryCreateCreatureVisuals()` | 512x512 PNG; public resource factory + reviewed `VisualNodeStyle` |
 | RestSite body | `Scenes.RestSiteAnimPath` | raw `.tscn` wrapping 512x512 PNG |
 | Shop body | `Scenes.MerchantAnimPath` | raw `.tscn` wrapping 512x512 PNG |
 | full energy | `Scenes.EnergyCounterPath` | raw `.tscn` using five 256x256 PNGs |
-| compact card energy | card-pool `BigEnergyIconPath` and `TextEnergyIconPath` | checked 24x24 PNG |
+| large card energy | card-pool `BigEnergyIconPath` | checked 256x256 PNG |
+| text card energy | card-pool `TextEnergyIconPath` | checked 24x24 PNG |
 
 Locked selection and map marker paths may retain checked assets, but they are not
 pipeline-promoted until their real consumers are visibly proved. RitsuLib's
 resolved profile keeps the placeholder/native fallback for missing fields. Do not
 add the historical static-merchant prefix: the R4 Shop proof rendered a real
 `NMerchantCharacter` directly from the RitsuLib scene profile.
+
+Leave `Scenes.VisualsPath` unset for the generated combat body so the resolved profile
+retains its checked missing-file fallback. When `images/charui/combat.png` exists, load it
+as `Texture2D` and call
+`RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>(texture, style)` from the
+protected override. The settled style is `VisualNodeStyle.Empty.WithScale(0.80f)` followed
+by `.WithPosition(new Vector2(0f, -184f))`; return `null` when the PNG is absent. Do not use
+the texture-only `Scenes.VisualsPath` shortcut because it cannot carry this reviewed
+visible-footprint transform.
 
 ## Ancient boundary
 
@@ -177,14 +239,21 @@ dialogue, speech color, and custom Ancient layouts unclaimed.
    texture path, unlock only for proof setup, and select that exact model. Never
    choose the first unlocked character.
 3. Prove the 132x195 portrait and 1920x1200 background in the visible select UI,
-   capture a settled screenshot, and click Confirm.
+   assert the button is inside the 1920x1080 viewport, capture a settled screenshot, and
+   click Confirm.
 4. After `NRun.GlobalUi` is ready, assert selected identity, exact HP/Max HP,
    starting Gold, all three exact typed pool types/member sets, every independently
    registered supporting Power, and exact starter deck/relic multisets.
 5. Enter a real combat, wait for `PlayerTurnPhase.Play`, and assert native
-   `MaxEnergy`, the hosted starter mechanic, the non-Spine 512x512 body, 88x88
-   top-panel icon, one `NEnergyCounter`, all five 256x256 layers, and a visible
-   24x24 icon in a real hand `NCard`.
+   `MaxEnergy`, the hosted starter mechanic, all four exact theme colors, frame shader
+   target/brightness, the non-Spine 512x512 body, normal and outlined 88x88 top-panel
+   icon textures under the same real `NTopBarPortrait`, one
+   `NEnergyCounter`, all five 256x256 layers, a 256x256 large icon in a real hand
+   `NCard.%EnergyIcon`, the distinct 24x24 path in a real formatted card description, and
+   every generated Relic's exact 256x256 main/outline pair under one real `NRelic`.
+   For the body also assert alpha bounds within
+   `(26,26)-(486,486)`, baseline `486`, scale `0.80`, position `(0,-184)`, resulting screen
+   bounds inside the viewport, and no overlap with top/bottom UI, enemy lane, or turn banner.
 6. Finish combat, enter RestSite and Shop, and assert the real
    `NRestSiteCharacter` / `NMerchantCharacter`, exact 512x512 resources, and
    settled screenshots.
@@ -194,9 +263,11 @@ dialogue, speech color, and custom Ancient layouts unclaimed.
 
 The 2026-07-23 RitsuLib-only Wayfinder proof observed exactly one selected model,
 HP `72/72`, Gold `99`, exact pools `cards7/relic1/potion1/power1`, starter deck
-`5 Strike + 5 Guard`, one Compass, Energy `3/4`, and every promoted static
-consumer above. It built with zero warnings/errors against the pinned profile and
-passed strict Tier 2 with no fresh error.
+`5 Strike + 5 Guard`, one Compass, Energy `3/4`, and the original static consumers.
+It built with zero warnings/errors against the pinned profile and passed strict Tier 2
+with no fresh error. The 2026-07-27 Meridian proof added the split large/text Energy
+consumers and bounded card/UI theme; the maintainer's headed review passed all seven
+visible checks, while generated Mods retain the automatic node/property assertions.
 
 ## Checklist
 
@@ -207,5 +278,7 @@ passed strict Tier 2 with no fresh error.
 - [ ] non-Basic pool has at least `2 Attack / 2 Skill / 1 Power` before Shop
 - [ ] all 14 Character keys and four Architect keys use the normalized Character entry
 - [ ] every selected static asset renders in its real consumer with a screenshot and state proof
-- [ ] locked/map/Ancient/animation/material/multiplayer/audio boundaries remain explicit
+- [ ] one theme contract owns four colors, frame parameters, and distinct 256x256/24x24 Energy paths
+- [ ] one 3% white-alpha rule derives the top icon and every generated Relic outline with no acquisition call
+- [ ] locked/map/Ancient/animation/arbitrary-material/multiplayer/audio boundaries remain explicit
 - [ ] strict Tier 1/Tier 2, `selftest done`, and no fresh error pass on the pinned profile
