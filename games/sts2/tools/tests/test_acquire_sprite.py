@@ -47,7 +47,9 @@ if args[:2] == ["image", "create"]:
         time.sleep(2)
     output = Path(args[args.index("--download-to") + 1])
     output.mkdir(parents=True, exist_ok=True)
-    if mode != "zero":
+    if mode == "invalid_image":
+        (output / "source.png").write_bytes(b"not an image")
+    elif mode != "zero":
         (output / "source.png").write_bytes(base64.b64decode({PNG!r}))
     if mode == "multiple":
         (output / "second.png").write_bytes(base64.b64decode({PNG!r}))
@@ -214,6 +216,23 @@ class AcquireSpriteTests(unittest.TestCase):
         self.assertEqual(1, calls.count("'image', 'create'"))
         for token in ("'--yes'", "'--n', '1'", "'--image'", "'--aspect-ratio', '4:3'"):
             self.assertIn(token, calls)
+
+    def test_import_failure_preserves_paid_source_without_retry(self) -> None:
+        images = self.root / "project" / "PaidMod" / "images"
+        args = self.create_args()
+        args[args.index("--out") + 1] = str(images)
+
+        result = self.run_tool(*args, "--yes", mode="invalid_image")
+
+        self.assertEqual(7, result.returncode)
+        self.assertIn("Paid source preserved at", result.stderr)
+        recovered = (
+            self.root / "project" / "art-sources" / "recovered" / "card"
+            / "paid-art.png"
+        )
+        self.assertEqual(b"not an image", recovered.read_bytes())
+        calls = self.record.read_text(encoding="utf-8")
+        self.assertEqual(1, calls.count("'image', 'create'"))
 
     def test_reference_root_selects_matching_spec_and_randomly_caps_at_three(self) -> None:
         root = self.root / "art-samples"
@@ -400,7 +419,7 @@ class AcquireSpriteTests(unittest.TestCase):
 
         log = (self.out / ".gen_sprite.log").read_text(encoding="utf-8")
         self.assertIn("chroma=True", log)
-        self.assertIn("applied magenta chroma-key", log)
+        self.assertIn("applied edge-connected soft magenta chroma-key", log)
 
     def test_character_background_keeps_opaque_full_bleed_import(self) -> None:
         result = self.run_tool(*self.create_args("character_background"), "--yes")

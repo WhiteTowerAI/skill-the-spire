@@ -46,6 +46,7 @@ import urllib.error
 from pathlib import Path
 
 from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
+from character_cues import remove_magenta
 
 try:
     from PIL import Image, ImageFilter, ImageOps
@@ -133,6 +134,11 @@ SPECS.update(CHARACTER_ART_BUNDLE.sprite_specs())
 CUE_SPECS = set(CHARACTER_ART_BUNDLE.cue_specs)
 ALL_SPECS = set(SPECS) | CUE_SPECS
 FRAGMENT_CLEANUP_SPECS = {"enchantment", "orb", "monster"}
+CHARACTER_SOFT_CHROMA_SPECS = {
+    slot.spec
+    for slot in CHARACTER_ART_BUNDLE.slots
+    if slot.alpha == "transparent" and slot.generation_calls > 0
+}
 REFERENCE_FAMILIES = CHARACTER_ART_BUNDLE.reference_families()
 DERIVED_OUTLINE_SPECS = {"character_icon", "relic"}
 OUTLINE_EXPANSION_RATIO = 0.03
@@ -348,9 +354,15 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
     footprint = info.get("visible_footprint")
     img = src
     if do_chroma:
-        threshold = 180 if spec in FRAGMENT_CLEANUP_SPECS else 100
-        img = chroma_key_magenta(img, threshold=threshold)
-        log("applied magenta chroma-key")
+        if spec in CHARACTER_SOFT_CHROMA_SPECS:
+            img = remove_magenta(img, threshold=180, edge_threshold=200)
+            log("applied edge-connected soft magenta chroma-key")
+            img = remove_cutout_fragments(img)
+            log("removed disconnected Character cut-out background fragments")
+        else:
+            threshold = 180 if spec in FRAGMENT_CLEANUP_SPECS else 100
+            img = chroma_key_magenta(img, threshold=threshold)
+            log("applied magenta chroma-key")
     if footprint is not None:
         img = fit_into_footprint(
             img,

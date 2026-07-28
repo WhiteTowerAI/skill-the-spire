@@ -14,26 +14,17 @@ under `documents/history/` and is not current instruction.
 ## Current Status
 
 `0.6.0` is the unreleased RitsuLib-only development baseline for STS2 stable `0.107.1`
-and RitsuLib `0.4.62`. R0-R6 completed the semantic contract, pinned scaffold/build
-profile, supported content migration, Character Foundation/static presentation,
-state/resource/buffer/UI composition, and generated-Mod-local singleplayer Scry helper.
+and RitsuLib `0.4.62`. The BaseLib-to-RitsuLib migration and external clean-workspace
+Codex acceptance are closed; details live in
+`documents/history/RITSULIB_MIGRATION_RESULTS.md`. R7 was canceled by the human lead and
+did not pass.
 
-R7 was canceled by the human lead. It did not pass and must never be described as passed.
-R8 completed repository cleanup, active documentation, Codex/portable payload generation,
-and maintainer validation. The lead's subsequent clean-workspace Codex test produced a
-working in-game Mod and passed external acceptance. The BaseLib-to-RitsuLib migration is
-complete at the supported boundary.
-
-Do not reopen migration proof projects or start M7. The lead has approved M6.5 Character
-content-quality work in `documents/IMPLEMENTATION_PLAN.md`; execute only its currently
-listed packages and keep unproved surfaces unsupported. Other expansion tracks still need
-a later lead instruction. M6.5 has no separate character-sheet generation, locked-select
-route, custom map marker, Character trail, or `Cast` cue. Characters retain the checked
-native/shared map-marker fallback. Its full-energy acquisition creates only layer 1 per
-Character; layers 2-5 use four fixed PNG templates after the lead supplies them. M6.5 also
-corrects selection/combat visible footprint without changing contract pixel dimensions and
-derives top-icon/Relic outlines deterministically from alpha, with no extra AI call. Do
-not prepare or claim a GitHub release yet.
+The focused M6.5 Character art, theme, outline, and bounded combat-cue packages are
+pipeline-supported. The fresh Prismwright acceptance is closed and retired by explicit
+human-lead decision; its headed result and waived Tier 2 harness are recorded in
+`documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. Do not reopen that proof, start M7 or
+another expansion track, or prepare/claim a GitHub release without later lead instruction.
+Keep all unproved surfaces unsupported.
 
 ## Dependency Contract
 
@@ -59,7 +50,8 @@ Pipeline-supported surfaces include:
 - monster + encounter and the complete grounded move vocabulary;
 - Event / World Node outcomes, bounded rich text/VFX/native presentation, and one bounded
   solo Quest Card -> forced Event composition;
-- playable Character Foundation and eight checked static art profiles;
+- playable Character Foundation, nine checked static art profiles, and bounded private
+  `Idle`/`Attack`/`Hit`/`Dead` combat cues;
 - stateful relic cadence, combat-only secondary resources, all-or-nothing payment, public
   fixed combat UI, and ordered semantic buffers using normal Play -> Discard.
 
@@ -71,7 +63,8 @@ Preserve these important boundaries:
 - The fixed Character resource control is 220x32 at offset 160 with a text fallback and
   must remain disjoint from native Energy.
 - Custom locked-selection/map-marker presentation, native custom-Character Ancient
-  presentation, production animation/material/audio, remote-player UI, alternative
+  presentation, production animation beyond the bounded cues, arbitrary material/audio,
+  remote-player UI, alternative
   Energy, vanilla editing, retained-card zones, and one-click Workshop publishing remain
   unsupported.
 
@@ -82,7 +75,9 @@ For the exact active inventory, read
 
 `gen_sprite.py` is framework-neutral. RitsuLib `*AssetProfile` consumers own runtime
 wiring. The verified Character profiles are selection portrait/background, top-panel
-icon, combat/rest/merchant static bodies, five full-energy layers, and the compact icon.
+main/outline icons, combat/rest/merchant static bodies, five full-energy layers, and
+distinct large/text Energy icons. Optional combat cues are a private combat-only frame
+set, not a profile-global animation replacement.
 
 Host-native image generation is optional. Use it only when a callable raster tool returns
 a local image. Do not infer availability from a text-model name or installed skill, and do

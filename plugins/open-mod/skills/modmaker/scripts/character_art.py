@@ -768,7 +768,7 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
                 False, False, "charui/cues/hit",
             ),
             CharacterCueAction(
-                "dead", "Dead", "character_cue_dead", 2, 3, 140,
+                "dead", "Dead", "character_cue_dead", 3, 2, 140,
                 False, True, "charui/cues/dead",
             ),
         ),

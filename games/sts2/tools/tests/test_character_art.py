@@ -92,6 +92,8 @@ class CharacterArtBundleTests(unittest.TestCase):
         )
         self.assertEqual(4, cues.generation_calls)
         self.assertEqual((4, 4, 4, 6), tuple(action.frame_count for action in cues.actions))
+        dead = next(action for action in cues.actions if action.name == "dead")
+        self.assertEqual((3, 2), (dead.rows, dead.columns))
         self.assertEqual((180, 90, 80, 140), tuple(
             action.frame_duration_ms for action in cues.actions
         ))

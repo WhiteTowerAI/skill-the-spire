@@ -187,6 +187,27 @@ def import_source(args: argparse.Namespace, source: Path) -> Path:
     return Path(output_lines[-1])
 
 
+def preserve_failed_import(args: argparse.Namespace, source: Path) -> Path:
+    """Keep the paid source outside the temporary download directory for local repair."""
+    images_dir = Path(args.out).resolve()
+    project_dir = (
+        images_dir.parent.parent
+        if images_dir.name.lower() == "images"
+        else images_dir.parent
+    )
+    recovery_dir = project_dir / "art-sources" / "recovered" / args.spec
+    recovery_dir.mkdir(parents=True, exist_ok=True)
+
+    suffix = source.suffix.lower() if source.suffix.lower() in IMAGE_SUFFIXES else ".png"
+    destination = recovery_dir / f"{args.slug}{suffix}"
+    index = 2
+    while destination.exists():
+        destination = recovery_dir / f"{args.slug}-{index}{suffix}"
+        index += 1
+    shutil.copy2(source, destination)
+    return destination
+
+
 def cmd_preflight(args: argparse.Namespace) -> int:
     prefix = command_prefix(args.vofy_command)
     preflight(prefix, args.model, args.preflight_timeout)
@@ -257,7 +278,22 @@ def cmd_create(args: argparse.Namespace) -> int:
                 "open-mod will not submit another paid task automatically.",
                 6,
             )
-        destination = import_source(args, downloaded[0])
+        try:
+            destination = import_source(args, downloaded[0])
+        except AcquisitionError as exc:
+            try:
+                recovered = preserve_failed_import(args, downloaded[0])
+            except OSError as recovery_exc:
+                raise AcquisitionError(
+                    f"{exc} The paid source could not be preserved locally: "
+                    f"{recovery_exc}. Recover the completed Vofy task instead of "
+                    "submitting another paid request.",
+                    exc.exit_code,
+                ) from recovery_exc
+            raise AcquisitionError(
+                f"{exc} Paid source preserved at {recovered}",
+                exc.exit_code,
+            ) from exc
 
     print(f"[acquire_sprite] acquired and imported {args.spec} {args.slug!r}")
     print(str(destination))

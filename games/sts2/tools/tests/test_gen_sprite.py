@@ -179,6 +179,65 @@ class GenSpriteTests(unittest.TestCase):
                     {pixel[:3] for pixel in outline.getdata() if pixel[3]},
                 )
 
+    def test_character_cutout_removes_edge_connected_soft_magenta(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            image = Image.new("RGBA", (100, 100), (222, 27, 136, 255))
+            ImageDraw.Draw(image).rectangle(
+                (35, 15, 64, 84), fill=(30, 80, 150, 255)
+            )
+            image.save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "character_rest", "--slug", "rest",
+                    "--input", str(source), "--out", str(out), "--chroma",
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            with Image.open(out / "charui" / "rest.png") as normalized:
+                self.assertEqual(0, normalized.getpixel((0, 0))[3])
+                self.assertEqual(255, normalized.getpixel((256, 256))[3])
+            log = (out / ".gen_sprite.log").read_text(encoding="utf-8")
+            self.assertIn("edge-connected soft magenta", log)
+
+    def test_character_icon_drops_disconnected_debris_before_outline(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            image = Image.new("RGBA", (100, 100), (222, 27, 136, 255))
+            draw = ImageDraw.Draw(image)
+            draw.rectangle((35, 15, 64, 84), fill=(30, 80, 150, 255))
+            draw.rectangle((0, 0, 4, 4), fill=(20, 40, 90, 255))
+            draw.rectangle((95, 95, 99, 99), fill=(20, 40, 90, 255))
+            image.save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "character_icon", "--slug", "icon",
+                    "--input", str(source), "--out", str(out), "--chroma",
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            with Image.open(out / "charui" / "icon.png") as normalized:
+                bounds = normalized.getchannel("A").getbbox()
+                self.assertGreater(bounds[0], 3)
+                self.assertLess(bounds[2], 85)
+            with Image.open(out / "charui" / "icon_outline.png") as outline:
+                self.assertEqual(0, outline.getpixel((0, 0))[3])
+                self.assertEqual(0, outline.getpixel((87, 87))[3])
+            log = (out / ".gen_sprite.log").read_text(encoding="utf-8")
+            self.assertIn("disconnected Character cut-out", log)
+
     def test_alpha_outline_uses_exact_proportional_white_expansion(self) -> None:
         image = Image.new("RGBA", (88, 88), (0, 0, 0, 0))
         ImageDraw.Draw(image).rectangle((20, 30, 39, 49), fill=(30, 90, 170, 128))

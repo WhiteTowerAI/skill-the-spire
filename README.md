@@ -9,11 +9,11 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 
 > **Unreleased development version: 0.6.0.** The generated-mod pipeline now targets only RitsuLib
 > `0.4.62` on STS2 stable `0.107.1`. The BaseLib implementation path has been retired.
-> Migration phases R0-R6 have hosted evidence; R7 was canceled by the project lead in
-> favor of a fresh external Codex user test; R8 closed the repository, documentation,
-> and distribution work. The external clean-workspace Codex test has now passed, so the
-> migration is complete. A GitHub release is deliberately deferred while remaining bugs
-> and content quality are improved.
+> The migration and external clean-workspace Codex acceptance are complete; details are
+> archived in `documents/history/RITSULIB_MIGRATION_RESULTS.md`. A GitHub release is
+> deliberately deferred while remaining bugs are fixed. M6.5 acceptance is closed; its
+> lead-approved Prismwright result is archived in
+> `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`.
 
 ## Requirements
 
@@ -88,7 +88,9 @@ The current RitsuLib-only pipeline supports:
 - combat-only secondary resources with all-or-nothing payment and a public fixed live UI;
 - ordered semantic card-play buffers whose source Cards follow normal Play -> Discard;
 - placeholder, local, or generated static art for the grounded content families, including
-  the eight verified Character profiles.
+  nine verified Character profiles;
+- optional private combat-only Character `Idle`/`Attack`/`Hit`/`Dead` frame cues with an
+  all-or-nothing static fallback.
 
 Static art acquisition prefers a callable host-native raster tool (`image_gen` in Codex),
 then the explicitly selected Vofy, compatible HTTP backend, or local-image route. Tool
@@ -105,7 +107,8 @@ them:
 - alternative Energy engine hooks;
 - run-persistent or remote-player Character resources and UI;
 - multiplayer/replay Scry or global cross-Mod Scry hooks;
-- production Character animation, materials, audio, or multiplayer presentation;
+- production Character animation beyond the bounded combat cues, arbitrary materials,
+  audio, or multiplayer presentation;
 - custom Character Ancient layouts and unproved locked-selection/map-marker art;
 - arbitrary Event VFX/layouts, direct merchant/rest/treasure transitions, or more than one
   special combat from the same mutable Event instance;

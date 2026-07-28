@@ -35,7 +35,9 @@ Current sources of truth:
 - `M6_NATIVE_PRESENTATION_RESULTS.md`
 - `M6_FORCED_FOLLOWUP_EVENT_RESULTS.md`
 - `M65_CHARACTER_QUALITY_FOCUSED_RESULTS.md` - focused M6.5 Character
-  bundle/footprint/theme/outline and bounded combat-cue results; full acceptance remains pending
+  bundle/footprint/theme/outline and bounded combat-cue results
+- `M65_FRESH_ACCEPTANCE_RESULTS.md` - Prismwright fresh Character acceptance, explicit
+  lead waiver of the remaining Tier 2 harness, and acceptance-project retirement
 
 The final canary-results section records the player-found Wayfinder lifecycle correction:
 the semantic ordered buffer supersedes the retained-card `CustomPile` claim.

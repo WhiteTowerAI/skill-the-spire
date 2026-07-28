@@ -23,8 +23,10 @@ Version `0.6.0` is the first RitsuLib-only, externally accepted development base
 BaseLib is no longer an implementation option. Historical BaseLib and Downfall checkouts
 are offline research archives, not generated dependencies or runtime inputs.
 
-The migration and clean-workspace Codex acceptance are complete. `0.6.0` remains
-unreleased while user-test bugs are fixed and content quality is improved; no GitHub
+The migration and clean-workspace Codex acceptance are complete; the migration record is
+archived in `documents/history/RITSULIB_MIGRATION_RESULTS.md`. `0.6.0` remains unreleased
+while user-test bugs are fixed. M6.5 closed through the lead-approved Prismwright headed
+acceptance recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; no GitHub
 release is currently planned.
 
 ## User Experience
@@ -95,13 +97,13 @@ editing, arbitrary patching, retained-card zones, alternative Energy, multiplaye
 Spine/production Character motion or audio, arbitrary Event layouts, or Workshop
 publishing.
 
-The next named content-quality milestone is M6.5 Character art and presentation. Its
-bounded scope is role-based identity references without a separate character sheet,
-selection/combat visible-footprint correction without changing contract pixel sizes,
-structured Character card/UI theming with a deterministic frame material and alpha-derived
-Character/Relic outlines, one per-Character energy layer plus four lead-supplied fixed
-templates, and geometry-stable non-Spine `Idle`/`Attack`/`Hit`/`Dead` combat cues.
-Characters keep the game-native shared map-marker fallback; no custom map marker is
-planned. Locked selection, Character card trails, and a `Cast` cue remain future outlook,
-as scoped in
-`documents/IMPLEMENTATION_PLAN.md`. No automatic milestone transition follows from M6.5.
+The focused M6.5 Character art and presentation packages are pipeline-supported:
+role-based identity references without a separate Character sheet, corrected
+selection/combat visible footprints, a structured card/UI theme, alpha-derived
+Character/Relic outlines, one Character-specific Energy layer plus four fixed templates,
+and geometry-stable non-Spine `Idle`/`Attack`/`Hit`/`Dead` combat cues. The fresh
+natural-language Prismwright acceptance is closed with its explicit lead-approved
+verification exceptions recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`.
+Characters keep the game-native shared map-marker fallback; locked selection, Character
+card trails, and a `Cast` cue remain unsupported. No automatic milestone transition
+follows from M6.5.

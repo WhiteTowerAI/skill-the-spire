@@ -1,9 +1,8 @@
 # STS2 verification ownership
 
-The migration proof projects were disposable and are no longer part of the worktree.
-Durable results are recorded in `documents/history/RITSULIB_MIGRATION_RESULTS.md`; current
-claims are defined by `content-capability-graph.md` and focused tests under
-`games/sts2/tools/tests/`.
+Completed migration evidence is archived in
+`documents/history/RITSULIB_MIGRATION_RESULTS.md`. Current claims are defined by
+`content-capability-graph.md` and focused tests under `games/sts2/tools/tests/`.
 
 ## Model
 
@@ -42,7 +41,6 @@ python games/sts2/tools/launch.py --self-test --mod-name <ModName>
 python games/sts2/tools/grep_log.py --mod-name <ModName> --tier2-pattern "<structured state proof>"
 ```
 
-R8 did not run another headed acceptance Mod. The project lead subsequently completed the
-separate clean-workspace Codex acceptance with a working in-game result. Future bug fixes
-still require verification proportional to the changed behavior; the acceptance result is
-not a blanket substitute for regression testing.
+Completed acceptance evidence is historical. Future bug fixes still require verification
+proportional to the changed behavior; an earlier acceptance result is not a blanket
+substitute for regression testing.
