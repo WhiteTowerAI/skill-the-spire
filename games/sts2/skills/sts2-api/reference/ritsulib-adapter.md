@@ -64,6 +64,7 @@ unselected modules.
 | Encounter | act/global encounter registration; `ModEncounterTemplate` | `EncounterAssetProfile` | pipeline-supported; real room proof |
 | Event | shared/act event registration; `ModEventTemplate` | `EventAssetProfile` | pipeline-supported; `MapNode` behavior/presentation proof |
 | Character | character/starter registration; `ModCharacterTemplate<...>` | `CharacterAssetProfile` | pipeline-supported; selection/combat/RestSite/Shop proof |
+| Character combat cues | `SetupCustomCombatAnimationStateMachine` + private `VisualCueSet` | all-or-nothing static combat fallback | pipeline-supported; Idle/Attack/Hit/Dead + cleanup proof |
 | Stateful relic cadence | `SavedAttachedState<SpecificRelic, int/bool>` plus native model hooks | normal relic counter/fallback | pipeline-supported; save round trip + two-combat Tier 2 |
 | Combat resource | `ModSecondaryResourceRegistry` + `SecondaryResourceCmd` | registered icons plus fixed counter fallback | pipeline-supported; payment/reset + two-combat Tier 2 |
 | Ordered semantic buffer | `AttachedState<PlayerCombatState,TState>` + native Card lifecycle | composed live counter text | pipeline-supported; order/overflow/output/reset Tier 2 |
@@ -241,6 +242,14 @@ its Energy consumers through the same public pool model:
 `energy_large.png`, while `TextEnergyIconPath` independently checks a 24x24
 `energy_text.png`. `EnergyIconHelper.GetPath` owns the large `NCard` consumer and
 `EnergyIconsFormatter` owns the rich-text consumer.
+
+The bounded non-Spine combat route builds its Idle/Attack/Hit/Dead `VisualCueSet` only when
+all eighteen 512x512 resources exist, then passes that private set directly to
+`ModAnimStateMachines.StandardCue` from `SetupCustomCombatAnimationStateMachine`. Keep
+`CharacterAssetProfile.VisualCues` unset: RitsuLib also consults it for merchant/rest
+playback. An incomplete set selects static `combat.png`, or the resolved profile fallback
+when the static file is absent. Read `reference/character-combat-cues.md` for timing,
+geometry, cleanup, and proof.
 
 For the bounded Character card-frame theme, `TypeListCardPoolModel` already implements
 `IModCardPoolFrameMaterial`. Return one cached

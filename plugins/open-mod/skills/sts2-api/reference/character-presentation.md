@@ -1,7 +1,8 @@
-# Character static and native presentation
+# Character static, combat-cue, and native presentation
 
 Status: **pipeline-supported for nine static profiles, deterministic top-icon/generated-
-Relic outlines, and the bounded card/UI theme on STS2 `0.107.1` / RitsuLib `0.4.62`**.
+Relic outlines, the bounded card/UI theme, and private non-Spine Idle/Attack/Hit/Dead cues
+on STS2 `0.107.1` / RitsuLib `0.4.62`**.
 The 2026-07-23 Wayfinder headed proof established selection
 portrait/background, top-panel icon, non-Spine combat/rest/merchant bodies, five-layer
 energy, and the original compact shared card-energy icon. Locked selection, map marker,
@@ -9,10 +10,13 @@ and native Ancient/Architect presentation remain unverified. The 2026-07-27 M6.5
 proof additionally pins selection/combat visible footprint without changing the 132x195 or
 512x512 pixel contracts and proves the card/UI theme, split Energy-icon consumers, and the
 deterministic top-icon/generated-Relic outline route. The outline proof combined exact
-real-host resource/property/node assertions with the maintainer's headed review.
+real-host resource/property/node assertions with the maintainer's headed review. A focused
+Meridian cue proof then established all four combat sequences, cleanup, shared geometry,
+and one-missing-disables-all static fallback.
 
-Use this page with `recipes/character.md` and `reference/art-contract.md`. Treat every
-consumer independently: a valid path or successful PCK build is not render evidence.
+Use this page with `recipes/character.md` and `reference/art-contract.md`; also read
+`reference/character-combat-cues.md` when cues are selected. Treat every consumer
+independently: a valid path or successful PCK build is not render evidence.
 
 ## Profile and consumer matrix
 
@@ -24,6 +28,7 @@ consumer independently: a valid path or successful PCK build is not render evide
 | map marker, 49x64 | `Ui.MapMarkerPath` | run map marker | grounded only |
 | select background, 1920x1200 | `Ui.CharacterSelectBgPath` | character-select background | visible raw-scene consumer |
 | combat body, 512x512 | existence-checked resource factory | player `NCreature.Visuals` | visible static non-Spine body with reviewed public style |
+| Idle/Attack/Hit/Dead cue bundle, 18x 512x512 | private set passed by `SetupCustomCombatAnimationStateMachine` | player `NCreature.Visuals` in combat only | full route and all-or-nothing fallback headed-review-proven |
 | rest body, 512x512 | `Scenes.RestSiteAnimPath` | `NRestSiteCharacter` | visible raw-scene consumer |
 | merchant body, 512x512 | `Scenes.MerchantAnimPath` | `NMerchantCharacter` | visible raw-scene consumer |
 | full energy, five 256x256 layers | `Scenes.EnergyCounterPath` | one native `NEnergyCounter` | all five layers visible |
@@ -99,6 +104,19 @@ zoom, UI occlusion, or host clipping.
 Missing/unused rows resolve against the template's placeholder/native profile. Do not
 invent a second getter path or patch. In particular, the RitsuLib Shop route does not need
 the historical `NMerchantCharacter._Ready()` prefix.
+
+## Combat cue composition
+
+The optional cue layer reuses the combat body's public scale/position but owns a fixed
+Bounds/Intent/Center/Orb/Talk geometry. It accepts only the four sequences and timings in
+`reference/character-combat-cues.md`. Require all eighteen resources before constructing
+the set; otherwise keep the static body and mount no cue playback node.
+
+The set is deliberately private to `SetupCustomCombatAnimationStateMachine`, which passes
+it directly to `ModAnimStateMachines.StandardCue`. Leave
+`CharacterAssetProfile.VisualCues` unset. That profile-level value is also consulted by
+RitsuLib for merchant/rest playback and can incorrectly replace those static textures with
+combat frames. Cast, Spine, trails, audio, and animated world-host bodies stay unsupported.
 
 ## Raw scene contract
 
@@ -239,8 +257,10 @@ For every selected visual:
    `NRelic`, plus its explicit `RelicAssetProfile` big path;
 6. for selection/combat, also assert the normalized content box/baseline, public combat
    transform, resulting screen bounds, and named UI exclusion regions;
-7. capture a settled headed screenshot that visibly distinguishes it from fallback;
-8. emit the final Foundation/static marker only after selection, combat, RestSite, and Shop
+7. when cues are selected, assert all four routes, one-shot returns/terminal pose, stable
+   geometry, cleanup, and the separate one-missing-frame static fallback;
+8. capture settled headed screenshots that visibly distinguish custom presentation from fallback;
+9. emit the final Foundation/static marker only after selection, combat, RestSite, and Shop
    all pass; then require `selftest done` and no fresh error.
 
 The 2026-07-23 proof captured selection, combat, RestSite, and Shop. Structured state
@@ -253,12 +273,13 @@ passed with no fresh error.
 ## Unsupported extensions
 
 - locked selection and map-marker presentation until their real hosts are visibly proved;
-- custom Character Spine animation, combat states, trails, and animated transitions;
+- Character combat cues beyond Idle/Attack/Hit/Dead, including Cast;
+- custom Character Spine animation, trails, and animated transitions;
 - arbitrary custom materials/shaders and their lifecycle beyond the bounded pool-frame helper;
 - remote-player hands, identity, ownership, rebuild, and Character UI;
 - custom audio registration, mix, fallback, and cleanup;
 - arbitrary top-bar or retained-card-zone UI;
 - native custom-Character Ancient presentation and custom Ancient layouts.
 
-Animation, materials, multiplayer presentation, and audio remain separate later tracks.
-None is implied by these static profiles.
+Production animation, materials, multiplayer presentation, and audio remain separate later
+tracks. None is implied by the bounded frame-sequence support.

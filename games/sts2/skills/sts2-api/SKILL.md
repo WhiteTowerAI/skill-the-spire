@@ -48,10 +48,13 @@ scaffold, or infer a runtime dependency from a recipe name.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
    RitsuLib typed template, one content-pack registration, three pools, starters, two-table
    localization, static profile/fallback, and `RunStart` + `CombatPlayer` proof.
-   When Character SPEC selects static art, richer resource/buffer UI, or native
+   When Character SPEC selects static art, combat cues, richer resource/buffer UI, or native
    Ancient/Architect presentation, also read
    `${STS2_API_SKILL_DIR}/reference/character-presentation.md`. It separates the four
    live-proven loose-PNG consumers from scene-export and headed-Ancient blockers.
+   For the bounded non-Spine `Idle`/`Attack`/`Hit`/`Dead` frame sequences, additionally
+   read `${STS2_API_SKILL_DIR}/reference/character-combat-cues.md`; keep its cue set private
+   to the combat state machine and preserve its all-or-nothing static fallback.
    For a combat-lifetime **character resource with explicit payment and a live counter**,
    read `${STS2_API_SKILL_DIR}/reference/character-resource.md`. For a **bounded ordered
    semantic card-play buffer with deterministic dynamic output**, read
@@ -97,6 +100,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `recipes/event.md` | Event / World Node pages/options, outcomes, checked portraits, and `MapNode` proof | Authoring a map event after adapter selection |
 | `recipes/character.md` | Character Foundation pools, starters, localization, selection/run behavior, fallbacks, and proof | Authoring a playable character shell after adapter selection |
 | `reference/character-presentation.md` | RitsuLib Character profile/consumer matrix; nine live static profiles; no-editor raw-scene packing; five-layer energy scene; split card/text Energy icons; bounded theme; native Ancient/Architect proof boundary | Authoring or verifying Character static/native presentation |
+| `reference/character-combat-cues.md` | Bounded non-Spine Idle/Attack/Hit/Dead sheets, deterministic frame normalization, private combat cue wiring, shared geometry, all-or-nothing static fallback, and hosted proof | Authoring or verifying Character combat cues |
 | `reference/event-outcomes.md` | Full normal-Event outcome vocabulary: immediate Cmd combinations, multi-page/locked options, blocking card selections, custom rewards, resumable/terminal special combat, extra combat rewards, one-combat-per-instance boundary, and unsupported room transitions | Authoring an Event beyond the one-Cmd fast path |
 | `reference/event-vfx.md` | Bounded code-native normal-layout `portrait_halo`: page parameters, Fast Mode behavior, `OnRoomEnter`/portrait host, explicit named-node cleanup, and headed acceptance contract | Authoring the supported Event portrait VFX profile |
 | `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation inventory, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
@@ -149,6 +153,11 @@ Harmony patching and is deferred. The recipes make **new** elements.
   deterministic top-icon/generated-Relic outlines are pipeline-supported. Locked
   selection, map marker, and native Ancient/Architect presentation need separate headed
   evidence.
+- **Character combat cues:** support exactly the private combat-only Idle/Attack/Hit/Dead
+  contract. Require all eighteen 512x512 frames, one shared style/geometry, one-shot return
+  and terminal behavior, cleanup, and all-or-nothing static fallback. Never publish the set
+  through `CharacterAssetProfile.VisualCues`; Cast, Spine, trails, audio, and animated world
+  hosts remain unsupported.
 - **Capability kernel:** prefer the game or RitsuLib public API. A missing public seam may
   use one selected, version/fingerprint-gated adapter with zero-target/failure markers,
   conflict policy, fallback, and a hosted proof. Do not invent C/D targets or a shared

@@ -870,6 +870,23 @@ large path; and a real formatted card description embeds the text path. Emit
 assertion succeeds. Automatic node/property proof is required even when the maintainer
 chooses to perform the focused visual review manually.
 
+For bounded Character combat cues, read `reference/character-combat-cues.md` and keep the
+proof independent from the static/theme marker. Assert all eighteen exact 512x512 paths,
+shared style plus Bounds/Intent/Center/Orb/Talk geometry,
+Idle advance/loop, Attack trigger and return to Idle, damage-triggered Hit and return to
+Idle, first-combat playback-node cleanup, and Dead's contracted duration/final-frame hold
+in a fresh combat. Emit
+`character combat cues complete expected=Idle/Attack/Hit/Dead/cleanup observed=all` only
+after every assertion succeeds.
+
+Run one separate missing-frame variant. Omit exactly one expected frame and assert that the
+entire private cue set is unavailable, the exact static 512x512 `combat.png` is mounted,
+no cue playback node exists, and no surviving action frame appears. Its marker is
+`combat cue fallback expected=one-missing-disables-all/static-combat512/no-playback observed=all`.
+The user performs both headed observations; do not infer motion or fallback from model-only
+state. `CharacterAssetProfile.VisualCues` must remain unset so merchant/rest retain their
+static textures.
+
 > **R4 live-proven (Wayfinder, build 0/0 + strict Tier 2 PASS, 2026-07-23):** RitsuLib
 > content-pack registration count was 1; the exact custom icon button was selected; the run
 > started at HP `72/72`, Gold `99`, exact pools `7/1/1/1`, starter deck `5 Strike + 5

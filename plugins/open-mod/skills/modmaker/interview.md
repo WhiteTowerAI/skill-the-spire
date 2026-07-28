@@ -132,12 +132,20 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    implies a custom visual. This is a **single mod-level decision**: placeholder or
    generate for the mod, asked **once** no matter how many cards/sprites it has. Do NOT
    ask per sprite. If they want custom art:
-   - **Eight established static specs plus nine Character specs** can be generated. The
+    - **Eight established static specs plus nine Character static specs and one bounded
+      four-action cue bundle** can be generated. The
      established set is card portraits, relic/power/potion/enchantment/orb icons, static
      monster bodies, and normal-event portrait slots. The Character set is selection
      portrait/background, top-panel icon, static non-Spine combat/rest/merchant bodies,
-     five-layer full energy, a large pool Energy icon, and a small text Energy icon. Full
-     energy is five image assets; show that count before a paid route. The established
+      five-layer full energy, a large pool Energy icon, and a small text Energy icon. The
+      optional combat bundle is four acquired action sheets that normalize to eighteen
+      runtime frames: Idle 4, Attack 4, Hit 4, and Dead 6. Full energy is five image assets
+      but only layer 1 is acquired; show the one Energy call and four cue calls before a
+      paid route. Derive one concise neutral combat-anchor pose from the Character
+      description and reviewed selection portrait; do not ask another user question for
+      it. The same identity, costume, camera, apparent scale, pivot, and baseline remain
+      locked across all four sheets, and adjacent cells use small in-between pose changes
+      because the sequences play quickly. The established
      static specs and all nine Character output specs are live-verified. Orb support is
      icon-only, and Event raster support does not include custom phobia or custom-layout
      assets. Generate the initial event
@@ -157,12 +165,13 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      style") once, for the mod. If the mod has several generated assets, take one overall
      style note here; `author.md` fills each asset's subject from its element SPEC when it
      generates — but you still only *ask* once.
-   - **Static monster bodies and the bounded Character subset are supported; animation is not.**
-     Monsters use one static combat/bestiary body or the built-in scene fallback. Character
-     generation supports selection/background, top-panel icon, static combat/rest/merchant
-     bodies, five-layer full energy, and distinct large/text Energy icons; preserve only locked/map
-     requests as explicit gaps with inherited fallbacks. Preserve
-     requests for Spine bodies, attack/hurt/cast/death animation, phobia variants, or
+    - **Static monster bodies and the bounded Character combat cues are supported.**
+      Monsters use one static combat/bestiary body or the built-in scene fallback. Character
+      generation supports selection/background, top-panel icon, static combat/rest/merchant
+      bodies, five-layer full energy, distinct large/text Energy icons, and the fixed
+      non-Spine Idle/Attack/Hit/Dead cue bundle. Preserve locked/map requests as explicit
+      gaps with inherited fallbacks. Preserve requests for Spine, Cast, trails, audio,
+      animated merchant/rest bodies, phobia variants, or
      bestiary move previews as later-animation gaps. For an event, offer the normal initial portrait
      and any explicitly requested later-page image change. The separate code-native
      `portrait_halo` and the built-in `trial_noble` profile need no image backend. Preserve
@@ -324,17 +333,22 @@ starter relic: <name + one grounded public effect>
 pools: character-scoped card/relic/potion pools with at least one concrete member each;
   if Shop/merchant is selected, at least 2 non-Basic Attacks, 2 Skills, and 1 Power
 scenario: RunStart + CombatPlayer
-art: placeholder | generate: selected Character static profiles only
+art: placeholder | generate: selected Character static profiles and optional combat cues
 art profiles: selection | background | top-panel icon | combat body | rest body |
 merchant body | five-layer full energy | large energy icon | text energy icon |
 explicit gap: locked selection/map marker
 art bundle: one structured row per selected slot with required/optional, output path,
 dimensions, alpha policy, fallback, and real consumer
 identity route: selection portrait bootstrap; identity+style for combat/rest/merchant;
-palette/motif brief + style only for background/icon/Energy
+  combat cue sheets; palette/motif brief + style only for background/icon/Energy
 theme contract: four named UI colors | card-frame target RGB/brightness |
   one shared motif/palette rendered separately at 256x256 and 24x24
 static merchant patch: selected only with merchant body; inherited fallback on mismatch
+combat cues: none | fixed Idle4@180ms loop, Attack4@90ms one-shot, Hit4@80ms one-shot,
+  Dead6@140ms terminal; four acquired sheets; all-or-nothing static combat fallback
+combat continuity: one derived neutral anchor repeated verbatim across all four prompts;
+  identity/costume/camera/scale/pivot/baseline locked; adjacent cells are small,
+  substantially overlapping in-between poses; Attack/Hit recover toward Idle
 Ancient presentation: native banner/dialogue researched but unverified |
   deferred custom Ancient layout
 advanced mechanic: none | <unverified idea that remains beyond Foundation>

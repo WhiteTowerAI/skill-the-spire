@@ -359,12 +359,13 @@ separate contracts below):
   - runtime identity, HP, three pool types/members, exact deck/relic multisets
   - combat `MaxEnergy=3` plus the hosted mechanic's independent state delta
 - **advanced mechanic**: none | <selected verified capability or explicit pack gap>
-- **art**: placeholder | generate (Character static profiles only; list each consumer)
+- **art**: placeholder | generate (Character static profiles and optional combat cues;
+  list each consumer and acquisition count)
 - **art source**: runtime-imagegen | vofy | byo-http | local-image (generate only)
 - **character art bundle**: one `CharacterArtBundle` row per selected slot; record
   required/optional, output path, dimensions, alpha policy, fallback, and real consumer
 - **character identity route**: selection portrait is the sole identity bootstrap;
-  combat/rest/merchant (and future combat cues) use identity + type-matched style;
+  combat/rest/merchant and combat cue sheets use identity + type-matched style;
   background/icon/Energy use palette/motif brief + type-matched style only
 - **palette/motif brief**: concise colors, motif, material, and silhouette derived from
   the user's description and reviewed selection portrait; never a second canonical image
@@ -380,6 +381,19 @@ separate contracts below):
   map marker | select background | combat body | rest body | merchant body | energy |
   large energy icon | text energy icon (do not infer one profile from another; mark
   unsupported consumers as explicit gaps per `reference/character-presentation.md`)
+- **character combat cues**: none | fixed bounded bundle
+  - actions: Idle `4 x 180ms, loop`; Attack `4 x 90ms, one-shot -> Idle`;
+    Hit `4 x 80ms, one-shot -> Idle`; Dead `6 x 140ms, terminal final frame`
+  - acquisition: four action sheets, normalized selection portrait as identity reference
+  - neutral combat anchor: <one concise pose sentence derived once and repeated verbatim>
+  - continuity lock: same identity, costume, proportions, equipment, facing, camera,
+    apparent scale, pivot, and baseline across all four sheets
+  - frame motion: adjacent cells are small, substantially overlapping in-between pose
+    steps, not distant key poses; Attack/Hit begin near and recover toward Idle; Dead falls
+    through six adjacent steps
+  - geometry: shared 512x512 content box/baseline/style and Bounds/Intent/Center/Orb/Talk anchors
+  - fallback: one missing or invalid frame disables all cues and uses static combat body
+  - explicit gaps: Cast, Spine, trails, audio, animated merchant/rest bodies
 - **Ancient presentation**: native banner/dialogue researched but unverified |
   deferred (custom Ancient layout)
 - **derived ids** (adapter resolves after the semantic SPEC is accepted):
@@ -509,11 +523,14 @@ Rules for this round:
   `enchantment`, `orb`, `monster`, `event`** (all live-verified — card 1000×760;
   relic/power/potion 256×256; enchantment 64×64; orb icon 100×100; normal event portrait
   slots 3440×1613; static monster body 360×360;
-  `reference/art-contract.md`) **plus nine promoted Character specs**:
+  `reference/art-contract.md`) **plus nine promoted Character static specs**:
   `character_select`, `character_background`, `character_icon`, `character_combat`,
   `character_rest`, `character_merchant`, `character_energy`, `character_energy_large`,
   and `character_energy_text`. `character_energy` means five 256x256 layer assets. Locked
-  selection and map marker remain explicit gaps until headed consumer proof passes.
+  selection and map marker remain explicit gaps until headed consumer proof passes. The
+  optional bounded cue bundle adds four source specs: `character_cue_idle`,
+  `character_cue_attack`, `character_cue_hit`, and `character_cue_dead`; they normalize to
+  eighteen combat-only frames and fall back as one all-or-nothing unit.
   `character_energy_large` is the distinct 256x256 pool icon, while
   `character_energy_text` belongs exclusively to the 24x24 formatter consumer.
 - **Orb generation is icon-only.** Keep the recipe's explicit Frost icon/Spine scene/
@@ -533,7 +550,8 @@ Rules for this round:
   support includes only the initial and explicitly authored later-page portraits; it does
   not include custom phobia, custom-layout, or Ancient assets. The separate code-native
   `portrait_halo` profile has no raster generation step.
-  All other VFX and Spine/animation work is a later expansion.
+  Cast, Spine, trails, audio, and all animation beyond the fixed four-cue bundle remain a
+  later expansion.
 - **`generate` has four source routes:** a host-native raster image tool that is actually
   callable in the current runtime (`runtime-imagegen`; Codex calls it `image_gen`), an
   already-installed/authenticated Vofy CLI (managed credits), a user-supplied OpenAI-

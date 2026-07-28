@@ -287,7 +287,7 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         choices=(
             "card", "relic", "power", "potion", "event", "enchantment", "orb", "monster",
-            *CHARACTER_ART_BUNDLE.specs,
+            *CHARACTER_ART_BUNDLE.acquisition_specs,
         ),
     )
     create.add_argument("--slug", required=True)

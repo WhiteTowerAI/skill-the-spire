@@ -82,6 +82,39 @@ class CharacterArtBundleTests(unittest.TestCase):
         self.assertEqual(0.80, combat.visual_scale)
         self.assertEqual((0.0, -184.0), combat.visual_position)
 
+    def test_combat_cue_contract_owns_actions_budget_geometry_and_identity_routing(self) -> None:
+        cues = CHARACTER_ART_BUNDLE.combat_cues
+
+        self.assertIsNotNone(cues)
+        self.assertEqual(
+            ("character_cue_idle", "character_cue_attack", "character_cue_hit", "character_cue_dead"),
+            CHARACTER_ART_BUNDLE.cue_specs,
+        )
+        self.assertEqual(4, cues.generation_calls)
+        self.assertEqual((4, 4, 4, 6), tuple(action.frame_count for action in cues.actions))
+        self.assertEqual((180, 90, 80, 140), tuple(
+            action.frame_duration_ms for action in cues.actions
+        ))
+        self.assertEqual((512, 512), cues.frame_size)
+        self.assertEqual((26, 26, 486, 486), cues.content_box)
+        self.assertEqual(486, cues.baseline_y)
+        self.assertEqual("combat_body", cues.fallback_slot)
+        self.assertEqual((0.0, -184.0), cues.visual_position)
+        self.assertEqual(
+            "character_combat",
+            CHARACTER_ART_BUNDLE.reference_families()["character_cue_attack"],
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            identity = Path(tmp) / "select.png"
+            Image.new("RGB", (132, 195), (80, 110, 140)).save(identity)
+            self.assertEqual(
+                identity.resolve(),
+                CHARACTER_ART_BUNDLE.validate_identity_reference(
+                    "character_cue_dead", identity
+                ),
+            )
+
     def test_character_background_reference_pool_is_shipped(self) -> None:
         pool = ART_SAMPLES / "character_background"
         references = sorted(pool.glob("*.png"))

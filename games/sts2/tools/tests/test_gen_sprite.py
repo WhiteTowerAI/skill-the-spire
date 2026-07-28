@@ -17,6 +17,21 @@ sys.path.insert(0, str(TOOLS_DIR))
 import gen_sprite  # noqa: E402
 
 
+def make_cue_sheet(path: Path, action_name: str) -> None:
+    action = gen_sprite.CHARACTER_ART_BUNDLE.cue_action(action_name)
+    cell = 100
+    image = Image.new(
+        "RGBA", (action.columns * cell, action.rows * cell), (255, 0, 255, 255)
+    )
+    draw = ImageDraw.Draw(image)
+    for index in range(action.frame_count):
+        row, column = divmod(index, action.columns)
+        left = column * cell + 30
+        top = row * cell + 10
+        draw.rectangle((left, top, left + 39, top + 79), fill=(40, 130, 190, 255))
+    image.save(path)
+
+
 class GenSpriteTests(unittest.TestCase):
     def test_cutout_fragment_cleanup_keeps_subject_cluster_and_removes_debris(self) -> None:
         image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
@@ -81,6 +96,51 @@ class GenSpriteTests(unittest.TestCase):
                 self.assertEqual(fit, info["fit"])
                 self.assertEqual(chroma, info["chroma"])
                 self.assertEqual(verified, info["verified"])
+
+    def test_character_cue_import_stages_until_complete_then_writes_atomic_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = root / "project"
+            images = project / "CueMod" / "images"
+            inputs = root / "inputs"
+            inputs.mkdir()
+
+            for index, action in enumerate(
+                gen_sprite.CHARACTER_ART_BUNDLE.combat_cues.actions
+            ):
+                source = inputs / f"{action.name}.png"
+                make_cue_sheet(source, action.name)
+                result = subprocess.run(
+                    [
+                        sys.executable, str(GEN_SPRITE), "import",
+                        "--spec", action.source_spec,
+                        "--slug", action.name,
+                        "--input", str(source),
+                        "--out", str(images),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    check=False,
+                )
+                self.assertEqual(0, result.returncode, result.stderr)
+                self.assertTrue(
+                    (project / "art-sources" / "character-cues" / f"{action.name}.png").is_file()
+                )
+                if index < 3:
+                    self.assertIn("bundle incomplete", result.stdout)
+                    self.assertFalse((images / "charui" / "cues").exists())
+
+            self.assertIn("normalized complete bundle", result.stdout)
+            runtime_frames = sorted((images / "charui" / "cues").rglob("*.png"))
+            self.assertEqual(18, len(runtime_frames))
+            self.assertTrue(
+                (project / "art-review" / "character-cues" / "pipeline-meta.json").is_file()
+            )
+            self.assertTrue(
+                (project / "art-review" / "character-cues" /
+                 "character-cues-contact-sheet.png").is_file()
+            )
 
     def test_character_icon_import_writes_exact_transparent_profile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

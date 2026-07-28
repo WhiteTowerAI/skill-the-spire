@@ -3,14 +3,17 @@
 > Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.62` by the
 > 2026-07-23 Wayfinder R4 proof and 2026-07-27 Meridian M6.5 proof. This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
-> and the nine promoted static presentation profiles. Selected R5 resource/buffer/UI
+> the nine promoted static presentation profiles, and the bounded non-Spine
+> Idle/Attack/Hit/Dead combat cues. Selected R5 resource/buffer/UI
 > capability details live in `reference/character-resource.md` and
 > `reference/ordered-card-buffer.md`; this Foundation recipe does not duplicate them or
-> promote Ancient, animation, arbitrary custom materials, multiplayer presentation, or
-> audio. Its bounded M6.5 theme uses only RitsuLib's public pool-material helper.
+> promote Ancient, Spine, Cast, trails, arbitrary custom materials, multiplayer
+> presentation, or audio. Its bounded M6.5 theme uses only RitsuLib's public
+> pool-material helper.
 
 Read `reference/ritsulib-adapter.md` first. When static art is selected, also
 read `reference/character-presentation.md` and `reference/art-contract.md`.
+When combat cues are selected, additionally read `reference/character-combat-cues.md`.
 
 ## Registration and model shell
 
@@ -223,6 +226,22 @@ by `.WithPosition(new Vector2(0f, -184f))`; return `null` when the PNG is absent
 the texture-only `Scenes.VisualsPath` shortcut because it cannot carry this reviewed
 visible-footprint transform.
 
+## Bounded combat cues
+
+The optional combat-cue bundle is exactly Idle 4x180ms loop, Attack 4x90ms one-shot then
+Idle, Hit 4x80ms one-shot then Idle, and Dead 6x140ms terminal final pose. All eighteen
+transparent 512x512 frames share the static combat content box, baseline, public style,
+and the fixed Bounds/Intent/Center/Orb/Talk geometry from
+`reference/character-combat-cues.md`.
+
+Require every expected path and size before building one private `VisualCueSet`. Use
+`Idle/00` to create the anchored combat visuals and pass that set directly to
+`ModAnimStateMachines.StandardCue` from `SetupCustomCombatAnimationStateMachine`.
+Never set `CharacterAssetProfile.VisualCues`: RitsuLib also uses that global fallback in
+merchant/rest playback. One missing or invalid frame disables all cues, creates no playback
+node, and selects the checked static `combat.png`; if that file is also absent, return
+`null` for the resolved profile fallback.
+
 ## Ancient boundary
 
 The public Character abstract members include `NameColor`, animation delays, and
@@ -254,10 +273,14 @@ dialogue, speech color, and custom Ancient layouts unclaimed.
    For the body also assert alpha bounds within
    `(26,26)-(486,486)`, baseline `486`, scale `0.80`, position `(0,-184)`, resulting screen
    bounds inside the viewport, and no overlap with top/bottom UI, enemy lane, or turn banner.
-6. Finish combat, enter RestSite and Shop, and assert the real
+6. When combat cues are selected, prove Idle loops, Attack/Hit each return to Idle, all
+   shared geometry remains fixed, the first combat's playback node is freed, and a fresh
+   combat's Dead sequence reaches and holds its sixth frame. Run the one-missing-frame
+   fallback proof separately and require static combat with no playback node/frame flash.
+7. Finish combat, enter RestSite and Shop, and assert the real
    `NRestSiteCharacter` / `NMerchantCharacter`, exact 512x512 resources, and
    settled screenshots.
-7. Emit the final `character foundation/static-presentation ... observed=all`
+8. Emit the final `character foundation/static-presentation ... observed=all`
    marker only after every assertion passes, followed by `selftest done` and a
    strict no-fresh-error check.
 
@@ -268,6 +291,9 @@ It built with zero warnings/errors against the pinned profile and passed strict 
 with no fresh error. The 2026-07-27 Meridian proof added the split large/text Energy
 consumers and bounded card/UI theme; the maintainer's headed review passed all seven
 visible checks, while generated Mods retain the automatic node/property assertions.
+The 2026-07-27 Meridian cue proof separately passed the complete four-action route,
+playback cleanup, strict Tier 2, and the one-missing-disables-all static fallback; the human
+lead accepted both headed checkpoints.
 
 ## Checklist
 
@@ -280,5 +306,7 @@ visible checks, while generated Mods retain the automatic node/property assertio
 - [ ] every selected static asset renders in its real consumer with a screenshot and state proof
 - [ ] one theme contract owns four colors, frame parameters, and distinct 256x256/24x24 Energy paths
 - [ ] one 3% white-alpha rule derives the top icon and every generated Relic outline with no acquisition call
-- [ ] locked/map/Ancient/animation/arbitrary-material/multiplayer/audio boundaries remain explicit
+- [ ] selected combat cues use the fixed private four-action set, shared geometry, cleanup, and all-or-nothing fallback
+- [ ] `CharacterAssetProfile.VisualCues` remains unset; merchant/rest keep their static textures
+- [ ] locked/map/Ancient/Cast/Spine/trail/arbitrary-material/multiplayer/audio boundaries remain explicit
 - [ ] strict Tier 1/Tier 2, `selftest done`, and no fresh error pass on the pinned profile

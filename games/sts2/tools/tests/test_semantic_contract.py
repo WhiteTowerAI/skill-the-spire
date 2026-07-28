@@ -158,6 +158,54 @@ class SemanticContractTests(unittest.TestCase):
         ):
             self.assertIn(rule, normalized)
 
+    def test_character_combat_cues_preserve_private_all_or_nothing_contract(self) -> None:
+        cues = (
+            STS2_API_DIR / "reference" / "character-combat-cues.md"
+        ).read_text(encoding="utf-8")
+        normalized = " ".join(cues.split())
+        art = (
+            STS2_API_DIR / "reference" / "art-contract.md"
+        ).read_text(encoding="utf-8")
+        normalized_art = " ".join(art.split())
+
+        for rule in (
+            "`Idle` | 2x2 | 4 | 180 ms | loops",
+            "`Attack` | 2x2 | 4 | 90 ms | one shot, then returns to `Idle`",
+            "`Hit` | 2x2 | 4 | 80 ms | one shot, then returns to `Idle`",
+            "`Dead` | 2x3 | 6 | 140 ms | one shot, then holds its final frame",
+            "Never assign the generated set to `CharacterAssetProfile.VisualCues`",
+            "One missing, unreadable, or wrongly sized expected frame disables the entire set.",
+            "The incomplete route must create no cue playback node",
+            "There is no `Cast` cue.",
+            "character combat cues complete expected=Idle/Attack/Hit/Dead/cleanup observed=all",
+            "combat cue fallback expected=one-missing-disables-all/static-combat512/no-playback observed=all",
+        ):
+            self.assertIn(rule, normalized)
+
+        self.assertIn(
+            "Character combat cues | enabled/disabled fixed Idle/Attack/Hit/Dead contract",
+            self.contract,
+        )
+        for rule in (
+            "Treat adjacent cells as closely spaced in-between frames, not widely separated key poses.",
+            "adjacent silhouettes must substantially overlap",
+            "Only the action-specific sentence, grid, and beat list may change",
+        ):
+            self.assertIn(rule, normalized_art)
+
+        for rule in (
+            "Attack and Hit begin near the neutral anchor",
+            "Dead distributes its fall across all six frames",
+        ):
+            self.assertIn(rule, normalized)
+
+        for field in (
+            "neutral combat anchor",
+            "continuity lock",
+            "adjacent cells are small, substantially overlapping in-between pose steps",
+        ):
+            self.assertIn(field, " ".join(self.spec.split()))
+
 
 if __name__ == "__main__":
     unittest.main()

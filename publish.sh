@@ -49,6 +49,10 @@ find_python() {
     return 1
 }
 
+count_files() {
+    "$PYTHON" -c 'import pathlib, sys; print(sum(path.is_file() for path in pathlib.Path(sys.argv[1]).rglob("*")))' "$1"
+}
+
 while [ $# -gt 0 ]; do
     case "$1" in
         --agent)    AGENT="${2:-}"; shift 2 ;;
@@ -152,15 +156,15 @@ for t in "$REPO_ROOT"/games/sts2/tools/*.py; do
 done
 
 echo "Published STS2 skill for $AGENT_NAME -> $SKILLS_DIR_ABS"
-echo "  modmaker:  $(find "$SKILLS_DIR_ABS/modmaker" -type f | wc -l) files"
-echo "  sts2-api:  $(find "$SKILLS_DIR_ABS/sts2-api" -type f | wc -l) files"
+echo "  modmaker:  $(count_files "$SKILLS_DIR_ABS/modmaker") files"
+echo "  sts2-api:  $(count_files "$SKILLS_DIR_ABS/sts2-api") files"
 if [ "$PLUGIN" -eq 1 ]; then
-    echo "  tools:     $(find "$TOOLS_DIR_ABS" -type f | wc -l) files (in skills/modmaker/scripts/)"
+    echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in skills/modmaker/scripts/)"
     echo "Committed Codex plugin payload ready. Test locally with:"
     echo "  codex plugin marketplace add $REPO_ROOT"
     echo "  codex plugin add open-mod@open-mod"
 elif [ "$PORTABLE" -eq 1 ]; then
-    echo "  tools:     $(find "$TOOLS_DIR_ABS" -type f | wc -l) files (in skills/modmaker/scripts/)"
+    echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in skills/modmaker/scripts/)"
     echo "Committed cross-agent payload ready. Install into any agent with:"
     echo "  npx skills add WhiteTowerAI/open-mod"
 else

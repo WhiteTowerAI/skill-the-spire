@@ -259,8 +259,10 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
   those exact slots and otherwise throws before its UI appears.
 - Add all 14 normalized `characters.json` values and the four Architect keys from the recipe.
 - Keep `CharacterAssetProfile` partial fallback semantics; selected Character static
-  profiles fill only the matching fields after headed proof, while animation is not a
-  Foundation gate. A Foundation-only SPEC emits no patch infrastructure. A resource SPEC
+  profiles fill only the matching fields after headed proof. When combat cues are selected,
+  read `reference/character-combat-cues.md` and emit only its private combat-owned
+  Idle/Attack/Hit/Dead state machine; never fill profile-global `VisualCues`. A
+  Foundation-only SPEC emits no patch infrastructure. A resource SPEC
   registers one `SecondaryResourceDefinition`, uses `SecondaryResourceCmd` for amount and
   all-or-nothing payment, and mounts the fixed control through public `RegisterCombatUi`.
   An ordered-buffer SPEC uses `AttachedState<PlayerCombatState,TState>`, native source-card
@@ -476,14 +478,16 @@ For an **enemy encounter**, the recipe checks `images/monsters/<slug>.png` and r
 For a **character**, leave optional `CharacterAssetProfile` rows unset so RitsuLib resolves
 the placeholder/native fallback. The combat override returns `null` when its checked PNG
 is absent, so RitsuLib resumes that resolved profile fallback without a missing-resource
-load. Placeholder mode emits no Character asset. Custom animation and unpromoted static
-consumers are not supported by Foundation.
+load. Placeholder mode emits no Character asset or combat cue set. The static combat body
+remains the cue fallback; Cast, Spine, and unpromoted consumers are not supported.
 
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
 Supported sprite specs (see `sts2-api` → `reference/art-contract.md` and
-`reference/character-presentation.md` for the full contracts). Character generation covers
-nine promoted static profiles; locked selection and map marker remain explicit gaps.
+`reference/character-presentation.md` and `reference/character-combat-cues.md` for the full
+contracts). Character generation covers
+nine promoted static profiles and one optional bounded cue bundle; locked selection and
+map marker remain explicit gaps.
 - **`--spec card`** — the one portrait a normal card loads, **1000×760 landscape**, full-
   bleed (chroma OFF), written to `card_portraits/big/<slug>.png`. **Live-verified in-game.**
   The 606×852 "full art" size is **Ancient-rarity only and out of scope — we never make it**.
@@ -542,6 +546,13 @@ nine promoted static profiles; locked selection and map marker remain explicit g
   RitsuLib's Shop profile needs no historical `_Ready()` prefix. Keep checked profile/text
   fallbacks. Do not emit
   locked selection or map-marker art as supported.
+- **`--spec character_cue_idle` / `character_cue_attack` / `character_cue_hit` /
+  `character_cue_dead`** - four identity-referenced action sheets (2x2, 2x2, 2x2, 2x3)
+  normalized to 4/4/4/6 transparent 512x512 frames. Import each with the matching lowercase
+  action slug. The first three sheets only stage under `art-sources/character-cues`; after
+  all four exist, deterministic QC atomically replaces `images/charui/cues` and writes GIF,
+  contact-sheet, and metadata review output. A failed or incomplete bundle leaves existing
+  runtime cues unchanged. Runtime support is combat-only and all-or-nothing.
 
 1. **Build the prompt (three segments — see `art-contract.md`).** For card and the M5.5
    `relic`/`power`/`potion` icon specs,
@@ -576,8 +587,9 @@ nine promoted static profiles; locked selection and map marker remain explicit g
    place the focal subject in the left third, and reserve darker low-detail center-right and
    lower-right space for the game's title, description, and options. Do not reuse the card
    prompt's centered-subject constraint or paint option reward numbers into the scene.
-**Character static art profiles.** When `SPEC.md` selects Character art, emit only the
-nine selected profiles above. Selection and background are opaque (`--chroma` off); icon,
+**Character art profiles.** When `SPEC.md` selects Character art, emit only the nine
+selected static profiles and optional bounded cue bundle above. Selection and background
+are opaque (`--chroma` off); icon,
 combat/rest/merchant bodies, full-energy layers, and large/text Energy icons use `--chroma`.
 Do not set `CharacterAssetProfile.Scenes.VisualsPath` to the combat PNG: the texture-only
 factory has no per-Character footprint style. Instead, existence-check the PNG in
@@ -598,14 +610,20 @@ character on the right, and reserve the calm left-center information-panel area 
 1920x1200; top-panel icons are bold at 88x88; static combat/rest/
 merchant bodies are centered on one baseline at 512x512; full energy requests five
 complementary layers. The 256x256 large pool icon and 24x24 text icon share the SPEC's
-palette/motif but are normalized separately for their own consumers. Do not request animation, trails, transition shaders, remote hands,
-phobia art, or a custom Ancient layout. The Ancient name-banner/Architect line is a
-separate native headed proof, not a normal Event rich-text shortcut.
+palette/motif but are normalized separately for their own consumers. Combat cue sheets use
+the same identity route and shared combat footprint. Derive the SPEC's neutral combat
+anchor once, then repeat the fixed identity/geometry continuity lock from
+`art-contract.md` verbatim in all four cue prompts. Adjacent cells are closely spaced
+in-between poses with substantial silhouette overlap, not distant key poses; Attack/Hit
+start near and recover toward Idle, while Dead falls through six small steps. Do not
+request Cast, Spine, trails, transition shaders, remote hands, phobia art, audio, or a
+custom Ancient layout. The Ancient name-banner/Architect line is a separate native headed
+proof, not a normal Event rich-text shortcut.
 
 **CharacterArtBundle routing.** Generate/import the required `character_select` asset
 first. Its normalized `charui/select.png` is the sole identity bootstrap; do not create a
 separate character sheet. For identity-sensitive `character_combat`, `character_rest`,
-and `character_merchant` assets, pass that selection portrait as
+`character_merchant`, and all four `character_cue_*` assets, pass that selection portrait as
 `--identity-reference` alongside up to three type-matched STS2 style references. For the
 selection background, top-panel icon, five Energy layers, and large/text Energy icons,
 derive a concise palette/motif brief from the user's description and the reviewed
@@ -613,9 +631,16 @@ selection portrait, but do not pass the portrait as an image reference. `charact
 also writes `charui/icon_outline.png` as an opaque-white silhouette expanded by
 `round(3% * 88) = 3` pixels from final main alpha. This derived file and every Relic
 outline use the same rule; normalization reserves the matching main-icon inset, and the
-derivation never triggers an acquisition call. Future combat cue assets
-use the identity-sensitive route. Keep all generation/import calls at one acquired image;
+derivation never triggers an acquisition call. Keep all generation/import calls at one acquired image;
 the existing explicit per-paid-call approval remains mandatory.
+
+**Combat cue runtime.** Generate the helper and Character overrides exactly from
+`reference/character-combat-cues.md`. Require all eighteen paths and sizes before building
+the private `VisualCueSet`; use `Idle/00` plus the shared geometry for the initial visual;
+pass the set directly to `ModAnimStateMachines.StandardCue` from
+`SetupCustomCombatAnimationStateMachine`. Do not set `CharacterAssetProfile.VisualCues`,
+because RitsuLib can reuse that fallback in merchant/rest hosts. On any missing/invalid
+frame, mount no playback node and use `combat.png`, then the resolved profile fallback.
 
 **Character-wide theme contract.** Emit one Character-local theme class and copy every
 explicit value from SPEC into it: `NameColor`, `EnergyLabelOutlineColor`,

@@ -289,6 +289,38 @@ class AcquireSpriteTests(unittest.TestCase):
         self.assertEqual([identity.resolve()], references)
         self.assertIn("identity reference: select.png", result.stdout)
 
+    def test_character_cue_acquisition_uses_identity_and_stages_through_gen_sprite(self) -> None:
+        identity = self.root / "select.png"
+        Image.new("RGB", (132, 195), (80, 110, 140)).save(identity)
+        images = self.root / "project" / "CueMod" / "images"
+
+        result = self.run_tool(
+            "create",
+            "--model", "test-model",
+            "--spec", "character_cue_idle",
+            "--slug", "idle",
+            "--prompt", "four idle frames on flat magenta",
+            "--out", str(images),
+            "--identity-reference", str(identity),
+            "--yes",
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertTrue(
+            (self.root / "project" / "art-sources" / "character-cues" / "idle.png").is_file()
+        )
+        self.assertFalse((images / "charui" / "cues").exists())
+        calls = [ast.literal_eval(line) for line in self.record.read_text(
+            encoding="utf-8"
+        ).splitlines()]
+        create = next(args for args in calls if args[:2] == ["image", "create"])
+        references = [
+            Path(create[index + 1])
+            for index, value in enumerate(create)
+            if value == "--image"
+        ]
+        self.assertEqual([identity.resolve()], references)
+
     def test_palette_character_rejects_identity_portrait_and_identity_asset_requires_one(self) -> None:
         identity = self.root / "select.png"
         Image.new("RGB", (132, 195), (80, 110, 140)).save(identity)

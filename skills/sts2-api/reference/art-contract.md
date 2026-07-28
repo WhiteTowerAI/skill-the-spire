@@ -158,7 +158,7 @@ headed review in the 2026-07-27 Meridian proof.
 Ancient-rarity full art (606×852) is intentionally **out of scope** — we don't make
 Ancient cards.
 
-## Character static profiles
+## Character art profiles and combat cues
 
 Character assets are separate contracts because `CharacterAssetProfile` maps distinct
 game hosts. The active profiles are re-grounded against STS2 `0.107.1` and RitsuLib
@@ -180,6 +180,16 @@ packed resource instead of the resolved fallback.
 | `character_energy_large` | `<slug>.png` | 256x256 | transparent large card Energy icon |
 | `character_energy_text` | `<slug>.png` | 24x24 | transparent rich-text Energy icon |
 
+The bounded combat-cue sources are four action sheets rather than ordinary single-file
+runtime specs:
+
+| source spec | sheet grid | runtime output | timing |
+|---|---:|---|---:|
+| `character_cue_idle` | 2x2 | `cues/idle/00.png` .. `03.png` | 180 ms, loop |
+| `character_cue_attack` | 2x2 | `cues/attack/00.png` .. `03.png` | 90 ms, one shot |
+| `character_cue_hit` | 2x2 | `cues/hit/00.png` .. `03.png` | 80 ms, one shot |
+| `character_cue_dead` | 2x3 | `cues/dead/00.png` .. `05.png` | 140 ms, terminal |
+
 The 2026-07-23 RitsuLib-only Wayfinder run re-proved `character_select`, `character_background`,
 `character_icon`, `character_combat`, `character_rest`, `character_merchant`,
 `character_energy`, and `character_energy_text`. Real selection, CombatPlayer, RestSite,
@@ -199,21 +209,23 @@ marker, static body, and energy profiles use `contain` with chroma on and a flat
 `#FF00FF` source background. The normalizer writes only loose PNGs; author code creates
 the tiny raw `.tscn` wrappers for icon/background/rest/merchant/energy, and `build.py` packs them
 without Godot/MegaDot. Full energy references all five layers from that one energy scene.
-A static body is not
-an animation contract: `SetupCustomAnimationStates` remains null and the built-in
-animation/fallback path stays documented for attack, hurt, cast, death, phobia, and
-multiplayer views.
+The optional non-Spine cue contract is limited to the four tabled sequences. Cast, Spine,
+phobia, trails, audio, animated merchant/rest bodies, and multiplayer views remain outside
+the contract. Read `reference/character-combat-cues.md` for runtime ownership and fallback.
 
 ### CharacterArtBundle and reference routing
 
 `games/sts2/tools/character_art.py` owns one structured `CharacterArtBundle` for every
-Character static slot. Each row records required/optional status, normalized output path,
+Character static slot and the four-action cue contract. Each static row records
+required/optional status, normalized output path,
 exact dimensions, alpha policy, checked fallback, real consumer, style-reference family,
 fit mode, verification status, and any host-specific visible content box/baseline/public
 visual style. `gen_sprite.py` and `acquire_sprite.py` read this
 bundle instead of maintaining a second Character spec table. The optional locked
 selection and map-marker rows remain native/shared fallback rows; their presence in the
-inventory does not promote those consumers.
+inventory does not promote those consumers. The cue contract separately owns action order,
+sheet layout, frame count/timing, loop/terminal flags, generation-call count, output
+directories, shared geometry, style, anchors, and static fallback slot.
 
 The generated Character profile uses these stable bundle output names: `select.png`,
 `background.png`, `icon.png`, `icon_outline.png`, `combat.png`, `rest.png`, `merchant.png`,
@@ -243,13 +255,20 @@ template.
 The required `selection_portrait` is the sole identity bootstrap. It is normalized first
 to `charui/select.png` and is the only approved identity image; open-mod does not create a
 separate Character sheet or canonical identity asset. Identity-sensitive
-`character_combat`, `character_rest`, and `character_merchant` acquisition passes that
+`character_combat`, `character_rest`, `character_merchant`, and all four
+`character_cue_*` acquisitions pass that
 normalized portrait as `--identity-reference` in addition to up to three type-matched STS2
 style references. Background, top-panel icon, full-energy layers, and large/text Energy-icon
 acquisition use a palette/motif brief derived from the user's description and reviewed
 selection portrait, but deliberately do not receive the portrait as an image reference.
-Future combat cue assets use the same identity-sensitive route when that package is
-implemented.
+
+Cue imports stage sheets under `<project>/art-sources/character-cues/`. Runtime cue files
+are replaced only when all four sheets pass magenta cleanup, grid/component extraction,
+edge/body-scale QC, shared cross-action scaling, and baseline alignment. Review GIFs,
+cleaned sheets, a contact sheet, and QC metadata land under
+`<project>/art-review/character-cues/`; failed processing leaves prior runtime cues intact.
+The processing techniques are adapted from agent-sprite-forge under MIT, with no runtime
+dependency or external asset reuse.
 
 Run the bundle review after the selected required outputs are normalized:
 
@@ -322,13 +341,63 @@ one baseline, centered and filling about 85-90% of a square. Use a perfectly fla
 streak. This still is the static fallback body, not a Spine animation frame.
 ```
 
+Combat cue action sheets:
+
+```text
+Original non-Spine combat action sheet for a deck-building combat game. The normalized
+selection portrait is CHARACTER IDENTITY ONLY; the provided STS2 combat images are STYLE
+ONLY. Across every cell in this sheet and across all Idle, Attack, Hit, and Dead sheets,
+depict exactly the same original individual, never a redesign, variant, costume change,
+or reinterpretation. Keep the face, head shape, hairstyle, body proportions, outfit
+construction and layers, accessories, colors, weapon shape and size, handedness, and
+facing direction unchanged.
+
+Reuse this exact neutral combat anchor from the Character SPEC: <one concise pose sentence>.
+Use the same locked camera, viewing angle, apparent body scale, torso and head size, ground
+baseline, and visual pivot in every cell and every action. Motion comes only from pose
+changes; never zoom, crop, resize, or move the camera. Attack and Hit may extend limbs or
+the weapon, while preserving body scale. Dead rotates and lowers the same-sized body
+rather than shrinking, stretching, or changing its proportions.
+
+These frames play quickly. Treat adjacent cells as closely spaced in-between frames, not
+widely separated key poses. Advance the pose by one small readable step per cell; adjacent
+silhouettes must substantially overlap, with no sudden jump in limb position, weapon
+position, body angle, center of mass, or facing direction. Keep the complete silhouette
+inside every cell with consistent padding. Read frames left-to-right, then top-to-bottom.
+Use equal cells with no panel borders, labels, numbers, or gutters.
+
+<action-specific sentence and fixed beat list from the cue contract>
+
+Use one perfectly flat solid #FF00FF background across the sheet, with no gradient,
+floor, shadow, text, UI, border, logo, or watermark. Do not borrow a reference character's
+design. NOT photorealistic, NOT a 3D render, NOT pixel art.
+```
+
+The continuity and geometry paragraphs plus the SPEC's neutral anchor are repeated
+verbatim in all four paid requests. Only the action-specific sentence, grid, and beat list
+may change:
+
+- `Idle` 2x2: four subtle breathing/cloth/weapon-settle steps; frame 4 stays close enough
+  to frame 1 for a quiet loop.
+- `Attack` 2x2: begin close to the neutral anchor, move through four restrained adjacent
+  attack steps, and end already recovering toward Idle. Do not compress distant wind-up,
+  peak, and recovery key poses into abrupt jumps.
+- `Hit` 2x2: begin close to the neutral anchor, show a compact recoil through four small
+  adjacent steps, and end already recovering toward Idle.
+- `Dead` 2x3: begin from the same anchor and distribute the fall across six small adjacent
+  steps before the final terminal pose; do not jump directly from standing to the ground.
+
+Reject and regenerate a sheet when the contact-sheet review shows identity, costume,
+scale, camera, pivot, or baseline drift, or when any adjacent pair has a large pose jump.
+Do not replace this review with a brittle image-similarity score.
+
 Select background:
 
 ```text
 Original wide character-select background for a deck-building combat game. Match the
 provided references as STYLE ONLY. Create a broad environment that supports a live
-character-select information panel. Use a grounded vanilla-like close composition with the
-focal character on the right half, without cropping the head or identity-defining held
+character-select information panel. Use a grounded vanilla-like close composition WITH THE FOCAL
+CHARACTER ON THE RIGHT HALF, without cropping the head or identity-defining held
 object. Keep the left-center region calm and low-detail for the name, HP, description, and
 relic panel; keep the bottom strip and lower-right confirm-button region readable. Opaque
 16:10 landscape, no text, logo, UI, border, watermark, or borrowed character design.
@@ -563,7 +632,8 @@ renders), `event/` (six reviewed wiki.gg previews), and four three-image Charact
 `character_rest/`.
 The tool **auto-selects the matching visual family** and randomly samples three distinct
 images when the pool is larger. Character aliases are explicit: locked uses select,
-marker/energy use icon, merchant uses combat, and rest uses rest; background uses its own
+marker/energy use icon, merchant and all combat cues use combat, and rest uses rest;
+background uses its own
 wide selection-scene pool. A missing
 same-name directory never falls back to another content family's images.
 Monster's fixed three are always all supplied.
@@ -897,7 +967,7 @@ status/credit output, or parses Vofy's normal stdout for a result filename. It r
 synchronous `vofy image create --yes --n 1` into a unique empty temporary directory,
 requires exactly one downloaded image, and invokes `gen_sprite.py import` for the real
 crop/fit/chroma/path contract. For relic/power/potion/enchantment/orb/monster and Character
-icon/marker/combat/rest/merchant/energy profiles it supplies import's `--chroma`
+icon/marker/combat/rest/merchant/energy/cue profiles it supplies import's `--chroma`
 automatically; event and Character selection/background remain opaque. It prints the selected reference filenames
 so the random few-shot choice is auditable without exposing account data. For enchantment,
 orb, and monster, normalization also keeps the centered subject cluster and removes

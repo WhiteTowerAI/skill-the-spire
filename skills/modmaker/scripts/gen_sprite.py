@@ -130,6 +130,8 @@ SPECS: dict[str, dict] = {
     "monster":    {"sub_path": "monsters",             "extra_sub_paths": [],             "size": (360, 360),  "verified": True,  "fit": "contain", "chroma": True},
 }
 SPECS.update(CHARACTER_ART_BUNDLE.sprite_specs())
+CUE_SPECS = set(CHARACTER_ART_BUNDLE.cue_specs)
+ALL_SPECS = set(SPECS) | CUE_SPECS
 FRAGMENT_CLEANUP_SPECS = {"enchantment", "orb", "monster"}
 REFERENCE_FAMILIES = CHARACTER_ART_BUNDLE.reference_families()
 DERIVED_OUTLINE_SPECS = {"character_icon", "relic"}
@@ -146,6 +148,13 @@ def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]
             f"[gen_sprite] spec '{spec}' has no source-verified size in art-contract.md; "
             f"pass --size WxH explicitly (and confirm it in-game). Refusing to guess.")
     return info["size"]
+
+
+def cue_sheet_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
+    if override:
+        return override
+    action = CHARACTER_ART_BUNDLE.cue_action(spec)
+    return action.columns * 512, action.rows * 512
 
 
 # --- normalize primitives (magenta chroma-key adapted from agent-sprite-forge,
@@ -704,11 +713,66 @@ def resolve_references(
 
 # --- command handlers -------------------------------------------------------
 
+def stage_character_cue_source(
+    source: "Image.Image",
+    spec: str,
+    slug: str,
+    images_root: Path,
+    log,
+) -> tuple[Path, bool]:
+    """Stage one action sheet; normalize runtime cues only when all four exist."""
+    action = CHARACTER_ART_BUNDLE.cue_action(spec)
+    if slug.lower() != action.name:
+        raise SystemExit(
+            f"[gen_sprite] cue spec {spec!r} requires --slug {action.name!r}"
+        )
+    if images_root.name.lower() != "images":
+        raise SystemExit(
+            "[gen_sprite] Character cue import requires --out <project>/<ModName>/images"
+        )
+
+    project_root = images_root.resolve().parent.parent
+    source_dir = project_root / "art-sources" / "character-cues"
+    review_dir = project_root / "art-review" / "character-cues"
+    source_dir.mkdir(parents=True, exist_ok=True)
+    destination = source_dir / f"{action.name}.png"
+    temporary = source_dir / f".{action.name}.tmp.png"
+    source.convert("RGBA").save(temporary, "PNG")
+    temporary.replace(destination)
+    log(f"staged {action.name} action sheet -> {destination}")
+
+    cue_contract = CHARACTER_ART_BUNDLE.combat_cues
+    if cue_contract is None:
+        raise SystemExit("[gen_sprite] Character combat cue contract is unavailable")
+    sources = {
+        item.name: source_dir / f"{item.name}.png"
+        for item in cue_contract.actions
+    }
+    missing = [name for name, path in sources.items() if not path.is_file()]
+    if missing:
+        log(f"cue bundle waiting for action sheet(s): {missing}")
+        return destination, False
+
+    from character_cues import CharacterCueError, process_bundle
+
+    try:
+        process_bundle(sources, images_root, review_dir)
+    except CharacterCueError as exc:
+        raise SystemExit(
+            "[gen_sprite] Character cue bundle failed deterministic QC; existing runtime "
+            f"cues were not changed: {exc}"
+        ) from exc
+    runtime_dir = images_root / "charui" / "cues"
+    log(f"normalized complete Character cue bundle -> {runtime_dir}")
+    return runtime_dir, True
+
+
 def cmd_generate(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     log, flush = make_logger(out_dir)
-    info = SPECS[args.spec]
-    size = resolve_size(args.spec, args.size)
+    cue_spec = args.spec in CUE_SPECS
+    info = SPECS.get(args.spec)
+    size = cue_sheet_size(args.spec, args.size) if cue_spec else resolve_size(args.spec, args.size)
     try:
         cfg = load_config(Path(args.config) if args.config else None)
         refs = resolve_references(
@@ -721,15 +785,25 @@ def cmd_generate(args: argparse.Namespace) -> int:
         src = call_backend(cfg, args.prompt, size, log, references=refs)
         # default follows the spec (cut-out icon → key; full-bleed illustration → don't);
         # explicit --chroma / --no-chroma override it.
-        do_chroma = info["chroma"]
-        if args.chroma:
-            do_chroma = True
-        if args.no_chroma:
-            do_chroma = False
-        dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
-                                   do_chroma, info["fit"], log)
+        if cue_spec:
+            dest, complete = stage_character_cue_source(
+                src, args.spec, args.slug, out_dir, log
+            )
+        else:
+            do_chroma = info["chroma"]
+            if args.chroma:
+                do_chroma = True
+            if args.no_chroma:
+                do_chroma = False
+            dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
+                                       do_chroma, info["fit"], log)
     finally:
         flush()
+    if cue_spec:
+        status = "normalized complete bundle" if complete else "staged; bundle incomplete"
+        print(f"[gen_sprite] generated {args.spec} '{args.slug}' -> {status}")
+        print(str(dest))
+        return 0
     print(f"[gen_sprite] generated {args.spec} '{args.slug}' -> {dest.name} at {size[0]}x{size[1]}")
     print(str(dest))
     return 0
@@ -738,21 +812,30 @@ def cmd_generate(args: argparse.Namespace) -> int:
 def cmd_import(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     log, flush = make_logger(out_dir)
-    info = SPECS[args.spec]
-    size = resolve_size(args.spec, args.size)
+    cue_spec = args.spec in CUE_SPECS
+    info = SPECS.get(args.spec)
+    size = cue_sheet_size(args.spec, args.size) if cue_spec else resolve_size(args.spec, args.size)
     src_path = Path(args.input)
     if not src_path.is_file():
         print(f"[gen_sprite] input file not found: {src_path}", file=sys.stderr)
         return 2
     try:
-        src = Image.open(src_path)
-        # import defaults to NO chroma-key (user's image is assumed already cut),
-        # unless they explicitly ask for it with --chroma.
-        do_chroma = bool(args.chroma)
-        dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
-                                   do_chroma, info["fit"], log)
+        with Image.open(src_path) as src:
+            if cue_spec:
+                dest, complete = stage_character_cue_source(
+                    src, args.spec, args.slug, out_dir, log
+                )
+            else:
+                do_chroma = bool(args.chroma)
+                dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
+                                           do_chroma, info["fit"], log)
     finally:
         flush()
+    if cue_spec:
+        status = "normalized complete bundle" if complete else "staged; bundle incomplete"
+        print(f"[gen_sprite] imported {args.spec} '{args.slug}' -> {status}")
+        print(str(dest))
+        return 0
     print(f"[gen_sprite] imported {args.spec} '{args.slug}' -> {dest.name} at {size[0]}x{size[1]}")
     print(str(dest))
     return 0
@@ -766,6 +849,13 @@ def cmd_list_specs(_args: argparse.Namespace) -> int:
         chroma = "on" if info["chroma"] else "off"
         star = "" if info["verified"] else "  *not live-verified"
         print(f'{name:<11} {info["sub_path"]:<30} {size:<12} {info["fit"]:<8} {chroma}{star}')
+    for spec in CHARACTER_ART_BUNDLE.cue_specs:
+        action = CHARACTER_ART_BUNDLE.cue_action(spec)
+        layout = f"{action.rows}x{action.columns} sheet"
+        print(
+            f"{spec:<11} {'art-sources/character-cues':<30} "
+            f"{layout:<12} {'grid':<8} on"
+        )
     if any(not info["verified"] for info in SPECS.values()):
         print("\n* contract is source-grounded but still requires headed in-game proof.")
     return 0
@@ -784,7 +874,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     g = sub.add_parser("generate", help="Generate via a BYO OpenAI-compatible backend.")
-    g.add_argument("--spec", required=True, choices=sorted(SPECS))
+    g.add_argument("--spec", required=True, choices=sorted(ALL_SPECS))
     g.add_argument("--slug", required=True, help="lowercased prefix-stripped id, e.g. firebolt")
     g.add_argument("--prompt", required=True)
     g.add_argument("--out", required=True, help="the mod's <ModName>/images dir")
@@ -806,7 +896,7 @@ def build_parser() -> argparse.ArgumentParser:
     g.set_defaults(func=cmd_generate)
 
     i = sub.add_parser("import", help="Normalize + place a local image (no HTTP).")
-    i.add_argument("--spec", required=True, choices=sorted(SPECS))
+    i.add_argument("--spec", required=True, choices=sorted(ALL_SPECS))
     i.add_argument("--slug", required=True)
     i.add_argument("--input", required=True, help="path to the source image")
     i.add_argument("--out", required=True, help="the mod's <ModName>/images dir")

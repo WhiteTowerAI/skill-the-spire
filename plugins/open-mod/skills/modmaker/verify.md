@@ -169,6 +169,11 @@ assertion plus visual inspection. In particular:
   screenshot for selection, combat/top-panel/energy, RestSite, and Shop. Locked selection
   and map marker require their own visible-host evidence. Do not infer any consumer from a
   path or successful build. Read `reference/character-presentation.md`.
+- character combat cues: in real combat, observe Idle loop, Attack and damage-triggered Hit
+  one-shots returning to Idle, Dead reaching and holding frame 6, stable body/UI anchors,
+  and playback cleanup between combats. The harness asserts every 512x512 frame and shared
+  geometry. Separately omit one frame and require the static 512x512 combat body with no
+  playback node or surviving-frame flash. Read `reference/character-combat-cues.md`.
 - Ancient presentation: enter the real Ancient/Architect flow and capture the native name
   banner plus one character/Architect dialogue exchange. Assert the character localization,
   speech-bubble color, and attack VFX selection; normal Event rich text is not a substitute.
@@ -222,7 +227,9 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
     A forced follow-up cannot be proved by the `event` console shortcut; if its automated
     real-Unknown driver cannot run, report Tier 1 rather than claiming the hook behavior.
    **character** → confirm HP, starter deck/relic, and standard 3 energy after run start;
-   enter combat and observe the named starter mechanic's exact state delta.
+   enter combat and observe the named starter mechanic's exact state delta. When combat
+   cues are selected, watch one full Idle loop, play an Attack, take one Hit, and reach Dead;
+   confirm the first two return to Idle, Dead holds its last pose, and no anchor jumps.
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
    game** (closing rotates the log away):
 

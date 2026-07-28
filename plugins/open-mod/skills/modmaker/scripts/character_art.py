@@ -54,11 +54,57 @@ class CharacterArtSlot:
 
 
 @dataclass(frozen=True)
+class CharacterCueAction:
+    """One paid action-sheet acquisition and its runtime frame sequence."""
+
+    name: str
+    state_name: str
+    source_spec: str
+    rows: int
+    columns: int
+    frame_duration_ms: int
+    loop: bool
+    terminal: bool
+    output_dir: str
+    generation_calls: int = 1
+
+    @property
+    def frame_count(self) -> int:
+        return self.rows * self.columns
+
+
+@dataclass(frozen=True)
+class CharacterCueContract:
+    """Shared acquisition, normalization, geometry, and fallback contract for combat cues."""
+
+    actions: tuple[CharacterCueAction, ...]
+    frame_size: tuple[int, int]
+    content_box: tuple[int, int, int, int]
+    baseline_y: int
+    reference_family: str
+    fallback_slot: str
+    consumer: str
+    visual_scale: float
+    visual_position: tuple[float, float]
+    bounds_position: tuple[float, float]
+    bounds_size: tuple[float, float]
+    intent_position: tuple[float, float]
+    center_position: tuple[float, float]
+    orb_position: tuple[float, float]
+    talk_position: tuple[float, float]
+
+    @property
+    def generation_calls(self) -> int:
+        return sum(action.generation_calls for action in self.actions)
+
+
+@dataclass(frozen=True)
 class CharacterArtBundle:
     """The one source of truth for Character asset metadata and reference routing."""
 
     slots: tuple[CharacterArtSlot, ...]
     identity_slot: str = "selection_portrait"
+    combat_cues: CharacterCueContract | None = None
 
     def __post_init__(self) -> None:
         names: set[str] = set()
@@ -165,6 +211,68 @@ class CharacterArtBundle:
                 "the identity slot must be the selection portrait bootstrap"
             )
 
+        cues = self.combat_cues
+        if cues is not None:
+            expected_actions = ("idle", "attack", "hit", "dead")
+            if tuple(action.name for action in cues.actions) != expected_actions:
+                raise CharacterArtValidationError(
+                    "Character combat cues must be ordered Idle, Attack, Hit, Dead"
+                )
+            cue_specs: set[str] = set()
+            cue_paths: set[str] = set()
+            for action in cues.actions:
+                output = Path(action.output_dir)
+                if (
+                    not action.state_name
+                    or not action.source_spec
+                    or action.rows <= 0
+                    or action.columns <= 0
+                    or action.frame_duration_ms <= 0
+                    or action.generation_calls != 1
+                    or output.is_absolute()
+                    or ".." in output.parts
+                    or output.suffix
+                ):
+                    raise CharacterArtValidationError(
+                        f"Character cue action {action.name!r} has invalid metadata"
+                    )
+                if action.source_spec in cue_specs or action.source_spec in self.specs:
+                    raise CharacterArtValidationError(
+                        f"Character cue source spec is duplicated: {action.source_spec!r}"
+                    )
+                if action.output_dir in cue_paths:
+                    raise CharacterArtValidationError(
+                        f"Character cue output directory is duplicated: {action.output_dir!r}"
+                    )
+                cue_specs.add(action.source_spec)
+                cue_paths.add(action.output_dir)
+            if cues.actions[-1].terminal is not True or any(
+                action.terminal for action in cues.actions[:-1]
+            ):
+                raise CharacterArtValidationError("only the Dead cue may be terminal")
+            if cues.actions[0].loop is not True or any(
+                action.loop for action in cues.actions[1:]
+            ):
+                raise CharacterArtValidationError("only the Idle cue may loop")
+            width, height = cues.frame_size
+            left, top, right, bottom = cues.content_box
+            if (
+                width <= 0
+                or height <= 0
+                or left < 0
+                or top < 0
+                or right > width
+                or bottom > height
+                or left >= right
+                or top >= bottom
+                or cues.baseline_y != bottom
+                or cues.visual_scale <= 0
+                or cues.fallback_slot not in names
+                or not cues.reference_family
+                or not cues.consumer
+            ):
+                raise CharacterArtValidationError("Character combat cues have invalid shared geometry")
+
         for spec in self.specs:
             members = [slot for slot in self.slots if slot.spec == spec]
             first = members[0]
@@ -211,6 +319,24 @@ class CharacterArtBundle:
             return next(slot for slot in self.slots if slot.spec == spec)
         except StopIteration as exc:
             raise CharacterArtValidationError(f"unknown Character art spec: {spec!r}") from exc
+
+    @property
+    def cue_specs(self) -> tuple[str, ...]:
+        if self.combat_cues is None:
+            return ()
+        return tuple(action.source_spec for action in self.combat_cues.actions)
+
+    @property
+    def acquisition_specs(self) -> tuple[str, ...]:
+        return (*self.specs, *self.cue_specs)
+
+    def cue_action(self, name_or_spec: str) -> CharacterCueAction:
+        cues = self.combat_cues
+        if cues is not None:
+            for action in cues.actions:
+                if name_or_spec in (action.name, action.source_spec, action.state_name):
+                    return action
+        raise CharacterArtValidationError(f"unknown Character combat cue: {name_or_spec!r}")
 
     def sprite_specs(self) -> dict[str, dict]:
         """Expose the normalizer shape without duplicating the Character contract."""
@@ -280,9 +406,17 @@ class CharacterArtBundle:
         return alpha_bounds
 
     def reference_families(self) -> dict[str, str]:
-        return {spec: self.slot_for_spec(spec).reference_family for spec in self.specs}
+        families = {spec: self.slot_for_spec(spec).reference_family for spec in self.specs}
+        if self.combat_cues is not None:
+            families.update(
+                (action.source_spec, self.combat_cues.reference_family)
+                for action in self.combat_cues.actions
+            )
+        return families
 
     def reference_role(self, spec: str) -> ReferenceRole:
+        if spec in self.cue_specs:
+            return "identity"
         return self.slot_for_spec(spec).reference_role
 
     def requires_identity_reference(self, spec: str) -> bool:
@@ -297,7 +431,7 @@ class CharacterArtBundle:
         body/cue assets require its normalized PNG; palette-driven assets explicitly
         reject it so the portrait cannot be accidentally sent as an image reference.
         """
-        if spec not in self.specs:
+        if spec not in self.acquisition_specs:
             if identity_reference is not None:
                 raise CharacterArtValidationError(
                     "--identity-reference is only valid for Character art specs"
@@ -618,7 +752,41 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
             "transparent", True, _PROFILE_FALLBACK, "EnergyIconsFormatter rich-text image",
             "character_icon", "contain", True, "palette",
         ),
-    )
+    ),
+    combat_cues=CharacterCueContract(
+        actions=(
+            CharacterCueAction(
+                "idle", "Idle", "character_cue_idle", 2, 2, 180,
+                True, False, "charui/cues/idle",
+            ),
+            CharacterCueAction(
+                "attack", "Attack", "character_cue_attack", 2, 2, 90,
+                False, False, "charui/cues/attack",
+            ),
+            CharacterCueAction(
+                "hit", "Hit", "character_cue_hit", 2, 2, 80,
+                False, False, "charui/cues/hit",
+            ),
+            CharacterCueAction(
+                "dead", "Dead", "character_cue_dead", 2, 3, 140,
+                False, True, "charui/cues/dead",
+            ),
+        ),
+        frame_size=(512, 512),
+        content_box=(26, 26, 486, 486),
+        baseline_y=486,
+        reference_family="character_combat",
+        fallback_slot="combat_body",
+        consumer="CombatPlayer NCreature visual cue state machine",
+        visual_scale=0.80,
+        visual_position=(0.0, -184.0),
+        bounds_position=(-160.0, -368.0),
+        bounds_size=(320.0, 368.0),
+        intent_position=(0.0, -410.0),
+        center_position=(0.0, -184.0),
+        orb_position=(-178.0, -230.0),
+        talk_position=(0.0, -420.0),
+    ),
 )
 
 

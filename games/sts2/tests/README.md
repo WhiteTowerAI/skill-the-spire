@@ -20,10 +20,10 @@ Host ownership:
 
 | Host | Owns |
 |---|---|
-| `CombatPlayer` | content core, stateful relics, Scry |
+| `CombatPlayer` | content core, stateful relics, Scry, Character combat cues |
 | `CombatEnemy` | Monster + Encounter, move vocabulary, combat/bestiary body |
 | `MapNode` | Event outcomes/presentation and bounded forced follow-up |
-| `RunStart` / Character | Foundation, static art, resource/UI, ordered buffer |
+| `RunStart` / Character | Foundation, static art/theme, combat cues, resource/UI, ordered buffer |
 
 Tier 1 requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof and `selftest done`. Trigger logs, terminal markers, and

@@ -89,6 +89,7 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Enemy encounter | HP, group, ordered moves, conditions, encounter placement | `CombatEnemy` |
 | Event | acts, pages/options, public outcomes, bounded presentation, combat completion | `MapNode` |
 | Character | identity, HP, starter content, pools, hosted mechanic, selected static profiles | `RunStart` + `CombatPlayer` |
+| Character combat cues | enabled/disabled fixed Idle/Attack/Hit/Dead contract, shared footprint/anchors, static fallback | `RunStart` + `CombatPlayer` |
 | Character combat resource | name, gain/spend/payoff, nonnegative domain, combat reset, fixed UI/fallback | two-combat Character / `CombatPlayer` |
 | Ordered semantic buffer | value/order, capacity/overflow, normal source destination, formula/output | two-combat Character / `CombatPlayer` |
 | Card Scry helper | top-X amount, discard-any choice, upgrade delta, singleplayer boundary | `CombatPlayer` with visible native selector |
