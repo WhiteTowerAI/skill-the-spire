@@ -98,33 +98,84 @@ should a generated Mod call?" The latter remains owned by the pinned
    `RelicAssetProfile.IconOutlinePath`, so open-mod should derive a white/approved-color
    expanded silhouette from the normalized icon alpha and wire that distinct path.
 
-The immediate changes are limited to M6.5 planning. They do not reopen custom locked
-selection/map-marker presentation, trail, `Cast`, Spine, audio, multiplayer presentation,
-or any other future surface. M6.5 keeps the checked game-native shared map marker instead
-of copying or resizing one from a research Mod.
+M6.5 is closed. Its conclusions do not reopen custom locked selection/map-marker
+presentation, trail, `Cast`, Spine, audio, or multiplayer presentation. Characters keep
+the checked game-native shared map marker instead of copying or resizing one from a
+research Mod.
+
+### M6.6 planning inputs
+
+The human lead selected five provisional capability packages for M6.6. These research
+findings identify product requirements only; pinned RitsuLib `0.4.62` and real hosted
+proofs remain the API and support authority.
+
+- **Advanced Card/Potion target types:** bound filtering, selection/cancel behavior,
+  revalidation, ownership, and the resulting source-content lifecycle rather than exposing
+  an arbitrary patch hook.
+- **Gameplay readability:** independently prove computed previews, dynamic Energy/Star and
+  typed Power amounts, variable tooltips, conditional hand emphasis, and bounded
+  Relic/Power/Intent labels in their real consumers.
+- **Custom Rest Site options:** `RoastPorkRestSiteOption` demonstrates the product shape of
+  owned eligibility, localized title/description, custom icon, asynchronous outcome, and
+  card-acquisition preview. The generated implementation must use RitsuLib's public Rest
+  Site template rather than research-Mod code.
+- **Combat-only CardPile/ExtraHand:** begin with a visible singleplayer Mod-local pile and
+  explicit ordering, movement, capacity, interaction, and cleanup. Persistence,
+  multiplayer, vanilla-pile replacement, and general retained-card semantics stay outside
+  the first slice.
+- **Custom-Character native Ancient dialogue:** RitsuLib's registered
+  `AncientDialoguePopulateLocKeysPatch` appends localization-defined dialogue for Mod
+  Characters to each native `AncientDialogueSet` once. The flat `ancients.json` contract
+  covers ordered Ancient/Character lines, repeat and visit routing, transition prompts, and
+  Architect attacker metadata. Open-mod still needs semantic intake, a pinned Ancient
+  catalog, structural localization validation, and focused native-scene proof; the YuWan
+  implementation is product evidence only and its private injection patch is not reusable.
+
+### M6.7 vanilla-override planning inputs
+
+The planned M6.7 track treats existing vanilla models as version-bound semantic targets,
+not as permission for arbitrary generated patches. RitsuLib `0.4.62` provides enough public
+composition surface for a broad design:
+
+- `ConfigureDefaultModelCapabilities<TModel>` can attach generated capabilities to matching
+  vanilla model types without replacing their identity;
+- Card property contributors cover rarity/type/target/tags and local cost/result surfaces;
+- `CardPlayCapability` can run before/after an owning Card and can suppress its original
+  `OnPlay`, allowing a complete existing open-mod Card recipe to replace that behavior;
+- typed owner capabilities extend vanilla Relic, Potion, Power, Orb, Enchantment,
+  Affliction, and Monster hook streams; and
+- the checked RitsuLib patcher remains a bounded fallback for cataloged original entry
+  points that have no public suppression/override surface.
+
+The implementation should therefore use a per-STS2-version catalog plus semantic
+`adjust`/`compose`/`replace`/`availability` operations. It can cover common balance changes
+across Cards, Relics, Potions, Powers, pools, Monsters/Encounters, and Events, while routing
+unusual AI or scene state machines to maintained target adapters. Disabling content should
+remove acquisition routes rather than unregistering a model required by old saves. Preserve
+typed dynamic variables, normal modifiers, localization truth, deterministic RNG, and
+multiplayer parity; fail closed on target/signature/baseline drift.
 
 ### Future research value
 
-- **Mod settings:** the page/section/subpage model, toggles, sliders, custom entries,
-  localization, persistence, and immediate side effects form a useful product checklist.
-  Because open-mod already requires RitsuLib, any future recipe should use its pinned
-  public settings API directly rather than YuWanCard's reflection-emission bridge.
+- **Mod settings and persistence:** this remains future outlook outside the provisional
+  M6.6 list. The page/section/subpage model, toggles, sliders, custom entries, localization,
+  persistence scopes, and immediate side effects form a useful product checklist. Because
+  open-mod already requires RitsuLib, any future recipe should use its pinned public
+  settings and persistence APIs directly rather than YuWanCard's reflection-emission
+  bridge.
 - **Character skins:** the repository keeps a stable skin ID, persists the selection,
   previews the real combat visuals on both normal and custom-run selection screens, and
   resolves skin-specific combat, merchant, and icon assets with per-slot fallback. A
   future open-mod design would need a declared skin bundle and explicit consumer coverage,
   not merely a second combat image.
-- **Custom Rest Site options:** `RoastPorkRestSiteOption` shows the complete product shape:
-  eligibility supplied by an owned relic, localized title/description, custom icon,
-  asynchronous outcome, multiplayer-aware ownership, and card-acquisition preview.
 - **Multiplayer mechanics:** custom reliable messages, explicit serialization, targeted
   run locations, request timeouts, disconnect cleanup, and host-authoritative content
   settings demonstrate why multiplayer is a separate systems track. Singleplayer behavior
   cannot simply be marked multiplayer-compatible.
-- **Custom target types, modifiers, badges, interoperability, and complex UI:** these are
-  useful inventories of the downstream patches, persistence, deterministic RNG,
-  localization, networking, and real-host UI work each feature can require. Each needs its
-  own bounded public-API research and hosted proof before it can enter the support graph.
+- **Modifiers, badges, interoperability, and complex UI:** these remain useful inventories
+  of the downstream persistence, deterministic RNG, localization, networking, and real-
+  host UI work each feature can require. Each needs its own bounded public-API research and
+  hosted proof before it can enter the support graph.
 
 ### What not to carry forward
 

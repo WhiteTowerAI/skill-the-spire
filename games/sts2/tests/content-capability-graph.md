@@ -92,8 +92,11 @@ Do not generate it.
 - alternative Energy hooks;
 - run-persistent or remote-player Character resources/UI;
 - multiplayer/replay Scry or global Scry modifiers/completion hooks;
-- vanilla content editing or ungrounded patch targets;
-- custom locked-selection/map-marker and native custom-Character Ancient presentation;
+- all planned M6.7 version-bound vanilla content override categories, plus ungrounded patch
+  targets or arbitrary generated Harmony/reflection/IL;
+- custom locked-selection/map-marker presentation;
+- planned M6.6 native Ancient dialogue/presentation for custom Characters, plus custom
+  Ancient models, backgrounds, and layouts;
 - production animation beyond the bounded Idle/Attack/Hit/Dead cues, Cast, Spine, trails,
   arbitrary materials beyond the bounded pool-frame helper,
   multiplayer presentation, and audio;

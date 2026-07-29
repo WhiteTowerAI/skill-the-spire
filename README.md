@@ -15,6 +15,11 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 > lead-approved Prismwright result is archived in
 > `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`.
 
+The provisional M6.6 capability roadmap and planned M6.7 version-bound vanilla-content
+override track are maintained in `documents/IMPLEMENTATION_PLAN.md`. Planned items are not
+part of the supported surface until their individual implementation and real-game proof
+gates pass.
+
 ## Requirements
 
 1. Slay the Spire 2 stable `0.107.1`, installed through Steam.
@@ -102,14 +107,15 @@ image generation is callable, and open-mod never silently switches to a paid bac
 The following remain unsupported unless a later milestone explicitly opens and proves
 them:
 
-- editing vanilla content;
+- all unproved M6.6 capability packages and M6.7 vanilla-content override categories;
 - retained-card custom-zone UI or hidden retained played cards;
 - alternative Energy engine hooks;
 - run-persistent or remote-player Character resources and UI;
 - multiplayer/replay Scry or global cross-Mod Scry hooks;
 - production Character animation beyond the bounded combat cues, arbitrary materials,
   audio, or multiplayer presentation;
-- custom Character Ancient layouts and unproved locked-selection/map-marker art;
+- planned native Ancient dialogue/presentation for custom Characters, custom Character
+  Ancient layouts, and unproved locked-selection/map-marker art;
 - arbitrary Event VFX/layouts, direct merchant/rest/treasure transitions, or more than one
   special combat from the same mutable Event instance;
 - one-click Steam Workshop publishing.

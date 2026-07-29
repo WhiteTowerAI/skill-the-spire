@@ -105,5 +105,20 @@ and geometry-stable non-Spine `Idle`/`Attack`/`Hit`/`Dead` combat cues. The fres
 natural-language Prismwright acceptance is closed with its explicit lead-approved
 verification exceptions recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`.
 Characters keep the game-native shared map-marker fallback; locked selection, Character
-card trails, and a `Cast` cue remain unsupported. No automatic milestone transition
-follows from M6.5.
+card trails, and a `Cast` cue remain unsupported.
+
+M6.6 is the provisional next capability-improvement milestone. Its current package list
+covers advanced Card/Potion target types, computed and contextual gameplay readability,
+owned custom Rest Site options, and an initial combat-only singleplayer custom
+CardPile/ExtraHand, plus custom-Character dialogue in native Ancient scenes. The scope may
+gain other explicitly approved features, and none of these planned surfaces becomes current
+support before its own implementation and real-host proof. Optional Mod settings with
+Global/Profile/run-owned persistence remain future outlook outside the current M6.6 list.
+
+M6.7 is the planned follow-on for version-bound overrides of existing vanilla content. Its
+product goal is broader than numeric Card balance: generated Mods may eventually adjust
+data and upgrades, alter acquisition/pools, compose behavior, or replace a grounded behavior
+entry point while preserving the vanilla model identity and untouched assets. A pinned
+version catalog, semantic override manifest, checked RitsuLib capability/adapter routes,
+conflict diagnostics, and per-operation real-host proof are required before any category is
+promoted. Arbitrary prompt-generated Harmony/reflection/IL is not part of the design.

@@ -22,9 +22,23 @@ did not pass.
 The focused M6.5 Character art, theme, outline, and bounded combat-cue packages are
 pipeline-supported. The fresh Prismwright acceptance is closed and retired by explicit
 human-lead decision; its headed result and waived Tier 2 harness are recorded in
-`documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. Do not reopen that proof, start M7 or
-another expansion track, or prepare/claim a GitHub release without later lead instruction.
-Keep all unproved surfaces unsupported.
+`documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. Do not reopen that proof, start M7, or
+prepare/claim a GitHub release without later lead instruction.
+
+M6.6 is the provisional next capability milestone. Its current plan contains advanced
+Card/Potion target types, gameplay-readability surfaces, owned custom Rest Site options,
+a combat-only singleplayer custom CardPile/ExtraHand slice, and custom-Character dialogue
+in native Ancient scenes. The package list may gain other lead-approved features. Planning
+does not make these surfaces supported or start implementation automatically; follow
+`documents/IMPLEMENTATION_PLAN.md`, wait for the lead to select a package/order, and keep
+all unproved surfaces unsupported.
+
+M6.7 is the planned follow-on for version-bound vanilla content overrides and behavior
+composition. Its intended scope includes data/upgrade/property edits, acquisition and pool
+changes, behavior composition, and complete recipe-backed replacement across grounded
+content categories. It does not start automatically after M6.6. Until individual M6.7
+operation/category gates pass, vanilla editing remains unsupported; never generate
+ungrounded Harmony, reflection, or IL from a prompt.
 
 ## Dependency Contract
 
@@ -62,11 +76,11 @@ Preserve these important boundaries:
 - Scry is singleplayer and Mod-local; it is not a global interoperability service.
 - The fixed Character resource control is 220x32 at offset 160 with a text fallback and
   must remain disjoint from native Energy.
-- Custom locked-selection/map-marker presentation, native custom-Character Ancient
-  presentation, production animation beyond the bounded cues, arbitrary material/audio,
-  remote-player UI, alternative
-  Energy, vanilla editing, retained-card zones, and one-click Workshop publishing remain
-  unsupported.
+- Custom locked-selection/map-marker presentation, planned native custom-Character Ancient
+  dialogue/presentation, custom Ancient layouts, production animation beyond the bounded
+  cues, arbitrary material/audio, remote-player UI, alternative
+  Energy, retained-card zones, one-click Workshop publishing, and all unproved M6.7 vanilla
+  override categories remain unsupported.
 
 For the exact active inventory, read
 `games/sts2/tests/content-capability-graph.md`.
