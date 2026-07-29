@@ -15,6 +15,7 @@ Support levels:
 |---|---|---|
 | card / relic / potion / power | `CombatPlayer` | RitsuLib `Mod*Template`, exactly-once content-pack registration, explicit pools, checked art fallback |
 | computed Card values | `CombatPlayer` | one bounded formula for preview/execution; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltip |
+| advanced creature targeting | `CombatPlayer` | deterministic Mod-local live-creature filters; native mouse/controller selection for Card one/many and Potion one; execution-time resolution checks; no multi Potion |
 | keyword | `CombatPlayer` | RitsuLib-owned native keyword, real Card text and no-icon tooltip, named behavior |
 | enchantment | `CombatPlayer` | template/registration, persistent Card attachment, checked 64x64 icon |
 | orb | `CombatPlayer` | template/registration, passive/evoke, checked 100x100 icon; Frost body/SFX fallback |
@@ -48,6 +49,15 @@ two Darv entries, the production Architect transition, clean run progression, an
 error block. The structured state proof and `selftest done` were absent, so strict Tier 2
 is a recorded exception rather than a pass. See
 `documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`.
+
+The focused `M66TargetingProof` host covered zero, one, and multiple legal candidates,
+invalid-creature rejection, normal cancellation/payment, exact single Card/Potion deltas,
+two-creature multi Card resolution, mouse/controller reticles, normal Card/Potion lifecycle,
+and post-resolution cleanup. The human lead accepted all six headed groups. The current log
+had matching Tier 1, exact target IDs/counts, and no fresh target-Mod error. It had no
+automated `selftest done`, and queued-target invalidation was not run; strict Tier 2 is a
+recorded exception, not a pass. See
+`documents/history/M66_ADVANCED_TARGETING_RESULTS.md`.
 
 ## Static Art Contract
 
@@ -110,6 +120,8 @@ Do not generate it.
 - alternative Energy hooks;
 - run-persistent or remote-player Character resources/UI;
 - multiplayer/replay Scry or global Scry modifiers/completion hooks;
+- custom multi-target Potions, arbitrary object/Card/map targets, or global custom-target
+  interoperability registration;
 - all planned M6.7 version-bound vanilla content override categories, plus ungrounded patch
   targets or arbitrary generated Harmony/reflection/IL;
 - custom locked-selection/map-marker presentation;

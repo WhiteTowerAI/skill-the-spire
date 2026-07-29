@@ -108,20 +108,20 @@ Characters keep the game-native shared map-marker fallback; locked selection, Ch
 card trails, and a `Cast` cue remain unsupported.
 
 M6.6 is the active provisional capability-improvement milestone. Package 2A computed Card
-values is pipeline-supported, with its focused human-lead acceptance and omitted strict
-Tier 2 harness recorded in `documents/history/M66_COMPUTED_VALUES_RESULTS.md`. Package 5
-custom-Character dialogue in native Ancient scenes is pipeline-supported after its
-repaired headed Darv and Architect recheck. Its failed first proof, repair, successful
-recheck, and omitted strict Tier 2 harness are recorded in
-`documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`.
+values, Package 5 custom-Character dialogue in native Ancient scenes, and Package 1
+advanced creature targeting are pipeline-supported. Package 1 covers single-target Cards,
+single-target Potions, and multi-target Cards through deterministic Mod-local live-creature
+filters and native mouse/controller selection. Its focused human-lead acceptance and
+omitted strict Tier 2 harness are recorded in
+`documents/history/M66_ADVANCED_TARGETING_RESULTS.md`; multi-target Potions remain
+unsupported on the pinned profile.
 
-The remaining M6.6 package list covers advanced Card/Potion target types, contextual hand
-and corner-label readability, owned custom Rest Site options, an initial combat-only
-singleplayer custom CardPile/ExtraHand. Package 1 targeting is the direct next step in the
-approved order. None of these remaining planned surfaces
-becomes current support before its own implementation and real-host proof. Optional Mod
-settings with Global/Profile/run-owned persistence remain future outlook outside the
-current M6.6 list.
+The remaining M6.6 package list covers contextual hand and corner-label readability, owned
+custom Rest Site options, and an initial combat-only singleplayer custom
+CardPile/ExtraHand. Package 3 Rest Site options is the direct next step in the approved
+order. None of these remaining planned surfaces becomes current support before its own
+implementation and real-host proof. Optional Mod settings with Global/Profile/run-owned
+persistence remain future outlook outside the current M6.6 list.
 
 M6.7 is the planned follow-on for version-bound overrides of existing vanilla content. Its
 product goal is broader than numeric Card balance: generated Mods may eventually adjust

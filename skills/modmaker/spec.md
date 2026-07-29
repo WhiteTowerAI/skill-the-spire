@@ -75,6 +75,7 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
 - **availability**: shared | character:<name>
 - **usage**: CombatOnly | AnyTime | Automatic
 - **target**: self | one enemy | all enemies
+- **advanced target**: none | use the shared declaration below
 - **effect**: <precise game-terms description, with numbers>
 - **display**:
   - title: <shown name>
@@ -119,6 +120,7 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
 - **effects**:
   - trigger: play
   - target: one enemy | all enemies | self
+  - advanced target: none | use the shared declaration below
   - cost: <energy integer, default 1>
   - sequence: <ordered game-term effect with exact values>
   - helper: none | Scry top <X>, discard any number, singleplayer only
@@ -149,6 +151,28 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
 - **adapter output** (written to MEMORY after acceptance): resolved content id,
   localization keys, asset profile, and framework diagnostic record
 ```
+
+When a Card or Potion selects a filtered live-creature target, replace that surface's
+`advanced target: none` field with this block at the same indentation (top-level for a
+Potion, inside `effects` for a Card). It remains semantic; no framework class or enum
+belongs here:
+
+```markdown
+- **advanced target**:
+  - consumer: card | potion
+  - mode: one | many
+  - target id: <stable Mod-local stem>
+  - candidate conditions: <alive side/intent/Block/current-or-maximum-HP rules>
+  - acting-player conditions: none | <plain-language player-relative rules>
+  - source conditions: none | <single-target source Card/Potion rule>
+  - zero-target behavior: reject or cancel without payment/consumption
+  - resolution: apply the effect exactly once to each resolved creature
+```
+
+The current pinned adapter accepts `card + one`, `card + many`, and `potion + one`.
+`potion + many` stops authoring because the pinned host cannot recheck an empty resolved
+group before consumption. Do not rewrite it as ordinary `all enemies`, restore a consumed
+Potion, or generate a patch.
 
 **Custom power** (standalone or a dependency of a card/relic/potion; include one block
 for every authored custom Power):

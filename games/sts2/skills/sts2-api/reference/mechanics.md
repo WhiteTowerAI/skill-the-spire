@@ -100,7 +100,9 @@ sets read from the decompile (STS2 v0.107.1 — a game update could add members)
   Osty`. ⚠️ **potions self-target with `AnyPlayer`, not `Self`** (see
   `recipes/potion.md`); cards may use `Self` (no target selection). `AnyEnemy` =
   single enemy w/ selection; `AllEnemies` = all, no selection. `TargetType.IsSingleTarget()`
-  is a helper.
+  is a helper. Filtered live-creature targets are dynamic values registered through the
+  pinned adapter; read `advanced-targeting.md` instead of inventing enum members or
+  predicates in a surface recipe.
 - **`CardType`** (`Entities.Cards`): `None, Attack, Skill, Power, Status, Curse, Quest`.
 - **`CardRarity`** (`Entities.Cards`): `None, Basic, Common, Uncommon, Rare, Ancient,
   Event, Token, Status, Curse, Quest`. (Starter cards like Strike use `Basic`;
@@ -163,6 +165,8 @@ proof. In particular, a run-persistent relic counter uses RitsuLib
 - **`reference/card-computed-values.md`** — calculated Card roles, preview/execution
   parity, Energy/Star icon formatting, typed Power amount-given hooks, and variable
   tooltips.
+- **`reference/advanced-targeting.md`** — deterministic custom `TargetType` registration,
+  single/multi resolution, payment/consumption lifecycle, and headed selection proof.
 - **relics/potions** — mostly literal amounts + plain descriptions; they only need §3
   (enums). They reach here only for a scaling effect. A stateful relic additionally
   routes to `stateful-mechanics.md` (§5); potion saved state is not pipeline-supported.

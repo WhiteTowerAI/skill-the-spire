@@ -9,6 +9,9 @@
 > `CardAssetProfile` are adapter-owned.
 > When SPEC declares calculated values, Energy/Star icon counts, typed computed Power
 > amounts, or variable tooltips, also read `reference/card-computed-values.md`.
+> When SPEC declares a filtered live-creature target, also read
+> `reference/advanced-targeting.md`; it owns registration, one/many execution,
+> zero-target cancellation, and headed selection proof.
 >
 > Vanilla cards to imitate: `StrikeIronclad` (single-target attack), `DefendIronclad`
 > (self block), `Inflame` (gain a Power), `Bash` (attack + apply a debuff).
@@ -123,6 +126,11 @@ public sealed class <CardName> : ModCardTemplate
 | `type` | `CardType` = `Attack, Skill, Power, …` | deals damage → `Attack`; block/utility → `Skill`; permanent buff → `Power`. |
 | `rarity` | `CardRarity` = `Basic, Common, Uncommon, Rare, …` | droppable default `Common`; `Basic` is for starter cards. |
 | `target` | `TargetType` (shared with potions) | one enemy → **`AnyEnemy`**; all enemies → `AllEnemies`; a self/no-selection effect (block, gain Strength) → **`Self`**. |
+
+An advanced target does not lower to a vanilla enum. Use the stable registered value from
+`reference/advanced-targeting.md`. A single-target Card keeps `cardPlay.Target`; a
+multi-target Card overrides `IsPlayable` for the empty group and calls `GetTargets()`
+inside `OnPlay`. Never cache the target list from selection time.
 
 > ⚠️ Card `Self` vs potion `AnyPlayer`: a **card** that targets the player uses
 > `TargetType.Self` (no target selection) — `DefendIronclad`/`Inflame` do. Potions use
@@ -338,6 +346,10 @@ content-pack Card registration. Do not create a second id rule.
 - [ ] Constructor passes `cost, CardType, CardRarity, TargetType` to `base(...)`.
 - [ ] `TargetType` matches the effect: `AnyEnemy` (targeted attack), `Self` (block /
       self-buff — NOT `AnyPlayer`, that's potions), `AllEnemies` (room).
+- [ ] An advanced target follows `reference/advanced-targeting.md`: one stable
+      registration, source context only for single-target rules, live `GetTargets()` for
+      many, zero-target gate before payment, normal result pile, and headed mouse/controller
+      proof.
 - [ ] Targeted card null-checks `cardPlay.Target` (`ArgumentNullException.ThrowIfNull`).
 - [ ] Static numbers come from `CanonicalVars` + `DynamicVars.*`, not literals;
       `OnUpgrade` bumps each static var the upgrade changes.

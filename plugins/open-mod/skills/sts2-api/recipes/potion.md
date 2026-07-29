@@ -11,6 +11,11 @@ registration, its behavior belongs in `OnUse`, and its art belongs in one
 `PotionAssetProfile`. Do not add `[Pool]`, a per-Mod potion base class, or a second
 registration path.
 
+When SPEC declares a filtered live-creature target, read
+`reference/advanced-targeting.md`. The pinned profile supports a custom single-target
+Potion only; `potion + many` must stop authoring because queued zero-target execution
+cannot preserve the Potion.
+
 Register once from `MainFile.RegisterContent()`:
 
 ```csharp
@@ -70,6 +75,11 @@ fallback stays available.
 - Player buffs normally use `TargetType.AnyPlayer`; the selected target is a player
   creature, unlike a self-targeting Card.
 - Room-wide effects use the matching all-target `CreatureCmd` overload.
+- A filtered single target uses the stable registered value and keeps
+  `AssertValidForTargetedPotion(target)`. RitsuLib revalidates it before removal; follow
+  `reference/advanced-targeting.md` for registration and mouse/controller proof.
+- Never lower a filtered many-target Potion to `AllEnemies`, restore it after removal, or
+  generate a patch. Report the pinned-profile gap.
 - Potion damage, Block, and Power effects normally use `ValueProp.Unpowered`.
 - `OnUse` must await every Cmd. A diagnostic `used:` line does not prove behavior.
 

@@ -72,6 +72,10 @@ scaffold, or infer a runtime dependency from a recipe name.
    Power amounts, or variable tooltips, also read
    `${STS2_API_SKILL_DIR}/reference/card-computed-values.md`. It owns the shared-formula,
    evaluation-timing, formatter, execution-helper, and tooltip proof contracts.
+   When a Card or Potion selects one or many live creatures through a declarative filter,
+   read `${STS2_API_SKILL_DIR}/reference/advanced-targeting.md`. It owns the custom target
+   registration, selection/resolution lifecycle, supported consumer matrix, and headed
+   mouse/controller proof.
    When a Card looks at the top X Draw cards and discards any number, also read
    `${STS2_API_SKILL_DIR}/reference/scry-helper.md`. It owns the singleplayer-only
    open-mod helper, native selector/discard lifecycle, structured result, and proof.
@@ -119,6 +123,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `reference/ordered-card-buffer.md` | Ordered buffer: `AttachedState<PlayerCombatState,TState>`, native source-card Discard, visible order, non-destructive overflow, deterministic output/`CardGeneratedEntry`, and combat reset; retained-card `CustomPile` remains unsupported | Authoring an ordered card-play record and dynamic output |
 | `reference/scry-helper.md` | open-mod Scry helper: top-X native selector, structured result, normal Discard history/hooks, zero/empty/short/full boundaries, await proof, and explicit singleplayer restriction | Authoring a Card that looks at the top X Draw cards and discards any number |
 | `reference/card-computed-values.md` | Computed Card value roles, one-formula preview/execution parity, upgrade/timing/domain rules, Energy/Star formatters, typed Power amount-given behavior, variable tooltips, and focused proof | Authoring a Card with calculated text/effects or DynamicVar tooltips |
+| `reference/advanced-targeting.md` | RitsuLib custom live-Creature targets: stable Mod-local registration, single Card/Potion and multi Card resolution, revalidation/payment lifecycle, unsupported multi Potion, and headed selection proof | Authoring a filtered Card/Potion target |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
@@ -187,8 +192,10 @@ Harmony patching and is deferred. The recipes make **new** elements.
   route; "on turn N of each combat" reads the native combat turn; never duplicate that
   counter or silently shorten a run lifetime.
 - **Potions and cards:** model potion use as a use/target effect and card play as a play
-  effect. Self, one-enemy, and all-enemy targets stay semantic until adapter lowering.
-  Scaling values and upgrade deltas are data, not literals in the SPEC.
+  effect. Self, one-enemy, all-enemy, and advanced filtered targets stay semantic until
+  adapter lowering. Advanced targets route only through `reference/advanced-targeting.md`;
+  the pinned profile supports Card one/many and Potion one, while `potion + many` stops
+  authoring. Scaling values and upgrade deltas are data, not literals in the SPEC.
 - **Content rich text is per surface:** Card descriptions author only `gold`/`purple`
   (SmartFormat may emit `green`/`red`); relic descriptions allow
   `blue`/`gold`/`green`/`purple`/`red`; potion descriptions allow

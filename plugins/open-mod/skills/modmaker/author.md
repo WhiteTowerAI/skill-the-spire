@@ -81,6 +81,11 @@ second framework branch into this file.
   means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
   snapshots, `errors.md`), and if it's genuinely not there, report a pack gap. Never
   invent a Cmd name — that's the #1 way the repair loop burns its attempts.
+- If a Card or Potion has a non-`none` **advanced target**, read
+  `reference/advanced-targeting.md` before authoring either model. Emit one stable
+  Mod-local target registration, use only its supported consumer/mode matrix, and stop
+  authoring for `potion + many`; do not generate a lifecycle patch or restore a consumed
+  Potion.
 - If SPEC has a non-`none` **state** block, also read
   `reference/stateful-mechanics.md` before writing the hook. Implement its event,
   threshold/phase, lifetime, reset, persistence, UI meaning, and proof as one contract;
@@ -109,6 +114,9 @@ second framework branch into this file.
 
 - Override the three abstract props: `Rarity`, `Usage` (`CombatOnly`/`AnyTime`),
   `TargetType` (self-buff = `AnyPlayer`, not `Self`; one enemy = `AnyEnemy`).
+- For an advanced `mode: one` target, use the registered value and the single-Potion
+  route from `reference/advanced-targeting.md`. `mode: many` is unsupported on the pinned
+  profile and must stop authoring.
 - Add exactly one `.Potion<SharedPotionPool,TPotion>()` step to `MainFile.Content.cs`.
   Use another pool only when SPEC makes the Potion character-specific; do not add a pool
   attribute or a per-Mod Potion base.
@@ -122,6 +130,10 @@ second framework branch into this file.
 
 - Pass `cost, CardType, CardRarity, TargetType` to `base(...)`. A card that targets the
   player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions).
+- For an advanced target, pass the registered value from
+  `reference/advanced-targeting.md`. A single Card uses `cardPlay.Target`; a multi Card
+  gates zero candidates through `IsPlayable`, executes once with `null`, and resolves the
+  live creature list with `GetTargets()` inside `OnPlay`.
 - Add exactly one `.Card<TPool,TCard>()` step to `MainFile.Content.cs`; use
   `ColorlessCardPool` unless SPEC selects a character pool. Do not add a pool attribute.
 - Declare static scaling numbers in `CanonicalVars`
@@ -340,6 +352,11 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    **relic** → `BeforeCombat` (grant it, its `AfterSideTurnStart` fires on its own);
    **card** → `InCombat` (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`);
    **potion** → `InCombat` (`TryToProcure` → `EnqueueManualUse`);
+   **advanced target** → keep the same real Card/Potion driver, then use
+   `reference/advanced-targeting.md` to assert exact affected creature IDs, payment or
+   Potion retention on cancellation, normal Card result pile, zero/one/multiple legal
+   candidates, and queued target invalidation. Headed mouse/controller/reticle checks stay
+   separate from the structured state proof.
    **enemy encounter** → the **`CombatEnemy`** variant: enter the custom encounter via
    `ModelDb.Encounter<TEncounter>().ToMutable()` + `EnterRoomDebug`, confirm the monster in
    `Enemies` (`e.Monster is TMonster`), and use the reference page's multi-turn helper. Before

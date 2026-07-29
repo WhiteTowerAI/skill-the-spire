@@ -13,11 +13,11 @@ pipeline-supported. Their evidence is recorded in
 acceptance and its explicit lead-approved verification exceptions are recorded in
 `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; M6.5 is closed.
 
-M6.6 Package 2A computed Card values and Package 5 custom-Character dialogue in native
-Ancient scenes are pipeline-supported. Their focused proofs and explicit strict Tier 2
-exceptions are recorded in `documents/history/M66_COMPUTED_VALUES_RESULTS.md` and
-`documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`. The remaining M6.6 and all M6.7
-surfaces stay provisional and unsupported until their individual gates pass.
+M6.6 Package 2A computed Card values, Package 5 custom-Character dialogue in native Ancient
+scenes, and the bounded Package 1 advanced creature-targeting slice are
+pipeline-supported. Their focused proofs and explicit strict Tier 2 exceptions are
+recorded under `documents/history/`. The remaining M6.6 and all M6.7 surfaces stay
+provisional and unsupported until their individual gates pass.
 
 Do not prepare or claim a GitHub release. Package promotion does not close M6.6 or start
 the next package automatically.
@@ -69,9 +69,11 @@ the rebuilt proof passed the human lead's headed Darv and Architect recheck. The
 log confirms the PCK load, both native routes, clean progression, and no fresh error block;
 the absent structured state marker and `selftest done` remain an explicit strict Tier 2
 exception. The focused proof project and deployed Mod were retired after recording this
-evidence. Do not reopen Prismwright or either retired proof, and do not start M7. Package 1
-advanced Card/Potion targeting is the direct next step, but this document does not start it
-without human-lead selection.
+evidence. Package 1 then passed its human-lead mouse/controller host matrix, with exact
+single- and multi-target trigger records and no fresh target-Mod error. Its absent automated
+`selftest done` and unrun queued-target-invalidation cases remain explicit strict Tier 2
+exceptions. Do not reopen these retired proofs or Prismwright, and do not start M7. Package
+3 owned custom Rest Site options is the direct next step but does not start automatically.
 
 ## M6.6 - Capability Expansion (Provisional)
 
@@ -109,6 +111,16 @@ if the milestone later needs one.
 
 ### Package 1 - Advanced Card and Potion target types
 
+**Status: pipeline-supported as of 2026-07-29 for Card one/many and Potion one.** Semantic
+intake, SPEC, authoring, deterministic contract tests, pinned RitsuLib routes, and focused
+real-host mouse/controller review cover the bounded slice. The human lead accepted zero-
+target rejection, valid-target filtering, cancellation/payment behavior, native reticles,
+normal result-pile/Potion lifecycle, exact observed deltas, and post-resolution cleanup.
+The proof had Tier 1 and no fresh target-Mod error, but no automated `selftest done`;
+queued selected-target invalidation and a queued multi Card losing every candidate were not
+run and remain explicit verification exceptions. See
+`documents/history/M66_ADVANCED_TARGETING_RESULTS.md`.
+
 **Semantic intake.** Add a bounded target declaration that records whether the consumer is
 a Card or Potion, whether it selects one or affects many, a stable Mod-local target ID, and
 a declarative creature predicate. Single-target rules may combine candidate state, acting
@@ -128,19 +140,28 @@ target Cards in hand, corpses, map objects, or arbitrary game objects.
 - A single-target consumer must filter candidates consistently for mouse and controller,
   allow normal cancellation, handle no legal candidates, and revalidate the selected
   creature when play/use resolves.
-- A multi-target Card or Potion executes once with no selected creature. Its effect must
-  call the appropriate `GetTargets(...)` extension at resolution time and apply the effect
-  exactly once to each returned creature.
+- A multi-target Card executes once with no selected creature. Its effect must call the
+  appropriate `GetTargets(...)` extension at resolution time and apply the effect exactly
+  once to each returned creature.
 - Cancellation or loss of all valid targets must not spend resources, consume a Potion, or
   strand a Card outside its normal lifecycle. Successful execution must retain the normal
   Card result-pile and Potion-use behavior.
 
-**First proof matrix.** Prove at least one single-target and one multi-target family. If the
-package claims both Card and Potion support, include a real consumer of each rather than
-inferring Potion behavior from a Card test. Cover zero, one, and multiple legal candidates;
-mouse/controller selection where applicable; cancellation; a candidate becoming invalid;
-and an exact structured list of affected creature IDs and state deltas. Visually check the
-reticle/selection affordance and confirm that invalid creatures cannot be selected.
+**Pinned-profile boundary found during implementation research.** On STS2 `0.107.1` with
+RitsuLib `0.4.62`, `potion + many` cannot satisfy the zero-target consumption rule:
+`UsePotionAction` accepts the multi-target `null` target and does not recheck
+`PassesCustomUsabilityCheck` before `OnUseWrapper` removes the Potion. The first slice
+therefore supports single-target Card, single-target Potion, and multi-target Card only.
+Custom multi-target Potion authoring remains unsupported until a grounded RitsuLib
+capability change and version update add execution-time zero-target cancellation. Generated
+Mods must not compensate with Harmony, reflection, IL, or remove-then-restore behavior.
+
+**First proof matrix.** Prove a source-aware single-target Card, a single-target Potion, and
+a player-aware multi-target Card rather than inferring one lifecycle from another. Cover
+zero, one, and multiple legal candidates; mouse/controller selection where applicable;
+cancellation; a candidate becoming invalid; and an exact structured list of affected
+creature IDs and state deltas. Visually check the reticle/selection affordance and confirm
+that invalid creatures cannot be selected.
 
 **Not in the first slice.** Arbitrary object targeting, selecting Cards or map nodes,
 retargeting dead creatures, global interoperability registration for other Mods, and custom
@@ -343,12 +364,12 @@ unsupported unless separately planned and proved.
 
 ### Proposed sequence and M6.6 completion
 
-Package 2A computed values and Package 5 native Ancient dialogue are complete. The direct
-next step is Package 1 targeting, followed by Package 3 Rest Site options, 2B/2C hand and
-corner presentation, then Package 4 CardPile / ExtraHand. This establishes reusable
-targeting before manual ExtraHand play and leaves the combined Card/UI/cancellation work
-until its prerequisites and proof patterns are stable. The human lead may reorder packages
-or add other M6.6 features by updating this section first.
+Packages 2A, 5, and the bounded Package 1 targeting slice are complete. The direct next step
+is Package 3 Rest Site options, followed by 2B/2C hand and corner presentation, then Package
+4 CardPile / ExtraHand. Targeting is now available before manual ExtraHand play, while the
+combined Card/UI/cancellation work remains scheduled after its other prerequisites and
+proof patterns. The human lead may reorder packages or add other M6.6 features by updating
+this section first.
 
 M6.6 may close only after every feature retained in its final approved scope is either
 promoted through its own gate or explicitly removed/deferred by the human lead; all payloads

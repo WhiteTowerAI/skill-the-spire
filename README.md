@@ -13,7 +13,9 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 > archived in `documents/history/RITSULIB_MIGRATION_RESULTS.md`. A GitHub release is
 > deliberately deferred while remaining bugs are fixed. M6.5 acceptance is closed; its
 > lead-approved Prismwright result is archived in
-> `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`.
+> `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. M6.6 computed values, bounded
+> advanced targeting, and native custom-Character Ancient dialogue are individually
+> pipeline-supported; M6.6 itself remains open.
 
 The provisional M6.6 capability roadmap and planned M6.7 version-bound vanilla-content
 override track are maintained in `documents/IMPLEMENTATION_PLAN.md`. Planned items are not
@@ -83,12 +85,16 @@ The skill will:
 The current RitsuLib-only pipeline supports:
 
 - cards, relics, potions, powers, keywords, enchantments, and orbs;
+- filtered live-creature targeting for single-target Cards/Potions and multi-target Cards,
+  including native mouse/controller selection and cancellation;
 - singleplayer top-X Scry through a generated-Mod-local helper;
 - monsters and encounters with deterministic and conditional move vocabularies;
 - Events / World Nodes with pages, options, public Cmd outcomes, selections, rewards,
   resumable or terminal special combat, bounded rich text and VFX, and one bounded solo
   Quest Card to forced-Event composition;
 - playable Character Foundation with exact pools, starters, HP, and Energy;
+- custom-Character localization dialogue in the nine cataloged native Ancient and
+  Architect scenes, preserving native models, layouts, options, and outcomes;
 - stateful relic cadence with combat-local and run-persistent state;
 - combat-only secondary resources with all-or-nothing payment and a public fixed live UI;
 - ordered semantic card-play buffers whose source Cards follow normal Play -> Discard;
@@ -108,14 +114,15 @@ The following remain unsupported unless a later milestone explicitly opens and p
 them:
 
 - all unproved M6.6 capability packages and M6.7 vanilla-content override categories;
+- custom multi-target Potions and arbitrary Card/object/map targeting;
 - retained-card custom-zone UI or hidden retained played cards;
 - alternative Energy engine hooks;
 - run-persistent or remote-player Character resources and UI;
 - multiplayer/replay Scry or global cross-Mod Scry hooks;
 - production Character animation beyond the bounded combat cues, arbitrary materials,
   audio, or multiplayer presentation;
-- planned native Ancient dialogue/presentation for custom Characters, custom Character
-  Ancient layouts, and unproved locked-selection/map-marker art;
+- custom Character Ancient models/layouts/options/rewards/audio/VFX, global dialogue
+  replacement, and unproved locked-selection/map-marker art;
 - arbitrary Event VFX/layouts, direct merchant/rest/treasure transitions, or more than one
   special combat from the same mutable Event instance;
 - one-click Steam Workshop publishing.

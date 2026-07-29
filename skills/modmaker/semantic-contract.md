@@ -84,6 +84,13 @@ those phases cannot observe equivalent state, authoring stops instead of keeping
 display-only formula. Damage, Block, Energy icons, Star icons, raw typed Power, and applied
 typed Power remain distinct roles because their normal game modifiers differ.
 
+Advanced creature targeting is an optional Card/Potion surface extension. Keep it in
+player-facing terms and add one declaration with `consumer: card | potion`, `mode: one |
+many`, a stable local target id, candidate conditions, acting-player conditions, optional
+single-source conditions, zero-target behavior, and exact resolution semantics. The
+adapter owns the dynamic enum and predicate APIs. Under the pinned profile, `potion + many`
+is an unsupported adapter result rather than a semantic fallback.
+
 ## Surface inputs
 
 These are the only surface-specific inputs the adapter needs from a normal SPEC:
@@ -105,6 +112,7 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Ordered semantic buffer | value/order, capacity/overflow, normal source destination, formula/output | two-combat Character / `CombatPlayer` |
 | Character Ancient dialogue | cataloged natural target, first/explicit/repeat visit, ordered speaker/text/prompts, Architect attackers | native Ancient + production Architect |
 | Card Scry helper | top-X amount, discard-any choice, upgrade delta, singleplayer boundary | `CombatPlayer` with visible native selector |
+| Advanced creature targeting | consumer, one/many mode, stable Mod-local target id, declarative live-Creature predicate, zero-target lifecycle | `CombatPlayer` plus headed mouse/controller targeting |
 
 The adapter may require additional technical inputs internally, but those belong in
 the selected adapter reference and generated source, never in the semantic fields.

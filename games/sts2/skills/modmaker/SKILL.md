@@ -88,6 +88,12 @@ cards and discards any number. It is generated-Mod-local, uses the native visibl
 and discard lifecycle, returns a structured result, and is explicitly singleplayer-only.
 Route it only to `reference/scry-helper.md`; do not add BaseLib, global Scry hooks, or a
 multiplayer fallback.
+The bounded **advanced targeting** route supports deterministic filtered live-creature
+targets for single-target Cards, single-target Potions, and multi-target Cards. It keeps
+native mouse/controller selection, execution-time validation, payment/Potion retention,
+and normal Card result piles. Route it only to `reference/advanced-targeting.md`.
+Multi-target Potions remain unsupported on the pinned profile because queued empty-target
+execution cannot cancel before consumption; do not generate a patch or restore the Potion.
 Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
 the source by its actual type and checks the dependent observation, so a card→power link
 cannot pass merely because both models loaded. “Combo” is not a content type.

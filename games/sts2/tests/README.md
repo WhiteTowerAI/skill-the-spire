@@ -7,6 +7,8 @@ The focused M6.6 computed-Card result is archived in
 `documents/history/M66_COMPUTED_VALUES_RESULTS.md`.
 The failed initial native Ancient-dialogue proof, repair, and successful recheck are recorded in
 `documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`.
+The bounded advanced-targeting proof and its manual-verification exception are recorded in
+`documents/history/M66_ADVANCED_TARGETING_RESULTS.md`.
 
 ## Model
 
@@ -23,7 +25,7 @@ Host ownership:
 
 | Host | Owns |
 |---|---|
-| `CombatPlayer` | content core, computed Card values, stateful relics, Scry, Character combat cues |
+| `CombatPlayer` | content core, computed Card values, advanced targeting, stateful relics, Scry, Character combat cues |
 | `CombatEnemy` | Monster + Encounter, move vocabulary, combat/bestiary body |
 | `MapNode` / Character | Event outcomes/presentation, bounded forced follow-up, native Ancient/Architect dialogue |
 | `RunStart` / Character | Foundation, static art/theme, combat cues, resource/UI, ordered buffer |
@@ -40,6 +42,12 @@ Package 5 has the same explicit boundary. Its first headed Darv/Architect run fa
 the repaired proof passed the human lead's visible native-flow recheck and the current log
 showed the mounted PCK, both routes, clean progression, and no fresh error block. The log
 did not contain the structured state proof or `selftest done`; strict Tier 2 remains an
+exception rather than a pass.
+
+Package 1 also uses that explicit boundary. The human lead accepted its complete zero-,
+single-, and multi-candidate mouse/controller matrix, while current-run logs corroborated
+the exact successful consumers and no fresh error block. No automated `selftest done`
+harness ran, and queued-target invalidation was not exercised; strict Tier 2 remains an
 exception rather than a pass.
 
 Run one armed harness at a time. Preserve and restore unrelated user Mods. Do not reopen a

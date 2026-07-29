@@ -230,6 +230,85 @@ class SemanticContractTests(unittest.TestCase):
         ):
             self.assertIn(intake_rule, normalized_interview)
 
+    def test_advanced_targeting_preserves_selection_resolution_and_payment(self) -> None:
+        reference = (
+            STS2_API_DIR / "reference" / "advanced-targeting.md"
+        ).read_text(encoding="utf-8")
+        card_recipe = (STS2_API_DIR / "recipes" / "card.md").read_text(
+            encoding="utf-8"
+        )
+        potion_recipe = (STS2_API_DIR / "recipes" / "potion.md").read_text(
+            encoding="utf-8"
+        )
+        api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
+        adapter = (
+            STS2_API_DIR / "reference" / "ritsulib-adapter.md"
+        ).read_text(encoding="utf-8")
+        harness = (
+            STS2_API_DIR / "reference" / "selftest-harness.md"
+        ).read_text(encoding="utf-8")
+        verify = (MODMAKER_DIR / "verify.md").read_text(encoding="utf-8")
+        plan = (REPO_ROOT / "documents" / "IMPLEMENTATION_PLAN.md").read_text(
+            encoding="utf-8"
+        )
+        normalized_reference = " ".join(reference.split())
+        normalized_spec = " ".join(self.spec.split())
+        normalized_interview = " ".join(self.interview.split())
+
+        self.assertIn(
+            "Advanced creature targeting | consumer, one/many mode, stable Mod-local target id",
+            self.contract,
+        )
+        for field in (
+            "consumer: card | potion",
+            "mode: one | many",
+            "target id: <stable Mod-local stem>",
+            "candidate conditions",
+            "acting-player conditions",
+            "source conditions",
+        ):
+            self.assertIn(field, normalized_spec)
+            self.assertIn(field, normalized_interview)
+
+        for api in (
+            "RegisterSingleTargetType",
+            "RegisterSingleTargetTypeWithContext",
+            "RegisterMultiTargetType",
+            "CustomTargetContext",
+            "CardModelTargetingExtensions.GetTargets",
+            "PotionModelTargetingExtensions.GetTargets",
+        ):
+            self.assertIn(api, reference)
+
+        for rule in (
+            "RegisterTargetTypes();",
+            "before the content pack",
+            "There is no source-aware multi-target registration.",
+            "mouse and controller",
+            "revalidated before Energy or Stars are spent",
+            "revalidated before the Potion is removed",
+            "executes once with a null selected target",
+            "protected override bool IsPlayable",
+            "normal result pile",
+            "potion + many",
+            "stop authoring",
+        ):
+            self.assertIn(rule, normalized_reference)
+
+        for routed in (
+            self.author,
+            card_recipe,
+            potion_recipe,
+            api_skill,
+            adapter,
+            harness,
+            verify,
+        ):
+            self.assertIn("advanced-targeting.md", routed)
+
+        self.assertIn("potion + many", plan)
+        self.assertIn("unsupported", plan)
+
     def test_character_combat_cues_preserve_private_all_or_nothing_contract(self) -> None:
         cues = (
             STS2_API_DIR / "reference" / "character-combat-cues.md"

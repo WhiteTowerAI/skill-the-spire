@@ -25,17 +25,17 @@ human-lead decision; its headed result and waived Tier 2 harness are recorded in
 `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. Do not reopen that proof, start M7, or
 prepare/claim a GitHub release without later lead instruction.
 
-M6.6 is the active provisional capability milestone. Package 2A computed Card values is
-pipeline-supported, with its focused result and explicit manual-verification exception in
-`documents/history/M66_COMPUTED_VALUES_RESULTS.md`. Package 5 custom-Character dialogue in
-native Ancient scenes is also pipeline-supported after its repaired headed Darv and
-Architect recheck; its failed first proof, repair, successful recheck, and strict Tier 2
-exception are recorded in `documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`; the focused
-proof project and deployed Mod are retired. Package 1 advanced Card/Potion targeting is the
-direct next step in the approved order, but it does not start automatically. The remaining
-gameplay-readability surfaces, owned custom Rest Site options, and the combat-only
-singleplayer custom CardPile/ExtraHand slice remain planned and unsupported until
-individually selected and proved. The package list may gain other lead-approved features.
+M6.6 is the active provisional capability milestone. Package 2A computed Card values,
+Package 5 custom-Character dialogue in native Ancient scenes, and the bounded Package 1
+advanced creature-targeting slice are pipeline-supported. Package 1 supports single-target
+Cards, single-target Potions, and multi-target Cards; its mouse/controller result and
+strict Tier 2 exception are recorded in
+`documents/history/M66_ADVANCED_TARGETING_RESULTS.md`. Custom multi-target Potions remain
+unsupported on the pinned profile. Package 3 owned custom Rest Site options is the direct
+next step in the approved order, but it does not start automatically. The remaining
+gameplay-readability surfaces and combat-only singleplayer custom CardPile/ExtraHand slice
+remain planned and unsupported until individually selected and proved. The package list may
+gain other lead-approved features.
 
 M6.7 is the planned follow-on for version-bound vanilla content overrides and behavior
 composition. Its intended scope includes data/upgrade/property edits, acquisition and pool
@@ -66,6 +66,8 @@ Pipeline-supported surfaces include:
 - card, relic, potion, power, keyword, enchantment, and orb;
 - computed Card Damage/Block, Energy/Star icon counts, raw and amount-given typed Power
   values, and localized DynamicVar tooltips under one preview/execution formula;
+- deterministic Mod-local live-creature filters for single-target Cards/Potions and
+  multi-target Cards, with native mouse/controller selection and resolution-time checks;
 - generated-Mod-local singleplayer top-X Scry with normal selection/discard history/hooks;
 - monster + encounter and the complete grounded move vocabulary;
 - Event / World Node outcomes, bounded rich text/VFX/native presentation, and one bounded
@@ -86,7 +88,7 @@ Preserve these important boundaries:
   must remain disjoint from native Energy.
 - Custom locked-selection/map-marker presentation, custom Ancient models/backgrounds/
   layouts/options/rewards, production animation beyond the bounded cues, line audio,
-  arbitrary material/audio, remote-player UI, alternative
+  custom multi-target Potions, arbitrary material/audio, remote-player UI, alternative
   Energy, retained-card zones, one-click Workshop publishing, and all unproved M6.7 vanilla
   override categories remain unsupported.
 

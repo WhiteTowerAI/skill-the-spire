@@ -122,12 +122,27 @@ requires the exact load marker and `selftest done`.
   confirmation, plus zero/empty/short/full cases, exact seen/discarded/unselected order,
   source result pile, one history/hook dispatch per discarded Card, and an explicit
   singleplayer restriction. Do not require another headed run after this combined proof.
+- For advanced Card/Potion targeting, follow `reference/advanced-targeting.md`: require
+  the source-aware single Card, single Potion, and player-aware multi Card as distinct real
+  consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
+  queued invalidation, unchanged rejected payment/Potion state, and normal Card result
+  pile. `potion + many` remains unsupported.
 - For an Event, require one real UI path per independent SPEC outcome family. Blocking
   card/reward overlays must finish before their post-state assertion. A special combat must
   identify the custom encounter and prove exactly one authored completion path: named
   `Resume` page or direct map. Use a fresh Event instance if SPEC independently exercises
   both forms; never start two combats from one mutable Event. The final structured marker
   lists identical expected/observed outcome families.
+
+### Advanced-target headed acceptance
+
+The structured state proof does not establish selection UI. In the same focused
+`CombatPlayer` fixture, the reviewer uses the dev console to grant each proof Card/Potion,
+then checks the exact matrix from `reference/advanced-targeting.md`: mouse and controller
+can select only legal single targets, cancel returns normally, zero legal targets cannot
+commit the action, multi-target reticles appear only on the resolved creatures, and no
+reticle remains after resolution. Record the visible result as manually observed; do not
+rename it an automated Tier-2 pass.
 
 ### Custom-art headed acceptance
 

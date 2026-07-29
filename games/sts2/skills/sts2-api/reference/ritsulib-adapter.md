@@ -43,6 +43,9 @@ RitsuLibFramework.SubscribeLifecycle<TEvent>(...)
 RitsuLibFramework.GetRunSavedDataStore(modId)
 RitsuLibFramework.GetSecondaryResourceRegistry(modId)
 RitsuLibFramework.GetNodeAttachmentRegistry(modId)
+RitsuLibFramework.RegisterSingleTargetType(...)
+RitsuLibFramework.RegisterSingleTargetTypeWithContext(...)
+RitsuLibFramework.RegisterMultiTargetType(...)
 ```
 
 The content-pack builder and registry are the shared registration boundary. A simple
@@ -69,6 +72,7 @@ unselected modules.
 | Combat resource | `ModSecondaryResourceRegistry` + `SecondaryResourceCmd` | registered icons plus fixed counter fallback | pipeline-supported; payment/reset + two-combat Tier 2 |
 | Ordered semantic buffer | `AttachedState<PlayerCombatState,TState>` + native Card lifecycle | composed live counter text | pipeline-supported; order/overflow/output/reset Tier 2 |
 | Combat UI attachment | `RegisterCombatUi` + `ModNodeAttachmentRegistry` | 220x32 icon+text control at offset 160 | pipeline-supported; public attachment + geometry proof |
+| Advanced creature targeting | Mod-scoped custom `TargetType` registration + Card/Potion target extensions | native selection/reticles | pipeline-supported for Card one/many and Potion one; multi Potion unsupported |
 
 Registration remains data-driven: pool/act/availability comes from the semantic
 `registration` section and is translated once by the adapter. Do not add a parallel
@@ -153,6 +157,26 @@ auto-discovery, or a second registration path. Keyword behavior stays in its hos
 Card/Power; the keyword itself owns
 only the native vocabulary and localized tooltip. An Orb icon never promotes its persistent
 combat body or animation contract.
+
+### Advanced creature targeting
+
+When the semantic target has a custom live-creature filter, route to
+`reference/advanced-targeting.md`. Register its stable Mod-local target value immediately
+at the start of `MainFile.RegisterContent()`, before the deferred content pack constructs
+the consuming Card/Potion models. Single-target source rules use `CustomTargetContext` only
+when declared; multi-target rules can read candidate and acting player only.
+
+Cards resolve through `CardModelTargetingExtensions.GetTargets`; Potions expose the matching
+`PotionModelTargetingExtensions.GetTargets`. The pinned adapter supports Card one/many and
+Potion one. It rejects `potion + many` because the host does not recheck an empty group
+before removing a queued Potion. Do not add a generated patch or remove-then-restore path.
+
+The focused `M66TargetingProof` host passed the human lead's zero-, single-, and
+multi-candidate mouse/controller matrix. Current-run logs recorded exact single Card/Potion
+Block deltas and two multi Card resolutions over creature IDs `1,2`, with matching Tier 1
+and no fresh target-Mod error. No automated `selftest done` ran, and queued-target
+invalidation was not exercised; preserve those as verification exceptions rather than a
+strict Tier 2 pass.
 
 ### Monster and Encounter
 
@@ -341,6 +365,7 @@ invariants in one `CombatPlayer` run, ending at
 | Combat resource | nonnegative amount, payment, reset, UI fallback | secondary-resource registry/commands + public `RegisterCombatUi` | combat-only; does not replace native Energy |
 | Ordered buffer | semantic value, capacity, compile/output | `AttachedState<PlayerCombatState,TState>` + native result piles | no retained Card instances or custom zone |
 | Scry | top-X amount and discard-any selection | generated-Mod-local `OpenModScry` + native selector/pile/history/hooks | singleplayer only; no global modifier/completion hooks |
+| Advanced target | consumer/mode/id and pure creature predicate | custom target registration + `GetTargets` at resolution | Card one/many, Potion one; multi Potion unsupported |
 | Asset | consumer profile and fallback | per-surface asset profile | retain current placeholder and unsupported consumers |
 | Patch seam | exact target, version/fingerprint, risk, failure | `CreatePatcher` only when public APIs are insufficient | no arbitrary patches, C/D targets, or `OpenMod.Runtime` |
 | Diagnostics | framework profile and proof route | shared marker fields from semantic contract | marker is not state proof |
@@ -353,7 +378,9 @@ arbitrary Event layouts/VFX, Ancient custom layouts, animation, materials, multi
 presentation, audio, run-persistent Character resources, direct merchant/rest/treasure
 transitions, and unproven save or
 multiplayer claims. The promoted Scry helper remains singleplayer-only and generated-Mod
-local; it does not broaden those multiplayer or interoperability boundaries.
+local; it does not broaden those multiplayer or interoperability boundaries. Custom
+multi-target Potions remain unsupported until the pinned host/framework can cancel an
+empty queued group before consumption.
 
 ## Adapter record
 

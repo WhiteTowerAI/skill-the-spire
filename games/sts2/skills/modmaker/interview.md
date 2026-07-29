@@ -50,7 +50,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
    - **Potion**: potions fire when *used*, so there's no trigger to pick — instead
      resolve **when it can be used** (in combat only? any time?) and **what it
      targets** (yourself, one enemy, all enemies) only if the effect makes that
-     ambiguous.
+     ambiguous. If it asks for a filtered creature such as "an attacking enemy" or
+     "an enemy with Block", record an advanced target. A filtered single target is
+     supported; a filtered many-target Potion is a pinned-profile gap, so offer a
+     filtered single-target Potion or a filtered many-target Card instead.
    - **Card**: cards fire when *played*, so resolve **energy cost** (default 1),
      **type** (deals damage → Attack; block/utility → Skill; a permanent buff →
      Power), and **what it targets** (one enemy / all enemies / yourself) only if the
@@ -62,6 +65,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      what it changes. If a Card/relic/power channels a persistent orb, record the orb's
      **passive** and **evoke** effects separately. Do not call either a run modifier, and
      never ask about enum fields or APIs.
+     A Card may instead select one or affect many live creatures matching a deterministic
+     filter. Ask only for the missing game rule: who can be affected, whether it chooses
+     one or affects all matches, and whether the answer depends on the acting player or
+     this source Card. Never ask for a predicate, enum, or registration API.
      If the user asks for colored words in a Card, relic, potion, or Power description,
      infer bounded vanilla rich text and capture only the exact phrase plus plain-language
      color intent. Never ask for or preserve raw BBCode. Use the per-surface allowlist;
@@ -298,6 +305,23 @@ variable tooltips: none | <value name -> title; description; optional custom ico
 art: placeholder | generate: <subject/style, if the user asked for custom art>
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
+
+When either Card or Potion uses a filtered live-creature target, append this semantic
+summary. Translate the user's words; do not expose these labels as programming questions:
+
+```text
+advanced target:
+  consumer: card | potion
+  mode: one | many
+  target id: <stable Mod-local stem>
+  candidate conditions: <alive side/intent/Block/current-or-maximum-HP rules>
+  acting-player conditions: none | <plain-language player-relative rules>
+  source conditions: none | <single-target source Card/Potion rule>
+  zero-target behavior: reject or cancel without payment/consumption
+```
+
+If this produces `consumer: potion` plus `mode: many`, stop and offer the two supported
+alternatives above. Do not silently weaken the zero-target behavior.
 
 For an **enemy encounter** (monster + the encounter that spawns it, one unit):
 

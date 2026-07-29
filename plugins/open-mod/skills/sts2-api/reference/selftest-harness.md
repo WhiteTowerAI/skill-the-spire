@@ -452,6 +452,25 @@ private static async Task InCombat(Player player, CancellationToken ct)
 }
 ```
 
+### advanced Card/Potion targeting — prove each lifecycle separately
+
+Read `advanced-targeting.md` and keep its current three-consumer matrix in one disposable
+`CombatPlayer` proof: source-aware single Card, single Potion, and player-aware multi Card.
+Do not add a multi Potion or infer its lifecycle from another consumer.
+
+Use at least two live enemies and establish deterministic zero/one/multiple candidate
+states through public combat Cmds. For each consumer, assert the exact registered target
+kind, resolved creature combat IDs, before/after values, and diagnostic target id. Drive a
+single Card/Potion with its selected creature; drive the multi Card once with `null` and
+assert one effect delta per `GetTargets()` result.
+
+Snapshot Energy, Stars, Potion belt membership, and the source Card pile before boundary
+cases. Normal cancel and a queued target becoming invalid must leave payment/Potion state
+unchanged; a successful Card must reach its normal result pile. Predicate-only assertions,
+model-only `GetTargets()` output, and trigger logs are diagnostics, not the hosted behavior
+proof. Keep mouse and controller selection, invalid-target rejection, and multi reticles as
+the separate headed checks in `advanced-targeting.md`.
+
 ### multi-element interactions — drive the real source type, then observe each edge
 
 There is no `combo` model or DRIVER type. Drive the **source** exactly as its real element
