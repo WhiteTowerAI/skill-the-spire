@@ -1,12 +1,13 @@
 # Character static, combat-cue, and native presentation
 
 Status: **pipeline-supported for nine static profiles, deterministic top-icon/generated-
-Relic outlines, the bounded card/UI theme, and private non-Spine Idle/Attack/Hit/Dead cues
-on STS2 `0.107.1` / RitsuLib `0.4.62`**.
+Relic outlines, the bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and
+Character dialogue in native Ancient/Architect scenes on STS2 `0.107.1` / RitsuLib
+`0.4.62`**.
 The 2026-07-23 Wayfinder headed proof established selection
 portrait/background, top-panel icon, non-Spine combat/rest/merchant bodies, five-layer
-energy, and the original compact shared card-energy icon. Locked selection, map marker,
-and native Ancient/Architect presentation remain unverified. The 2026-07-27 M6.5 Meridian
+energy, and the original compact shared card-energy icon. Locked selection and map marker
+remain unverified. The 2026-07-27 M6.5 Meridian
 proof additionally pins selection/combat visible footprint without changing the 132x195 or
 512x512 pixel contracts and proves the card/UI theme, split Energy-icon consumers, and the
 deterministic top-icon/generated-Relic outline route. The outline proof combined exact
@@ -235,13 +236,12 @@ seven visible checks; generated Mods retain the automatic node/property assertio
 
 ## Ancient boundary
 
-`NAncientNameBanner`, Architect dialogue/speech color, and
-`CharacterModel.GetArchitectAttackVfx()` are source-grounded. The Character still supplies
-the abstract attack-VFX list and four Architect localization keys, but no headed custom-
-Character Ancient run occurred. Do not claim native Ancient presentation or a custom
-Ancient layout. The Foundation harness may initialize act 0 through the public test API
-when its starter Ancient intentionally produces no map; that bypass is not an Ancient
-consumer proof.
+`NAncientNameBanner`, Character/Ancient speech styling, native option restoration,
+Architect dialogue/speech color, and `CharacterModel.GetArchitectAttackVfx()` are real-host
+proved for the dedicated localization route in `reference/ancient-dialogue.md`. The focused
+Wayfarer run covered one ordinary Ancient and the production Architect transition. This
+supports a generated Character's dialogue in those native scenes; it does not support a
+custom Ancient model, background, layout, options/rewards, or global dialogue replacement.
 
 ## Acceptance contract
 
@@ -279,7 +279,8 @@ passed with no fresh error.
 - remote-player hands, identity, ownership, rebuild, and Character UI;
 - custom audio registration, mix, fallback, and cleanup;
 - arbitrary top-bar or retained-card-zone UI;
-- native custom-Character Ancient presentation and custom Ancient layouts.
+- custom Ancient models, backgrounds, layouts, options/rewards, global dialogue
+  replacement, line audio, arbitrary VFX, and multiplayer presentation.
 
 Production animation, materials, multiplayer presentation, and audio remain separate later
 tracks. None is implied by the bounded frame-sequence support.

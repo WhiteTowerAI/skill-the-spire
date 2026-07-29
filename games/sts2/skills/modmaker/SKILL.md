@@ -67,9 +67,13 @@ Energy icons. The M6.5 Character-wide color/frame contract is also pipeline-supp
 Deterministic top-icon and generated-Relic outlines are pipeline-supported. A separate
 bounded non-Spine combat layer supports private `Idle`/`Attack`/`Hit`/`Dead` frame
 sequences with one shared geometry and an all-or-nothing static fallback. Locked selection,
-map marker, Ancient, `Cast`, Spine, trails, audio, and broader animation retain explicit
-boundaries. Read `reference/character-presentation.md` and
-`reference/character-combat-cues.md` when selected.
+map marker, custom Ancient models/layouts, `Cast`, Spine, trails, audio, and broader
+animation retain explicit boundaries. Character-specific dialogue in the nine cataloged
+native Ancient/Architect scenes is a separate localization-only capability: it preserves
+native scenes/options/rewards/progression and uses RitsuLib's registered population patch.
+Read `reference/ancient-dialogue.md`; do not generate Harmony/reflection injection.
+Read `reference/character-presentation.md` and `reference/character-combat-cues.md` for
+their respective visual layers.
 Two **advanced capability contracts are RitsuLib pipeline-supported**:
 a combat-owned nonnegative resource using `SecondaryResourceCmd` with explicit
 gain/affordability/all-or-nothing spend/reset plus public `RegisterCombatUi`, and a bounded

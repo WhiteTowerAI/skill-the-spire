@@ -397,6 +397,31 @@ private static async Task InCombat(Player player, CancellationToken ct)
 (`TargetType` is `MegaCrit.Sts2.Core.Models` — already imported. For an attack the
 `card.CombatState.HittableEnemies` list is the slugs from the minimal encounter.)
 
+### calculated-value Card — preview, raw request, final state, and headed text
+
+Read `card-computed-values.md` and keep all cases in one disposable `CombatPlayer` suite.
+For each behavior case, set deterministic combat state, call
+`card.UpdateDynamicVarPreview(CardPreviewMode.Normal, target, card.DynamicVars)`, record the
+matching `PreviewValue`, then play the real hand Card and assert the exact HP, Block,
+Energy, Stars, or Power delta. Also inspect the raw execution request through the matching
+`Compute*Value` extension. This distinguishes a wrong formula from a hook applied zero or
+two times.
+
+Cover zero/positive/changing inputs and an upgraded mutable Card. Apply
+Strength/Vulnerable for Damage and Dexterity/Frail for Block, one modifier family at a
+time, and require the final preview to equal the observed result. For Power, obtain
+`SneckoSkull`, use raw Poison 2, and separately prove raw `ComputedPower<PoisonPower>` 2,
+amount-given preview 3, and final target Poison 3. Neutral Energy/Stars cases assert the
+exact requested gain; their normal gain hooks are a separate effect boundary.
+
+The structured state proof does not establish presentation. In the same headed combat,
+the reviewer must inspect the real hand Card at zero, positive, changed, and upgraded
+states; confirm Energy 0 is `0` plus one Energy icon while Stars 0 is empty; inspect
+multiple icons, maximum-count reflow, no clipping/stale glyphs, localized variable tooltip,
+and the omitted-icon fallback. A mutable hand Card displaying the tooltip also exercises
+DynamicVar clone preservation. End only after all structured cases pass and the harness
+emits `selftest done`.
+
 ### potion — procure, then EnqueueManualUse (NOT a Cmd)
 
 ```csharp

@@ -7,6 +7,8 @@
 > upgrades, SmartFormat descriptions) — **read that first.** The skill fills only the
 > **effect logic**; `ModCardTemplate`, content-pack registration, localization, and
 > `CardAssetProfile` are adapter-owned.
+> When SPEC declares calculated values, Energy/Star icon counts, typed computed Power
+> amounts, or variable tooltips, also read `reference/card-computed-values.md`.
 >
 > Vanilla cards to imitate: `StrikeIronclad` (single-target attack), `DefendIronclad`
 > (self block), `Inflame` (gain a Power), `Bash` (attack + apply a debuff).
@@ -138,8 +140,10 @@ playability — reach for them only if SPEC demands.)
 
 ## Effect building blocks (confirmed APIs — pick the block(s) matching SPEC)
 
-All `Cmd`s are `static async Task` — `await` every one. Read scaling numbers from
-`DynamicVars` (never a C# literal), so upgrades/Strength flow through.
+All `Cmd`s are `static async Task` — `await` every one. Read static scaling numbers from
+their normal `DynamicVars`; read calculated values through the matching `Compute*Value`
+extension. Never execute a calculated effect from `BaseValue` or display-only
+`PreviewValue`.
 
 ### Attack — deal damage (`CardType.Attack`, `TargetType.AnyEnemy`)
 
@@ -229,9 +233,27 @@ await PowerCmd.Apply<VulnerablePower>(choiceContext, cardPlay.Target,
 > `errors.md`) for the Cmd. If it's genuinely not in the pack, report a pack gap —
 > **do not guess a Cmd name** (the maintainer grounds new Cmds offline).
 
+### Calculated values, icon counts, and variable tooltips
+
+Read `reference/card-computed-values.md` and preserve its complete contract. In short:
+
+- generate one pure bounded calculation shared by base/upgrade preview and execution;
+- select `ComputedDamage`/`ComputedBlock` when normal combat modifiers apply, plain
+  `Computed` only when they intentionally do not, and the typed Energy/Stars/Power helper
+  for those roles;
+- execute through `ComputeDynamicValue`, `ComputeEnergyValue`, `ComputeStarsValue`, or
+  `ComputePowerValue<T>`, then pass the raw result to the normal Cmd exactly once;
+- use `{EnergyGain:energyIcons()}` and `{StarGain:starIcons()}`; and
+- attach `.WithSharedTooltip(...)` only when SPEC supplies the corresponding
+  `static_hover_tips` title/description.
+
+If Card payment or normal Hand-to-Play movement changes a formula input, the shared helper
+must make preview and live execution observe the SPEC's declared evaluation point. Stop
+authoring when that cannot be done deterministically.
+
 ## DynamicVars, upgrade & description (see `reference/mechanics.md` §1–2)
 
-Cards declare their numbers in `CanonicalVars` and read them via typed accessors:
+Cards declare their static numbers in `CanonicalVars` and read them via typed accessors:
 
 - `new DamageVar(6m, ValueProp.Move)` → `base.DynamicVars.Damage.BaseValue`
 - `new BlockVar(5m, ValueProp.Move)` → `base.DynamicVars.Block.BaseValue`
@@ -277,6 +299,12 @@ use the exact RitsuLib public entry (`MOD_CARD_TYPENAME`):
 class-name key (`{StrengthPower}`, `{VulnerablePower}`). **Flat string keys, not nested
 JSON.** No `.flavor` for cards (relics only).
 
+Calculated icon variables use the pinned `{EnergyGain:energyIcons()}` and
+`{StarGain:starIcons()}` tokens. A declared variable tooltip adds flat `.title` and
+`.description` entries to `localization/eng/static_hover_tips.json`; see
+`reference/card-computed-values.md` for the deterministic entry stem and null-icon
+fallback.
+
 ### Bounded rich text
 
 If SPEC selects vanilla text effects, read `reference/content-text-effects.md`. Card
@@ -311,8 +339,13 @@ content-pack Card registration. Do not create a second id rule.
 - [ ] `TargetType` matches the effect: `AnyEnemy` (targeted attack), `Self` (block /
       self-buff — NOT `AnyPlayer`, that's potions), `AllEnemies` (room).
 - [ ] Targeted card null-checks `cardPlay.Target` (`ArgumentNullException.ThrowIfNull`).
-- [ ] Numbers come from `CanonicalVars` + `DynamicVars.*`, not literals; `OnUpgrade`
-      bumps each var the upgrade changes.
+- [ ] Static numbers come from `CanonicalVars` + `DynamicVars.*`, not literals;
+      `OnUpgrade` bumps each static var the upgrade changes.
+- [ ] Calculated values have one bounded deterministic helper, explicit inputs/upgrade/
+      evaluation point, the matching computed factory and `Compute*Value` execution read;
+      neither `BaseValue` nor `PreviewValue` executes the effect.
+- [ ] Energy/Star descriptions use `energyIcons()`/`starIcons()` and any variable tooltip
+      has flat `static_hover_tips` title/description keys plus an intentional icon fallback.
 - [ ] Block card sets `GainsBlock => true` and uses the `cardPlay` overload of `GainBlock`.
 - [ ] `cards.json` has `<MOD>_CARD_<TYPE>.{title,description}` — flat public-entry keys,
       table `cards`; description uses `{Damage:diff()}` etc. so upgrades render.
@@ -402,6 +435,8 @@ public sealed class Bulk : ModCardTemplate
    portrait — expected in M4, not a failure. If load *errors*, that's a repair signal.
 2. Run `verify.md`: Tier 1 checks the load marker; automated Tier 2 spawns/plays the card,
    asserts its concrete state delta, and greps the structured `state proof:` line.
+   A calculated-value Card uses the focused behavior/presentation matrix in
+   `reference/card-computed-values.md`.
    A Scry Card instead uses the single focused visible-selector matrix in
    `reference/scry-helper.md` and its `R6 scry helper complete ... observed=all` marker.
 3. Manual fallback only: dev console (backtick) → **`card <MOD>_CARD_<TYPE>`** → play it in

@@ -70,6 +70,14 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      the amount and upgrade delta as **Scry** semantics. The supported helper is
      singleplayer-only; preserve multiplayer/replay requests as an explicit gap rather
      than asking the user about APIs or inventing a fallback.
+     If a displayed Card number is calculated from live state, capture one named formula,
+     every input it reads, an integer minimum/maximum, its base and upgraded behavior, and
+     whether it is plain, damage, Block, Energy icons, Star icons, a raw typed buff/debuff
+     amount, or an amount the Card applies. Ask one plain timing question only when playing
+     the Card changes an input: "Should this count the state before this card spends its
+     energy and leaves your hand, or just after?" Record any variable tooltip's title,
+     description, and whether it has a custom icon. Do not ask about preview classes,
+     formatters, delegates, or hooks.
    - **Enemy encounter**: an enemy is fought inside its encounter, so treat them as one
      unit. Resolve only what genuinely shapes the fight: the monster's **HP**, whether it
      is alone or in a group, and each move's visible warning, exact effect, and what comes
@@ -119,6 +127,12 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      capture semantic values, normal source destination, order, capacity/overflow, compile
      trigger, deterministic formula, and output. If physical played Cards must remain in a
      custom zone, preserve that as an explicit unsupported gap.
+     If it requests dialogue with a vanilla Ancient, resolve each natural-language target
+     through the pinned `0.107.1` catalog and capture ordered groups. Each group records
+     `first`, `visit N`, or `repeat from visit N`; every line records Character/Ancient
+     speaker and text, and every non-terminal line records its transition prompt. Architect
+     groups also record start/end attackers as None, Player, Architect, or Both. Explain
+     that the native global first-visit introduction wins on a never-visited profile.
      Ask only for missing semantics and offer the verified defaults below. Any other
      Harmony/Publicizer seam stays an explicit pack gap; do not silently flatten it.
 3. **Effect**: what exactly happens, in game terms (energy, damage, block, draw,
@@ -210,6 +224,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Character Foundation**: 70 HP, standard 3 energy, a 10-card Basic starter deck,
   one Starter relic, valid character-scoped card/relic/potion pools, and template/built-in
   placeholder visuals. Derive starter effects from the user's stated theme.
+- **Character Ancient dialogue** (only when requested): Character first-visit group plus a
+  repeat group from visit 2; preserve the native global first-visit-ever introduction. A
+  complete Architect group remains mandatory for every Character; default its start
+  attackers to None and end attackers to Architect when the user does not specify them.
 - **Character resource** (only when requested): combat lifetime, starts at 0, nonnegative
   integer, all-or-nothing spend, fixed 220x32 icon+text counter with text-only fallback,
   offset from native Energy, and no alternative-energy payment.
@@ -274,6 +292,9 @@ type: Attack | Skill | Power
 target: one enemy | all enemies | self
 effect: <plain-language, with numbers>
 upgrade: <what improves, e.g. "damage 6 -> 9">
+calculated values: none | <name; role; one formula; inputs; integer min/max; base/upgrade;
+  before-play or after-payment-and-move evaluation>
+variable tooltips: none | <value name -> title; description; optional custom icon>
 art: placeholder | generate: <subject/style, if the user asked for custom art>
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
@@ -349,8 +370,10 @@ combat cues: none | fixed Idle4@180ms loop, Attack4@90ms one-shot, Hit4@80ms one
 combat continuity: one derived neutral anchor repeated verbatim across all four prompts;
   identity/costume/camera/scale/pivot/baseline locked; adjacent cells are small,
   substantially overlapping in-between poses; Attack/Hit recover toward Idle
-Ancient presentation: native banner/dialogue researched but unverified |
-  deferred custom Ancient layout
+Ancient dialogue: none | target <natural name>; groups <first|visit N|repeat from visit N>;
+  ordered speaker/text/non-terminal transition prompt; Architect start/end attackers
+Ancient boundary: preserve native model/scene/background/options/rewards/progression;
+  deferred custom Ancient/layout/audio/multiplayer
 advanced mechanic: none | <unverified idea that remains beyond Foundation>
 ```
 

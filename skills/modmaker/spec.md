@@ -115,6 +115,7 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - fields: title=<shown name>; description=<hover text>; optional selection prompt
   - formatting: dynamic value placeholders; plain | bounded vanilla rich text
   - text spans: <description phrase -> semantic color intent>
+  - variable tooltips: none | <value name -> localized title; description; optional icon>
 - **effects**:
   - trigger: play
   - target: one enemy | all enemies | self
@@ -123,6 +124,11 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - helper: none | Scry top <X>, discard any number, singleplayer only
   - scaling: <named base values, e.g. damage 6; block 5; strength 2>
   - upgrade: <named value deltas, e.g. damage +3>
+  - calculated values: none | one or more
+    - <name>: role <plain | damage | block | Energy icons | Star icons | raw typed Power |
+      applied typed Power>; formula <one deterministic expression>; inputs <complete list>;
+      domain <integer [min,max]>; upgrade <same | exact change>; evaluation <before play |
+      after normal payment and move>
 - **state**: none | see the stateful-mechanic contract below
 - **presentation**:
   - assets: card portrait; placeholder | generate
@@ -135,7 +141,9 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - scenario: CombatPlayer
   - driver: play the real card against its declared target
   - invariants: <exact expected/observed state, result pile, and dependent effects>
-  - boundary cases: <upgrade/state/relationship cases; for Scry include
+  - boundary cases: <upgrade/state/relationship cases; for calculated values include
+    zero/positive/changing input, domain bounds, base/upgrade, normal modifiers, final
+    preview vs effect result, icon reflow, and variable tooltip; for Scry include
     zero/empty/short/full, order, discard hooks/history, awaited selector, and
     singleplayer restriction; or none>
 - **adapter output** (written to MEMORY after acceptance): resolved content id,
@@ -394,12 +402,21 @@ separate contracts below):
   - geometry: shared 512x512 content box/baseline/style and Bounds/Intent/Center/Orb/Talk anchors
   - fallback: one missing or invalid frame disables all cues and uses static combat body
   - explicit gaps: Cast, Spine, trails, audio, animated merchant/rest bodies
-- **Ancient presentation**: native banner/dialogue researched but unverified |
-  deferred (custom Ancient layout)
+- **Ancient dialogue**: none | one block per cataloged vanilla target
+  - target: <natural-language Ancient name; adapter resolves the pinned entry>
+  - groups:
+    - visit rule: first | visit <one-based N> | repeat from visit <one-based N>
+      - lines: ordered `speaker: Character|Ancient`, `text`, and a transition prompt on
+        every non-terminal line
+      - Architect only: start attackers and end attackers, each
+        `None|Player|Architect|Both`
+  - native priority: preserve the global first-visit-ever introduction before Character
+    exact-visit and repeating dialogue
+  - explicit gaps: custom Ancient/model/background/layout/options/rewards/audio/multiplayer
 - **derived ids** (adapter resolves after the semantic SPEC is accepted):
   - character logical id
   - every starter content logical id and localization fields
-  - Architect dialogue fields from the character reference
+  - flat Ancient dialogue keys and zero-based visit metadata from the semantic groups
 ```
 
 `author.md` dispatches `element: character` to `recipes/character.md`. Do not add a

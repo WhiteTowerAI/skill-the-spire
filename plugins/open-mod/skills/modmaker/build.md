@@ -14,9 +14,13 @@ Before MSBuild, the tool verifies:
 - project package `STS2.RitsuLib.Compat.0.107.1` is exactly `0.4.62`;
 - no BaseLib/Alchyr dependency appears in the project or manifest;
 - the manifest depends only on `STS2-RitsuLib >= 0.4.62` and targets host `0.107.1`;
+- `has_pck` is `true` exactly when the authored Mod resource tree is non-empty;
 - the installed host's `release_info.json` is stable `0.107.1`;
 - `mods/STS2-RitsuLib` contains the matching direct compat runtime or a variant-pack
-  `lib/0.107.1/STS2-RitsuLib.dll` with matching marker and manifest hash.
+  `lib/0.107.1/STS2-RitsuLib.dll` with matching marker and manifest hash;
+- any generated Character `ancients.json` uses the pinned vanilla target catalog,
+  contiguous dialogue/line structure, valid visit/repeat/Architect metadata, matching
+  Character entries, and identical keys across shipped languages.
 
 After the build it checks the NuGet lock resolved the exact compat package, copies the
 Mod's DLL/manifest/PDB through the generated MSBuild target, packs
@@ -42,6 +46,11 @@ contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
   not compile against another host.
 - `no matching 0.107.1 RitsuLib variant` means the runtime asset is missing/wrong. Install
   the compat zip or verified variant pack; do not fall back to a root beta DLL.
+- `[ancient-dialogue]` or an Ancient localization detail in the profile failure means the
+  generated flat table is structurally unsafe. Fix the reported semantic group/key; do not
+  bypass the preflight or enable the debug missing-Architect fallback.
+- `manifest has_pck must be ...` means authored localization/art/scenes and the manifest
+  disagree. Set the boolean to match the resource tree before rebuilding.
 - ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
 
 On success, mark `build` done in `PLAN.md`, record the resolved Mods path and profile in

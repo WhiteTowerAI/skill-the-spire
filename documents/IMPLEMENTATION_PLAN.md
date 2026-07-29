@@ -13,8 +13,14 @@ pipeline-supported. Their evidence is recorded in
 acceptance and its explicit lead-approved verification exceptions are recorded in
 `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; M6.5 is closed.
 
-Do not prepare or claim a GitHub release. M6.6 and M6.7 planning below do not promote any
-new surface into the supported boundary or automatically start implementation.
+M6.6 Package 2A computed Card values and Package 5 custom-Character dialogue in native
+Ancient scenes are pipeline-supported. Their focused proofs and explicit strict Tier 2
+exceptions are recorded in `documents/history/M66_COMPUTED_VALUES_RESULTS.md` and
+`documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`. The remaining M6.6 and all M6.7
+surfaces stay provisional and unsupported until their individual gates pass.
+
+Do not prepare or claim a GitHub release. Package promotion does not close M6.6 or start
+the next package automatically.
 
 ## Dependency Boundary
 
@@ -35,9 +41,11 @@ and deployed artifacts before verification.
 
 ## Verification Ownership
 
-- `CombatPlayer`: content core, stateful cadence, Scry, and Character combat cues.
+- `CombatPlayer`: content core, computed Card values, stateful cadence, Scry, and
+  Character combat cues.
 - `CombatEnemy`: Monster + Encounter and move vocabulary.
-- `MapNode`: Event behavior/presentation and bounded forced follow-up.
+- `MapNode` / Character: Event behavior/presentation, bounded forced follow-up, and native
+  Ancient/Architect dialogue.
 - `RunStart` / Character: Foundation, static presentation, resource/UI, and ordered
   buffer.
 
@@ -54,10 +62,16 @@ load marker and runtime profile matched; the strict log parser separately report
 engine-shutdown resource-leak messages after the headed session. M6.5 is closed by that
 lead decision rather than by claiming those omitted checks passed.
 
-Do not reopen Prismwright or start M7. The next planned milestone is the provisional M6.6
-capability expansion below, followed by the planned M6.7 vanilla-content track. Their
-presence in this document authorizes scope planning, not automatic implementation; the
-human lead still selects when and in what order packages start.
+M6.6 Package 2A completed on 2026-07-29 with its omitted strict Tier 2 harness recorded as
+an exception. Package 5's first headed Darv/Architect proof failed: both scenes stopped
+after their first visible line. The proof fixture and pipeline contracts are repaired, and
+the rebuilt proof passed the human lead's headed Darv and Architect recheck. The current
+log confirms the PCK load, both native routes, clean progression, and no fresh error block;
+the absent structured state marker and `selftest done` remain an explicit strict Tier 2
+exception. The focused proof project and deployed Mod were retired after recording this
+evidence. Do not reopen Prismwright or either retired proof, and do not start M7. Package 1
+advanced Card/Potion targeting is the direct next step, but this document does not start it
+without human-lead selection.
 
 ## M6.6 - Capability Expansion (Provisional)
 
@@ -83,6 +97,10 @@ the selected slice must have:
    targeting, controller focus, text fit, color, or non-overlap is the actual claim; and
 5. updated source documentation and support graph, followed by regeneration and parity
    validation of both committed payloads.
+
+An explicit human-lead decision may accept a focused manual host result in place of a
+scheduled automated gate. Record that omission as a verification exception; never relabel
+it as a strict Tier 2 pass.
 
 Do not change `games/sts2/tests/content-capability-graph.md` from unsupported to supported
 until that slice's recipe and focused host proof both exist. Ordinary package work does not
@@ -135,6 +153,14 @@ separately; completing one does not support the other two.
 
 #### 2A. Computed previews, icon variables, and variable tooltips
 
+**Status: pipeline-supported as of 2026-07-29.** Semantic intake, SPEC, authoring, a
+grounded RitsuLib `0.4.62` recipe, and deterministic contract checks now cover this slice.
+The focused `ComputedValuesProof` host established live changing text, modifier-aware
+Damage/Block, neutral Energy/Star gains, typed Poison amount-given behavior, formatter
+boundaries, reflow, and localized null-icon tooltips. The human lead accepted every headed
+and behavior case. No structured `selftest done` harness was run, so strict Tier 2 remains
+an explicit exception. This promotion does not include 2B or 2C.
+
 Extend semantic card text so one declared calculation feeds both the displayed dynamic
 value and the live effect. Route damage and block through `ComputedDamage` and
 `ComputedBlock` so previews continue to receive normal Strength, Dexterity, Vulnerable,
@@ -142,8 +168,8 @@ Frail, enchantment, and preview-hook adjustments. Use an untyped plain computed 
 for numbers that intentionally do not pass through damage/block or Power-application hooks.
 
 - Add `ComputedEnergy` and `ComputedStars` for runtime-changing Energy and Star icon counts.
-  Ground localization on the pinned formatter contract (`energyIcons()` and `starIcons()`),
-  and resolve the current local `{X:stars()}` wording mismatch before generating recipes.
+  Ground localization on the pinned formatter contract (`energyIcons()` and `starIcons()`);
+  the obsolete local `{X:stars()}` wording must never return to generated recipes.
 - Use `ComputedPower<T>` for a typed Power value and
   `ComputedPowerAmountGiven<T>` when the number means Power applied to a creature and must
   receive normal Power amount-given hooks.
@@ -156,8 +182,9 @@ for numbers that intentionally do not pass through damage/block or Power-applica
 Contract tests should cover zero, positive, and changing values; upgrade/base forms; relevant
 combat modifiers; and the difference between raw computed numbers and hook-aware damage,
 block, or Power amounts. The hosted proof must show the card text changing before play and
-then record an outcome equal to that final preview. For Energy/Stars, prove zero icons,
-multiple icons, tooltip rendering, and text reflow without clipping or stale glyphs.
+then record an outcome equal to that final preview. For Energy/Stars, prove zero-valued
+rendering, multiple icons, tooltip rendering, and text reflow without clipping or stale
+glyphs.
 
 #### 2B. Conditional hand glow and outline
 
@@ -254,6 +281,19 @@ to the normal lifecycle of unrelated source Cards remain unsupported.
 
 ### Package 5 - Custom Character dialogue in native Ancient scenes
 
+**Status: pipeline-supported as of 2026-07-29 after repaired headed recheck.** The
+semantic intake, pinned nine-target catalog, flat localization lowering, build preflight,
+RitsuLib route, and deterministic contract checks are implemented. The first
+`M66AncientProof` headed run exposed an unmounted localization PCK, an invalid proof-only
+Energy asset prefix that broke native Event controls, and no Ancient Card for Darv's
+unchanged Dusty Tome option. The repair mounts the PCK, uses a checked native proof asset,
+registers a Mod-local Ancient Card, and adds regression contracts. In the rebuilt proof,
+the human lead observed Mod-local text and normal progression through Darv and the
+production Architect path. The current log confirms the PCK mount, two Darv entries, the
+real final-act Architect transition, and no fresh error block. It does not contain the
+structured state marker or `selftest done`, so strict Tier 2 is an explicit exception. This
+package does not include custom Ancient content or global dialogue replacement.
+
 This package adds Character-specific dialogue to cataloged vanilla Ancient encounters while
 preserving their native event model, scene, background, options, rewards, and progression.
 It is a Character capability, not an M6.7 vanilla replacement: the generated Mod contributes
@@ -303,13 +343,12 @@ unsupported unless separately planned and proved.
 
 ### Proposed sequence and M6.6 completion
 
-The preferred order is 2A computed previews and dynamic values, Package 5 native Ancient
-dialogue, Package 1 targeting, Package 3 Rest Site options, 2B/2C hand and corner
-presentation, then Package 4 CardPile / ExtraHand. This starts with semantic calculations
-and localization-driven Character dialogue that have the smallest new lifecycle,
-establishes reusable targeting before manual ExtraHand play, and leaves the combined
-Card/UI/cancellation work until its prerequisites and proof patterns are stable. The human
-lead may reorder packages or add other M6.6 features by updating this section first.
+Package 2A computed values and Package 5 native Ancient dialogue are complete. The direct
+next step is Package 1 targeting, followed by Package 3 Rest Site options, 2B/2C hand and
+corner presentation, then Package 4 CardPile / ExtraHand. This establishes reusable
+targeting before manual ExtraHand play and leaves the combined Card/UI/cancellation work
+until its prerequisites and proof patterns are stable. The human lead may reorder packages
+or add other M6.6 features by updating this section first.
 
 M6.6 may close only after every feature retained in its final approved scope is either
 promoted through its own gate or explicitly removed/deferred by the human lead; all payloads
@@ -539,9 +578,9 @@ fixed templates. Combat cues remain the private, combat-only, all-or-nothing
 bodies, production audio/materials, or multiplayer presentation.
 
 Locked-selection presentation, Character-specific card trails, additional combat cue
-states, planned native custom-Character Ancient dialogue/presentation, custom Ancient
-layouts, alternative Energy, arbitrary Event layouts/chains, and one-click Workshop
-publishing remain unsupported. All provisional M6.6 surfaces and all planned M6.7
+states, custom Ancient models/backgrounds/layouts/options/rewards, Ancient line audio and
+global dialogue replacement, alternative Energy, arbitrary Event layouts/chains, and one-
+click Workshop publishing remain unsupported. All remaining unproved M6.6 surfaces and all planned M6.7
 vanilla-override surfaces remain unsupported until their individual promotion gates pass.
 Unversioned target guessing and arbitrary generated Harmony/reflection/IL remain outside
 M6.7 entirely.

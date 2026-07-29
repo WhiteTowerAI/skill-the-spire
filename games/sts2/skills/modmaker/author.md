@@ -19,7 +19,11 @@ second framework branch into this file.
 - Query the **sts2-api** skill for the recipe matching SPEC's **element**:
   `recipes/relic.md` for a relic, `recipes/potion.md` for a potion, `recipes/card.md`
   for a card. For a **card or power**, also read `reference/mechanics.md` first
-  (DynamicVars, SmartFormat descriptions, shared enums). If a Card/relic/potion/power
+  (DynamicVars, SmartFormat descriptions, shared enums). For a Card whose SPEC has
+  non-`none` `calculated values` or `variable tooltips`, also read
+  `reference/card-computed-values.md`; it owns formula timing, preview/execution parity,
+  icon formatters, typed Power semantics, and shared tooltip localization. If a
+  Card/relic/potion/power
   display selects bounded vanilla text effects, also read
   `reference/content-text-effects.md` and apply only its per-surface allowlist. If the effect needs a
   buff/debuff no vanilla power covers, read `recipes/power.md` and author the custom
@@ -60,9 +64,10 @@ second framework branch into this file.
   `recipes/character.md`: use `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>` and
   the three `TypeList*PoolModel` bases, fill exact starters/HP/Gold/loc, and register the
   Character plus starters/members once through the content pack.
-  If SPEC selects any Character art profile, richer resource/buffer presentation, or the
-  native Ancient/Architect flow, also read `reference/character-presentation.md` and obey
-  its per-consumer promotion/fallback boundary.
+  If SPEC selects any Character art profile or richer resource/buffer presentation, also
+  read `reference/character-presentation.md` and obey its per-consumer promotion/fallback
+  boundary. If SPEC selects native Ancient/Architect dialogue, read
+  `reference/ancient-dialogue.md` and use only its localization route.
   If SPEC selects a character resource, read `reference/character-resource.md`; if it
   selects a bounded ordered semantic buffer/dynamic output, read
   `reference/ordered-card-buffer.md`.
@@ -119,8 +124,12 @@ second framework branch into this file.
   player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions).
 - Add exactly one `.Card<TPool,TCard>()` step to `MainFile.Content.cs`; use
   `ColorlessCardPool` unless SPEC selects a character pool. Do not add a pool attribute.
-- Declare scaling numbers in `CanonicalVars` (`DamageVar`/`BlockVar`/`PowerVar<T>`),
-  never literals; bump them in `OnUpgrade()`.
+- Declare static scaling numbers in `CanonicalVars`
+  (`DamageVar`/`BlockVar`/`PowerVar<T>`), never literals; bump them in `OnUpgrade()`.
+  For a SPEC calculated value, instead follow `reference/card-computed-values.md`: emit
+  one pure bounded helper, select the matching computed variable role, account for upgrade
+  preview and play-transition timing, and execute through the matching `Compute*Value`
+  extension. `PreviewValue` remains display-only and `BaseValue` is not a computed result.
 - Fill **only** the `OnPlay` effect block with the recipe's confirmed Cmds
   (`DamageCmd.Attack(...).FromCard(this).Targeting(...).Execute(...)`, `CreatureCmd.GainBlock`
   with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
@@ -257,7 +266,9 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
 - If Shop/static merchant is selected, author enough unlocked non-Basic cards to provide
   at least two Attacks, two Skills, and one Power after filters; the native merchant fills
   those exact slots and otherwise throws before its UI appears.
-- Add all 14 normalized `characters.json` values and the four Architect keys from the recipe.
+- Add all 14 normalized `characters.json` values and a complete repeating Architect
+  dialogue. When SPEC selects other Ancient targets or richer Architect groups, lower the
+  semantic blocks through `reference/ancient-dialogue.md`; do not author an injection patch.
 - Keep `CharacterAssetProfile` partial fallback semantics; selected Character static
   profiles fill only the matching fields after headed proof. When combat cues are selected,
   read `reference/character-combat-cues.md` and emit only its private combat-owned
@@ -393,6 +404,11 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    selected/unselected order, normal source result pile, discard history, and one known
    `AfterCardDiscarded` effect. Keep the whole matrix in one headed run and retain the
    singleplayer assertion.
+   A **calculated-value Card** uses the focused matrix in
+   `reference/card-computed-values.md`: cover Damage/Block modifiers, zero and changing
+   Energy/Star icon counts, raw versus amount-given typed Power, base/upgrade display, and
+   the real hand-Card tooltip. Structured post-state proves behavior; headed observation
+   separately proves text, icon reflow, and tooltip presentation.
 3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
    post-state, then call the shared `StateProof(...)`. Its structured
    `[T2MOD-SELFTEST] <ModName> state proof:` line must include the selected framework,
@@ -419,9 +435,13 @@ description and SmartFormat placeholders are correct. Validate every tag against
 another color, and never copy user-supplied raw markup. Titles, flavor, and selection
 prompts stay plain.
 
-For a **character**, write the 14 normalized flat keys to `characters.json` and the four
-exact `THE_ARCHITECT.talk.<CHAR_ID>` keys to `ancients.json`, as listed in
-`recipes/character.md`. For an **event**, write the normalized title/page/option/result keys
+For a **character**, write the 14 normalized flat keys to `characters.json` and the
+complete `THE_ARCHITECT.talk.<CHAR_ID>` dialogue to `ancients.json`, as listed in
+`recipes/character.md`. Lower every selected semantic Ancient group through
+`reference/ancient-dialogue.md`: explicit zero-based `-visit`, one consistent repeat mode,
+one speaker per line, and `.next` only on non-terminal lines. Generated Mods rely on
+RitsuLib's registered population patch and emit no Harmony/reflection injection. For an
+**event**, write the normalized title/page/option/result keys
 to `events.json`; `InitialOptionKey` and `ModOptionKey` must match those explicit segments.
 
 For the JSON-backed types, add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
@@ -449,6 +469,9 @@ upgraded value renders automatically (`reference/mechanics.md` §2). A **power**
 two tables: `monsters.json` with just `<MOD>_MONSTER_<TYPE>.name`, and `encounters.json`
 with `<MOD>_ENCOUNTER_<TYPE>.title` + `.loss`. Use the exact normalized public entries
 produced by the RitsuLib adapter. Not nested JSON — a flat `Dictionary<string,string>`.
+When a calculated Card value declares a tooltip, also add its resolved `.title` and
+`.description` keys to `localization/eng/static_hover_tips.json`; omit the icon argument
+for the native null-icon fallback.
 
 ## 4. Art (per SPEC's art plan — placeholder or generate)
 

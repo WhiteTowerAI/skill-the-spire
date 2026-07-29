@@ -27,7 +27,7 @@ protected override IEnumerable<DynamicVar> CanonicalVars => new[]
 };
 ```
 
-**Read** the value for game logic (always the *base*, never the preview):
+**Read a static variable** for game logic from its base value:
 
 ```csharp
 decimal v = base.DynamicVars["DamageIncrease"].BaseValue;   // .IntValue for int
@@ -52,7 +52,10 @@ protected override void OnUpgrade() => base.DynamicVars.Damage.UpgradeValueBy(3m
 
 `DynamicVar` also carries `EnchantedValue` and `PreviewValue` (display-only, reflect
 enchantments / power hooks). **Never use `PreviewValue` for logic** — it's for the
-number shown on the card. Use `BaseValue`.
+number shown on the card. `BaseValue` is correct for the static vars above, but it is only
+a fallback/baseline on RitsuLib computed variables. A calculated Card effect must use the
+matching `ComputeDynamicValue`, `ComputeEnergyValue`, `ComputeStarsValue`, or
+`ComputePowerValue<T>` extension from `reference/card-computed-values.md`.
 
 ## 2. SmartFormat descriptions — showing the current number
 
@@ -76,7 +79,7 @@ precise token/args before relying on one you haven't seen used:**
 | `{Damage:diff()}` | HighlightDifferences | Colors the number green/red vs. its base (upgrade/buff preview). The common one for card values. |
 | `{X:diffInverse()}` | HighlightDifferencesInverse | Same, flipped (green when lower is better). |
 | `{Cost:energyIcons()}` | EnergyIcons | Renders energy-cost glyphs. |
-| `{X:stars()}` | StarIcons | Star glyphs. |
+| `{X:starIcons()}` | StarIcons | Star glyphs. Zero renders no glyph; a positive count repeats the glyph. |
 | `{X:percentMore()}` / `:percentLess()` | PercentMore/Less | "X% more/less" phrasing. |
 | `{X:showIfUpgraded()}` | ShowIfUpgraded | Emits text only on the upgraded card. |
 | `{X:abs()}` | AbsoluteValue | Absolute value (for powers that store a signed amount). |
@@ -157,6 +160,9 @@ proof. In particular, a run-persistent relic counter uses RitsuLib
   required Counter amount-domain contract (§4).
 - **`recipes/card.md`** — `DamageVar`/`BlockVar` in `CanonicalVars` (§1), `OnUpgrade`,
   `{Damage:diff()}` (§2), `CardType`/`CardRarity`/`TargetType` in the constructor (§3).
+- **`reference/card-computed-values.md`** — calculated Card roles, preview/execution
+  parity, Energy/Star icon formatting, typed Power amount-given hooks, and variable
+  tooltips.
 - **relics/potions** — mostly literal amounts + plain descriptions; they only need §3
   (enums). They reach here only for a scaling effect. A stateful relic additionally
   routes to `stateful-mechanics.md` (§5); potion saved state is not pipeline-supported.

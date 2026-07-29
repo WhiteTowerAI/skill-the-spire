@@ -41,6 +41,17 @@ RitsuLibFramework.CreateContentPack(ModId)
     .Apply();
 ```
 
+When Package 5 selects Darv dialogue, the same content pack must register a semantically
+authored Ancient Card for Darv's unchanged Dusty Tome option:
+
+```csharp
+    .Card<<CardPool>, <AncientCard>>()
+    .DustyTomeCard<<CharacterName>, <AncientCard>>()
+```
+
+`<AncientCard>` must report `CardRarity.Ancient`. Do not remove Dusty Tome, map a Basic
+starter, or continue when the Character design has no approved Ancient Card.
+
 The character extends the typed RitsuLib template. Fill every public abstract
 member explicitly; do not infer historical getter names:
 
@@ -185,15 +196,22 @@ RitsuLib uses the normalized public entry
 <CHAR_ID>.banter.dead.endTurnPing
 ```
 
-Also ship these four `ancients.json` keys even though native custom-Character
-Ancient presentation remains unverified:
+Also ship this complete repeating `ancients.json` group. It covers Architect win index
+zero and all later wins even when no optional Ancient dialogue was requested:
 
 ```text
 THE_ARCHITECT.talk.<CHAR_ID>.0-0r.char
 THE_ARCHITECT.talk.<CHAR_ID>.0-0r.next
 THE_ARCHITECT.talk.<CHAR_ID>.0-1r.ancient
-THE_ARCHITECT.talk.<CHAR_ID>.0-attack
+THE_ARCHITECT.talk.<CHAR_ID>.0-visit
+THE_ARCHITECT.talk.<CHAR_ID>.0-startattack
+THE_ARCHITECT.talk.<CHAR_ID>.0-endattack
 ```
+
+Use visit `0`, start attackers `None`, and end attackers `Architect` unless SPEC says
+otherwise. When SPEC selects Character-specific dialogue for a cataloged vanilla Ancient
+or richer Architect dialogue, read `reference/ancient-dialogue.md` and lower every
+semantic group through that contract. Do not generate an Ancient injection patch.
 
 ## Static presentation
 
@@ -242,14 +260,14 @@ merchant/rest playback. One missing or invalid frame disables all cues, creates 
 node, and selects the checked static `combat.png`; if that file is also absent, return
 `null` for the resolved profile fallback.
 
-## Ancient boundary
+## Native Ancient dialogue boundary
 
 The public Character abstract members include `NameColor`, animation delays, and
-`GetArchitectAttackVfx()`. Supplying them and the four localization keys is a
-compile/localization requirement, not an Ancient presentation proof. Do not drive
-the initial Ancient merely to make the Foundation map load; the R4 harness used the
-public test API to initialize act 0 and left `NAncientNameBanner`, Architect
-dialogue, speech color, and custom Ancient layouts unclaimed.
+`GetArchitectAttackVfx()`. RitsuLib's registered population patch reads the generated flat
+table and appends only this Character's dialogue to native sets. The generated Mod emits no
+Harmony/reflection injection. Follow `reference/ancient-dialogue.md` for catalog, visit,
+repeat, prompt, attacker, validation, and hosted-proof rules. Custom Ancient models,
+backgrounds/layouts, options/rewards, line audio, and multiplayer remain unsupported.
 
 ## Tier 2: selection + RunStart + CombatPlayer + world consumers
 
@@ -302,11 +320,13 @@ lead accepted both headed checkpoints.
 - [ ] no BaseLib namespace/package/manifest dependency, pool attribute, or manual registration
 - [ ] exact HP/Gold/pool member sets/starter multisets are asserted
 - [ ] non-Basic pool has at least `2 Attack / 2 Skill / 1 Power` before Shop
-- [ ] all 14 Character keys and four Architect keys use the normalized Character entry
+- [ ] all 14 Character keys and complete Architect dialogue use the normalized Character entry
+- [ ] selected Ancient groups pass `ancient_dialogue.py`, mount from a `has_pck=true` resource tree, and preserve native scenes/options
+- [ ] Darv dialogue registers a Mod-local `CardRarity.Ancient` Dusty Tome candidate
 - [ ] every selected static asset renders in its real consumer with a screenshot and state proof
 - [ ] one theme contract owns four colors, frame parameters, and distinct 256x256/24x24 Energy paths
 - [ ] one 3% white-alpha rule derives the top icon and every generated Relic outline with no acquisition call
 - [ ] selected combat cues use the fixed private four-action set, shared geometry, cleanup, and all-or-nothing fallback
 - [ ] `CharacterAssetProfile.VisualCues` remains unset; merchant/rest keep their static textures
-- [ ] locked/map/Ancient/Cast/Spine/trail/arbitrary-material/multiplayer/audio boundaries remain explicit
+- [ ] locked/map/custom-Ancient/Cast/Spine/trail/arbitrary-material/multiplayer/audio boundaries remain explicit
 - [ ] strict Tier 1/Tier 2, `selftest done`, and no fresh error pass on the pinned profile

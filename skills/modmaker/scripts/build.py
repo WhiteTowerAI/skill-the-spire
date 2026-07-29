@@ -18,11 +18,16 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
 from pathlib import Path
 
+from ancient_dialogue import (
+    AncientDialogueValidationError,
+    validate_project_ancient_dialogue,
+)
 from pack_pck import PackError, pack_assets
 from ritsu_profile import (
     PROFILE,
@@ -96,6 +101,27 @@ def pack_project_assets(project_dir: Path, mod_name: str, mods_dir: Path) -> boo
     return True
 
 
+def validate_resource_manifest(project_dir: Path, mod_name: str) -> str:
+    """Require the manifest's PCK declaration to match the authored resource tree."""
+    source_dir = project_dir / mod_name
+    has_resources = source_dir.is_dir() and any(
+        path.is_file() for path in source_dir.rglob("*")
+    )
+    manifest = find_manifest(project_dir, mod_name)
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RitsuProfileError(f"invalid manifest JSON in {manifest}: {exc}") from exc
+    has_pck = data.get("has_pck")
+    if not isinstance(has_pck, bool) or has_pck != has_resources:
+        expected = str(has_resources).lower()
+        raise RitsuProfileError(
+            f"manifest has_pck must be {expected} when the generated resource tree "
+            f"is {'non-empty' if has_resources else 'empty'}; found {has_pck!r}"
+        )
+    return f"has_pck={str(has_pck).lower()}"
+
+
 def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path) -> None:
     manifest = find_manifest(project_dir, mod_name)
     deployed_manifest = mods_dir / manifest.name
@@ -143,6 +169,10 @@ def main(argv: list[str]) -> int:
     try:
         summary = validate_project_contract(project_dir, mod_name)
         print(f"[build] profile OK: {summary}")
+        resource_summary = validate_resource_manifest(project_dir, mod_name)
+        print(f"[build] resource manifest OK: {resource_summary}")
+        dialogue_summary = validate_project_ancient_dialogue(project_dir, mod_name)
+        print(f"[build] Ancient dialogue OK: {dialogue_summary}")
         if args.skip_runtime_check:
             print("[build] WARNING: runtime/host validation skipped; this build cannot satisfy Tier 1")
         else:
@@ -155,7 +185,7 @@ def main(argv: list[str]) -> int:
             print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
             runtime = Path(args.runtime_dir) if args.runtime_dir else Path(mods_root_text) / PROFILE.runtime_mod_id
             print(f"[build] runtime OK: {validate_runtime_asset(runtime)}")
-    except (OSError, RitsuProfileError) as exc:
+    except (OSError, AncientDialogueValidationError, RitsuProfileError) as exc:
         print(f"[build] RitsuLib profile FAILED: {exc}", file=sys.stderr)
         return 2
 

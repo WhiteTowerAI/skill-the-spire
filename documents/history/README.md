@@ -38,6 +38,11 @@ Current sources of truth:
   bundle/footprint/theme/outline and bounded combat-cue results
 - `M65_FRESH_ACCEPTANCE_RESULTS.md` - Prismwright fresh Character acceptance, explicit
   lead waiver of the remaining Tier 2 harness, and acceptance-project retirement
+- `M66_COMPUTED_VALUES_RESULTS.md` - Package 2A computed Card-value focused proof,
+  human-lead manual acceptance, and strict Tier 2 exception
+- `M66_ANCIENT_DIALOGUE_RESULTS.md` - Package 5 failed initial native Ancient-dialogue
+  proof, repair evidence, successful headed recheck, strict Tier 2 exception, and proof
+  retirement
 
 The final canary-results section records the player-found Wayfinder lifecycle correction:
 the semantic ordered buffer supersedes the retained-card `CustomPile` claim.

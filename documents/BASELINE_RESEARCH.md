@@ -107,14 +107,20 @@ research Mod.
 
 The human lead selected five provisional capability packages for M6.6. These research
 findings identify product requirements only; pinned RitsuLib `0.4.62` and real hosted
-proofs remain the API and support authority.
+proofs remain the API and support authority. Package 2A computed Card values has passed its
+focused gate. Package 5 custom-Character dialogue in native Ancient scenes passed its
+focused gate after repairing the defects exposed by its first headed proof. Their records
+are `documents/history/M66_COMPUTED_VALUES_RESULTS.md` and
+`documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`.
 
 - **Advanced Card/Potion target types:** bound filtering, selection/cancel behavior,
   revalidation, ownership, and the resulting source-content lifecycle rather than exposing
   an arbitrary patch hook.
-- **Gameplay readability:** independently prove computed previews, dynamic Energy/Star and
-  typed Power amounts, variable tooltips, conditional hand emphasis, and bounded
-  Relic/Power/Intent labels in their real consumers.
+- **Computed Card readability (promoted):** one formula now drives preview and execution
+  for dynamic Damage/Block, Energy/Star icon counts, typed Power amounts, and variable
+  tooltips in their real Card consumers.
+- **Remaining gameplay readability:** independently prove conditional hand emphasis and
+  bounded Relic/Power/Intent labels in their real consumers.
 - **Custom Rest Site options:** `RoastPorkRestSiteOption` demonstrates the product shape of
   owned eligibility, localized title/description, custom icon, asynchronous outcome, and
   card-acquisition preview. The generated implementation must use RitsuLib's public Rest
@@ -123,13 +129,16 @@ proofs remain the API and support authority.
   explicit ordering, movement, capacity, interaction, and cleanup. Persistence,
   multiplayer, vanilla-pile replacement, and general retained-card semantics stay outside
   the first slice.
-- **Custom-Character native Ancient dialogue:** RitsuLib's registered
+- **Custom-Character native Ancient dialogue (promoted):** RitsuLib's registered
   `AncientDialoguePopulateLocKeysPatch` appends localization-defined dialogue for Mod
   Characters to each native `AncientDialogueSet` once. The flat `ancients.json` contract
   covers ordered Ancient/Character lines, repeat and visit routing, transition prompts, and
-  Architect attacker metadata. Open-mod still needs semantic intake, a pinned Ancient
-  catalog, structural localization validation, and focused native-scene proof; the YuWan
-  implementation is product evidence only and its private injection patch is not reusable.
+  Architect attacker metadata. Open-mod now owns semantic intake, a pinned nine-target
+  catalog, structural localization validation, and focused native-scene proof. The initial
+  native-scene attempt exposed missing resource mounting, Event UI assets, and Darv Dusty
+  Tome registration; the repaired Darv and Architect recheck passed. The YuWan
+  implementation remains product evidence only and its private injection patch is not
+  reusable.
 
 ### M6.7 vanilla-override planning inputs
 

@@ -14,6 +14,7 @@ Support levels:
 | Capability | Host | Active boundary |
 |---|---|---|
 | card / relic / potion / power | `CombatPlayer` | RitsuLib `Mod*Template`, exactly-once content-pack registration, explicit pools, checked art fallback |
+| computed Card values | `CombatPlayer` | one bounded formula for preview/execution; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltip |
 | keyword | `CombatPlayer` | RitsuLib-owned native keyword, real Card text and no-icon tooltip, named behavior |
 | enchantment | `CombatPlayer` | template/registration, persistent Card attachment, checked 64x64 icon |
 | orb | `CombatPlayer` | template/registration, passive/evoke, checked 100x100 icon; Frost body/SFX fallback |
@@ -28,8 +29,25 @@ Support levels:
 | Character card/UI theme | Character select + `CombatPlayer` | four named colors, cached deterministic pool-frame material, distinct 256x256 card and 24x24 rich-text Energy consumers |
 | Character/Relic outlines | `CombatPlayer` | deterministic 3% opaque-white alpha expansion, inset-safe main normalization, exact main/outline wiring in real top-panel and Relic hosts |
 | Character combat cues | `CombatPlayer` | private non-Spine Idle4/Attack4/Hit4/Dead6 sequences, shared geometry, one-shot/terminal routing, cleanup, all-or-nothing static fallback |
+| Character dialogue in native Ancient scenes | `MapNode` / Character | nine pinned vanilla targets, Character-scoped first/visit/repeat groups, RitsuLib localization population, native scene/options/outcomes, complete Architect routing and attackers |
 | Character resource/payment/UI | two-combat Character | RitsuLib Secondary Resource, bool payment, public 220x32 fixed UI at offset 160, text fallback |
 | ordered semantic buffer | two-combat Character | combat-attached semantic values, overflow/order/output/reset, normal source Play -> Discard |
+
+The focused `ComputedValuesProof` host covered base/upgrade and live-input changes,
+Strength/Vulnerable, Dexterity/Frail, Energy/Star zero and maximum formatting, exact neutral
+resource gains, Snecko Skull raw-versus-applied Poison, tooltip fallback, clone survival,
+and real hand-Card reflow. The human lead accepted the complete manual matrix. The proof
+had a matching Tier 1 profile and no fresh target-Mod error, but no structured `selftest
+done`; strict Tier 2 is a recorded exception, not a pass. See
+`documents/history/M66_COMPUTED_VALUES_RESULTS.md`.
+
+The first headed `M66AncientProof` Darv/Architect run exposed three proof defects and
+stopped after the first visible lines. After repair, the human lead observed Mod-local text
+and normal native progression in both routes. The current log confirmed the mounted PCK,
+two Darv entries, the production Architect transition, clean run progression, and no fresh
+error block. The structured state proof and `selftest done` were absent, so strict Tier 2
+is a recorded exception rather than a pass. See
+`documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`.
 
 ## Static Art Contract
 
@@ -95,8 +113,8 @@ Do not generate it.
 - all planned M6.7 version-bound vanilla content override categories, plus ungrounded patch
   targets or arbitrary generated Harmony/reflection/IL;
 - custom locked-selection/map-marker presentation;
-- planned M6.6 native Ancient dialogue/presentation for custom Characters, plus custom
-  Ancient models, backgrounds, and layouts;
+- custom Ancient models, backgrounds, layouts, options/rewards, line audio, global
+  dialogue replacement, arbitrary Ancient VFX, and multiplayer presentation;
 - production animation beyond the bounded Idle/Attack/Hit/Dead cues, Cast, Spine, trails,
   arbitrary materials beyond the bounded pool-frame helper,
   multiplayer presentation, and audio;

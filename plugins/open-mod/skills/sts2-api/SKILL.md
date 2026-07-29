@@ -48,10 +48,12 @@ scaffold, or infer a runtime dependency from a recipe name.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
    RitsuLib typed template, one content-pack registration, three pools, starters, two-table
    localization, static profile/fallback, and `RunStart` + `CombatPlayer` proof.
-   When Character SPEC selects static art, combat cues, richer resource/buffer UI, or native
-   Ancient/Architect presentation, also read
-   `../sts2-api/reference/character-presentation.md`. It separates the four
-   live-proven loose-PNG consumers from scene-export and headed-Ancient blockers.
+   When Character SPEC selects static art, combat cues, or richer resource/buffer UI, also read
+   `../sts2-api/reference/character-presentation.md`. It separates the nine
+   live-proven static consumers, combat cues, and dedicated native-Ancient dialogue route.
+   When it selects custom-Character dialogue in a cataloged native Ancient or Architect,
+   read `../sts2-api/reference/ancient-dialogue.md`; use its flat localization,
+   build validation, native priority, and proof route without generating a patch.
    For the bounded non-Spine `Idle`/`Attack`/`Hit`/`Dead` frame sequences, additionally
    read `../sts2-api/reference/character-combat-cues.md`; keep its cue set private
    to the combat state machine and preserve its all-or-nothing static fallback.
@@ -66,6 +68,10 @@ scaffold, or infer a runtime dependency from a recipe name.
    `../sts2-api/reference/mechanics.md` first (scaling numbers, SmartFormat
    descriptions, shared enums). When Card/relic/potion/power descriptions select bounded
    vanilla colors, also read `../sts2-api/reference/content-text-effects.md`.
+   When a Card has calculated description values, Energy/Star icon counts, typed computed
+   Power amounts, or variable tooltips, also read
+   `../sts2-api/reference/card-computed-values.md`. It owns the shared-formula,
+   evaluation-timing, formatter, execution-helper, and tooltip proof contracts.
    When a Card looks at the top X Draw cards and discards any number, also read
    `../sts2-api/reference/scry-helper.md`. It owns the singleplayer-only
    open-mod helper, native selector/discard lifecycle, structured result, and proof.
@@ -99,6 +105,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `recipes/monster.md` | Monster + Encounter as one vertical slice: grounded moves, cycles/branches, static combat+bestiary body, fallback, and `CombatEnemy` proof | Authoring a fought enemy or its move cycle after adapter selection |
 | `recipes/event.md` | Event / World Node pages/options, outcomes, checked portraits, and `MapNode` proof | Authoring a map event after adapter selection |
 | `recipes/character.md` | Character Foundation pools, starters, localization, selection/run behavior, fallbacks, and proof | Authoring a playable character shell after adapter selection |
+| `reference/ancient-dialogue.md` | Pinned vanilla Ancient catalog, semantic visit groups, flat RitsuLib localization, structural validator, native priority, Architect attackers, and focused proof | Authoring or verifying custom-Character dialogue in native Ancient scenes |
 | `reference/character-presentation.md` | RitsuLib Character profile/consumer matrix; nine live static profiles; no-editor raw-scene packing; five-layer energy scene; split card/text Energy icons; bounded theme; native Ancient/Architect proof boundary | Authoring or verifying Character static/native presentation |
 | `reference/character-combat-cues.md` | Bounded non-Spine Idle/Attack/Hit/Dead sheets, deterministic frame normalization, private combat cue wiring, shared geometry, all-or-nothing static fallback, and hosted proof | Authoring or verifying Character combat cues |
 | `reference/event-outcomes.md` | Full normal-Event outcome vocabulary: immediate Cmd combinations, multi-page/locked options, blocking card selections, custom rewards, resumable/terminal special combat, extra combat rewards, one-combat-per-instance boundary, and unsupported room transitions | Authoring an Event beyond the one-Cmd fast path |
@@ -111,6 +118,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `reference/character-resource.md` | RitsuLib combat resource: `SecondaryResourceDefinition`/`SecondaryResourceCmd`, combat reset, all-or-nothing spend, public `RegisterCombatUi`, fixed 220x32 counter at offset 160, text fallback, and two-combat proof | Authoring a character resource and explicit-payoff loop |
 | `reference/ordered-card-buffer.md` | Ordered buffer: `AttachedState<PlayerCombatState,TState>`, native source-card Discard, visible order, non-destructive overflow, deterministic output/`CardGeneratedEntry`, and combat reset; retained-card `CustomPile` remains unsupported | Authoring an ordered card-play record and dynamic output |
 | `reference/scry-helper.md` | open-mod Scry helper: top-X native selector, structured result, normal Discard history/hooks, zero/empty/short/full boundaries, await proof, and explicit singleplayer restriction | Authoring a Card that looks at the top X Draw cards and discards any number |
+| `reference/card-computed-values.md` | Computed Card value roles, one-formula preview/execution parity, upgrade/timing/domain rules, Energy/Star formatters, typed Power amount-given behavior, variable tooltips, and focused proof | Authoring a Card with calculated text/effects or DynamicVar tooltips |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
@@ -151,8 +159,8 @@ Harmony patching and is deferred. The recipes make **new** elements.
   outline `88x88`, static bodies `512x512`, five energy layers `256x256`, and distinct
   256x256 large/24x24 rich-text Energy icons. The bounded M6.5 pool-frame/color theme and
   deterministic top-icon/generated-Relic outlines are pipeline-supported. Locked
-  selection, map marker, and native Ancient/Architect presentation need separate headed
-  evidence.
+  selection and map marker still need separate headed evidence. Character-specific native
+  Ancient/Architect dialogue is supported only through the dedicated localization contract.
 - **Character combat cues:** support exactly the private combat-only Idle/Attack/Hit/Dead
   contract. Require all eighteen 512x512 frames, one shared style/geometry, one-shot return
   and terminal behavior, cleanup, and all-or-nothing static fallback. Never publish the set

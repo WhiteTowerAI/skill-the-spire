@@ -28,6 +28,8 @@ class SemanticContractTests(unittest.TestCase):
             encoding="utf-8"
         )
         cls.spec = (MODMAKER_DIR / "spec.md").read_text(encoding="utf-8")
+        cls.interview = (MODMAKER_DIR / "interview.md").read_text(encoding="utf-8")
+        cls.author = (MODMAKER_DIR / "author.md").read_text(encoding="utf-8")
 
     def test_contract_has_all_shared_semantic_sections(self) -> None:
         for field in (
@@ -158,6 +160,76 @@ class SemanticContractTests(unittest.TestCase):
         ):
             self.assertIn(rule, normalized)
 
+    def test_computed_card_values_preserve_one_formula_and_native_hooks(self) -> None:
+        card = surface_block(self.spec, "Card", "Custom power")
+        reference = (
+            STS2_API_DIR / "reference" / "card-computed-values.md"
+        ).read_text(encoding="utf-8")
+        mechanics = (
+            STS2_API_DIR / "reference" / "mechanics.md"
+        ).read_text(encoding="utf-8")
+        recipe = (STS2_API_DIR / "recipes" / "card.md").read_text(
+            encoding="utf-8"
+        )
+        api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
+        normalized_card = " ".join(card.split())
+        normalized = " ".join(reference.split())
+        normalized_interview = " ".join(self.interview.split())
+
+        for field in (
+            "calculated values",
+            "formula <one deterministic expression>",
+            "inputs <complete list>",
+            "domain <integer [min,max]>",
+            "evaluation <before play | after normal payment and move>",
+            "variable tooltips",
+        ):
+            self.assertIn(field, normalized_card)
+
+        for role in (
+            "ModCardVars.ComputedDamage",
+            "ModCardVars.ComputedBlock",
+            "ModCardVars.ComputedEnergy",
+            "ModCardVars.ComputedStars",
+            "ModCardVars.ComputedPower<T>",
+            "ModCardVars.ComputedPowerAmountGiven<T>",
+        ):
+            self.assertIn(role, reference)
+
+        for execution_read in (
+            "ComputeDynamicValue",
+            "ComputeEnergyValue",
+            "ComputeStarsValue",
+            "ComputePowerValue<T>",
+        ):
+            self.assertIn(execution_read, reference)
+
+        for rule in (
+            "The formula must be pure",
+            "Stop authoring when the two phases cannot be reconciled deterministically.",
+            "`PreviewValue` is display-only.",
+            "`BaseValue` is not the live result of a computed variable.",
+            "normal Block hooks once",
+            "`PowerCmd.Apply<T>` runs `ModifyPowerAmountGiven` once",
+            "Energy 0 is therefore not an empty result",
+            "Stars 0 renders no image",
+            "WithSharedTooltip",
+            "native null-icon Hover Tip",
+            "real hand-Card hover consumer",
+        ):
+            self.assertIn(rule, normalized)
+
+        self.assertIn("{X:starIcons()}", mechanics)
+        self.assertNotIn("{X:stars()}", mechanics)
+        for routed in (self.author, recipe, api_skill):
+            self.assertIn("card-computed-values.md", routed)
+        for intake_rule in (
+            "one named formula",
+            "integer minimum/maximum",
+            "before this card spends its energy and leaves your hand",
+        ):
+            self.assertIn(intake_rule, normalized_interview)
+
     def test_character_combat_cues_preserve_private_all_or_nothing_contract(self) -> None:
         cues = (
             STS2_API_DIR / "reference" / "character-combat-cues.md"
@@ -205,6 +277,65 @@ class SemanticContractTests(unittest.TestCase):
             "adjacent cells are small, substantially overlapping in-between pose steps",
         ):
             self.assertIn(field, " ".join(self.spec.split()))
+
+    def test_character_ancient_dialogue_is_semantic_validated_and_native(self) -> None:
+        reference = (
+            STS2_API_DIR / "reference" / "ancient-dialogue.md"
+        ).read_text(encoding="utf-8")
+        recipe = (STS2_API_DIR / "recipes" / "character.md").read_text(
+            encoding="utf-8"
+        )
+        api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
+        build = (MODMAKER_DIR / "build.md").read_text(encoding="utf-8")
+        verify = (MODMAKER_DIR / "verify.md").read_text(encoding="utf-8")
+        normalized = " ".join(reference.split())
+        normalized_spec = " ".join(self.spec.split())
+
+        self.assertIn(
+            "Character Ancient dialogue | cataloged natural target",
+            self.contract,
+        )
+        for field in (
+            "visit rule: first | visit <one-based N> | repeat from visit <one-based N>",
+            "speaker: Character|Ancient",
+            "transition prompt",
+            "start attackers and end attackers",
+            "preserve the global first-visit-ever introduction",
+        ):
+            self.assertIn(field, normalized_spec)
+
+        for target in (
+            "DARV",
+            "NEOW",
+            "NONUPEIPE",
+            "OROBAS",
+            "PAEL",
+            "TANX",
+            "TEZCATARA",
+            "VAKUU",
+            "THE_ARCHITECT",
+        ):
+            self.assertIn(f"`{target}`", reference)
+        for rule in (
+            "The vanilla global first-visit-ever dialogue has higher priority",
+            "Dialogue and line indexes begin at zero and are contiguous.",
+            "Every non-terminal line has exactly one matching `.next`",
+            "It does not allow `ANY` fallback.",
+            "Generated Mods only provide `ancients.json`",
+            "do not emit Harmony, reflection, IL, Publicizer",
+            "line-level Ancient dialogue SFX is unsupported",
+            "The localization resource tree requires `has_pck=true`",
+            ".DustyTomeCard<<Character>, <AncientCard>>()",
+            "fresh missing-resource or UI exception",
+        ):
+            self.assertIn(rule, normalized)
+
+        for routed in (self.author, recipe, api_skill):
+            self.assertIn("reference/ancient-dialogue.md", routed)
+        self.assertIn(".DustyTomeCard<<CharacterName>, <AncientCard>>()", recipe)
+        self.assertIn("CardRarity.Ancient", recipe)
+        self.assertIn("ancients.json", build)
+        self.assertIn("production `EnterNextAct()` path", verify)
 
 
 if __name__ == "__main__":

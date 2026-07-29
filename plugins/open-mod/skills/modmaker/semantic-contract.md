@@ -41,11 +41,14 @@ not replace or rename the shared sections.
   - key rule: adapter derives stable content keys from logical id; SPEC records the
     resulting keys only after the adapter resolves them
   - formatting: plain | bounded vanilla rich text | SmartFormat values
+  - variable tooltips: <none or value name -> localized title/description and optional icon>
 - **effects**:
   - trigger: <play/use/turn/room/run/selection/encounter move>
   - target: <self/one enemy/all enemies/owner/room>
   - sequence: <ordered game-term operations and exact values>
   - scaling: <named values, upgrade deltas, and bounds>
+  - calculated values: <none or named role/formula/inputs/integer domain/upgrade behavior/
+    evaluation point>
 - **state**:
   - lifetime: none | turn | combat | run
   - owner: <real content node or player state that owns it>
@@ -73,13 +76,21 @@ start of combat, double current energy” is valid; a particular method name is 
 Likewise, “shared relic pool” is valid; a pool attribute or registration call is
 adapter detail.
 
+A calculated Card value is semantic data, not an implementation expression. It records
+one deterministic formula, all live inputs, an integer domain, base/upgrade behavior, and
+whether the intended state is observed before the Card plays or after its normal payment
+and move. The same declared calculation owns the displayed value and effect request. If
+those phases cannot observe equivalent state, authoring stops instead of keeping a second
+display-only formula. Damage, Block, Energy icons, Star icons, raw typed Power, and applied
+typed Power remain distinct roles because their normal game modifiers differ.
+
 ## Surface inputs
 
 These are the only surface-specific inputs the adapter needs from a normal SPEC:
 
 | Surface | Semantic inputs | Current proof route |
 |---|---|---|
-| Card | cost, kind, rarity, target, scaling values, upgrade deltas, effect sequence | `CombatPlayer` |
+| Card | cost, kind, rarity, target, scaling values, optional calculated value contract, upgrade deltas, effect sequence | `CombatPlayer` |
 | Relic | rarity, availability, trigger, owner guard, effect sequence, state contract | `CombatPlayer` |
 | Potion | rarity, usage window, target, effect sequence | `CombatPlayer` |
 | Power | buff/debuff, stack domain, trigger, amount mutation, display fields | `CombatPlayer` |
@@ -92,6 +103,7 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Character combat cues | enabled/disabled fixed Idle/Attack/Hit/Dead contract, shared footprint/anchors, static fallback | `RunStart` + `CombatPlayer` |
 | Character combat resource | name, gain/spend/payoff, nonnegative domain, combat reset, fixed UI/fallback | two-combat Character / `CombatPlayer` |
 | Ordered semantic buffer | value/order, capacity/overflow, normal source destination, formula/output | two-combat Character / `CombatPlayer` |
+| Character Ancient dialogue | cataloged natural target, first/explicit/repeat visit, ordered speaker/text/prompts, Architect attackers | native Ancient + production Architect |
 | Card Scry helper | top-X amount, discard-any choice, upgrade delta, singleplayer boundary | `CombatPlayer` with visible native selector |
 
 The adapter may require additional technical inputs internally, but those belong in

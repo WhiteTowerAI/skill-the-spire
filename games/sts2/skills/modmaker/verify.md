@@ -174,9 +174,17 @@ assertion plus visual inspection. In particular:
   and playback cleanup between combats. The harness asserts every 512x512 frame and shared
   geometry. Separately omit one frame and require the static 512x512 combat body with no
   playback node or surviving-frame flash. Read `reference/character-combat-cues.md`.
-- Ancient presentation: enter the real Ancient/Architect flow and capture the native name
-  banner plus one character/Architect dialogue exchange. Assert the character localization,
-  speech-bubble color, and attack VFX selection; normal Event rich text is not a substitute.
+- Character Ancient dialogue: first parse every selected catalog target through the actual
+  RitsuLib localization route and assert group count, line order/speaker, visit/repeat,
+  prompts, and Architect attackers. Enter one ordinary target through `ancient <ID>` and
+  enter Architect only through the final-act production `EnterNextAct()` path. In the
+  ordinary scene confirm the native name banner/background, Character and Ancient
+  icon/bubble direction/color, readable text/prompts, mouse/controller progression, and
+  restoration of the untouched native options after the last line. In Architect confirm
+  Character speech color, configured start/end attackers, every selected
+  `GetArchitectAttackVfx()` path, Proceed, and clean run completion. A fresh profile's
+  global first-visit-ever line correctly wins before Character dialogue. Normal Event rich
+  text, `event THE_ARCHITECT`, debug fallback, or a successful build is not a substitute.
 
 If a secondary view cannot be reached, report behavior Tier 2 separately and label the art
 unverified; do not infer it from a resource path, `.pck` build, or primary view.

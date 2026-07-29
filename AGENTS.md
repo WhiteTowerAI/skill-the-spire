@@ -25,13 +25,17 @@ human-lead decision; its headed result and waived Tier 2 harness are recorded in
 `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. Do not reopen that proof, start M7, or
 prepare/claim a GitHub release without later lead instruction.
 
-M6.6 is the provisional next capability milestone. Its current plan contains advanced
-Card/Potion target types, gameplay-readability surfaces, owned custom Rest Site options,
-a combat-only singleplayer custom CardPile/ExtraHand slice, and custom-Character dialogue
-in native Ancient scenes. The package list may gain other lead-approved features. Planning
-does not make these surfaces supported or start implementation automatically; follow
-`documents/IMPLEMENTATION_PLAN.md`, wait for the lead to select a package/order, and keep
-all unproved surfaces unsupported.
+M6.6 is the active provisional capability milestone. Package 2A computed Card values is
+pipeline-supported, with its focused result and explicit manual-verification exception in
+`documents/history/M66_COMPUTED_VALUES_RESULTS.md`. Package 5 custom-Character dialogue in
+native Ancient scenes is also pipeline-supported after its repaired headed Darv and
+Architect recheck; its failed first proof, repair, successful recheck, and strict Tier 2
+exception are recorded in `documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`; the focused
+proof project and deployed Mod are retired. Package 1 advanced Card/Potion targeting is the
+direct next step in the approved order, but it does not start automatically. The remaining
+gameplay-readability surfaces, owned custom Rest Site options, and the combat-only
+singleplayer custom CardPile/ExtraHand slice remain planned and unsupported until
+individually selected and proved. The package list may gain other lead-approved features.
 
 M6.7 is the planned follow-on for version-bound vanilla content overrides and behavior
 composition. Its intended scope includes data/upgrade/property edits, acquisition and pool
@@ -60,12 +64,16 @@ ungrounded Harmony, reflection, or IL from a prompt.
 Pipeline-supported surfaces include:
 
 - card, relic, potion, power, keyword, enchantment, and orb;
+- computed Card Damage/Block, Energy/Star icon counts, raw and amount-given typed Power
+  values, and localized DynamicVar tooltips under one preview/execution formula;
 - generated-Mod-local singleplayer top-X Scry with normal selection/discard history/hooks;
 - monster + encounter and the complete grounded move vocabulary;
 - Event / World Node outcomes, bounded rich text/VFX/native presentation, and one bounded
   solo Quest Card -> forced Event composition;
 - playable Character Foundation, nine checked static art profiles, and bounded private
   `Idle`/`Attack`/`Hit`/`Dead` combat cues;
+- custom-Character localization dialogue across the nine cataloged native Ancient and
+  Architect scenes while preserving their native models, layouts, options, and outcomes;
 - stateful relic cadence, combat-only secondary resources, all-or-nothing payment, public
   fixed combat UI, and ordered semantic buffers using normal Play -> Discard.
 
@@ -76,9 +84,9 @@ Preserve these important boundaries:
 - Scry is singleplayer and Mod-local; it is not a global interoperability service.
 - The fixed Character resource control is 220x32 at offset 160 with a text fallback and
   must remain disjoint from native Energy.
-- Custom locked-selection/map-marker presentation, planned native custom-Character Ancient
-  dialogue/presentation, custom Ancient layouts, production animation beyond the bounded
-  cues, arbitrary material/audio, remote-player UI, alternative
+- Custom locked-selection/map-marker presentation, custom Ancient models/backgrounds/
+  layouts/options/rewards, production animation beyond the bounded cues, line audio,
+  arbitrary material/audio, remote-player UI, alternative
   Energy, retained-card zones, one-click Workshop publishing, and all unproved M6.7 vanilla
   override categories remain unsupported.
 
