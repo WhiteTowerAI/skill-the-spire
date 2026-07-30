@@ -19,6 +19,12 @@ If the relic remembers progress ("every N", "once per combat", "last turn", limi
 uses), read `../reference/stateful-mechanics.md` before choosing a field or hook. The
 state lifetime is part of the SPEC; it is not an implementation detail.
 
+If the Relic owns a custom Rest Site action, also read
+`../reference/rest-site-options.md`. That reference owns the first singleplayer-only
+free/fixed-Gold slice, final selection-time checks, repeatability, native stay/leave
+lifecycle, and icon fallback. Do not adapt the ordinary combat-trigger skeleton below into
+a Rest Site option by guessing UI methods.
+
 ## The skeleton (fill only the marked spot)
 
 Add ONE file under `<ModName>Code/Relics/<RelicName>.cs`:
@@ -106,6 +112,24 @@ using the shared 3% rule (8 pixels) without another acquisition call. RitsuLib c
 path and retains its template/base-game fallback when a file is absent; leave the whole
 profile empty in placeholder mode.
 
+## Optional owned Rest Site action
+
+Keep the Relic registered exactly once through the normal content pack. Add one separate
+`ModRestSiteOptionTemplate` class and contribute it from the Relic's
+`TryModifyRestSiteOptions`; the option itself is not content-pack registered.
+
+Use the reference page's `ShouldOffer` / `CanPay` split. `TryModifyRestSiteOptions` owns
+absence and duplicate prevention; `IsEnabled` owns native gray state; `OnSelect` repeats
+the final eligibility/payment check before any command. A false result mutates nothing and
+leaves the current Rest Site list intact. A true result awaits fixed Gold payment and the
+deterministic outcome, marks once-per-run state only after success, and lets the native
+host remove the selected option.
+
+Put option title/description beside the Relic's keys in `relics.json`. A generated option
+icon is one verified `rest_site_option` 256x169 image at
+`images/rest_site_options/<slug>.png`. Resolve absence to the native Heal icon before
+building `RestSiteOptionAssetProfile`; do not return a missing custom path.
+
 ## Trigger hooks (override the one matching the request)
 
 All are `public virtual async Task` on `AbstractModel` (relics receive them because
@@ -191,6 +215,10 @@ Pools (`MegaCrit.Sts2.Core.Models.RelicPools`):
 - [ ] If stateful: event/threshold/phase/lifetime/reset/persistence match SPEC; run state
       uses `SavedAttachedState<SpecificRelic, int/bool>` with a Mod-qualified name;
       combat turns use `PlayerCombatState.TurnNumber`.
+- [ ] If it owns a Rest Site action: singleplayer guard, stable namespaced option ID,
+      duplicate check, shared offer/payment predicate, final click-time recheck,
+      success-only repeatability mutation, declared stay/leave behavior, and native Heal
+      icon fallback all match `reference/rest-site-options.md`.
 - [ ] `participants.Contains(Owner.Creature)` guard present.
 - [ ] All `Cmd`/RNG calls `await`ed.
 - [ ] `relics.json` has `<MOD>_RELIC_<TYPE>.{title,description,flavor}` flat keys.

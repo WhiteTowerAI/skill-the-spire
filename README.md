@@ -14,8 +14,8 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 > deliberately deferred while remaining bugs are fixed. M6.5 acceptance is closed; its
 > lead-approved Prismwright result is archived in
 > `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. M6.6 computed values, bounded
-> advanced targeting, and native custom-Character Ancient dialogue are individually
-> pipeline-supported; M6.6 itself remains open.
+> advanced targeting, native custom-Character Ancient dialogue, and bounded Relic-owned
+> Rest Site options are individually pipeline-supported; M6.6 itself remains open.
 
 The provisional M6.6 capability roadmap and planned M6.7 version-bound vanilla-content
 override track are maintained in `documents/IMPLEMENTATION_PLAN.md`. Planned items are not
@@ -95,6 +95,9 @@ The current RitsuLib-only pipeline supports:
 - playable Character Foundation with exact pools, starters, HP, and Energy;
 - custom-Character localization dialogue in the nine cataloged native Ancient and
   Architect scenes, preserving native models, layouts, options, and outcomes;
+- singleplayer Relic-owned Rest Site options with free/fixed Gold, deterministic outcomes,
+  once-per-site/run repeatability, native stay/leave behavior, and checked custom/fallback
+  button art;
 - stateful relic cadence with combat-local and run-persistent state;
 - combat-only secondary resources with all-or-nothing payment and a public fixed live UI;
 - ordered semantic card-play buffers whose source Cards follow normal Play -> Discard;
@@ -115,6 +118,8 @@ them:
 
 - all unproved M6.6 capability packages and M6.7 vanilla-content override categories;
 - custom multi-target Potions and arbitrary Card/object/map targeting;
+- Card/Modifier-owned Rest Site options, variable or non-Gold Rest Site costs, arbitrary
+  transactions, same-site repeat, or multiplayer Rest Site extensions;
 - retained-card custom-zone UI or hidden retained played cards;
 - alternative Energy engine hooks;
 - run-persistent or remote-player Character resources and UI;

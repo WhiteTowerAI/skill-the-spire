@@ -61,6 +61,32 @@ Use the block for the element type. **Relic:**
   localization keys, asset profile, and framework diagnostic record
 ```
 
+When a Relic contributes a Rest Site action, add this block to the same Relic SPEC. The
+current slice does not accept a Card or Modifier owner:
+
+```markdown
+- **owned Rest Site option**:
+  - owner: relic
+  - title: <localized button title>
+  - description: <localized hover description>
+  - eligibility: <when the owned relic contributes the option>
+  - repeatability: once per Rest Site | once per run
+  - enabled rule: always | can pay fixed Gold cost
+  - cost: free | <nonnegative integer> Gold
+  - outcome: <ordered deterministic game-term operations and exact values>
+  - after success: leave | keep remaining options available
+  - icon: checked native fallback | generate
+  - multiplayer: singleplayer only
+  - proof: absent owner; present disabled/enabled; stale-render failed payment with no
+    mutation; exact successful cost/outcome/history; no duplicate; stay/leave; second visit;
+    custom icon and missing-icon fallback
+```
+
+Absence and disabled are separate. `eligibility` controls contribution; `enabled rule`
+controls the native gray/clickable state. A fixed-Gold outcome must be completely
+preflightable before its first mutation. Stop authoring for a post-payment selection,
+random branch, or other result that would require rollback.
+
 **Potion** (usage/target replace trigger; loc table is `potions`, no flavor, plus an
 optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/power):
 
@@ -564,7 +590,9 @@ Rules for this round:
   `enchantment`, `orb`, `monster`, `event`** (all live-verified — card 1000×760;
   relic/power/potion 256×256; enchantment 64×64; orb icon 100×100; normal event portrait
   slots 3440×1613; static monster body 360×360;
-  `reference/art-contract.md`) **plus nine promoted Character static specs**:
+  `reference/art-contract.md`), plus the verified opaque `rest_site_option` 256x169
+  role with checked custom and Heal-fallback button consumers, **plus nine promoted
+  Character static specs**:
   `character_select`, `character_background`, `character_icon`, `character_combat`,
   `character_rest`, `character_merchant`, `character_energy`, `character_energy_large`,
   and `character_energy_text`. `character_energy` means five 256x256 layer assets. Locked

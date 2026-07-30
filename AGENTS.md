@@ -26,16 +26,18 @@ human-lead decision; its headed result and waived Tier 2 harness are recorded in
 prepare/claim a GitHub release without later lead instruction.
 
 M6.6 is the active provisional capability milestone. Package 2A computed Card values,
-Package 5 custom-Character dialogue in native Ancient scenes, and the bounded Package 1
-advanced creature-targeting slice are pipeline-supported. Package 1 supports single-target
-Cards, single-target Potions, and multi-target Cards; its mouse/controller result and
-strict Tier 2 exception are recorded in
-`documents/history/M66_ADVANCED_TARGETING_RESULTS.md`. Custom multi-target Potions remain
-unsupported on the pinned profile. Package 3 owned custom Rest Site options is the direct
-next step in the approved order, but it does not start automatically. The remaining
-gameplay-readability surfaces and combat-only singleplayer custom CardPile/ExtraHand slice
-remain planned and unsupported until individually selected and proved. The package list may
-gain other lead-approved features.
+Package 5 custom-Character dialogue in native Ancient scenes, the bounded Package 1
+advanced creature-targeting slice, and the bounded Package 3 Relic-owned Rest Site option
+slice are pipeline-supported. Package 1 supports single-target Cards, single-target
+Potions, and multi-target Cards; custom multi-target Potions remain unsupported. Package 3
+supports singleplayer Relic-owned options with free/fixed Gold, deterministic outcomes,
+once-per-site/run repeatability, native stay/leave behavior, and checked custom/Heal-fallback
+icons. Its human-led result, skipped log check, and strict Tier 2 exception are recorded in
+`documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`. Package 2B/2C gameplay readability is
+the direct next step in the approved order, but it does not start automatically. The
+combat-only singleplayer custom CardPile/ExtraHand slice remains planned and unsupported
+until individually selected and proved. The package list may gain other lead-approved
+features.
 
 M6.7 is the planned follow-on for version-bound vanilla content overrides and behavior
 composition. Its intended scope includes data/upgrade/property edits, acquisition and pool
@@ -76,6 +78,9 @@ Pipeline-supported surfaces include:
   `Idle`/`Attack`/`Hit`/`Dead` combat cues;
 - custom-Character localization dialogue across the nine cataloged native Ancient and
   Architect scenes while preserving their native models, layouts, options, and outcomes;
+- singleplayer Relic-owned custom Rest Site options with free/fixed Gold, deterministic
+  preflightable outcomes, once-per-site/run use, native stay/leave behavior, and checked
+  256x169 custom/Heal-fallback icons;
 - stateful relic cadence, combat-only secondary resources, all-or-nothing payment, public
   fixed combat UI, and ordered semantic buffers using normal Play -> Discard.
 
@@ -84,6 +89,9 @@ Preserve these important boundaries:
 - Route stores semantic direction values, never retained played Card instances.
 - A source Card follows STS2's normal result pile lifecycle.
 - Scry is singleplayer and Mod-local; it is not a global interoperability service.
+- Rest Site options are Relic-owned and singleplayer-only; Card/Modifier owners, variable
+  or non-Gold costs, post-payment choices, arbitrary transactions, same-site repeat, and
+  multiplayer remain unsupported.
 - The fixed Character resource control is 220x32 at offset 160 with a text fallback and
   must remain disjoint from native Energy.
 - Custom locked-selection/map-marker presentation, custom Ancient models/backgrounds/

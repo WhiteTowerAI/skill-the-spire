@@ -24,6 +24,10 @@
 > A concrete monster must check its static PNG in `TryCreateCreatureVisuals()` and pass its
 > texture to RitsuLib's `RitsuGodotNodeFactories`; `MonsterAssetProfile` retains the explicit
 > built-in fallback scene. Never put the PNG in the profile's scene path.
+> A concrete Rest Site option must resolve an absent custom icon to
+> `res://images/ui/rest_site/option_heal.png` before constructing
+> `RestSiteOptionAssetProfile`. The vanilla path derived from a custom `OptionId` is not a
+> usable fallback.
 >
 > **Acquisition is source-independent.** When the current agent runtime exposes a
 > callable host-native raster image tool, it may create the source PNG without a separate
@@ -82,6 +86,7 @@ Source-verified against the decompile after a live in-game run (do not re-derive
 | `orb` | `orbs/<slug>.png` | **100×100** (verified live) | cut-out icon; **ONE file** — smart tooltip and trigger flash reuse it. Combat body is a separate Spine scene |
 | `monster` | `monsters/<slug>.png` | **360×360** (verified live profile) | transparent static body; **ONE file** — combat and bestiary reuse it. No animation/phobia variant |
 | `event` | `events/<slot-slug>.png` | **3440×1613 wide landscape** (verified live) | opaque full-bleed portrait; one file per initial/page slot. Normal/default-layout events only |
+| `rest_site_option` | `rest_site_options/<slug>.png` | **256x169** (verified live) | opaque native-button image; one file; checked custom framing and native Heal fallback |
 
 **A relic and a power each need TWO files; every other invocation writes ONE
 (`gen_sprite.py` handles the count automatically). An event may invoke the same spec once
@@ -113,6 +118,10 @@ leaves the other on the placeholder:
 - **event portrait**: `events/<slot-slug>.png` **only** for each selected slot. The initial
   slot is resolved by `EventAssetProfile.InitialPortraitPath`; authored page slots are loaded and
   passed to `NEventRoom.SetPortrait` by the event option method.
+- **Rest Site option**: `rest_site_options/<slug>.png` **only**. Two local
+  pinned-version product consumers independently use an opaque 256x169 canvas. RitsuLib's
+  `RestSiteOptionAssetProfile.IconPath` feeds the real native button. The focused
+  `M66RestSiteProof` headed run confirmed the custom framing and missing-art Heal fallback.
 `gen_sprite.py` writes the same normalized image to every path a spec needs, so you don't
 manage them by hand. The RitsuLib Card profile uses the single
 `card_portraits/<slug>.png` path.
@@ -825,6 +834,23 @@ or radial-burst language.
 
 Do not include a transient move effect. The same still image is used for idle, every move,
 combat damage, death fade, and the bestiary entry until the later animation expansion.
+
+## The Rest Site option prompt template
+
+A Rest Site option is a compact opaque scene tile, not a transparent relic icon. Translate
+the action title into one immediately readable object or moment and keep the composition
+simple enough for the 256x169 button:
+
+```text
+Original compact Rest Site action illustration for a deck-building game. Use graphic 2D
+painting, broad shapes, clear light-dark separation, and one restrained focal accent.
+Show one centered action or object with generous edge clearance in a 3:2 landscape tile.
+Use a complete opaque background. No text, numbers, logo, border, UI, card frame,
+photorealism, 3D render, pixel art, or transparent cut-out.
+```
+
+The role has no shipped style-reference pool yet. `gen_sprite.py` normalizes the result to
+256x169 with `cover`; each generated asset still receives normal headed framing review.
 
 ## The event portrait prompt template
 

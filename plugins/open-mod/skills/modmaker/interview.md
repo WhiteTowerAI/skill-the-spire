@@ -215,6 +215,12 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Scry** (only when requested): inspect the top X Draw cards, choose zero through X to
   discard, preserve the order of all unselected cards, and await the choice. Singleplayer
   only; no global modifier/completion hooks.
+- **Owned Rest Site option** (only when requested on a Relic): singleplayer only; distinguish
+  when it is absent from when it is visible but gray; default to once per Rest Site,
+  normal leave behavior, checked native Heal-icon fallback, and free cost unless the idea
+  names a fixed Gold price. Ask only for an unresolved repeatability or stay/leave choice.
+  Card/Modifier owners, arbitrary costs, post-payment choices, and same-site repeat are
+  unsupported in this slice.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
 - **Event VFX**: none unless explicitly requested; then use only `portrait_halo` or
@@ -271,6 +277,11 @@ trigger: start of combat (turn 1)
 effect: <plain-language, with numbers>
 state: none | event=<what advances>; threshold=<N>; lifetime=turn|combat|run;
   reset=<exact boundary>; persistence=field|AttachedState|SavedAttachedState
+owned Rest Site option: none | title=<title>; description=<description>;
+  eligibility=<absence rule>; repeatability=once per Rest Site|once per run;
+  enabled=<rule>; cost=free|<N> Gold; outcome=<deterministic exact operations>;
+  after success=leave|keep remaining options; icon=fallback|generate;
+  multiplayer=singleplayer only
 art: placeholder | generate: <subject/style, if requested>
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```

@@ -377,6 +377,14 @@ class AcquireSpriteTests(unittest.TestCase):
             self.assertEqual((3440, 1613), image.size)
         self.assertEqual([destination], list(self.out.rglob("*.png")))
 
+    def test_rest_site_option_uses_opaque_import_and_emits_one_icon(self) -> None:
+        result = self.run_tool(*self.create_args("rest_site_option"), "--yes")
+        self.assertEqual(0, result.returncode, result.stderr)
+        destination = self.out / "rest_site_options" / "paid-art.png"
+        with Image.open(destination) as image:
+            self.assertEqual((256, 169), image.size)
+        self.assertEqual([destination], list(self.out.rglob("*.png")))
+
     def test_enchantment_emits_one_exact_icon(self) -> None:
         result = self.run_tool(*self.create_args("enchantment"), "--yes")
         self.assertEqual(0, result.returncode, result.stderr)

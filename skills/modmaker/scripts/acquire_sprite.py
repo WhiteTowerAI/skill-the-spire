@@ -323,6 +323,7 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         choices=(
             "card", "relic", "power", "potion", "event", "enchantment", "orb", "monster",
+            "rest_site_option",
             *CHARACTER_ART_BUNDLE.acquisition_specs,
         ),
     )

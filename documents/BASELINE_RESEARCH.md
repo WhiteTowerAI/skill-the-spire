@@ -107,24 +107,26 @@ research Mod.
 
 The human lead selected five provisional capability packages for M6.6. These research
 findings identify product requirements only; pinned RitsuLib `0.4.62` and real hosted
-proofs remain the API and support authority. Package 2A computed Card values has passed its
-focused gate. Package 5 custom-Character dialogue in native Ancient scenes passed its
-focused gate after repairing the defects exposed by its first headed proof. Their records
-are `documents/history/M66_COMPUTED_VALUES_RESULTS.md` and
-`documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`.
+proofs remain the API and support authority. Packages 2A computed Card values, 5
+custom-Character dialogue in native Ancient scenes, 1 bounded advanced targeting, and 3
+bounded Relic-owned Rest Site options have passed their focused gates. Their records live
+under `documents/history/`.
 
-- **Advanced Card/Potion target types:** bound filtering, selection/cancel behavior,
-  revalidation, ownership, and the resulting source-content lifecycle rather than exposing
-  an arbitrary patch hook.
+- **Advanced Card/Potion target types (promoted):** deterministic Mod-local creature
+  filtering now covers Card one/many and Potion one with native selection/cancellation,
+  execution-time checks, and normal source-content lifecycle. Multi-target Potions remain
+  unsupported.
 - **Computed Card readability (promoted):** one formula now drives preview and execution
   for dynamic Damage/Block, Energy/Star icon counts, typed Power amounts, and variable
   tooltips in their real Card consumers.
 - **Remaining gameplay readability:** independently prove conditional hand emphasis and
   bounded Relic/Power/Intent labels in their real consumers.
-- **Custom Rest Site options:** `RoastPorkRestSiteOption` demonstrates the product shape of
-  owned eligibility, localized title/description, custom icon, asynchronous outcome, and
-  card-acquisition preview. The generated implementation must use RitsuLib's public Rest
-  Site template rather than research-Mod code.
+- **Custom Rest Site options (promoted, bounded):** the product references established
+  owned eligibility, localized title/description, custom icon, and asynchronous outcome.
+  Open-mod now supports the narrower public RitsuLib route for a singleplayer Relic owner,
+  free/fixed Gold, deterministic preflightable outcomes, once-per-site/run use, native
+  stay/leave behavior, and explicit Heal-icon fallback. Card/Modifier ownership and the
+  research Mod's card-acquisition preview remain outside the supported slice.
 - **Combat-only CardPile/ExtraHand:** begin with a visible singleplayer Mod-local pile and
   explicit ordering, movement, capacity, interaction, and cleanup. Persistence,
   multiplayer, vanilla-pile replacement, and general retained-card semantics stay outside

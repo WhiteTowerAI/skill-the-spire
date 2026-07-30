@@ -309,6 +309,92 @@ class SemanticContractTests(unittest.TestCase):
         self.assertIn("potion + many", plan)
         self.assertIn("unsupported", plan)
 
+    def test_relic_owned_rest_site_option_preserves_native_payment_lifecycle(self) -> None:
+        reference = (
+            STS2_API_DIR / "reference" / "rest-site-options.md"
+        ).read_text(encoding="utf-8")
+        recipe = (STS2_API_DIR / "recipes" / "relic.md").read_text(
+            encoding="utf-8"
+        )
+        api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
+        adapter = (
+            STS2_API_DIR / "reference" / "ritsulib-adapter.md"
+        ).read_text(encoding="utf-8")
+        harness = (
+            STS2_API_DIR / "reference" / "selftest-harness.md"
+        ).read_text(encoding="utf-8")
+        verify = (MODMAKER_DIR / "verify.md").read_text(encoding="utf-8")
+        modmaker = (MODMAKER_DIR / "SKILL.md").read_text(encoding="utf-8")
+        graph = (
+            REPO_ROOT / "games" / "sts2" / "tests" /
+            "content-capability-graph.md"
+        ).read_text(encoding="utf-8")
+        normalized = " ".join(reference.split())
+        normalized_spec = " ".join(self.spec.split())
+        normalized_interview = " ".join(self.interview.split())
+
+        self.assertIn("Relic-owned Rest Site option", self.contract)
+        for field in (
+            "owner: relic",
+            "eligibility:",
+            "repeatability: once per Rest Site | once per run",
+            "enabled rule: always | can pay fixed Gold cost",
+            "cost: free | <nonnegative integer> Gold",
+            "after success: leave | keep remaining options available",
+            "multiplayer: singleplayer only",
+        ):
+            self.assertIn(field, normalized_spec)
+
+        for intake_rule in (
+            "distinguish when it is absent from when it is visible but gray",
+            "once per Rest Site",
+            "fixed Gold price",
+            "same-site repeat",
+        ):
+            self.assertIn(intake_rule, normalized_interview)
+
+        for api in (
+            "ModRestSiteOptionTemplate",
+            "TryModifyRestSiteOptions",
+            "RestSiteOptionAssetProfile",
+            "SavedAttachedState<<RelicName>, bool>",
+            "ShouldDisableRemainingRestSiteOptions",
+            "NetGameType.Singleplayer",
+            "GoldLossType.Spent",
+            "CreatureCmd.GainMaxHp",
+        ):
+            self.assertIn(api, reference)
+
+        for rule in (
+            "NRestSiteButton.Create` snapshots",
+            "`OnSelect() == false` keeps the option",
+            "A successful option can never remain available in that same visit",
+            "`ShouldOffer(player)`",
+            "`CanPay(player)`",
+            "returns `false` only immediately after this option's success",
+            "res://images/ui/rest_site/option_heal.png",
+            "Card or Modifier owners",
+            "arbitrary transactional outcomes",
+            "dev-console `gold` command ignores negative values",
+            "Tier 2 requires a structured post-state proof plus `selftest done`",
+        ):
+            self.assertIn(rule, normalized)
+
+        for routed in (
+            self.author,
+            recipe,
+            api_skill,
+            adapter,
+            harness,
+            verify,
+            modmaker,
+        ):
+            self.assertIn("rest-site-options.md", routed)
+
+        self.assertIn("Relic-owned Rest Site option", graph)
+        self.assertIn("checked custom/Heal-fallback icon", graph)
+        self.assertIn("M66_REST_SITE_OPTIONS_RESULTS.md", graph)
+
     def test_character_combat_cues_preserve_private_all_or_nothing_contract(self) -> None:
         cues = (
             STS2_API_DIR / "reference" / "character-combat-cues.md"

@@ -28,6 +28,7 @@ Host ownership:
 | `CombatPlayer` | content core, computed Card values, advanced targeting, stateful relics, Scry, Character combat cues |
 | `CombatEnemy` | Monster + Encounter, move vocabulary, combat/bestiary body |
 | `MapNode` / Character | Event outcomes/presentation, bounded forced follow-up, native Ancient/Architect dialogue |
+| real Rest Site / `MapNode` | Relic-owned option absence/gray/payment/stay/repeat/icon matrix |
 | `RunStart` / Character | Foundation, static art/theme, combat cues, resource/UI, ordered buffer |
 
 Tier 1 requires the exact load marker and no fresh error block. Tier 2 requires a
@@ -49,6 +50,14 @@ single-, and multi-candidate mouse/controller matrix, while current-run logs cor
 the exact successful consumers and no fresh error block. No automated `selftest done`
 harness ran, and queued-target invalidation was not exercised; strict Tier 2 remains an
 exception rather than a pass.
+
+The bounded Package 3 Relic-owned Rest Site option slice is pipeline-supported after the
+human lead accepted its focused native absence/gray/enabled/payment/outcome/stay/repeat/
+controller/custom-icon/fallback matrix. Per lead instruction, no log read followed the
+headed run, and no structured `selftest done` harness ran; the exact Tier 1 log gate and
+strict Tier 2 remain explicit exceptions. The pinned dev-console `gold` command ignores
+negative values, so future manual routes must use normal Shop spending for a low-Gold state
+or a narrow proof driver for a render-time stale-payment check.
 
 Run one armed harness at a time. Preserve and restore unrelated user Mods. Do not reopen a
 completed host proof unless a later source change exposes a real regression.

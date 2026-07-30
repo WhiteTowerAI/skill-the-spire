@@ -1191,6 +1191,41 @@ Event types.
 > seals=1->0 restored=True`, reached `selftest done`, and had no fresh error. The screenshot
 > showed the real `Sealed Archive` room and `Break the seal` option.
 
+## Relic-owned Rest Site option focused host
+
+Use `reference/rest-site-options.md` for the supported contract. This proof is not a
+`CombatPlayer` substitute: it must enter the real Rest Site through
+`RunManager.Instance.EnterRoomDebug(RoomType.RestSite, MapPointType.RestSite)` or the
+equivalent `room RESTSITE` dev-console command.
+
+The focused proof Mod should expose diagnostic snapshots, but the reviewer drives the
+native buttons. Before each selection, record Gold, Current HP, Max HP, the owner's saved
+use flag, current option IDs, and current map-history Rest Site choices. After selection,
+emit one structured line only when all expected deltas match:
+
+```text
+[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1 expected=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden observed=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden
+```
+
+The required matrix is:
+
+1. no owner produces no custom option;
+2. owner plus insufficient Gold produces one disabled option;
+3. an enabled button whose Gold becomes insufficient after rendering calls `OnSelect`,
+   returns false, and preserves Gold, Max HP, saved use, history, and every option ID;
+4. success produces exact fixed-Gold and deterministic-outcome deltas, one history entry,
+   and no second custom option in the rebuilt same-visit list;
+5. native options either clear normally or remain according to SPEC, with the selected
+   custom option removed in both cases;
+6. a second visit matches once-per-site or once-per-run semantics;
+7. explicit non-singleplayer generation produces no custom option;
+8. the custom-icon and missing-icon builds both preload without a fresh error.
+
+Button color, localization, image framing, hover, and controller focus are headed
+observations. A model-generated list cannot prove them. When the human lead reserves this
+headed run, do not launch the game automatically; provide the exact console route and keep
+an unrun strict `selftest done` as an explicit verification exception.
+
 ## Deferred: the headless / menu-skip path (design seam, not built in M5)
 
 The fragile part is `NavigateToRunAsync` (scene-tree paths shift across versions). The

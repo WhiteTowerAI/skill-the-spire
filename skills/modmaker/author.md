@@ -90,6 +90,10 @@ second framework branch into this file.
   `reference/stateful-mechanics.md` before writing the hook. Implement its event,
   threshold/phase, lifetime, reset, persistence, UI meaning, and proof as one contract;
   never infer lifetime from the C# field that happens to be easiest.
+- If a Relic SPEC has an **owned Rest Site option**, read
+  `reference/rest-site-options.md` before writing either class. Keep its current
+  Relic/singleplayer/free-or-fixed-Gold boundary and stop for a Card/Modifier owner,
+  post-payment choice, arbitrary transaction, same-site repeat, or multiplayer request.
 
 ## 1. Write the element class
 
@@ -108,6 +112,11 @@ second framework branch into this file.
   never cleared at combat end; combat-local fixed/periodic turns read
   `PlayerCombatState.TurnNumber`. Any visible mutation calls
   `InvokeDisplayAmountChanged()` after updating the attached value.
+- For a Relic-owned Rest Site action, author one separate `ModRestSiteOptionTemplate` and
+  contribute it through the owner's `TryModifyRestSiteOptions`. Separate `ShouldOffer`
+  from `CanPay`, reject duplicate `OptionId`, share `CanPay` between `IsEnabled` and the
+  first line of `OnSelect`, and mutate repeatability only after the awaited deterministic
+  outcome. Resolve missing custom art to the native Heal option image explicitly.
 
 **Potion** — add `<ModName>Code/Potions/<PotionName>.cs` and extend
 `ModPotionTemplate`:
@@ -426,6 +435,12 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    Energy/Star icon counts, raw versus amount-given typed Power, base/upgrade display, and
    the real hand-Card tooltip. Structured post-state proves behavior; headed observation
    separately proves text, icon reflow, and tooltip presentation.
+   A **Relic-owned Rest Site option** uses the focused real-host matrix in
+   `reference/rest-site-options.md`: absent owner, insufficient-Gold gray state,
+   render-then-remove-Gold failed selection with zero deltas, exact successful
+   Gold/Max-HP/history deltas, rebuilt list without duplication, declared stay/leave,
+   second-visit repeatability, controller focus, custom icon, and missing-icon native
+   fallback. Keep the run explicitly singleplayer.
 3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
    post-state, then call the shared `StateProof(...)`. Its structured
    `[T2MOD-SELFTEST] <ModName> state proof:` line must include the selected framework,
@@ -486,6 +501,8 @@ upgraded value renders automatically (`reference/mechanics.md` §2). A **power**
 two tables: `monsters.json` with just `<MOD>_MONSTER_<TYPE>.name`, and `encounters.json`
 with `<MOD>_ENCOUNTER_<TYPE>.title` + `.loss`. Use the exact normalized public entries
 produced by the RitsuLib adapter. Not nested JSON — a flat `Dictionary<string,string>`.
+An owned Rest Site option adds its stable namespaced `.title` and `.description` keys to
+the same `relics.json`; these are separate from the owner Relic's three model keys.
 When a calculated Card value declares a tooltip, also add its resolved `.title` and
 `.description` keys to `localization/eng/static_hover_tips.json`; omit the icon argument
 for the native null-icon fallback.
@@ -507,7 +524,10 @@ default, and the mod loads fine on it: a **relic** falls back to `relic.png` if
 absent. This is the fast path — nothing to build, no backend, no dev box. For an **event**,
 the class uses the recipe's `ResourceLoader.Exists` branch and returns the verified vanilla
 portrait when `images/events/<slug>.png` is absent; the default event layout always preloads
-a portrait. For an **enchantment**, its `CustomIconPath` existence check returns `null`
+a portrait. For an owned **Rest Site option**, resolve an absent
+`images/rest_site_options/<slug>.png` to the checked native Heal-option image; the custom
+`OptionId` cannot derive a valid implicit vanilla fallback. For an **enchantment**, its
+`CustomIconPath` existence check returns `null`
 when `images/enchantments/<slug>.png` is absent, preserving the game's missing-icon
 fallback.
 For an **orb**, placeholder mode keeps the recipe's Frost icon, Spine scene, and channel
@@ -572,6 +592,10 @@ map marker remain explicit gaps.
   page art is absent. This does not generate a phobia variant, custom layout, or Ancient
   background scene. The optional code-native `portrait_halo` is authored from
   `reference/event-vfx.md` and has no `gen_sprite.py` invocation.
+- **`--spec rest_site_option`** - one opaque **256x169** native-button image,
+  `fit: cover`, chroma-key OFF, written to `rest_site_options/<slug>.png`. This size and
+  custom-button framing are live-verified in the focused real Rest Site host. The owning
+  option must explicitly fall back to the native Heal icon when this file is absent.
 - **`--spec character_select` / `character_background` / `character_icon` /
   `character_combat` / `character_rest` / `character_merchant` / `character_energy` /
   `character_energy_large` / `character_energy_text`** — respectively opaque **132x195** and **1920x1200** assets,
@@ -609,6 +633,9 @@ map marker remain explicit gaps.
    **For a `relic`/`power`/`potion` icon** the same name→subject translation applies,
    but since it's a cut-out (chroma ON), ③ must also ask for a **solid flat `#FF00FF`
    magenta background, no gradient** so the tool can key it out cleanly.
+   **For `rest_site_option`**, use the dedicated compact opaque scene-tile template in
+   `art-contract.md`: one centered readable action/object, a complete background, and no
+   chroma key, text, border, or UI.
    **For `enchantment`**, use the contract's dedicated micro-emblem template: bold slightly
    irregular silhouette, broad matte fills, one dominant hue with only one or two value
    steps, and almost no fine detail so it survives at 64x64. Do not turn it into a relic,
@@ -730,7 +757,7 @@ exact 256x256/24x24 textures, and both real consumers before it emits the theme 
    image file. Pass that file through the existing normalizer:
    ```
    python ../modmaker/scripts/gen_sprite.py import \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --input "<native-output.png>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|rest_site_option|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --input "<native-output.png>" \
      --out "<work dir>/<ModName>/images" [--chroma]
    ```
    Add `--chroma` for `relic`, `power`, `potion`, `enchantment`, `orb`, `monster`, and
@@ -759,7 +786,7 @@ exact 256x256/24x24 textures, and both real consumers before it emits the theme 
    step 1a's confirmation, submit exactly one synchronous paid task:
    ```
    python ../modmaker/scripts/acquire_sprite.py create \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|rest_site_option|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --model <chosen-model> \
      [--aspect-ratio <confirmed-ratio>] [--resolution <confirmed-resolution>] \
      [--reference ../sts2-api/reference/art-samples] \
@@ -774,7 +801,7 @@ exact 256x256/24x24 textures, and both real consumers before it emits the theme 
    **BYO HTTP backend:** run the existing generator:
    ```
    python ../modmaker/scripts/gen_sprite.py generate \
-     --spec <card|relic|power|potion|enchantment|orb|monster|event|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --prompt "<the prompt>" \
+     --spec <card|relic|power|potion|enchantment|orb|monster|event|rest_site_option|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --config <path to art-backend.json> \
      --reference ../sts2-api/reference/art-samples
    ```
@@ -790,9 +817,9 @@ exact 256x256/24x24 textures, and both real consumers before it emits the theme 
    `character_background`, `character_icon`, `character_energy`, `character_energy_large`, and
    `character_energy_text`.
    The tool POSTs to the user's backend, then chroma-keys (per spec — OFF for a full-bleed
-   `card`/`event`/Character selection-background, ON for the cut-out icon/body/energy specs) / fits /
+   `card`/`event`/`rest_site_option`/Character selection-background, ON for the cut-out icon/body/energy specs) / fits /
    resizes to the exact contract size and writes every required path: one
-   card/potion/enchantment/orb/monster/event/Character main asset, two power files, or a
+   card/potion/enchantment/orb/monster/event/rest-site-option/Character main asset, two power files, or a
    relic's main/big/derived-outline triplet. `character_icon` similarly adds its derived
    outline beside the main PNG. Pass `--identity-reference` only for
    identity-sensitive Character body assets; palette-driven Character background/icon/

@@ -94,6 +94,12 @@ native mouse/controller selection, execution-time validation, payment/Potion ret
 and normal Card result piles. Route it only to `reference/advanced-targeting.md`.
 Multi-target Potions remain unsupported on the pinned profile because queued empty-target
 execution cannot cancel before consumption; do not generate a patch or restore the Potion.
+The pipeline-supported **Relic-owned Rest Site option** route is singleplayer-only and bounded to
+free or fixed Gold cost plus one deterministic preflightable outcome. It distinguishes
+absence from native disabled state, rechecks payment at selection time, supports once per
+Rest Site or once per run, and may preserve the other native options once. Route it only
+to `reference/rest-site-options.md`. Card/Modifier owners, arbitrary transactions,
+same-site repeat, and multiplayer remain unsupported until separate proof.
 Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
 the source by its actual type and checks the dependent observation, so a card→power link
 cannot pass merely because both models loaded. “Combo” is not a content type.

@@ -83,6 +83,8 @@ except ImportError:
 # texture one-to-one through RitsuGodotNodeFactories, so the normalized pixel dimensions
 # also define the combat/bestiary footprint. RitsuMonsterProof live-verified the 360x360
 # texture in both consumers with generated bounds/intent nodes on 2026-07-22.
+# rest_site_option is one opaque 256x169 button image. M66RestSiteProof live-verified the
+# custom framing and native Heal fallback in real NRestSiteButton consumers on 2026-07-30.
 # fit: "cover"   = fill the whole rect, crop overflow (a full-bleed illustration the
 #                  game frames itself, e.g. a card portrait). Opaque.
 #      "contain" = fit inside with transparent padding (a cut-out object on a keyed
@@ -129,6 +131,7 @@ SPECS: dict[str, dict] = {
     "enchantment": {"sub_path": "enchantments",         "extra_sub_paths": [],             "size": (64, 64),    "verified": True,  "fit": "contain", "chroma": True},
     "orb":        {"sub_path": "orbs",                 "extra_sub_paths": [],             "size": (100, 100),  "verified": True,  "fit": "contain", "chroma": True},
     "monster":    {"sub_path": "monsters",             "extra_sub_paths": [],             "size": (360, 360),  "verified": True,  "fit": "contain", "chroma": True},
+    "rest_site_option": {"sub_path": "rest_site_options", "extra_sub_paths": [],          "size": (256, 169),  "verified": True,  "fit": "cover",   "chroma": False},
 }
 SPECS.update(CHARACTER_ART_BUNDLE.sprite_specs())
 CUE_SPECS = set(CHARACTER_ART_BUNDLE.cue_specs)

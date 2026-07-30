@@ -69,6 +69,7 @@ unselected modules.
 | Character | character/starter registration; `ModCharacterTemplate<...>` | `CharacterAssetProfile` | pipeline-supported; selection/combat/RestSite/Shop proof |
 | Character combat cues | `SetupCustomCombatAnimationStateMachine` + private `VisualCueSet` | all-or-nothing static combat fallback | pipeline-supported; Idle/Attack/Hit/Dead + cleanup proof |
 | Stateful relic cadence | `SavedAttachedState<SpecificRelic, int/bool>` plus native model hooks | normal relic counter/fallback | pipeline-supported; save round trip + two-combat Tier 2 |
+| Relic-owned Rest Site option | owner `TryModifyRestSiteOptions` + `ModRestSiteOptionTemplate` | `RestSiteOptionAssetProfile` with explicit native fallback | pipeline-supported; bounded singleplayer native Rest Site proof |
 | Combat resource | `ModSecondaryResourceRegistry` + `SecondaryResourceCmd` | registered icons plus fixed counter fallback | pipeline-supported; payment/reset + two-combat Tier 2 |
 | Ordered semantic buffer | `AttachedState<PlayerCombatState,TState>` + native Card lifecycle | composed live counter text | pipeline-supported; order/overflow/output/reset Tier 2 |
 | Combat UI attachment | `RegisterCombatUi` + `ModNodeAttachmentRegistry` | 220x32 icon+text control at offset 160 | pipeline-supported; public attachment + geometry proof |
@@ -137,6 +138,22 @@ effect reset to turn 1. It reached `selftest done`,
 strict Tier 2, and no fresh error with the historical framework absent. See
 `stateful-mechanics.md` for the
 generated shape and proof contract.
+
+For an optional Relic-owned Rest Site action, keep normal Relic content-pack registration
+and add the public host hook described in `rest-site-options.md`. The owner contributes one
+`ModRestSiteOptionTemplate` only when it is eligible, rejects an existing stable
+Mod-namespaced `OptionId`, and hides in every non-singleplayer mode. `IsEnabled` and
+`OnSelect` share the same fixed-Gold predicate; `OnSelect` repeats the complete check before
+the first mutation because native buttons snapshot clickability at creation.
+
+The first slice accepts free or fixed Gold cost, one deterministic preflightable outcome,
+once-per-site or `SavedAttachedState<SpecificRelic,bool>` once-per-run use, and normal
+leave or one-shot preservation of other options. The optional `RestSiteOptionAssetProfile`
+must resolve a missing Mod texture to `res://images/ui/rest_site/option_heal.png`; a
+custom `OptionId` has no usable implicit vanilla icon. Card/Modifier ownership,
+post-payment choices, rollback transactions, same-site repeat, and multiplayer are not
+adapter routes. The bounded surface is pipeline-supported after the focused native Rest
+Site matrix passed.
 
 ### Potion, Power, Keyword, Enchantment, and Orb
 
@@ -366,6 +383,7 @@ invariants in one `CombatPlayer` run, ending at
 | Ordered buffer | semantic value, capacity, compile/output | `AttachedState<PlayerCombatState,TState>` + native result piles | no retained Card instances or custom zone |
 | Scry | top-X amount and discard-any selection | generated-Mod-local `OpenModScry` + native selector/pile/history/hooks | singleplayer only; no global modifier/completion hooks |
 | Advanced target | consumer/mode/id and pure creature predicate | custom target registration + `GetTargets` at resolution | Card one/many, Potion one; multi Potion unsupported |
+| Relic-owned Rest Site option | eligibility, repeatability, free/fixed Gold, deterministic outcome, stay/leave | `ModRestSiteOptionTemplate` + owner hooks + optional saved bool | singleplayer only; no Card/Modifier owner or arbitrary transaction |
 | Asset | consumer profile and fallback | per-surface asset profile | retain current placeholder and unsupported consumers |
 | Patch seam | exact target, version/fingerprint, risk, failure | `CreatePatcher` only when public APIs are insufficient | no arbitrary patches, C/D targets, or `OpenMod.Runtime` |
 | Diagnostics | framework profile and proof route | shared marker fields from semantic contract | marker is not state proof |

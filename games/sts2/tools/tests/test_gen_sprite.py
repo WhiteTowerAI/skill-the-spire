@@ -654,6 +654,56 @@ class GenSpriteTests(unittest.TestCase):
                 self.assertEqual((3440, 1613), image.size)
             self.assertEqual([destination], list(out.rglob("*.png")))
 
+    def test_rest_site_option_import_writes_one_exact_verified_icon(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            Image.new("RGB", (40, 20), (90, 50, 30)).save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(GEN_SPRITE),
+                    "import",
+                    "--spec",
+                    "rest_site_option",
+                    "--slug",
+                    "quiet-forge",
+                    "--input",
+                    str(source),
+                    "--out",
+                    str(out),
+                ],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            destination = out / "rest_site_options" / "quiet-forge.png"
+            self.assertTrue(destination.is_file())
+            with Image.open(destination) as image:
+                self.assertEqual((256, 169), image.size)
+            self.assertEqual([destination], list(out.rglob("*.png")))
+
+            listed = subprocess.run(
+                [sys.executable, str(GEN_SPRITE), "list-specs"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+            )
+            self.assertEqual(0, listed.returncode, listed.stderr)
+            line = next(
+                item for item in listed.stdout.splitlines()
+                if item.startswith("rest_site_option")
+            )
+            self.assertIn("rest_site_options", line)
+            self.assertIn("256x169", line)
+            self.assertNotIn("*not live-verified", line)
+
     def test_event_contract_is_live_verified(self) -> None:
         result = subprocess.run(
             [sys.executable, str(GEN_SPRITE), "list-specs"],

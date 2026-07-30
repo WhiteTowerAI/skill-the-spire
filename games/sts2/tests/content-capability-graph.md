@@ -31,6 +31,7 @@ Support levels:
 | Character/Relic outlines | `CombatPlayer` | deterministic 3% opaque-white alpha expansion, inset-safe main normalization, exact main/outline wiring in real top-panel and Relic hosts |
 | Character combat cues | `CombatPlayer` | private non-Spine Idle4/Attack4/Hit4/Dead6 sequences, shared geometry, one-shot/terminal routing, cleanup, all-or-nothing static fallback |
 | Character dialogue in native Ancient scenes | `MapNode` / Character | nine pinned vanilla targets, Character-scoped first/visit/repeat groups, RitsuLib localization population, native scene/options/outcomes, complete Architect routing and attackers |
+| Relic-owned Rest Site option | real Rest Site / `MapNode` | singleplayer; absent versus native-disabled; free/fixed Gold; deterministic preflightable outcome; once per site/run; native stay/leave; checked custom/Heal-fallback icon |
 | Character resource/payment/UI | two-combat Character | RitsuLib Secondary Resource, bool payment, public 220x32 fixed UI at offset 160, text fallback |
 | ordered semantic buffer | two-combat Character | combat-attached semantic values, overflow/order/output/reset, normal source Play -> Discard |
 
@@ -59,6 +60,14 @@ automated `selftest done`, and queued-target invalidation was not run; strict Ti
 recorded exception, not a pass. See
 `documents/history/M66_ADVANCED_TARGETING_RESULTS.md`.
 
+The focused `M66RestSiteProof` host covered absent, gray, enabled, successful payment and
+exact outcome, rebuilt native options, once-per-run hiding, controller focus, custom
+256x169 framing, and native Heal-icon fallback. The human lead accepted the complete headed
+matrix. Per lead instruction, no post-session log read or automated `selftest done` ran, so
+the exact Tier 1 log gate and strict Tier 2 are recorded exceptions, not passes. The pinned
+console ignores negative `gold` amounts; normal Shop spending established the low-Gold
+state. See `documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`.
+
 ## Static Art Contract
 
 | Family | Normalized output | Verified consumers |
@@ -69,6 +78,7 @@ recorded exception, not a pass. See
 | orb | 100x100 transparent PNG | tooltip and trigger flash |
 | monster | 360x360 transparent PNG | combat and default bestiary |
 | Event | 3440x1613 opaque PNG | initial and explicit later page portraits |
+| Rest Site option | 256x169 opaque PNG | real native-button custom framing and Heal fallback |
 | Character selection | 132x195 portrait; 1920x1200 background | real selection screen |
 | Character identity/body | 88x88 top-icon main/outline; 512x512 combat/rest/merchant | top panel and real hosts |
 | Character energy | five 256x256 layers, 256x256 large icon, 24x24 text icon | native energy scene, real hand Card, and formatted Card description |
@@ -116,6 +126,8 @@ Do not generate it.
 
 ## Unsupported
 
+- Card/Modifier-owned Rest Site options, variable/non-Gold costs, post-payment choices,
+  arbitrary transactions, same-site repeat, and multiplayer Rest Site extensions;
 - retained played-card custom piles or custom-zone UI;
 - alternative Energy hooks;
 - run-persistent or remote-player Character resources/UI;

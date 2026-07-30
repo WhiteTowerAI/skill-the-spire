@@ -127,6 +127,12 @@ requires the exact load marker and `selftest done`.
   consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
   queued invalidation, unchanged rejected payment/Potion state, and normal Card result
   pile. `potion + many` remains unsupported.
+- For a Relic-owned Rest Site option, follow `reference/rest-site-options.md`: require the
+  real native room, absent/disabled/enabled states, final click-time payment rejection with
+  no deltas, exact successful Gold/outcome/history deltas, no duplicate after rebuild,
+  declared stay/leave and second-visit repeatability, explicit singleplayer mode, custom
+  icon, and missing-icon native fallback. Model-generated option lists are diagnostics,
+  not hosted proof.
 - For an Event, require one real UI path per independent SPEC outcome family. Blocking
   card/reward overlays must finish before their post-state assertion. A special combat must
   identify the custom encounter and prove exactly one authored completion path: named
@@ -143,6 +149,21 @@ can select only legal single targets, cancel returns normally, zero legal target
 commit the action, multi-target reticles appear only on the resolved creatures, and no
 reticle remains after resolution. Record the visible result as manually observed; do not
 rename it an automated Tier-2 pass.
+
+### Rest Site option headed acceptance
+
+Do not launch this check automatically when the human lead has reserved headed review.
+Build and deploy the focused proof, then provide the exact dev-console route from
+`reference/rest-site-options.md`. The reviewer checks native localization, custom and
+fallback icon framing, gray state, mouse click, controller focus loop, native-option
+coexistence, failed-payment retention, successful list rebuild, and the declared second
+visit. Record the reported matrix separately from Tier 1 and strict Tier 2; an unrun
+structured harness remains an exception, never a pass.
+
+On the pinned host, `gold -N` is not a removal command: negative values are ignored. Use
+normal Shop spending before entering the Rest Site to establish the visible low-Gold state.
+A literal render-then-lower-Gold stale-button check needs a narrow proof driver that calls a
+public Gold command; if the human-led route omits it, record that omission explicitly.
 
 ### Custom-art headed acceptance
 
@@ -171,6 +192,10 @@ assertion plus visual inspection. In particular:
   acquisition preview with the acquired relic visible in the top bar, and the settled
   result page. Assert preference-aware shake movement/return and preview/VFX cleanup in the
   same `MapNode` run; a model delta without the native consumers is insufficient.
+- rest-site option: one real `NRestSiteButton` must show the packed 256x169 custom image
+  without crop/distortion, and a missing-art build must show the resolved native Heal icon
+  without missing-resource or UI errors. The dimensions and fallback consumer are verified;
+  each generated image still needs its own framing review.
 - character static presentation: the real character-select button/background, top-panel
   icon, and static combat body must visibly use the normalized custom resources. Assert the
   exact 132x195 portrait, 1920x1200 background, normal and outlined 88x88 top-panel

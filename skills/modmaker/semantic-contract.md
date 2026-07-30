@@ -91,6 +91,14 @@ single-source conditions, zero-target behavior, and exact resolution semantics. 
 adapter owns the dynamic enum and predicate APIs. Under the pinned profile, `potion + many`
 is an unsupported adapter result rather than a semantic fallback.
 
+A Relic-owned Rest Site option is an optional Relic surface extension. Record the
+localized title/description, owner, eligibility, repeatability, enabled rule, fixed Gold
+cost, deterministic outcome, after-success behavior, optional icon, and singleplayer
+boundary. Eligibility controls absence; affordability controls visible-but-disabled state.
+The adapter owns the option class, contribution hook, stable option ID, saved run-use state,
+and native UI lifecycle. Card/Modifier owners and arbitrary transactional outcomes are
+unsupported adapter results in the first slice.
+
 ## Surface inputs
 
 These are the only surface-specific inputs the adapter needs from a normal SPEC:
@@ -99,6 +107,7 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 |---|---|---|
 | Card | cost, kind, rarity, target, scaling values, optional calculated value contract, upgrade deltas, effect sequence | `CombatPlayer` |
 | Relic | rarity, availability, trigger, owner guard, effect sequence, state contract | `CombatPlayer` |
+| Relic-owned Rest Site option | title/description, eligibility, repeatability, enabled rule, free/fixed Gold cost, deterministic outcome, stay/leave, optional icon, singleplayer boundary | real Rest Site / `MapNode` |
 | Potion | rarity, usage window, target, effect sequence | `CombatPlayer` |
 | Power | buff/debuff, stack domain, trigger, amount mutation, display fields | `CombatPlayer` |
 | Keyword | shared rule, host cards, display title/description, behavior proof | `CombatPlayer` |

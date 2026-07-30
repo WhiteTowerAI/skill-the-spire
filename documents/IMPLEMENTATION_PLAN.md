@@ -14,10 +14,11 @@ acceptance and its explicit lead-approved verification exceptions are recorded i
 `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; M6.5 is closed.
 
 M6.6 Package 2A computed Card values, Package 5 custom-Character dialogue in native Ancient
-scenes, and the bounded Package 1 advanced creature-targeting slice are
-pipeline-supported. Their focused proofs and explicit strict Tier 2 exceptions are
-recorded under `documents/history/`. The remaining M6.6 and all M6.7 surfaces stay
-provisional and unsupported until their individual gates pass.
+scenes, the bounded Package 1 advanced creature-targeting slice, and the bounded Package 3
+Relic-owned Rest Site option slice are pipeline-supported. Their focused proofs and
+explicit strict Tier 2 exceptions are recorded under `documents/history/`. The remaining
+M6.6 and all M6.7 surfaces stay provisional and unsupported until their individual gates
+pass.
 
 Do not prepare or claim a GitHub release. Package promotion does not close M6.6 or start
 the next package automatically.
@@ -72,8 +73,12 @@ exception. The focused proof project and deployed Mod were retired after recordi
 evidence. Package 1 then passed its human-lead mouse/controller host matrix, with exact
 single- and multi-target trigger records and no fresh target-Mod error. Its absent automated
 `selftest done` and unrun queued-target-invalidation cases remain explicit strict Tier 2
-exceptions. Do not reopen these retired proofs or Prismwright, and do not start M7. Package
-3 owned custom Rest Site options is the direct next step but does not start automatically.
+exceptions. Package 3 then passed its human-lead native Rest Site matrix for absence,
+disabled/enabled state, payment, exact outcome, repeatability, native-option coexistence,
+controller focus, custom framing, and Heal-icon fallback. Per lead instruction, no log read
+was performed; the exact Tier 1 log gate and strict `selftest done` remain exceptions. Do
+not reopen these retired proofs or Prismwright, and do not start M7. Package 2B/2C
+gameplay-readability surfaces are the direct next step but do not start automatically.
 
 ## M6.6 - Capability Expansion (Provisional)
 
@@ -237,11 +242,11 @@ counter, and reject overlap with native icons, tooltips, or adjacent labels.
 
 ### Package 3 - Owned custom Rest Site options
 
-**Semantic intake.** Model the option as an action contributed by one generated-Mod-local
-Card, Relic, or Modifier. Declare its localized title/description, owner, eligibility,
-repeatability, enabled/disabled rule, optional icon, cost, and asynchronous outcome. Separate
-absence (the owner is ineligible) from visible-but-disabled (the option exists but cannot be
-paid for or used now).
+**Semantic intake.** Model the first supported slice as an action contributed by one
+generated-Mod-local Relic. Declare its localized title/description, owner, eligibility,
+repeatability, enabled/disabled rule, optional icon, cost, and asynchronous outcome.
+Separate absence (the owner is ineligible) from visible-but-disabled (the option exists but
+cannot be paid for or used now). Card/Modifier owners remain outside this slice.
 
 **RitsuLib route and outcome.** Implement the action with `ModRestSiteOptionTemplate` and
 have the owner contribute it through `TryModifyRestSiteOptions`. Prevent duplicate insertion
@@ -259,6 +264,14 @@ Rest Site; and a second visit according to the repeatability contract. Headed ch
 localization, icon fallback, gray state, controller focus, and coexistence with native Rest
 Site options. This first package does not claim remote-player ownership or multiplayer
 coordination.
+
+**Status (2026-07-30).** The bounded Relic-owned singleplayer slice is pipeline-supported.
+`M66RestSiteProof` passed the human lead's native absent/gray/enabled/payment/outcome/list-
+rebuild/repeatability/controller/custom-icon/fallback matrix. The `gold` console command on
+the pinned host ignores negative values, so the lead used normal Shop spending to establish
+the insufficient-Gold state. No post-session log read or strict structured harness ran;
+those remain explicit exceptions. See
+`documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`.
 
 ### Package 4 - Combat-only custom CardPile / ExtraHand
 
@@ -364,12 +377,12 @@ unsupported unless separately planned and proved.
 
 ### Proposed sequence and M6.6 completion
 
-Packages 2A, 5, and the bounded Package 1 targeting slice are complete. The direct next step
-is Package 3 Rest Site options, followed by 2B/2C hand and corner presentation, then Package
-4 CardPile / ExtraHand. Targeting is now available before manual ExtraHand play, while the
-combined Card/UI/cancellation work remains scheduled after its other prerequisites and
-proof patterns. The human lead may reorder packages or add other M6.6 features by updating
-this section first.
+Packages 2A, 5, the bounded Package 1 targeting slice, and the bounded Package 3 Rest Site
+slice are complete. The direct next step is Package 2B/2C hand and corner presentation,
+followed by Package 4 CardPile / ExtraHand. Targeting is now available before manual
+ExtraHand play, while the combined Card/UI/cancellation work remains scheduled after its
+other prerequisites and proof patterns. The human lead may reorder packages or add other
+M6.6 features by updating this section first.
 
 M6.6 may close only after every feature retained in its final approved scope is either
 promoted through its own gate or explicitly removed/deferred by the human lead; all payloads
