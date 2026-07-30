@@ -51,7 +51,7 @@ art, arbitrary VFX, and custom/Ancient scenes remain out. Normal Events also sup
 Card/relic acquisition presentation, one preference-respecting `weak_short` screen shake,
 and the curated built-in `trial_noble` VFX at its vanilla host/placement with explicit
 cleanup.
-One additional bounded Event composition is pipeline-supported: a solo custom Quest Card
+One additional bounded Event composition is implemented: a solo custom Quest Card
 may force one custom Event from an Unknown MapPoint in one specified act. The target stays
 out of ordinary Event pools and one named option completes/removes the token. This public-
 hook path does not authorize arbitrary chains, vanilla edits, multiplayer semantics, or a
@@ -63,8 +63,8 @@ with valid card/relic/potion pools and exact starter deck/relic, and proves HP, 
 The adapter owns exactly-once registration. Static presentation is a separate opt-in layer
 with nine promoted profiles: selection portrait/background, top-panel icon, non-Spine
 combat/rest/merchant bodies, five-layer energy, and distinct 256x256 large/24x24 rich-text
-Energy icons. The M6.5 Character-wide color/frame contract is also pipeline-supported.
-Deterministic top-icon and generated-Relic outlines are pipeline-supported. A separate
+Energy icons. The M6.5 Character-wide color/frame contract is also implemented.
+Deterministic top-icon and generated-Relic outlines are implemented. A separate
 bounded non-Spine combat layer supports private `Idle`/`Attack`/`Hit`/`Dead` frame
 sequences with one shared geometry and an all-or-nothing static fallback. Locked selection,
 map marker, custom Ancient models/layouts, `Cast`, Spine, trails, audio, and broader
@@ -74,7 +74,7 @@ native scenes/options/rewards/progression and uses RitsuLib's registered populat
 Read `reference/ancient-dialogue.md`; do not generate Harmony/reflection injection.
 Read `reference/character-presentation.md` and `reference/character-combat-cues.md` for
 their respective visual layers.
-Two **advanced capability contracts are RitsuLib pipeline-supported**:
+Two **advanced capability contracts are implemented with RitsuLib**:
 a combat-owned nonnegative resource using `SecondaryResourceCmd` with explicit
 gain/affordability/all-or-nothing spend/reset plus public `RegisterCombatUi`, and a bounded
 ordered semantic buffer using combat-attached semantic values while source Cards use native
@@ -83,7 +83,7 @@ offset from native Energy. Route only to `reference/character-resource.md` and
 `reference/ordered-card-buffer.md`. Retaining played Cards in a `CustomPile` is unsupported.
 Do not invent alternative-energy patches, zone UI, persistence, C/D access, or
 `OpenMod.Runtime`.
-The **Scry helper** is also pipeline-supported for a Card that inspects the top X Draw
+The **Scry helper** is also implemented for a Card that inspects the top X Draw
 cards and discards any number. It is generated-Mod-local, uses the native visible selector
 and discard lifecycle, returns a structured result, and is explicitly singleplayer-only.
 Route it only to `reference/scry-helper.md`; do not add BaseLib, global Scry hooks, or a
@@ -92,9 +92,9 @@ The bounded **advanced targeting** route supports deterministic filtered live-cr
 targets for single-target Cards, single-target Potions, and multi-target Cards. It keeps
 native mouse/controller selection, execution-time validation, payment/Potion retention,
 and normal Card result piles. Route it only to `reference/advanced-targeting.md`.
-Multi-target Potions remain unsupported on the pinned profile because queued empty-target
+Multi-target Potions have a pinned lifecycle limitation because queued empty-target
 execution cannot cancel before consumption; do not generate a patch or restore the Potion.
-The pipeline-supported **Relic-owned Rest Site option** route is singleplayer-only and bounded to
+The implemented **Relic-owned Rest Site option** route is singleplayer-only and bounded to
 free or fixed Gold cost plus one deterministic preflightable outcome. It distinguishes
 absence from native disabled state, rechecks payment at selection time, supports once per
 Rest Site or once per run, and may preserve the other native options once. Route it only
@@ -103,7 +103,7 @@ same-site repeat, and multiplayer remain unsupported until separate proof.
 Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
 the source by its actual type and checks the dependent observation, so a card→power link
 cannot pass merely because both models loaded. “Combo” is not a content type.
-Two core **stateful relic** families are pipeline-supported: Happy Flower-style counters
+Two core **stateful relic** families are implemented: Happy Flower-style counters
 cross combats and save/resume through `SavedAttachedState<SpecificRelic,int/bool>`, while
 Stone Calendar-style timing
 reads the current combat's `TurnNumber`. Tier-2 proves `N-1`, threshold, reset/carry-over,
@@ -132,6 +132,11 @@ host-native tool availability is runtime-dependent, and macOS/Linux remains best
 *Editing existing* vanilla content is still out; historical capability bridges are not a
 general vanilla-editing recipe.
 If a request needs what isn't wired, say so plainly rather than half-doing it.
+
+A RitsuLib Package documented by the official tutorials is supported when its public API
+exists in the pinned profile. If this shipped pack still lacks its SPEC block or recipe,
+say exactly what authoring work is missing; do not call the public API unsupported,
+silently omit the request, or improvise source outside the pack.
 
 ## Stage files
 
@@ -210,7 +215,7 @@ threads and context compaction:
 - **SPEC.md** — the design contract (element, name, rarity, trigger, effect, state
   lifetime/reset/persistence when applicable, art).
 - **PLAN.md** — stage checklist + status; update after each stage.
-- **MEMORY.md** — discoveries, chosen ids, derived loc keys, what worked/failed.
+- **MEMORY.md** — discoveries, chosen ids, derived loc keys, and what worked/failed.
 
 **Resume-check first**: if these exist, continue from the artifacts, not from
 conversational memory.

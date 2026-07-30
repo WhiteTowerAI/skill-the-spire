@@ -21,6 +21,11 @@ pins RitsuLib `0.4.62` against STS2 `0.107.1`, maps each semantic surface to one
 registration/template and asset profile, and owns the framework/version diagnostic
 record. Only then load the surface recipe or reference needed for the request.
 
+Official tutorial semantics plus public members in the pinned profile make all documented
+consumers in that feature Package supported. A missing shipped recipe means only that the
+authoring route is not implemented here; report that plainly and never guess the absent
+implementation.
+
 RitsuLib is the only active adapter. Do not select a historical dependency, copy another
 scaffold, or infer a runtime dependency from a recipe name.
 
@@ -61,7 +66,7 @@ scaffold, or infer a runtime dependency from a recipe name.
    read `../sts2-api/reference/character-resource.md`. For a **bounded ordered
    semantic card-play buffer with deterministic dynamic output**, read
    `../sts2-api/reference/ordered-card-buffer.md`. Both use the public RitsuLib
-   Secondary Resource/node-attachment APIs and are pipeline-supported by the final
+   Secondary Resource/node-attachment APIs and are implemented by the final
    Wayfinder composition. If a requested capability has no documented public game/RitsuLib
    seam, report a pack gap; do not invent a patch target or `OpenMod.Runtime`.
    Cards/powers/keywords/enchantments/orbs also read
@@ -72,6 +77,14 @@ scaffold, or infer a runtime dependency from a recipe name.
    Power amounts, or variable tooltips, also read
    `../sts2-api/reference/card-computed-values.md`. It owns the shared-formula,
    evaluation-timing, formatter, execution-helper, and tooltip proof contracts.
+   When a Card selects conditional hand emphasis, read
+   `../sts2-api/reference/card-hand-emphasis.md`. It owns ordered rules,
+   priority/tie resolution, native gold/red versus typed outline lowering, unplayable
+   visibility, refresh boundaries, and headed hand proof.
+   When a Relic or Power selects supplemental corner values, read
+   `../sts2-api/reference/extra-corner-labels.md`. It owns safe-corner/count/text
+   bounds, plain/bounded-rich specs, refresh/removal, and real-consumer proof. Do not route
+   that generated authoring guidance to Intent.
    When a Card or Potion selects one or many live creatures through a declarative filter,
    read `../sts2-api/reference/advanced-targeting.md`. It owns the custom target
    registration, selection/resolution lifecycle, supported consumer matrix, and headed
@@ -127,7 +140,9 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `reference/ordered-card-buffer.md` | Ordered buffer: `AttachedState<PlayerCombatState,TState>`, native source-card Discard, visible order, non-destructive overflow, deterministic output/`CardGeneratedEntry`, and combat reset; retained-card `CustomPile` remains unsupported | Authoring an ordered card-play record and dynamic output |
 | `reference/scry-helper.md` | open-mod Scry helper: top-X native selector, structured result, normal Discard history/hooks, zero/empty/short/full boundaries, await proof, and explicit singleplayer restriction | Authoring a Card that looks at the top X Draw cards and discards any number |
 | `reference/card-computed-values.md` | Computed Card value roles, one-formula preview/execution parity, upgrade/timing/domain rules, Energy/Star formatters, typed Power amount-given behavior, variable tooltips, and focused proof | Authoring a Card with calculated text/effects or DynamicVar tooltips |
-| `reference/advanced-targeting.md` | RitsuLib custom live-Creature targets: stable Mod-local registration, single Card/Potion and multi Card resolution, revalidation/payment lifecycle, unsupported multi Potion, and headed selection proof | Authoring a filtered Card/Potion target |
+| `reference/card-hand-emphasis.md` | Conditional Card hand emphasis: ordered fixed-color rules, priority/ties, native gold/red versus typed outline lowering, unplayable visibility, refresh boundary, and headed proof | Authoring a Card with hand emphasis |
+| `reference/extra-corner-labels.md` | Bounded extra badges: Relic up to three safe corners, Power one top-left label, text/rich-text limits, specs providers, invalidation/removal, cleanup, and headed proof | Authoring supplemental values on a Relic or Power |
+| `reference/advanced-targeting.md` | RitsuLib custom live-Creature targets: stable Mod-local registration, single Card/Potion and multi Card resolution, revalidation/payment lifecycle, multi-Potion limitation, and headed selection proof | Authoring a filtered Card/Potion target |
 | `reference/rest-site-options.md` | Relic-owned native Rest Site option: singleplayer contribution, free/fixed Gold, final recheck, run/site repeatability, stay/leave, checked icon fallback, and real-host proof | Authoring an owned Rest Site action on a Relic |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
@@ -135,7 +150,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and nine promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | Type-matched real STS2 reference pools for card/relic/power/potion/enchantment/orb/monster/event (© Mega Crit, reference-only — see ATTRIBUTION.md); tools select the matching family and randomly sample three distinct images | Passed as the root `--reference` in the art step; never mix families |
-| `grounding.md` | Where facts come from (three sources: content→spire-codex, C# signatures→decompile, build/load→validators) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine miss is a pack gap to report, not a dig | An answer the recipe lacks |
+| `grounding.md` | Where facts come from (official semantics→Package purpose, content→spire-codex, C# signatures→pinned source, implementation/proof→open-mod) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine recipe miss is reported, not researched live | An answer the recipe lacks |
 | `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |
 | `errors.md` | Error signature → cause → fix catalog; append-only | Build or load failure; repair loop |
 
@@ -147,6 +162,9 @@ Harmony patching and is deferred. The recipes make **new** elements.
 - **Adapter first:** resolve `reference/ritsulib-adapter.md` from the semantic SPEC before
   reading a recipe. Registration, template bases, concrete ids, localization keys, and
   asset paths are adapter output; do not place them in the semantic contract.
+- **Support rule:** a documented Package with public members in the pinned profile is
+  supported. A missing recipe or unrun check does not make it unsupported; report the exact
+  authoring or verification gap.
 - **Scry helper:** use `OpenModScry.Execute` only for the bounded top-X/discard-any Card
   effect. Await the native selector and every pile/hook command, preserve seen order, and
   keep the result and hooks local to the generated Mod. Multiplayer/replay remains
@@ -168,7 +186,7 @@ Harmony patching and is deferred. The recipes make **new** elements.
   remain separate profiles: selection `132x195`, background `1920x1200`, top icon main and
   outline `88x88`, static bodies `512x512`, five energy layers `256x256`, and distinct
   256x256 large/24x24 rich-text Energy icons. The bounded M6.5 pool-frame/color theme and
-  deterministic top-icon/generated-Relic outlines are pipeline-supported. Locked
+  deterministic top-icon/generated-Relic outlines are implemented. Locked
   selection and map marker still need separate headed evidence. Character-specific native
   Ancient/Architect dialogue is supported only through the dedicated localization contract.
 - **Character combat cues:** support exactly the private combat-only Idle/Attack/Hit/Dead

@@ -3,6 +3,9 @@
 > Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. The hosted
 > `RitsuCardProof` run explicitly registered a `Counter` Power, applied it at amount 2,
 > changed the live instance to 3, and resolved its localization in a RitsuLib-only run.
+> When SPEC declares supplemental corner values, also read
+> `reference/extra-corner-labels.md`; it owns provider, bounds, refresh/removal, and headed
+> consumer proof.
 
 ## Contract
 
@@ -41,6 +44,21 @@ public sealed class <PowerName> : ModPowerTemplate
 
 Omit `AssetProfile` in placeholder mode. Generated Power art is two checked 256x256 PNGs:
 the status icon and `big/` apply/expire icon.
+
+## Optional extra badges
+
+Implement `IPowerExtraIconAmountLabelSpecsProvider` on the same Power class. Return zero to
+one `ExtraIconAmountLabelSpec.Plain(...)` or bounded `RichText(...)` entry at `TopLeft`.
+Preserve the native bottom-right `Amount` display and the six-visible-character limit. Do
+not combine Power presets: the pinned preset bands are not clipped and multiple labels can
+intrude into adjacent Powers in a crowded row.
+
+If badge text follows `Amount`, use the normal amount mutation and
+`InvokeDisplayAmountChanged()`. For a separate field with no host display refresh,
+implement `IPowerExtraIconAmountLabelsChangeSource`, declare
+`event Action? PowerExtraIconAmountLabelsInvalidated`, and invoke it once after the state
+mutation. Returning no spec after the removal condition makes RitsuLib remove the label.
+Do not poll or generate custom rectangles.
 
 ## Amount domain
 
@@ -103,3 +121,7 @@ The nearest `CombatPlayer` suite must resolve the model from `ModelDb.AllPowers`
 title and entry, apply it through `PowerCmd.Apply<T>`, mutate the live instance through
 the intended path, and assert final state. The R3 proof observed
 `RITSU_CARD_PROOF_POWER_CHARGE_POWER`, title `Charge`, `Counter`, and `2 -> 3`.
+
+For extra badges, also assert zero/one provider output, exact `TopLeft` corner and text, the
+selected invalidation path, removal, and unchanged native `Amount`. The real
+`NPower` label layout remains a headed observation; provider data alone is not proof.

@@ -15,12 +15,11 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 > lead-approved Prismwright result is archived in
 > `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. M6.6 computed values, bounded
 > advanced targeting, native custom-Character Ancient dialogue, and bounded Relic-owned
-> Rest Site options are individually pipeline-supported; M6.6 itself remains open.
+> Rest Site options are individually implemented; M6.6 itself remains open.
 
 The provisional M6.6 capability roadmap and planned M6.7 version-bound vanilla-content
-override track are maintained in `documents/IMPLEMENTATION_PLAN.md`. Planned items are not
-part of the supported surface until their individual implementation and real-game proof
-gates pass.
+override track are maintained in `documents/IMPLEMENTATION_PLAN.md`. Support is declared at
+the documented RitsuLib Package level when its public API exists in the pinned profile.
 
 ## Requirements
 
@@ -82,12 +81,16 @@ The skill will:
 
 ## Supported Surface
 
-The current RitsuLib-only pipeline supports:
+The current RitsuLib-only generator implements:
 
 - cards, relics, potions, powers, keywords, enchantments, and orbs;
 - filtered live-creature targeting for single-target Cards/Potions and multi-target Cards,
   including native mouse/controller selection and cancellation;
 - singleplayer top-X Scry through a generated-Mod-local helper;
+- conditional Card hand emphasis with ordered fixed-color rules, priority, and explicit
+  unplayable visibility;
+- up to three bounded supplemental Relic labels in safe corners, or one top-left Power
+  label, with explicit refresh and removal;
 - monsters and encounters with deterministic and conditional move vocabularies;
 - Events / World Nodes with pages, options, public Cmd outcomes, selections, rewards,
   resumable or terminal special combat, bounded rich text and VFX, and one bounded solo
@@ -106,6 +109,10 @@ The current RitsuLib-only pipeline supports:
 - optional private combat-only Character `Idle`/`Attack`/`Hit`/`Dead` frame cues with an
   all-or-nothing static fallback.
 
+The official RitsuLib Extra Badges Package also supports Intent because its documented
+public API exists in the pinned profile. Intent badge authoring is not part of the current
+implementation plan.
+
 Static art acquisition prefers a callable host-native raster tool (`image_gen` in Codex),
 then the explicitly selected Vofy, compatible HTTP backend, or local-image route. Tool
 availability is detected at runtime. A skill file or model name alone is not proof that
@@ -113,11 +120,14 @@ image generation is callable, and open-mod never silently switches to a paid bac
 
 ## Current Limits
 
-The following remain unsupported unless a later milestone explicitly opens and proves
-them:
+The exact known limitations and unsupported public routes live in the capability graph:
 
-- all unproved M6.6 capability packages and M6.7 vanilla-content override categories;
-- custom multi-target Potions and arbitrary Card/object/map targeting;
+- custom multi-target Potions have a confirmed lifecycle limitation;
+- arbitrary Card/object/map targeting has no supported public route;
+- remaining M6.6 CardPile/ExtraHand authoring work and planned M6.7 vanilla-content
+  overrides are not yet implemented by the generator;
+- hand emphasis whose condition changes without a normal combat-state refresh, arbitrary
+  extra-label rectangles, bottom-right extra labels, and Intent badge authoring;
 - Card/Modifier-owned Rest Site options, variable or non-Gold Rest Site costs, arbitrary
   transactions, same-site repeat, or multiplayer Rest Site extensions;
 - retained-card custom-zone UI or hidden retained played cards;

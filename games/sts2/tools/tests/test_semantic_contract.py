@@ -84,6 +84,120 @@ class SemanticContractTests(unittest.TestCase):
         ):
             self.assertIn(token, self.contract)
 
+    def test_support_policy_uses_simple_package_rule(self) -> None:
+        guidance = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        baseline = (REPO_ROOT / "documents" / "BASELINE_RESEARCH.md").read_text(
+            encoding="utf-8"
+        )
+        graph = (
+            REPO_ROOT / "games" / "sts2" / "tests" /
+            "content-capability-graph.md"
+        ).read_text(encoding="utf-8")
+        grounding = (STS2_API_DIR / "grounding.md").read_text(encoding="utf-8")
+        adapter = (
+            STS2_API_DIR / "reference" / "ritsulib-adapter.md"
+        ).read_text(encoding="utf-8")
+        normalized_guidance = " ".join(guidance.split())
+        normalized_baseline = " ".join(baseline.split())
+
+        for rule in (
+            "all documented public consumers in that Package are supported",
+            "Record a confirmed API or lifecycle problem as the smallest known limitation",
+            "Do not add readiness levels or evidence badges",
+        ):
+            self.assertIn(rule, normalized_guidance)
+        for baseline_fact in (
+            "public-beta",
+            "5a9110b3c1b1c428f9f349e51cd4a155266b92e3",
+        ):
+            self.assertIn(baseline_fact, normalized_baseline)
+
+        self.assertIn("Official RitsuLib Product-Semantics Baseline", baseline)
+        self.assertIn("Card Hand Glow", graph)
+        self.assertIn("Power, Relic, and Intent", graph)
+        self.assertIn("## Supported With Known Limitations", graph)
+        self.assertIn("## Unsupported", graph)
+        self.assertIn("pinned official RitsuLib tutorial distillations", grounding)
+        self.assertIn("| Card Hand Glow |", adapter)
+        self.assertIn("| Extra Badges |", adapter)
+
+        for field in (
+            "hand emphasis: none | one or more ordered rules",
+            "extra badges: none | one to three",
+            "extra badges: none | one",
+        ):
+            self.assertIn(field, self.spec)
+        for removed_field in (
+            "capability status:",
+            "pipeline readiness:",
+            "evidence badges:",
+        ):
+            self.assertNotIn(removed_field, self.spec)
+        self.assertIn("Card highlighted in hand", self.interview)
+        self.assertIn("second player-readable number", self.interview)
+        self.assertNotIn("authoring recipe is not shipped yet", self.author)
+
+    def test_gameplay_readability_routes_are_bounded_and_authorable(self) -> None:
+        hand = (
+            STS2_API_DIR / "reference" / "card-hand-emphasis.md"
+        ).read_text(encoding="utf-8")
+        badges = (
+            STS2_API_DIR / "reference" / "extra-corner-labels.md"
+        ).read_text(encoding="utf-8")
+        card_recipe = (STS2_API_DIR / "recipes" / "card.md").read_text(
+            encoding="utf-8"
+        )
+        power_recipe = (STS2_API_DIR / "recipes" / "power.md").read_text(
+            encoding="utf-8"
+        )
+        relic_recipe = (STS2_API_DIR / "recipes" / "relic.md").read_text(
+            encoding="utf-8"
+        )
+        api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
+        harness = (
+            STS2_API_DIR / "reference" / "selftest-harness.md"
+        ).read_text(encoding="utf-8")
+        normalized_hand = " ".join(hand.split())
+        normalized_badges = " ".join(badges.split())
+
+        for routed in (self.author, card_recipe, api_skill, harness):
+            self.assertIn("reference/card-hand-emphasis.md", routed)
+        for routed in (self.author, power_recipe, relic_recipe, api_skill, harness):
+            self.assertIn("reference/extra-corner-labels.md", routed)
+
+        for contract in (
+            "one or more ordered rules",
+            "highest active priority wins",
+            "ties favor the later listed rule",
+            "VisibleWhenUnplayable",
+            "RefreshEveryFrame: false",
+        ):
+            self.assertIn(contract, normalized_hand)
+        self.assertIn("hand emphasis: none | one or more ordered rules", self.spec)
+
+        for contract in (
+            "Relics may generate at most three labels",
+            "Powers may generate at most one supplemental label",
+            "TopLeft",
+            "TopRight",
+            "BottomLeft",
+            "Relic: at most 4 visible characters",
+            "Power: at most 6 visible characters",
+            "[color=blue|gold|green|purple|red]",
+            "InvokeDisplayAmountChanged()",
+            "PowerExtraIconAmountLabelsInvalidated",
+            "RelicExtraIconAmountLabelsInvalidated",
+        ):
+            self.assertIn(contract, normalized_badges)
+        self.assertIn(
+            "Powers use at most one top-left label", " ".join(self.spec.split())
+        )
+        self.assertIn("Return zero to one", " ".join(power_recipe.split()))
+        self.assertIn("Return zero to three", " ".join(relic_recipe.split()))
+        self.assertNotIn("zero/one/bounded-multiple provider output", power_recipe)
+        self.assertNotIn("corner: top-left | top-right | bottom-left | custom", self.spec)
+        self.assertIn("Intent authoring is not scheduled", normalized_badges)
+
     def test_stateful_mechanics_preserve_lifetime_reset_and_save_semantics(self) -> None:
         stateful = (
             STS2_API_DIR / "reference" / "stateful-mechanics.md"

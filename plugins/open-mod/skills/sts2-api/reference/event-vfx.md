@@ -1,6 +1,6 @@
 # Normal Event Portrait VFX
 
-This is one bounded, pipeline-supported VFX profile for a normal/default-layout Event:
+This is one bounded, implemented VFX profile for a normal/default-layout Event:
 a code-native portrait halo made from Godot `Node2D`, `Line2D`, and `Polygon2D` nodes. It
 was re-verified on RitsuLib `0.4.62` on 2026-07-23 across the initial page, a later
 portrait page, Event-to-combat cleanup, and the resumed post-combat page.

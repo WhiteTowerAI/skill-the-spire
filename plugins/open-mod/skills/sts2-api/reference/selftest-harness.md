@@ -95,6 +95,25 @@ failure from a real effect bug:
   the trigger, but **not proof**: calculation/preview hooks can emit it without a committed
   state change.
 
+## Gameplay-readability proof additions
+
+For a Card with hand emphasis, also read `reference/card-hand-emphasis.md`. A focused
+`CombatPlayer` driver must place the real Card in hand, mutate the actual condition state,
+and independently assert no-active, single-active, conflict winner, playability, and hand
+entry/exit states. Do not claim the outline color from predicate or model state alone; the
+real hand consumer remains a headed or exact live-node observation.
+
+For Relic/Power supplemental labels, also read `reference/extra-corner-labels.md`. The
+driver must assert the exact zero/one Power sequence and zero/one/bounded-multiple Relic
+sequence, visible text, selected safe corners, refresh source, removal condition, and
+unchanged native main amount. Provider data alone is not a presentation proof; exact
+live-node observation or headed review owns readability, overlap, and cleanup.
+
+When the human lead reserves headed review, build and deploy the focused proof but do not
+launch the game. Give the lead the exact console setup and observation matrix. Record the
+reported visible result separately, and keep unrun structured checks as exceptions rather
+than converting manual observation into strict Tier 2.
+
 ## Shared scaffold and scenario-specific room driver
 
 Emit this as `<ModName>Code/SelfTest.cs`. The arg gate, menu→run navigation, timeout, and

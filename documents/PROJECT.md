@@ -55,7 +55,8 @@ The product has three layers:
 1. `modmaker` owns the staged workflow and resumable project state (`SPEC.md`, `PLAN.md`,
    `MEMORY.md`).
 2. `sts2-api` owns lazy, grounded game knowledge: recipes, lifecycle contracts, art
-   consumers, verification hosts, and error fixes.
+   consumers, official-product-semantics distillations, verification hosts, and error
+   fixes.
 3. Python tools own deterministic scaffold, profile validation, build/package, launch,
    log parsing, and sprite normalization.
 
@@ -66,8 +67,15 @@ binary.
 
 ## Verification Philosophy
 
-Compilation is necessary but insufficient. A supported capability needs the lightest proof
-that establishes its independent invariant:
+A documented RitsuLib feature Package is supported when the official tutorials establish
+its player-facing use and its public API exists in the pinned profile. This applies to all
+documented public consumers in the Package; confirmed defects become narrow limitations,
+while only missing public routes are unsupported. Recipes and host runs tell us what the
+generator currently implements and what we actually observed, not whether the Package is
+supported.
+
+Compilation is necessary but insufficient. Use the lightest proof that establishes the
+changed invariant:
 
 - local assertions for pure calculations;
 - a hosted real-game scenario for lifecycle and behavior;
@@ -76,7 +84,8 @@ that establishes its independent invariant:
   gate.
 
 Tier 1 means loaded with no fresh error. Tier 2 means a structured post-state marker plus
-`selftest done`. Evidence density is not a goal; one proof per independent invariant is.
+`selftest done`. Record only the checks that actually ran; none is silently inferred from
+another.
 
 ## Distribution
 
@@ -97,7 +106,7 @@ editing, arbitrary patching, retained-card zones, alternative Energy, multiplaye
 Spine/production Character motion or audio, arbitrary Event layouts, or Workshop
 publishing.
 
-The focused M6.5 Character art and presentation packages are pipeline-supported:
+The focused M6.5 Character art and presentation packages are implemented:
 role-based identity references without a separate Character sheet, corrected
 selection/combat visible footprints, a structured card/UI theme, alpha-derived
 Character/Relic outlines, one Character-specific Energy layer plus four fixed templates,
@@ -110,25 +119,34 @@ card trails, and a `Cast` cue remain unsupported.
 M6.6 is the active provisional capability-improvement milestone. Package 2A computed Card
 values, Package 5 custom-Character dialogue in native Ancient scenes, Package 1 advanced
 creature targeting, and the bounded Package 3 Relic-owned Rest Site option slice are
-pipeline-supported. Package 1 covers single-target Cards, single-target Potions, and
+implemented. Package 1 covers single-target Cards, single-target Potions, and
 multi-target Cards through deterministic Mod-local live-creature filters and native
-mouse/controller selection; multi-target Potions remain unsupported. Package 3 covers
+mouse/controller selection; multi-target Potions have a pinned lifecycle limitation.
+Package 3 covers
 singleplayer Relic-owned options with free/fixed Gold, deterministic preflightable outcomes,
 once-per-site/run repeatability, native stay/leave behavior, and checked custom/Heal-fallback
 button art. Its human-lead acceptance, skipped log check, and omitted strict Tier 2 harness
 are recorded in `documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`.
 
-The remaining M6.6 package list covers contextual hand and corner-label readability and an
-initial combat-only singleplayer custom CardPile/ExtraHand. Package 2B/2C readability is the
-direct next step in the approved order. None of these remaining planned surfaces becomes
-current support before its own implementation and real-host proof. Optional Mod settings
-with Global/Profile/run-owned persistence remain future outlook outside the current M6.6
-list.
+Package 2B/2C authoring is implemented in the generation pipeline: Cards may declare
+ordered fixed-color hand-emphasis rules with priority and explicit unplayable visibility,
+Relics may declare up to three bounded supplemental labels in distinct safe corners, and
+Powers may declare one top-left label with explicit refresh/removal. The Power boundary was
+narrowed after multiple un-clipped preset bands overflowed an adjacent Power in the human
+lead's crowded 16:9 row. The rebuilt proof passed the human-led 16:9/16:10 recheck and strict
+Tier 1; strict Tier 2 was not run. The result is recorded in
+`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. The direct next M6.6 development
+step is an initial combat-only singleplayer custom CardPile/ExtraHand, which does not start
+automatically. Intent belongs to Extra Badges but was removed from current M6.6 work
+by the human lead on 2026-07-30; current generated 2C authoring is Relic/Power only.
+Optional Mod settings with Global/Profile/run-owned persistence remain future outlook
+outside the current M6.6 list.
 
 M6.7 is the planned follow-on for version-bound overrides of existing vanilla content. Its
 product goal is broader than numeric Card balance: generated Mods may eventually adjust
 data and upgrades, alter acquisition/pools, compose behavior, or replace a grounded behavior
 entry point while preserving the vanilla model identity and untouched assets. A pinned
 version catalog, semantic override manifest, checked RitsuLib capability/adapter routes,
-conflict diagnostics, and per-operation real-host proof are required before any category is
-promoted. Arbitrary prompt-generated Harmony/reflection/IL is not part of the design.
+conflict diagnostics, and proportional real-host evidence are required before any category
+is implemented. Support follows the same tutorial-plus-public-API rule as the rest of the
+project; arbitrary prompt-generated Harmony/reflection/IL is not part of the design.

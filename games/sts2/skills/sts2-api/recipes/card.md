@@ -12,6 +12,8 @@
 > When SPEC declares a filtered live-creature target, also read
 > `reference/advanced-targeting.md`; it owns registration, one/many execution,
 > zero-target cancellation, and headed selection proof.
+> When SPEC declares hand emphasis, also read `reference/card-hand-emphasis.md`; it owns
+> ordered-rule lowering, priority/ties, refresh boundaries, and headed hand proof.
 >
 > Vanilla cards to imitate: `StrikeIronclad` (single-target attack), `DefendIronclad`
 > (self block), `Inflame` (gain a Power), `Bash` (attack + apply a debuff).
@@ -66,6 +68,18 @@ Omit the override for placeholder art. Empty profile fields retain the template/
 fallback. Custom art is optional and never blocks the pipeline. The established normal
 portrait import remains `1000×760`; Ancient-only full art remains out of scope. See
 `reference/art-contract.md`.
+
+### Optional hand emphasis
+
+Do not put visual-node code in the Card. For one non-competing gold/red rule, override the
+matching native `ShouldGlowGoldInternal` or `ShouldGlowRedInternal` property. For multiple
+rules or any custom color, append exactly one typed `.CardHandOutline<TCard>(...)` step to
+the same builder and emit every `ModCardHandOutlineSwitchRule<TCard>.Fixed(...)` in SPEC
+order. The highest active integer priority wins; a tie uses the later listed rule.
+
+Use the reference's exact `visibleWhenUnplayable` mapping and keep fixed rules at
+`RefreshEveryFrame: false`. Never mix the native and custom-outline routes on one generated
+Card, register after `.Apply()`, retain a Card instance, or poll UI state.
 
 ## The skeleton (fill only the marked spots)
 

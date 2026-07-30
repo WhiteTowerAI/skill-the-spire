@@ -54,4 +54,5 @@ contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
 - ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
 
 On success, mark `build` done in `PLAN.md`, record the resolved Mods path and profile in
-`MEMORY.md`, and continue to `verify.md`.
+`MEMORY.md`, and continue to `verify.md`. If `--skip-runtime-check` was used, record that
+the runtime profile was not checked.

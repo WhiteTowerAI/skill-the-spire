@@ -49,6 +49,13 @@ Use the block for the element type. **Relic:**
   - assets: relic icon; placeholder | generate
   - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
   - native presentation: standard relic display
+  - extra badges: none | one to three
+    - meaning: <player-facing auxiliary value, e.g. charges remaining>
+      value: <state value or bounded display rule>
+      corner: top-left | top-right | bottom-left (one label per corner)
+      format: plain | bounded color rich text; at most 4 visible characters
+      refresh: <state change that updates it>
+      remove: <condition that hides/removes it>
 - **fallback**:
   - missing asset: checked template relic icon
   - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
@@ -162,6 +169,13 @@ plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
   - assets: card portrait; placeholder | generate
   - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
   - native presentation: standard card body/preview
+  - hand emphasis: none | one or more ordered rules
+    - rule: <stable local rule name; repeat in precedence order>
+      meaning: <actionable bonus, warning, or other player-facing state>
+      condition: <plain-language active rule>
+      color: gold | red | custom <plain color>
+      priority: <integer; highest active rule wins>
+      while unplayable: show | hide
 - **fallback**:
   - missing asset: checked template card portrait
   - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
@@ -218,6 +232,13 @@ for every authored custom Power):
   - smartDescription: <usually the same text; required>
   - text effects: none | vanilla
   - text spans: <description phrase -> blue/gold; apply to smartDescription too>
+  - extra badges: none | one
+    - meaning: <player-facing auxiliary value distinct from Amount>
+      value: <state value or bounded display rule>
+      corner: top-left
+      format: plain | bounded color rich text; at most 6 visible characters
+      refresh: <state change that updates it>
+      remove: <condition that hides/removes it>
 - **art**: placeholder | generate
 - **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 - **derived ids** (adapter resolves after the semantic SPEC is accepted):
@@ -231,6 +252,16 @@ unless the design explicitly defines negative-stack behavior; `AllowNegative` is
 implementation property, not a substitute for this SPEC decision. Write finite bounds
 as numbers rather than leaving them implicit. `Single` is a flag-like Power with hidden
 amount 1, so it does not need a Counter domain.
+
+Hand emphasis and extra badges are product semantics, not styling escape hatches. Record
+why the player needs the signal and the game-state rule that owns it; never record RitsuLib
+interfaces, predicates, `Color` objects, raw markup, rectangles, or invalidation event names
+in SPEC. Hand rules remain in declared order; the highest active priority wins and a tie is
+resolved by the later listed rule. Relics use at most three distinct safe corners; Powers
+use at most one top-left label because their preset label bands overlap in crowded rows.
+Every extra badge supplements the native Relic/Power main amount instead of replacing it. Intent belongs to
+the public Extra Badges Package, but it has no current generated SPEC block because its
+authoring recipe is not scheduled in M6.6.
 
 **Stateful-mechanic contract** (add when any element remembers progress; omit for a
 stateless effect). This is state owned by the real relic/card/power, not a new element:
@@ -382,7 +413,7 @@ this same bounded Event composition. Native Card/relic acquisition presentation,
 `reference/event-native-presentation.md`. The warning cost must be identical to the later
 Cmd cost; a relic-backed Event option does not itself grant the relic.
 
-All six native-presentation families are pipeline-supported: cross-content Card/standard-
+All six native-presentation families are implemented: cross-content Card/standard-
 Hover-Tip rich text; enabled Event option Hover Tips plus normal relic-backed text/metadata
 with an explicit image blocker; native exact-lethal HP/Max HP warnings; native Card/relic
 acquisition presentation; bounded `weak_short` screen shake; and the curated built-in
@@ -472,7 +503,8 @@ separate contracts below):
 `author.md` dispatches `element: character` to `recipes/character.md`. Do not add a
 manual registration line or invent a nonstandard energy override. If `advanced mechanic`
 is not `none`, also record the envelope below. Author it only when the named semantic
-capability has its own scenario-verified pack contract. The supported public framework
+capability has its own recipe in the shipped pack. Package support alone does not provide
+missing runtime instructions. The current implemented public framework
 routes are exactly `reference/character-resource.md` and
 `reference/ordered-card-buffer.md`.
 

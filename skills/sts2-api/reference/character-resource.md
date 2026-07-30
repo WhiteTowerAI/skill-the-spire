@@ -1,6 +1,6 @@
 # Character resource - RitsuLib combat state, payment, and live counter
 
-Status: **RitsuLib pipeline-supported on STS2 0.107.1**. `RitsuResourceProof` proved
+Status: **implemented with RitsuLib on STS2 0.107.1**. `RitsuResourceProof` proved
 the resource in isolation and `RitsuWayfinderProof` proved the final Character
 composition on 2026-07-23 with RitsuLib 0.4.62 as the sole framework dependency.
 

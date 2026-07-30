@@ -9,6 +9,10 @@ error** (never a guess), apply **one** fix, re-run **only the failed stage**, an
 either converge or stop with an honest report. Auto-repair is bounded, not magical
 (~70% converge in the literature) — cap it and hand back a clear failure.
 
+Do not generalize one failed generated route to the whole documented feature Package. If a
+pinned API or lifecycle defect is reproducible, record the smallest affected consumer as a
+known limitation and preserve the rest of the Package.
+
 This is the M3 deliverable. It inherits godogen's debugging discipline (read the
 real log, not the exit code; when code and observed reality disagree, trust
 reality) and this project's rule: **if an approach fails twice, change the

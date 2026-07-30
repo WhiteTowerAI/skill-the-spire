@@ -1,6 +1,6 @@
 # Character static, combat-cue, and native presentation
 
-Status: **pipeline-supported for nine static profiles, deterministic top-icon/generated-
+Status: **implemented for nine static profiles, deterministic top-icon/generated-
 Relic outlines, the bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and
 Character dialogue in native Ancient/Architect scenes on STS2 `0.107.1` / RitsuLib
 `0.4.62`**.

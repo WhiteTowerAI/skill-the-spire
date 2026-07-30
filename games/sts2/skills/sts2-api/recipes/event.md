@@ -192,7 +192,7 @@ unsupported.
 
 ## Art contract: normal and later-page portraits
 
-Normal/default-layout event portraits are pipeline-supported as loose opaque PNGs, each
+Normal/default-layout event portraits are implemented as loose opaque PNGs, each
 exactly **3440×1613**. The initial slot is
 `res://<ModName>/images/events/<event-slug>.png`; an authored page slot uses
 `res://<ModName>/images/events/<event-slug>_<page-key-lower>.png`. Generate/import each
@@ -244,7 +244,7 @@ portrait.
 
 ### Bounded VFX profiles
 
-Normal/default-layout Events may select the pipeline-supported `portrait_halo` profile in
+Normal/default-layout Events may select the implemented `portrait_halo` profile in
 `reference/event-vfx.md`. It uses public code-native Godot nodes through `OnRoomEnter` and
 `NEventLayout.AddVfxAnchoredToPortrait`; it does not use an image backend or a `.pck` VFX
 scene. The headed acceptance proved initial, later-page, combat cleanup, and resumed-page

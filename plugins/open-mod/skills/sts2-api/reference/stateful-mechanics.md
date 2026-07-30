@@ -1,6 +1,6 @@
 # Stateful mechanics - counters, phases, and persistence
 
-Status: **RitsuLib pipeline-supported on STS2 0.107.1** for custom-relic run cadence
+Status: **implemented with RitsuLib on STS2 0.107.1** for custom-relic run cadence
 with `int`/`bool` attached state and combat-local cadence based on the native turn number.
 `RitsuStateProof` passed the two-combat hosted proof on 2026-07-23 with RitsuLib 0.4.62.
 

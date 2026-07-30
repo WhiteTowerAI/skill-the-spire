@@ -536,7 +536,7 @@ body, and phobia mode retains the same texture.
 
 ## The normal-event portrait contract
 
-A pipeline-supported normal event has an initial portrait at
+An implemented normal event has an initial portrait at
 `images/events/<event-slug>.png` and may have additional page portraits at
 `images/events/<event-slug>_<page-key-lower>.png`. Every slot is independently normalized
 with `--spec event` to **3440×1613**, opaque `cover` fit, and chroma-key off. Eleven current
@@ -587,7 +587,7 @@ The remaining boundaries are explicit:
 - `NAncientEventLayout` casts the model to `AncientEventModel` and instantiates its
   background scene. A normal `ModEventTemplate` is not an Ancient presentation proof;
 - raster portrait generation does not create VFX. The separate code-native
-  `portrait_halo` profile is pipeline-supported through `reference/event-vfx.md`; arbitrary
+  `portrait_halo` profile is implemented through `reference/event-vfx.md`; arbitrary
   VFX remains later work.
 
 The promoted bounded VFX proof used only public/native pieces: `EventModel.OnRoomEnter`,

@@ -169,7 +169,7 @@ proof. In particular, a run-persistent relic counter uses RitsuLib
   single/multi resolution, payment/consumption lifecycle, and headed selection proof.
 - **relics/potions** — mostly literal amounts + plain descriptions; they only need §3
   (enums). They reach here only for a scaling effect. A stateful relic additionally
-  routes to `stateful-mechanics.md` (§5); potion saved state is not pipeline-supported.
+  routes to `stateful-mechanics.md` (§5); potion saved state is not implemented.
 
 When this file lacks a specific value or formatter, follow `grounding.md`: at runtime
 that means the rest of the pack (recipes, `build-constraints.md`, snapshots,

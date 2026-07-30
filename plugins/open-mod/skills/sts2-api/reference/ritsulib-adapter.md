@@ -54,26 +54,28 @@ unselected modules.
 
 ## Surface routing
 
-| Semantic surface | RitsuLib public registration/template | Asset profile | Support status |
+| Semantic surface | RitsuLib public registration/template | Asset profile | Current boundary |
 |---|---|---|---|
-| Card | content-pack card registration; `ModCardTemplate` | `CardAssetProfile` | pipeline-supported; hosted Tier 2 |
-| Relic | content-pack relic registration; `ModRelicTemplate` | `RelicAssetProfile` | pipeline-supported; hosted Tier 2 |
-| Potion | content-pack potion registration; `ModPotionTemplate` | `PotionAssetProfile` | pipeline-supported; hosted Tier 2 |
-| Power | content-pack power registration; `ModPowerTemplate` | `PowerAssetProfile` | pipeline-supported; hosted Tier 2 |
-| Keyword | keyword registry/manifest entry | text-only tooltip fallback | pipeline-supported; hosted Tier 2 |
-| Enchantment | enchantment registration; `ModEnchantmentTemplate` | `EnchantmentAssetProfile` | pipeline-supported; hosted Tier 2 |
-| Orb | orb registration; `ModOrbTemplate` | `OrbAssetProfile` | pipeline-supported; hosted Tier 2 |
-| Monster | monster registration; `ModMonsterTemplate` | `MonsterAssetProfile` | pipeline-supported; combat/bestiary proof |
-| Encounter | act/global encounter registration; `ModEncounterTemplate` | `EncounterAssetProfile` | pipeline-supported; real room proof |
-| Event | shared/act event registration; `ModEventTemplate` | `EventAssetProfile` | pipeline-supported; `MapNode` behavior/presentation proof |
-| Character | character/starter registration; `ModCharacterTemplate<...>` | `CharacterAssetProfile` | pipeline-supported; selection/combat/RestSite/Shop proof |
-| Character combat cues | `SetupCustomCombatAnimationStateMachine` + private `VisualCueSet` | all-or-nothing static combat fallback | pipeline-supported; Idle/Attack/Hit/Dead + cleanup proof |
-| Stateful relic cadence | `SavedAttachedState<SpecificRelic, int/bool>` plus native model hooks | normal relic counter/fallback | pipeline-supported; save round trip + two-combat Tier 2 |
-| Relic-owned Rest Site option | owner `TryModifyRestSiteOptions` + `ModRestSiteOptionTemplate` | `RestSiteOptionAssetProfile` with explicit native fallback | pipeline-supported; bounded singleplayer native Rest Site proof |
-| Combat resource | `ModSecondaryResourceRegistry` + `SecondaryResourceCmd` | registered icons plus fixed counter fallback | pipeline-supported; payment/reset + two-combat Tier 2 |
-| Ordered semantic buffer | `AttachedState<PlayerCombatState,TState>` + native Card lifecycle | composed live counter text | pipeline-supported; order/overflow/output/reset Tier 2 |
-| Combat UI attachment | `RegisterCombatUi` + `ModNodeAttachmentRegistry` | 220x32 icon+text control at offset 160 | pipeline-supported; public attachment + geometry proof |
-| Advanced creature targeting | Mod-scoped custom `TargetType` registration + Card/Potion target extensions | native selection/reticles | pipeline-supported for Card one/many and Potion one; multi Potion unsupported |
+| Card | content-pack card registration; `ModCardTemplate` | `CardAssetProfile` | generated; hosted Tier 2 |
+| Relic | content-pack relic registration; `ModRelicTemplate` | `RelicAssetProfile` | generated; hosted Tier 2 |
+| Potion | content-pack potion registration; `ModPotionTemplate` | `PotionAssetProfile` | generated; hosted Tier 2 |
+| Power | content-pack power registration; `ModPowerTemplate` | `PowerAssetProfile` | generated; hosted Tier 2 |
+| Keyword | keyword registry/manifest entry | text-only tooltip fallback | generated; hosted Tier 2 |
+| Enchantment | enchantment registration; `ModEnchantmentTemplate` | `EnchantmentAssetProfile` | generated; hosted Tier 2 |
+| Orb | orb registration; `ModOrbTemplate` | `OrbAssetProfile` | generated; hosted Tier 2 |
+| Monster | monster registration; `ModMonsterTemplate` | `MonsterAssetProfile` | generated; combat/bestiary proof |
+| Encounter | act/global encounter registration; `ModEncounterTemplate` | `EncounterAssetProfile` | generated; real room proof |
+| Event | shared/act event registration; `ModEventTemplate` | `EventAssetProfile` | generated; `MapNode` behavior/presentation proof |
+| Character | character/starter registration; `ModCharacterTemplate<...>` | `CharacterAssetProfile` | generated; selection/combat/RestSite/Shop proof |
+| Character combat cues | `SetupCustomCombatAnimationStateMachine` + private `VisualCueSet` | all-or-nothing static combat fallback | generated; Idle/Attack/Hit/Dead + cleanup proof |
+| Stateful relic cadence | `SavedAttachedState<SpecificRelic, int/bool>` plus native model hooks | normal relic counter/fallback | generated; save round trip + two-combat Tier 2 |
+| Relic-owned Rest Site option | owner `TryModifyRestSiteOptions` + `ModRestSiteOptionTemplate` | `RestSiteOptionAssetProfile` with explicit native fallback | generated; bounded singleplayer native Rest Site proof |
+| Combat resource | `ModSecondaryResourceRegistry` + `SecondaryResourceCmd` | registered icons plus fixed counter fallback | generated; payment/reset + two-combat Tier 2 |
+| Ordered semantic buffer | `AttachedState<PlayerCombatState,TState>` + native Card lifecycle | composed live counter text | generated; order/overflow/output/reset Tier 2 |
+| Combat UI attachment | `RegisterCombatUi` + `ModNodeAttachmentRegistry` | 220x32 icon+text control at offset 160 | generated; public attachment + geometry proof |
+| Advanced creature targeting | Mod-scoped custom `TargetType` registration + Card/Potion target extensions | native selection/reticles | generated for Card one/many and Potion one; multi Potion has a known lifecycle limitation |
+| Card Hand Glow | `ShouldGlowGoldInternal` / `ShouldGlowRedInternal`; `CardHandOutline<TCard>(ModCardHandOutlineRules<TCard>)` | native hand outline | generated with ordered fixed-color rules; headed host result remains literal |
+| Extra Badges | Power/Relic/Intent extra-label providers and change sources with `ExtraIconAmountLabelSpec` | native Power/Relic/Intent corners | Relic: up to three safe corners; Power: one top-left label because preset bands overlap in crowded rows; Intent supported but not scheduled |
 
 Registration remains data-driven: pool/act/availability comes from the semantic
 `registration` section and is translated once by the adapter. Do not add a parallel
@@ -152,7 +154,7 @@ leave or one-shot preservation of other options. The optional `RestSiteOptionAss
 must resolve a missing Mod texture to `res://images/ui/rest_site/option_heal.png`; a
 custom `OptionId` has no usable implicit vanilla icon. Card/Modifier ownership,
 post-payment choices, rollback transactions, same-site repeat, and multiplayer are not
-adapter routes. The bounded surface is pipeline-supported after the focused native Rest
+adapter routes. The bounded surface is implemented after the focused native Rest
 Site matrix passed.
 
 ### Potion, Power, Keyword, Enchantment, and Orb
@@ -377,28 +379,31 @@ invariants in one `CombatPlayer` run, ending at
 | Semantic concern | Adapter input | RitsuLib route | Boundary |
 |---|---|---|---|
 | Relic-owned run state | `state.lifetime=run`, concrete relic owner, `int`/`bool` | `SavedAttachedState<SpecificRelic,T>` | current support is concrete custom Relics only; prove save round-trip |
-| Other run state | `state.lifetime=run`, run/player owner, save fields | `RunSavedDataStore` | not pipeline-supported; no new shared runtime |
+| Other run state | `state.lifetime=run`, run/player owner, save fields | `RunSavedDataStore` | not implemented; no new shared runtime |
 | Lifecycle | semantic trigger and reset boundary | typed `SubscribeLifecycle<TEvent>` or the model's public hook | no guessed event type |
 | Combat resource | nonnegative amount, payment, reset, UI fallback | secondary-resource registry/commands + public `RegisterCombatUi` | combat-only; does not replace native Energy |
 | Ordered buffer | semantic value, capacity, compile/output | `AttachedState<PlayerCombatState,TState>` + native result piles | no retained Card instances or custom zone |
 | Scry | top-X amount and discard-any selection | generated-Mod-local `OpenModScry` + native selector/pile/history/hooks | singleplayer only; no global modifier/completion hooks |
-| Advanced target | consumer/mode/id and pure creature predicate | custom target registration + `GetTargets` at resolution | Card one/many, Potion one; multi Potion unsupported |
+| Advanced target | consumer/mode/id and pure creature predicate | custom target registration + `GetTargets` at resolution | Card one/many, Potion one; multi Potion has a known limitation |
+| Card hand emphasis | ordered meanings/conditions/colors/priorities and unplayable visibility | vanilla glow override for one gold/red rule or one typed `CardHandOutline<TCard>` ruleset | fixed colors only; normal combat-state refresh; headed result remains literal |
+| Relic/Power extra badge | Relic up to three safe-corner values or Power one top-left value, format, refresh/removal | typed extra-label specs provider plus host display or independent change source | Power preset bands overlap in crowded rows; no bottom-right/arbitrary rectangle; native main amount remains |
 | Relic-owned Rest Site option | eligibility, repeatability, free/fixed Gold, deterministic outcome, stay/leave | `ModRestSiteOptionTemplate` + owner hooks + optional saved bool | singleplayer only; no Card/Modifier owner or arbitrary transaction |
 | Asset | consumer profile and fallback | per-surface asset profile | retain current placeholder and unsupported consumers |
 | Patch seam | exact target, version/fingerprint, risk, failure | `CreatePatcher` only when public APIs are insufficient | no arbitrary patches, C/D targets, or `OpenMod.Runtime` |
 | Diagnostics | framework profile and proof route | shared marker fields from semantic contract | marker is not state proof |
 
-## Unsupported/deferred seams
+## Unsupported, planned, and limited seams
 
-The presence of a RitsuLib API does not promote a capability. Keep these boundaries as
-explicit gaps: vanilla editing, alternative Energy, retained-card custom zones,
-arbitrary Event layouts/VFX, Ancient custom layouts, animation, materials, multiplayer
-presentation, audio, run-persistent Character resources, direct merchant/rest/treasure
-transitions, and unproven save or
-multiplayer claims. The promoted Scry helper remains singleplayer-only and generated-Mod
+Official product semantics plus a public API in this pinned profile support the documented
+Package and its public consumers. Missing authoring work or verification does not change
+that. Keep actual no-route boundaries explicit: alternative Energy,
+retained-card custom zones, arbitrary Event layouts/VFX, Ancient custom layouts, animation,
+materials, multiplayer presentation, audio, run-persistent Character resources, and direct
+merchant/rest/treasure transitions. M6.7 vanilla editing remains planned and is not
+generated. The promoted Scry helper remains singleplayer-only and generated-Mod
 local; it does not broaden those multiplayer or interoperability boundaries. Custom
-multi-target Potions remain unsupported until the pinned host/framework can cancel an
-empty queued group before consumption.
+multi-target Potions retain a known limitation until the pinned host/framework can cancel
+an empty queued group before consumption.
 
 ## Adapter record
 

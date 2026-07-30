@@ -29,10 +29,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact
      resource icon. Locked selection and map marker remain grounded gaps with explicit
      fallbacks.
-   - **Supported now: relic, potion, card, enemy encounter, event, and bounded character composition.**
+   - **Current authoring recipes: relic, potion, card, enemy encounter, event, and bounded character composition.**
      (*Editing* an existing
-     vanilla card/relic/potion is not yet supported — if that's the ask, say so and offer to
-     build the closest **new** element instead.)
+     vanilla card/relic/potion has no current recipe — if that's the ask, say so and offer
+     to build the closest **new** element instead.)
    - If the request says played cards should physically remain in a special area, ask one
      short question: should the cards instead resolve normally while a visible text record
      tracks their order? Offer that as the supported default. Retained-card zone UI is a
@@ -85,6 +85,20 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      energy and leaves your hand, or just after?" Record any variable tooltip's title,
      description, and whether it has a custom icon. Do not ask about preview classes,
      formatters, delegates, or hooks.
+    If the user wants a Card highlighted in hand under one or more conditions, capture each
+    actionable meaning, plain-language condition, gold/red/custom color, priority relative
+    to the other active rules, and whether it remains visible while unplayable. Preserve
+    the rules in precedence order. Infer gold for a bonus and red for a warning when the
+    meaning is clear. Never ask about registries, predicates, polling, or framework color
+    objects.
+     If a Relic owns player-readable numbers distinct from its native main amount, capture
+    up to three extra badges: meaning, bounded value rule, one distinct
+    top-left/top-right/bottom-left corner, plain/bounded-color intent, refresh state change,
+    and removal condition. Relic labels have at most 4 visible characters. If a custom
+    Power owns a second player-readable number, capture exactly the same semantics for at
+    most one top-left badge with at most 6 visible characters. This is supplemental UI, not
+    a replacement for the main counter. Never collect raw BBCode, arbitrary strings,
+    custom rectangles, or a bottom-right label.
    - **Enemy encounter**: an enemy is fought inside its encounter, so treat them as one
      unit. Resolve only what genuinely shapes the fight: the monster's **HP**, whether it
      is alone or in a group, and each move's visible warning, exact effect, and what comes
@@ -93,6 +107,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      only when the order/condition is genuinely unclear; default to the stated order in a
      repeating cycle. Don't ask about scenes, animations, intent class names, or APIs —
      those are the recipe's job.
+     If the user asks for auxiliary information on one monster intent, recognize the
+     supported Extra Badges Package but report that Intent authoring is not implemented in
+     the current pack. Do not rewrite a separate debuff as an attack badge, and keep an
+     ordinary repeated identical attack as the native multi-attack intent.
    - **Event / World Node**: resolve the event's opening situation, the option(s) the
      player can choose, and each option's concrete consequence (gold/HP/card/relic/etc.).
      Record whether each option finishes, opens another choice page, blocks on a card/

@@ -8,17 +8,18 @@ the durable migration record is
 `documents/history/RITSULIB_MIGRATION_RESULTS.md`.
 
 The focused M6.5 Character art, theme, outline, and bounded combat-cue packages are
-pipeline-supported. Their evidence is recorded in
+implemented. Their evidence is recorded in
 `documents/history/M65_CHARACTER_QUALITY_FOCUSED_RESULTS.md`. The fresh Prismwright
 acceptance and its explicit lead-approved verification exceptions are recorded in
 `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; M6.5 is closed.
 
 M6.6 Package 2A computed Card values, Package 5 custom-Character dialogue in native Ancient
 scenes, the bounded Package 1 advanced creature-targeting slice, and the bounded Package 3
-Relic-owned Rest Site option slice are pipeline-supported. Their focused proofs and
-explicit strict Tier 2 exceptions are recorded under `documents/history/`. The remaining
-M6.6 and all M6.7 surfaces stay provisional and unsupported until their individual gates
-pass.
+Relic-owned Rest Site option slice are implemented. Their focused proofs and
+explicit strict Tier 2 exceptions are recorded under `documents/history/`. Remaining M6.6
+and M6.7 work is not implemented until its scheduled development gates pass. Per
+`AGENTS.md`, official Package semantics plus a public API in the pinned profile are enough
+for support, while confirmed problems are recorded as limitations.
 
 Do not prepare or claim a GitHub release. Package promotion does not close M6.6 or start
 the next package automatically.
@@ -36,6 +37,11 @@ the next package automatically.
 idea -> interview -> semantic SPEC -> grounded recipe -> pinned scaffold
      -> author -> build/package -> Tier 1 -> hosted Tier 2 -> bounded repair
 ```
+
+The official RitsuLib tutorial baseline supplies product semantics and documented feature-
+Package membership. The pinned RitsuLib source/compat profile supplies exact versioned API
+facts. The workflow stages above implement and verify the feature; they do not redefine
+Package support.
 
 The build wrapper validates project, restore, runtime variant, host version, manifest,
 and deployed artifacts before verification.
@@ -77,21 +83,27 @@ exceptions. Package 3 then passed its human-lead native Rest Site matrix for abs
 disabled/enabled state, payment, exact outcome, repeatability, native-option coexistence,
 controller focus, custom framing, and Heal-icon fallback. Per lead instruction, no log read
 was performed; the exact Tier 1 log gate and strict `selftest done` remain exceptions. Do
-not reopen these retired proofs or Prismwright, and do not start M7. Package 2B/2C
-gameplay-readability surfaces are the direct next step but do not start automatically.
+not reopen these retired proofs or Prismwright, and do not start M7. Package 2B/2C then
+passed its human-led hand/Relic matrix and, after narrowing Power authoring to one top-left
+label, its crowded 16:9/16:10 Power-row recheck. Strict Tier 1 passed; strict Tier 2 was not
+run. See `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Package 4 combat-only
+CardPile/ExtraHand is the direct next step but does not start automatically.
 
 ## M6.6 - Capability Expansion (Provisional)
 
 M6.6 is the next capability-improvement milestone. Its scope is deliberately provisional:
 the human lead may add other suitable features before or during milestone planning. Any
-addition must be written into this plan explicitly; do not infer extra scope from
-RitsuLib's available APIs.
+implementation addition must be written into this plan explicitly. Public APIs may broaden
+the support inventory under the global policy, but they do not schedule development.
 
 ### Shared implementation and promotion rules
 
-Treat every package, and every separately listed readability consumer, as an independent
-support claim. Planning or finding a public RitsuLib API is not enough. Before promotion,
-the selected slice must have:
+Use the Package-level rule in `AGENTS.md` for support decisions. Once official product
+semantics identify a RitsuLib Package and the pinned `0.4.62` profile confirms its public
+members, all documented public consumers are supported. Record a confirmed problem as the
+smallest known limitation.
+
+Before finishing a selected implementation slice, it must have:
 
 1. a semantic interview/SPEC shape that describes player-visible intent rather than C# API
    names, including owner, lifetime, initial state, transitions, localization, and fallback;
@@ -99,9 +111,10 @@ the selected slice must have:
    BaseLib, copied baseline code, private patches, or arbitrary generated reflection;
 3. deterministic checks for calculations, filtering, ordering, payment, and state rules,
    plus build/manifest checks that preserve the RitsuLib-only dependency boundary;
-4. the nearest focused real-game proof for every independent lifecycle and presentation
-   invariant, using structured post-state evidence for behavior and a headed check where
-   targeting, controller focus, text fit, color, or non-overlap is the actual claim; and
+4. the nearest representative real-game proof for each materially different lifecycle or
+   presentation risk selected for this implementation, with structured post-state evidence
+   for behavior and a headed check where targeting, controller focus, text fit, color, or
+   non-overlap is the actual evidence claimed; and
 5. updated source documentation and support graph, followed by regeneration and parity
    validation of both committed payloads.
 
@@ -109,14 +122,14 @@ An explicit human-lead decision may accept a focused manual host result in place
 scheduled automated gate. Record that omission as a verification exception; never relabel
 it as a strict Tier 2 pass.
 
-Do not change `games/sts2/tests/content-capability-graph.md` from unsupported to supported
-until that slice's recipe and focused host proof both exist. Ordinary package work does not
-schedule another fresh natural-language acceptance Mod; add such a gate to this plan first
-if the milestone later needs one.
+Update `games/sts2/tests/content-capability-graph.md` when support or a known limitation is
+grounded. State unfinished authoring or unrun verification directly instead of inventing a
+status for it. Ordinary package work does not schedule another fresh natural-language
+acceptance Mod; add such a gate to this plan first if the milestone later needs one.
 
 ### Package 1 - Advanced Card and Potion target types
 
-**Status: pipeline-supported as of 2026-07-29 for Card one/many and Potion one.** Semantic
+**Implemented as of 2026-07-29 for Card one/many and Potion one.** Semantic
 intake, SPEC, authoring, deterministic contract tests, pinned RitsuLib routes, and focused
 real-host mouse/controller review cover the bounded slice. The human lead accepted zero-
 target rejection, valid-target filtering, cancellation/payment behavior, native reticles,
@@ -157,8 +170,8 @@ RitsuLib `0.4.62`, `potion + many` cannot satisfy the zero-target consumption ru
 `UsePotionAction` accepts the multi-target `null` target and does not recheck
 `PassesCustomUsabilityCheck` before `OnUseWrapper` removes the Potion. The first slice
 therefore supports single-target Card, single-target Potion, and multi-target Card only.
-Custom multi-target Potion authoring remains unsupported until a grounded RitsuLib
-capability change and version update add execution-time zero-target cancellation. Generated
+Custom multi-target Potion authoring has a pinned lifecycle limitation until a grounded
+RitsuLib change and version update add execution-time zero-target cancellation. Generated
 Mods must not compensate with Harmony, reflection, IL, or remove-then-restore behavior.
 
 **First proof matrix.** Prove a source-aware single-target Card, a single-target Potion, and
@@ -170,16 +183,19 @@ that invalid creatures cannot be selected.
 
 **Not in the first slice.** Arbitrary object targeting, selecting Cards or map nodes,
 retargeting dead creatures, global interoperability registration for other Mods, and custom
-targeting UI layouts remain unsupported unless separately planned and proved.
+targeting UI layouts remain unsupported because no matching documented public route is
+grounded in the pinned profile. A future API review may add supported routes before any
+implementation work is scheduled.
 
 ### Package 2 - Gameplay readability
 
-This package contains three independent subpackages. They may be implemented and promoted
-separately; completing one does not support the other two.
+This planning group contains three separately scheduled feature Packages. Implementing one
+does not implement another. Support still follows the documented RitsuLib Package boundary
+rather than per-consumer proof gates.
 
 #### 2A. Computed previews, icon variables, and variable tooltips
 
-**Status: pipeline-supported as of 2026-07-29.** Semantic intake, SPEC, authoring, a
+**Implemented as of 2026-07-29.** Semantic intake, SPEC, authoring, a
 grounded RitsuLib `0.4.62` recipe, and deterministic contract checks now cover this slice.
 The focused `ComputedValuesProof` host established live changing text, modifier-aware
 Damage/Block, neutral Energy/Star gains, typed Poison amount-given behavior, formatter
@@ -214,31 +230,68 @@ glyphs.
 
 #### 2B. Conditional hand glow and outline
 
+The official Card Hand Glow tutorial defines conditional vanilla gold/red meaning,
+arbitrary colors, priority, and the unplayable-Card visibility choice. The pinned RitsuLib
+source confirms the public family, so it is supported. The work below adds the open-mod
+authoring route and verifies it in game.
+
+**Implementation status (2026-07-30):** semantic intake, the grounded authoring reference,
+Card recipe/author routing, and static contract coverage are implemented. The focused
+real-host review is reserved for the human lead and remains open; no headed or strict Tier 2
+result is claimed yet.
+
 Add declarative hand emphasis only when it communicates an actionable state. Use gold glow
 for an active bonus or stronger effect line and red glow for a warning or unavailable
-condition. Outlines may be fixed, switch-based, or dynamically colored; every rule needs a
-stable priority because the highest-priority active rule wins. Whether a rule remains visible
-while the Card is unplayable must be an explicit semantic choice, not an adapter default.
+condition. The generated slice uses ordered fixed-color rules; every rule needs a stable
+priority because the highest-priority active rule wins, with later-listed rules winning a
+tie. Whether a rule remains visible while the Card is unplayable must be an explicit
+semantic choice, not an adapter default.
 
-Keep dynamic predicates cheap and side-effect-free because outline state may refresh every
-frame. The recipe must define no-active-rule, one-active-rule, and conflicting-rule results.
+Keep predicates cheap and side-effect-free. Generated fixed rules do not poll every frame;
+their conditions must change through normal combat-state refreshes. The recipe must define
+no-active-rule, one-active-rule, and conflicting-rule results.
 Prove activation, deactivation, priority resolution, changes in Card playability, hover/drag,
 and hand enter/leave cleanup. A headed check must confirm that the emphasis is legible but
 does not obscure cost, art, text, rarity, selection, or native playable-state feedback.
 
-#### 2C. Extra corner amount labels
+#### 2C. Relic and Power extra corner amount labels
 
-Allow bounded supplemental labels on Relic, Power, and Intent hosts through their public
-provider surfaces. These labels supplement, rather than replace, the vanilla amount/value
-counter. The semantic shape must declare host, corner/custom slot, plain or rich text,
-update trigger, and removal condition. Set conservative limits on label count and text
-length before exposing multiple slots.
+Extra Badges is supported for Power, Relic, and Intent: the official tutorial supplies
+product semantics for all three consumers and the pinned source confirms their public
+provider/change-source surfaces. This implementation covers Relic and Power only. Intent
+remains outside the schedule by human-lead decision.
+
+**Implementation status (2026-07-30):** semantic intake, the grounded Relic/Power reference,
+recipes/author routing, static contract coverage, and focused host review are complete. The
+human-led review passed the hand-emphasis and Relic cases, then found that multiple Power
+preset bands overflowed an adjacent Power in a crowded 16:9 row. Power authoring was
+narrowed to one top-left supplemental label; the rebuilt proof passed the 16:9/16:10
+Power-row recheck and strict Tier 1. Strict Tier 2 was not run. See
+`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`.
+
+Allow bounded supplemental labels on Relic and Power hosts through their public provider
+surfaces. These labels supplement, rather than replace, the vanilla amount/value
+counter. The generated semantic shape declares host, one of three distinct safe preset
+corners, plain or bounded-color text, update trigger, and removal condition. It permits at
+most three labels, limits visible text to 4 characters on Relics and 6 on Powers, and does
+not expose bottom-right or arbitrary custom rectangles through normal authoring.
 
 Use the RitsuLib invalidation events when underlying state changes without a normal host
-display event; do not poll every frame. Prove zero/one/multiple labels, rich-text formatting,
-state-driven update, removal, host destruction, and combat transition cleanup. Headed checks
-must cover common aspect ratios and crowded Relic/Power/Intent cases, preserve the vanilla
-counter, and reject overlap with native icons, tooltips, or adjacent labels.
+display event; do not poll every frame. Relics may use up to three distinct
+top-left/top-right/bottom-left labels. Powers may use one top-left supplemental label; the
+pinned preset bands are not clipped, so do not combine Power corners or generate a custom
+rectangle as an unproved workaround. Prove Relic zero/one/multiple and Power zero/one,
+rich-text formatting, state-driven update, removal, host destruction, and combat transition
+cleanup. Headed checks must cover common aspect ratios and crowded Relic/Power cases,
+preserve the vanilla counter, and reject overlap with native icons, tooltips, or adjacent
+labels.
+
+Intent authoring remains removed from active M6.6 work by human-lead decision on 2026-07-30;
+that scheduling decision does not make the public Extra Badges consumer unsupported. Its official
+meaning is auxiliary same-intent information such as additional triggered hits. A separate
+debuff or other visible effect keeps its own native intent, and an ordinary repeated
+identical attack keeps the native multi-attack intent. Adding an Intent recipe remains a
+future pipeline task and does not start with this Relic/Power implementation.
 
 ### Package 3 - Owned custom Rest Site options
 
@@ -265,7 +318,7 @@ localization, icon fallback, gray state, controller focus, and coexistence with 
 Site options. This first package does not claim remote-player ownership or multiplayer
 coordination.
 
-**Status (2026-07-30).** The bounded Relic-owned singleplayer slice is pipeline-supported.
+**Implemented (2026-07-30).** The bounded Relic-owned singleplayer slice is available.
 `M66RestSiteProof` passed the human lead's native absent/gray/enabled/payment/outcome/list-
 rebuild/repeatability/controller/custom-icon/fallback matrix. The `gold` console command on
 the pinned host ignores negative values, so the lead used normal Shop spending to establish
@@ -315,7 +368,7 @@ to the normal lifecycle of unrelated source Cards remain unsupported.
 
 ### Package 5 - Custom Character dialogue in native Ancient scenes
 
-**Status: pipeline-supported as of 2026-07-29 after repaired headed recheck.** The
+**Implemented as of 2026-07-29 after repaired headed recheck.** The
 semantic intake, pinned nine-target catalog, flat localization lowering, build preflight,
 RitsuLib route, and deterministic contract checks are implemented. The first
 `M66AncientProof` headed run exposed an unmounted localization PCK, an invalid proof-only
@@ -373,23 +426,25 @@ normal option restoration, and untouched scene/background. The Architect proof a
 checks the selected attack presentation, every referenced attack VFX, and clean run-end
 progression. This promotes only dialogue in native Ancient scenes; custom Ancient models,
 backgrounds/layouts, option/reward authoring, audio, and remote-player presentation remain
-unsupported unless separately planned and proved.
+unsupported because the current baseline has no matching documented public route. A future
+API review may add supported routes before any implementation plan is added.
 
 ### Proposed sequence and M6.6 completion
 
-Packages 2A, 5, the bounded Package 1 targeting slice, and the bounded Package 3 Rest Site
-slice are complete. The direct next step is Package 2B/2C hand and corner presentation,
-followed by Package 4 CardPile / ExtraHand. Targeting is now available before manual
-ExtraHand play, while the combined Card/UI/cancellation work remains scheduled after its
-other prerequisites and proof patterns. The human lead may reorder packages or add other
-M6.6 features by updating this section first.
+Packages 2A, 2B, 2C, 5, the bounded Package 1 targeting slice, and the bounded Package 3
+Rest Site slice are complete with their literal verification results and exceptions
+recorded. Package 4 CardPile / ExtraHand is the direct next development step but starts only
+after a human-lead selection. Targeting is available before
+manual ExtraHand play, while the combined Card/UI/cancellation work remains scheduled after
+its other prerequisites and proof patterns. The human lead may reorder packages or add
+other M6.6 features by updating this section first.
 
 M6.6 may close only after every feature retained in its final approved scope is either
 promoted through its own gate or explicitly removed/deferred by the human lead; all payloads
 and active documents agree with the final support graph; outstanding verification exceptions
 are recorded rather than counted as passes; and the human lead explicitly closes the
-milestone. Until then, each unproved slice remains unsupported even if another slice in the
-same package has shipped.
+milestone. Until then, unfinished slices remain unimplemented. Their Package support still
+follows the official-semantics and pinned-source rule.
 
 ## M6.7 - Version-Bound Vanilla Content Overrides and Behavior Composition
 
@@ -399,7 +454,7 @@ for data, availability, behavior, and presentation changes across Cards, Relics,
 Powers, Monsters/Encounters, and Events where the current authoring vocabulary and a grounded
 host adapter can express the requested result.
 
-M6.7 planning does not start implementation, and no M6.7 surface is currently supported.
+M6.7 planning does not start implementation, and no M6.7 surface is currently generated.
 Begin it only after the human lead selects the milestone. The scope may be refined as the
 version catalog reveals real model shapes, but do not shrink the product goal to a small
 handwritten whitelist merely because some targets need maintained adapters.
@@ -578,8 +633,9 @@ RNG, saves, remote presentation, and disconnect behavior where relevant.
    named catalog adapters instead of blocking the broad generic layers.
 
 This sequence is a dependency order, not a requirement to wait for every content category
-before promoting an independently proved earlier layer. Do not claim broad "vanilla editing"
-from one sample Card: record the exact operation families and model categories that passed.
+before finishing an earlier layer. Do not claim broad "vanilla editing" from one sample
+Card: record the exact documented Package, operation families, model categories, and
+verification that actually ran.
 
 ### Proof and M6.7 completion
 
@@ -600,7 +656,8 @@ M6.7 may close when the final approved operation/category matrix is implemented,
 and represented accurately in the support graph; retained target adapters have current-host
 proof; verification exceptions are recorded rather than counted as passes; generated
 payloads agree; and the human lead explicitly closes the milestone. Targets outside that
-matrix remain unsupported even though the architecture may make future adapters possible.
+matrix remain unimplemented. Support them only after the official semantics and pinned
+public route are known.
 
 ## Current Boundaries
 
@@ -614,8 +671,9 @@ bodies, production audio/materials, or multiplayer presentation.
 Locked-selection presentation, Character-specific card trails, additional combat cue
 states, custom Ancient models/backgrounds/layouts/options/rewards, Ancient line audio and
 global dialogue replacement, alternative Energy, arbitrary Event layouts/chains, and one-
-click Workshop publishing remain unsupported. All remaining unproved M6.6 surfaces and all planned M6.7
-vanilla-override surfaces remain unsupported until their individual promotion gates pass.
+click Workshop publishing retain their current unsupported boundaries. Remaining M6.6 work
+and all planned M6.7 vanilla-override work are not yet implemented; missing proof alone does
+not decide Package support.
 Unversioned target guessing and arbitrary generated Harmony/reflection/IL remain outside
 M6.7 entirely.
 

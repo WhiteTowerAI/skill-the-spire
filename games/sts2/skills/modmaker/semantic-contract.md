@@ -60,6 +60,7 @@ not replace or rename the shared sections.
   - assets: <consumer-specific profile or none>
   - text effects: <bounded semantic spans, never raw markup>
   - native presentation: <none or named supported consumer>
+  - readability aids: <none or optional hand-emphasis / extra-badge semantic blocks>
 - **fallback**:
   - missing asset: <checked built-in/placeholder behavior>
   - unavailable seam: <unchanged behavior or explicit unsupported boundary>
@@ -76,6 +77,12 @@ start of combat, double current energy” is valid; a particular method name is 
 Likewise, “shared relic pool” is valid; a pool attribute or registration call is
 adapter detail.
 
+Official RitsuLib tutorials are a product-semantics baseline. They may establish what a
+feature Package communicates to the player and which public consumers belong to it. Exact
+versioned symbols still come from the pinned adapter. Support and known limitations follow
+`sts2-api/grounding.md`; they are never questions for the user and never semantic fields in
+SPEC.
+
 A calculated Card value is semantic data, not an implementation expression. It records
 one deterministic formula, all live inputs, an integer domain, base/upgrade behavior, and
 whether the intended state is observed before the Card plays or after its normal payment
@@ -89,7 +96,7 @@ player-facing terms and add one declaration with `consumer: card | potion`, `mod
 many`, a stable local target id, candidate conditions, acting-player conditions, optional
 single-source conditions, zero-target behavior, and exact resolution semantics. The
 adapter owns the dynamic enum and predicate APIs. Under the pinned profile, `potion + many`
-is an unsupported adapter result rather than a semantic fallback.
+is a known lifecycle limitation rather than a semantic fallback.
 
 A Relic-owned Rest Site option is an optional Relic surface extension. Record the
 localized title/description, owner, eligibility, repeatability, enabled rule, fixed Gold
@@ -99,6 +106,26 @@ The adapter owns the option class, contribution hook, stable option ID, saved ru
 and native UI lifecycle. Card/Modifier owners and arbitrary transactional outcomes are
 unsupported adapter results in the first slice.
 
+Gameplay readability uses two optional presentation extensions:
+
+- **hand emphasis:** record one or more ordered rules. Each rule owns an actionable
+  player-facing meaning, activation condition, semantic color (`gold`, `red`, or a
+  requested custom color), integer priority, and whether it remains visible while the Card
+  is unplayable. Highest active priority wins; ties use the later listed rule. Never put
+  predicates, registry calls, polling, or framework color objects in SPEC.
+- **extra badge:** record up to three Relic labels in distinct top-left/top-right/bottom-left
+  corners, or one top-left Power label. Each has one auxiliary meaning, bounded
+  value/formatter, plain/bounded-color intent, refresh event, and removal condition. Relic
+  text is at most 4 visible characters and Power text at most 6. It supplements rather than
+  replaces the native main amount; raw markup, arbitrary rectangles, and bottom-right
+  authoring are not semantic inputs.
+
+The public Extra Badges Package also includes Intent. Its official meaning is auxiliary
+same-intent information such as additional triggered hits. Intent recipe work is not in the
+current pipeline scope, so normal generated SPEC intake exposes only Relic and Power badge
+blocks. A separate debuff/effect remains a separate native intent, and an ordinary repeated
+identical attack remains a native multi-attack intent.
+
 ## Surface inputs
 
 These are the only surface-specific inputs the adapter needs from a normal SPEC:
@@ -106,10 +133,12 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Surface | Semantic inputs | Current proof route |
 |---|---|---|
 | Card | cost, kind, rarity, target, scaling values, optional calculated value contract, upgrade deltas, effect sequence | `CombatPlayer` |
+| Card hand emphasis | ordered actionable rules, conditions, semantic colors, priority/tie order, unplayable visibility | `CombatPlayer` plus headed hand review |
 | Relic | rarity, availability, trigger, owner guard, effect sequence, state contract | `CombatPlayer` |
 | Relic-owned Rest Site option | title/description, eligibility, repeatability, enabled rule, free/fixed Gold cost, deterministic outcome, stay/leave, optional icon, singleplayer boundary | real Rest Site / `MapNode` |
 | Potion | rarity, usage window, target, effect sequence | `CombatPlayer` |
 | Power | buff/debuff, stack domain, trigger, amount mutation, display fields | `CombatPlayer` |
+| Relic/Power extra badge | host, Relic up to three distinct safe-corner values or Power one top-left value, format intent, refresh/removal | matching real Relic/Power consumer plus headed review |
 | Keyword | shared rule, host cards, display title/description, behavior proof | `CombatPlayer` |
 | Enchantment | compatible host, persistent change, display/icon fallback | `CombatPlayer` |
 | Orb | channel host, passive, evoke, icon and combat fallback | `CombatPlayer` |

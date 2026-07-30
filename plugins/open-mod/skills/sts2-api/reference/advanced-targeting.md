@@ -12,14 +12,14 @@ corpses, map nodes, or arbitrary objects is unsupported.
 | Card | one | supported by this recipe | selected creature, revalidated before payment |
 | Card | many | supported by this recipe | one play with `null`; call `GetTargets()` in `OnPlay` |
 | Potion | one | supported by this recipe | selected creature, revalidated before removal |
-| Potion | many | unsupported on the pinned profile | stop authoring |
+| Potion | many | supported API with a known lifecycle limitation | stop authoring |
 
 `potion + many` is not a generated fallback. On the pinned host, a queued multi-target
 Potion has a valid `null` target and `UsePotionAction` does not recheck
 `PassesCustomUsabilityCheck`. If all candidates disappear after enqueue, `OnUseWrapper`
 removes the Potion before its effect sees an empty `GetTargets()` result. Do not promise
 zero-target retention, restore a consumed Potion after the fact, or emit Harmony,
-reflection, IL, or Publicizer code. Report the unsupported combination and offer a
+reflection, IL, or Publicizer code. Report the known limitation and offer a
 single-target Potion or multi-target Card instead.
 
 ## Semantic input
@@ -204,7 +204,7 @@ protected override async Task OnUse(
 
 `PotionModelTargetingExtensions.GetTargets(potion, selectedTarget)` is available when one
 effect implementation intentionally shares a target-resolution helper with another
-consumer. It is not permission to author the unsupported `potion + many` combination.
+consumer. It is not permission to author the limited `potion + many` combination.
 
 ## Verification contract
 

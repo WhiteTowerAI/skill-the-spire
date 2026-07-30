@@ -77,7 +77,7 @@ Reuse the Event `MapNode` suite. One headed run is sufficient:
 
 ## M6 native-presentation pass
 
-All six ordered native-presentation candidates are now pipeline-supported with headed
+All six ordered native-presentation candidates are now implemented with headed
 evidence:
 
 1. **Cross-content bounded rich text:** `reference/content-text-effects.md` owns the

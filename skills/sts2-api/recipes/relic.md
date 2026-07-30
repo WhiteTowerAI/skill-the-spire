@@ -25,6 +25,10 @@ free/fixed-Gold slice, final selection-time checks, repeatability, native stay/l
 lifecycle, and icon fallback. Do not adapt the ordinary combat-trigger skeleton below into
 a Rest Site option by guessing UI methods.
 
+If the Relic declares supplemental corner values, also read
+`../reference/extra-corner-labels.md`. That reference owns the specs provider, safe-corner
+and text bounds, refresh/removal, cleanup, and headed consumer proof.
+
 ## The skeleton (fill only the marked spot)
 
 Add ONE file under `<ModName>Code/Relics/<RelicName>.cs`:
@@ -111,6 +115,20 @@ shown above. `gen_sprite.py` derives the 256x256 filled-white outline from final
 using the shared 3% rule (8 pixels) without another acquisition call. RitsuLib checks each
 path and retains its template/base-game fallback when a file is absent; leave the whole
 profile empty in placeholder mode.
+
+## Optional extra badges
+
+Implement `IRelicExtraIconAmountLabelSpecsProvider` on the same Relic class. Return zero to
+three `ExtraIconAmountLabelSpec.Plain(...)` or bounded `RichText(...)` entries in SPEC
+order, using each of `TopLeft`, `TopRight`, and `BottomLeft` at most once. Preserve the
+native bottom-right counter and the four-visible-character limit.
+
+If badge text follows the Relic's displayed state, mutate that state and call
+`InvokeDisplayAmountChanged()`. For a separate field with no host display refresh,
+implement `IRelicExtraIconAmountLabelsChangeSource`, declare
+`event Action? RelicExtraIconAmountLabelsInvalidated`, and invoke it once after the state
+mutation. Returning no spec after the removal condition makes RitsuLib remove the label.
+Do not poll or generate custom rectangles.
 
 ## Optional owned Rest Site action
 
@@ -225,6 +243,8 @@ Pools (`MegaCrit.Sts2.Core.Models.RelicPools`):
 - [ ] Main/derived-outline/big files exist at their exact paths and the three-field
       `RelicAssetProfile` is wired, or the placeholder profile is left empty.
 - [ ] `[T2MOD-SELFTEST]` diagnostic marker logged on trigger; `SelfTest` asserts post-state.
+- [ ] If it has extra badges: at most three unique safe corners, bounded visible text,
+      exactly one refresh path per mutation, removal, and the native main counter preserved.
 - [ ] Stateful SelfTest proves `N-1`, threshold, reset/carry-over, and a
       `SavedProperties.From`/`Fill` round trip for run-persistent state.
 

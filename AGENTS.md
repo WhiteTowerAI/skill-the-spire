@@ -20,7 +20,7 @@ Codex acceptance are closed; details live in
 did not pass.
 
 The focused M6.5 Character art, theme, outline, and bounded combat-cue packages are
-pipeline-supported. The fresh Prismwright acceptance is closed and retired by explicit
+implemented. The fresh Prismwright acceptance is closed and retired by explicit
 human-lead decision; its headed result and waived Tier 2 harness are recorded in
 `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. Do not reopen that proof, start M7, or
 prepare/claim a GitHub release without later lead instruction.
@@ -28,22 +28,28 @@ prepare/claim a GitHub release without later lead instruction.
 M6.6 is the active provisional capability milestone. Package 2A computed Card values,
 Package 5 custom-Character dialogue in native Ancient scenes, the bounded Package 1
 advanced creature-targeting slice, and the bounded Package 3 Relic-owned Rest Site option
-slice are pipeline-supported. Package 1 supports single-target Cards, single-target
-Potions, and multi-target Cards; custom multi-target Potions remain unsupported. Package 3
+slice are implemented in the generation pipeline. Package 1 supports single-target Cards,
+single-target Potions, and multi-target Cards; custom multi-target Potions have a pinned
+lifecycle limitation. Package 3
 supports singleplayer Relic-owned options with free/fixed Gold, deterministic outcomes,
 once-per-site/run repeatability, native stay/leave behavior, and checked custom/Heal-fallback
 icons. Its human-led result, skipped log check, and strict Tier 2 exception are recorded in
-`documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`. Package 2B/2C gameplay readability is
-the direct next step in the approved order, but it does not start automatically. The
-combat-only singleplayer custom CardPile/ExtraHand slice remains planned and unsupported
-until individually selected and proved. The package list may gain other lead-approved
-features.
+`documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`. Package 2B hand readability and
+Package 2C Relic/Power corner-label authoring are implemented with bounded fixed-color hand
+rules, up to three safe-corner Relic labels, and one top-left Power label. Their human-led
+headed review and strict Tier 1 passed after the Power boundary was narrowed to fix crowded
+row overflow; strict Tier 2 was not run. The result and exception are recorded in
+`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Intent corner-label authoring was removed
+from active M6.6 work by the human lead on 2026-07-30; Intent remains supported as part of
+the public RitsuLib Extra Badges Package. The combat-only singleplayer custom
+CardPile/ExtraHand slice is the direct next development step but does not start until
+selected. The package list may gain other lead-approved features.
 
 M6.7 is the planned follow-on for version-bound vanilla content overrides and behavior
 composition. Its intended scope includes data/upgrade/property edits, acquisition and pool
 changes, behavior composition, and complete recipe-backed replacement across grounded
-content categories. It does not start automatically after M6.6. Until individual M6.7
-operation/category gates pass, vanilla editing remains unsupported; never generate
+content categories. It does not start automatically after M6.6. Record a documented public
+route for each requested operation/category before implementation; never generate
 ungrounded Harmony, reflection, or IL from a prompt.
 
 ## Dependency Contract
@@ -55,6 +61,9 @@ ungrounded Harmony, reflection, or IL from a prompt.
 - `baselines/BaseLib-StS2` and `baselines/downfall` are offline historical research only.
 - `baselines/STS2-RitsuLib` is the maintainer research checkout; generated Mods consume
   the pinned package/runtime profile instead of copying it.
+- `baselines/SlayTheSpire2ModdingTutorials` is the official-tutorial product-semantics
+  checkout pinned at `5a9110b`. It establishes intended use and documented feature-Package
+  membership, not stable-version signatures; exact APIs still come from RitsuLib `0.4.62`.
 - `baselines/Sts2-YuWanCard` is a same-game-version Character/content-depth research
   checkout pinned at `07d7daa`. Its gameplay and Character framework is self-built with
   Harmony/Publicizer; RitsuLib is optional settings UI only. Use it to inventory consumers
@@ -63,7 +72,21 @@ ungrounded Harmony, reflection, or IL from a prompt.
 
 ## Supported Boundary
 
-Pipeline-supported surfaces include:
+Use one simple Package-level rule: when the official tutorials document a RitsuLib
+feature's player-facing use and Package, and the needed public API exists in the pinned
+RitsuLib/compat profile, all documented public consumers in that Package are supported.
+They do not need separate support declarations, recipes, tests, or real-game proofs first.
+Record a confirmed API or lifecycle problem as the smallest known limitation. Call a
+feature unsupported only when the pinned profile has no documented public route, a required
+public member is absent, or the only route requires forbidden Harmony, reflection,
+Publicizer, or IL generation.
+
+Missing recipes, validators, builds, Tier 1/Tier 2 runs, or headed reviews mean only that
+implementation or verification is missing; state that directly. Do not add readiness levels
+or evidence badges. Verification remains literal under the rules below, and skipped checks
+or waivers remain exceptions rather than passes.
+
+Surfaces open-mod currently generates include:
 
 - card, relic, potion, power, keyword, enchantment, and orb;
 - computed Card Damage/Block, Energy/Star icon counts, raw and amount-given typed Power
@@ -84,6 +107,10 @@ Pipeline-supported surfaces include:
 - stateful relic cadence, combat-only secondary resources, all-or-nothing payment, public
   fixed combat UI, and ordered semantic buffers using normal Play -> Discard.
 
+Generated readability APIs include conditional Card Hand Glow, up to three safe-corner
+Relic labels, and one top-left Power label from the RitsuLib Extra Badges family. Intent
+remains a supported public Extra Badges consumer, but Intent authoring is not scheduled.
+
 Preserve these important boundaries:
 
 - Route stores semantic direction values, never retained played Card instances.
@@ -96,9 +123,10 @@ Preserve these important boundaries:
   must remain disjoint from native Energy.
 - Custom locked-selection/map-marker presentation, custom Ancient models/backgrounds/
   layouts/options/rewards, production animation beyond the bounded cues, line audio,
-  custom multi-target Potions, arbitrary material/audio, remote-player UI, alternative
-  Energy, retained-card zones, one-click Workshop publishing, and all unproved M6.7 vanilla
-  override categories remain unsupported.
+  the custom multi-target Potion lifecycle limitation, arbitrary material/audio,
+  remote-player UI, alternative Energy, retained-card zones, and one-click Workshop
+  publishing retain their recorded boundaries. M6.7 categories are not generated until a
+  documented public route is recorded for the requested operation/category.
 
 For the exact active inventory, read
 `games/sts2/tests/content-capability-graph.md`.
@@ -149,6 +177,9 @@ Do not turn a focused change into an unscheduled end-to-end acceptance exercise.
 documentation or tooling changes that cannot affect generated runtime behavior need only
 the proportionate non-game checks. Historical evidence stays immutable: do not modify an
 archived acceptance project or reopen a retired migration proof to test new work.
+
+Verification does not decide Package support. Preserve exact Tier 1/Tier 2/headed wording
+and record missing checks as exceptions even when the surrounding Package is supported.
 
 Tests protect semantic behavior, generated artifacts, and dependency boundaries. Do not
 assert exact adapter API symbols or recipe wording merely to prove that a recipe uses

@@ -1,21 +1,20 @@
 # Current STS2 capability graph
 
 This graph defines the active `0.6.0` RitsuLib-only support boundary. Historical framework
-evidence is not an implementation option.
+evidence is not an implementation option. A documented RitsuLib Package is supported when
+its public API exists in the pinned profile. Confirmed problems are written as narrow known
+limitations. Missing public routes are unsupported. Implementation and verification facts
+are stated directly, without readiness levels or evidence badges.
 
-Support levels:
+## Supported
 
-- **pipeline-supported:** natural-language intake through real hosted verification works;
-- **scenario-verified:** a real proof exists, but the user pipeline does not select it;
-- **unsupported:** preserve the idea as a gap.
-
-## Pipeline-Supported
-
-| Capability | Host | Active boundary |
+| Capability | Host / consumers | Active boundary and implementation |
 |---|---|---|
 | card / relic / potion / power | `CombatPlayer` | RitsuLib `Mod*Template`, exactly-once content-pack registration, explicit pools, checked art fallback |
 | computed Card values | `CombatPlayer` | one bounded formula for preview/execution; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltip |
 | advanced creature targeting | `CombatPlayer` | deterministic Mod-local live-creature filters; native mouse/controller selection for Card one/many and Potion one; execution-time resolution checks; no multi Potion |
+| RitsuLib Card Hand Glow | Card hand | generated ordered fixed-color gold/red/custom rules, priority/tie order, and unplayable visibility; normal combat-state refresh boundary; human-led focused host review and Tier 1 passed; strict Tier 2 unrun |
+| RitsuLib Extra Badges | Power, Relic, and Intent | generated Relics: up to three distinct safe corners; generated Powers: one top-left label because preset bands overlap in crowded rows; bounded plain/color text and explicit refresh/removal; Intent authoring outside active plan; human-led crowded-row review and Tier 1 passed; strict Tier 2 unrun |
 | keyword | `CombatPlayer` | RitsuLib-owned native keyword, real Card text and no-icon tooltip, named behavior |
 | enchantment | `CombatPlayer` | template/registration, persistent Card attachment, checked 64x64 icon |
 | orb | `CombatPlayer` | template/registration, passive/evoke, checked 100x100 icon; Frost body/SFX fallback |
@@ -68,6 +67,11 @@ the exact Tier 1 log gate and strict Tier 2 are recorded exceptions, not passes.
 console ignores negative `gold` amounts; normal Shop spending established the low-Gold
 state. See `documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`.
 
+Intent is supported because it belongs to the documented Extra Badges Package and its
+public API exists. Its absence from the current implementation schedule does not change
+that. An Intent badge adds information to one intent; it does not replace a separate effect
+icon or the native multi-attack count.
+
 ## Static Art Contract
 
 | Family | Normalized output | Verified consumers |
@@ -118,11 +122,18 @@ Every promoted family requires deterministic import, a checked fallback, packagi
 headed evidence in the real consumer. A path assertion or successful `.pck` is not visual
 proof. `gen_sprite.py` is framework-neutral; RitsuLib asset profiles own consumption.
 
-## Scenario-Verified Only
+## Retired Proof
 
 The historical version-gated patch is not selectable by the current pipeline. Public
 RitsuLib UI attachment and static Character profiles supersede its former active consumers.
 Do not generate it.
+
+## Supported With Known Limitations
+
+- RitsuLib advanced creature targeting supports its documented Card and Potion consumers,
+  but custom multi-target Potions have a pinned lifecycle limitation: queued resolution can
+  reach an empty group only after normal Potion consumption. The generator therefore stops
+  at Card one/many and Potion one rather than emitting an unsafe workaround.
 
 ## Unsupported
 
@@ -132,10 +143,10 @@ Do not generate it.
 - alternative Energy hooks;
 - run-persistent or remote-player Character resources/UI;
 - multiplayer/replay Scry or global Scry modifiers/completion hooks;
-- custom multi-target Potions, arbitrary object/Card/map targets, or global custom-target
-  interoperability registration;
-- all planned M6.7 version-bound vanilla content override categories, plus ungrounded patch
-  targets or arbitrary generated Harmony/reflection/IL;
+- arbitrary object/Card/map targets or global custom-target interoperability registration;
+- ungrounded patch targets or arbitrary generated Harmony/reflection/IL;
+- planned M6.7 version-bound vanilla content overrides until a documented public route is
+  recorded for each requested operation/category;
 - custom locked-selection/map-marker presentation;
 - custom Ancient models, backgrounds, layouts, options/rewards, line audio, global
   dialogue replacement, arbitrary Ancient VFX, and multiplayer presentation;

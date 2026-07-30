@@ -126,7 +126,7 @@ requires the exact load marker and `selftest done`.
   the source-aware single Card, single Potion, and player-aware multi Card as distinct real
   consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
   queued invalidation, unchanged rejected payment/Potion state, and normal Card result
-  pile. `potion + many` remains unsupported.
+  pile. `potion + many` remains a known lifecycle limitation.
 - For a Relic-owned Rest Site option, follow `reference/rest-site-options.md`: require the
   real native room, absent/disabled/enabled states, final click-time payment rejection with
   no deltas, exact successful Gold/outcome/history deltas, no duplicate after rebuild,
@@ -149,6 +149,24 @@ can select only legal single targets, cancel returns normally, zero legal target
 commit the action, multi-target reticles appear only on the resolved creatures, and no
 reticle remains after resolution. Record the visible result as manually observed; do not
 rename it an automated Tier-2 pass.
+
+### Gameplay-readability headed acceptance
+
+For Card hand emphasis, read `reference/card-hand-emphasis.md`. Put the real Card in hand
+and drive no-active, activation, deactivation, conflict winner, unplayable show/hide,
+hover/drag, and hand enter/leave states. Confirm that cost, art, rules text, rarity,
+selection, and native playable feedback remain readable.
+
+For Relic/Power extra labels, read `reference/extra-corner-labels.md`. Obtain the real hosts
+and drive Power zero/one plus Relic zero/one/bounded-multiple, plain/rich text, state
+refresh, removal, host cleanup, and combat-transition cleanup. Inspect crowded Relic and
+Power rows at common aspect ratios; the native main counter, icon, tooltip, and neighboring
+labels must remain unobstructed.
+
+When the human lead reserves this review, do not launch the game or take screenshots.
+Build/deploy the focused proof and provide exact console commands plus the matrix above.
+Record the lead's reported observations separately; any unrun Tier 1 or structured Tier 2
+gate remains an explicit exception.
 
 ### Rest Site option headed acceptance
 
@@ -292,7 +310,8 @@ state change; otherwise report tier-1 only.
 
 ## Finalize
 
-Update `PLAN.md` (check the verify boxes for the tiers actually reached). Then
+Update `PLAN.md` (check the verify boxes for the tiers actually reached) and record the
+checks that actually ran in `MEMORY.md`. Then
 summarize for the user in plain language:
 
 > Built **<Title>** (Common relic). It **loads in-game** (verified) and its effect

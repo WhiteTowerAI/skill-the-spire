@@ -18,6 +18,36 @@ open-mod targets:
 projects use the pinned package and installed runtime variant rather than copying that
 checkout.
 
+## Official RitsuLib Product-Semantics Baseline
+
+The gitignored maintainer checkout `baselines/SlayTheSpire2ModdingTutorials` tracks
+<https://github.com/GlitchedReme/SlayTheSpire2ModdingTutorials> at commit
+`5a9110b3c1b1c428f9f349e51cd4a155266b92e3` (2026-07-26). It is the official tutorial
+baseline for player-facing purpose, intended usage, examples, and documented RitsuLib
+feature-Package membership.
+
+The tutorial repository currently labels itself `public-beta`. It therefore does not
+replace the stable `0.107.1` / RitsuLib `0.4.62` source and compat profile for exact symbols
+or lifecycle behavior. Use the tutorial to answer "what product problem does this Package
+solve?" and the pinned RitsuLib checkout to answer "does this exact public API exist on our
+target?" Distill accepted findings into the shipped pack; generated Mods never read the
+baseline or copy tutorial code.
+
+The two directly relevant official pages establish:
+
+- **[Card Hand Glow](https://tutorials.sts2modding.com/en/docs/04-ritsulib/04-19-hand-outline/):**
+  vanilla yellow/red conditions plus conditional arbitrary-color glow,
+  priority, and the option to hide the outline while a Card is unplayable;
+- **[Extra Badges](https://tutorials.sts2modding.com/en/docs/04-ritsulib/04-22-1-extra-badge/):**
+  additional/dual Power values, a separate Relic charge value, and
+  auxiliary Intent information such as additional triggered hits, including refresh and
+  occupied-corner guidance.
+
+These are product semantics, not merely symbol examples. Under the Package-level rule in
+`AGENTS.md`, the documented Package and all public consumers confirmed in the pinned source
+are supported together. Missing recipe or real-host work is stated directly where relevant
+and does not create another support classification.
+
 ## YuWanCard Character Baseline
 
 The gitignored maintainer checkout `baselines/Sts2-YuWanCard` tracks
@@ -76,13 +106,15 @@ should a generated Mod call?" The latter remains owned by the pinned
    baseline, bounds, and `IntentPos`, `CenterPos`, `OrbPos`, and `TalkPos` anchors. M6.5
    should contract frame order/duration, fallback and terminal behavior, plus stable
    geometry/anchors so the body and game UI remain aligned.
-6. **A broad interface is an inventory, not presentation evidence.**
+6. **A broad interface is Package inventory, not presentation proof.**
    `IYuWanCharacter` enumerates combat visuals, trail, top icon/outline, full energy,
    rest/merchant, selection portrait/background/locked portrait, map marker, transition,
    multiplayer hands, SFX, animation, and the cookie icon. The concrete Pig does not
    customize every row: map marker, locked selection, and trail fall back, while the
-   outline currently reuses the normal icon. Those rows identify future consumers but do
-   not justify a claim that the corresponding custom presentation works.
+   outline currently reuses the normal icon. Those rows identify consumers, but YuWanCard
+   is not an official RitsuLib Package baseline and does not establish RitsuLib support.
+   Even for an official Package, the interface can establish membership while a headed
+   review records only what was actually seen.
 7. **Pixel dimensions and visible footprint are different contracts.** YuWanCard's
    selection portrait is the same 132x195 expected by open-mod and is assigned directly;
    its subject occupies 128 of 132 horizontal pixels. Its combat Character instead uses a
@@ -105,9 +137,10 @@ research Mod.
 
 ### M6.6 planning inputs
 
-The human lead selected five provisional capability packages for M6.6. These research
-findings identify product requirements only; pinned RitsuLib `0.4.62` and real hosted
-proofs remain the API and support authority. Packages 2A computed Card values, 5
+The human lead selected five provisional capability packages for M6.6. Official tutorial
+semantics plus pinned RitsuLib `0.4.62` public source determine Package support. Recipes,
+builds, and real hosted proofs show what open-mod has implemented and observed. Packages 2A
+computed Card values, 5
 custom-Character dialogue in native Ancient scenes, 1 bounded advanced targeting, and 3
 bounded Relic-owned Rest Site options have passed their focused gates. Their records live
 under `documents/history/`.
@@ -115,12 +148,21 @@ under `documents/history/`.
 - **Advanced Card/Potion target types (promoted):** deterministic Mod-local creature
   filtering now covers Card one/many and Potion one with native selection/cancellation,
   execution-time checks, and normal source-content lifecycle. Multi-target Potions remain
-  unsupported.
+  a pinned lifecycle limitation.
 - **Computed Card readability (promoted):** one formula now drives preview and execution
   for dynamic Damage/Block, Energy/Star icon counts, typed Power amounts, and variable
   tooltips in their real Card consumers.
-- **Remaining gameplay readability:** independently prove conditional hand emphasis and
-  bounded Relic/Power/Intent labels in their real consumers.
+- **Gameplay readability (promoted):** Card Hand Glow and
+  Extra Badges are supported from the official semantics and pinned public APIs. Open-mod
+  now lowers ordered fixed-color Card hand rules, up to three safe-corner Relic labels, and
+  one top-left Power label. Multiple Power preset bands are not clipped and overflowed in a
+  crowded 16:9 host row, so the generated Power boundary is intentionally narrower. The
+  rebuilt proof passed the human-led 16:9/16:10 recheck and strict Tier 1; strict Tier 2 was
+  not run. Intent
+  is a supported Extra Badges consumer but its recipe was removed
+  from current M6.6 work by the human lead on 2026-07-30. A badge may describe auxiliary
+  same-intent information; it must not replace a separate debuff intent, and ordinary
+  repeated identical attacks keep the native multi-attack intent.
 - **Custom Rest Site options (promoted, bounded):** the product references established
   owned eligibility, localized title/description, custom icon, and asynchronous outcome.
   Open-mod now supports the narrower public RitsuLib route for a singleplayer Relic owner,
@@ -183,10 +225,10 @@ multiplayer parity; fail closed on target/signature/baseline drift.
   run locations, request timeouts, disconnect cleanup, and host-authoritative content
   settings demonstrate why multiplayer is a separate systems track. Singleplayer behavior
   cannot simply be marked multiplayer-compatible.
-- **Modifiers, badges, interoperability, and complex UI:** these remain useful inventories
-  of the downstream persistence, deterministic RNG, localization, networking, and real-
-  host UI work each feature can require. Each needs its own bounded public-API research and
-  hosted proof before it can enter the support graph.
+- **Modifiers, badges, interoperability, and complex UI:** official Package documentation
+  plus pinned public source can establish support before implementation. The generator
+  still needs bounded semantic intake and recipes, and behavior/presentation claims still
+  require proportional host verification.
 
 ### What not to carry forward
 
@@ -206,6 +248,8 @@ The active architecture still borrows these durable ideas from the initial surve
   and resumable state files;
 - **spire-codex:** content facts and vanilla analogs, never C# API authority or a runtime
   dependency;
+- **official RitsuLib tutorials:** product semantics and documented Package membership,
+  never stable-version signature authority or a runtime dependency;
 - **STS2/game decompile:** exact public command, lifecycle, enum, and host signatures used
   by maintainers to improve the shipped pack;
 - **image tool research:** acquisition is optional and source-independent; deterministic
@@ -215,8 +259,9 @@ The active architecture still borrows these durable ideas from the initial surve
 
 `baselines/BaseLib-StS2` and `baselines/downfall` are retained only as offline historical
 research. They explain pre-migration behavior and implementation depth. YuWanCard is a
-current same-version product-depth reference under the narrower rules above. None of these
-three may be used to scaffold, author, build, repair, or run a generated Mod.
+current same-version product-depth reference under the narrower rules above. The official
+tutorial checkout is an active semantics baseline, but remains maintainer-only. None of
+these checkouts may be used to scaffold, author, build, repair, or run a generated Mod.
 
 Claude-specific baseline repositories may remain locally for historical comparison, but
 the product and publish flow now target Codex. They are not required to build or install
@@ -225,11 +270,13 @@ the product and publish flow now target Codex. They are not required to build or
 ## Decision Rules
 
 1. Semantic intent is framework-neutral; RitsuLib owns the active adapter.
-2. A successful build is not a behavior or presentation claim.
-3. Public game/RitsuLib APIs are preferred; a private patch needs a separately grounded
+2. Support follows the Package-level rule in `AGENTS.md`; missing recipe or proof does not
+   by itself make a documented public Package unsupported.
+3. A successful build is not a behavior or presentation claim.
+4. Public game/RitsuLib APIs are preferred; a private patch needs a separately grounded
    and hosted contract.
-4. Do not add a helper unless an existing supported surface needs it and one focused proof
+5. Do not add a helper unless an existing supported surface needs it and one focused proof
    can establish it.
-5. Do not make a paid network call or switch image backends without explicit user choice.
-6. Keep runtime sessions inside the shipped pack. Live decompilation and baseline research
+6. Do not make a paid network call or switch image backends without explicit user choice.
+7. Keep runtime sessions inside the shipped pack. Live decompilation and baseline research
    are maintainer work, not steps in `$modmaker`.

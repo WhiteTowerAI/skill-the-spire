@@ -81,11 +81,20 @@ second framework branch into this file.
   means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
   snapshots, `errors.md`), and if it's genuinely not there, report a pack gap. Never
   invent a Cmd name — that's the #1 way the repair loop burns its attempts.
+- If a Card SPEC selects non-`none` **hand emphasis**, read
+  `reference/card-hand-emphasis.md`. Preserve every ordered rule, lower a lone gold/red
+  rule through its native channel, or lower all competing/custom rules through one typed
+  `CardHandOutline<TCard>` registration. Never mix the two resolvers on one generated Card.
+- If a Relic or Power SPEC selects non-`none` **extra badges**, read
+  `reference/extra-corner-labels.md`. Enforce its Relic three-safe-corner or Power
+  one-top-left boundary and host text limits, implement the matching specs provider, and use
+  exactly one host-display or independent invalidation path per mutation. Intent authoring
+  remains outside the active schedule.
 - If a Card or Potion has a non-`none` **advanced target**, read
   `reference/advanced-targeting.md` before authoring either model. Emit one stable
-  Mod-local target registration, use only its supported consumer/mode matrix, and stop
-  authoring for `potion + many`; do not generate a lifecycle patch or restore a consumed
-  Potion.
+  Mod-local target registration, use only its implemented consumer/mode matrix, and stop
+  authoring for the limited `potion + many`; do not generate a lifecycle patch or
+  restore a consumed Potion.
 - If SPEC has a non-`none` **state** block, also read
   `reference/stateful-mechanics.md` before writing the hook. Implement its event,
   threshold/phase, lifetime, reset, persistence, UI meaning, and proof as one contract;
@@ -117,6 +126,10 @@ second framework branch into this file.
   from `CanPay`, reject duplicate `OptionId`, share `CanPay` between `IsEnabled` and the
   first line of `OnSelect`, and mutate repeatability only after the awaited deterministic
   outcome. Resolve missing custom art to the native Heal option image explicitly.
+- For extra badges, implement `IRelicExtraIconAmountLabelSpecsProvider`; return only active
+  bounded specs in SPEC order, never exceeding three distinct safe corners, and add
+  `IRelicExtraIconAmountLabelsChangeSource` only when the label state changes without
+  `InvokeDisplayAmountChanged()`.
 
 **Potion** — add `<ModName>Code/Potions/<PotionName>.cs` and extend
 `ModPotionTemplate`:
@@ -160,6 +173,10 @@ second framework branch into this file.
   `<ModName>Code/Helpers/OpenModScry.cs`, and await `OpenModScry.Execute` from `OnPlay`
   using the real `PlayerChoiceContext`, `Owner`, and a scaling `DynamicVar("Scry", X)`.
   Do not add BaseLib, a global hook/service, or a multiplayer fallback.
+- For hand emphasis, keep one native gold/red rule on the Card or append one typed ordered
+  ruleset to the existing content-pack builder. Generate fixed colors with
+  `RefreshEveryFrame: false`; stop if the condition can change without a normal combat-state
+  refresh.
 
 **Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend
 `ModPowerTemplate`:
@@ -170,6 +187,10 @@ second framework branch into this file.
   use `PowerCmd.ModifyAmount` to consume an existing nonnegative Counter.
 - Emit `.title`, `.description`, and `.smartDescription` under the exact normalized public
   entry. Use `PowerAssetProfile` only for checked icon paths.
+- For extra badges, implement `IPowerExtraIconAmountLabelSpecsProvider`; return only active
+  bounded specs, never exceeding one `TopLeft` label, and add
+  `IPowerExtraIconAmountLabelsChangeSource` only when the label state changes without
+  `InvokeDisplayAmountChanged()`.
 
 **Custom keyword** — register it once with
 `.CardKeywordOwnedByLocNamespace(...)`, keep `iconPath: null`, and attach the minted native

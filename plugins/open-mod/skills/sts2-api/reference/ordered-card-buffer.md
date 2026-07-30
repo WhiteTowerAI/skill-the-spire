@@ -1,6 +1,6 @@
 # Ordered combat buffer and deterministic dynamic output
 
-Status: **RitsuLib pipeline-supported on STS2 0.107.1**. `RitsuResourceProof` proved the
+Status: **implemented with RitsuLib on STS2 0.107.1**. `RitsuResourceProof` proved the
 mechanic in isolation and `RitsuWayfinderProof` proved the final Character composition on
 2026-07-23. The buffer stores semantic values in combat-attached state while source cards
 use STS2's normal Play -> Discard lifecycle.
