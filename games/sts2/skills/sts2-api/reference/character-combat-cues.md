@@ -1,6 +1,6 @@
 # Character combat cues
 
-> Implemented on STS2 `0.107.1` / RitsuLib `0.4.62` by the 2026-07-27
+> Implemented on STS2 `0.107.1` / RitsuLib `0.4.67` by the 2026-07-27
 > Meridian focused proof. This is a bounded non-Spine frame-sequence contract, not a
 > general Character animation pipeline.
 

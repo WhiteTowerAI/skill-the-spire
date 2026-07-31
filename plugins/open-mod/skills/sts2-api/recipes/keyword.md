@@ -1,6 +1,6 @@
 # Recipe: Custom Card Keyword
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. RitsuLib mints a
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. RitsuLib mints a
 > deterministic `CardKeyword` value and stores it in the game's native Card keyword set;
 > the R3 proof checked membership, localization, and the named Card behavior.
 

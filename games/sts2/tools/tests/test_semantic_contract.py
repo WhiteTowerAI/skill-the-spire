@@ -78,7 +78,7 @@ class SemanticContractTests(unittest.TestCase):
     def test_diagnostic_envelope_records_pinned_compatibility(self) -> None:
         for token in (
             "framework=RitsuLib",
-            "frameworkVersion=0.4.62",
+            "frameworkVersion=0.4.67",
             "host=0.107.1",
             "compat=0.107.1",
         ):
@@ -255,6 +255,71 @@ class SemanticContractTests(unittest.TestCase):
             "combat 2 has a distinct attached state, empty route, reset resource, and reset UI",
         ):
             self.assertIn(rule, buffer)
+
+    def test_combat_extra_hand_preserves_visible_card_lifecycle(self) -> None:
+        reference = (
+            STS2_API_DIR / "reference" / "card-pile-extra-hand.md"
+        ).read_text(encoding="utf-8")
+        api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
+        adapter = (
+            STS2_API_DIR / "reference" / "ritsulib-adapter.md"
+        ).read_text(encoding="utf-8")
+        verify = (MODMAKER_DIR / "verify.md").read_text(encoding="utf-8")
+        harness = (
+            STS2_API_DIR / "reference" / "selftest-harness.md"
+        ).read_text(encoding="utf-8")
+        normalized_reference = " ".join(reference.split())
+        normalized_spec = " ".join(self.spec.replace("**", "").split())
+        normalized_interview = " ".join(
+            self.interview.replace("**", "").split()
+        )
+
+        for field in (
+            "owner/lifetime: local Player / combat",
+            "capacity/overflow: <positive N>; reject the incoming move without changing either pile",
+            "entry: <source/trigger/card>; insert at top | bottom",
+            "manual play: enabled | disabled",
+            "successful play: normal STS2 result pile",
+            "numbered shortcuts stay native-Hand-only",
+            "multiplayer: singleplayer only",
+        ):
+            self.assertIn(field, normalized_spec)
+            self.assertIn(field, normalized_interview)
+
+        for rule in (
+            "ModCardPileScope.CombatOnly",
+            "ModCardPileUiStyle.ExtraHand",
+            "CardShouldBeVisible = true",
+            "ModCardPileAnchorKind.ExtraHandAbove",
+            "new Vector2(0f, -420f)",
+            "ModExtraHandLayoutDirection.Horizontal",
+            "Spacing = 180f",
+            "CardScale = Vector2.One * 0.55f",
+            "HoverScale = Vector2.One * 0.75f",
+            "CardPilePosition.Top",
+            "CardPilePosition.Bottom",
+            "capacity before starting the awaited move",
+            "same Card instance exists in exactly one pile",
+            "target-selection cancellation restores the exact Card at its recorded source index",
+            "enters `NPlayerHand.StartCardPlay` with the selected holder",
+            "awaiting-holder cleanup, mouse/controller targeting, and immediate follow-up play",
+            "successful manual play follows the Card's normal result-pile lifecycle",
+            "combat 2 starts with a distinct empty pile",
+            "Numbered select-card shortcuts remain exclusive to the native Hand",
+            "generated code must never add or reparent those idle holders into `NPlayerHand.CardHolderContainer`",
+            "numbered shortcuts `1`-`5` select only native-Hand Cards",
+            "a remaining ExtraHand Card can immediately enter the same native selected-card presentation",
+        ):
+            self.assertIn(rule, normalized_reference)
+
+        for routed in (self.author, api_skill, adapter, verify, harness):
+            self.assertIn("reference/card-pile-extra-hand.md", routed)
+
+        self.assertIn(
+            "The documented public Card Piles Package and its public consumers are supported",
+            normalized_reference,
+        )
+        self.assertIn("retained played Cards", normalized_reference)
 
     def test_scry_preserves_local_singleplayer_selection_semantics(self) -> None:
         helper = (

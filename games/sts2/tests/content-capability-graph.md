@@ -33,6 +33,7 @@ are stated directly, without readiness levels or evidence badges.
 | Relic-owned Rest Site option | real Rest Site / `MapNode` | singleplayer; absent versus native-disabled; free/fixed Gold; deterministic preflightable outcome; once per site/run; native stay/leave; checked custom/Heal-fallback icon |
 | Character resource/payment/UI | two-combat Character | RitsuLib Secondary Resource, bool payment, public 220x32 fixed UI at offset 160, text fallback |
 | ordered semantic buffer | two-combat Character | combat-attached semantic values, overflow/order/output/reset, normal source Play -> Discard |
+| RitsuLib Card Piles Package | `CombatPlayer` / Card pile consumers | documented public consumers are supported by the Package rule; generated authoring implements one local singleplayer combat-only visible ExtraHand with finite capacity, Top/Bottom movement, compact above-Hand layout, native-Hand-only numbered shortcuts, optional normal manual play, cancellation restoration, normal result piles, and combat cleanup; complete human-led matrix passed; exact Tier 1 failed on post-shutdown Godot leaks; strict Tier 2 unrun by lead decision |
 
 The focused `ComputedValuesProof` host covered base/upgrade and live-input changes,
 Strength/Vulnerable, Dexterity/Frail, Energy/Star zero and maximum formatting, exact neutral
@@ -71,6 +72,21 @@ Intent is supported because it belongs to the documented Extra Badges Package an
 public API exists. Its absence from the current implementation schedule does not change
 that. An Intent badge adds information to one intent; it does not replace a separate effect
 icon or the native multi-attack count.
+
+The Card Piles Package follows the same rule. The official tutorial documents owned piles,
+lifecycle scopes, UI styles, anchors, normal pile commands, and localization, while the
+pinned profile adds the public ExtraHand holder/manual-play route. The current generator's
+first recipe is intentionally the combat-only visible singleplayer slice. Missing generated
+recipes for other documented public consumers are authoring gaps, not unsupported Package
+claims. Intercepting an already played source Card to retain it remains a separate lifecycle
+limitation.
+
+The complete human-led `M66CardPileProof` matrix passed after repairing the native play
+bridge, stale active state, inherited holder labels, and above-zone mouse targeting. The
+current log corroborated exact setup/order/overflow state and seven successful ExtraHand
+plays, but its post-shutdown Godot leak block means literal Tier 1 did not pass. Per explicit
+human-lead decision, strict Tier 2 was not run and is not a pass. See
+`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`.
 
 ## Static Art Contract
 
@@ -139,7 +155,8 @@ Do not generate it.
 
 - Card/Modifier-owned Rest Site options, variable/non-Gold costs, post-payment choices,
   arbitrary transactions, same-site repeat, and multiplayer Rest Site extensions;
-- retained played-card custom piles or custom-zone UI;
+- intercepting already played Cards into retained custom zones or changing unrelated
+  Cards' normal result-pile lifecycle;
 - alternative Energy hooks;
 - run-persistent or remote-player Character resources/UI;
 - multiplayer/replay Scry or global Scry modifiers/completion hooks;

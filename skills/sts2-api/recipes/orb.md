@@ -1,6 +1,6 @@
 # Recipe: Custom Orb
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. The R3 proof registered
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The R3 proof registered
 > `ShelterOrb`, channeled it on a zero-slot Ironclad, proved passive and evoke Block,
 > and verified removal in a RitsuLib-only run.
 

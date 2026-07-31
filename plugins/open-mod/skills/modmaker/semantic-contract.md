@@ -126,6 +126,16 @@ current pipeline scope, so normal generated SPEC intake exposes only Relic and P
 blocks. A separate debuff/effect remains a separate native intent, and an ordinary repeated
 identical attack remains a native multi-attack intent.
 
+A combat-only visible Card pile is an optional cross-surface capability. Record one stable
+local name, local-Player/combat ownership, explicit entry and non-play exit triggers,
+Top/Bottom insertion, a positive capacity with non-destructive overflow, repeated-model
+policy, visible empty state, manual-play choice, normal successful result pile, fixed
+compact above-Hand layout intent, native-Hand-only numbered shortcuts, and singleplayer
+boundary. The adapter owns the qualified pile ID,
+native holders, temporary backend-Hand bridge, cancellation restoration, and combat cleanup.
+This is distinct from an ordered semantic record: it stores explicitly moved Card instances
+but never intercepts an already played source Card or changes unrelated result piles.
+
 ## Surface inputs
 
 These are the only surface-specific inputs the adapter needs from a normal SPEC:
@@ -148,6 +158,7 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Character combat cues | enabled/disabled fixed Idle/Attack/Hit/Dead contract, shared footprint/anchors, static fallback | `RunStart` + `CombatPlayer` |
 | Character combat resource | name, gain/spend/payoff, nonnegative domain, combat reset, fixed UI/fallback | two-combat Character / `CombatPlayer` |
 | Ordered semantic buffer | value/order, capacity/overflow, normal source destination, formula/output | two-combat Character / `CombatPlayer` |
+| Combat-only visible Card pile | name/text, explicit entry/exit and Top/Bottom order, capacity/overflow, repeated-model rule, manual play, fixed layout, normal result pile | two-combat `CombatPlayer` plus headed interaction/layout review |
 | Character Ancient dialogue | cataloged natural target, first/explicit/repeat visit, ordered speaker/text/prompts, Architect attackers | native Ancient + production Architect |
 | Card Scry helper | top-X amount, discard-any choice, upgrade delta, singleplayer boundary | `CombatPlayer` with visible native selector |
 | Advanced creature targeting | consumer, one/many mode, stable Mod-local target id, declarative live-Creature predicate, zero-target lifecycle | `CombatPlayer` plus headed mouse/controller targeting |
@@ -167,7 +178,7 @@ returns four implementation records:
 3. **diagnostics** - framework/compat/host identity and adapter status;
 4. **proof route** - the closest hosted suite and the structured invariant it must emit.
 
-The first target profile is `ritsulib-0.4.62-sts2-0.107.1`. There is no compatibility
+The first target profile is `ritsulib-0.4.67-sts2-0.107.1`. There is no compatibility
 fallback to the historical framework and no beta-facing variant selection. If the
 profile cannot be resolved, authoring stops with an actionable diagnostic and the
 placeholder/fallback remains the documented outcome.
@@ -178,9 +189,9 @@ Build, load, and Tier-2 records use the same fields. The existing exact load mar
 retained so current verification tools remain compatible.
 
 ```text
-[OPENMOD-FRAMEWORK] phase=<build|load|tier2> mod=<mod-id> framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1 adapter=<surface>/<contract-version> status=<selected|resolved|fallback|failed>
+[OPENMOD-FRAMEWORK] phase=<build|load|tier2> mod=<mod-id> framework=RitsuLib frameworkVersion=0.4.67 host=0.107.1 compat=0.107.1 adapter=<surface>/<contract-version> status=<selected|resolved|fallback|failed>
 [T2MOD-SELFTEST] <ModName> loaded ok
-[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1 expected=<...> observed=<...>
+[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.4.67 host=0.107.1 compat=0.107.1 expected=<...> observed=<...>
 ```
 
 `status=failed` must include a short reason such as `missing-compat-asset` or

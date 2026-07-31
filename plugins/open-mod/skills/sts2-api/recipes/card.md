@@ -1,7 +1,7 @@
 # Recipe: Card
 
 > A copy-adaptable, **known-good** RitsuLib pattern for a single STS2 card. Every signature
-> here was confirmed against STS2 `0.107.1`, RitsuLib `0.4.62`, and the hosted
+> here was confirmed against STS2 `0.107.1`, RitsuLib `0.4.67`, and the hosted
 > `RitsuCardProof` run, not guessed. Cards
 > lean harder on `reference/mechanics.md` than relics/potions do (scaling numbers,
 > upgrades, SmartFormat descriptions) — **read that first.** The skill fills only the
@@ -183,7 +183,7 @@ await DamageCmd.Attack(base.DynamicVars.Damage.BaseValue)
 
 Builder methods you may need (all return the builder, keep chaining):
 - `.TargetingAllOpponents(combatState)` — hit every enemy (`TargetType.AllEnemies`).
-  Get `combatState` from `base.Owner.PlayerCombatState!`.
+  Get `combatState` from `base.CombatState!` inside `OnPlay`.
 - `.TargetingRandomOpponents(combatState)` — random target(s).
 - `.WithHitCount(n)` — multi-hit (Twin Strike = 2). `n` can be a `DynamicVar` value.
 - `.Unpowered()` — do NOT scale with Strength (rare; for fixed-damage attacks).

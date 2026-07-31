@@ -168,7 +168,7 @@ The proof must enter through `MapPointType.Unknown`, not debug-enter the target 
 Event directly, because the room-type and Event-replacement hooks are the behavior under
 test.
 
-R4 live proof (2026-07-23, STS2 `0.107.1` / RitsuLib `0.4.62`): the combined Event headed
+R4 live proof (2026-07-23, STS2 `0.107.1` / RitsuLib `0.4.67`): the combined Event headed
 run rendered `Sealed Archive`, its description, and its real `Break the seal` option
 through an Unknown MapPoint. Strict Tier 2 reported:
 

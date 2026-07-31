@@ -6,8 +6,8 @@ This is one adapter-owned path, not a second copy of the historical BaseLib reci
 ## Pinned profile
 
 ```text
-profile: ritsulib-0.4.62-sts2-0.107.1
-compile package: STS2.RitsuLib.Compat.0.107.1 0.4.62
+profile: ritsulib-0.4.67-sts2-0.107.1
+compile package: STS2.RitsuLib.Compat.0.107.1 0.4.67
 runtime Mod id: STS2-RitsuLib
 host: STS2 stable 0.107.1
 ```
@@ -40,14 +40,14 @@ The project contains:
 - `<ModName>.csproj` with the exact compat package and `Sts2ApiCompat=0.107.1`;
 - `RitsuLibAutoCopy=false` and an empty `RitsuLibDeployDir`, so the consumer never bundles
   the framework DLL;
-- `<ModName>.json` with only `STS2-RitsuLib >= 0.4.62`, `min_game_version=0.107.1`,
+- `<ModName>.json` with only `STS2-RitsuLib >= 0.4.67`, `min_game_version=0.107.1`,
   `has_dll=true`, and `has_pck=false` for the empty scaffold;
 - `Sts2PathDiscovery.props` plus optional `local.props` support;
 - `<ModName>Code/MainFile.cs`, whose exact load marker records public RitsuLib version
   metadata and the actual loaded `Sts2ApiCompat` assembly metadata.
 
 RitsuLib is installed as its own runtime Mod from either the matching
-`STS2.RitsuLib.Compat.0.107.1.0.4.62.github.zip` or the verified variant pack. Never copy
+`STS2.RitsuLib.Compat.0.107.1.0.4.67.github.zip` or the verified variant pack. Never copy
 `STS2-RitsuLib.dll` into `<ModName>`.
 
 When authoring adds localization, images, or scenes, place them under

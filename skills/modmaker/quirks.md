@@ -3,7 +3,7 @@
 Non-obvious behaviors that silently break STS2 mods. Read before writing any C#.
 These pair with the sts2-api `errors.md` (error signature → fix); this file is the
 "know it up front" version. These rules were confirmed against STS2 `0.107.1`,
-RitsuLib `0.4.62`, and hosted proofs.
+RitsuLib `0.4.67`, and hosted proofs.
 
 ## Registration
 

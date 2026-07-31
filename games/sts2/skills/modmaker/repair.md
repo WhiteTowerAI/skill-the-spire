@@ -104,6 +104,19 @@ Read the artifact, not your memory of what you wrote.
   means capacity was checked after mutation. Stale/overlapping Card views mean source Cards
   were retained or skipped their native lifecycle; restore normal Play -> Discard instead
   of hiding visuals.
+  For a **combat Card pile / ExtraHand**, wrong overflow or order means the explicit
+  capacity/Top/Bottom preflight was omitted or performed after `CardPileCmd.Add`. A lost
+  Card after cancel points to bypassing RitsuLib's manual-play bridge or moving the Card
+  again while targeting. Missing/stale holders point to `CardShouldBeVisible`, the wrong
+  pile type, backend `AddInternal`/`RemoveInternal`, or `skipVisuals`; restore the exact
+  `reference/card-pile-extra-hand.md` route instead of adding UI patches. Native-Hand
+  overlap points to the old default `VanillaHand` fan/offset; numbered-key response means
+  idle holders were incorrectly registered with `NPlayerHand`. Restore the fixed compact
+  layout and ExtraHand-owned holders rather than patching input. A selected Card that looks
+  different from the native Hand, or remaining ExtraHand Cards that stop responding after
+  one successful Play, points to a framework bridge that bypassed
+  `NPlayerHand.StartCardPlay`; use the repaired RitsuLib native lifecycle instead of adding
+  generated Card-play or UI patches.
   For **Scry**, a missing overlay usually means Draw was empty, the amount was nonpositive,
   combat was ending, or a test selector was still installed. A completed Card play while
   the overlay is open means `CardSelectCmd.FromSimpleGrid` was not awaited. Wrong retained

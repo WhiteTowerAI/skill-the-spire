@@ -1,6 +1,6 @@
 # Recipe: Power
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. The hosted
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The hosted
 > `RitsuCardProof` run explicitly registered a `Counter` Power, applied it at amount 2,
 > changed the live instance to 3, and resolved its localization in a RitsuLib-only run.
 > When SPEC declares supplemental corner values, also read

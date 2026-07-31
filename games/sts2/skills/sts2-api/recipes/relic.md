@@ -2,7 +2,7 @@
 
 > A copy-adaptable, **known-good** RitsuLib pattern for a single STS2 relic. Registration,
 > localization, combat-start Energy, and the empty asset fallback were confirmed against
-> STS2 `0.107.1`, RitsuLib `0.4.62`, and the hosted `RitsuCardProof` run. The skill fills
+> STS2 `0.107.1`, RitsuLib `0.4.67`, and the hosted `RitsuCardProof` run. The skill fills
 > only the effect logic; `ModRelicTemplate`, content-pack registration, localization, and
 > `RelicAssetProfile` are adapter-owned.
 >

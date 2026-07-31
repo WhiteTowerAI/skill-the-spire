@@ -38,7 +38,7 @@ Maintainers may improve the pack offline:
    membership. Its repository targets `public-beta`, so do not use it as stable-version
    signature authority.
 3. Query a local spire-codex data dump or its attributed API for content facts.
-4. Inspect the pinned STS2 `0.107.1` and RitsuLib `0.4.62` code for exact signatures.
+4. Inspect the pinned STS2 `0.107.1` and RitsuLib `0.4.67` code for exact signatures.
 5. Confirm build/load rules in `scaffold.py`, `ritsu_profile.py`, package metadata, and a
    focused hosted proof.
 6. Add the complete documented Package inventory and narrow known limitations to the

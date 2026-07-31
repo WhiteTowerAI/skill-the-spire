@@ -490,6 +490,22 @@ model-only `GetTargets()` output, and trigger logs are diagnostics, not the host
 proof. Keep mouse and controller selection, invalid-target rejection, and multi reticles as
 the separate headed checks in `advanced-targeting.md`.
 
+### combat Card pile / ExtraHand - split state proof from real UI review
+
+Read `reference/card-pile-extra-hand.md` and use one two-combat `CombatPlayer` fixture.
+Structured assertions cover exact Card IDs and instance identity, Top/Bottom order,
+empty/one/full/non-destructive overflow, one non-play exit, Energy/payment, target and
+queued-cancel restoration, successful normal result piles/hooks, combat cleanup, and a
+distinct empty pile in combat 2. Emit
+`combat card pile complete expected=all observed=all` only after all state assertions pass.
+
+The harness cannot replace native-holder review. Mouse/controller entry and return, Card
+hover/tooltips, playable/unplayable glow, target UI, native-Hand-only numbered shortcuts,
+and 16:9/16:10 overlap remain headed observations. When the human lead reserves that run,
+build/deploy but do not launch STS2;
+provide the fixture's exact `fight`, `card`, and `energy` dev-console sequence and record the
+reported matrix separately. An unrun structured harness remains an explicit exception.
+
 ### multi-element interactions — drive the real source type, then observe each edge
 
 There is no `combo` model or DRIVER type. Drive the **source** exactly as its real element
@@ -1178,7 +1194,7 @@ and the result page is readable. One marker may cover all selected profiles.
 > Headed screenshots showed the initial/page/resumed portrait halos and the actual special
 > combat after its room fade.
 
-> **R4 close (RitsuLib `0.4.62`, strict Tier-2 PASS, 2026-07-23):** one combined headed
+> **R4 close (RitsuLib `0.4.67`, strict Tier-2 PASS, 2026-07-23):** one combined headed
 > run repeated core pages/Cmds, option/lethal/native presentation, outcomes, rich text,
 > portrait-halo lifecycle, and forced follow-up against stable `0.107.1`. It reached every
 > structured family marker, `selftest done`, and no fresh error.
@@ -1223,7 +1239,7 @@ use flag, current option IDs, and current map-history Rest Site choices. After s
 emit one structured line only when all expected deltas match:
 
 ```text
-[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.4.62 host=0.107.1 compat=0.107.1 expected=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden observed=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden
+[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.4.67 host=0.107.1 compat=0.107.1 expected=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden observed=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden
 ```
 
 The required matrix is:

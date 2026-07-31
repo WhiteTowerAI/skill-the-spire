@@ -6,7 +6,7 @@ switching to an old template.
 
 ## Build And Profile
 
-### Required compile asset is `STS2.RitsuLib.Compat.0.107.1 0.4.62`
+### Required compile asset is `STS2.RitsuLib.Compat.0.107.1 0.4.67`
 
 - **Cause:** the project selected a floating/default RitsuLib package, another compat
   target, or an additional framework package.
@@ -17,7 +17,7 @@ switching to an old template.
 
 - **Cause:** RitsuLib is missing, another host variant was installed, or its variant
   manifest/hash does not match.
-- **Fix:** install RitsuLib `0.4.62` with `lib/0.107.1/STS2-RitsuLib.dll`; do not use
+- **Fix:** install RitsuLib `0.4.67` with `lib/0.107.1/STS2-RitsuLib.dll`; do not use
   `--skip-runtime-check` for Tier 1.
 
 ### Host version is not `0.107.1`
@@ -122,6 +122,36 @@ switching to an old template.
   state used a non-combat owner.
 - **Fix:** store semantic values in `AttachedState<PlayerCombatState,TState>` and let every
   source Card follow normal Play -> Discard.
+
+### ExtraHand overflows, loses order, or leaves a stale Card holder
+
+- **Cause:** capacity/repeated-model checks ran after the move, Top/Bottom was implicit,
+  gameplay mutated a backend pile directly, or the move skipped normal visuals.
+- **Fix:** follow `reference/card-pile-extra-hand.md`: preflight before one awaited
+  `CardPileCmd.Add`, pass explicit `CardPilePosition.Top`/`Bottom`, and never call
+  `AddInternal`, `RemoveInternal`, or `skipVisuals: true`.
+
+### ExtraHand Card is lost or paid twice after cancellation
+
+- **Cause:** generated gameplay intercepted the Card during RitsuLib's backend-Hand bridge,
+  moved it again while targeting, or implemented a competing cancellation handler.
+- **Fix:** remove the competing move/handler and let RitsuLib restore the exact source Card
+  and recorded index. Generated code handles only explicit entry/non-play exits.
+
+### ExtraHand selection looks different or remaining Cards stop responding after one Play
+
+- **Cause:** the framework bridge created its own `NCardPlay` instead of entering vanilla
+  `NPlayerHand.StartCardPlay`, so native selected-card and awaiting-holder state diverged.
+- **Fix:** use a RitsuLib runtime whose ExtraHand bridge enters the native Hand play
+  lifecycle. Do not add a generated input/UI patch or a second Card-play coordinator.
+
+### ExtraHand overlaps the native Hand or responds to numbered shortcuts
+
+- **Cause:** the generated pile used the full-size `VanillaHand` fan at the default
+  `ExtraHandAbove` offset, or registered idle ExtraHand holders with `NPlayerHand`.
+- **Fix:** use the fixed compact horizontal layout from
+  `reference/card-pile-extra-hand.md`; keep idle holders owned by `NModExtraHand` and never
+  add numbered input handling. Validate `1`-`5` against five native-Hand probe Cards.
 
 ### Scry overlay is missing, unawaited, or has wrong order/history
 

@@ -14,7 +14,7 @@ under `documents/history/` and is not current instruction.
 ## Current Status
 
 `0.6.0` is the unreleased RitsuLib-only development baseline for STS2 stable `0.107.1`
-and RitsuLib `0.4.62`. The BaseLib-to-RitsuLib migration and external clean-workspace
+and RitsuLib `0.4.67`. The BaseLib-to-RitsuLib migration and external clean-workspace
 Codex acceptance are closed; details live in
 `documents/history/RITSULIB_MIGRATION_RESULTS.md`. R7 was canceled by the human lead and
 did not pass.
@@ -41,8 +41,16 @@ headed review and strict Tier 1 passed after the Power boundary was narrowed to 
 row overflow; strict Tier 2 was not run. The result and exception are recorded in
 `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Intent corner-label authoring was removed
 from active M6.6 work by the human lead on 2026-07-30; Intent remains supported as part of
-the public RitsuLib Extra Badges Package. The combat-only singleplayer custom
-CardPile/ExtraHand slice is the direct next development step but does not start until
+the public RitsuLib Extra Badges Package. The initial combat-only singleplayer custom
+CardPile/ExtraHand slice is implemented with a generated-Mod-local visible ExtraHand,
+finite capacity, explicit Top/Bottom movement, native optional manual play, normal result
+piles, cancellation restoration, a compact above-Hand layout, native-Hand-only numbered
+shortcuts, and combat cleanup. `M66CardPileProof` is built and
+passed the complete human-led focused matrix after repairing native play state, holder
+labels, and above-zone mouse targeting. The exact Tier 1 gate did not pass because the
+post-shutdown log contained Godot leak blocks. Per explicit human-lead decision, strict
+Tier 2 was not run and is not a pass. The result and exceptions are recorded in
+`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`. Do not start a later package until
 selected. The package list may gain other lead-approved features.
 
 M6.7 is the planned follow-on for version-bound vanilla content overrides and behavior
@@ -54,8 +62,8 @@ ungrounded Harmony, reflection, or IL from a prompt.
 
 ## Dependency Contract
 
-- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.4.62`.
-- Runtime manifests depend only on `STS2-RitsuLib >= 0.4.62`.
+- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.4.67`.
+- Runtime manifests depend only on `STS2-RitsuLib >= 0.4.67`.
 - Generated Mods must not reference, package, or depend on BaseLib.
 - Do not use Alchyr templates or restore historical BaseLib implementation snippets.
 - `baselines/BaseLib-StS2` and `baselines/downfall` are offline historical research only.
@@ -63,7 +71,7 @@ ungrounded Harmony, reflection, or IL from a prompt.
   the pinned package/runtime profile instead of copying it.
 - `baselines/SlayTheSpire2ModdingTutorials` is the official-tutorial product-semantics
   checkout pinned at `5a9110b`. It establishes intended use and documented feature-Package
-  membership, not stable-version signatures; exact APIs still come from RitsuLib `0.4.62`.
+  membership, not stable-version signatures; exact APIs still come from RitsuLib `0.4.67`.
 - `baselines/Sts2-YuWanCard` is a same-game-version Character/content-depth research
   checkout pinned at `07d7daa`. Its gameplay and Character framework is self-built with
   Harmony/Publicizer; RitsuLib is optional settings UI only. Use it to inventory consumers
@@ -104,6 +112,10 @@ Surfaces open-mod currently generates include:
 - singleplayer Relic-owned custom Rest Site options with free/fixed Gold, deterministic
   preflightable outcomes, once-per-site/run use, native stay/leave behavior, and checked
   256x169 custom/Heal-fallback icons;
+- generated-Mod-local singleplayer combat-only visible CardPile/ExtraHand with finite
+  capacity, explicit Top/Bottom movement, distinct same-model instances, native optional
+  manual play, native-Hand-only numbered shortcuts, compact above-Hand layout, normal
+  cancellation/result-pile behavior, and combat cleanup;
 - stateful relic cadence, combat-only secondary resources, all-or-nothing payment, public
   fixed combat UI, and ordered semantic buffers using normal Play -> Discard.
 
@@ -124,7 +136,8 @@ Preserve these important boundaries:
 - Custom locked-selection/map-marker presentation, custom Ancient models/backgrounds/
   layouts/options/rewards, production animation beyond the bounded cues, line audio,
   the custom multi-target Potion lifecycle limitation, arbitrary material/audio,
-  remote-player UI, alternative Energy, retained-card zones, and one-click Workshop
+  remote-player UI, alternative Energy, interception of already played Cards into retained
+  zones, and one-click Workshop
   publishing retain their recorded boundaries. M6.7 categories are not generated until a
   documented public route is recorded for the requested operation/category.
 
@@ -218,7 +231,7 @@ The outer project directory name must differ from the Mod name.
 ## Windows
 
 The verified environment uses PowerShell, STS2 `0.107.1`, .NET SDK `9.0.300`, Python 3,
-and RitsuLib `0.4.62`. Use PowerShell syntax for normal commands. Invoke `publish.sh`
+and RitsuLib `0.4.67`. Use PowerShell syntax for normal commands. Invoke `publish.sh`
 through an explicit Git Bash executable when needed; do not mix Bash path syntax into
 PowerShell commands.
 

@@ -3,7 +3,7 @@
 Status: **implemented for nine static profiles, deterministic top-icon/generated-
 Relic outlines, the bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and
 Character dialogue in native Ancient/Architect scenes on STS2 `0.107.1` / RitsuLib
-`0.4.62`**.
+`0.4.67`**.
 The 2026-07-23 Wayfinder headed proof established selection
 portrait/background, top-panel icon, non-Spine combat/rest/merchant bodies, five-layer
 energy, and the original compact shared card-energy icon. Locked selection and map marker

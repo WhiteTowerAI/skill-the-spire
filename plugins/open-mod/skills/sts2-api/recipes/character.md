@@ -1,6 +1,6 @@
 # Recipe: Character Foundation
 
-> Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.62` by the
+> Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.67` by the
 > 2026-07-23 Wayfinder R4 proof and 2026-07-27 Meridian M6.5 proof. This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
 > the nine promoted static presentation profiles, and the bounded non-Spine

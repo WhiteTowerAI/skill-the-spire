@@ -1,7 +1,7 @@
 # Reference: open-mod Scry helper
 
 Use this page only when a Card's semantic effect is "look at the top X cards of Draw and
-discard any number of them." RitsuLib `0.4.62` has no public Scry command, so the helper
+discard any number of them." RitsuLib `0.4.67` has no public Scry command, so the helper
 is emitted as source inside the generated Mod. It is not another runtime dependency.
 
 ## Supported contract
@@ -135,7 +135,7 @@ zero/empty/short/full matrix in this one run:
 6. Emit `R6 scry helper complete expected=all observed=all`, then `selftest done`.
 
 The 2026-07-23 `RitsuHelpersProof` run passed this contract against STS2 `0.107.1` and
-RitsuLib `0.4.62`, with BaseLib absent, strict Tier 2, and no fresh error. The visible
+RitsuLib `0.4.67`, with BaseLib absent, strict Tier 2, and no fresh error. The visible
 selector evidence is
 `C:\Users\YY\AppData\Roaming\SlayTheSpire2\r6_ritsu_scry_selector.png`.
 

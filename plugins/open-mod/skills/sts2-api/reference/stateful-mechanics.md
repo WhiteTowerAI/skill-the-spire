@@ -2,7 +2,7 @@
 
 Status: **implemented with RitsuLib on STS2 0.107.1** for custom-relic run cadence
 with `int`/`bool` attached state and combat-local cadence based on the native turn number.
-`RitsuStateProof` passed the two-combat hosted proof on 2026-07-23 with RitsuLib 0.4.62.
+`RitsuStateProof` passed the two-combat hosted proof on 2026-07-23 with RitsuLib 0.4.67.
 
 Use this page whenever an effect remembers progress, limits uses, compares turns, or
 changes behavior after a prior event. State is part of the mechanic, not an implementation

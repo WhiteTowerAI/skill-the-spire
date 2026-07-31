@@ -1,6 +1,6 @@
 # Recipe: Potion
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. The hosted
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The hosted
 > `RitsuCardProof` run registered `EmberDraft` through the public content pack,
 > procured it, used it on a real enemy, and proved exact damage in a RitsuLib-only run.
 

@@ -1,6 +1,6 @@
 # Recipe: Card Enchantment
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.62` compat. The R3 proof registered
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The R3 proof registered
 > `Guarded`, attached it to a real Card at amount 5, and observed its `OnPlay` Block
 > consequence in a RitsuLib-only run.
 

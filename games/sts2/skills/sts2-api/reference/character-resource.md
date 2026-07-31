@@ -2,7 +2,7 @@
 
 Status: **implemented with RitsuLib on STS2 0.107.1**. `RitsuResourceProof` proved
 the resource in isolation and `RitsuWayfinderProof` proved the final Character
-composition on 2026-07-23 with RitsuLib 0.4.62 as the sole framework dependency.
+composition on 2026-07-23 with RitsuLib 0.4.67 as the sole framework dependency.
 
 Use this capability when cards or other character-owned effects gain and spend a named
 nonnegative resource during combat. It is a selected Character capability, not a new

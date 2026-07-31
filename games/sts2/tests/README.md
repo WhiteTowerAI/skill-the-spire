@@ -31,7 +31,7 @@ Host ownership:
 
 | Host | Owns |
 |---|---|
-| `CombatPlayer` | content core, computed Card values, hand emphasis, Relic/Power extra labels, advanced targeting, stateful relics, Scry, Character combat cues |
+| `CombatPlayer` | content core, computed Card values, hand emphasis, Relic/Power extra labels, advanced targeting, combat CardPile/ExtraHand, stateful relics, Scry, Character combat cues |
 | `CombatEnemy` | Monster + Encounter, move vocabulary, combat/bestiary body |
 | `MapNode` / Character | Event outcomes/presentation, bounded forced follow-up, native Ancient/Architect dialogue |
 | real Rest Site / `MapNode` | Relic-owned option absence/gray/payment/stay/repeat/icon matrix |
@@ -70,10 +70,19 @@ strict Tier 2 remain explicit exceptions. The pinned dev-console `gold` command 
 negative values, so future manual routes must use normal Shop spending for a low-Gold state
 or a narrow proof driver for a render-time stale-payment check.
 
-Package 2B/2C authoring is implemented, but its focused real-host result is still open.
-Static contract tests cover routing and generated bounds. The human lead owns the headed
-hand/Relic/Power readability matrix for this session; until that report exists, do not claim
-headed acceptance or strict Tier 2 from the provider/predicate state alone.
+Package 2B/2C authoring and its focused human-led hand/Relic/Power review are complete. The
+crowded Power boundary was narrowed to one top-left label; the rebuilt 16:9/16:10 matrix and
+strict Tier 1 passed. Strict Tier 2 was not run and remains the recorded exception in
+`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`.
+
+The initial Package 4 combat CardPile/ExtraHand authoring route is implemented in the source
+pipeline with a compact above-Hand layout and native-Hand-only numbered shortcuts. The
+complete human-led empty/one/full/overflow/order/movement/payment/cancel/result/reset/layout/
+numbered-shortcut matrix passed after the native-play, holder-label, and mouse-targeting
+repairs. The final log had the exact load marker and successful ExtraHand play records, but
+the post-shutdown Godot leak block means exact Tier 1 did not pass. Per explicit human-lead
+decision, strict Tier 2 was not run and is not a pass. See
+`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`.
 
 Run one armed harness at a time. Preserve and restore unrelated user Mods. Do not reopen a
 completed host proof unless a later source change exposes a real regression.

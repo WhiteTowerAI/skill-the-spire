@@ -33,10 +33,11 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      (*Editing* an existing
      vanilla card/relic/potion has no current recipe — if that's the ask, say so and offer
      to build the closest **new** element instead.)
-   - If the request says played cards should physically remain in a special area, ask one
-     short question: should the cards instead resolve normally while a visible text record
-     tracks their order? Offer that as the supported default. Retained-card zone UI is a
-     pack gap, not something AUTHOR should improvise.
+   - If the request explicitly moves Cards into a visible combat-only side hand before
+     they are played, capture the combat Card-pile block below. If it instead says an
+     already played source Card should physically remain there, ask one short question:
+     should the Card resolve normally while a visible semantic record tracks its order?
+     Retaining already played Cards is still a pack gap; an explicit pre-play move is not.
 2. **Trigger / usage / how it's played:**
    - **Relic**: when does the effect happen? Map the user's words to a lifecycle
      moment — "start of combat", "start of each turn", "when you play a card",
@@ -150,8 +151,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      visuals. If it names a custom resource, capture its gain sources, spenders/payoff,
      floor, combat reset, and counter text. If it describes an ordered card-play record,
      capture semantic values, normal source destination, order, capacity/overflow, compile
-     trigger, deterministic formula, and output. If physical played Cards must remain in a
-     custom zone, preserve that as an explicit unsupported gap.
+     trigger, deterministic formula, and output. If it explicitly sets Cards aside before
+     play in a visible combat pile, capture entry/exit, capacity, order, repeated-model
+     policy, manual play, and placement. If already played Cards must remain in that zone,
+     preserve that narrower request as an explicit unsupported gap.
      If it requests dialogue with a vanilla Ancient, resolve each natural-language target
      through the pinned `0.107.1` catalog and capture ordered groups. Each group records
      `first`, `visit N`, or `repeat from visit N`; every line records Character/Ancient
@@ -265,7 +268,11 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Ordered semantic buffer** (only when requested): combat lifetime, normal Play ->
   Discard source lifecycle, finite capacity, reject overflow without mutation, preserve
   semantic insertion order, show compact state, and create one deterministic real output
-  Card. Retained-card zone UI is unsupported.
+  Card. It does not retain source Card instances.
+- **Combat-only visible Card pile** (only when requested): local Player, one visible
+  above-hand native-holder pile, capacity 3, non-destructive overflow, explicit Top/Bottom
+  movement, same-model instances allowed, optional manual play, normal successful result
+  piles, no visible empty holders, singleplayer, and clean combat reset.
 - **Monster move order**: moves repeat in the order stated. Do not invent random choice;
   add a conditional branch only when the concept names a condition or the user confirms it.
 - **State lifetime**: "every N turns" on a relic continues across combats in the current
@@ -352,6 +359,28 @@ advanced target:
 If this produces `consumer: potion` plus `mode: many`, stop and offer the two supported
 alternatives above. Do not silently weaken the zero-target behavior.
 
+When any generated element explicitly moves Cards into a visible combat side hand, append
+this semantic summary. Do not ask about RitsuLib types, anchors, or node callbacks:
+
+```text
+combat Card pile: <player-facing name>; stable local name <stem>
+owner/lifetime: local Player / combat
+localization: title <text>; description <text>; empty <text>
+entry: <source/trigger/card>; insert at top | bottom
+non-play exits: <trigger -> destination at top|bottom, or none>
+capacity/overflow: <positive N>; reject the incoming move without changing either pile
+duplicates: distinct same-model instances allowed | reject repeated model ID; same instance once
+empty presentation: no visible Card holders
+manual play: enabled | disabled
+successful play: normal STS2 result pile
+placement/layout: fixed compact horizontal row above the native Hand; numbered shortcuts stay native-Hand-only
+multiplayer: singleplayer only
+```
+
+Default capacity is 3, repeated model IDs are allowed as separate Card instances, manual
+play is enabled when the user calls it a second hand, and every other Card keeps its normal
+result pile. An already played source Card cannot be redirected here merely to retain it.
+
 For an **enemy encounter** (monster + the encounter that spawns it, one unit):
 
 ```
@@ -430,12 +459,13 @@ Ancient boundary: preserve native model/scene/background/options/rewards/progres
 advanced mechanic: none | <unverified idea that remains beyond Foundation>
 ```
 
-When the idea selects a supported advanced capability, replace `advanced mechanic` with one or
-both compact semantic blocks:
+When the idea selects a supported advanced capability, replace `advanced mechanic` with one
+or more compact semantic blocks:
 
 ```text
 resource: <name>; gain <sources/amounts>; spend <cost/payoff>; floor 0; reset combat; UI <counter text>
 buffer: <name>; values <semantic values>; source destination Discard; order <rule>; capacity <N>; overflow reject; compile <trigger/formula/output>
+pile: <name>; explicit entry/exit; top/bottom; capacity <N>; overflow reject; manual play <yes|no>; normal result pile; singleplayer combat
 ```
 
 Do not write files here — `spec.md` does that. If nothing was ambiguous, skip

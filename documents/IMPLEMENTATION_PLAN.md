@@ -16,8 +16,11 @@ acceptance and its explicit lead-approved verification exceptions are recorded i
 M6.6 Package 2A computed Card values, Package 5 custom-Character dialogue in native Ancient
 scenes, the bounded Package 1 advanced creature-targeting slice, and the bounded Package 3
 Relic-owned Rest Site option slice are implemented. Their focused proofs and
-explicit strict Tier 2 exceptions are recorded under `documents/history/`. Remaining M6.6
-and M6.7 work is not implemented until its scheduled development gates pass. Per
+explicit strict Tier 2 exceptions are recorded under `documents/history/`. The initial
+Package 4 combat-only singleplayer CardPile/ExtraHand slice is also implemented and its
+complete human-led matrix passed after lifecycle/presentation repair. Its exact Tier 1 gate
+did not pass on post-shutdown Godot leak blocks; strict Tier 2 was not run by explicit
+human-lead decision and is not a pass. Remaining M6.6 and M6.7 work is not implemented until its scheduled development gates pass. Per
 `AGENTS.md`, official Package semantics plus a public API in the pinned profile are enough
 for support, while confirmed problems are recorded as limitations.
 
@@ -26,8 +29,8 @@ the next package automatically.
 
 ## Dependency Boundary
 
-- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.4.62`.
-- Runtime manifests depend only on `STS2-RitsuLib >= 0.4.62`.
+- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.4.67`.
+- Runtime manifests depend only on `STS2-RitsuLib >= 0.4.67`.
 - Generated Mods must not reference, package, or depend on BaseLib or use historical
   Alchyr templates. Offline BaseLib/Downfall checkouts remain research-only.
 
@@ -86,8 +89,12 @@ was performed; the exact Tier 1 log gate and strict `selftest done` remain excep
 not reopen these retired proofs or Prismwright, and do not start M7. Package 2B/2C then
 passed its human-led hand/Relic matrix and, after narrowing Power authoring to one top-left
 label, its crowded 16:9/16:10 Power-row recheck. Strict Tier 1 passed; strict Tier 2 was not
-run. See `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Package 4 combat-only
-CardPile/ExtraHand is the direct next step but does not start automatically.
+run. See `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. The human lead then
+selected Package 4. Its initial combat-only CardPile/ExtraHand authoring route is
+implemented. After four focused repairs, the human lead reported that the complete headed
+matrix passed. The exact Tier 1 gate did not pass because the final read contained Godot
+shutdown leak blocks. Per explicit human-lead decision, strict Tier 2 was not run and is not
+a pass. See `documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`.
 
 ## M6.6 - Capability Expansion (Provisional)
 
@@ -99,7 +106,7 @@ the support inventory under the global policy, but they do not schedule developm
 ### Shared implementation and promotion rules
 
 Use the Package-level rule in `AGENTS.md` for support decisions. Once official product
-semantics identify a RitsuLib Package and the pinned `0.4.62` profile confirms its public
+semantics identify a RitsuLib Package and the pinned `0.4.67` profile confirms its public
 members, all documented public consumers are supported. Record a confirmed problem as the
 smallest known limitation.
 
@@ -107,7 +114,7 @@ Before finishing a selected implementation slice, it must have:
 
 1. a semantic interview/SPEC shape that describes player-visible intent rather than C# API
    names, including owner, lifetime, initial state, transitions, localization, and fallback;
-2. one grounded `sts2-api` recipe and pinned RitsuLib `0.4.62` adapter route, without
+2. one grounded `sts2-api` recipe and pinned RitsuLib `0.4.67` adapter route, without
    BaseLib, copied baseline code, private patches, or arbitrary generated reflection;
 3. deterministic checks for calculations, filtering, ordering, payment, and state rules,
    plus build/manifest checks that preserve the RitsuLib-only dependency boundary;
@@ -166,7 +173,7 @@ target Cards in hand, corpses, map objects, or arbitrary game objects.
   Card result-pile and Potion-use behavior.
 
 **Pinned-profile boundary found during implementation research.** On STS2 `0.107.1` with
-RitsuLib `0.4.62`, `potion + many` cannot satisfy the zero-target consumption rule:
+RitsuLib `0.4.67`, `potion + many` cannot satisfy the zero-target consumption rule:
 `UsePotionAction` accepts the multi-target `null` target and does not recheck
 `PassesCustomUsabilityCheck` before `OnUseWrapper` removes the Potion. The first slice
 therefore supports single-target Card, single-target Potion, and multi-target Card only.
@@ -196,7 +203,7 @@ rather than per-consumer proof gates.
 #### 2A. Computed previews, icon variables, and variable tooltips
 
 **Implemented as of 2026-07-29.** Semantic intake, SPEC, authoring, a
-grounded RitsuLib `0.4.62` recipe, and deterministic contract checks now cover this slice.
+grounded RitsuLib `0.4.67` recipe, and deterministic contract checks now cover this slice.
 The focused `ComputedValuesProof` host established live changing text, modifier-aware
 Damage/Block, neutral Energy/Star gains, typed Poison amount-given behavior, formatter
 boundaries, reflow, and localized null-icon tooltips. The human lead accepted every headed
@@ -340,9 +347,11 @@ goes. Move Cards through normal CardPile/command lifecycle APIs; do not retain p
 instances in an ad hoc collection or mutate backend piles directly.
 
 **ExtraHand presentation and play.** Use RitsuLib's native Card holders, hover/tooltips,
-controller focus, and playable glow. Start with one fixed reviewed anchor and either the
-default `VanillaHand` layout or one bounded Horizontal/Vertical layout; do not expose
-arbitrary layout callbacks in the first recipe. Manual play is optional per pile. When it is
+controller focus, and playable glow. The first recipe uses a compact Horizontal row at one
+fixed preset-relative above-Hand offset; do not expose arbitrary layout callbacks or
+absolute viewport coordinates. Numbered select-card shortcuts remain exclusive to the
+native Hand; ExtraHand manual play starts only through mouse/controller interaction. Manual
+play is optional per pile. When it is
 enabled, preserve normal targeting, payment, play hooks, action queue, and result-pile
 processing, including RitsuLib's temporary bridge through the backend vanilla Hand.
 
@@ -362,9 +371,35 @@ pile. Headed checks prove anchor stability, text/tooltips, expanded layout, targ
 overlap with native Hand, Energy, draw/discard piles, powers, or the fixed Character resource
 control.
 
-**Not in the first slice.** `RunPersistent` piles, multiplayer or remote-player UI, vanilla
-pile replacement, arbitrary custom layout callbacks, hidden retained-card zones, and changes
-to the normal lifecycle of unrelated source Cards remain unsupported.
+**Not in the first recipe.** `RunPersistent` piles, Headless/other documented styles and
+views, and public custom layout callbacks are supported Card Piles Package consumers whose
+generated recipes are still missing. Multiplayer/remote-player UI, vanilla-pile replacement,
+intercepting already played source Cards into retained zones, and changes to unrelated Cards'
+normal result lifecycle retain their recorded limitations.
+
+**Implemented (2026-07-30; focused human result closed 2026-07-31).** The source pipeline now authors
+one generated-Mod-local, singleplayer, combat-only visible ExtraHand with capacity `3`, a
+compact above-Hand row, native-Hand-only numbered shortcuts,
+non-destructive overflow, explicit Top/Bottom entry and exit, distinct same-model instances,
+optional native manual play, normal cancellation/result-pile behavior, and combat cleanup.
+The focused `M66CardPileProof` compiles against the pinned host/profile and is deployed for
+the human-led matrix. The first headed review confirmed the compact row placement, then
+found that selected-card presentation differed from the native Hand and that remaining
+ExtraHand Cards stopped responding after one successful Play. Local source tracing found
+that RitsuLib's bridge created an independent `NCardPlay` instead of entering
+`NPlayerHand.StartCardPlay`; the repaired local 0.107.1 RitsuLib variant now uses the native
+selected-card/current-play/awaiting-holder lifecycle while idle holders remain outside
+`NPlayerHand.ActiveHolders`. Follow-up review found and repaired stale active state and
+inherited numbered labels. The final targeting defect came from native mouse drag math
+assuming that a Card begins below the play zone; normalizing only above-zone ExtraHand drag
+starts removed the position and one-remaining-Card failures. The human lead then reported
+that the complete headed matrix passed, including controller/cancellation/payment/result,
+all ExtraHand positions, a single remaining targeted Card, layout, cleanup, and combat-2
+reset. The current log contains the exact load marker, setup/order/overflow evidence, and
+seven successful `beganFromExtraHand=True` plays. The literal Tier 1 gate did not pass
+because the final read happened after shutdown and included Godot leak blocks. Per explicit
+human-lead decision, strict Tier 2 was not run and is not a pass. See
+`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`.
 
 ### Package 5 - Custom Character dialogue in native Ancient scenes
 
@@ -433,10 +468,10 @@ API review may add supported routes before any implementation plan is added.
 
 Packages 2A, 2B, 2C, 5, the bounded Package 1 targeting slice, and the bounded Package 3
 Rest Site slice are complete with their literal verification results and exceptions
-recorded. Package 4 CardPile / ExtraHand is the direct next development step but starts only
-after a human-lead selection. Targeting is available before
-manual ExtraHand play, while the combined Card/UI/cancellation work remains scheduled after
-its other prerequisites and proof patterns. The human lead may reorder packages or add
+recorded. The human lead selected Package 4, and its first CardPile/ExtraHand recipe is
+implemented and closed with a complete human-led focused result. Its failed exact Tier 1
+gate and explicit decision not to run strict Tier 2 remain recorded exceptions rather than
+passes. No later package starts automatically. The human lead may reorder packages or add
 other M6.6 features by updating this section first.
 
 M6.6 may close only after every feature retained in its final approved scope is either

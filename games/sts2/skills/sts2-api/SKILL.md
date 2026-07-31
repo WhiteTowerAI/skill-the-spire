@@ -17,7 +17,7 @@ not dump entire files into the response.
 For generated content, the semantic contract is the product-level source of truth:
 read `${MODMAKER_SKILL_DIR}/semantic-contract.md` before selecting an implementation.
 Lazily read `reference/ritsulib-adapter.md` next. It
-pins RitsuLib `0.4.62` against STS2 `0.107.1`, maps each semantic surface to one public
+pins RitsuLib `0.4.67` against STS2 `0.107.1`, maps each semantic surface to one public
 registration/template and asset profile, and owns the framework/version diagnostic
 record. Only then load the surface recipe or reference needed for the request.
 
@@ -69,6 +69,11 @@ scaffold, or infer a runtime dependency from a recipe name.
    Secondary Resource/node-attachment APIs and are implemented by the final
    Wayfinder composition. If a requested capability has no documented public game/RitsuLib
    seam, report a pack gap; do not invent a patch target or `OpenMod.Runtime`.
+   For an explicit **combat-only visible Card pile / second hand**, read
+   `${STS2_API_SKILL_DIR}/reference/card-pile-extra-hand.md`. It owns stable registration,
+   bounded awaited movement, native holders/manual play, native-Hand-only numbered shortcuts,
+   cancellation, normal result piles, cleanup, and focused interaction/layout proof. Do not route an ordered semantic record to
+   this page or use it to retain an already played source Card.
    Cards/powers/keywords/enchantments/orbs also read
    `${STS2_API_SKILL_DIR}/reference/mechanics.md` first (scaling numbers, SmartFormat
    descriptions, shared enums). When Card/relic/potion/power descriptions select bounded
@@ -138,6 +143,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
 | `reference/character-resource.md` | RitsuLib combat resource: `SecondaryResourceDefinition`/`SecondaryResourceCmd`, combat reset, all-or-nothing spend, public `RegisterCombatUi`, fixed 220x32 counter at offset 160, text fallback, and two-combat proof | Authoring a character resource and explicit-payoff loop |
 | `reference/ordered-card-buffer.md` | Ordered buffer: `AttachedState<PlayerCombatState,TState>`, native source-card Discard, visible order, non-destructive overflow, deterministic output/`CardGeneratedEntry`, and combat reset; retained-card `CustomPile` remains unsupported | Authoring an ordered card-play record and dynamic output |
+| `reference/card-pile-extra-hand.md` | RitsuLib combat-only visible Card pile: stable owned ID, finite capacity, Top/Bottom movement, compact layout, native holders, native-Hand-only numbered shortcuts, optional manual play, cancel restoration, normal result piles, cleanup, and human-led UI matrix | Authoring an explicit visible side hand or combat holding pile |
 | `reference/scry-helper.md` | open-mod Scry helper: top-X native selector, structured result, normal Discard history/hooks, zero/empty/short/full boundaries, await proof, and explicit singleplayer restriction | Authoring a Card that looks at the top X Draw cards and discards any number |
 | `reference/card-computed-values.md` | Computed Card value roles, one-formula preview/execution parity, upgrade/timing/domain rules, Energy/Star formatters, typed Power amount-given behavior, variable tooltips, and focused proof | Authoring a Card with calculated text/effects or DynamicVar tooltips |
 | `reference/card-hand-emphasis.md` | Conditional Card hand emphasis: ordered fixed-color rules, priority/ties, native gold/red versus typed outline lowering, unplayable visibility, refresh boundary, and headed proof | Authoring a Card with hand emphasis |
@@ -205,7 +211,11 @@ Harmony patching and is deferred. The recipes make **new** elements.
 - **Ordered combat buffer:** record semantic values in combat state, send source cards
   through their normal result pile, use `AttachedState<PlayerCombatState,TState>`, expose
   order through grounded UI, enforce capacity before mutation, and create one deterministic
-  output. Retained-card custom zones remain unsupported.
+  output. It never stores source Card instances.
+- **Combat Card pile / ExtraHand:** use `CardPileOwned` with one combat-only visible pile,
+  preflight finite capacity before awaited Top/Bottom movement, and let RitsuLib own native
+  holders, optional manual play, cancellation restoration, and combat cleanup. Explicitly
+  moved Cards are supported; intercepting retained played Cards is not this recipe.
 - **Localization keys:** derive concrete keys once in the adapter, keep them flat where the
   selected host requires flat tables, and record the result in `MEMORY.md`; never infer a
   framework prefix from a class or namespace inside SPEC.
