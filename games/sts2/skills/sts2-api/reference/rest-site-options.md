@@ -1,7 +1,7 @@
 # Relic-owned Rest Site options
 
 This page owns the first bounded Package 3 route for a generated Mod to add one action to
-the native Rest Site. It is grounded against STS2 `0.107.1` and RitsuLib `0.4.67`.
+the native Rest Site. It is grounded against STS2 `0.107.1` and RitsuLib `0.5.0`.
 
 ## Supported contract
 

@@ -8,10 +8,10 @@ mapping into every recipe and do not reintroduce a second historical-framework b
 
 ```text
 framework: RitsuLib
-framework version: 0.4.67
+framework version: 0.5.0
 host: STS2 stable 0.107.1
 compat target: 0.107.1
-profile id: ritsulib-0.4.67-sts2-0.107.1
+profile id: ritsulib-0.5.0-sts2-0.107.1
 ```
 
 The compat package or variant must resolve `lib/0.107.1/STS2-RitsuLib.dll` and the
@@ -359,25 +359,10 @@ Discard, one `CardGeneratedEntry`, one Hand output with dynamic Block `20`, and 
 empty combat-2 attached state. Retained Card instances, `CustomPile`, `Vector2.Zero` layout,
 and `skipVisuals: true` lifecycle are not adapter routes. See `ordered-card-buffer.md`.
 
-### Combat-only visible Card pile / ExtraHand
-
-When SPEC explicitly moves Card instances into a visible combat side hand, use RitsuLib's
-public `.CardPileOwned(...)` route with `ModCardPileScope.CombatOnly`,
-`ModCardPileUiStyle.ExtraHand`, and visible native holders. Derive the stable qualified ID,
-resolve its `PileType`, preflight finite capacity/repeated-model rules, then await normal
-`CardPileCmd.Add` with the declared Top/Bottom position.
-
-RitsuLib owns the temporary backend-Hand bridge for optional manual play, target and queued
-cancellation restoration, normal payment/hooks/result piles, UI subscriptions, and combat
-cleanup. The generated recipe is singleplayer, uses the fixed compact horizontal layout,
-keeps numbered shortcuts owned by the native Hand, and never calls backend pile mutation
-or intercepts an already played source Card. See
-`reference/card-pile-extra-hand.md`.
-
 ### Open-mod Scry helper
 
 When the semantic Card effect is top-X Scry, emit the generated-Mod-local
-`OpenModScry.Execute` implementation from `scry-helper.md`. RitsuLib `0.4.67` has no public
+`OpenModScry.Execute` implementation from `scry-helper.md`. RitsuLib `0.5.0` has no public
 equivalent. The helper uses STS2's public `CardSelectCmd.FromSimpleGrid`, `CardPileCmd.Add`,
 discard history, and `Hook.AfterCardDiscarded`; it returns requested/seen/discarded Cards
 and preserves unselected Draw order. Nonpositive, missing/ending-combat, and empty-Draw
@@ -398,7 +383,6 @@ invariants in one `CombatPlayer` run, ending at
 | Lifecycle | semantic trigger and reset boundary | typed `SubscribeLifecycle<TEvent>` or the model's public hook | no guessed event type |
 | Combat resource | nonnegative amount, payment, reset, UI fallback | secondary-resource registry/commands + public `RegisterCombatUi` | combat-only; does not replace native Energy |
 | Ordered buffer | semantic value, capacity, compile/output | `AttachedState<PlayerCombatState,TState>` + native result piles | no retained Card instances or custom zone |
-| Combat Card pile | explicit Card entry/exit, order, capacity, manual-play choice | owned combat-only `ExtraHand` + normal `CardPileCmd.Add` | generated recipe is local singleplayer with fixed layout; no retained played-Card redirect |
 | Scry | top-X amount and discard-any selection | generated-Mod-local `OpenModScry` + native selector/pile/history/hooks | singleplayer only; no global modifier/completion hooks |
 | Advanced target | consumer/mode/id and pure creature predicate | custom target registration + `GetTargets` at resolution | Card one/many, Potion one; multi Potion has a known limitation |
 | Card hand emphasis | ordered meanings/conditions/colors/priorities and unplayable visibility | vanilla glow override for one gold/red rule or one typed `CardHandOutline<TCard>` ruleset | fixed colors only; normal combat-state refresh; headed result remains literal |
@@ -413,7 +397,7 @@ invariants in one `CombatPlayer` run, ending at
 Official product semantics plus a public API in this pinned profile support the documented
 Package and its public consumers. Missing authoring work or verification does not change
 that. Keep actual no-route boundaries explicit: alternative Energy,
-retained played-Card interception, arbitrary Event layouts/VFX, Ancient custom layouts, animation,
+retained-card custom zones, arbitrary Event layouts/VFX, Ancient custom layouts, animation,
 materials, multiplayer presentation, audio, run-persistent Character resources, and direct
 merchant/rest/treasure transitions. M6.7 vanilla editing remains planned and is not
 generated. The promoted Scry helper remains singleplayer-only and generated-Mod
@@ -426,7 +410,7 @@ an empty queued group before consumption.
 For each generated mod, record this small implementation-only block in `MEMORY.md`:
 
 ```markdown
-- framework profile: ritsulib-0.4.67-sts2-0.107.1
+- framework profile: ritsulib-0.5.0-sts2-0.107.1
 - adapter: <surface>/<contract-version>
 - registration route: <shared/act/standalone/host-owned>
 - asset profile: <profile or fallback>

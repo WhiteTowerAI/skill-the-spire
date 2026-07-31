@@ -183,7 +183,7 @@ await DamageCmd.Attack(base.DynamicVars.Damage.BaseValue)
 
 Builder methods you may need (all return the builder, keep chaining):
 - `.TargetingAllOpponents(combatState)` — hit every enemy (`TargetType.AllEnemies`).
-  Get `combatState` from `base.CombatState!` inside `OnPlay`.
+  Get `combatState` from `base.Owner.PlayerCombatState!`.
 - `.TargetingRandomOpponents(combatState)` — random target(s).
 - `.WithHitCount(n)` — multi-hit (Twin Strike = 2). `n` can be a `DynamicVar` value.
 - `.Unpowered()` — do NOT scale with Strength (rare; for fixed-damage attacks).

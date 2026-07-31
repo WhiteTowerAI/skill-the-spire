@@ -6,9 +6,9 @@ diagnostic fails. The active toolchain is the pinned open-mod RitsuLib profile.
 ## Pinned Profile
 
 - host: STS2 stable `0.107.1`;
-- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.4.67`;
+- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.5.0`;
 - `Sts2ApiCompat`: `0.107.1`;
-- runtime dependency: `STS2-RitsuLib >= 0.4.67`;
+- runtime dependency: `STS2-RitsuLib >= 0.5.0`;
 - `RitsuLibAutoCopy`: `false`;
 - no framework DLL inside the generated Mod directory.
 

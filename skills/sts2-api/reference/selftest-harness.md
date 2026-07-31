@@ -490,22 +490,6 @@ model-only `GetTargets()` output, and trigger logs are diagnostics, not the host
 proof. Keep mouse and controller selection, invalid-target rejection, and multi reticles as
 the separate headed checks in `advanced-targeting.md`.
 
-### combat Card pile / ExtraHand - split state proof from real UI review
-
-Read `reference/card-pile-extra-hand.md` and use one two-combat `CombatPlayer` fixture.
-Structured assertions cover exact Card IDs and instance identity, Top/Bottom order,
-empty/one/full/non-destructive overflow, one non-play exit, Energy/payment, target and
-queued-cancel restoration, successful normal result piles/hooks, combat cleanup, and a
-distinct empty pile in combat 2. Emit
-`combat card pile complete expected=all observed=all` only after all state assertions pass.
-
-The harness cannot replace native-holder review. Mouse/controller entry and return, Card
-hover/tooltips, playable/unplayable glow, target UI, native-Hand-only numbered shortcuts,
-and 16:9/16:10 overlap remain headed observations. When the human lead reserves that run,
-build/deploy but do not launch STS2;
-provide the fixture's exact `fight`, `card`, and `energy` dev-console sequence and record the
-reported matrix separately. An unrun structured harness remains an explicit exception.
-
 ### multi-element interactions — drive the real source type, then observe each edge
 
 There is no `combo` model or DRIVER type. Drive the **source** exactly as its real element

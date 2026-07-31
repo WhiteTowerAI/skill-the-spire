@@ -18,7 +18,7 @@ python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName>
   waits ~25s, and closes it.
 - `grep_log.py` reads the **current** `godot.log` in full. The verifier passes
   only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
-  `framework=RitsuLib frameworkVersion=0.4.67 host=0.107.1 compat=0.107.1`, with no
+  `framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1`, with no
   error/exception block after that
   boundary. It includes multiline stack context and global errors whose header does not
   name the mod. It also reports the `RUNNING MODDED` flag. Two exact, stack-qualified
@@ -63,7 +63,7 @@ python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "<stat
 
 The `--tier2-pattern` selects the SPEC invariant from structured
 `[T2MOD-SELFTEST] <ModName> state proof:` lines. Every proof also records
-`framework=RitsuLib frameworkVersion=0.4.67 host=0.107.1 compat=0.107.1`. Use concrete
+`framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1`. Use concrete
 expected/observed vocabulary:
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
 `"cadence cross-combat threshold.*observed=0/4"`,
@@ -73,7 +73,6 @@ expected/observed vocabulary:
 `"character foundation/static-presentation.*observed=all"`,
 `"resource UI complete.*observed=all"`, or
 `"ordered buffer complete.*observed=all"`, or
-`"combat card pile complete.*observed=all"`, or
 `"wayfinder R5 parity complete.*observed=all"`, or
 `"R6 scry helper complete.*observed=all"`. The verifier ignores all
 ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
@@ -118,12 +117,6 @@ requires the exact load marker and `selftest done`.
   piles, visible order, capacity and overflow behavior, one generated-history entry, exact
   configured output/effect, `AttachedState` ownership, and a distinct empty state/UI in
   combat 2. Reject retained-card, hidden-zone, and `skipVisuals` substitutions.
-- For a combat Card pile / ExtraHand, follow `reference/card-pile-extra-hand.md`: require
-  exact Card identity/order for Top/Bottom entry and non-play exit, empty/one/full/overflow,
-  unchanged source and destination on rejection, payment/cancellation restoration, normal
-  successful result piles and hooks, combat cleanup, and a distinct empty pile in combat 2.
-  Native holders, hover/glow, mouse/controller focus/targeting, native-Hand-only numbered
-  shortcuts, and placement remain real-UI observations rather than model-only assertions.
 - For a Scry Card, follow `reference/scry-helper.md`: require one visible native selector
   and a pending Card play task before
   confirmation, plus zero/empty/short/full cases, exact seen/discarded/unselected order,
@@ -156,22 +149,6 @@ can select only legal single targets, cancel returns normally, zero legal target
 commit the action, multi-target reticles appear only on the resolved creatures, and no
 reticle remains after resolution. Record the visible result as manually observed; do not
 rename it an automated Tier-2 pass.
-
-### Combat Card-pile headed acceptance
-
-Use the same focused `CombatPlayer` fixture and
-`reference/card-pile-extra-hand.md`. The reviewer drives its exact `fight`, `card`, and
-`energy` console route and checks native holders, Card text/tooltips, playable/unplayable
-glow, mouse/controller entry and return, target cancellation, insufficient-payment restore,
-successful single/multi targeting, empty/full/overflow presentation, and a clean second
-combat. With five native-Hand probe Cards and a full ExtraHand visible, press `1`-`5` and
-confirm only the corresponding native-Hand holder begins play. Check 16:9 and 16:10 against
-native Hand, Energy, pile buttons, Powers, and the fixed Character resource UI.
-
-When the human lead reserves this review, do not launch STS2 or take screenshots. Build and
-deploy the focused proof, provide the exact console commands and observation matrix, and
-record the reported observations separately. Any unrun exact Tier 1 log gate or structured
-`selftest done` remains an explicit exception.
 
 ### Gameplay-readability headed acceptance
 

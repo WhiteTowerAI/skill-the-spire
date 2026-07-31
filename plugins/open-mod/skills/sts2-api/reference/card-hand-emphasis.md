@@ -5,7 +5,7 @@ shape is one or more ordered rules on one generated Card type. Each rule has one
 player-facing meaning, a deterministic live-state condition, one fixed color, an integer
 priority, and an explicit unplayable-visibility choice.
 
-This route is pinned to STS2 `0.107.1` and RitsuLib `0.4.67`. It uses the official Card
+This route is pinned to STS2 `0.107.1` and RitsuLib `0.5.0`. It uses the official Card
 Hand Glow Package without generating Harmony, reflection, Publicizer, or IL.
 
 ## Semantic and runtime contract

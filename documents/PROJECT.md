@@ -15,8 +15,8 @@ support model are mature enough to extract a reusable platform.
 Version `0.6.0` is the first RitsuLib-only, externally accepted development baseline:
 
 - host: STS2 stable `0.107.1`;
-- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.4.67`;
-- runtime dependency: `STS2-RitsuLib >= 0.4.67`;
+- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.5.0`;
+- runtime dependency: `STS2-RitsuLib >= 0.5.0`;
 - primary runtime: Codex plugin;
 - secondary distribution: portable Agent Skills payload.
 
@@ -102,8 +102,7 @@ directly.
 
 The current product supports the surfaces in
 `games/sts2/tests/content-capability-graph.md`. It deliberately does not imply vanilla
-editing, arbitrary patching, interception of already played Cards into retained zones,
-alternative Energy, multiplayer UI,
+editing, arbitrary patching, retained-card zones, alternative Energy, multiplayer UI,
 Spine/production Character motion or audio, arbitrary Event layouts, or Workshop
 publishing.
 
@@ -117,7 +116,7 @@ verification exceptions recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESU
 Characters keep the game-native shared map-marker fallback; locked selection, Character
 card trails, and a `Cast` cue remain unsupported.
 
-M6.6 is the active provisional capability-improvement milestone. Package 2A computed Card
+M6.6 is closed by explicit human-lead decision. Package 2A computed Card
 values, Package 5 custom-Character dialogue in native Ancient scenes, Package 1 advanced
 creature targeting, and the bounded Package 3 Relic-owned Rest Site option slice are
 implemented. Package 1 covers single-target Cards, single-target Potions, and
@@ -136,16 +135,14 @@ Powers may declare one top-left label with explicit refresh/removal. The Power b
 narrowed after multiple un-clipped preset bands overflowed an adjacent Power in the human
 lead's crowded 16:9 row. The rebuilt proof passed the human-led 16:9/16:10 recheck and strict
 Tier 1; strict Tier 2 was not run. The result is recorded in
-`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. The initial combat-only
-singleplayer custom CardPile/ExtraHand is implemented with a compact above-Hand layout and
-native-Hand-only numbered shortcuts in the generation pipeline. Its complete human-led
-focused matrix passed after the ExtraHand lifecycle, label, and mouse-targeting repairs.
-The exact Tier 1 gate did not pass because the final log read included post-shutdown Godot
-leak blocks; strict Tier 2 was not run by explicit human-lead decision and is not a pass.
-The result is recorded in `documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`. Intent belongs to Extra Badges but was removed from current M6.6 work
-by the human lead on 2026-07-30; current generated 2C authoring is Relic/Power only.
+`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Package 4 CardPile/ExtraHand was
+implemented and focused-tested only with a private RitsuLib lifecycle repair. Because
+official `0.5.0` does not provide the required working lifecycle, the implementation is
+retained as a repository experiment but is not supported, routed through formal skills, or
+included in generated payloads. Intent belongs to Extra Badges but was removed from M6.6
+work by the human lead on 2026-07-30; current generated 2C authoring is Relic/Power only.
 Optional Mod settings with Global/Profile/run-owned persistence remain future outlook
-outside the current M6.6 list.
+outside the closed M6.6 scope.
 
 M6.7 is the planned follow-on for version-bound overrides of existing vanilla content. Its
 product goal is broader than numeric Card balance: generated Mods may eventually adjust

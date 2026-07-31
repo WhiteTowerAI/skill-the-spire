@@ -9,7 +9,7 @@ decisions and the evidence needed to apply them correctly.
 open-mod targets:
 
 - Slay the Spire 2 stable `0.107.1`;
-- RitsuLib `0.4.67` and `STS2.RitsuLib.Compat.0.107.1`;
+- RitsuLib `0.5.0` and `STS2.RitsuLib.Compat.0.107.1`;
 - .NET SDK 9;
 - Codex plugin distribution plus a portable Agent Skills payload;
 - cross-platform Python tools, with the complete loop currently verified on Windows.
@@ -27,7 +27,7 @@ baseline for player-facing purpose, intended usage, examples, and documented Rit
 feature-Package membership.
 
 The tutorial repository currently labels itself `public-beta`. It therefore does not
-replace the stable `0.107.1` / RitsuLib `0.4.67` source and compat profile for exact symbols
+replace the stable `0.107.1` / RitsuLib `0.5.0` source and compat profile for exact symbols
 or lifecycle behavior. Use the tutorial to answer "what product problem does this Package
 solve?" and the pinned RitsuLib checkout to answer "does this exact public API exist on our
 target?" Distill accepted findings into the shipped pack; generated Mods never read the
@@ -135,12 +135,12 @@ presentation, trail, `Cast`, Spine, audio, or multiplayer presentation. Characte
 the checked game-native shared map marker instead of copying or resizing one from a
 research Mod.
 
-### M6.6 planning inputs
+### M6.6 closure
 
-The human lead selected five provisional capability packages for M6.6. Official tutorial
-semantics plus pinned RitsuLib `0.4.67` public source determine Package support. Recipes,
-builds, and real hosted proofs show what open-mod has implemented and observed. Packages 2A
-computed Card values, 5
+The human lead closed M6.6 after evaluating its provisional capability packages. Official
+tutorial semantics plus pinned RitsuLib `0.5.0` public source determine Package support.
+Recipes, builds, and real hosted proofs show what open-mod has implemented and observed.
+Packages 2A computed Card values, 5
 custom-Character dialogue in native Ancient scenes, 1 bounded advanced targeting, and 3
 bounded Relic-owned Rest Site options have passed their focused gates. Their records live
 under `documents/history/`.
@@ -169,17 +169,11 @@ under `documents/history/`.
   free/fixed Gold, deterministic preflightable outcomes, once-per-site/run use, native
   stay/leave behavior, and explicit Heal-icon fallback. Card/Modifier ownership and the
   research Mod's card-acquisition preview remain outside the supported slice.
-- **Combat-only CardPile/ExtraHand (implemented; focused result recorded):** the first recipe
-  is a visible singleplayer Mod-local combat pile with finite capacity, explicit Top/Bottom
-  movement, distinct same-model instances, a compact above-Hand layout, native-Hand-only
-  numbered shortcuts, native optional manual play, normal
-  cancellation/result-pile behavior, and cleanup. Persistence, multiplayer, vanilla-pile
-  replacement, and retained played-card interception stay outside the first recipe. The
-  Package's other documented public consumers remain supported under the Package rule;
-  missing recipes are implementation gaps. The complete human-led matrix passed after the
-  native-play, holder-label, and above-zone mouse-targeting repairs. The exact Tier 1 gate
-  remained an exception because the final read included Godot shutdown leak blocks; strict
-  Tier 2 was not run by explicit human-lead decision.
+- **Combat-only CardPile/ExtraHand (repository experiment, unsupported):** the bounded
+  visible singleplayer Mod-local implementation and its focused evidence are retained for
+  research. It requires a private RitsuLib lifecycle repair that open-mod will not ship.
+  Official `0.5.0` does not satisfy the required manual-play lifecycle, so no formal skill
+  routes or generated payloads expose this work.
 - **Custom-Character native Ancient dialogue (promoted):** RitsuLib's registered
   `AncientDialoguePopulateLocKeysPatch` appends localization-defined dialogue for Mod
   Characters to each native `AncientDialogueSet` once. The flat `ancients.json` contract
@@ -194,7 +188,7 @@ under `documents/history/`.
 ### M6.7 vanilla-override planning inputs
 
 The planned M6.7 track treats existing vanilla models as version-bound semantic targets,
-not as permission for arbitrary generated patches. RitsuLib `0.4.67` provides enough public
+not as permission for arbitrary generated patches. RitsuLib `0.5.0` provides enough public
 composition surface for a broad design:
 
 - `ConfigureDefaultModelCapabilities<TModel>` can attach generated capabilities to matching

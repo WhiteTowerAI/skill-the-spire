@@ -34,7 +34,7 @@ class RitsuProfileTests(unittest.TestCase):
             summary = validate_project_contract(project, "EmptyRitsu")
             self.assertIn(PROFILE.profile_id, summary)
             manifest = json.loads((project / "EmptyRitsu.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["dependencies"], [{"id": "STS2-RitsuLib", "min_version": "0.4.67"}])
+            self.assertEqual(manifest["dependencies"], [{"id": "STS2-RitsuLib", "min_version": "0.5.0"}])
             csproj = (project / "EmptyRitsu.csproj").read_text(encoding="utf-8")
             main = (project / "EmptyRitsuCode" / "MainFile.cs").read_text(encoding="utf-8")
             self.assertNotIn("BaseLib", csproj)

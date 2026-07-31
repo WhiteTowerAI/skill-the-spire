@@ -1,12 +1,11 @@
 # Combat-only visible CardPile / ExtraHand
 
-Status: implemented authoring route for STS2 `0.107.1` and RitsuLib `0.4.67`.
+Status: repository-only experiment; unsupported and excluded from formal skills and payloads.
 
-The documented public Card Piles Package and its public consumers are supported when the
-pinned profile exposes the required public members. This page is the initial generated
-recipe for one visible, generated-Mod-local, singleplayer combat pile. Missing recipes for
-other documented styles, views, anchors, or scopes are authoring gaps, not reasons to call
-the public Package unsupported.
+This page preserves the bounded design that was tested with a private RitsuLib lifecycle
+repair. Official RitsuLib `0.5.0` does not provide the required repeated native manual-play
+behavior, and open-mod does not ship that repair. Do not route this reference into generated
+Mods or use it as a support claim.
 
 ## Initial generated contract
 

@@ -18,7 +18,7 @@ class RitsuProfileError(ValueError):
 
 @dataclass(frozen=True)
 class RitsuProfile:
-    framework_version: str = "0.4.67"
+    framework_version: str = "0.5.0"
     host_version: str = "0.107.1"
     package_id: str = "STS2.RitsuLib.Compat.0.107.1"
     runtime_mod_id: str = "STS2-RitsuLib"

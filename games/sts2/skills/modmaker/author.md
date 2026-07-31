@@ -74,7 +74,7 @@ second framework branch into this file.
   A selected resource UI uses RitsuLib's public `RegisterCombatUi` route from
   `reference/character-resource.md`. If another capability has no documented public
   game/framework seam, report a pack gap. Do not invent alternative-energy patches,
-  C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
+  visible zone UI, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. Do **not** guess API names — if
   the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
@@ -103,11 +103,6 @@ second framework branch into this file.
   `reference/rest-site-options.md` before writing either class. Keep its current
   Relic/singleplayer/free-or-fixed-Gold boundary and stop for a Card/Modifier owner,
   post-payment choice, arbitrary transaction, same-site repeat, or multiplayer request.
-- If SPEC has a **combat Card pile**, read `reference/card-pile-extra-hand.md`. Add one
-  `.CardPileOwned(...)` step to the existing content pack, derive its stable `PileType`,
-  enforce capacity/repeated-model rules before every awaited move, and preserve every
-  declared Top/Bottom position. Do not emit a second registration path, backend pile
-  mutation, hidden pile, retained played-Card redirect, or layout callback.
 
 ## 1. Write the element class
 
@@ -324,10 +319,9 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
   registers one `SecondaryResourceDefinition`, uses `SecondaryResourceCmd` for amount and
   all-or-nothing payment, and mounts the fixed control through public `RegisterCombatUi`.
   An ordered-buffer SPEC uses `AttachedState<PlayerCombatState,TState>`, native source-card
-  result piles, visible state text, and one configured output card. A combat-Card-pile SPEC
-  instead uses the separately grounded `reference/card-pile-extra-hand.md` lifecycle for
-  Cards explicitly moved before play; it never intercepts an already played source Card.
-  Keep proof-only observers and assertions out of generated gameplay.
+  result piles, visible state text, and one configured output card. Never emit a retained-
+  card `CustomPile` without a separately grounded UI lifecycle. Keep proof-only observers
+  and assertions out of generated gameplay.
 
 **Counter Power amount-domain gate (applies to every source element)** — before writing
 any custom Counter mutation, read that Power's `amount domain` from SPEC. The default
@@ -355,7 +349,7 @@ tier-1 verify silently finds nothing. Use the shared envelope from
 `semantic-contract.md`:
 
 ```csharp
-Logger.Info("[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion=0.4.67 host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
+Logger.Info("[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
 Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 
@@ -438,13 +432,6 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    one `CardGeneratedEntry`, play the configured output, then prove a distinct empty state
    in combat 2. Reuse the owning character or `CombatPlayer` suite; do not create a project
    solely for this capability.
-   **combat Card pile / ExtraHand** → use `reference/card-pile-extra-hand.md`: drive exact
-   Card instances through explicit Top/Bottom entry and one non-play exit; assert
-   empty/one/full/non-destructive overflow, order, identity, payment/cancel/success result
-   piles, exactly-once hooks, cleanup, and a distinct empty pile in combat 2. Keep
-   mouse/controller holder focus, glow/hover, targeting, native-Hand-only numbered
-   shortcuts, and 16:9/16:10 placement as literal headed observations in the same focused
-   `CombatPlayer` fixture.
    For a multi-element SPEC, use
    that same source driver, then walk `interactions` in dependency order and
    observe each dependent marker/state invariant. There is no `combo` element or separate

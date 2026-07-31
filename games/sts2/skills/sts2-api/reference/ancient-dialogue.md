@@ -100,7 +100,7 @@ identical structural keys; line-level Ancient dialogue SFX is unsupported.
 
 ## RitsuLib route
 
-RitsuLib `0.4.67` registers `AncientDialoguePopulateLocKeysPatch`. Its prefix appends
+RitsuLib `0.5.0` registers `AncientDialoguePopulateLocKeysPatch`. Its prefix appends
 localization-defined groups for registered Mod Characters once, before the native
 `AncientDialogueSet.PopulateLocKeys` call. Generated Mods only provide `ancients.json`;
 they do not emit Harmony, reflection, IL, Publicizer, a second injection patch, or another

@@ -506,8 +506,7 @@ is not `none`, also record the envelope below. Author it only when the named sem
 capability has its own recipe in the shipped pack. Package support alone does not provide
 missing runtime instructions. The current implemented public framework
 routes are exactly `reference/character-resource.md` and
-`reference/ordered-card-buffer.md`, plus the cross-surface
-`reference/card-pile-extra-hand.md` route below.
+`reference/ordered-card-buffer.md`.
 
 ```markdown
 - **capability module**: <family/name>
@@ -558,34 +557,9 @@ The adapter lowers the resource block to one framework-owned combat resource wit
 all-or-nothing commands and a public UI attachment. It lowers the buffer block to combat-
 attached semantic state. These implementation records belong in `MEMORY.md`, not SPEC.
 
-For a selected **combat-only visible Card pile**, also record:
-
-```markdown
-- **combat Card pile**: <player-facing name>; stable local name <stem>
-- **owner/lifetime**: local Player / combat
-- **localization**: title <text>; description <text>; empty <text>
-- **entry**: <source/trigger/card>; insert at top | bottom
-- **non-play exits**: <trigger -> destination at top|bottom, or none>
-- **capacity/overflow**: <positive N>; reject the incoming move without changing either pile
-- **duplicates**: distinct same-model instances allowed | reject repeated model ID;
-  the same instance exists once
-- **empty presentation**: no visible Card holders
-- **manual play**: enabled | disabled
-- **successful play**: normal STS2 result pile
-- **placement/layout**: fixed compact horizontal row above the native Hand; numbered
-  shortcuts stay native-Hand-only
-- **multiplayer**: singleplayer only
-- **observe**: empty/one/full/overflow, exact instance/order/movement, hover/glow/focus,
-  numbered shortcuts, payment and cancellation, result pile/hooks, combat cleanup, clean
-  combat 2, and 16:9/16:10 non-overlap
-```
-
-This pile accepts explicit Card moves and displays those exact instances. It does not make
-retained played Cards supported: if the user requires an already played source Card to be
-intercepted and kept in a custom zone, preserve that idea as a pack gap. A hidden/no-UI pile
-is a separate supported Card Piles Package consumer whose generated recipe is still missing;
-do not silently lower this visible-pile request to it or change the source Card's normal
-result lifecycle.
+Retained-card zone UI is unsupported. If the user requires real played-card instances to
+remain in a custom zone, preserve that idea as a pack gap. Do not silently generate a no-UI
+`CustomPile`.
 
 **Multi-element contract** (add only when the mod contains more than one authored element;
 omit it for the single-element fast path). `elements` are real content nodes. `interactions`
