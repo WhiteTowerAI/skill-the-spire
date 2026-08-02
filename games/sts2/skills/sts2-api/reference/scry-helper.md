@@ -1,7 +1,7 @@
 # Reference: open-mod Scry helper
 
 Use this page only when a Card's semantic effect is "look at the top X cards of Draw and
-discard any number of them." RitsuLib `0.5.0` has no public Scry command, so the helper
+discard any number of them." RitsuLib `0.5.4` has no public Scry command, so the helper
 is emitted as source inside the generated Mod. It is not another runtime dependency.
 
 ## Supported contract

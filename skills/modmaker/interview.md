@@ -29,15 +29,23 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact
      resource icon. Locked selection and map marker remain grounded gaps with explicit
      fallbacks.
-   - **Current authoring recipes: relic, potion, card, enemy encounter, event, and bounded character composition.**
+   - **A named place where Cards are stored, moved, inspected, or shown separately** is a
+     **custom card pile**. The Custom Card Piles Package supports combat/run lifetime,
+     headless/top-bar/bottom-left/bottom-right/ExtraHand presentation, public pile screens,
+     and explicit Card movement.
+   - **Current authoring recipes: relic, potion, card, custom card piles, enemy encounter,
+     event, and bounded character composition.**
      (*Editing* an existing
      vanilla card/relic/potion has no current recipe — if that's the ask, say so and offer
      to build the closest **new** element instead.)
-   - If the request says played cards should physically remain in a special area, ask one
-     short question: should the cards instead resolve normally while a visible text record
-     tracks their order? Offer that as the supported default. Retained-card zone UI is a
-     pack gap, not something AUTHOR should improvise.
 2. **Trigger / usage / how it's played:**
+   - **Custom Card Piles Package**: infer every stated pile and ask only for player-visible
+     ambiguity: does it reset each fight or persist for the run; is it hidden, a top-bar/
+     bottom-corner button, or visible as extra Cards; what exact action moves Cards in and
+     out; and may visible Cards be played normally? When placement, pile-screen tools,
+     sorting, hotkeys, hover behavior, or visual callbacks are requested, record the
+     requested behavior in game terms. Do not ask for enum names, delegates, or framework
+     APIs; ask for exact coordinates only when the user requested an exact custom layout.
    - **Relic**: when does the effect happen? Map the user's words to a lifecycle
      moment — "start of combat", "start of each turn", "when you play a card",
      "start of each floor". If they said it, don't re-ask. If it remembers progress

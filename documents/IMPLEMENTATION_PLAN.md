@@ -13,11 +13,11 @@ implemented. Their evidence is recorded in
 acceptance and its explicit lead-approved verification exceptions are recorded in
 `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; M6.5 is closed.
 
-M6.6 is closed by explicit human-lead decision. Packages 1, 2A, 2B, 2C, 3, and 5 are
+M6.6 is closed by explicit human-lead decision. Packages 1, 2A, 2B, 2C, 3, 4, and 5 are
 implemented with their literal focused results and exceptions recorded under
-`documents/history/`. Package 4 remains a repository-only experiment because its working
-implementation requires a private RitsuLib lifecycle repair; it is not supported or
-published. M6.7 work is not implemented until its scheduled development gates pass. Per
+`documents/history/` or the retained Package 4 official-version proof. Package 4 was
+promoted on official RitsuLib `0.5.4` under the Package-level support rule. M6.7 work is not
+implemented until its scheduled development gates pass. Per
 `AGENTS.md`, official Package semantics plus a public API in the pinned profile are enough
 for support, while confirmed problems are recorded as limitations.
 
@@ -25,8 +25,8 @@ Do not prepare or claim a GitHub release. Closing M6.6 does not start M6.7 autom
 
 ## Dependency Boundary
 
-- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.5.0`.
-- Runtime manifests depend only on `STS2-RitsuLib >= 0.5.0`.
+- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.5.4`.
+- Runtime manifests depend only on `STS2-RitsuLib >= 0.5.4`.
 - Generated Mods must not reference, package, or depend on BaseLib or use historical
   Alchyr templates. Offline BaseLib/Downfall checkouts remain research-only.
 
@@ -85,22 +85,22 @@ was performed; the exact Tier 1 log gate and strict `selftest done` remain excep
 not reopen these retired proofs or Prismwright, and do not start M7. Package 2B/2C then
 passed its human-led hand/Relic matrix and, after narrowing Power authoring to one top-left
 label, its crowded 16:9/16:10 Power-row recheck. Strict Tier 1 passed; strict Tier 2 was not
-run. See `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Package 4 was implemented
-and passed its focused matrix only with a private RitsuLib lifecycle repair. Official
-RitsuLib `0.5.0` does not satisfy the required manual-play lifecycle, so the human lead
-retained it as a repository experiment, removed it from formal skills and payloads, and
-closed M6.6 without a Package 4 support claim.
+run. See `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Official RitsuLib `0.5.4`
+now contains the native-Hand ExtraHand lifecycle missing from `0.5.0`. On 2026-08-02 the
+unmodified official runtime loaded and registered the focused proof; setup assertions passed,
+and the human lead accepted native-Hand shortcut isolation, target cancellation restoration,
+and consecutive mouse play of all three ExtraHand Cards. A host save-backup cleanup error
+prevented strict Tier 1, and no structured `selftest done` ran; the lead waived strict Tier 2
+and promoted the complete documented Custom Card Piles Package under the support rule.
 
 ## M6.6 - Capability Expansion (Closed)
 
-M6.6 is closed. Its completed formal scope is Packages 1, 2A, 2B, 2C, 3, and 5. Package 4
-is retained only as repository research and is excluded from the support inventory and
-published skills.
+M6.6 is closed. Its completed formal scope is Packages 1, 2A, 2B, 2C, 3, 4, and 5.
 
 ### Shared implementation and promotion rules
 
 Use the Package-level rule in `AGENTS.md` for support decisions. Once official product
-semantics identify a RitsuLib Package and the pinned `0.5.0` profile confirms its public
+semantics identify a RitsuLib Package and the pinned `0.5.4` profile confirms its public
 members, all documented public consumers are supported. Record a confirmed problem as the
 smallest known limitation.
 
@@ -108,7 +108,7 @@ Before finishing a selected implementation slice, it must have:
 
 1. a semantic interview/SPEC shape that describes player-visible intent rather than C# API
    names, including owner, lifetime, initial state, transitions, localization, and fallback;
-2. one grounded `sts2-api` recipe and pinned RitsuLib `0.5.0` adapter route, without
+2. one grounded `sts2-api` recipe and pinned RitsuLib `0.5.4` adapter route, without
    BaseLib, copied baseline code, private patches, or arbitrary generated reflection;
 3. deterministic checks for calculations, filtering, ordering, payment, and state rules,
    plus build/manifest checks that preserve the RitsuLib-only dependency boundary;
@@ -327,15 +327,31 @@ the insufficient-Gold state. No post-session log read or strict structured harne
 those remain explicit exceptions. See
 `documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`.
 
-### Package 4 - Combat-only custom CardPile / ExtraHand (repository experiment)
+### Package 4 - Custom Card Piles Package
 
-The bounded implementation and focused evidence are retained under
-`games/sts2/experimental/card-pile-extra-hand/` and
-`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`. Its correct native manual-play
-lifecycle requires a private RitsuLib repair. Because open-mod will not modify or ship
-RitsuLib and official `0.5.0` does not provide that behavior, Package 4 is unsupported,
-absent from formal `modmaker`/`sts2-api` routing, and excluded from plugin and portable
-payloads. Commit `436f6cb` preserves the complete implementation snapshot for research.
+**Implemented and promoted on 2026-08-02.** The official tutorials establish the Custom
+Card Piles Package and official RitsuLib `0.5.4` provides its public stable-host APIs.
+Formal authoring covers both combat-only and run-persistent scopes; Headless, TopBarDeck,
+BottomLeft, BottomRight, and ExtraHand styles; default, preset, and custom anchors; icon,
+hover-tip, visibility, hotkey, default/custom open, and complete pile-screen view settings;
+native awaited Card movement and live pile access; required localization; and ExtraHand
+layout, glow, manual play, transform resolver, and visual callbacks.
+
+The generated Mod registers Mod-owned piles through the single deferred content pack and
+uses public RitsuLib/STS2 commands. It does not ship the historical private repair or patch
+RitsuLib/native pile internals. Support follows the complete documented Package, not only
+the ExtraHand consumer exercised by the focused proof. The selected generated SPEC still
+owns capacity/order/duplicate rules, exact movement triggers, lifecycle/reset/persistence,
+and the UI behavior that its verification must exercise.
+
+The retained official `0.5.4` proof used no consumer patch. Its setup assertions confirmed
+five native-Hand holders, three separate ExtraHand holders, capacity/overflow, and idle
+holder separation. The human lead accepted target cancellation restoration, numbered
+shortcut isolation, and consecutive mouse play of Stored Guard, Stored Strike, and Stored
+Sweep. The effect callbacks reached the normal Play pile. Strict Tier 1 did not pass due to
+a host save-backup cleanup error, and the proof emitted no structured `selftest done`; the
+human lead accepted the result and waived strict Tier 2 for promotion. Those literal
+exceptions do not narrow Package support.
 
 ### Package 5 - Custom Character dialogue in native Ancient scenes
 
@@ -402,10 +418,10 @@ API review may add supported routes before any implementation plan is added.
 
 ### M6.6 completion
 
-Packages 1, 2A, 2B, 2C, 3, and 5 are complete with their literal verification results and
-exceptions recorded. The human lead explicitly removed Package 4 from the formal support
-and publication boundary and closed M6.6. The repository experiment is not a deferred
-support promise. M6.7 remains planned and starts only after explicit human-lead selection.
+Packages 1, 2A, 2B, 2C, 3, 4, and 5 are complete with their literal verification results
+and exceptions recorded. The human lead promoted Package 4 on official RitsuLib `0.5.4`
+and accepted its focused headed result with strict Tier 2 waived. M6.7 remains planned and
+starts only after explicit human-lead selection.
 
 ## M6.7 - Version-Bound Vanilla Content Overrides and Behavior Composition
 

@@ -15,8 +15,8 @@ support model are mature enough to extract a reusable platform.
 Version `0.6.0` is the first RitsuLib-only, externally accepted development baseline:
 
 - host: STS2 stable `0.107.1`;
-- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.5.0`;
-- runtime dependency: `STS2-RitsuLib >= 0.5.0`;
+- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.5.4`;
+- runtime dependency: `STS2-RitsuLib >= 0.5.4`;
 - primary runtime: Codex plugin;
 - secondary distribution: portable Agent Skills payload.
 
@@ -135,11 +135,12 @@ Powers may declare one top-left label with explicit refresh/removal. The Power b
 narrowed after multiple un-clipped preset bands overflowed an adjacent Power in the human
 lead's crowded 16:9 row. The rebuilt proof passed the human-led 16:9/16:10 recheck and strict
 Tier 1; strict Tier 2 was not run. The result is recorded in
-`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Package 4 CardPile/ExtraHand was
-implemented and focused-tested only with a private RitsuLib lifecycle repair. Because
-official `0.5.0` does not provide the required working lifecycle, the implementation is
-retained as a repository experiment but is not supported, routed through formal skills, or
-included in generated payloads. Intent belongs to Extra Badges but was removed from M6.6
+`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Package 4 Custom Card Piles is
+implemented across the complete documented public Package on official RitsuLib `0.5.4`.
+It includes combat/run scopes, all five UI styles, preset/custom anchors, public pile-screen
+capabilities, visibility/hotkeys, native movement/localization, and ExtraHand layout/manual
+play/callbacks. The human lead accepted the focused unmodified-runtime ExtraHand recheck;
+strict structured Tier 2 was waived rather than run. Intent belongs to Extra Badges but was removed from M6.6
 work by the human lead on 2026-07-30; current generated 2C authoring is Relic/Power only.
 Optional Mod settings with Global/Profile/run-owned persistence remain future outlook
 outside the closed M6.6 scope.

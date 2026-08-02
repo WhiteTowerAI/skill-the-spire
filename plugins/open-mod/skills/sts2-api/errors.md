@@ -6,7 +6,7 @@ switching to an old template.
 
 ## Build And Profile
 
-### Required compile asset is `STS2.RitsuLib.Compat.0.107.1 0.5.0`
+### Required compile asset is `STS2.RitsuLib.Compat.0.107.1 0.5.4`
 
 - **Cause:** the project selected a floating/default RitsuLib package, another compat
   target, or an additional framework package.
@@ -17,7 +17,7 @@ switching to an old template.
 
 - **Cause:** RitsuLib is missing, another host variant was installed, or its variant
   manifest/hash does not match.
-- **Fix:** install RitsuLib `0.5.0` with `lib/0.107.1/STS2-RitsuLib.dll`; do not use
+- **Fix:** install RitsuLib `0.5.4` with `lib/0.107.1/STS2-RitsuLib.dll`; do not use
   `--skip-runtime-check` for Tier 1.
 
 ### Host version is not `0.107.1`

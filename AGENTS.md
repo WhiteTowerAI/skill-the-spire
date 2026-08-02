@@ -14,7 +14,7 @@ under `documents/history/` and is not current instruction.
 ## Current Status
 
 `0.6.0` is the unreleased RitsuLib-only development baseline for STS2 stable `0.107.1`
-and RitsuLib `0.5.0`. The BaseLib-to-RitsuLib migration and external clean-workspace
+and RitsuLib `0.5.4`. The BaseLib-to-RitsuLib migration and external clean-workspace
 Codex acceptance are closed; details live in
 `documents/history/RITSULIB_MIGRATION_RESULTS.md`. R7 was canceled by the human lead and
 did not pass.
@@ -41,12 +41,15 @@ headed review and strict Tier 1 passed after the Power boundary was narrowed to 
 row overflow; strict Tier 2 was not run. The result and exception are recorded in
 `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Intent corner-label authoring was removed
 from M6.6 work by the human lead on 2026-07-30; Intent remains supported as part of the
-public RitsuLib Extra Badges Package. Package 4 CardPile/ExtraHand authoring and its focused
-proof remain as a repository-only experiment. It required a local RitsuLib lifecycle repair
-that is absent from official `0.5.0`. Package 4 is therefore not supported, routed by the
-formal skills, or included in generated payloads. Its immutable result remains in
-`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`, and its experimental reference is
-under `games/sts2/experimental/card-pile-extra-hand/`.
+public RitsuLib Extra Badges Package. Package 4 Custom Card Piles authoring is implemented
+for the complete documented Package: combat/run scopes, headless/top-bar/bottom-corner/
+ExtraHand styles, preset/custom anchors, public pile screens and view capabilities,
+visibility/hotkeys, native Card movement, localization, and ExtraHand layout/manual play/
+callbacks. Official RitsuLib `0.5.4` contains the native-Hand lifecycle repair missing from
+`0.5.0`; the human lead accepted the focused unmodified-runtime result and promoted the
+Package on 2026-08-02. The strict structured Tier 2 harness was waived, not run. Historical
+and official-version proof records remain under `documents/history/` and
+`games/sts2/experimental/card-pile-extra-hand/`.
 
 M6.7 is the planned follow-on for version-bound vanilla content overrides and behavior
 composition. Its intended scope includes data/upgrade/property edits, acquisition and pool
@@ -57,8 +60,8 @@ ungrounded Harmony, reflection, or IL from a prompt.
 
 ## Dependency Contract
 
-- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.5.0`.
-- Runtime manifests depend only on `STS2-RitsuLib >= 0.5.0`.
+- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.5.4`.
+- Runtime manifests depend only on `STS2-RitsuLib >= 0.5.4`.
 - Generated Mods must not reference, package, or depend on BaseLib.
 - Do not use Alchyr templates or restore historical BaseLib implementation snippets.
 - `baselines/BaseLib-StS2` and `baselines/downfall` are offline historical research only.
@@ -66,7 +69,7 @@ ungrounded Harmony, reflection, or IL from a prompt.
   the pinned package/runtime profile instead of copying it.
 - `baselines/SlayTheSpire2ModdingTutorials` is the official-tutorial product-semantics
   checkout pinned at `5a9110b`. It establishes intended use and documented feature-Package
-  membership, not stable-version signatures; exact APIs still come from RitsuLib `0.5.0`.
+  membership, not stable-version signatures; exact APIs still come from RitsuLib `0.5.4`.
 - `baselines/Sts2-YuWanCard` is a same-game-version Character/content-depth research
   checkout pinned at `07d7daa`. Its gameplay and Character framework is self-built with
   Harmony/Publicizer; RitsuLib is optional settings UI only. Use it to inventory consumers
@@ -109,6 +112,9 @@ Surfaces open-mod currently generates include:
   256x169 custom/Heal-fallback icons;
 - stateful relic cadence, combat-only secondary resources, all-or-nothing payment, public
   fixed combat UI, and ordered semantic buffers using normal Play -> Discard.
+- complete documented Custom Card Piles Package authoring across combat/run lifetime,
+  headless/top-bar/bottom-corner/ExtraHand presentation, public screens/views/hotkeys,
+  deterministic visibility, native Card movement, localization, and ExtraHand interaction.
 
 Generated readability APIs include conditional Card Hand Glow, up to three safe-corner
 Relic labels, and one top-left Power label from the RitsuLib Extra Badges family. Intent
@@ -122,10 +128,9 @@ Preserve these important boundaries:
 - Rest Site options are Relic-owned and singleplayer-only; Card/Modifier owners, variable
   or non-Gold costs, post-payment choices, arbitrary transactions, same-site repeat, and
   multiplayer remain unsupported.
-- CardPile/ExtraHand generation is unsupported and absent from the formal skills. The
-  repository-only Package 4 experiment must not be used as a generated recipe or support
-  claim unless an unmodified official pinned RitsuLib release passes its focused lifecycle
-  matrix and the human lead explicitly promotes it again.
+- Custom Card Piles use official public RitsuLib APIs only. Generated Mods must not recreate
+  the framework's native-Hand bridge, patch pile internals, or narrow the documented Package
+  merely because a selected consumer lacks a focused proof.
 - The fixed Character resource control is 220x32 at offset 160 with a text fallback and
   must remain disjoint from native Energy.
 - Custom locked-selection/map-marker presentation, custom Ancient models/backgrounds/
@@ -227,7 +232,7 @@ The outer project directory name must differ from the Mod name.
 ## Windows
 
 The verified environment uses PowerShell, STS2 `0.107.1`, .NET SDK `9.0.300`, Python 3,
-and RitsuLib `0.5.0`. Use PowerShell syntax for normal commands. Invoke `publish.sh`
+and RitsuLib `0.5.4`. Use PowerShell syntax for normal commands. Invoke `publish.sh`
 through an explicit Git Bash executable when needed; do not mix Bash path syntax into
 PowerShell commands.
 

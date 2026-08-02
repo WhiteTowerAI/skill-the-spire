@@ -9,7 +9,7 @@ decisions and the evidence needed to apply them correctly.
 open-mod targets:
 
 - Slay the Spire 2 stable `0.107.1`;
-- RitsuLib `0.5.0` and `STS2.RitsuLib.Compat.0.107.1`;
+- RitsuLib `0.5.4` and `STS2.RitsuLib.Compat.0.107.1`;
 - .NET SDK 9;
 - Codex plugin distribution plus a portable Agent Skills payload;
 - cross-platform Python tools, with the complete loop currently verified on Windows.
@@ -27,7 +27,7 @@ baseline for player-facing purpose, intended usage, examples, and documented Rit
 feature-Package membership.
 
 The tutorial repository currently labels itself `public-beta`. It therefore does not
-replace the stable `0.107.1` / RitsuLib `0.5.0` source and compat profile for exact symbols
+replace the stable `0.107.1` / RitsuLib `0.5.4` source and compat profile for exact symbols
 or lifecycle behavior. Use the tutorial to answer "what product problem does this Package
 solve?" and the pinned RitsuLib checkout to answer "does this exact public API exist on our
 target?" Distill accepted findings into the shipped pack; generated Mods never read the
@@ -138,7 +138,7 @@ research Mod.
 ### M6.6 closure
 
 The human lead closed M6.6 after evaluating its provisional capability packages. Official
-tutorial semantics plus pinned RitsuLib `0.5.0` public source determine Package support.
+tutorial semantics plus pinned RitsuLib `0.5.4` public source determine Package support.
 Recipes, builds, and real hosted proofs show what open-mod has implemented and observed.
 Packages 2A computed Card values, 5
 custom-Character dialogue in native Ancient scenes, 1 bounded advanced targeting, and 3
@@ -169,11 +169,13 @@ under `documents/history/`.
   free/fixed Gold, deterministic preflightable outcomes, once-per-site/run use, native
   stay/leave behavior, and explicit Heal-icon fallback. Card/Modifier ownership and the
   research Mod's card-acquisition preview remain outside the supported slice.
-- **Combat-only CardPile/ExtraHand (repository experiment, unsupported):** the bounded
-  visible singleplayer Mod-local implementation and its focused evidence are retained for
-  research. It requires a private RitsuLib lifecycle repair that open-mod will not ship.
-  Official `0.5.0` does not satisfy the required manual-play lifecycle, so no formal skill
-  routes or generated payloads expose this work.
+- **Custom Card Piles Package (promoted):** official RitsuLib `0.5.4` supplies the public
+  registration, combat/run persistence, all documented UI styles and anchors, pile-screen
+  capabilities, visibility/hotkeys, native movement/localization, and ExtraHand layout,
+  callbacks, and native manual-play lifecycle. The human lead accepted the focused official-
+  runtime cancellation/shortcut/consecutive-play recheck and promoted the complete Package
+  under the repository's Package-level rule. Strict structured Tier 2 was waived, not run;
+  the earlier private-repair experiment remains historical research rather than shipped code.
 - **Custom-Character native Ancient dialogue (promoted):** RitsuLib's registered
   `AncientDialoguePopulateLocKeysPatch` appends localization-defined dialogue for Mod
   Characters to each native `AncientDialogueSet` once. The flat `ancients.json` contract
@@ -188,7 +190,7 @@ under `documents/history/`.
 ### M6.7 vanilla-override planning inputs
 
 The planned M6.7 track treats existing vanilla models as version-bound semantic targets,
-not as permission for arbitrary generated patches. RitsuLib `0.5.0` provides enough public
+not as permission for arbitrary generated patches. RitsuLib `0.5.4` provides enough public
 composition surface for a broad design:
 
 - `ConfigureDefaultModelCapabilities<TModel>` can attach generated capabilities to matching

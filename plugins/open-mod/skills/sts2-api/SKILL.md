@@ -17,7 +17,7 @@ not dump entire files into the response.
 For generated content, the semantic contract is the product-level source of truth:
 read `./semantic-contract.md` before selecting an implementation.
 Lazily read `reference/ritsulib-adapter.md` next. It
-pins RitsuLib `0.5.0` against STS2 `0.107.1`, maps each semantic surface to one public
+pins RitsuLib `0.5.4` against STS2 `0.107.1`, maps each semantic surface to one public
 registration/template and asset profile, and owns the framework/version diagnostic
 record. Only then load the surface recipe or reference needed for the request.
 
@@ -93,6 +93,12 @@ scaffold, or infer a runtime dependency from a recipe name.
    `../sts2-api/reference/rest-site-options.md`. It owns the singleplayer-only
    free/fixed-Gold contract, absence versus disabled state, final payment recheck,
    repeatability, stay/leave lifecycle, icon fallback, and focused real-host proof.
+   When the Mod declares one or more custom Card piles, read
+   `../sts2-api/reference/card-piles.md`. It owns the complete documented Card
+   Piles Package: combat/run scope, every public UI style and anchor, open/view/visibility/
+   hotkey behavior, native movement, localization, and ExtraHand layout/manual play/
+   callbacks. Do not reduce routing to only the consumers already exercised by a focused
+   proof.
    When a Card looks at the top X Draw cards and discards any number, also read
    `../sts2-api/reference/scry-helper.md`. It owns the singleplayer-only
    open-mod helper, native selector/discard lifecycle, structured result, and proof.
@@ -144,6 +150,7 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `reference/extra-corner-labels.md` | Bounded extra badges: Relic up to three safe corners, Power one top-left label, text/rich-text limits, specs providers, invalidation/removal, cleanup, and headed proof | Authoring supplemental values on a Relic or Power |
 | `reference/advanced-targeting.md` | RitsuLib custom live-Creature targets: stable Mod-local registration, single Card/Potion and multi Card resolution, revalidation/payment lifecycle, multi-Potion limitation, and headed selection proof | Authoring a filtered Card/Potion target |
 | `reference/rest-site-options.md` | Relic-owned native Rest Site option: singleplayer contribution, free/fixed Gold, final recheck, run/site repeatability, stay/leave, checked icon fallback, and real-host proof | Authoring an owned Rest Site action on a Relic |
+| `reference/card-piles.md` | Complete Custom Card Piles Package: combat/run lifetime; headless/top-bar/bottom-corner/ExtraHand UI; preset/custom anchors; open/view/visibility/hotkeys; native movement; localization; ExtraHand layout, play, and callbacks | Authoring one or more Mod-owned Card piles |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
@@ -165,6 +172,9 @@ Harmony patching and is deferred. The recipes make **new** elements.
 - **Support rule:** a documented Package with public members in the pinned profile is
   supported. A missing recipe or unrun check does not make it unsupported; report the exact
   authoring or verification gap.
+- **Custom Card Piles:** route the complete documented Package through
+  `reference/card-piles.md`; preserve exact Card identity and awaited movement, and let the
+  generated SPEC select any public scope/style/anchor/view/ExtraHand consumer.
 - **Scry helper:** use `OpenModScry.Execute` only for the bounded top-X/discard-any Card
   effect. Await the native selector and every pile/hook command, preserve seen order, and
   keep the result and hooks local to the generated Mod. Multiplayer/replay remains

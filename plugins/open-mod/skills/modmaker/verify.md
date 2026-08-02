@@ -18,7 +18,7 @@ python ../modmaker/scripts/grep_log.py --mod-name <ModName>
   waits ~25s, and closes it.
 - `grep_log.py` reads the **current** `godot.log` in full. The verifier passes
   only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
-  `framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1`, with no
+  `framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1`, with no
   error/exception block after that
   boundary. It includes multiline stack context and global errors whose header does not
   name the mod. It also reports the `RUNNING MODDED` flag. Two exact, stack-qualified
@@ -63,7 +63,7 @@ python ../modmaker/scripts/grep_log.py --mod-name <ModName> --tier2-pattern "<st
 
 The `--tier2-pattern` selects the SPEC invariant from structured
 `[T2MOD-SELFTEST] <ModName> state proof:` lines. Every proof also records
-`framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1`. Use concrete
+`framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1`. Use concrete
 expected/observed vocabulary:
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
 `"cadence cross-combat threshold.*observed=0/4"`,
@@ -74,7 +74,10 @@ expected/observed vocabulary:
 `"resource UI complete.*observed=all"`, or
 `"ordered buffer complete.*observed=all"`, or
 `"wayfinder R5 parity complete.*observed=all"`, or
-`"R6 scry helper complete.*observed=all"`. The verifier ignores all
+`"R6 scry helper complete.*observed=all"`, or
+`"custom card piles complete.*observed=all"`. A custom-pile run follows
+`reference/card-piles.md` and proves the consumers selected by SPEC; Package support does
+not require a separate run for every documented public consumer. The verifier ignores all
 ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
 requires the exact load marker and `selftest done`.
 

@@ -11,9 +11,9 @@ python ../modmaker/scripts/build.py --project-dir <project path from MEMORY.md> 
 
 Before MSBuild, the tool verifies:
 
-- project package `STS2.RitsuLib.Compat.0.107.1` is exactly `0.5.0`;
+- project package `STS2.RitsuLib.Compat.0.107.1` is exactly `0.5.4`;
 - no BaseLib/Alchyr dependency appears in the project or manifest;
-- the manifest depends only on `STS2-RitsuLib >= 0.5.0` and targets host `0.107.1`;
+- the manifest depends only on `STS2-RitsuLib >= 0.5.4` and targets host `0.107.1`;
 - `has_pck` is `true` exactly when the authored Mod resource tree is non-empty;
 - the installed host's `release_info.json` is stable `0.107.1`;
 - `mods/STS2-RitsuLib` contains the matching direct compat runtime or a variant-pack
@@ -33,7 +33,7 @@ contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
 ## Expect
 
 - build summary: `0 warnings, 0 errors`;
-- profile lines report `frameworkVersion=0.5.0`, `host=0.107.1`, and `compat=0.107.1`;
+- profile lines report `frameworkVersion=0.5.4`, `host=0.107.1`, and `compat=0.107.1`;
 - `mods/<ModName>/` contains `<ModName>.dll`, `<ModName>.json`, optional PDB, and a PCK
   only when the Mod owns resources;
 - RitsuLib remains in its separate `mods/STS2-RitsuLib/` folder.

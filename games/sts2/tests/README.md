@@ -10,9 +10,11 @@ The failed initial native Ancient-dialogue proof, repair, and successful recheck
 `documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`.
 The bounded advanced-targeting proof and its manual-verification exception are recorded in
 `documents/history/M66_ADVANCED_TARGETING_RESULTS.md`.
-The Package 4 CardPile/ExtraHand result is retained in
-`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md` as repository-only experimental
-evidence. It is not a current support claim or a formal skill route.
+The historical private-repair Package 4 result is retained in
+`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`. The official RitsuLib `0.5.4`
+promotion proof and current literal exceptions are recorded under
+`games/sts2/experimental/card-pile-extra-hand/official-v054-proof/`; the formal route is
+`sts2-api/reference/card-piles.md`.
 
 ## Model
 
@@ -34,7 +36,7 @@ Host ownership:
 
 | Host | Owns |
 |---|---|
-| `CombatPlayer` | content core, computed Card values, hand emphasis, Relic/Power extra labels, advanced targeting, stateful relics, Scry, Character combat cues |
+| `CombatPlayer` | content core, computed Card values, custom Card Piles/ExtraHand, hand emphasis, Relic/Power extra labels, advanced targeting, stateful relics, Scry, Character combat cues |
 | `CombatEnemy` | Monster + Encounter, move vocabulary, combat/bestiary body |
 | `MapNode` / Character | Event outcomes/presentation, bounded forced follow-up, native Ancient/Architect dialogue |
 | real Rest Site / `MapNode` | Relic-owned option absence/gray/payment/stay/repeat/icon matrix |
@@ -77,10 +79,13 @@ Package 2B/2C authoring is implemented. Its human-led hand/Relic/Power matrix an
 Tier 1 passed after narrowing Power authoring to one top-left label; strict Tier 2 was not
 run and remains an explicit exception.
 
-Package 4 is excluded from formal verification ownership and generated payloads. Its
-focused matrix passed only with a private RitsuLib lifecycle repair, while official `0.5.0`
-does not provide the required behavior. Preserve the experiment and historical result, but
-do not treat either as support or publication evidence.
+Package 4 Custom Card Piles is formally supported on official RitsuLib `0.5.4`. The human
+lead accepted the unmodified-runtime focused ExtraHand cancellation, shortcut-isolation,
+and consecutive-play result and promoted the complete documented Package. The current run
+had a host save-backup cleanup error and no structured `selftest done`, so strict Tier 1 did
+not pass and strict Tier 2 was waived rather than relabeled as passed. Future generated Mods
+verify the scopes, styles, screens, movement, persistence, callbacks, and interactions they
+actually select; unrun consumers do not narrow Package support.
 
 Run one armed harness at a time. Preserve and restore unrelated user Mods. Do not reopen a
 completed host proof unless a later source change exposes a real regression.

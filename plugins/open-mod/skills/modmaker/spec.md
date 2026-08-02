@@ -125,6 +125,59 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
   - asset role: potion icon
 ```
 
+**Custom card pile** (repeat once per pile; Mod-level Package surface):
+
+```markdown
+- **content**:
+  - name: <player-facing pile name>
+  - surface: custom card pile
+  - logical id: <stable local pile stem>
+  - relations: <Cards/effects/screens that move, inspect, or present this pile>
+- **registration**:
+  - availability: host-owned
+  - ownership: player
+  - placement: custom Card Piles Package
+  - scope: combat | run
+- **localization**:
+  - fields: title, description, empty
+  - table intent: static hover tips
+  - formatting: plain
+- **effects**:
+  - trigger: <every entry/exit/open/arrival interaction>
+  - target: <this pile and exact source/destination pile>
+  - sequence: <ordered movements and requested callbacks>
+  - scaling: none
+  - movement: <trigger, exact Card identity, source, destination, top | bottom, rejection rule>
+- **state**:
+  - lifetime: combat | run
+  - owner: player combat state | player
+  - advance/check: <capacity/order/duplicate rules and transition timing>
+  - reset: combat end | run end
+  - persistence: none | run save
+  - visible state: <hidden | pile count | visible Cards>
+- **presentation**:
+  - assets: <none | pile icon and optional view styling assets>
+  - text effects: none
+  - native presentation: custom Card Piles Package
+  - style: headless | top bar deck | bottom left | bottom right | extra hand
+  - anchor: style default | <matching preset + offset> | <custom position + pivot>
+  - open behavior: default pile screen | public custom screen
+  - visibility: always | <deterministic player/pile/room condition>
+  - hover tip: auto | below trailing | above centered | below centered; offset <x,y>
+  - hotkeys: none | <existing input action ids>
+  - view: vanilla | deck-like | explicit capabilities
+  - extra hand: <none | direction/spacing/scales/glow/manual play/layout/callback behavior>
+- **fallback**:
+  - missing asset: RitsuLib placeholder or named built-in resource
+  - unavailable seam: fail clearly without changing unrelated piles
+  - failure policy: preserve source/destination state or stop authoring
+- **proof**:
+  - scenario: <matching combat/run/card-pile UI host>
+  - driver: <real movement/open/hotkey/manual-play interaction>
+  - invariants: <identity/order/count/state/UI/result-pile outcomes>
+  - boundary cases: <empty/full/rejection/reset/save/cancel/aspect ratio as selected>
+```
+
 **Card** (cost/type/target + upgrade replace trigger; loc table is `cards`, no flavor,
 plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
 

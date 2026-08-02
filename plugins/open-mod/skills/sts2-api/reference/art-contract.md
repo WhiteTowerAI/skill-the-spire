@@ -171,7 +171,7 @@ Ancient cards.
 
 Character assets are separate contracts because `CharacterAssetProfile` maps distinct
 game hosts. The active profiles are re-grounded against STS2 `0.107.1` and RitsuLib
-`0.5.0`; archived framework inventories are style/consumer research only.
+`0.5.4`; archived framework inventories are style/consumer research only.
 Each profile is promoted independently only after a real headed Character run shows the
 packed resource instead of the resolved fallback.
 

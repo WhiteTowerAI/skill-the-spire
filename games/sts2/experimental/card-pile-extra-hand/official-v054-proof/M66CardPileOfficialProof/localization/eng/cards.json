@@ -1,0 +1,10 @@
+{
+  "M66_CARD_PILE_OFFICIAL_PROOF_CARD_STORED_STRIKE.title": "Stored Strike",
+  "M66_CARD_PILE_OFFICIAL_PROOF_CARD_STORED_STRIKE.description": "Deal {Damage:diff()} damage.",
+  "M66_CARD_PILE_OFFICIAL_PROOF_CARD_STORED_SWEEP.title": "Stored Sweep",
+  "M66_CARD_PILE_OFFICIAL_PROOF_CARD_STORED_SWEEP.description": "Deal {Damage:diff()} damage to ALL enemies.",
+  "M66_CARD_PILE_OFFICIAL_PROOF_CARD_STORED_GUARD.title": "Stored Guard",
+  "M66_CARD_PILE_OFFICIAL_PROOF_CARD_STORED_GUARD.description": "Gain {Block:diff()} Block.",
+  "M66_CARD_PILE_OFFICIAL_PROOF_CARD_REVIEW_SETUP.title": "Review Setup",
+  "M66_CARD_PILE_OFFICIAL_PROOF_CARD_REVIEW_SETUP.description": "Prepare five cards in the normal Hand and three cards in the Archive."
+}

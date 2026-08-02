@@ -78,7 +78,7 @@ class SemanticContractTests(unittest.TestCase):
     def test_diagnostic_envelope_records_pinned_compatibility(self) -> None:
         for token in (
             "framework=RitsuLib",
-            "frameworkVersion=0.5.0",
+            "frameworkVersion=0.5.4",
             "host=0.107.1",
             "compat=0.107.1",
         ):
@@ -138,26 +138,59 @@ class SemanticContractTests(unittest.TestCase):
         self.assertIn("second player-readable number", self.interview)
         self.assertNotIn("authoring recipe is not shipped yet", self.author)
 
-    def test_card_pile_extra_hand_remains_repository_only(self) -> None:
-        formal_reference = STS2_API_DIR / "reference" / "card-pile-extra-hand.md"
-        experimental_dir = (
-            REPO_ROOT / "games" / "sts2" / "experimental" /
-            "card-pile-extra-hand"
-        )
+    def test_card_piles_package_is_supported_and_authorable(self) -> None:
+        formal_reference = STS2_API_DIR / "reference" / "card-piles.md"
         graph = (
             REPO_ROOT / "games" / "sts2" / "tests" /
             "content-capability-graph.md"
         ).read_text(encoding="utf-8")
+        reference = formal_reference.read_text(encoding="utf-8")
+        api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
+        adapter = (
+            STS2_API_DIR / "reference" / "ritsulib-adapter.md"
+        ).read_text(encoding="utf-8")
+        harness = (
+            STS2_API_DIR / "reference" / "selftest-harness.md"
+        ).read_text(encoding="utf-8")
 
-        self.assertFalse(formal_reference.exists())
-        self.assertTrue((experimental_dir / "README.md").is_file())
-        self.assertTrue((experimental_dir / "reference.md").is_file())
-        self.assertIn("custom CardPile/ExtraHand generation", graph)
-        for path in STS2_API_DIR.rglob("*.md"):
-            self.assertNotIn(
-                "reference/card-pile-extra-hand.md",
-                path.read_text(encoding="utf-8"),
-            )
+        self.assertTrue(formal_reference.is_file())
+        for routed in (self.author, api_skill, adapter, harness):
+            self.assertIn("reference/card-piles.md", routed)
+
+        normalized = " ".join(reference.split())
+        for contract in (
+            "CombatOnly",
+            "RunPersistent",
+            "Headless",
+            "TopBarDeck",
+            "BottomLeft",
+            "BottomRight",
+            "ExtraHand",
+            "AtPosition",
+            "AtCenter",
+            "AtPivot",
+            "ModCardPileViewSpec.DeckLike",
+            "CardPileCmd.Add",
+            "CardPilePosition.Top",
+            "CardPilePosition.Bottom",
+            "LayoutResolver",
+            "OnCardVisualCreated",
+            "OnCardArrived",
+            "NPlayerHand.StartCardPlay",
+        ):
+            self.assertIn(contract, normalized)
+
+        for field in (
+            "scope: combat | run",
+            "style: headless | top bar deck | bottom left | bottom right | extra hand",
+            "open behavior: default pile screen | public custom screen",
+            "view: vanilla | deck-like | explicit capabilities",
+            "movement:",
+        ):
+            self.assertIn(field, " ".join(self.spec.split()))
+        self.assertIn("Custom Card Piles Package", self.interview)
+        self.assertIn("custom Card Piles", graph)
+        self.assertNotIn("custom CardPile/ExtraHand generation", graph)
 
     def test_gameplay_readability_routes_are_bounded_and_authorable(self) -> None:
         hand = (

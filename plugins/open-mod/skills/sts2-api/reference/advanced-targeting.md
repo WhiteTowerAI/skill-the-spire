@@ -1,7 +1,7 @@
 # Reference: advanced Card and Potion creature targeting
 
 This page owns the bounded custom-target contract for STS2 `0.107.1` with RitsuLib
-`0.5.0`. Use it only when a Card or Potion needs a creature filter beyond `Self`,
+`0.5.4`. Use it only when a Card or Potion needs a creature filter beyond `Self`,
 `AnyEnemy`, or `AllEnemies`. The target remains a live combat `Creature`; selecting Cards,
 corpses, map nodes, or arbitrary objects is unsupported.
 

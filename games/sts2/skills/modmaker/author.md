@@ -71,10 +71,15 @@ second framework branch into this file.
   If SPEC selects a character resource, read `reference/character-resource.md`; if it
   selects a bounded ordered semantic buffer/dynamic output, read
   `reference/ordered-card-buffer.md`.
+  For every **custom card pile**, read `reference/card-piles.md`. Register all piles in
+  the same deferred content pack, lower every documented scope/style/anchor/open/view/
+  visibility/hotkey/ExtraHand consumer selected by SPEC, and use awaited native pile Cmds
+  for every movement. The Package route is not limited to ExtraHand or to previously
+  exercised UI presets.
   A selected resource UI uses RitsuLib's public `RegisterCombatUi` route from
   `reference/character-resource.md`. If another capability has no documented public
   game/framework seam, report a pack gap. Do not invent alternative-energy patches,
-  visible zone UI, C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
+  C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. Do **not** guess API names — if
   the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
@@ -349,7 +354,7 @@ tier-1 verify silently finds nothing. Use the shared envelope from
 `semantic-contract.md`:
 
 ```csharp
-Logger.Info("[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
+Logger.Info("[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
 Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 
@@ -462,6 +467,11 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    Gold/Max-HP/history deltas, rebuilt list without duplication, declared stay/leave,
    second-visit repeatability, controller focus, custom icon, and missing-icon native
    fallback. Keep the run explicitly singleplayer.
+   A **custom card pile** selects the matching host matrix in
+   `reference/card-piles.md`. Prove the generated Mod's selected scopes, UI styles,
+   anchors, open/view/hotkey behavior, explicit Card movements, localization, and
+   ExtraHand interactions. Do not require one proof per documented public consumer merely
+   to preserve Package support; verify every behavior the generated SPEC actually uses.
 3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
    post-state, then call the shared `StateProof(...)`. Its structured
    `[T2MOD-SELFTEST] <ModName> state proof:` line must include the selected framework,

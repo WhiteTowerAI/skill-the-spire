@@ -620,6 +620,21 @@ Assert `NetGameType.Singleplayer` before the scenario. Do not simulate remote ow
 add a local multiplayer fallback, or promote global Scry hooks. The accepted marker is
 `R6 scry helper complete expected=all observed=all` followed by `selftest done`.
 
+## Custom Card Piles Package
+
+When SPEC declares custom piles, read `reference/card-piles.md` and extend the nearest
+combat/run host instead of inventing a separate support gate. The harness asserts every
+selected pile's qualified identity, combat/run owner, exact Card instances and order,
+awaited entry/exit outcomes, rejection invariants, reset/save behavior, and any deterministic
+visibility/open/view/callback state. Headed review owns the selected button, top-bar,
+custom-anchor, pile-screen, hotkey, and ExtraHand mouse/controller presentation.
+
+For manual ExtraHand play, the structured post-state records payment, source restoration on
+cancel, successful normal result pile, callback counts, and the next remaining Card's
+ability to enter the same native play flow. Official `0.5.4` owns the temporary Hand bridge;
+the generated proof must not inspect private native fields or patch the lifecycle. End with
+the ordinary structured `state proof` and `selftest done` markers when strict Tier 2 is run.
+
 ## The `CombatEnemy` scenario (monster + encounter; one- and multi-move live)
 
 Enemy-side content (monster + encounter) does not fit the card/relic/potion drivers above:

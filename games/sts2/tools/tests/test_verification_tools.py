@@ -43,7 +43,7 @@ class GrepLogTests(unittest.TestCase):
         return [
             "RUNNING MODDED",
             f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1",
         ]
 
     def test_tier2_pass_requires_state_proof_and_done(self) -> None:
@@ -193,10 +193,10 @@ class GrepLogTests(unittest.TestCase):
         code, output = self.run_grep(
             [
                 f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-                "framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1",
+                "framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1",
                 "[ERROR] failure from the previous appended run",
                 f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-                "framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1",
+                "framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1",
             ]
         )
         self.assertEqual(0, code)

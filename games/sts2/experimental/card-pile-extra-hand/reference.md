@@ -1,11 +1,19 @@
 # Combat-only visible CardPile / ExtraHand
 
-Status: repository-only experiment; unsupported and excluded from formal skills and payloads.
+Status: historical bounded implementation reference. The complete documented Custom Card
+Piles Package is supported through `../../skills/sts2-api/reference/card-piles.md`.
 
 This page preserves the bounded design that was tested with a private RitsuLib lifecycle
 repair. Official RitsuLib `0.5.0` does not provide the required repeated native manual-play
-behavior, and open-mod does not ship that repair. Do not route this reference into generated
-Mods or use it as a support claim.
+behavior, and open-mod does not ship that repair. Do not route this archived recipe into
+generated Mods; use the formal Package reference instead.
+
+Official RitsuLib `0.5.4` now contains the native-Hand bridge and cleanup behavior that was
+missing from `0.5.0`. A focused STS2 `0.107.1` proof using the unmodified official runtime
+passed the mouse cancellation, numbered-shortcut isolation, and consecutive manual-play
+cases on 2026-08-02. The proof and its bounded result are under `official-v054-proof/`.
+The human lead accepted that result and promoted the complete documented Package under the
+Package-level support rule. Strict Tier 2 remained waived, not passed.
 
 ## Initial generated contract
 

@@ -8,10 +8,10 @@ mapping into every recipe and do not reintroduce a second historical-framework b
 
 ```text
 framework: RitsuLib
-framework version: 0.5.0
+framework version: 0.5.4
 host: STS2 stable 0.107.1
 compat target: 0.107.1
-profile id: ritsulib-0.5.0-sts2-0.107.1
+profile id: ritsulib-0.5.4-sts2-0.107.1
 ```
 
 The compat package or variant must resolve `lib/0.107.1/STS2-RitsuLib.dll` and the
@@ -76,10 +76,20 @@ unselected modules.
 | Advanced creature targeting | Mod-scoped custom `TargetType` registration + Card/Potion target extensions | native selection/reticles | generated for Card one/many and Potion one; multi Potion has a known lifecycle limitation |
 | Card Hand Glow | `ShouldGlowGoldInternal` / `ShouldGlowRedInternal`; `CardHandOutline<TCard>(ModCardHandOutlineRules<TCard>)` | native hand outline | generated with ordered fixed-color rules; headed host result remains literal |
 | Extra Badges | Power/Relic/Intent extra-label providers and change sources with `ExtraIconAmountLabelSpec` | native Power/Relic/Intent corners | Relic: up to three safe corners; Power: one top-left label because preset bands overlap in crowded rows; Intent supported but not scheduled |
+| Custom Card Piles | `.CardPileOwned(...)` + `ModCardPileSpec` + native `CardPileCmd` | headless, top-bar, bottom-corner, ExtraHand, and pile-screen consumers | complete documented Package; selected behavior uses `reference/card-piles.md` |
 
 Registration remains data-driven: pool/act/availability comes from the semantic
 `registration` section and is translated once by the adapter. Do not add a parallel
 recipe tree for RitsuLib.
+
+### Custom Card Piles
+
+When SPEC declares any custom pile, read `reference/card-piles.md` and lower the complete
+selected Package surface through `.CardPileOwned(...)`. That reference owns combat/run
+lifetime, every public style and anchor, icon/hover/open/view/visibility/hotkey behavior,
+native movement, localization, and ExtraHand presentation/manual play/callbacks. Official
+RitsuLib `0.5.4` owns its internal native-Hand bridge; generated Mods emit no lifecycle
+patch. Package support is not limited by which consumers appeared in the focused proof.
 
 ### Card
 
@@ -362,7 +372,7 @@ and `skipVisuals: true` lifecycle are not adapter routes. See `ordered-card-buff
 ### Open-mod Scry helper
 
 When the semantic Card effect is top-X Scry, emit the generated-Mod-local
-`OpenModScry.Execute` implementation from `scry-helper.md`. RitsuLib `0.5.0` has no public
+`OpenModScry.Execute` implementation from `scry-helper.md`. RitsuLib `0.5.4` has no public
 equivalent. The helper uses STS2's public `CardSelectCmd.FromSimpleGrid`, `CardPileCmd.Add`,
 discard history, and `Hook.AfterCardDiscarded`; it returns requested/seen/discarded Cards
 and preserves unselected Draw order. Nonpositive, missing/ending-combat, and empty-Draw
@@ -388,6 +398,7 @@ invariants in one `CombatPlayer` run, ending at
 | Card hand emphasis | ordered meanings/conditions/colors/priorities and unplayable visibility | vanilla glow override for one gold/red rule or one typed `CardHandOutline<TCard>` ruleset | fixed colors only; normal combat-state refresh; headed result remains literal |
 | Relic/Power extra badge | Relic up to three safe-corner values or Power one top-left value, format, refresh/removal | typed extra-label specs provider plus host display or independent change source | Power preset bands overlap in crowded rows; no bottom-right/arbitrary rectangle; native main amount remains |
 | Relic-owned Rest Site option | eligibility, repeatability, free/fixed Gold, deterministic outcome, stay/leave | `ModRestSiteOptionTemplate` + owner hooks + optional saved bool | singleplayer only; no Card/Modifier owner or arbitrary transaction |
+| Custom Card Piles | pile identity/scope/style/anchor/open/view/visibility/hotkeys, movement, localization, ExtraHand behavior | `.CardPileOwned(...)`, `ModCardPileSpec`, `CardPileCmd`, `GetPile` | complete documented public Package; verify the consumers selected by SPEC |
 | Asset | consumer profile and fallback | per-surface asset profile | retain current placeholder and unsupported consumers |
 | Patch seam | exact target, version/fingerprint, risk, failure | `CreatePatcher` only when public APIs are insufficient | no arbitrary patches, C/D targets, or `OpenMod.Runtime` |
 | Diagnostics | framework profile and proof route | shared marker fields from semantic contract | marker is not state proof |
@@ -397,7 +408,7 @@ invariants in one `CombatPlayer` run, ending at
 Official product semantics plus a public API in this pinned profile support the documented
 Package and its public consumers. Missing authoring work or verification does not change
 that. Keep actual no-route boundaries explicit: alternative Energy,
-retained-card custom zones, arbitrary Event layouts/VFX, Ancient custom layouts, animation,
+arbitrary Event layouts/VFX, Ancient custom layouts, animation,
 materials, multiplayer presentation, audio, run-persistent Character resources, and direct
 merchant/rest/treasure transitions. M6.7 vanilla editing remains planned and is not
 generated. The promoted Scry helper remains singleplayer-only and generated-Mod
@@ -410,7 +421,7 @@ an empty queued group before consumption.
 For each generated mod, record this small implementation-only block in `MEMORY.md`:
 
 ```markdown
-- framework profile: ritsulib-0.5.0-sts2-0.107.1
+- framework profile: ritsulib-0.5.4-sts2-0.107.1
 - adapter: <surface>/<contract-version>
 - registration route: <shared/act/standalone/host-owned>
 - asset profile: <profile or fallback>

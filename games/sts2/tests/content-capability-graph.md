@@ -13,6 +13,7 @@ are stated directly, without readiness levels or evidence badges.
 | card / relic / potion / power | `CombatPlayer` | RitsuLib `Mod*Template`, exactly-once content-pack registration, explicit pools, checked art fallback |
 | computed Card values | `CombatPlayer` | one bounded formula for preview/execution; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltip |
 | advanced creature targeting | `CombatPlayer` | deterministic Mod-local live-creature filters; native mouse/controller selection for Card one/many and Potion one; execution-time resolution checks; no multi Potion |
+| custom Card Piles | matching combat/run and UI hosts | complete documented public Package: combat/run scopes; Headless/TopBarDeck/BottomLeft/BottomRight/ExtraHand; preset/custom anchors; icon/hover/open/view/visibility/hotkeys; awaited native movement; localization; ExtraHand layout/manual play/callbacks |
 | RitsuLib Card Hand Glow | Card hand | generated ordered fixed-color gold/red/custom rules, priority/tie order, and unplayable visibility; normal combat-state refresh boundary; human-led focused host review and Tier 1 passed; strict Tier 2 unrun |
 | RitsuLib Extra Badges | Power, Relic, and Intent | generated Relics: up to three distinct safe corners; generated Powers: one top-left label because preset bands overlap in crowded rows; bounded plain/color text and explicit refresh/removal; Intent authoring outside active plan; human-led crowded-row review and Tier 1 passed; strict Tier 2 unrun |
 | keyword | `CombatPlayer` | RitsuLib-owned native keyword, real Card text and no-icon tooltip, named behavior |
@@ -58,6 +59,14 @@ had matching Tier 1, exact target IDs/counts, and no fresh target-Mod error. It 
 automated `selftest done`, and queued-target invalidation was not run; strict Tier 2 is a
 recorded exception, not a pass. See
 `documents/history/M66_ADVANCED_TARGETING_RESULTS.md`.
+
+The official RitsuLib `0.5.4` Package 4 proof used no consumer lifecycle patch. Setup
+asserted native-Hand/ExtraHand holder separation, capacity, and overflow; the human lead
+accepted target-cancel restoration, numbered-shortcut isolation, and consecutive mouse play
+of all three ExtraHand Cards. A host save-backup cleanup error prevented strict Tier 1, and
+no structured `selftest done` ran; strict Tier 2 was waived. Under the Package-level rule,
+these verification facts do not narrow support to the one exercised UI consumer. See
+`games/sts2/experimental/card-pile-extra-hand/official-v054-proof/RESULTS.md`.
 
 The focused `M66RestSiteProof` host covered absent, gray, enabled, successful payment and
 exact outcome, rebuilt native options, once-per-run hiding, controller focus, custom
@@ -137,11 +146,8 @@ Do not generate it.
 
 ## Unsupported
 
-- custom CardPile/ExtraHand generation; the repository experiment requires a private
-  RitsuLib lifecycle repair and is excluded from formal skills and generated payloads;
 - Card/Modifier-owned Rest Site options, variable/non-Gold costs, post-payment choices,
   arbitrary transactions, same-site repeat, and multiplayer Rest Site extensions;
-- retained played-card custom piles or custom-zone UI;
 - alternative Energy hooks;
 - run-persistent or remote-player Character resources/UI;
 - multiplayer/replay Scry or global Scry modifiers/completion hooks;

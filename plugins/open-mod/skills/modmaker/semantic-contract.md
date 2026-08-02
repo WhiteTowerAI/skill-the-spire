@@ -28,7 +28,7 @@ not replace or rename the shared sections.
 - **content**:
   - name: <player-facing name>
     surface: card | relic | potion | power | keyword | enchantment | orb |
-      enemy encounter | event | character
+      custom card pile | enemy encounter | event | character
     logical id: <stable local stem, before adapter-specific id decoration>
     relations: <none | directed source -> dependent relationships>
 - **registration**:
@@ -106,6 +106,14 @@ The adapter owns the option class, contribution hook, stable option ID, saved ru
 and native UI lifecycle. Card/Modifier owners and arbitrary transactional outcomes are
 unsupported adapter results in the first slice.
 
+The Custom Card Piles Package is a Mod-level surface. Record every pile's local identity,
+combat/run scope, headless/top-bar/bottom-left/bottom-right/ExtraHand style, default/preset/
+custom anchor, icon and hover behavior, visibility, open/view/hotkey behavior, every
+explicit Card movement, localization, and state transition. ExtraHand declarations also
+record layout, manual-play/glow behavior, and requested visual callbacks. The adapter owns
+qualified IDs, `PileType` values, public registration, native pile commands, persistence,
+and UI wiring; framework names and raw callbacks never enter SPEC.
+
 Gameplay readability uses two optional presentation extensions:
 
 - **hand emphasis:** record one or more ordered rules. Each rule owns an actionable
@@ -142,6 +150,7 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Keyword | shared rule, host cards, display title/description, behavior proof | `CombatPlayer` |
 | Enchantment | compatible host, persistent change, display/icon fallback | `CombatPlayer` |
 | Orb | channel host, passive, evoke, icon and combat fallback | `CombatPlayer` |
+| Custom card pile | identity, combat/run scope, UI style/anchor, open/view/visibility/hotkeys, movement/order, localization, optional ExtraHand behavior | matching combat/run/card-pile UI host |
 | Enemy encounter | HP, group, ordered moves, conditions, encounter placement | `CombatEnemy` |
 | Event | acts, pages/options, public outcomes, bounded presentation, combat completion | `MapNode` |
 | Character | identity, HP, starter content, pools, hosted mechanic, selected static profiles | `RunStart` + `CombatPlayer` |
@@ -167,7 +176,7 @@ returns four implementation records:
 3. **diagnostics** - framework/compat/host identity and adapter status;
 4. **proof route** - the closest hosted suite and the structured invariant it must emit.
 
-The first target profile is `ritsulib-0.5.0-sts2-0.107.1`. There is no compatibility
+The first target profile is `ritsulib-0.5.4-sts2-0.107.1`. There is no compatibility
 fallback to the historical framework and no beta-facing variant selection. If the
 profile cannot be resolved, authoring stops with an actionable diagnostic and the
 placeholder/fallback remains the documented outcome.
@@ -178,9 +187,9 @@ Build, load, and Tier-2 records use the same fields. The existing exact load mar
 retained so current verification tools remain compatible.
 
 ```text
-[OPENMOD-FRAMEWORK] phase=<build|load|tier2> mod=<mod-id> framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1 adapter=<surface>/<contract-version> status=<selected|resolved|fallback|failed>
+[OPENMOD-FRAMEWORK] phase=<build|load|tier2> mod=<mod-id> framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1 adapter=<surface>/<contract-version> status=<selected|resolved|fallback|failed>
 [T2MOD-SELFTEST] <ModName> loaded ok
-[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.5.0 host=0.107.1 compat=0.107.1 expected=<...> observed=<...>
+[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1 expected=<...> observed=<...>
 ```
 
 `status=failed` must include a short reason such as `missing-compat-asset` or
