@@ -1,6 +1,7 @@
 # Framework-neutral semantic contract
 
-This file is the source-of-truth for the product-level `SPEC.md` envelope. It is
+This file is the source-of-truth for the product-level `SPEC.md` envelope. `DESIGN.md` owns
+creative intent and scope; SPEC owns only the exact current generation contract. It is
 intentionally free of framework class names, namespaces, hook signatures, project
 files, manifest fields, or resource-loader conventions. A SPEC describes what the
 player should experience; an adapter decides how that intent is registered and
@@ -22,6 +23,11 @@ change to this envelope requires a contract-version bump and a migration note.
 
 Include these sections once per SPEC. Surface-specific blocks may add fields, but must
 not replace or rename the shared sections.
+
+Before this envelope, include the M7.4 `open-mod-spec-trace/v1` block from `spec.md`. Every
+emitted semantic operation appears once with a stable `OP-###`, one or more current
+`D-###` requirements, its semantic target, and its shipped supported route. The trace is a
+generation allowlist: deferred/out-of-scope design items never appear in this envelope.
 
 ```markdown
 - **contract**: sts2-content-semantic/v1

@@ -75,7 +75,6 @@ expected/observed vocabulary:
 `"character foundation/static-presentation.*observed=all"`,
 `"resource UI complete.*observed=all"`, or
 `"ordered buffer complete.*observed=all"`, or
-`"wayfinder R5 parity complete.*observed=all"`, or
 `"R6 scry helper complete.*observed=all"`, or
 `"custom card piles complete.*observed=all"`. A custom-pile run follows
 `reference/card-piles.md` and proves the consumers selected by SPEC; Package support does
@@ -111,9 +110,9 @@ requires the exact load marker and `selftest done`.
   identity and exact SPEC HP/Max HP, exact typed Card/Relic/Potion pools and member models,
   every independently registered supporting Power, exact starter deck/relic multisets, and
   designed MaxEnergy. The unlocked Card pool must also fill Shop's native colored Attack,
-  Skill, and Power slots without falling back to another character's pool. The live
-  Wayfinder regression is exactly `72/72`, cards/relic/potion/power `7/1/1/1`, five Strike
-  plus five Guard, and one Wayfinder Compass.
+  Skill, and Power slots without falling back to another character's pool. Derive every
+  expected identity, count, value, and terminal summary from the current `SPEC.md`; never
+  reuse a retired proof Mod's constants or marker.
 - For a character resource, require gain, affordable and unaffordable checks, one exact
   successful payoff, one rejected spend with no mutation/negative state, live counter
   values, public `RegisterCombatUi` attachment, the fixed 220x32 control at offset 160,

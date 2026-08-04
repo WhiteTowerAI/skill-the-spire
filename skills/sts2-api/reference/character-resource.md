@@ -1,8 +1,8 @@
 # Character resource - RitsuLib combat state, payment, and live counter
 
-Status: **implemented with RitsuLib on STS2 0.107.1**. `RitsuResourceProof` proved
-the resource in isolation and `RitsuWayfinderProof` proved the final Character
-composition on 2026-07-23 with RitsuLib 0.4.67 as the sole framework dependency.
+Status: **implemented with RitsuLib on STS2 0.107.1**. Focused two-combat proofs established
+the isolated resource and final generated-Character composition with RitsuLib as the sole
+framework dependency.
 
 Use this capability when cards or other character-owned effects gain and spend a named
 nonnegative resource during combat. It is a selected Character capability, not a new
@@ -49,21 +49,21 @@ public static string Id => Definition.Id;
 
 public static void Register()
 {
-    Definition = Resources.Register("ink", new SecondaryResourceDefinition(
+    Definition = Resources.Register("resource", new SecondaryResourceDefinition(
         defaultAmount: 0,
         minAmount: 0,
         turnStartPolicy: SecondaryResourceTurnStartPolicy.None,
         persistencePolicy: SecondaryResourcePersistencePolicy.Combat,
         smallIconPath: IconPath,
         largeIconPath: IconPath));
-    Resources.AlwaysShowInCombatUi("ink");
+    Resources.AlwaysShowInCombatUi("resource");
     Resources.RegisterCombatUi(
-        "ink-counter",
-        _ => InkCounter.Create(),
+        "resource-counter",
+        _ => CharacterResourceCounter.Create(),
         UpdateCounter,
         new NodeAttachmentOptions
         {
-            Name = "<ModName>InkCounter",
+            Name = "<ModName>ResourceCounter",
             AttachParentSelector = node =>
                 ((NCombatUi)node).EnergyCounterContainer,
         });
@@ -108,7 +108,7 @@ all-or-nothing payment.
 The spender applies its payoff only after payment:
 
 ```csharp
-bool paid = await InkResource.TrySpend(Owner, cost, this, this);
+bool paid = await CharacterResource.TrySpend(Owner, cost, this, this);
 if (paid)
     await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
 ```
@@ -124,7 +124,7 @@ bounded mechanic state:
 
 ```csharp
 private static void UpdateCounter(
-    SecondaryResourceCombatUiContext<NCombatUi, InkCounter> context)
+    SecondaryResourceCombatUiContext<NCombatUi, CharacterResourceCounter> context)
 {
     var visible = context.Player != null &&
         context.VisibleDefinitions.Any(definition => definition.Id == Id);
@@ -132,12 +132,13 @@ private static void UpdateCounter(
     if (!visible) return;
 
     context.Node.ValueLabel.Text =
-        $"Ink: {Get(context.Player!)} | Route: " +
-        RouteBuffer.RouteText(context.Player!);
+        $"{DisplayName}: {Get(context.Player!)}" +
+        MechanicStateText.GetOptionalSuffix(context.Player!);
 }
 
-public static bool TryGetMounted(NCombatUi ui, out InkCounter counter) =>
-    Attachments.TryGetAttached(ui, "ink-counter", out counter);
+public static bool TryGetMounted(
+    NCombatUi ui, out CharacterResourceCounter counter) =>
+    Attachments.TryGetAttached(ui, "resource-counter", out counter);
 
 public static void Refresh(Player player)
 {
@@ -172,12 +173,10 @@ Use two real `CombatPlayer` combats and assert:
    resource and native energy global rects do not intersect;
 6. combat 2 has a distinct `PlayerCombatState`, amount `0`, and reset UI.
 
-`RitsuResourceProof` observed resource `0 -> 3 -> 1`, affordability `true/false`, Block
-`+4` only on successful payment, rejection at `1`, and a distinct combat-2 value `0`.
-The final `RitsuWayfinderProof` observed Ink `0 -> 4 -> 0`, paid Block `20`, rejected
-payment with no extra Block, route composition in the same control, resource rect
-`(260,828,220,32)` disjoint from energy rect `(100,828,128,128)`, and combat-2 Ink `0`.
-Both reached `selftest done`, strict Tier 2, and no fresh error.
+The maintained harness derives the resource name, gain/spend amounts, payoff, and expected
+counter states from the current `SPEC.md`. It reaches `selftest done` only after the exact
+configured values, rejected-payment invariants, disjoint UI, and distinct combat-2 reset
+state pass; no historical proof constants or markers are reusable defaults.
 
 ## Unsupported extensions
 

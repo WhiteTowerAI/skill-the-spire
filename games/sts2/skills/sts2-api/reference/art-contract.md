@@ -199,7 +199,7 @@ runtime specs:
 | `character_cue_hit` | 2x2 | `cues/hit/00.png` .. `03.png` | 80 ms, one shot |
 | `character_cue_dead` | 2x3 | `cues/dead/00.png` .. `05.png` | 140 ms, terminal |
 
-The 2026-07-23 RitsuLib-only Wayfinder run re-proved `character_select`, `character_background`,
+The focused RitsuLib-only Character run re-proved `character_select`, `character_background`,
 `character_icon`, `character_combat`, `character_rest`, `character_merchant`,
 `character_energy`, and `character_energy_text`. Real selection, CombatPlayer, RestSite,
 and Shop hosts rendered the exact PNGs; one native energy counter exposed five 256x256

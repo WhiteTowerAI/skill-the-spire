@@ -965,14 +965,11 @@ The user performs both headed observations; do not infer motion or fallback from
 state. `CharacterAssetProfile.VisualCues` must remain unset so merchant/rest retain their
 static textures.
 
-> **R4 live-proven (Wayfinder, build 0/0 + strict Tier 2 PASS, 2026-07-23):** RitsuLib
-> content-pack registration count was 1; the exact custom icon button was selected; the run
-> started at HP `72/72`, Gold `99`, exact pools `7/1/1/1`, starter deck `5 Strike + 5
-> Guard`, and one Compass. Combat observed Energy `3/4`, the exact non-Spine body,
-> top-panel icon, five layers, and compact icon. Selection, combat, RestSite, and Shop all
-> produced settled screenshots; the final marker reported
-> `character foundation/static-presentation ... observed=all`, followed by `selftest done`
-> and no fresh error.
+For every generated Character, load the expected identity, HP, Gold, pools, starters,
+supporting models, relics, Energy behavior, and selected presentation profiles from the
+current `SPEC.md`. Do not embed a historical proof Mod's values or terminal marker in the
+generated harness. Emit the Foundation/static marker only after the SPEC-derived automatic
+assertions and selected headed observations pass.
 
 ## Advanced `CombatPlayer` capabilities (R5 RitsuLib live 2026-07-23)
 
@@ -1001,10 +998,9 @@ Finish with:
 StateProof(true, "resource UI complete expected=all observed=all");
 ```
 
-`RitsuResourceProof` observed amount `0 -> 3 -> 1`, Block `+4` only on payment, a rejected
-second cost at amount `1`, and distinct-combat amounts `1/0`. The final
-`RitsuWayfinderProof` observed Ink `0 -> 4 -> 0`, resource rect `(260,828,220,32)` disjoint
-from energy rect `(100,828,128,128)`, and combat-2 Ink `0` with native Energy `3/4`.
+Derive the resource name, amounts, payment, payoff, and reset expectations from the current
+`SPEC.md`; the UI dimensions and non-intersection contract remain fixed. Do not reuse a
+historical acceptance Mod's state sequence.
 
 ### Ordered semantic buffer/dynamic output
 
@@ -1028,12 +1024,9 @@ Finish with:
 StateProof(true, "ordered buffer complete expected=all observed=all");
 ```
 
-The final Wayfinder suite observed four source Cards plus the compile Card in Discard,
-route text `- -> N>E>S>W -> -`, rejected overflow, generated history `1`, configured and
-actual Block `20`, successful Ink `4 -> 0`, rejected payment at `0`, and a distinct empty
-second-combat state. Finish the composed suite with
-`wayfinder R5 parity complete expected=all observed=all`. Retained-card custom piles are
-not covered by this supported path.
+Derive source/output identities, ordered values, capacity, generated-history count, formula,
+payment, payoff, reset state, and the composed terminal summary from the current `SPEC.md`.
+Retained-card custom piles are not covered by this supported path.
 
 ## The `MapNode` scenario (event / World Node - RitsuLib live 2026-07-23)
 

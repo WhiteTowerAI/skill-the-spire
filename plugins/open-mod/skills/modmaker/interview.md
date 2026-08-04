@@ -1,15 +1,87 @@
-# Interview — one short intake round
+# Interview - resolve only the open design decisions
 
-Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
-**asking as little as possible**. The user is a non-programmer; keep it plain.
+Goal: turn the routed request into enough certainty to write or revise `DESIGN.md`, then
+lower its current slice into `SPEC.md`,
+**asking as little as possible**. Read `route.md` first and carry its settled decisions,
+defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
 
 ## Rules
 
-- **One round only.** Ask only what's genuinely ambiguous. Everything else gets a
-  sensible default (state the default, don't ask).
+- **Follow the selected route.** Fast asks no question when complete and at most one compact
+  round otherwise. Co-design resolves the smallest high-impact decision with materially
+  different choices and trade-offs. Revision asks only about the requested delta.
+- **Ask only material questions.** Everything else gets a sensible default that is stated
+  later, not presented as another decision.
+- **Preserve settled decisions.** Do not re-ask or silently replace anything already fixed
+  by the prompt or project artifacts.
 - **No jargon.** Say "when does it happen?" not "which combat hook?". Never ask
   about classes, namespaces, or APIs.
-- **Batch the questions.** Ask all needed clarifications together, not one by one.
+- **Keep the interaction proportional.** Batch up to three independent short questions;
+  keep dependent co-design decisions incremental.
+- **Expose real conflicts.** Contradictory or unsupported requirements pause before SPEC;
+  use `route.md`'s constrained resolution and explicit-acceptance rules.
+- **Ground Character proposals first.** For a Character or Character/content-set request,
+  load `../sts2-api/design/character-foundation.md` before creative questions.
+  Recommend an exact native-shaped starter deck before asking for deck details, and label
+  pinned facts, observed conventions, and creative decisions distinctly.
+- **Plan only when routed.** Load only the mechanic, content-set, and balance references
+  named by `route.md`. An exact narrow Card keeps the fast path and does not receive a
+  general design review merely because it has numbers.
+- **Review coherence only when routed.** Load `design/coherence-review.md` for multiple
+  intentional expressive surfaces, explicit theme/narrative/presentation work, or an
+  identity-changing revision. Derive anchors from settled decisions, not new lore. Name
+  any exact cross-artifact conflict and ask only when the repair is a creative choice.
+
+## Compact M7.3 planning pass
+
+Run this pass only when `route.md` selected one or more M7.3 planning references. Resolve
+the highest-impact open design decision first, then use accepted choices and safe defaults
+to complete only the relevant parts of the capsule below.
+
+- **Mechanic:** preserve one player fantasy, the competing actions/timings and state that
+  favors each, the trigger-to-payoff/reset loop, risk/reward, singleplayer pressure or
+  opportunity cost, exact edge rules, and independent tuning knobs. Compare plausible
+  repeated lines in unfavorable, ordinary, and favorable states, including ignoring the
+  mechanic.
+- **Content set:** assign real proposed content nodes the smallest useful roles across
+  Foundation, access, payoff, consistency, defense, scaling, bridge/off-ramp, and release
+  valve. Record directed source-to-dependent relationships; flag isolated nodes, circular
+  prerequisites, coverage gaps, unsupported edges, and an archetype that receives easier
+  access, safer setup, and a higher ceiling at once.
+- **Balance/economy:** name the output unit, deterministic formula, variables, timing,
+  assumptions, constraints, comparison basis, every source and sink, opportunity cost,
+  low/working/high sensitivity, and the evidence status. Default to a generous working
+  hypothesis that is modestly stronger in its intended state, but repair any value that
+  erases choices, bypasses setup/cost, trivializes ordinary opposition, or becomes
+  deterministic, self-funding, or unbounded. Never invent a fixed power percentage.
+
+Ask only about an unresolved choice whose answers change player behavior or the current
+supported implementation. Offer two or three structures rather than number-only variants
+when the mechanic itself is unclear. A missing measurement, trigger rate, formula input,
+or human playtest result remains an open hypothesis; never call static reasoning,
+compilation, or a proposed value balanced or fun.
+
+This pass produces a compact planning capsule. M7.3 did not itself define a durable
+artifact; the following `design.md` stage now records the capsule, current/future scope,
+and M7.4 traceability without re-asking its settled decisions.
+
+## Compact M7.5 coherence pass
+
+Run this pass only when `route.md` selected coherence review. Use one to three observable
+identity anchors from accepted decisions, then inspect only selected mechanics, naming,
+localization, visuals, Event text, and Character identity. State how each applicable
+surface communicates an anchor; do not force the same word, palette, or imagery everywhere.
+
+If two surfaces contradict behavior, drift one gameplay term, break the accepted identity,
+leak deferred/unsupported scope, or present flavor/build evidence as gameplay proof, name
+both sides and the player-facing consequence. Offer the smallest resolution and pause
+before DESIGN/SPEC until the user decides. Preserve an accepted contrast as deliberate
+tension rather than repeatedly "fixing" it.
+
+For revision, inspect only existing artifacts that can depend on the changed `D-###` item.
+Prepare an ordered impact/re-evaluation queue with UPDATE, REVIEW, REVERIFY, and high-risk
+PRESERVE entries. This is not permission to edit every downstream file or rerun a full
+acceptance; `design.md` records the queue and reopens only invalidated stages.
 
 ## What to resolve (only if unclear from the sentence)
 
@@ -184,10 +256,16 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
       offer the single `weak_short` screen-shake profile. Do not ask for strengths,
       durations, scene paths, or player preference values. Speech/thought bubbles are
       future outlook only.
-   - **Character**: resolve the character's identity/theme, starting HP,
-     exact starter deck counts, starter relic, and one starter card/relic mechanic that
-     a grounded public game/framework API can prove in combat. Default to standard 3 energy and placeholder
-     visuals. If it names a custom resource, capture its gain sources, spenders/payoff,
+   - **Character**: resolve the character's identity/theme, starting HP, starter relic, and
+     one starter card/relic mechanic that a grounded public game/framework API can prove in
+     combat. Use the loaded Character Foundation grammar to recommend the exact Card names,
+     counts, base effects, upgrades, and total before asking the user for deck details. If
+     the core mechanic is materially unclear, ask about that one decision first, then make
+     the complete deck proposal; never ask the user to name ten Cards from a blank form.
+     Default to standard 3 energy and placeholder visuals. Preserve an explicit
+     implementable departure after explaining its onboarding, Strike/Defend-tag
+     compatibility, and early-balance consequences. If it names a custom resource, capture
+     its gain sources, spenders/payoff,
      floor, combat reset, and counter text. If it describes an ordered card-play record,
      capture semantic values, normal source destination, order, capacity/overflow, compile
      trigger, deterministic formula, and output. If physical played Cards must remain in a
@@ -297,9 +375,16 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Forced Event follow-up**: none unless explicitly described; then one custom Quest Card
   forces one custom target Event from an Unknown MapPoint in one specified act, and one
   named target option consumes the token.
-- **Character Foundation**: 70 HP, standard 3 energy, a 10-card Basic starter deck,
-  one Starter relic, valid character-scoped card/relic/potion pools, and template/built-in
-  placeholder visuals. Derive starter effects from the user's stated theme.
+- **Character Foundation**: 70 HP as an explicit creative starting point, standard 3
+  energy as the current grounded Foundation value, one Starter relic, valid
+  character-scoped card/relic/potion pools, and template/built-in placeholder visuals.
+  Unless the idea supports another native analogy, propose an exact 10-Card Basic deck of
+  4 Character-specific Strike, 4 Character-specific Defend, and 2 low-complexity identity
+  Cards that teach setup/payoff. Preserve the pinned Strike/Defend names, values, upgrades,
+  and tags by default. This is an observed native-shaped recommendation, not a universal
+  `4/4/2` or ten-Card rule. Derive the teaching Cards and Starter relic from the stated
+  theme, state the complete proposal at confirmation, and accept deliberate implementable
+  departures after recording their consequences.
 - **Character Ancient dialogue** (only when requested): Character first-visit group plus a
   repeat group from visit 2; preserve the native global first-visit-ever introduction. A
   complete Architect group remains mandatory for every Character; default its start
@@ -330,7 +415,38 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 
 ## Output
 
-A compact intake you carry into `spec.md`. For a **relic**:
+A compact intake you carry into `spec.md`. Prefix every intake with:
+
+```text
+route: fast | co-design | revision
+intent: <one player-facing sentence>
+settled decisions: <choices preserved from the request and project artifacts>
+defaults: <inferred values to state in the confirmation>
+native grammar: none | <loaded native grammar and pinned profile>
+planning references: none | <loaded mechanic/content-set/balance references>
+coherence reference: none | design/coherence-review.md
+revision delta: none | <keep/change/check/re-verify summary>
+gaps: none | <unsupported intent awaiting explicit acceptance>
+scope signals: <requested now; explicitly later; accepted placeholder; explicitly excluded>
+identity anchors: none | <one to three accepted observable promises>
+coherence surfaces: none | <selected surface -> anchor expression or deliberate tension>
+coherence conflicts: none | <exact conflicting artifacts/decisions awaiting resolution>
+impact queue: none | <ordered revision-only UPDATE/REVIEW/REVERIFY/PRESERVE targets>
+player fantasy: none | <repeated action -> intended feeling>
+core decision: none | <line A versus line B; state that favors each>
+loop: none | <input -> visible state -> choice -> feedback/payoff -> reset>
+risk/reward: none | <commitment, information, agency, payoff>
+counterplay/pressure: none | <player-facing constraint or opportunity cost>
+rules/edge cases: none | <accepted exact rules and boundaries>
+content roles: none | <real content nodes and selected roles>
+interaction graph: none | <directed source -> dependent relationships and gaps>
+formula/economy: none | <formula contract, sources/sinks, assumptions, sensitivity>
+tuning knobs: none | <independent values and the behavior each changes>
+dominant-strategy check: none | <lines compared, concern, mitigation or none>
+open hypotheses: none | <unproven claim and evidence needed>
+```
+
+For a **relic**:
 
 ```
 element: relic
@@ -476,7 +592,12 @@ element: character
 name: <display name>
 starting HP: <int, default 70>
 energy per turn: 3 (current grounded Foundation value)
-starter deck: <exact card names and counts, total 10>
+native grammar: design/character-foundation.md @ STS2 0.107.1
+pinned facts used: <exact native identities/values used in the proposal>
+observed convention: <native shape used as the recommendation>
+starter deck: <exact creative Card names, counts, base effects, upgrades, and total>
+starter deck rationale: <how the teaching Cards and Starter relic introduce the mechanic>
+deliberate departure: none | <departure; onboarding; compatibility; balance consequences>
 starter relic: <name + one grounded public effect>
 pools: character-scoped card/relic/potion pools with at least one concrete member each;
   if Shop/merchant is selected, at least 2 non-Basic Attacks, 2 Skills, and 1 Power
@@ -512,5 +633,7 @@ resource: <name>; gain <sources/amounts>; spend <cost/payoff>; floor 0; reset co
 buffer: <name>; values <semantic values>; source destination Discard; order <rule>; capacity <N>; overflow reject; compile <trigger/formula/output>
 ```
 
-Do not write files here — `spec.md` does that. If nothing was ambiguous, skip
-straight to `spec.md` with the inferred intake.
+Do not write files here — `design.md` writes durable intent/scope and `spec.md` lowers its
+current slice. If fast routing found nothing material to ask, skip straight to `design.md`
+with the inferred intake. If this is a revision, preserve every unrelated design decision,
+stable ID, and existing SPEC operation outside the confirmed delta.

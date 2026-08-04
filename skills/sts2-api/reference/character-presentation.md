@@ -4,7 +4,7 @@ Status: **implemented for nine static profiles, deterministic top-icon/generated
 Relic outlines, the bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and
 Character dialogue in native Ancient/Architect scenes on STS2 `0.107.1` / RitsuLib
 `0.4.67`**.
-The 2026-07-23 Wayfinder headed proof established selection
+The focused RitsuLib-only headed proof established selection
 portrait/background, top-panel icon, non-Spine combat/rest/merchant bodies, five-layer
 energy, and the original compact shared card-energy icon. Locked selection and map marker
 remain unverified. The 2026-07-27 M6.5 Meridian
@@ -263,10 +263,10 @@ For every selected visual:
 9. emit the final Foundation/static marker only after selection, combat, RestSite, and Shop
    all pass; then require `selftest done` and no fresh error.
 
-The 2026-07-23 proof captured selection, combat, RestSite, and Shop. Structured state
-proved exactly one selected Wayfinder, HP `72/72`, exact pools and starters, one native
-energy counter/five layers, visible 24x24 card icon, `NRestSiteCharacter`, and
-`NMerchantCharacter`, then emitted
+The focused proof captured selection, combat, RestSite, and Shop. Structured state must
+derive the selected Character identity, HP, pools, and starters from the current `SPEC.md`,
+then assert one native energy counter/five layers, the visible 24x24 card icon,
+`NRestSiteCharacter`, and `NMerchantCharacter` before emitting
 `character foundation/static-presentation ... observed=all`. Strict RitsuLib-only Tier 2
 passed with no fresh error.
 

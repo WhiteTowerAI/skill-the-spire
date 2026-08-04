@@ -1,25 +1,16 @@
 # open-mod
 
 open-mod is a free, open-source Codex plugin that turns a plain-language idea into a
-working Slay the Spire 2 mod. It interviews only when a decision matters, writes a
-semantic spec, scaffolds and authors the project, builds it, launches the real game, and
-checks both load and behavior.
+working Slay the Spire 2 mod. It adapts the design conversation to the request, records a
+durable design and exact supported spec, scaffolds and authors the project, builds it, and
+uses proportional real-game verification when runtime behavior or presentation changes.
 
 The first supported game is **Slay the Spire 2 (STS2)**.
 
-> **Unreleased development version: 0.6.0.** The generated-mod pipeline now targets only RitsuLib
-> `0.4.62` on STS2 stable `0.107.1`. The BaseLib implementation path has been retired.
-> The migration and external clean-workspace Codex acceptance are complete; details are
-> archived in `documents/history/RITSULIB_MIGRATION_RESULTS.md`. A GitHub release is
-> deliberately deferred while remaining bugs are fixed. M6.5 acceptance is closed; its
-> lead-approved Prismwright result is archived in
-> `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. M6.6 computed values, bounded
-> advanced targeting, native custom-Character Ancient dialogue, and bounded Relic-owned
-> Rest Site options are individually implemented; M6.6 itself remains open.
-
-The provisional M6.6 capability roadmap and planned M6.7 version-bound vanilla-content
-override track are maintained in `documents/IMPLEMENTATION_PLAN.md`. Support is declared at
-the documented RitsuLib Package level when its public API exists in the pinned profile.
+> **Unreleased development version: 0.6.0.** Generated Mods target STS2 stable `0.107.1`
+> with RitsuLib `0.5.4`. The BaseLib migration and M6.5-M6.7 implementation tracks are
+> closed. M7.1-M7.5 design-intelligence work is implemented; M7.6 human-owned playtest
+> tuning has not started. A GitHub release is not currently authorized.
 
 ## Requirements
 
@@ -27,11 +18,8 @@ the documented RitsuLib Package level when its public API exists in the pinned p
 2. .NET SDK `9.0` or newer (`dotnet --version`).
 3. Python 3. On Windows, use a real python.org/Anaconda installation rather than the
    non-working Windows Store `python3` shim.
-4. RitsuLib `0.4.62`, installed in the STS2 Mods directory with the `0.107.1` compat
-   variant. Use the release from
-   [BAKAOLC/STS2-RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib); the installed
-   runtime must contain `lib/0.107.1/STS2-RitsuLib.dll` or the equivalent direct compat
-   asset.
+4. RitsuLib `0.5.4` with the `0.107.1` compat variant, installed locally or through the
+   official Steam Workshop item `3747602295`.
 5. Codex with plugin support.
 
 You do not need BaseLib, an Alchyr template, Godot, MegaDot, or PckPacker. The generated
@@ -39,15 +27,14 @@ project uses open-mod's pinned scaffold and bundled Python build/packaging tools
 
 ## Install In Codex
 
-Until `0.6.0` is merged and published from GitHub, install the current local checkout as a
-repo marketplace:
+Until `0.6.0` is published, install the current checkout as a repo marketplace:
 
 ```powershell
 codex plugin marketplace add D:\path\to\open-mod
 codex plugin add open-mod@open-mod
 ```
 
-Start a new Codex thread after installation so it loads the new skills and tools. The
+Start a new Codex thread after installation so it loads the current skills and tools. The
 plugin is defined by `.agents/plugins/marketplace.json` and
 `plugins/open-mod/.codex-plugin/plugin.json`.
 
@@ -65,113 +52,105 @@ Invoke the skill in Codex:
 $modmaker
 ```
 
-Then describe the mod in ordinary language, for example:
+Then describe the Mod in ordinary language, for example:
 
 > A relic that gives 5 Block at the start of every third turn.
 
 The skill will:
 
-1. Ask at most one compact round of questions when the answer changes the implementation.
-2. Show a plain-language plan and record the accepted semantic contract.
-3. Create a pinned RitsuLib project and author the required content.
-4. Build and install the mod into STS2's Mods directory.
-5. Launch the real game for Tier 1 load verification.
-6. Run the closest hosted self-test for Tier 2 behavior verification when that host is
-   supported; otherwise report the exact manual fallback without pretending it passed.
+1. Resume an unfinished project or infer a fast, co-design, or revision route.
+2. Ask only questions whose answers materially change the Mod.
+3. Write `DESIGN.md` for intent, scope, coherence, and revision impact.
+4. Write a validated `SPEC.md` containing only exact supported operations generated now.
+5. Scaffold, author, build, package, and deploy the Mod.
+6. Run the proportional load/behavior checks owned by the changed surface.
+7. Report every pass, failure, fallback, and unrun check literally.
+
+A complete narrow request keeps a zero-question fast path. Character requests receive an
+exact native-shaped starter proposal rather than a blank deck questionnaire. Unsupported
+current intent blocks before generation unless it is explicitly deferred, removed, or
+changed to a supported version.
 
 ## Supported Surface
 
-The current RitsuLib-only generator implements:
+The RitsuLib-only generator currently covers:
 
-- cards, relics, potions, powers, keywords, enchantments, and orbs;
-- filtered live-creature targeting for single-target Cards/Potions and multi-target Cards,
-  including native mouse/controller selection and cancellation;
-- singleplayer top-X Scry through a generated-Mod-local helper;
-- conditional Card hand emphasis with ordered fixed-color rules, priority, and explicit
-  unplayable visibility;
-- up to three bounded supplemental Relic labels in safe corners, or one top-left Power
-  label, with explicit refresh and removal;
-- monsters and encounters with deterministic and conditional move vocabularies;
-- Events / World Nodes with pages, options, public Cmd outcomes, selections, rewards,
-  resumable or terminal special combat, bounded rich text and VFX, and one bounded solo
-  Quest Card to forced-Event composition;
-- playable Character Foundation with exact pools, starters, HP, and Energy;
-- custom-Character localization dialogue in the nine cataloged native Ancient and
-  Architect scenes, preserving native models, layouts, options, and outcomes;
-- singleplayer Relic-owned Rest Site options with free/fixed Gold, deterministic outcomes,
-  once-per-site/run repeatability, native stay/leave behavior, and checked custom/fallback
-  button art;
-- stateful relic cadence with combat-local and run-persistent state;
-- combat-only secondary resources with all-or-nothing payment and a public fixed live UI;
-- ordered semantic card-play buffers whose source Cards follow normal Play -> Discard;
-- placeholder, local, or generated static art for the grounded content families, including
-  nine verified Character profiles;
-- optional private combat-only Character `Idle`/`Attack`/`Hit`/`Dead` frame cues with an
-  all-or-nothing static fallback.
+- Cards, Relics, Potions, Powers, Keywords, Enchantments, Orbs, Monsters, and Encounters;
+- computed Card Damage/Block, Energy/Star icons, typed Power values, and DynamicVar tips;
+- native single/multi creature targeting within the recorded Card/Potion boundary;
+- singleplayer top-X Scry, stateful cadence/resources, and ordered semantic card buffers;
+- Events/World Nodes, bounded native presentation, and one Quest Card to forced Event route;
+- playable Character Foundation, checked static art profiles, bounded private combat cues,
+  and Character-local native Ancient/Architect dialogue;
+- Relic-owned singleplayer Rest Site options;
+- complete documented Custom Card Piles authoring, including ExtraHand;
+- conditional Card hand glow and bounded Relic/Power corner labels; and
+- the promoted M6.7 vanilla Card, visual, existing-Ancient, availability, and non-Card
+  data/behavior override operation families.
 
-The official RitsuLib Extra Badges Package also supports Intent because its documented
-public API exists in the pinned profile. Intent badge authoring is not part of the current
-implementation plan.
+Support follows one Package-level rule: when the official tutorials document a RitsuLib
+feature's player-facing use and Package, and the needed public API exists in the pinned
+profile, its documented public consumers are supported. Confirmed API/lifecycle problems
+remain narrow limitations; missing implementation or verification is stated separately.
 
-Static art acquisition prefers a callable host-native raster tool (`image_gen` in Codex),
-then the explicitly selected Vofy, compatible HTTP backend, or local-image route. Tool
-availability is detected at runtime. A skill file or model name alone is not proof that
-image generation is callable, and open-mod never silently switches to a paid backend.
+The exact active inventory and all exceptions live in
+`games/sts2/tests/content-capability-graph.md`.
 
 ## Current Limits
 
-The exact known limitations and unsupported public routes live in the capability graph:
+Important boundaries include:
 
-- custom multi-target Potions have a confirmed lifecycle limitation;
-- arbitrary Card/object/map targeting has no supported public route;
-- remaining M6.6 CardPile/ExtraHand authoring work and planned M6.7 vanilla-content
-  overrides are not yet implemented by the generator;
-- hand emphasis whose condition changes without a normal combat-state refresh, arbitrary
-  extra-label rectangles, bottom-right extra labels, and Intent badge authoring;
-- Card/Modifier-owned Rest Site options, variable or non-Gold Rest Site costs, arbitrary
-  transactions, same-site repeat, or multiplayer Rest Site extensions;
-- retained-card custom-zone UI or hidden retained played cards;
-- alternative Energy engine hooks;
-- run-persistent or remote-player Character resources and UI;
-- multiplayer/replay Scry or global cross-Mod Scry hooks;
-- production Character animation beyond the bounded combat cues, arbitrary materials,
-  audio, or multiplayer presentation;
-- custom Character Ancient models/layouts/options/rewards/audio/VFX, global dialogue
-  replacement, and unproved locked-selection/map-marker art;
-- arbitrary Event VFX/layouts, direct merchant/rest/treasure transitions, or more than one
-  special combat from the same mutable Event instance;
-- one-click Steam Workshop publishing.
+- custom multi-target Potions retain a confirmed lifecycle limitation;
+- Rest Site options are Relic-owned and singleplayer-only;
+- Scry and several generated state/UI systems are Mod-local and singleplayer-only;
+- alternative Energy, arbitrary target systems, global acquisition weighting, and
+  multiplayer vanilla overrides are unsupported;
+- new Ancient models, arbitrary native room/dialogue replacement, unsupported transitions,
+  production audio, and presentation outside promoted resource routes are unsupported;
+- generated Mods do not invent Harmony, reflection, Publicizer, or IL from a prompt; and
+- one-click Steam Workshop publishing is not implemented.
+
+The capability graph is authoritative when this summary and a detailed boundary differ.
+
+## Design Intelligence
+
+M7.1-M7.5 add adaptive routing, pinned Character design grammar, mechanic/content/balance
+planning, durable current/future scope, DESIGN-to-SPEC traceability, cross-surface coherence,
+and bounded revision propagation. These are authoring-workflow capabilities; they do not
+expand the runtime support graph.
+
+Static scenarios and validators prove the shipped contracts, not balance, enjoyment,
+translation quality, visual quality, or real-game behavior. M7.6 will cover human-owned
+playtest feedback only after explicit selection.
 
 ## Verification Model
 
-Tier 1 requires the exact load marker and no fresh error block. Tier 2 additionally
-requires a structured post-state marker and `selftest done`. A successful build, a trigger
-log, or a screenshot by itself is not behavior proof. Player-visible state is part of
-correctness whenever open-mod owns UI or presentation.
+Tier 1 requires the exact load marker and no fresh error block. Tier 2 additionally requires
+a structured post-state marker and `selftest done`. A successful build, trace validation,
+trigger log, model response, or screenshot does not substitute for runtime behavior or
+presentation evidence.
 
-Fresh natural-language acceptance mods are disposable. Durable contract and hosted proof
-ownership live in `games/sts2/tests/`; completed evidence is indexed under
-`documents/history/`.
+Fresh natural-language acceptance Mods are used only for an explicitly scheduled
+full-pipeline gate or direct human-lead request. Durable ownership lives in
+`games/sts2/tests/`; completed evidence is indexed under `documents/history/`.
 
 ## For Contributors
 
-Edit only the source under `games/sts2/`:
+Read `AGENTS.md` and the active documents before changing the repository. Edit authoritative
+source under `games/sts2/`:
 
-- `games/sts2/skills/modmaker/`: staged orchestrator;
-- `games/sts2/skills/sts2-api/`: lazy recipes and grounded references;
-- `games/sts2/tools/`: scaffold, build, launch, log, and art tools.
+- `games/sts2/skills/modmaker/`: staged design and implementation orchestrator;
+- `games/sts2/skills/sts2-api/`: lazy design references and grounded API recipes; and
+- `games/sts2/tools/`: scaffold, build, launch, log, art, and validation tools.
 
-Regenerate, do not hand-edit, the two committed payloads:
+Regenerate, do not hand-edit, the committed payloads:
 
 ```powershell
 & '<Git-install>\bin\bash.exe' './publish.sh' '--plugin'
 & '<Git-install>\bin\bash.exe' './publish.sh' '--portable'
 ```
 
-The local Codex development shape is generated with `./publish.sh --agent codex` under
-`.agents/skills/` and is git-ignored.
-
-Run the normal checks before handing off:
+Run the normal checks before handoff:
 
 ```powershell
 python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
@@ -179,4 +158,5 @@ python -m compileall -q games/sts2/tools scripts/publish plugins/open-mod/skills
 git diff --check
 ```
 
-Read `AGENTS.md` before changing the repository. See `LICENSE` for licensing.
+The active plan is `documents/IMPLEMENTATION_PLAN.md`; completed results and retired
+snapshots are indexed by `documents/history/README.md`. See `LICENSE` for licensing.

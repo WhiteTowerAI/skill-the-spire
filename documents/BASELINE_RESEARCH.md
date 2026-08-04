@@ -420,9 +420,9 @@ The following public projects were inspected live on 2026-08-04:
   handoff mode and running-result-over-clean-build principle. Its complete-game generation,
   paid asset stack, and proof-video model are not M7 design architecture.
 - **[Promptfoo](https://github.com/promptfoo/promptfoo):** useful scenario matrix,
-  assertion, and prompt/model comparison concepts. M7.0 should begin with a lightweight
-  repository-owned corpus rather than adding its Node toolchain before the evaluation
-  contract is known.
+  assertion, and prompt/model comparison concepts. The human lead canceled a standalone
+  M7.0 corpus; each M7 Package should keep its smallest repository-owned cases without
+  adding a Node toolchain.
 
 These repositories are method references, not design authorities. Popularity, a polished
 README, or a generic game-design framework does not establish an STS2 fact or supported
@@ -430,12 +430,13 @@ operation.
 
 ### STS2-native Character grammar input
 
-The current skill can register and verify an exact Character starter deck, but it does not
-yet own a reliable native design policy. `baselines/spire-codex/data/characters.json` and
-`cards.json` provide maintainer research input; the M6.7 pinned catalog independently
-confirms the five Character-specific Strike/Defend identities and their localized display
-titles. Before shipping a fact, M7 must check it against the exact `0.107.1` game/catalog
-substrate.
+M7.2 now ships the first reliable native design policy at
+`games/sts2/skills/sts2-api/design/character-foundation.md`. Its structured inventory was
+checked directly against the five Character types in the exact pinned `sts2.dll`; the
+assembly SHA-256 and MVID match the M6.7 `0.107.1` catalog. The catalog independently owns
+the Character-specific Strike/Defend identities, localized display titles, costs, tags,
+and values. `baselines/spire-codex/data/characters.json` and `cards.json` remain
+corroborating maintainer research, not sole authority.
 
 The current native pattern is:
 
@@ -449,25 +450,104 @@ The current native pattern is:
 - the identity Cards and Starter relic teach or reinforce the Character's first core
   mechanic instead of acting as unrelated bonus content.
 
-M7 should recommend this grammar before asking the user for deck details. It is still a
-convention: a deliberate departure is allowed when the design records its onboarding,
-compatibility, and balance consequences. The observed counts must not collapse into one
-universal `4/4/2` or `5/5` template.
+The shipped route lazily loads this grammar for Character and Character/content-set work,
+then recommends one exact native-shaped deck before asking the user for deck details. It
+remains a convention: a deliberate implementable departure is preserved when the design
+records its onboarding, compatibility, and balance consequences. The observed counts do
+not collapse into one universal `4/4/2`, ten-Card, or `5/5` template.
+
+### M7.3 planning decision
+
+M7.3 distills the useful local CCGS methods into three independently lazy references rather
+than one always-loaded game-design manual:
+
+- `design/mechanic-planning.md` owns player fantasy, meaningful competing lines, the
+  trigger-to-payoff/reset loop, risk/reward, STS2 singleplayer pressure, exact edge rules,
+  tuning knobs, and dominant-strategy review;
+- `design/content-set-planning.md` owns Foundation/access/payoff/consistency/defense/
+  scaling/bridge/release roles, real content nodes, directed interaction coverage, and
+  archetype dominance risks; and
+- `design/balance-planning.md` owns evidence classes, formula contracts, source/sink
+  economies, sensitivity, independent knobs, and open human-playtest hypotheses.
+
+The human lead selected a creative Mod-forward power bias: an unspecified working value
+should be clearly rewarding and modestly stronger than the closest checked native analog
+in its intended state. There is no universal percentage. An underpowered option with no
+plausible pick/use case fails the design, while the ceiling rejects values that erase
+choices, costs, setup, ordinary opposition, or create deterministic, self-funding, or
+unbounded loops. Without measurements or human playtest evidence the recommendation is a
+generous working hypothesis, never a claim that the content is balanced or fun.
+
+M7.3 carries a compact planning capsule through Interview and lowers only accepted,
+supported, exact rules, values, content nodes, and directed relationships into `SPEC.md`.
+It does not create M7.4's `DESIGN.md` schema, current/future split, or traceability contract,
+and general design confidence never promotes an unsupported runtime operation.
+
+### M7.4 artifact and traceability decision
+
+M7.4 adopts one adaptive durable `DESIGN.md`, not a wiki or full GDD hierarchy. Fast exact
+content records only intent, accepted/defaulted decisions, and a compact scope ledger;
+co-design and revision add only relevant M7.2/M7.3 rationale, relationships, tuning
+hypotheses, and preserved alternatives. The artifact uses stable `D-###` requirements:
+
+- current `MUST` has confirmed support and exact SPEC operations;
+- current `PLACEHOLDER` is a selected visible fallback, not silent omission;
+- future `DEFER` preserves larger intent without claiming future support; and
+- `OUT-OF-SCOPE` preserves an explicit exclusion or rejection.
+
+Unsupported intent stays in `blocking_gaps` until the user explicitly accepts a supported
+current version, defers the literal idea, or removes it. DESIGN owns that creative/scope
+decision; SPEC owns only current generated operations and their semantic routes; PLAN owns
+stage progress; MEMORY owns technical identities and build history.
+
+`design_trace.py` validates the machine-readable scope and SPEC trace in both directions.
+Every current item maps to one or more stable `OP-###` entries; every operation maps back
+only to current design IDs and an existing `recipes/*.md` or `reference/*.md` route.
+Deferred/out-of-scope items map to nothing. The validator rejects blocking gaps,
+missing/extra operations, one-way links, future leakage, invalid disposition/fallback
+states, invented route forms, and absent route files. Author treats the validated trace as
+an allowlist rather than generating convenient extras.
+
+For pre-M7.4 unfinished projects, backfill only settled intent and accepted SPEC operations;
+do not invent historical rationale, alternatives, or future vision, and do not restart the
+Interview. This preserves M7.1 resume behavior while giving later revisions durable scope.
+
+### M7.5 coherence and propagation decision
+
+M7.5 distills the useful coherence/change-propagation ideas into one lazy reference rather
+than a separate art, narrative, localization, and systems-agent hierarchy. Accepted
+`D-###` decisions produce one to three observable identity anchors. Only selected current
+mechanics, naming, localization, visuals, Event text, and Character identity surfaces are
+checked; placeholder art remains a fallback rather than an invented theme.
+
+The review names exact contradictions, terminology drift, identity breaks, scope leakage,
+and evidence inversion. A user-selected irony or contrast is recorded as deliberate
+tension instead of being normalized away. Localization is checked for semantic rules,
+costs, numbers, targets, and terminology, not word-for-word sentence parity or unreviewed
+translation quality.
+
+Revisions trace changed design IDs into an ordered `Q-###` queue over DESIGN, SPEC,
+localization, visuals, Event text, Character identity, generated source, and verification.
+UPDATE/REVIEW/REVERIFY identify affected work; PRESERVE protects settled or rejected
+decisions at real risk of accidental change. This adapts the local CCGS downstream-impact
+idea without its per-file approval ceremony. `coherence_trace.py` validates structure and
+references but cannot determine subjective quality. An unchanged pre-M7.5 project resumes
+without backfill; its next design revision adds the contract from explicit existing facts.
 
 ### M7 research decision
 
 Adopt a compact, progressive pipeline:
 
 ```text
-route -> relevant native grammar -> adaptive interview -> DESIGN.md
-      -> current slice/future vision -> SPEC.md -> build/verify -> human playtest delta
+route -> relevant native grammar/planning/coherence -> adaptive interview -> DESIGN.md
+      -> current slice/future vision/coherence -> SPEC.md -> build/verify -> human playtest delta
 ```
 
 `DESIGN.md` owns intent, trade-offs, tuning, rejected alternatives, open questions, and
 future/current scope. `SPEC.md` remains the exact generation contract. Behavioral tests
-must evaluate semantics and decision quality rather than exact prose. Real-player
-observations remain human evidence; no design framework or simulated persona may fabricate
-them.
+travel with the Package that changes the behavior and evaluate semantics and decision
+quality rather than exact prose. Real-player observations remain human evidence; no design
+framework or simulated persona may fabricate them.
 
 ## Reused Design Ideas
 

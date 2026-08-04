@@ -47,17 +47,66 @@ and representative human-led in-game acceptance completed. M6.7.6 was canceled a
 to Future Outlook. Tier 1, Tier 2/SelfTest, the current-catalog headed no-op, and every
 unselected check remain unrun, not passed; do not rerun the closed milestone gate.
 
-## M7 authoring-quality verification (Planned)
+## M7 authoring-quality verification
 
-M7 has been selected for planning but has no implemented behavioral gate yet. Its tests are
-separate from runtime support and Tier 1/Tier 2. A prompt or documentation check cannot
-prove that a generated Mod loads, behaves correctly, looks correct, or is enjoyable.
+The human lead canceled M7.0 as a standalone evaluation Package on 2026-08-04. Behavioral
+cases travel with M7.1 routing, M7.2 native grammar, M7.3 design planning, M7.4 scope/
+traceability, M7.5 coherence, and M7.6 playtest revision. M7.1 is implemented with
+`m71-routing-scenarios.md` and
+`tools/tests/test_m71_routing.py`: fast, co-design, revision, direct resume,
+material-question filtering, contradictions, unsupported requests, and decision-preserving
+deltas are deterministic shipped-instruction contracts. Independent forward-model runs are
+unrun. These tests are separate from runtime support and Tier 1/Tier 2; they cannot prove
+that a generated Mod loads, behaves correctly, looks correct, or is enjoyable.
+The complete source/payload result and explicit exceptions are recorded in
+`documents/history/M71_ADAPTIVE_ROUTING_RESULTS.md`.
 
-M7.0 establishes the baseline before `interview.md` changes. The corpus must cover a clear
-single Card, a vague mechanic, an unspecified Character starter deck, a Character/content
-set, a supported-plus-unsupported request, a future-vision/current-slice split, a resumed
-or revised project, real playtest feedback, and a deliberate departure from a native
-convention.
+M7.2 is implemented with `m72-native-grammar-scenarios.md` and
+`tools/tests/test_m72_native_grammar.py`. Its structured inventory is tied to the exact
+`0.107.1` assembly identity and records all five native starter decks. Exact catalog tests
+cover every Character-specific Strike/Defend type, English/Simplified-Chinese title,
+Basic rarity, Energy cost, tag, base value, and upgrade value. Contract tests cover lazy
+Character-only loading, exact native-shaped proposals before deck questions, explicit
+fact/convention/creative labels, deliberate-departure consequences, and Character SPEC
+preservation. Independent forward-model runs, generated Mods, runtime loading, Tier 1,
+Tier 2, headed review, and balance/playtest evidence are unrun. The complete source/payload
+result is recorded in `documents/history/M72_NATIVE_DESIGN_GRAMMAR_RESULTS.md`.
+
+M7.3 is implemented with `m73-design-planning-scenarios.md` and
+`tools/tests/test_m73_design_planning.py`. Its three lazy references cover mechanic loops
+and dominance, content roles and directed interactions, and formula/economy sensitivity.
+Contract tests cover selective loading, the exact-Card fast path, the compact planning
+capsule, accepted supported SPEC lowering, explicit hypotheses, and the human lead's
+Mod-forward power bias with a choice-preserving ceiling. Independent forward-model runs,
+generated Mods, runtime loading, Tier 1, Tier 2, headed review, and human balance/playtest
+evidence are unrun. The complete source/payload result is recorded in
+`documents/history/M73_MECHANIC_CONTENT_BALANCE_RESULTS.md`.
+
+M7.4 is implemented with `m74-scope-traceability-scenarios.md`,
+`tools/tests/test_m74_scope_traceability.py`, and `tools/design_trace.py`. Every route writes
+adaptive DESIGN before SPEC. The validator checks stable scope/operation IDs,
+MUST/PLACEHOLDER versus DEFER/OUT-OF-SCOPE placement, empty blocking gaps, bidirectional
+current-design/SPEC links, supported route syntax, and actual shipped route files. Its
+behavioral matrix covers supported-plus-unsupported intent, a larger future vision, and an
+exact-Card compactness review. Independent forward-model runs, generated Mods, runtime
+loading, Tier 1, Tier 2, headed review, and human artifact review are unrun. The complete
+source/payload result is recorded in
+`documents/history/M74_SCOPE_TRACEABILITY_RESULTS.md`.
+
+M7.5 is implemented with `m75-coherence-scenarios.md`,
+`tools/tests/test_m75_coherence.py`, and `tools/coherence_trace.py`. New/revised DESIGN
+records accepted identity anchors, selected mechanics/name/localization/visual/Event/
+Character surface checks, resolved conflicts, deliberate tensions, and a revision-only
+impact queue. The validator checks stable references, current-surface ownership, allowed
+targets/actions, empty pre-SPEC conflicts, and a nonempty affected queue for revisions. Its
+behavioral matrix covers an Event localization/visual contradiction, a Character identity
+conflict, and a terminology/palette revision that preserves accepted and rejected scope.
+Two focused read-only independent forward-model prompts covered the Character conflict and
+bounded revision. The initial conflict run exposed the missing temporary `conflict` state;
+after repair, its rerun correctly blocked SPEC pending a user decision. The Event prompt
+and complete matrix, generated Mods, runtime loading, Tier 1, Tier 2, headed review,
+translation/visual review, and human artifact review remain unrun. The complete source/
+payload result is recorded in `documents/history/M75_COHERENCE_RESULTS.md`.
 
 Evaluate three layers:
 
@@ -65,7 +114,7 @@ Evaluate three layers:
    pinned facts, supported-route resolution, explicit gaps, and payload parity.
 2. **Behavioral rubric:** question economy, materially distinct alternatives, concrete
    trade-offs, preservation of user decisions, STS2-native recommendations, coherent
-   content roles, and honest unknowns.
+   content roles and expressions, bounded change propagation, and honest unknowns.
 3. **Human review:** whether the design proposal expresses the intended player experience
    and whether a real playtest observation warrants a design change. An LLM judge may assist
    comparison but is never the sole pass/fail authority.
@@ -73,13 +122,13 @@ Evaluate three layers:
 Do not assert exact prose merely because one response was preferred. Assert exact names or
 values only when they are pinned game facts or product contracts, such as the native
 Character-specific Basic Strike/Defend identities, localized display names, tags, and
-values used by the planned Character grammar.
+values used by the shipped Character grammar.
 
-The source audit found retired `Wayfinder`/`RitsuWayfinderProof` identities in generic
-Character verification and references; `Pathfinder` is absent. M7.0/M7.2 must replace the
-generic exact values and log markers with current-`SPEC.md` assertions, regenerate both
-payloads, and check that retired proof identities remain only in history or repository-only
-evidence. This is a shipped-guidance regression check, not a rewrite of historical proof.
+Pre-M7 maintenance replaced the retired proof identity, exact values, and log markers in
+generic Character verification/reference text with current-`SPEC.md` assertions. A static
+regression scans source plus both generated payloads so retired proof identities remain only
+in history or repository-only evidence. This is a shipped-guidance regression check, not a
+rewrite of historical proof.
 
 When an M7 Package changes generated runtime behavior or presentation, use the same nearest
 real-host rule as any other implementation change. Prompt-only work needs no game launch.

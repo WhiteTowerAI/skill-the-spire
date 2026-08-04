@@ -1,7 +1,7 @@
 # Recipe: Character Foundation
 
-> Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.67` by the
-> 2026-07-23 Wayfinder R4 proof and 2026-07-27 Meridian M6.5 proof. This recipe covers exactly-once registration,
+> Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.67` by focused Character
+> Foundation and M6.5 presentation proofs. This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
 > the nine promoted static presentation profiles, and the bounded non-Spine
 > Idle/Attack/Hit/Dead combat cues. Selected R5 resource/buffer/UI
@@ -308,11 +308,10 @@ backgrounds/layouts, options/rewards, line audio, and multiplayer remain unsuppo
    marker only after every assertion passes, followed by `selftest done` and a
    strict no-fresh-error check.
 
-The 2026-07-23 RitsuLib-only Wayfinder proof observed exactly one selected model,
-HP `72/72`, Gold `99`, exact pools `cards7/relic1/potion1/power1`, starter deck
-`5 Strike + 5 Guard`, one Compass, Energy `3/4`, and the original static consumers.
-It built with zero warnings/errors against the pinned profile and passed strict Tier 2
-with no fresh error. The 2026-07-27 Meridian proof added the split large/text Energy
+For every generated Character, derive the selected model identity, HP, Gold, pool members,
+starter deck/relic multiset, supporting models, MaxEnergy, and terminal state summary from
+the current `SPEC.md`. Do not copy exact values or log markers from a historical acceptance
+Mod. The 2026-07-27 Meridian proof added the split large/text Energy
 consumers and bounded card/UI theme; the maintainer's headed review passed all seven
 visible checks, while generated Mods retain the automatic node/property assertions.
 The 2026-07-27 Meridian cue proof separately passed the complete four-action route,

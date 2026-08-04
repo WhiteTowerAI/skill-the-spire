@@ -1,17 +1,111 @@
 # Spec — write the design contract
 
-Goal: freeze the intake into `SPEC.md` in the work dir. This is the contract every
-later stage reads. Also seed `PLAN.md` (stage checklist) and `MEMORY.md`.
+Goal: lower the accepted current slice in `DESIGN.md` into exact `SPEC.md` operations in the
+work dir. This is the generation contract every later stage reads. Also seed `PLAN.md`
+(stage checklist) and `MEMORY.md`. For revision, change only the confirmed delta and
+preserve unrelated design IDs and semantic operations.
 
-Before choosing a surface block, read `semantic-contract.md`. Every SPEC must include
+Read `DESIGN.md` first, then `semantic-contract.md`. Every SPEC must include
 the `sts2-content-semantic/v1` envelope from that file. The blocks below collect
 surface-specific inputs; they are semantic data, not implementation recipes. Do not
 write framework class names, namespaces, hook signatures, pool attributes, project
 references, manifest fields, or resource paths in the user-facing SPEC. The selected
 adapter records those details in `MEMORY.md` after the SPEC is frozen.
 
-> **Work dir = a dedicated empty outer folder whose name is NOT `<ModName>`** (e.g.
-> `<modname>-mod`). Create it now and write these three files there; `scaffold.md`
+## Lower accepted design state
+
+M7.4 owns the durable `DESIGN.md`, current/future slicing, and design-to-SPEC traceability.
+M7.5 owns its accepted identity anchors, selected surface checks, resolved coherence state,
+and revision impact/re-evaluation queue. Before lowering, run:
+
+```powershell
+python ../modmaker/scripts/coherence_trace.py --design DESIGN.md
+```
+
+Do not write or update SPEC while a coherence conflict remains. Coherence rationale,
+anchors, deliberate tensions, and queue entries stay in DESIGN; lower only an accepted
+current decision that actually changes generated semantics or presentation.
+
+Lower only user-accepted, supported, exact current behavior from `current_slice`:
+
+- put selected rules, edge behavior, formulas, values, timing, caps, resets, and tuning
+  values into the owning surface's semantic fields;
+- put accepted real content nodes into their normal surface blocks and directed
+  source-to-dependent relationships into `interactions`;
+- preserve exact constraints and accepted working assumptions that implementation must
+  obey; and
+- keep unsupported operations in `gaps` and stop before silently substituting another
+  behavior.
+
+Do not dump player fantasy, alternatives, rationale, role-analysis prose, sensitivity
+discussion, dominance review, future vision, or evidence claims into `SPEC.md`. If an open hypothesis
+would change current generated behavior, such as an unknown payment rule, reset, formula
+input, or selected value, pause before freezing SPEC. A playtest-only balance hypothesis
+may remain explicitly unproven after its generous working value has been accepted; never
+write `balanced`, `fun`, or fabricated playtest evidence as a SPEC fact.
+
+Do not write SPEC while `blocking_gaps` is nonempty. `DEFER` and `OUT-OF-SCOPE` items map to
+no operation and never appear as empty stubs, comments promising future code, or generated
+fallback behavior.
+
+## Write the design trace
+
+Define one operation for each independently emitted semantic behavior, data change,
+availability change, content registration, presentation route, or explicit placeholder/
+fallback. Closely coupled fields lowered by one recipe may share an operation when they
+cannot be independently omitted or changed. Explanatory rationale and proof expectations
+are not generated operations.
+
+Every operation uses one stable `OP-###` already listed by one or more current `D-###` items and
+names a shipped semantic recipe/reference as its supported route. This is a product route,
+not an API class or guessed patch target.
+
+Place exactly one marked JSON block near the top of SPEC:
+
+<!-- open-mod-trace:v1:start -->
+```json
+{
+  "contract": "open-mod-spec-trace/v1",
+  "design_contract": "open-mod-design/v1",
+  "operations": [
+    {
+      "operation_id": "OP-001",
+      "design_ids": ["D-001"],
+      "semantic_target": "Card Ember Step: registration and exact play effect",
+      "supported_route": "recipes/card.md"
+    },
+    {
+      "operation_id": "OP-002",
+      "design_ids": ["D-002"],
+      "semantic_target": "Card portrait uses the checked placeholder fallback",
+      "supported_route": "reference/art-contract.md#placeholder"
+    }
+  ]
+}
+```
+<!-- open-mod-trace:v1:end -->
+
+The operation ledger is the generation allowlist. Every detailed surface block below must
+belong to one listed operation, and Author must emit nothing outside it. After writing both
+artifacts, run both validators (coherence first so a structurally valid SPEC cannot hide an
+unresolved design conflict):
+
+```powershell
+python ../modmaker/scripts/coherence_trace.py --design DESIGN.md
+python ../modmaker/scripts/design_trace.py --design DESIGN.md --spec SPEC.md
+```
+
+Stop before confirmation or scaffold on any validation error. Fix the artifact that owns
+the mismatch; never delete a future requirement or invent a supported route to make the
+validator green.
+
+For revision, update only operations named by confirmed UPDATE/REVIEW queue outcomes.
+PRESERVE entries never become SPEC operations. Reopen Author/Build/Verify only when the
+queue says their generated output or observed invariant changed.
+
+> **Work dir = the dedicated outer folder created by `design.md`, whose name is NOT
+> `<ModName>`** (e.g. `<modname>-mod`). Write SPEC, PLAN, and MEMORY beside DESIGN;
+> `scaffold.md`
 > then `cd`s into it and runs `dotnet new` (the template scatters into CWD and makes
 > a `<ModName>/` resource subdir, so the outer name must differ — see scaffold.md
 > step 1). Do **not** name the work dir `<ModName>`.
@@ -598,7 +692,15 @@ separate contracts below):
 - **starting HP**: <int>
 - **energy per turn**: 3 (current grounded Foundation value)
 - **availability**: character-scoped card/relic/potion pools
-- **starter deck**: <exact Basic-card multiset and total count>
+- **native design basis**:
+  - grammar profile: `design/character-foundation.md @ STS2 0.107.1`
+  - pinned facts used: <exact native identities/values used in the proposal>
+  - observed convention: <native shape used as the recommendation>
+  - creative decision: <exact selected deck shape and teaching intent>
+- **starter deck**: <exact Basic-card multiset, base effects, upgrades, and total count>
+- **starter deck rationale**: <how its first-run decisions teach the core mechanic>
+- **deliberate native departure**: none | <departure plus onboarding, compatibility, and
+  balance consequences accepted by the user>
 - **starter relic**: <exact Starter relic>
 - **hosted mechanic**: <one starter card/relic grounded public mechanic with exact numbers>
 - **scenario**: RunStart + CombatPlayer
@@ -733,9 +835,11 @@ independent observations that prove the link rather than merely proving both nod
   - name: <SourceElement>
     type: card | relic | potion | power
     id: `<source logical id>`
+    design role: <foundation | access | payoff | consistency | defense | scaling | bridge | release, only when accepted>
   - name: <DependentElement>
     type: card | relic | potion | power
     id: `<dependent logical id>`
+    design role: <accepted role, only when M7.3 content-set planning applies>
 - **interactions**:
   - source: <SourceElement>
     relation: <applies | grants | creates | triggers | consumes>
@@ -827,7 +931,9 @@ Rules for this round:
 
 ```markdown
 # PLAN — <Mod Name>
+- [x] route: fast | co-design | revision
 - [x] interview
+- [x] design
 - [x] spec
 - [ ] scaffold
 - [ ] author
@@ -837,7 +943,7 @@ Rules for this round:
 - [ ] verify (tier-2 effect, automated via the self-test harness)
 ```
 
-Update the checkboxes as you finish each stage — this is what resume-check reads.
+Update the checkboxes as you finish each stage — this is what state check reads.
 
 ## Seed `MEMORY.md`
 
@@ -846,6 +952,7 @@ details are derived once and remain resumable:
 
 ```markdown
 # MEMORY — <Mod Name>
+- design contract: open-mod-design/v1 (creative intent and scope remain in DESIGN.md)
 - semantic contract: sts2-content-semantic/v1
 - logical ids: <...>
 - framework profile: <selected adapter profile>
@@ -853,13 +960,16 @@ details are derived once and remain resumable:
 - resolved content ids: <...>
 - resolved localization keys: <...>
 - framework diagnostics: <host/framework/compat/status>
-- decisions: <type-specific defaults, e.g. rarity/pool OR event acts=all>
+- adapter defaults: <technical lowering defaults only; creative decisions stay in DESIGN.md>
 - state: <none OR event/threshold/phase/lifetime/reset/persistence + required proofs>
 ```
 
 ## Confirm with the user
 
-Show a **plain-language** summary and get a yes before scaffolding:
+Show one **plain-language** DESIGN/current-slice/SPEC summary and get a yes before
+scaffolding. Start with **build now**, **placeholder**, and **later/not included**, omitting
+empty groups; then use the applicable compact element summary below. Do not request separate
+approval for DESIGN and SPEC:
 
 > (relic) I'll build **<Title>**, a Common relic. At the start of combat it <effect
 > in plain words>. It'll drop for any character, with placeholder art for now. Sound right?
@@ -876,7 +986,9 @@ Show a **plain-language** summary and get a yes before scaffolding:
 > <art line> Sound right?
 >
 > (character) I'll build **<Title>**, a selectable character with <HP> HP, standard
-> 3 energy, <starter deck summary>, and <starter relic/effect>. The first build uses
+> 3 energy, <exact starter deck summary and why it teaches the mechanic>, and <starter
+> relic/effect>. <If applicable: deliberate departure and its accepted player-facing
+> consequences.> The first build uses
 > character-template placeholders and proves selection, run start, and the starter effect.
 > Sound right?
 
@@ -885,4 +997,12 @@ fast default), or "with custom art I'll generate for the portrait" if they chose
 generate for a card. Keep it one clause — don't turn the confirmation into an art
 interview (that already happened in `interview.md` / this stage's art plan).
 
-If they change something, update `SPEC.md` before moving on. Then go to `scaffold.md`.
+If they change intent or scope, update `DESIGN.md` first, then regenerate the affected SPEC
+operations and rerun `design_trace.py`. If they change only an exact current value, preserve
+the design IDs and update the owning DESIGN decision plus SPEC value before moving on. Then
+go to `scaffold.md`.
+
+For revision, show the compact **keep / change / check / re-verify** delta before editing.
+After confirmation, update only the affected DESIGN/SPEC fields and reopen only the PLAN
+stages invalidated by that delta. A future-vision-only edit does not reopen author/build.
+Do not replace unrelated content or restart the intake.

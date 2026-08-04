@@ -139,6 +139,23 @@ class SemanticContractTests(unittest.TestCase):
         self.assertIn("second player-readable number", self.interview)
         self.assertNotIn("authoring recipe is not shipped yet", self.author)
 
+    def test_retired_character_proof_identity_is_not_shipped(self) -> None:
+        shipped_roots = (
+            REPO_ROOT / "games" / "sts2" / "skills",
+            REPO_ROOT / "plugins" / "open-mod" / "skills",
+            REPO_ROOT / "skills",
+        )
+        violations: list[str] = []
+        for root in shipped_roots:
+            for path in root.rglob("*.md"):
+                text = path.read_text(encoding="utf-8").lower()
+                for retired_identity in ("wayfinder", "pathfinder"):
+                    if retired_identity in text:
+                        violations.append(
+                            f"{path.relative_to(REPO_ROOT)}: {retired_identity}"
+                        )
+        self.assertEqual([], violations)
+
     def test_card_piles_package_is_supported_and_authorable(self) -> None:
         formal_reference = STS2_API_DIR / "reference" / "card-piles.md"
         graph = (
@@ -418,12 +435,13 @@ class SemanticContractTests(unittest.TestCase):
             STS2_API_DIR / "reference" / "selftest-harness.md"
         ).read_text(encoding="utf-8")
         verify = (MODMAKER_DIR / "verify.md").read_text(encoding="utf-8")
-        plan = (REPO_ROOT / "documents" / "IMPLEMENTATION_PLAN.md").read_text(
-            encoding="utf-8"
-        )
+        graph = (
+            REPO_ROOT / "games" / "sts2" / "tests" / "content-capability-graph.md"
+        ).read_text(encoding="utf-8")
         normalized_reference = " ".join(reference.split())
         normalized_spec = " ".join(self.spec.split())
         normalized_interview = " ".join(self.interview.split())
+        normalized_graph = " ".join(graph.split())
 
         self.assertIn(
             "Advanced creature targeting | consumer, one/many mode, stable Mod-local target id",
@@ -476,8 +494,11 @@ class SemanticContractTests(unittest.TestCase):
         ):
             self.assertIn("advanced-targeting.md", routed)
 
-        self.assertIn("potion + many", plan)
-        self.assertIn("unsupported", plan)
+        self.assertIn(
+            "custom multi-target Potions have a pinned lifecycle limitation",
+            normalized_graph,
+        )
+        self.assertIn("stops at Card one/many and Potion one", normalized_graph)
 
     def test_relic_owned_rest_site_option_preserves_native_payment_lifecycle(self) -> None:
         reference = (

@@ -6,10 +6,24 @@ its public API exists in the pinned profile. Confirmed problems are written as n
 limitations. Missing public routes are unsupported. Implementation and verification facts
 are stated directly, without readiness levels or evidence badges.
 
-M7 Design Intelligence and User Experience is planned authoring work, not a new runtime
-capability. Until an M7 Package is implemented and verified, this graph remains unchanged.
-A future vision recorded in planned `DESIGN.md` does not promote an unsupported operation
-into the current deliverable or `SPEC.md`.
+M7 Design Intelligence and User Experience is authoring work, not a new runtime capability.
+The human lead canceled standalone M7.0 and distributed behavioral cases to the Packages
+that change those behaviors. M7.1 adaptive Interview and routing is implemented with fast,
+co-design, revision, direct resume, and its six semantic routing scenarios. M7.2 native
+design grammar is implemented with lazy Character-only grounding, a checked five-Character
+starter inventory, exact native-shaped proposals, explicit fact/convention/decision
+separation, and deliberate-departure handling. M7.3 mechanic, content-set, and balance
+planning is implemented with independently lazy references, a compact planning capsule,
+directed content relationships, formula/economy sensitivity, explicit open hypotheses, and
+a Mod-forward working-value bias bounded by meaningful choices and real costs. These three
+Packages change no row in this runtime graph. M7.4 adaptive DESIGN and design-to-SPEC
+traceability are implemented with current/future scope dispositions, blocking gaps, and a
+deterministic generation allowlist; M7.4 also changes no runtime row. A future vision
+recorded in `DESIGN.md` does not promote an unsupported operation into the current
+deliverable or `SPEC.md`. M7.5 proportional coherence review is implemented with accepted
+identity anchors, six selected expression surfaces, fail-closed conflicts, deliberate
+tension, and bounded revision impact queues. It also changes no runtime row and cannot
+promote a new art, localization, Event, Character, or other operation.
 
 ## Supported
 
@@ -170,12 +184,11 @@ The historical version-gated patch is not selectable by the current pipeline. Pu
 RitsuLib UI attachment and static Character profiles supersede its former active consumers.
 Do not generate it.
 
-Wayfinder/RitsuWayfinderProof is also a retired acceptance identity, not a reusable
-Character design, default deck, verification marker, or player-facing example. Current
-generic skill text still contains that name and exact proof values; M7 plans to replace
-them with `SPEC.md`-driven assertions while preserving the historical evidence outside the
-shipped generic instructions. `Pathfinder` is not present in the current skill source or
-payloads.
+The retired Character acceptance identity is not a reusable design, default deck,
+verification marker, or player-facing example. Pre-M7 maintenance replaced it and its exact
+proof values with `SPEC.md`-driven assertions while preserving historical evidence outside
+the shipped generic instructions. A static regression prevents retired identities from
+returning to the current skill source or payloads.
 
 ## Supported With Known Limitations
 
@@ -183,6 +196,10 @@ payloads.
   but custom multi-target Potions have a pinned lifecycle limitation: queued resolution can
   reach an empty group only after normal Potion consumption. The generator therefore stops
   at Card one/many and Potion one rather than emitting an unsafe workaround.
+- Existing vanilla Card public overrides may append tags and compose description fragments
+  before or after the original body. Canonical variable edits, tag removal, and
+  base-description replacement remain unsupported because the pinned profile has no public
+  route for those operations.
 - Pinned Affliction `AfterApplied()` and `BeforeRemoved()` are synchronous `void` callbacks.
   A complete M6.7.5 lifecycle replacement can suppress them only with empty effect lists;
   async `OnPlay` replacement and public owner-hook composition retain their full routes.

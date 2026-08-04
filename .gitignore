@@ -8,6 +8,10 @@ baselines/
 # Python cache from scripts/publish
 __pycache__/
 
+# Local editor state and disposable research/tool scratch output.
+.vscode/
+.tmp/
+
 # Tool scratch output (build.ps1 writes full dotnet output here to keep the
 # console quiet). Regenerated each build.
 .build.log

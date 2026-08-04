@@ -5,6 +5,26 @@ fill only the effect logic, add localization, and inject the shared diagnostics.
 Registration, model templates, localization-key derivation, and asset profiles come
 from the adapter rather than the user-facing SPEC.
 
+Before writing source, validate M7.5 coherence and the M7.4 generation allowlist:
+
+```powershell
+python ../modmaker/scripts/coherence_trace.py --design DESIGN.md
+python ../modmaker/scripts/design_trace.py --design DESIGN.md --spec SPEC.md
+```
+
+Emit only operations listed in the validated `open-mod-spec-trace/v1` block. Every emitted
+content registration, behavior/data operation, selected presentation, and placeholder must
+belong to its stated `OP-###` and supported recipe/reference. Never emit `DEFER`,
+`OUT-OF-SCOPE`, or unresolved-gap intent, and never add an untraced convenience feature.
+
+On revision, follow DESIGN's validated impact/re-evaluation queue before editing. Update
+only confirmed affected localization, Event text, visual prompts/resources, Character
+identity, or generated source. REVIEW stable runtime/localization identifiers instead of
+renaming them from a display-name change. PRESERVE entries are explicit guards against
+changing settled or rejected decisions. Reopen only affected PLAN stages and use the
+nearest proportional host/check for a REVERIFY entry; do not schedule a full acceptance
+unless the active plan or human lead explicitly selects it.
+
 Read `semantic-contract.md` first, then read the selected framework reference
 (`sts2-api/reference/ritsulib-adapter.md` for the current target). RitsuLib-specific
 snippets live in that reference and the surface recipe it routes to; do not copy a

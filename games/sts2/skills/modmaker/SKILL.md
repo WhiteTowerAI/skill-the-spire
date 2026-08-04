@@ -9,6 +9,28 @@ description: |
 
 # STS2 Mod Maker — Orchestrator
 
+Routing loads only the relevant STS2-native design grammar and planning reference before
+creative questions. Character Foundation uses
+`sts2-api/design/character-foundation.md`; unresolved mechanics, content ecosystems, and
+numeric/economy questions route independently to `design/mechanic-planning.md`,
+`design/content-set-planning.md`, and `design/balance-planning.md`. They separate pinned
+facts, observed conventions, creative decisions, and open hypotheses while preserving the
+simple exact-content fast path. They change authoring guidance, not runtime support.
+
+When a design has multiple intentional expressive surfaces, explicitly requests theme,
+narrative, or presentation, or revises an identity anchor, routing also loads
+`sts2-api/design/coherence-review.md`. It checks mechanics, naming, localization, visuals,
+Event text, and Character identity against accepted design decisions and creates a bounded
+impact/re-evaluation queue for revisions. It does not add runtime capabilities or turn a
+placeholder into an invented visual identity.
+
+Every route now writes an adaptive `DESIGN.md` through `design.md` before semantic SPEC.
+Its current/future scope ledger uses stable design and operation IDs; `design_trace.py`
+fails closed when current requirements lack SPEC operations, future items enter SPEC, or a
+generated operation lacks a current design source and supported semantic route.
+`coherence_trace.py` validates the proportional identity anchors, selected surface checks,
+resolved conflict state, and revision impact queue before SPEC.
+
 Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
@@ -164,9 +186,11 @@ Read each from `${MODMAKER_SKILL_DIR}/` only when you reach that stage.
 
 | File | Purpose | When to read |
 |------|---------|--------------|
-| `interview.md` | One short clarifying round → intake | Pipeline start (after resume check) |
+| `route.md` | Infer fast / co-design / revision and preserve settled decisions | Pipeline start (after state check) |
+| `interview.md` | Resolve only material open decisions → intake | After routing when a decision is still open |
+| `design.md` | Write adaptive `DESIGN.md`, current/future scope, coherence contract, and stable IDs | After Interview, or to backfill a pre-M7.4 project |
 | `semantic-contract.md` | Framework-neutral SPEC envelope, adapter inputs, and diagnostic record | Before writing SPEC |
-| `spec.md` | Write `SPEC.md` (the design contract) | After interview |
+| `spec.md` | Write exact current `SPEC.md` plus validated coherence/design traces | After DESIGN |
 | `scaffold.md` | Pinned RitsuLib project + manifest + compat wiring | After spec |
 | `author.md` | Write the C# element + localization + marker | After scaffold |
 | `build.md` | `dotnet build` → .dll/.pck/.json into mods/ | After author |
@@ -180,21 +204,35 @@ Read each from `${MODMAKER_SKILL_DIR}/` only when you reach that stage.
 ```text
 User: one sentence ("a relic that ...")
     |
- 0. RESUME CHECK — if SPEC.md / PLAN.md exist in the work dir, read them and skip
-    to the first unfinished stage. Files are state; do not restart from scratch.
+ 0. STATE CHECK — read DESIGN.md when present, then SPEC.md / PLAN.md / MEMORY.md.
+    If the user requested no change, skip to the first unfinished stage. If they requested
+    a change, preserve the existing artifacts and continue through the revision route.
     |
- 1. INTERVIEW (interview.md) — ONE short round, only for genuinely ambiguous
-    things (element type? rarity? exact trigger?). Non-blocking defaults for the rest.
+ 1. ROUTE (route.md) — infer fast / co-design / revision and state it briefly. Do
+    not ask the user to choose a workflow mode. Resume without an interview when no design
+    change was requested.
     |
- 2. SPEC (semantic-contract.md + spec.md) — write a framework-neutral SPEC: element type,
+ 2. INTERVIEW (interview.md) — resolve only material open decisions. Fast asks zero
+    questions when complete and at most one compact round otherwise; co-design presents
+    materially different player-facing options with trade-offs; revision discusses only
+    the delta and never re-asks settled facts.
+    |
+ 3. DESIGN (design.md) — write the adaptive durable intent, scope, and coherence artifact.
+    Every current MUST/PLACEHOLDER receives stable design and operation IDs; DEFER and
+    OUT-OF-SCOPE remain outside generation. Check only selected expressive surfaces against
+    accepted identity anchors. On revision, record the ordered impact/re-evaluation queue.
+    Stop while a blocking gap or coherence conflict is unresolved.
+    |
+ 4. SPEC (semantic-contract.md + spec.md) — write a framework-neutral SPEC: element type,
     name, type-specific host/starter contract, trigger, effect in game terms, any state
-    event/threshold/lifetime/reset/persistence, fallback, proof, and art plan.
-    Show the user a plain-language summary to confirm.
+    event/threshold/lifetime/reset/persistence, fallback, proof, art plan, and one supported
+    semantic route per traced operation. Run design_trace.py, then show one combined
+    DESIGN/current-slice/SPEC confirmation.
     |
- 3. SCAFFOLD (scaffold.md) — resolve the selected framework/host profile once, then emit
+ 5. SCAFFOLD (scaffold.md) — resolve the selected framework/host profile once, then emit
     its project, manifest, and package wiring.
     |
- 4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
+ 6. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
     monster+encounter/event/character, plus the selected Event outcome/VFX/rich-text/
     native-presentation/forced-follow-up/Scry references or power.md
     when selected by SPEC),
@@ -207,21 +245,21 @@ User: one sentence ("a relic that ...")
     blocks —
     a missing sprite falls back to the template default. Regenerate = re-run + rebuild.
     |
- 5. BUILD (build.md) — tools/build.py validates the pinned host/package/runtime profile,
+ 7. BUILD (build.md) — tools/build.py validates the pinned host/package/runtime profile,
     deploys the Mod's own DLL/manifest, and packs its resource tree when present. On
     failure: go to REPAIR (repair.md).
     |
- 6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
+ 8. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
     and fresh-run error blocks (tier-1). Then run the tier-2 self-test unattended
     (launch.py --self-test → the harness drives the required combat/event/run-start scenario and
     asserts concrete post-state → grep its structured state proof). Fall back to the manual dev-console guide
     only if the harness can't reach its scenario. Never claim the effect is verified when
     only load was. On failure: go to REPAIR (repair.md).
     |
- 7. FINALIZE — summarize what was built, where the artifacts are, and which tier
+ 9. FINALIZE — summarize what was built, where the artifacts are, and which tier
     of verification was reached.
     |
- 8. REPAIR (repair.md) — shared sub-loop invoked by 5/6: read the real error,
+10. REPAIR (repair.md) — shared sub-loop invoked by 7/8: read the real error,
     consult sts2-api errors.md, apply ONE fix, re-run only the failed stage.
     Bounded (max 3 attempts; stop if the same signature survives a fix). On
     convergence, resume the pipeline; on exhaustion, hand back a clear failure.
@@ -232,13 +270,17 @@ User: one sentence ("a relic that ...")
 Keep important state in files in the work dir so the pipeline survives long
 threads and context compaction:
 
-- **SPEC.md** — the design contract (element, name, rarity, trigger, effect, state
-  lifetime/reset/persistence when applicable, art).
+- **DESIGN.md** — player intent, decisions, current/future scope, tuning hypotheses,
+  coherence anchors/surface checks, revision impact queue, and accepted boundaries.
+- **SPEC.md** — exact current generated operations, semantic behavior, supported routes,
+  state lifetime/reset/persistence, presentation/fallback, and design trace.
 - **PLAN.md** — stage checklist + status; update after each stage.
 - **MEMORY.md** — discoveries, chosen ids, derived loc keys, and what worked/failed.
 
-**Resume-check first**: if these exist, continue from the artifacts, not from
-conversational memory.
+**State-check first**: if these exist, continue from the artifacts, not from
+conversational memory. Read `DESIGN.md` first as authoritative creative/scope state. For a
+pre-M7.4 unfinished project with SPEC but no DESIGN, use `design.md`'s compact backfill and
+resume without a general interview.
 
 ## Verify on observed reality, never "it compiled"
 

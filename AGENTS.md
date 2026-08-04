@@ -111,20 +111,84 @@ explicitly unrun. The durable result is
 fixed reviewed Adapter for each requested operation/category before implementation; never
 generate ungrounded Harmony, reflection, or IL from a prompt.
 
-M7 Design Intelligence and User Experience was selected for planning by the human lead on
-2026-08-04. No M7 source Package, generated payload change, or acceptance claim exists yet.
+M7 Design Intelligence and User Experience is the active authoring milestone, selected by
+the human lead on 2026-08-04. The human lead canceled M7.0 as a standalone up-front
+evaluation Package on the same day; its essential behavioral cases are owned by M7.1,
+M7.2, M7.4, and M7.6 instead.
+M7.1 adaptive Interview and routing is implemented in the source workflow. It adds an
+inferred fast/co-design/revision route before Interview, direct unfinished-project resume,
+material-question filtering, constrained contradiction/unsupported handling, and bounded
+revision deltas that preserve settled decisions. Its six semantic scenarios and focused
+contract tests cover clear, ambiguous, contradictory, unsupported, resume, and revision
+inputs. No independent forward-model run, real-game acceptance, Tier 1, or Tier 2 is
+inferred from those prompt contracts. The durable result is
+`documents/history/M71_ADAPTIVE_ROUTING_RESULTS.md`.
+M7.2 STS2-native design grammar is implemented in the source workflow. Character and
+Character/content-set requests lazily load one version-pinned Foundation reference before
+creative questions. It separates pinned facts, observed conventions, and creative
+decisions; proposes one exact native-shaped starter deck before asking for deck details;
+and preserves deliberate implementable departures after explaining onboarding,
+Strike/Defend-tag compatibility, and early-balance consequences. Its checked inventory is
+bound to the pinned assembly identity and the five native starter decks; exact tests cover
+all ten Character-specific Strike/Defend models. Three semantic scenarios cover an
+unspecified starter deck, a Character/content-set request, and a deliberate departure. No
+independent forward-model run, game acceptance, Tier 1, or Tier 2 is inferred. The durable
+result is `documents/history/M72_NATIVE_DESIGN_GRAMMAR_RESULTS.md`.
+M7.3 mechanic, content-set, and balance planning is implemented in the source workflow.
+It adds three independently lazy references for meaningful mechanic decisions and loops,
+content-role/interaction coverage, and evidence-bounded formulas/economies. Balance uses a
+human-lead-selected Mod-forward bias: prefer a clearly rewarding, modestly stronger working
+value over an underpowered no-pick option, but reduce or constrain any value that erases
+choices, setup, costs, ordinary opposition, or creates deterministic/self-funding/unbounded
+loops. This is a creative product preference, not a pinned STS2 fact or fixed percentage.
+Its three semantic cases cover one ambiguous mechanic, one Character/content set, and one
+numeric resource economy. Missing data remains an open hypothesis; static reasoning does
+not prove balance, enjoyment, or playtest results. M7.3 lowers only accepted, supported,
+exact rules, values, content nodes, and directed interactions into `SPEC.md`; it does not
+create M7.4's durable `DESIGN.md` or widen runtime support. The durable result is
+`documents/history/M73_MECHANIC_CONTENT_BALANCE_RESULTS.md`.
+M7.4 scope and design-to-SPEC translation is implemented in the source workflow. Every
+route writes an adaptive `open-mod-design/v1` `DESIGN.md` before SPEC: a fast exact request
+gets a compact capsule, while co-design/revision preserve only relevant rationale and
+settled decisions. Its scope ledger uses stable `D-###` requirements with exactly
+`MUST`, `PLACEHOLDER`, `DEFER`, or `OUT-OF-SCOPE`; unresolved unsupported intent remains a
+blocking gap until the human explicitly selects a supported current version, deferral, or
+removal. `SPEC.md` contains an `open-mod-spec-trace/v1` generation allowlist with stable
+`OP-###` operations, current design IDs, exact semantic targets, and existing shipped
+recipe/reference routes. `design_trace.py` rejects missing/extra operations, one-way links,
+future-item leakage, unresolved gaps, invalid dispositions/fallbacks, invented route forms,
+and missing route files. Three semantic scenarios cover supported-plus-unsupported scope,
+a future vision larger than the first playable slice, and compact exact-Card authoring. No
+independent forward-model run, game acceptance, Tier 1, or Tier 2 is inferred. The durable
+result is `documents/history/M74_SCOPE_TRACEABILITY_RESULTS.md`.
+M7.5 theme, narrative, presentation, and coherence is implemented in the source workflow.
+It adds one lazily loaded coherence reference, proportional `A-###` identity anchors and
+six selected expression surfaces, specific fail-closed conflict handling, deliberate-
+tension preservation, and an ordered `Q-###` revision impact queue. `coherence_trace.py`
+checks design references, current-surface ownership, resolved conflicts, and revision queue
+structure before SPEC; it does not judge subjective quality. Three semantic scenarios cover
+Event localization/visual contradiction, Character identity tension, and a bounded
+terminology/palette revision that preserves settled and rejected decisions. Two focused
+read-only independent forward-model prompts covered the Character identity
+conflict and bounded revision. The first conflict run exposed a missing temporary
+`conflict` status; after the contract repair, its focused rerun correctly stopped before
+SPEC. The Event case and complete three-case matrix were not independently run. No human
+artifact review, game acceptance, Tier 1, or Tier 2 is inferred.
+The durable result is `documents/history/M75_COHERENCE_RESULTS.md`. M7.6 has not started.
 M7 improves how the skill understands, discusses, scopes, records, and revises a Mod design;
 it does not expand the runtime support graph. Its target flow adds adaptive routing, a
 durable `DESIGN.md`, pinned STS2-native design grammar, explicit current-deliverable versus
 future-vision scope, design-to-`SPEC.md` traceability, and human-owned playtest tuning.
-M7.0 behavioral evaluation must be established before changing the Interview. Simple,
-unambiguous requests retain a fast path rather than receiving a full GDD process.
+Each M7 Package must carry the smallest behavioral cases that prove its own decisions;
+there is no separate corpus gate before M7.1. Simple, unambiguous requests retain a fast
+path rather than receiving a full GDD process.
 
-The shipped skills still contain the retired Wayfinder proof identity and exact proof values
-in generic Character verification/reference text. Treat those strings as historical
-evidence, never as Character defaults. M7 must replace them with `SPEC.md`-driven assertions
-and keep proof-specific identities under `documents/history/` or repository-only evidence.
-`Pathfinder` is not present in the current source or payloads.
+Pre-M7 maintenance removed the retired Wayfinder proof identity and exact proof values from
+generic Character verification/reference text. Historical facts remain under
+`documents/history/`; shipped verification derives HP, pools, starters, resources, effects,
+and terminal markers from the current `SPEC.md`. Keep the regression check that prevents a
+retired proof identity from returning to source or generated payloads. `Pathfinder` is not
+present in the current source or payloads.
 
 ## Dependency Contract
 
@@ -282,11 +346,13 @@ not silently select a paid backend. Every acquisition path converges on determin
 
 ## Architecture
 
-- Current `games/sts2/skills/modmaker/`: interview -> spec -> scaffold -> author -> build ->
-  verify -> bounded repair.
-- Planned M7 authoring flow: route -> adaptive interview -> `DESIGN.md` -> deliverable slice
-  -> semantic `SPEC.md` -> the unchanged grounded build/verification pipeline -> human
-  playtest feedback and bounded design revision.
+- Current `games/sts2/skills/modmaker/`: state check -> inferred fast/co-design/revision
+  route -> adaptive interview -> coherence-checked `DESIGN.md` -> validated current-slice `SPEC.md` ->
+  scaffold -> author -> build -> verify -> bounded repair. An unchanged unfinished project
+  resumes directly at its first incomplete stage; a pre-M7.4 project backfills DESIGN from
+  accepted SPEC without restarting its interview.
+- Remaining planned M7 flow: the current grounded author/build/verify pipeline ->
+  human-owned M7.6 playtest feedback and bounded design revision.
 - `games/sts2/skills/sts2-api/`: lazy recipes, references, and error catalog.
 - `games/sts2/tools/`: cross-platform Python build/launch/log/art wrappers.
 - `games/sts2/tests/`: current support graph and verification ownership.
@@ -339,7 +405,8 @@ a pinned compatibility or output contract.
 M7 prompt and authoring tests use behavioral scenarios and semantic rubrics, not exact prose
 snapshots. They must cover question economy, preserved user decisions, meaningful
 alternatives and trade-offs, STS2-native defaults, supported-slice grounding,
-`DESIGN.md`-to-`SPEC.md` traceability, and refusal to fabricate playtest evidence. A
+`DESIGN.md`-to-`SPEC.md` traceability, cross-artifact coherence, bounded change propagation,
+and refusal to fabricate playtest evidence. A
 documentation- or prompt-only M7 change does not require a real-game run unless it changes
 generated runtime behavior or presentation.
 

@@ -9,6 +9,31 @@ description: |
 
 # STS2 API Lookup
 
+## Design grammar and planning routing
+
+After `modmaker/route.md` classifies the request, load only the design references named in
+its handoff:
+
+- read `../sts2-api/design/character-foundation.md` for a playable Character,
+  its Foundation, or a Character/content-set design, before creative questions or a
+  starter-deck proposal; load it only for that Character surface;
+- read `../sts2-api/design/mechanic-planning.md` when a mechanic, resource,
+  stateful loop, risk/reward structure, or interacting system lacks an exact core
+  decision;
+- read `../sts2-api/design/content-set-planning.md` for a Character card pool,
+  archetype, multi-element set, or another content ecosystem; and
+- read `../sts2-api/design/balance-planning.md` when balance, numeric resource
+  sources/sinks/cadence, a formula, or materially unresolved values are a current design
+  question; and
+- read `../sts2-api/design/coherence-review.md` when multiple intentional
+  expressive surfaces, explicit theme/narrative/presentation work, or an identity-changing
+  revision needs cross-artifact review and bounded propagation.
+
+The references separate pinned facts, observed conventions, creative decisions, and open
+hypotheses. Load the smallest applicable set: an exact simple Card does not load balance
+planning merely because it contains a number. These files provide design guidance, not an
+adapter, runtime route, playtest result, or expanded capability boundary.
+
 This skill is a narrow reference tool. Answer only what the caller asked — do
 not dump entire files into the response.
 
@@ -92,8 +117,8 @@ explicitly accepted composition instead.
    read `../sts2-api/reference/character-resource.md`. For a **bounded ordered
    semantic card-play buffer with deterministic dynamic output**, read
    `../sts2-api/reference/ordered-card-buffer.md`. Both use the public RitsuLib
-   Secondary Resource/node-attachment APIs and are implemented by the final
-   Wayfinder composition. If a requested capability has no documented public game/RitsuLib
+   Secondary Resource/node-attachment APIs and follow the promoted generated-Character
+   contracts. If a requested capability has no documented public game/RitsuLib
    seam, report a pack gap; do not invent a patch target or `OpenMod.Runtime`.
    Cards/powers/keywords/enchantments/orbs also read
    `../sts2-api/reference/mechanics.md` first (scaling numbers, SmartFormat
@@ -147,6 +172,11 @@ explicitly accepted composition instead.
 
 | File | Content | When to read |
 |------|---------|--------------|
+| `design/character-foundation.md` | Pinned five-Character starter inventory, Strike/Defend facts, native-shaped recommendation, and deliberate-departure consequences | Designing or revising a playable Character or Character/content set, before creative questions |
+| `design/mechanic-planning.md` | Player fantasy, core decision, loop, risk/reward, singleplayer pressure, edge cases, tuning knobs, and dominant-strategy review | Designing or revising a materially unresolved mechanic, resource, stateful loop, or interacting system |
+| `design/content-set-planning.md` | Foundation/access/payoff/consistency/defense/scaling/bridge/release roles, directed interaction graph, coverage, and dominance review | Designing a Character card pool, archetype, multi-element set, or content ecosystem |
+| `design/balance-planning.md` | Evidence hierarchy, Mod-forward power bias, formulas, resource economy audit, sensitivity, tuning knobs, and open hypotheses | Answering a balance/economy question or selecting materially unresolved numeric values |
+| `design/coherence-review.md` | Accepted identity anchors, mechanics/name/localization/visual/Event/Character surface checks, specific conflicts, deliberate tension, and revision impact queues | Reviewing multiple expressive surfaces or propagating an identity-affecting revision before SPEC |
 | `reference/ritsulib-adapter.md` | Pinned RitsuLib compat profile, public registration/template routing, asset profiles, lifecycle/persistence/resource routes, and diagnostics | After the semantic SPEC and before a surface recipe |
 | `reference/vanilla-overrides.md` | Pinned vanilla catalog, exact alias resolution, semantic manifest, promotion, baseline/fingerprint, and conflict checks | Any request targeting existing vanilla content; before category-specific routing |
 | `reference/vanilla-card-overrides.md` | M6.7.1 public existing-Card operations: properties, evaluated costs, play state/result, localized text/tips, native glow, capability variables, owner hooks, and `OnPlay` composition/replacement | Authoring an override for an exact existing `CARD.*` target |

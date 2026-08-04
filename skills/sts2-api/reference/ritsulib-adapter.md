@@ -317,13 +317,12 @@ the path-based material while the direct material is non-null. Keep the four gam
 color properties and both icon paths in the same Character-local theme contract. Do not
 copy YuWanCard's private shader/patch route or add a custom shader.
 
-The 2026-07-23 RitsuLib-only Wayfinder run proved exactly one selected Character, HP
-`72/72`, exact Card/Relic/Potion pools plus one supporting Power, exact starter multisets,
-Energy `3/4`, and every promoted static consumer in selection, combat, top panel, a real
-hand Card, RestSite, and Shop. It reached
-`character foundation/static-presentation ... observed=all`, `selftest done`, and no fresh
-error. Locked selection, map marker, and Ancient remain outside this proof. The separate R5
-composition below adds resource/buffer/UI parity without broadening those R4 boundaries.
+The generated Character proof derives identity, HP, Card/Relic/Potion pools, supporting
+models, starter multisets, and MaxEnergy from the current `SPEC.md`, then checks every
+promoted static consumer in selection, combat, top panel, a real hand Card, RestSite, and
+Shop before `selftest done`. Locked selection, map marker, and Ancient remain outside this
+proof. The resource/buffer/UI composition below does not broaden those Foundation
+boundaries.
 
 For registered model surfaces, the default public entry is `MOD_CATEGORY_TYPENAME`, with every segment
 normalized to uppercase snake case by `ModContentRegistry`. Example: mod id
@@ -350,16 +349,13 @@ contains an optional checked 24x24 icon plus a minimum 188x32 Label, and retains
 live text when the icon is missing.
 
 The final Character composition places the control at `(160,0)`. Tier 2 must assert that
-its global rect does not intersect the native 128x128 energy counter. The proof observed
-resource rect `(260,828,220,32)` and energy rect `(100,828,128,128)`. Do not emit a
-Harmony postfix or separate patch module for this public RitsuLib route.
+its global rect does not intersect the native 128x128 energy counter. Do not emit a Harmony
+postfix or separate patch module for this public RitsuLib route.
 
-`RitsuResourceProof` independently proved default/reset, affordability, successful and
-rejected all-or-nothing payment, public attachment, icon/text fallback, and two real
-combats. `RitsuWayfinderProof` then proved Ink `0 -> 4 -> 0`, the disjoint UI composition,
-native Energy `3/4`, and combat-2 Ink `0`. Both reached `selftest done`, strict Tier 2, and
-no fresh error with the historical framework absent. See `character-resource.md` for the
-copyable contract.
+The maintained two-combat proof derives resource identity, amounts, payoff, and reset values
+from the current `SPEC.md`, then verifies affordability, successful and rejected
+all-or-nothing payment, public attachment, icon/text fallback, disjoint UI, and reset before
+`selftest done`. See `character-resource.md` for the copyable contract.
 
 ### Ordered semantic buffer
 
@@ -369,10 +365,10 @@ source Card complete STS2's normal Play -> Discard lifecycle. Snapshot and clear
 at the compile point, refresh the public combat UI, configure one mutable output Card, and
 add it through `CardPileCmd.AddGeneratedCardToCombat`.
 
-The final proof observed `N>E>S>W`, non-destructive overflow, source and compile Cards in
-Discard, one `CardGeneratedEntry`, one Hand output with dynamic Block `20`, and a distinct
-empty combat-2 attached state. Retained Card instances, `CustomPile`, `Vector2.Zero` layout,
-and `skipVisuals: true` lifecycle are not adapter routes. See `ordered-card-buffer.md`.
+The final proof derives semantic order, capacity, source and compile result piles, generated
+history, output fields/effect, payment, and combat-2 reset from the current `SPEC.md`.
+Retained Card instances, `CustomPile`, `Vector2.Zero` layout, and `skipVisuals: true`
+lifecycle are not adapter routes. See `ordered-card-buffer.md`.
 
 ### Open-mod Scry helper
 

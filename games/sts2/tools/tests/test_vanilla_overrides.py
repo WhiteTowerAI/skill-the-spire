@@ -2608,17 +2608,18 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         interview = guarded[1].read_text(encoding="utf-8")
         self.assertIn("does not authorize that downgrade", interview)
 
-        implementation_plan = (
-            sts2_root.parents[1] / "documents" / "IMPLEMENTATION_PLAN.md"
+        capability_graph = (
+            sts2_root / "tests" / "content-capability-graph.md"
         ).read_text(encoding="utf-8")
+        normalized_graph = " ".join(capability_graph.split())
         self.assertIn(
-            "no promoted route for canonical variables, tag removal, or "
-            "base-description replacement",
-            implementation_plan,
+            "Canonical variable edits, tag removal, and base-description replacement "
+            "remain unsupported",
+            normalized_graph,
         )
         self.assertNotIn(
             "Adapter for canonical variables, tag removal, and base-description replacement",
-            implementation_plan,
+            normalized_graph,
         )
 
     def test_reference_only_symbols_have_local_imports(self) -> None:
