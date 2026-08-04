@@ -29,31 +29,41 @@ while user-test bugs are fixed. M6.5 closed through the lead-approved Prismwrigh
 acceptance recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; no GitHub
 release is currently planned.
 
+M7 Design Intelligence and User Experience is selected for planning. It has no implemented
+source Package or release claim yet. M7 improves authoring quality and workflow without
+changing the current RitsuLib/runtime capability boundary.
+
 ## User Experience
 
 The desired interaction is:
 
 ```text
 plain-language idea
-  -> one compact clarification round when needed
-  -> plain-language plan
+  -> infer fast / co-design / revision route
+  -> load only the relevant STS2-native design grammar
+  -> adaptive clarification when a real design decision is missing
+  -> DESIGN.md (intent, trade-offs, tuning, vision, current slice)
   -> semantic SPEC.md
   -> pinned scaffold and grounded recipes
   -> author and package
   -> real-game load proof
   -> hosted behavior proof or an honest manual boundary
+  -> human playtest feedback and bounded design revision
 ```
 
 The skill should preserve unusual mechanics instead of flattening them to the nearest easy
 effect. It should recommend concrete defaults, avoid jargon, and tell the user when an idea
-crosses the supported boundary.
+crosses the supported boundary. It should not ask the user to supply facts the pinned game
+baseline can answer. A simple Card remains a fast interaction; a Character, content set, or
+ambiguous mechanic receives deeper design help only where needed.
 
 ## Architecture
 
 The product has three layers:
 
-1. `modmaker` owns the staged workflow and resumable project state (`SPEC.md`, `PLAN.md`,
-   `MEMORY.md`).
+1. `modmaker` owns the staged workflow and resumable project state. Today that state is
+   `SPEC.md`, `PLAN.md`, and `MEMORY.md`; M7 plans to add `DESIGN.md` before the semantic
+   contract.
 2. `sts2-api` owns lazy, grounded game knowledge: recipes, lifecycle contracts, art
    consumers, official-product-semantics distillations, verification hosts, and error
    fixes.
@@ -64,6 +74,21 @@ The semantic contract stays framework-neutral. RitsuLib details are concentrated
 pinned scaffold/profile and the adapter/reference surface. Generated source is preferred
 over a shared open-mod runtime until multiple independent consumers justify a versioned
 binary.
+
+The planned M7 artifact boundary is:
+
+- `DESIGN.md`: player fantasy, pillars where useful, core decisions, rejected alternatives,
+  system relationships, tuning knobs, open questions, future vision, and the currently
+  deliverable slice;
+- `SPEC.md`: only the exact framework-neutral operations the generator must build now;
+- `PLAN.md`: execution-stage status;
+- `MEMORY.md`: resolved technical identities, API choices, build facts, and repair history.
+
+STS2 design grammar is separate from API grammar. It records checked native patterns such
+as Character starter-deck composition, Basic Card naming/tags, archetype teaching cards,
+rarity/upgrade relationships, and content-set roles. It must distinguish pinned facts,
+observed conventions, and user-owned creative choices rather than converting every common
+pattern into a hard rule.
 
 ## Verification Philosophy
 
@@ -86,6 +111,12 @@ changed invariant:
 Tier 1 means loaded with no fresh error. Tier 2 means a structured post-state marker plus
 `selftest done`. Record only the checks that actually ran; none is silently inferred from
 another.
+
+M7 authoring quality is verified before runtime generation with behavioral prompt cases and
+semantic artifact rubrics. Those checks evaluate question economy, decision preservation,
+trade-off quality, native-design grounding, deliverable-slice honesty, and design-to-SPEC
+traceability. They do not treat one preferred sentence or an AI-simulated player response
+as proof. Real-player observations remain human-owned evidence.
 
 ## Distribution
 
@@ -124,6 +155,10 @@ The current product does not imply arbitrary patching, retained-card zones, alte
 Energy, multiplayer UI, Spine/production Character motion or audio, behavior-bearing
 arbitrary Event layouts beyond exact packaged public visual resources, or Workshop
 publishing.
+
+M7 may describe a larger future Mod vision, but it cannot promote any item in that vision
+into `SPEC.md` without an existing supported route. General game-design research, CCGS
+patterns, comparison projects, or vanilla analogies do not expand runtime support.
 
 The focused M6.5 Character art and presentation packages are implemented:
 role-based identity references without a separate Character sheet, corrected

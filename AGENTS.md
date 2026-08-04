@@ -22,7 +22,7 @@ did not pass.
 The focused M6.5 Character art, theme, outline, and bounded combat-cue packages are
 implemented. The fresh Prismwright acceptance is closed and retired by explicit
 human-lead decision; its headed result and waived Tier 2 harness are recorded in
-`documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. Do not reopen that proof, start M7, or
+`documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. Do not reopen that proof or
 prepare/claim a GitHub release without later lead instruction.
 
 M6.6 is closed by explicit human-lead decision. Package 2A computed Card values,
@@ -111,6 +111,21 @@ explicitly unrun. The durable result is
 fixed reviewed Adapter for each requested operation/category before implementation; never
 generate ungrounded Harmony, reflection, or IL from a prompt.
 
+M7 Design Intelligence and User Experience was selected for planning by the human lead on
+2026-08-04. No M7 source Package, generated payload change, or acceptance claim exists yet.
+M7 improves how the skill understands, discusses, scopes, records, and revises a Mod design;
+it does not expand the runtime support graph. Its target flow adds adaptive routing, a
+durable `DESIGN.md`, pinned STS2-native design grammar, explicit current-deliverable versus
+future-vision scope, design-to-`SPEC.md` traceability, and human-owned playtest tuning.
+M7.0 behavioral evaluation must be established before changing the Interview. Simple,
+unambiguous requests retain a fast path rather than receiving a full GDD process.
+
+The shipped skills still contain the retired Wayfinder proof identity and exact proof values
+in generic Character verification/reference text. Treat those strings as historical
+evidence, never as Character defaults. M7 must replace them with `SPEC.md`-driven assertions
+and keep proof-specific identities under `documents/history/` or repository-only evidence.
+`Pathfinder` is not present in the current source or payloads.
+
 ## Dependency Contract
 
 - Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.5.4`.
@@ -131,6 +146,12 @@ generate ungrounded Harmony, reflection, or IL from a prompt.
   Harmony/Publicizer; RitsuLib is optional settings UI only. Use it to inventory consumers
   and study product behavior, never as RitsuLib API authority or a source of shipped code,
   art, audio, Spine, shader, or other assets.
+- `baselines/spire-codex` is a maintainer-only vanilla-content fact and analogy source. M7
+  may use it to find design patterns, but every shipped version-bound fact must be checked
+  against the pinned `0.107.1` catalog/game substrate before promotion.
+- `baselines/Claude-Code-Game-Studios-main` is M7 workflow and behavioral-evaluation
+  research only. Do not copy its large agent hierarchy, make it a runtime dependency, or
+  treat its generic design advice as STS2 fact.
 
 ## Supported Boundary
 
@@ -147,6 +168,11 @@ Missing recipes, validators, builds, Tier 1/Tier 2 runs, or headed reviews mean 
 implementation or verification is missing; state that directly. Do not add readiness levels
 or evidence badges. Verification remains literal under the rules below, and skipped checks
 or waivers remain exceptions rather than passes.
+
+M7 design recommendations must remain inside this same runtime boundary. A broader future
+vision may be recorded in `DESIGN.md`, but the current deliverable slice and `SPEC.md` must
+contain only promoted operations or explicit gaps. General game-design confidence never
+authorizes ungrounded Harmony, reflection, Publicizer, or IL.
 
 Surfaces open-mod currently generates include:
 
@@ -256,8 +282,11 @@ not silently select a paid backend. Every acquisition path converges on determin
 
 ## Architecture
 
-- `games/sts2/skills/modmaker/`: interview -> spec -> scaffold -> author -> build ->
+- Current `games/sts2/skills/modmaker/`: interview -> spec -> scaffold -> author -> build ->
   verify -> bounded repair.
+- Planned M7 authoring flow: route -> adaptive interview -> `DESIGN.md` -> deliverable slice
+  -> semantic `SPEC.md` -> the unchanged grounded build/verification pipeline -> human
+  playtest feedback and bounded design revision.
 - `games/sts2/skills/sts2-api/`: lazy recipes, references, and error catalog.
 - `games/sts2/tools/`: cross-platform Python build/launch/log/art wrappers.
 - `games/sts2/tests/`: current support graph and verification ownership.
@@ -306,6 +335,13 @@ assert exact adapter API symbols or recipe wording merely to prove that a recipe
 RitsuLib rather than BaseLib; enforce that product contract at scaffold, build, manifest,
 and runtime-package boundaries. Assert a specific symbol or phrase only when it is itself
 a pinned compatibility or output contract.
+
+M7 prompt and authoring tests use behavioral scenarios and semantic rubrics, not exact prose
+snapshots. They must cover question economy, preserved user decisions, meaningful
+alternatives and trade-offs, STS2-native defaults, supported-slice grounding,
+`DESIGN.md`-to-`SPEC.md` traceability, and refusal to fabricate playtest evidence. A
+documentation- or prompt-only M7 change does not require a real-game run unless it changes
+generated runtime behavior or presentation.
 
 Tier 1 requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof plus `selftest done`. Trigger logs and model-only state do not

@@ -47,6 +47,45 @@ and representative human-led in-game acceptance completed. M6.7.6 was canceled a
 to Future Outlook. Tier 1, Tier 2/SelfTest, the current-catalog headed no-op, and every
 unselected check remain unrun, not passed; do not rerun the closed milestone gate.
 
+## M7 authoring-quality verification (Planned)
+
+M7 has been selected for planning but has no implemented behavioral gate yet. Its tests are
+separate from runtime support and Tier 1/Tier 2. A prompt or documentation check cannot
+prove that a generated Mod loads, behaves correctly, looks correct, or is enjoyable.
+
+M7.0 establishes the baseline before `interview.md` changes. The corpus must cover a clear
+single Card, a vague mechanic, an unspecified Character starter deck, a Character/content
+set, a supported-plus-unsupported request, a future-vision/current-slice split, a resumed
+or revised project, real playtest feedback, and a deliberate departure from a native
+convention.
+
+Evaluate three layers:
+
+1. **Deterministic contract:** required artifact sections, stable semantic fields, exact
+   pinned facts, supported-route resolution, explicit gaps, and payload parity.
+2. **Behavioral rubric:** question economy, materially distinct alternatives, concrete
+   trade-offs, preservation of user decisions, STS2-native recommendations, coherent
+   content roles, and honest unknowns.
+3. **Human review:** whether the design proposal expresses the intended player experience
+   and whether a real playtest observation warrants a design change. An LLM judge may assist
+   comparison but is never the sole pass/fail authority.
+
+Do not assert exact prose merely because one response was preferred. Assert exact names or
+values only when they are pinned game facts or product contracts, such as the native
+Character-specific Basic Strike/Defend identities, localized display names, tags, and
+values used by the planned Character grammar.
+
+The source audit found retired `Wayfinder`/`RitsuWayfinderProof` identities in generic
+Character verification and references; `Pathfinder` is absent. M7.0/M7.2 must replace the
+generic exact values and log markers with current-`SPEC.md` assertions, regenerate both
+payloads, and check that retired proof identities remain only in history or repository-only
+evidence. This is a shipped-guidance regression check, not a rewrite of historical proof.
+
+When an M7 Package changes generated runtime behavior or presentation, use the same nearest
+real-host rule as any other implementation change. Prompt-only work needs no game launch.
+M7.6 may prepare a human-executable playtest hypothesis and observation form, but it must
+never invent the observations or relabel simulated personas as acceptance.
+
 Host ownership:
 
 | Host | Owns |

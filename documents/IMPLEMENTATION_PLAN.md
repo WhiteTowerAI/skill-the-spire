@@ -1,4 +1,4 @@
-# Implementation plan: 0.6.0 stabilization
+# Implementation plan: M7 design intelligence and user experience
 
 ## Status
 
@@ -30,6 +30,11 @@ passed. The consolidated result and literal exceptions are recorded in
 `documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`. Do not prepare or claim a GitHub
 release.
 
+M7 Design Intelligence and User Experience is selected for planning as the next milestone.
+No M7 source Package, generated payload change, behavioral gate, or real-game acceptance has
+started. M7 improves the design and authoring workflow while preserving the closed M6.7
+runtime support boundary.
+
 ## Dependency Boundary
 
 - Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.5.4`.
@@ -37,7 +42,7 @@ release.
 - Generated Mods must not reference, package, or depend on BaseLib or use historical
   Alchyr templates. Offline BaseLib/Downfall checkouts remain research-only.
 
-## Current Runtime Architecture
+## Current Implemented Architecture
 
 ```text
 idea -> interview -> semantic SPEC -> grounded recipe -> pinned scaffold
@@ -51,6 +56,24 @@ Package support.
 
 The build wrapper validates project, restore, runtime variant, host version, manifest,
 and deployed artifacts before verification.
+
+The planned M7 authoring architecture is:
+
+```text
+idea
+  -> infer fast / co-design / revision route
+  -> load the relevant STS2-native design grammar
+  -> adaptive interview
+  -> DESIGN.md
+  -> current deliverable slice + separately recorded future vision
+  -> semantic SPEC.md
+  -> existing grounded scaffold/author/build/verify/repair pipeline
+  -> human playtest feedback
+  -> bounded DESIGN.md / SPEC.md revision
+```
+
+This is a target, not the current shipped flow. M7 must retain a short path for an
+unambiguous single Card or similarly narrow request.
 
 ## Verification Ownership
 
@@ -68,10 +91,15 @@ their result is recorded.
 
 ## Current Work
 
-No M6.7 development or acceptance work remains. The milestone is closed, both generated
-payloads agree with `games/sts2/`, and the installed-plugin acceptance is recorded in
-`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`. The earlier
-`documents/history/M67_GROUNDING_KERNEL_RESULTS.md` remains the interim kernel evidence.
+M7 planning is the selected current work. Begin with M7.0 behavioral evaluation; do not
+rewrite `interview.md` first and then invent a passing rubric around the new behavior. No
+implementation Package is authorized merely by this planning document: select and close
+each Package against its recorded contract before starting the next.
+
+No M6.7 development or acceptance work remains. Both generated payloads agree with
+`games/sts2/`, and the installed-plugin acceptance is recorded in
+`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`. The earlier grounding result remains
+interim historical evidence.
 
 The independent `VanillaReforged` workspace and deployment are retained because deletion
 was not authorized. They are disposable evidence rather than maintained fixtures. Do not
@@ -93,9 +121,155 @@ real-user NuGet cache when Codex isolates `dotnet` under another profile. The co
 package remains exactly `0.5.4`; this tooling work does not reopen M6.7 or float its API
 baseline.
 
-Continue triaging bugs found through real user testing, but do not reopen the retired M6.5
-or M6.6 proofs. Their literal results, waivers, and unrun checks remain historical evidence,
-not gates to rerun for M6.7.
+Continue triaging bugs found through real user testing, but do not reopen the retired M6.5,
+M6.6, or M6.7 proofs. Their literal results, waivers, and unrun checks remain historical
+evidence, not M7 gates.
+
+## M7 - Design Intelligence and User Experience (Planned)
+
+### Goal and boundary
+
+M7 should make open-mod a better game-design collaborator before it writes a better Mod.
+It owns question selection, alternatives and trade-offs, STS2-native defaults, content-set
+planning, balance hypotheses, scope control, design-to-SPEC translation, and playtest-led
+revision. Interview is a router and decision surface, not the whole milestone.
+
+M7 does not add runtime APIs, multiplayer, settings, arbitrary patches, new RitsuLib
+Packages, or previously unsupported effects. `DESIGN.md` may preserve a larger future
+vision, but `SPEC.md` and the current build must stay inside the existing capability graph.
+The skill must state that difference rather than silently simplifying the vision or
+pretending future work is currently deliverable.
+
+General design advice and STS2-native design facts are different knowledge classes:
+
+- **pinned fact:** exact `0.107.1` content identity, localized display title, Card data,
+  public lifecycle, or supported operation;
+- **observed convention:** a recurring native pattern that informs a recommendation but can
+  be deliberately broken;
+- **creative decision:** player fantasy, theme, mechanic, trade-off, and acceptable
+  departure selected by the user.
+
+The skill should answer facts from checked references, recommend conventions with reasons,
+and ask the user only for creative decisions or meaningful departures.
+
+### Authoring routes and artifacts
+
+Route selection is inferred and briefly stated; it is not another mandatory questionnaire:
+
+- **fast:** a clear, narrow request receives defaults and at most one compact clarification
+  round before a short design capsule and SPEC;
+- **co-design:** an ambiguous mechanic, Character, archetype, or content set receives
+  alternatives with concrete player-facing trade-offs and incremental decisions;
+- **revision:** an existing Mod, DESIGN/SPEC pair, or real playtest report produces a delta,
+  impact analysis, and bounded update instead of restarting the interview.
+
+All routes produce a durable `DESIGN.md`, but its depth is adaptive. A fast-path capsule may
+contain only intent, one key decision, tuning values, current slice, and explicit gaps. A
+full design may add player fantasy, falsifiable pillars, core loop, rules, formulas,
+counterplay, edge cases, content roles, rejected alternatives, and a playtest hypothesis.
+
+Artifact ownership remains strict:
+
+- `DESIGN.md` explains what experience is intended, why choices were made, what can be
+  tuned, what is deferred, and what evidence would change the design;
+- `SPEC.md` freezes only the exact framework-neutral operations generated now;
+- `PLAN.md` tracks pipeline stages, not game-design rationale;
+- `MEMORY.md` records resolved model/API/resource identities and build/repair facts, not
+  creative intent.
+
+### STS2-native design grammar
+
+M7 must add lazy, version-aware design references instead of relying on model pretraining or
+one retired proof Mod. Character Foundation is the first mandatory slice because the current
+skill knows how to register an exact deck but lacks a reliable native design policy.
+
+The pinned/native research shows these Character starter patterns:
+
+| Character | Native starter shape | Identity teaching cards |
+| --- | --- | --- |
+| Ironclad | 5 Strike, 4 Defend, 1 identity Card | Bash teaches Vulnerable |
+| Silent | 5 Strike, 5 Defend, 2 identity Cards; 12 total | Neutralize and Survivor teach Weak/discard |
+| Defect | 4 Strike, 4 Defend, 2 identity Cards | Zap and Dualcast teach Orbs |
+| Necrobinder | 4 Strike, 4 Defend, 2 identity Cards | Bodyguard and Unleash teach Osty |
+| Regent | 4 Strike, 4 Defend, 2 identity Cards | Falling Star and Venerate teach debuffs/Stars |
+
+Across all five, the player-facing Basic Cards are literally `Strike` / `打击` and
+`Defend` / `防御`, while their internal types are Character-specific. Their pinned base
+shape is 1 Energy, `6 -> 9` damage with `CardTag.Strike`, and 1 Energy, `5 -> 8` Block with
+`CardTag.Defend`. A custom Character should normally preserve those display names and tags,
+then use one or two low-complexity Basic Cards plus the Starter relic to teach its core
+mechanic. A deliberate departure is allowed after the skill explains its onboarding,
+compatibility, and balance consequences.
+
+The observed counts are a design range, not a universal `4/4/2` rule. The skill must propose
+an exact deck based on the Character's intended early decisions and explain why, without
+asking the user to name ten cards manually. Version-bound facts promoted into the shipped
+reference must be checked against the pinned `0.107.1` catalog/game substrate; maintainer
+data such as `baselines/spire-codex` is research input, not sole authority.
+
+Later grammar slices may cover Card rarity/upgrade bands, archetype and card-pool roles,
+Starter relic responsibilities, resource economies, encounter teaching order, Event
+risk/reward, and Monster intent readability. Add each only with a bounded source inventory
+and behavioral evaluation case.
+
+### Delivery packages
+
+| Package | Planned product result | Required closure evidence |
+| --- | --- | --- |
+| M7.0 - behavioral evaluation baseline | A representative prompt corpus, semantic output contracts, rubric, and current-behavior baseline before prompt edits | deterministic fixture/structure checks plus reviewed behavioral scores and documented current failures; no runtime claim |
+| M7.1 - adaptive Interview and routing | Fast, co-design, and revision routes; questions only for decisions that materially change the Mod; resumable progress without re-asking settled facts | prompt scenarios for clear, ambiguous, contradictory, unsupported, resume, and revision inputs; question-economy and decision-preservation review |
+| M7.2 - STS2-native design grammar | Lazy pinned-fact/convention references beginning with Character Foundation and starter decks; defaults with explicit departure handling | checked source inventory, exact fact tests, native-analogy cases, and no retired proof identity in generic shipped instructions |
+| M7.3 - mechanic, content-set, and balance planning | Player fantasy, meaningful decisions, risk/reward, counterplay, formulas, tuning knobs, archetype/card-role coverage, interaction and dominant-strategy checks | focused design cases for one mechanic, one Character/content set, and one numeric/economy problem; absent data stays an open hypothesis |
+| M7.4 - scope and design-to-SPEC translation | `DESIGN.md`, future/current split, MUST/placeholder/defer/out-of-scope decisions, and traceability from every generated operation to a supported SPEC route | artifact schema/trace tests, unsupported-route fail-closed cases, and fast-path compactness review |
+| M7.5 - theme, narrative, presentation, and coherence | Mechanics, names, localization, visuals, Event text, and Character identity reinforce the selected design; changes produce an impact/re-evaluation queue | cross-artifact conflict cases and one revision delta proving accepted/rejected decisions are preserved |
+| M7.6 - playtest and tuning loop | A human-executable hypothesis-led playtest plan, observation capture, design-versus-implementation triage, tuning delta, and targeted backtracking | no fabricated observations; one focused human-led tuning exercise only if explicitly selected, with literal runtime checks for any generated behavior changed |
+
+### M7.0 evaluation model
+
+The initial corpus must include at least:
+
+1. one unambiguous single Card that should not trigger a long interview;
+2. one vague mechanic requiring two or three materially different options;
+3. one Character whose starter deck is unspecified;
+4. one Character/content-set request with a mechanic, archetype, and balance tension;
+5. one request combining supported and unsupported operations;
+6. one request whose future vision is larger than the current deliverable slice;
+7. one existing Mod plus playtest feedback requiring a revision delta;
+8. one user decision that conflicts with a native convention but remains implementable.
+
+The rubric evaluates question economy, native-fact accuracy, alternative distinctness,
+trade-off reasoning, user-decision preservation, player-facing coherence, supported-route
+grounding, future/current separation, design-to-SPEC traceability, and literal evidence
+wording. Tests must not enforce a preferred paragraph or treat an LLM judge as the sole
+pass/fail authority. Missing formulas, playtest data, or source facts must remain explicit
+unknowns rather than confident inventions.
+
+### Wayfinder cleanup and migration
+
+The current source and both payloads contain `Wayfinder`/`RitsuWayfinderProof` in generic
+Character verification and API references; `Pathfinder` is absent. Some lines encode exact
+HP, pool counts, `5 Strike + 5 Guard`, Compass, or proof log markers. Those values belong to
+a retired proof, not to a generated Character contract.
+
+During M7.0/M7.2 implementation:
+
+1. inventory every proof-specific identity in `games/sts2/skills/`;
+2. replace generic verification with exact values read from the current `SPEC.md`;
+3. replace design defaults with pinned native grammar, not another named demo Character;
+4. retain durable proof facts only under `documents/history/` or repository-only evidence;
+5. regenerate both payloads and assert that retired proof identities do not reappear in
+   generic shipped instructions.
+
+This cleanup changes authoring guidance, not the historical truth of the old proof.
+
+### Milestone verification policy
+
+Documentation and prompt-only work uses contract, corpus, and payload checks. A Package that
+changes generated runtime source receives the closest proportional real host; it does not
+inherit M6.7's closed batching exception. Do not schedule a fresh full-pipeline Mod until a
+specific M7 Package or the human lead selects that gate. Human playtest evidence remains
+literal and cannot be replaced by simulated personas, screenshots, build success, or Tier 2
+state alone.
 
 ## M6.6 - Capability Expansion (Closed)
 

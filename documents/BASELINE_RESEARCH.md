@@ -367,12 +367,121 @@ tree also records separately licensed third-party code/assets, and individual im
 audio, Spine, and shader provenance cannot be inferred from the root license. Study
 behavior and code shape; do not redistribute or use those assets as generation references.
 
+## M7 Design-Intelligence Research
+
+The human lead selected M7 Design Intelligence and User Experience for planning on
+2026-08-04. This research changes authoring workflow and design quality; it does not add a
+runtime Package or widen the capability graph.
+
+### Local CCGS baseline
+
+`baselines/Claude-Code-Game-Studios-main` is useful for compact method extraction. Its most
+relevant patterns are:
+
+- Question -> Options with trade-offs -> User decision -> Draft -> Approval;
+- lightweight `quick-design` versus a full system-design route;
+- player fantasy, detailed rules, formulas, edge cases, dependencies, tuning knobs, and
+  acceptance criteria as a complete system-design review;
+- balance review that compares data to an established formula and refuses to invent a
+  missing formula;
+- behavioral skill specifications with happy, failure, and edge cases plus category
+  rubrics;
+- vertical-slice decomposition before large production work.
+
+Do not copy its 49-agent/73-skill scale, mandatory approval before every file section, or
+full GDD ceremony for a simple Mod. open-mod needs one adaptive workflow with lazy design
+references, not a simulated studio org chart.
+
+### Online comparison projects
+
+The following public projects were inspected live on 2026-08-04:
+
+- **[gstack-game](https://github.com/fagemx/gstack-game):** useful Fantasy/Loop/Twist
+  extraction, forcing questions, anti-sycophancy rules, risk-first prototype slices,
+  build-versus-fake decisions, two-layer functional/experiential acceptance, and
+  hypothesis-led playtest protocols. Do not copy its 29-skill shell, telemetry, repeated
+  boilerplate, or uncalibrated numeric confidence scores.
+- **[GDD Toolkit](https://github.com/mamoru-miyagawa/gdd_toolkit):** useful Pillar Gate,
+  design log, tensions, rejected ideas, open questions, pairwise system matrix, and
+  GDD/code-drift checks. Use a compact `DESIGN.md` rather than requiring its complete wiki
+  for every Mod.
+- **[Claude Game Design Suite](https://github.com/baxatron-git/claude-game-design-suite):**
+  useful gravity-not-waterfall model, coherence checks, change propagation, and ordered
+  re-evaluation queues. Do not split open-mod into 22 independent design skills.
+- **[Modmixer](https://github.com/lebek/modmixer):** strongest product-flow comparison for
+  environment preflight, plan approval, visible progress, game launch, log attribution,
+  test/retest, and interrupted-session recovery. open-mod should adopt the workflow
+  qualities without building a desktop application.
+- **[AgentTheSpire](https://github.com/cgxjdzz/AgentTheSpire):** direct STS2 comparison for
+  an editable batch plan, dependency grouping, image approval, and per-item progress. Its
+  one-shot JSON planner, BaseLib/Harmony routes, `latest` target, and prompt-authored API
+  notes are counterexamples to open-mod's pinned and grounded contract.
+- **[godogen](https://github.com/htdt/godogen):** useful adaptive collaboration versus
+  handoff mode and running-result-over-clean-build principle. Its complete-game generation,
+  paid asset stack, and proof-video model are not M7 design architecture.
+- **[Promptfoo](https://github.com/promptfoo/promptfoo):** useful scenario matrix,
+  assertion, and prompt/model comparison concepts. M7.0 should begin with a lightweight
+  repository-owned corpus rather than adding its Node toolchain before the evaluation
+  contract is known.
+
+These repositories are method references, not design authorities. Popularity, a polished
+README, or a generic game-design framework does not establish an STS2 fact or supported
+operation.
+
+### STS2-native Character grammar input
+
+The current skill can register and verify an exact Character starter deck, but it does not
+yet own a reliable native design policy. `baselines/spire-codex/data/characters.json` and
+`cards.json` provide maintainer research input; the M6.7 pinned catalog independently
+confirms the five Character-specific Strike/Defend identities and their localized display
+titles. Before shipping a fact, M7 must check it against the exact `0.107.1` game/catalog
+substrate.
+
+The current native pattern is:
+
+- every Character has Character-specific internal Strike and Defend types displayed as
+  `Strike` / `打击` and `Defend` / `防御`;
+- those Cards are Basic, 1 Energy, tagged Strike/Defend, with `6 -> 9` damage and `5 -> 8`
+  Block respectively;
+- Ironclad starts `5 Strike + 4 Defend + Bash`;
+- Silent starts `5 Strike + 5 Defend + Neutralize + Survivor` for twelve total;
+- Defect, Necrobinder, and Regent start `4 Strike + 4 Defend + 2` identity-teaching Cards;
+- the identity Cards and Starter relic teach or reinforce the Character's first core
+  mechanic instead of acting as unrelated bonus content.
+
+M7 should recommend this grammar before asking the user for deck details. It is still a
+convention: a deliberate departure is allowed when the design records its onboarding,
+compatibility, and balance consequences. The observed counts must not collapse into one
+universal `4/4/2` or `5/5` template.
+
+### M7 research decision
+
+Adopt a compact, progressive pipeline:
+
+```text
+route -> relevant native grammar -> adaptive interview -> DESIGN.md
+      -> current slice/future vision -> SPEC.md -> build/verify -> human playtest delta
+```
+
+`DESIGN.md` owns intent, trade-offs, tuning, rejected alternatives, open questions, and
+future/current scope. `SPEC.md` remains the exact generation contract. Behavioral tests
+must evaluate semantics and decision quality rather than exact prose. Real-player
+observations remain human evidence; no design framework or simulated persona may fabricate
+them.
+
 ## Reused Design Ideas
 
 The active architecture still borrows these durable ideas from the initial survey:
 
 - **godogen:** file-based staged skills, publish-time rendering, progressive disclosure,
-  and resumable state files;
+  resumable state files, and running-result-over-build claims;
+- **CCGS:** collaborative option/decision cycles, compact/full routing, design review
+  dimensions, and behavioral skill specifications without its studio-scale hierarchy;
+- **gstack-game / GDD Toolkit / Claude Game Design Suite:** forcing questions, risk-first
+  slices, durable decisions/tensions, design coherence, and change propagation without
+  importing their full skill stacks;
+- **Modmixer:** environment preflight, visible plan/build/test progress, log attribution,
+  and recovery as product-experience references;
 - **spire-codex:** content facts and vanilla analogs, never C# API authority or a runtime
   dependency;
 - **official RitsuLib tutorials:** product semantics and documented Package membership,
@@ -390,9 +499,9 @@ current same-version product-depth reference under the narrower rules above. The
 tutorial checkout is an active semantics baseline, but remains maintainer-only. None of
 these checkouts may be used to scaffold, author, build, repair, or run a generated Mod.
 
-Claude-specific baseline repositories may remain locally for historical comparison, but
-the product and publish flow now target Codex. They are not required to build or install
-`0.6.0`.
+CCGS is active M7 workflow research but remains maintainer-only and is not required to build
+or install `0.6.0`. Other Claude-specific baselines may remain for historical comparison;
+the product and publish flow target Codex.
 
 ## Decision Rules
 
@@ -407,3 +516,9 @@ the product and publish flow now target Codex. They are not required to build or
 6. Do not make a paid network call or switch image backends without explicit user choice.
 7. Keep runtime sessions inside the shipped pack. Live decompilation and baseline research
    are maintainer work, not steps in `$modmaker`.
+8. Answer pinned facts from checked references, recommend observed conventions with their
+   trade-offs, and reserve user questions for creative decisions or meaningful departures.
+9. A broader design vision does not widen the current runtime boundary; only supported
+   operations enter `SPEC.md`.
+10. Do not claim design quality with words such as "fun" or "balanced" without an
+    observable player behavior, explicit relationship, formula, or playtest hypothesis.
