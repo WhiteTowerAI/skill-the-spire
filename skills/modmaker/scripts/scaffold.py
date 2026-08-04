@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from ritsu_profile import PROFILE
+from vanilla_overrides import write_empty_project_manifest
 
 
 NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -19,7 +20,13 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
-def generate(project_dir: Path, mod_name: str, author: str) -> None:
+def generate(
+    project_dir: Path,
+    mod_name: str,
+    author: str,
+    *,
+    emit_override_manifest: bool = True,
+) -> None:
     if not NAME_RE.fullmatch(mod_name):
         raise ValueError("mod name must be a C# identifier without spaces")
     if "baselib" in mod_name.lower() or "alchyr" in mod_name.lower():
@@ -54,6 +61,7 @@ def generate(project_dir: Path, mod_name: str, author: str) -> None:
   <ItemGroup>
     <PackageReference Include="{PROFILE.package_id}" Version="{PROFILE.framework_version}" PrivateAssets="all" />
     <None Include="{mod_name}.json" />
+    <None Include="openmod\\vanilla-overrides.json" Condition="Exists('openmod\\vanilla-overrides.json')" />
     <None Include="Directory.Build.props" />
     <None Include="Sts2PathDiscovery.props" />
   </ItemGroup>
@@ -66,6 +74,8 @@ def generate(project_dir: Path, mod_name: str, author: str) -> None:
     <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\\$(MSBuildProjectName).json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
+    <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)\\openmod" Condition="Exists('$(MSBuildProjectDirectory)\\openmod\\vanilla-overrides.json')" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\\openmod\\vanilla-overrides.json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)\\openmod" Condition="Exists('$(MSBuildProjectDirectory)\\openmod\\vanilla-overrides.json')" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
   </Target>
 </Project>
@@ -148,6 +158,8 @@ public static partial class MainFile
     _write(project_dir / "Sts2PathDiscovery.props", path_props)
     _write(project_dir / f"{mod_name}.json", json.dumps(manifest, indent=2) + "\n")
     _write(project_dir / f"{mod_name}Code" / "MainFile.cs", source)
+    if emit_override_manifest:
+        write_empty_project_manifest(project_dir, mod_name)
 
 
 def main(argv: list[str]) -> int:

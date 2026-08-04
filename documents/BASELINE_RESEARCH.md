@@ -187,9 +187,9 @@ under `documents/history/`.
   implementation remains product evidence only and its private injection patch is not
   reusable.
 
-### M6.7 vanilla-override planning inputs
+### M6.7 vanilla-override grounding and planning inputs
 
-The planned M6.7 track treats existing vanilla models as version-bound semantic targets,
+The closed M6.7 track treats existing vanilla models as version-bound semantic targets,
 not as permission for arbitrary generated patches. RitsuLib `0.5.4` provides enough public
 composition surface for a broad design:
 
@@ -200,6 +200,9 @@ composition surface for a broad design:
   `OnPlay`, allowing a complete existing open-mod Card recipe to replace that behavior;
 - typed owner capabilities extend vanilla Relic, Potion, Power, Orb, Enchantment,
   Affliction, and Monster hook streams; and
+- RitsuLib `0.5.4` exposes four Card/CardPool material providers through
+  `ExternalCardMaterialOverrideRegistry` plus 40 non-Card/public asset providers through
+  `ExternalAssetOverrideRegistry`; and
 - the checked RitsuLib patcher remains a bounded fallback for cataloged original entry
   points that have no public suppression/override surface.
 
@@ -210,6 +213,119 @@ unusual AI or scene state machines to maintained target adapters. Disabling cont
 remove acquisition routes rather than unregistering a model required by old saves. Preserve
 typed dynamic variables, normal modifiers, localization truth, deterministic RNG, and
 multiplayer parity; fail closed on target/signature/baseline drift.
+
+M6.7.0 now implements the non-gameplay grounding layer. The `0.107.1` collectors observed
+the exact `sts2.dll` SHA-256
+`a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52`, 3883 model-namespace
+metadata types, and 1624 concrete vanilla `ModelDb` entries. Repeated host collection
+produced the same runtime snapshot hash. RitsuLib `0.5.4`
+`ModelTitleExtensions.TryGetTitleLocStringSource` supplies public stable table/key mappings
+for 14 model families, and the game's documented public `LocManager.SetLanguage` temporarily
+loads a requested language without updating the player's saved setting. The collector uses
+that route, restores the original language, and fails if machine-local localization
+overrides are active. The resulting catalog records 1580 stable title sources and 1537
+English plus 1537 Simplified Chinese titles across the 14 pinned language columns. Exact
+display titles are resolver aliases; duplicate titles remain explicit ambiguities, and this
+does not make the resolver a general free-form language parser. The merged catalog now has
+4165 reviewed Adapter fingerprints: the previous twenty for Ancient, availability, and pool
+membership plus 4145 M6.7.5 non-Card targets. M6.7.0 initially emitted only a pinned empty
+manifest and rejected every nonempty operation; M6.7.1 through M6.7.5 promote the first five
+checked operation Packages. These grounding facts alone do
+not prove a vanilla behavior, flow, availability, or visual edit.
+By human-lead decision on 2026-08-03, source development stopped at the complete approved
+M6.7.0-M6.7.5 matrix. The separate current-catalog headed no-op stayed unrun. The later
+closure passed the full regression, synchronized both payloads, built an independent Mod
+from the installed plugin, and received the lead's representative in-game acceptance.
+
+M6.7.1 Public Card Overrides source development is complete. Default Card capabilities now
+cover the grounded non-asset public contributor surface, capability-owned variables,
+recipe-backed `OnPlay` composition/replacement, and owner draw/discard/exhaust hooks. The
+exact routes, effect vocabulary, and exclusions are recorded in
+`sts2-api/reference/vanilla-card-overrides.md`. Focused tests and a representative
+compile-only check pass; selected Card text/play behavior was included in the consolidated
+Mod that the human lead accepted as a whole. No individual-route observation is inferred.
+
+M6.7.2 Public Visual Overrides source development is complete against upstream RitsuLib
+`0.5.4` commit `8b971a79`. The complete public surface is 44 providers: four Card/CardPool
+Material providers and 40 external providers for Relic, Power, Potion, Orb, Act, ordinary/
+Ancient Event, Encounter, Affliction, Enchantment, and Modifier consumers. The manifest
+requires exact target category/type/content kind and Mod-local typed resources; build
+preflight checks required/optional files, directories, lists, traversal/script exclusions,
+and path-vs-loaded-resource conflicts. Providers retain vanilla fallback and stable Mod-key
+cleanup. No external registry exists for a vanilla Monster body, and cross-Mod provider
+overlap remains outside same-Mod diagnostics. Focused manifest/resource tests pass. No AI
+image generation or Package-specific representative C# compile ran. The consolidated
+acceptance included selected Card and Darv visual providers; the human lead accepted the
+Mod as a whole, so no individual-provider observation is inferred. Full regression and
+payload synchronization passed at closure. Unselected providers remain unrun.
+
+M6.7.4 Existing Vanilla Availability source development is complete. The public
+`RequireEpoch` route is grounded for 57 pinned epoch IDs across vanilla Cards, Characters,
+ordinary Events, and shared `EVENT.DARV`. Relic and Potion epoch/permanent-disable filters
+use six fixed character/shared pool override dependencies each. Card, Relic, and Potion
+pool add routes use `ModHelper.AddModelToPool`; remove/move membership uses fixed getter
+Adapters. Complete `ModelDb` pool baselines, ordered membership simulation, primary-pool
+acknowledgement, debug/empty-transition rejection, `existing_instances: preserve`, and
+singleplayer scope are validated. No global weighting route exists, and Card/Character/
+Event permanent disable remains unpromoted. Focused manifest/catalog/document-route tests
+pass. The consolidated Mod included one Card pool move and was accepted as a whole; no
+individual-route observation is inferred. Cache timing, unlock UI, fresh-acquisition
+order/RNG, duplicate absence, and existing-save variants remain unrun; regression and
+payload synchronization passed at closure.
+
+M6.7.3 Existing Ancient Extensions source development is complete for the nine pinned
+`AncientEventModel` targets. RitsuLib's public `AncientOption<TAncient>` route supports a
+single rule returning multiple appended options with conditions, priority, and duplicate-
+text policy. Complete initial-option replacement uses one reviewed postfix on
+`GenerateInitialOptionsWrapper`: the original method creates and retains `_generatedOptions`,
+then the Adapter clears and refills that same list before RitsuLib's append postfix runs.
+This preserves native `Done()` choice-history reads and permits other Mods' public append
+rules to compose after replacement. Protected `SetEventState` and `Done` calls are the only
+two flow dependencies and are fixed `UnsafeAccessor` bindings, not prompt-derived patches.
+
+The semantic Package includes nested owner/run/deck/model conditions, visible versus native-
+locked options, one fixed Gold/HP/Max HP/no cost, typed Card/Relic/Potion/Power Hover Tips,
+relic-backed presentation, ordered damage/heal/Gold/Max HP/model grants, deck upgrade/
+remove/transform/enchant selectors, fixed custom rewards, bounded `weak_short` shake,
+Mod-owned page graphs, and native finish. Text is Mod-local `events.json` in every shipped
+language; `ancients.json` remains the Character-dialogue table. M6.7.2 existing-Ancient
+visual routes compose as separate operations. `TheArchitect` is rejected because the pinned
+game models it as an ordinary `EventModel`. New Ancient models, native opening-dialogue or
+room replacement, line audio, randomized/RNG rewrites, special combat, direct merchant/
+rest/treasure transitions, and multiplayer remain outside M6.7.3. Focused manifest,
+localization, catalog, and route-documentation tests pass. No AI image generation or
+Package-specific representative C# compile ran. The consolidated Mod included one Darv
+replacement/page/portrait route and was accepted as a whole; no individual-route
+observation is inferred, and other Ancient routes remain unrun.
+
+M6.7.5 Existing Vanilla Non-Card Data and Behavior source development is complete. The
+pinned RitsuLib surface provides typed owner capabilities for Relic, Potion, Power, Orb,
+Enchantment, Affliction, and Monster. The promoted public vocabulary includes every 0.107.1
+public `AbstractModel` hook collected from the exact assembly: 100 asynchronous callbacks,
+26 scalar modifiers, 28 `Should*` decisions, plus four typed Orb callbacks. Composition
+runs through default capabilities; complete owner-hook replacement uses fixed run/combat
+stream Adapters and conflicts with every same-target composition rule.
+
+The checked PE inventory adds sixteen intrinsic data routes and complete fingerprinted
+body routes for Relic/Potion/Power/Orb/Enchantment/Affliction lifecycles, Monster move state
+machines, Encounter `GenerateMonsters` plus `AllPossibleMonsters`, and ordinary Event
+initial options plus Mod-owned pages. The catalog contains 4141 target-specific M6.7.5
+method fingerprints and four shared stream/flow boundaries, for 4145 M6.7.5 and 4165 total
+Adapters. Ordinary Event localization uses `<MOD_ID>_EVENT_*` in every shipped `events.json`;
+Ancient keys remain separate. Affliction `AfterApplied()` and `BeforeRemoved()` are
+synchronous `void`, so a complete replacement can suppress them only with empty effect
+lists; async `OnPlay` and public owner hooks remain available. All promoted operations are
+singleplayer. Focused 40-test manifest/catalog/localization/documentation checks and Python
+syntax pass. The consolidated Mod included selected Relic, Monster, and Encounter routes
+and was accepted as a whole; no individual-route observation is inferred. Unselected
+lifecycle/intent/ordinary-Event and save/load variants remain unrun; full regression and
+payload synchronization passed at closure.
+
+The human lead canceled M6.7.6 on 2026-08-03 and declared M6.7 source development complete
+at M6.7.5. On 2026-08-04 the lead reported that the independent-session representative
+effects passed and explicitly closed M6.7. The exact result and exceptions are in
+`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`. Multiplayer vanilla overrides are
+future research rather than pending M6.7 implementation.
 
 ### Future research value
 
@@ -224,10 +340,13 @@ multiplayer parity; fail closed on target/signature/baseline drift.
   resolves skin-specific combat, merchant, and icon assets with per-slot fallback. A
   future open-mod design would need a declared skin bundle and explicit consumer coverage,
   not merely a second combat image.
-- **Multiplayer mechanics:** custom reliable messages, explicit serialization, targeted
-  run locations, request timeouts, disconnect cleanup, and host-authoritative content
-  settings demonstrate why multiplayer is a separate systems track. Singleplayer behavior
-  cannot simply be marked multiplayer-compatible.
+- **Multiplayer mechanics and vanilla overrides:** the canceled M6.7.6 concept belongs to
+  a separately selected future systems track. Custom reliable messages, identical override
+  manifests on every peer, explicit serialization, deterministic state/RNG and choices,
+  targeted run locations, save/load, remote presentation, request timeouts, disconnect
+  cleanup, and host-authoritative content settings are the minimum promotion questions for
+  an already-proved singleplayer operation family. Singleplayer behavior cannot simply be
+  marked multiplayer-compatible.
 - **Modifiers, badges, interoperability, and complex UI:** official Package documentation
   plus pinned public source can establish support before implementation. The generator
   still needs bounded semantic intake and recipes, and behavior/presentation claims still

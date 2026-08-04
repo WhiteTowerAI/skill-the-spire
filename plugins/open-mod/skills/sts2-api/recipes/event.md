@@ -4,6 +4,14 @@
 > room plus at least one consequential option: register it, enter it through the
 > `MapNode` scenario, click a real option, and observe the resulting run-state change.
 
+This recipe creates a new Mod-owned Event. When the request instead changes an exact
+existing vanilla Ancient's initial options or subsequent pages, resolve it through
+`reference/vanilla-overrides.md` and use `reference/vanilla-ancient-overrides.md`; do not
+subclass/register a second Ancient or copy this new-content lifecycle over the native one.
+For a fresh unlock gate on an exact ordinary vanilla Event or shared `EVENT.DARV`, use
+`reference/vanilla-availability-overrides.md`. That route requires one pinned epoch and
+singleplayer scope; act-owned Ancients and permanent Event disable remain outside M6.7.4.
+
 For the full option-result vocabulary (blocking card selections, custom rewards,
 conditional pages, and resumable/terminal special combat), also read
 `reference/event-outcomes.md`. When SPEC selects the bounded normal-layout

@@ -21,11 +21,26 @@ Before MSBuild, the tool verifies:
 - any generated Character `ancients.json` uses the pinned vanilla target catalog,
   contiguous dialogue/line structure, valid visit/repeat/Architect metadata, matching
   Character entries, and identical keys across shipped languages.
+- when present, `openmod/vanilla-overrides.json` has the pinned host/profile/catalog
+  digest, matching Mod id, grounded baselines/routes, no same-Mod conflict, and only
+  operations promoted by the current catalog. M6.7.1 accepts the exact public Card routes
+  in `reference/vanilla-card-overrides.md`; M6.7.2 accepts the 44 exact visual routes and
+  validates their required/optional Mod-local resources through
+  `reference/vanilla-visual-overrides.md`; M6.7.3 accepts exact existing-Ancient option
+  append/replacement/page-flow routes in `reference/vanilla-ancient-overrides.md`, including
+  exact Adapter/dependency fingerprints and complete per-language `events.json` keys.
+  M6.7.4 accepts the exact epoch and Card/Relic/Potion pool routes in
+  `reference/vanilla-availability-overrides.md`, including complete pool baselines,
+  Relic/Potion override dependencies, and ordered primary-pool checks. Every other nonempty
+  route still fails closed.
 
 After the build it checks the NuGet lock resolved the exact compat package, copies the
 Mod's DLL/manifest/PDB through the generated MSBuild target, packs
 `<project-dir>/<ModName>/` when resources exist, and rejects a generated directory that
 contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
+For a new scaffold it also requires the deployed override manifest and compares its bytes
+with the source document that passed preflight. Legacy projects without a source override
+manifest remain valid.
 
 `--runtime-dir <path>` may point at an explicitly selected runtime folder or release zip.
 `--skip-runtime-check` is a compile-only escape hatch and can never satisfy Tier 1.
@@ -49,6 +64,10 @@ contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
 - `[ancient-dialogue]` or an Ancient localization detail in the profile failure means the
   generated flat table is structurally unsafe. Fix the reported semantic group/key; do not
   bypass the preflight or enable the debug missing-Architect fallback.
+- `[vanilla-overrides]` with an Ancient target/route/page/localization/fingerprint detail
+  means the M6.7.3 manifest, generated flow, or `events.json` drifted. Fix the named
+  semantic operation or generated source; never relax the catalog or swap in a guessed
+  patch target.
 - `manifest has_pck must be ...` means authored localization/art/scenes and the manifest
   disagree. Set the boolean to match the resource tree before rebuilding.
 - ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.

@@ -152,6 +152,11 @@ TOOLS_DIR_ABS="$TARGET/$TOOLS_DIR_REL"
 rm -rf "${TOOLS_DIR_ABS:?}"
 mkdir -p "$TOOLS_DIR_ABS"
 for t in "$REPO_ROOT"/games/sts2/tools/*.py; do
+    # Catalog collection is a repository-maintainer workflow with a C# project/template;
+    # generated Mods need only the checked catalog and vanilla_overrides.py validator.
+    if [ "$(basename "$t")" = "collect_vanilla_catalog.py" ]; then
+        continue
+    fi
     cp "$t" "$TOOLS_DIR_ABS/"
 done
 

@@ -34,6 +34,12 @@ are stated directly, without readiness levels or evidence badges.
 | Relic-owned Rest Site option | real Rest Site / `MapNode` | singleplayer; absent versus native-disabled; free/fixed Gold; deterministic preflightable outcome; once per site/run; native stay/leave; checked custom/Heal-fallback icon |
 | Character resource/payment/UI | two-combat Character | RitsuLib Secondary Resource, bool payment, public 220x32 fixed UI at offset 160, text fallback |
 | ordered semantic buffer | two-combat Character | combat-attached semantic values, overflow/order/output/reset, normal source Play -> Discard |
+| vanilla override grounding kernel | offline metadata + `ModelDb`/localization host | supported: pinned `0.107.1` catalog with 1624 vanilla models, 1580 stable title sources, checked display titles across 14 languages, and exact assembly identity; exact internal/localized-title alias resolution with explicit ambiguity; semantic manifest; baseline/fingerprint/conflict validation; final regression/payload/installed-plugin build passed, while the separate current-catalog headed no-op remains unrun |
+| existing vanilla Card public overrides | `CombatPlayer` plus Card library/reward views | supported: public type/rarity/target, appended tags, evaluated Energy/Star cost, playability/result pile, title/description/type text, hover tips, native gold/red glow, capability variables, `OnPlay` before/after/replacement, and owner draw/discard/exhaust composition; representative Strike routes were included in the built Mod accepted as a whole, while unselected operations remain unrun |
+| existing vanilla public visual overrides | nearest Card/CardPool, Relic/Power/Potion/Orb, Act, Event/Ancient, Encounter, Affliction/Enchantment/Modifier consumers | supported: complete 44-provider RitsuLib `0.5.4` Package; exact Mod-local Material/texture/PackedScene/Spine/directory/list resources; matching raster normalization; typed/path vanilla fallback; cleanup and same-surface conflicts; selected Card and Darv providers were included in the built Mod accepted as a whole, while other providers remain unrun; no vanilla Monster-body external provider |
+| existing vanilla Ancient extensions | native Ancient room | supported: nine pinned `AncientEventModel` targets; public multi-option append or one fixed fingerprinted complete initial-option replacement; nested conditions, visible/locked choices, fixed Gold/HP/Max HP costs, typed tips/relic presentation, ordered fixed effects, deck selectors, custom rewards, Mod-owned pages, native finish/choice history, full-language `events.json`, and separate M6.7.2 visuals; selected Darv replacement/page/portrait was included in the built Mod accepted as a whole, while other routes remain unrun; Architect rejected as ordinary Event |
+| existing vanilla availability | `ModelDb` pools and unlock consumers | supported: public 57-epoch gates for Card, Character, ordinary Event, and shared `EVENT.DARV`; fixed Relic/Potion epoch or permanent-disable filters; Card/Relic/Potion pool add plus remove/move membership; complete baselines, ordered simulation, primary-pool checks, debug/empty-transition rejection, existing-instance preservation, and singleplayer scope; selected Card pool move was included in the built Mod accepted as a whole, while cache/order/RNG/duplicate/save variants remain unrun |
+| existing vanilla non-Card data and behavior | combat/run owner streams, concrete lifecycle hosts, `CombatEnemy`, ordinary Event room | supported: Relic/Potion/Power/Orb/Enchantment/Affliction/Monster typed owner capabilities with all 100 async hooks, 26 numeric hooks, 28 decisions, and four typed Orb callbacks; sixteen intrinsic data routes; complete checked lifecycle/body replacements; Monster move graphs; paired actual/all-possible Encounter rosters; complete ordinary Event options/pages and full-language `events.json`; singleplayer; selected Relic/Monster/Encounter routes were included in the built Mod accepted as a whole, while unselected families remain unrun |
 
 The focused `ComputedValuesProof` host covered base/upgrade and live-input changes,
 Strength/Vulnerable, Dexterity/Frail, Energy/Star zero and maximum formatting, exact neutral
@@ -80,6 +86,28 @@ Intent is supported because it belongs to the documented Extra Badges Package an
 public API exists. Its absence from the current implementation schedule does not change
 that. An Intent badge adds information to one intent; it does not replace a separate effect
 icon or the native multi-attack count.
+
+M6.7.0 is infrastructure rather than a vanilla-edit claim. Its runtime collector produced
+the same 1624-model snapshot and SHA-256 on repeated `0.107.1` host runs, strict Tier 1 and
+structured Tier 2 passed, and an earlier pre-localization no-op scaffold built, deployed,
+and passed Tier 1. The representative closure did not repeat a separate headed no-op for
+the current localized catalog; the fresh nonempty acceptance Mod owns installed-plugin
+scaffold/author/build, and that omitted no-op host remains an explicit unrun check.
+The checked catalog currently has 4165 adapter fingerprints and promotes
+`m6.7.1-public-card-overrides`, `m6.7.2-public-visual-overrides`,
+`m6.7.3-existing-ancient-overrides`, `m6.7.4-availability`, and
+`m6.7.5-non-card-data-behavior`. Of those fingerprints, 4141 are target-specific M6.7.5
+methods and four are shared stream/flow boundaries. The final regression passed `165/165`;
+Python compilation and six skill-root validations passed; plugin and portable payloads
+were repeatable with 161 effective files each and zero differences; and the independent
+installed-plugin Mod built with zero warnings/errors. On 2026-08-04 the human lead reported
+that the representative Mod's effect test passed and explicitly closed M6.7; no individual
+Card, Relic, Darv, Monster, or Encounter observation is inferred. Tier 1, Tier 2/SelfTest,
+the current-catalog headed no-op, and all unselected
+providers/hooks/families/availability/Event/save/multiplayer/cross-Mod paths remain unrun.
+See `documents/history/M67_VANILLA_OVERRIDES_RESULTS.md` for the consolidated result,
+`documents/history/M67_GROUNDING_KERNEL_RESULTS.md` for interim kernel evidence, and the
+five `sts2-api/reference/vanilla-*-overrides.md` Package files for promoted contracts.
 
 ## Static Art Contract
 
@@ -143,6 +171,9 @@ Do not generate it.
   but custom multi-target Potions have a pinned lifecycle limitation: queued resolution can
   reach an empty group only after normal Potion consumption. The generator therefore stops
   at Card one/many and Potion one rather than emitting an unsafe workaround.
+- Pinned Affliction `AfterApplied()` and `BeforeRemoved()` are synchronous `void` callbacks.
+  A complete M6.7.5 lifecycle replacement can suppress them only with empty effect lists;
+  async `OnPlay` replacement and public owner-hook composition retain their full routes.
 
 ## Unsupported
 
@@ -153,15 +184,24 @@ Do not generate it.
 - multiplayer/replay Scry or global Scry modifiers/completion hooks;
 - arbitrary object/Card/map targets or global custom-target interoperability registration;
 - ungrounded patch targets or arbitrary generated Harmony/reflection/IL;
-- planned M6.7 version-bound vanilla content overrides until a documented public route is
-  recorded for each requested operation/category;
+- every M6.7 vanilla override operation outside the promoted M6.7.1 public Card, M6.7.2
+  public visual, M6.7.3 existing-Ancient, M6.7.4 availability, and M6.7.5 non-Card data/
+  behavior routes until its specific public/adapter route, semantic recipe, and operation
+  package are promoted; vanilla
+  Monster-body visual override has no public external route in RitsuLib `0.5.4`;
+- global acquisition weighting, Card/Character/Event permanent disable, act-owned Ancient
+  epoch gating, multiplayer availability edits, and any reward/source weighting without an
+  individually grounded route;
 - custom locked-selection/map-marker presentation;
-- custom Ancient models, backgrounds, layouts, options/rewards, line audio, global
-  dialogue replacement, arbitrary Ancient VFX, and multiplayer presentation;
+- new Ancient models, native opening-dialogue/room replacement, line audio, randomized
+  outcome/RNG rewrites, special combat, direct merchant/rest/treasure transitions, Ancient
+  behavior beyond the fixed M6.7.3 option/page/effect vocabulary, arbitrary behavior VFX,
+  and multiplayer presentation;
 - production animation beyond the bounded Idle/Attack/Hit/Dead cues, Cast, Spine, trails,
-  arbitrary materials beyond the bounded pool-frame helper,
+  generated or behavior-bearing materials/scenes outside exact promoted public resources,
   multiplayer presentation, and audio;
-- arbitrary Event layouts/VFX, direct merchant/rest/treasure transitions, multiple
+- behavior-bearing arbitrary Event layouts/VFX beyond exact M6.7.2 visual resources,
+  direct merchant/rest/treasure transitions, multiple
   special combats per mutable Event instance, or arbitrary forced chains;
 - one-click Workshop publishing.
 

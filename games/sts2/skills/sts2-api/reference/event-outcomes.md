@@ -27,6 +27,8 @@ These are the grounded Event-level forms. Use `DynamicVars` for displayed number
 value appears in localized text.
 
 ```csharp
+using MegaCrit.Sts2.Core.Entities.Gold;
+
 var owner = Owner ?? throw new InvalidOperationException("Event has no owner");
 
 await PlayerCmd.GainGold(gold, owner);

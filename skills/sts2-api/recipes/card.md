@@ -18,9 +18,11 @@
 > Vanilla cards to imitate: `StrikeIronclad` (single-target attack), `DefendIronclad`
 > (self block), `Inflame` (gain a Power), `Bash` (attack + apply a debuff).
 >
-> **Scope: making a NEW card.** *Editing* an existing vanilla card is a different,
-> harder path (version-sensitive patching) and is deferred;
-> see the note near the end.
+> **Scope: making a NEW card.** Editing an existing vanilla Card starts at
+> `reference/vanilla-overrides.md` and `reference/vanilla-card-overrides.md`. Use this
+> recipe there only to lower effect commands selected by a promoted public override route.
+> For fresh unlock gates or Card-pool membership, also read
+> `reference/vanilla-availability-overrides.md`; it owns the pinned epoch and pool routes.
 
 ## When to use
 
@@ -475,9 +477,11 @@ public sealed class Bulk : ModCardTemplate
 > full public entry, e.g. `card QUICK_JAB_CARD_QUICK_JAB`. Confirmed against
 > `CardConsoleCmd.cs`. (For a non-attack card you can also target a pile: `card <id> Draw`.)
 
-## Editing an EXISTING vanilla card — deferred (not this recipe)
+## Editing an existing vanilla Card
 
-This recipe makes **new** cards. *Changing* a shipped card (e.g. "make Strike deal 9")
-is a different mechanism requiring a version-sensitive patch against vanilla code. It is
-outside the supported boundary; do not initialize a patcher for a normal new Card. If a
-request is really "edit an existing card", report that gap and offer the closest new Card.
+This recipe still makes **new** Cards. For a shipped Card change such as "make Strike deal
+9", resolve the exact target through `reference/vanilla-overrides.md`, then author only the
+promoted public operations in `reference/vanilla-card-overrides.md`. Reuse this recipe only
+for effect-command semantics selected by that override contract. Do not initialize a
+patcher, register a replacement model, or silently substitute a new Card. Report only the
+specific requested operation as a gap when it is outside the promoted Package.

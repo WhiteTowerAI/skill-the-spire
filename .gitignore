@@ -12,5 +12,9 @@ __pycache__/
 # console quiet). Regenerated each build.
 .build.log
 
+# Maintainer-only M6.7 assembly catalog build output.
+games/sts2/tools/assembly_catalog/bin/
+games/sts2/tools/assembly_catalog/obj/
+
 # Local image-generation credentials. Never commit provider keys.
 art-backend.json

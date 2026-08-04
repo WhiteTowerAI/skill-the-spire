@@ -29,6 +29,32 @@ implementation.
 RitsuLib is the only active adapter. Do not select a historical dependency, copy another
 scaffold, or infer a runtime dependency from a recipe name.
 
+When the request edits an existing vanilla model, read
+`../sts2-api/reference/vanilla-overrides.md` before any new-content recipe. The
+M6.7.0 kernel resolves and validates the pinned target. For a selected visual surface,
+continue to `../sts2-api/reference/vanilla-visual-overrides.md`; M6.7.2 promotes
+all 44 public Card-material and external-asset providers. For a non-asset exact Card
+target, continue to `../sts2-api/reference/vanilla-card-overrides.md`; M6.7.1
+promotes its property/cost/play-state/text/tip/glow/capability/behavior routes. For an
+exact Relic/Potion/Power/Orb/Enchantment/Affliction/Monster/Encounter/ordinary Event data
+or behavior request, continue to
+`../sts2-api/reference/vanilla-non-card-overrides.md`; M6.7.5 promotes the complete
+public owner-hook surface plus checked intrinsic-data and complete-body Adapters. For an
+exact Card/Character/ordinary Event/shared Darv
+epoch gate, or a Card/Relic/Potion pool membership change, continue to
+`../sts2-api/reference/vanilla-availability-overrides.md`; M6.7.4 promotes the
+public `RequireEpoch`/`AddModelToPool` routes plus the reviewed Relic/Potion and pool getter
+Adapters. For an exact existing Ancient's option/branch request:
+continue to `../sts2-api/reference/vanilla-ancient-overrides.md`; M6.7.3 promotes
+public multi-option append plus one fixed fingerprinted replacement/page-flow Adapter.
+Other operations remain grounding-only. Never derive a patch body from the prompt or
+silently convert the request into new content.
+
+A request to replace, remove, or hide a vanilla Card's original description is a blocking
+base-description replacement gap under RitsuLib `0.5.4`. Report that only before/after
+fragments exist and stop. Do not return an appended-text implementation unless the user has
+explicitly accepted composition instead.
+
 ## How to answer
 
 1. Check `../sts2-api/recipes/` for the element or mechanic type (relic, potion,
@@ -122,6 +148,12 @@ scaffold, or infer a runtime dependency from a recipe name.
 | File | Content | When to read |
 |------|---------|--------------|
 | `reference/ritsulib-adapter.md` | Pinned RitsuLib compat profile, public registration/template routing, asset profiles, lifecycle/persistence/resource routes, and diagnostics | After the semantic SPEC and before a surface recipe |
+| `reference/vanilla-overrides.md` | Pinned vanilla catalog, exact alias resolution, semantic manifest, promotion, baseline/fingerprint, and conflict checks | Any request targeting existing vanilla content; before category-specific routing |
+| `reference/vanilla-card-overrides.md` | M6.7.1 public existing-Card operations: properties, evaluated costs, play state/result, localized text/tips, native glow, capability variables, owner hooks, and `OnPlay` composition/replacement | Authoring an override for an exact existing `CARD.*` target |
+| `reference/vanilla-visual-overrides.md` | M6.7.2 complete 44-route visual registry matrix, Mod-local resource manifest, typed loading/fallback, conflicts, cleanup, and art/complex-resource boundary | Authoring a visual override for an exact existing vanilla model |
+| `reference/vanilla-ancient-overrides.md` | M6.7.3 existing-Ancient option append/replacement, conditions/costs/tips/effects/pages, Mod-local localization, and exact finish/page/replacement Adapter fingerprints | Authoring options or page progression for an exact existing `content_kind: ancient` target |
+| `reference/vanilla-availability-overrides.md` | M6.7.4 pinned epoch gates, Relic/Potion override filters, and Card/Relic/Potion pool add/remove/move routes with primary-pool checks | Authoring a grounded availability or pool-membership operation for an exact vanilla target |
+| `reference/vanilla-non-card-overrides.md` | M6.7.5 complete non-Card owner-hook surface, sixteen intrinsic data routes, and complete Relic/Potion/Power/Orb/Enchantment/Affliction/Monster/Encounter/ordinary Event behavior replacements | Authoring grounded data or behavior for an exact existing non-Card target |
 | `recipes/relic.md` | Relic trigger/effect/state behavior, localization fields, fallback, and proof obligations | Authoring a relic after adapter selection |
 | `recipes/potion.md` | Potion usage/target/effect behavior, localization fields, fallback, and proof obligations | Authoring a potion after adapter selection |
 | `recipes/card.md` | Card play/target/scaling/upgrade behavior, localization fields, fallback, and proof obligations | Authoring a card after adapter selection |
@@ -161,8 +193,14 @@ scaffold, or infer a runtime dependency from a recipe name.
 | `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |
 | `errors.md` | Error signature → cause → fix catalog; append-only | Build or load failure; repair loop |
 
-*Editing existing* vanilla content (relics/cards/potions) is not a recipe — it needs
-Harmony patching and is deferred. The recipes make **new** elements.
+*Editing existing* vanilla content starts at `reference/vanilla-overrides.md`, not a new-
+content recipe. Existing Cards use the promoted public route in
+`reference/vanilla-card-overrides.md` and may reuse a grounded effect recipe only for its
+semantic lowering. Existing Ancient option/page behavior uses the promoted bounded route in
+`reference/vanilla-ancient-overrides.md`; its visuals remain separate M6.7.2 operations.
+Existing non-Card data/behavior in the M6.7.5 matrix uses
+`reference/vanilla-non-card-overrides.md`. Do not infer that every edit needs Harmony, and
+do not author an operation outside a listed catalog package.
 
 ## Key rules to remember (recite these when relevant)
 
@@ -186,8 +224,9 @@ Harmony patching and is deferred. The recipes make **new** elements.
 - **Event/World Node:** preserve real page/option UI, blocking overlay completion,
   resume-vs-map choice, one special combat per mutable Event, and the bounded portrait,
   rich-text, native presentation, and cleanup profiles. Direct merchant/rest/treasure
-  transitions, custom layouts, Ancient layouts, arbitrary VFX, and speech bubbles remain
-  unsupported.
+  transitions, custom layouts, arbitrary VFX, and speech bubbles remain unsupported for new
+  normal Events. Exact existing Ancient visuals/options route through the separate M6.7.2/
+  M6.7.3 references; do not treat that override Package as new Ancient authoring.
 - **Forced Event follow-up:** one token, one target Event, one act, one Unknown MapPoint
   route, and one named completion option. Do not generalize it to arbitrary chains,
   vanilla edits, multiplayer, or save-roundtrip claims.

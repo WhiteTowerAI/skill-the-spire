@@ -51,12 +51,65 @@ Package on 2026-08-02. The strict structured Tier 2 harness was waived, not run.
 and official-version proof records remain under `documents/history/` and
 `games/sts2/experimental/card-pile-extra-hand/`.
 
-M6.7 is the planned follow-on for version-bound vanilla content overrides and behavior
-composition. Its intended scope includes data/upgrade/property edits, acquisition and pool
-changes, behavior composition, and complete recipe-backed replacement across grounded
-content categories. It does not start automatically after M6.6. Record a documented public
-route for each requested operation/category before implementation; never generate
-ungrounded Harmony, reflection, or IL from a prompt.
+M6.7 is closed by explicit human-lead decision on 2026-08-04. It delivers version-bound
+vanilla content overrides and behavior composition. M6.7.0 implements the grounding
+kernel: the pinned `0.107.1` catalog contains 1624 vanilla models, checked title table/key
+metadata plus localized display-title
+aliases in all 14 pinned languages and exact assembly identity. M6.7.1
+Public Card Overrides source development is implemented as the first promoted operation
+Package, covering the grounded non-asset Card contributors and public behavior composition.
+M6.7.2 Public Visual Overrides source development is also implemented as the second promoted
+Package. It covers all 44 public RitsuLib `0.5.4` Card-material/external-asset providers
+across Card/CardPool, Relic, Power, Potion, Orb, Act, Event/Ancient, Encounter, Affliction,
+Enchantment, and Modifier targets, with exact Mod-local resources, typed/path alternatives,
+fallback, cleanup, and same-surface conflicts. There is no vanilla Monster-body external
+provider. Focused manifest/resource tests pass; a representative M6.7.2 C# compile was not
+run in the sandbox. M6.7.3 Existing Ancient Extensions source development is implemented as
+the third promoted Package. It supports public multi-option append and one fixed,
+fingerprinted complete initial-option replacement Adapter for the nine pinned native
+Ancients, plus Mod-owned subsequent pages, nested conditions, fixed Gold/HP/Max HP costs,
+typed option presentation, deterministic effects, deck selections, fixed custom rewards,
+native `Done()` choice history, and separate M6.7.2 visual composition. Three reviewed
+Adapter targets fail closed on IL drift. `TheArchitect` is an ordinary Event in `0.107.1`
+and is rejected by the Ancient routes. Focused manifest/localization/catalog tests pass;
+one Darv replacement/page/portrait route was included in the consolidated Mod that the
+human lead accepted as a whole; no individual-route observation is inferred, and unselected
+Ancient behaviors and presentation paths remain unrun.
+M6.7.4 Existing Vanilla Availability source development is implemented as the fourth
+promoted Package. It supports the public 57-epoch gate for vanilla Cards, Characters,
+ordinary Events, and shared `EVENT.DARV`; Relic/Potion epoch or permanent-disable filters
+through six-dependency fixed Adapters; and Card/Relic/Potion pool add plus fixed
+remove/move membership Adapters. Pool edits preserve vanilla model identity and existing
+instances, require the pinned primary pool, reject debug/empty transitions, and are
+singleplayer-only. Focused manifest/catalog/document-route tests pass. One representative
+pool move was included in the consolidated Mod that the human lead accepted as a whole;
+no individual-route observation is inferred, and unselected cache timing, unlock UI,
+fresh-reward ordering/RNG, duplicate, and existing-save paths remain unrun.
+M6.7.5 Existing Vanilla
+Non-Card Data and Behavior source development is
+implemented as the fifth promoted Package. It covers seven typed owner-capability families
+with all 100 asynchronous `AbstractModel` hooks, 26 numeric hooks, 28 decision hooks, and
+four typed Orb callbacks; sixteen intrinsic data routes; complete Relic/Potion/Power/Orb/
+Enchantment/Affliction lifecycle bodies; Monster move graphs; paired runtime/all-possible
+Encounter rosters; and complete ordinary Event initial options plus Mod-owned pages. Public
+owner hooks compose, while complete suppression/replacement uses checked `0.107.1`
+Adapters. The catalog now contains 4165 reviewed Adapter fingerprints, including 4145 for
+M6.7.5. Affliction `AfterApplied`/`BeforeRemoved` are synchronous and can only be suppressed
+with empty effect lists; async `OnPlay` and owner hooks retain their full routes. Focused
+40-test manifest/catalog/localization/documentation checks and Python syntax pass.
+Representative Relic, Monster, and Encounter routes were included in the consolidated Mod
+that the human lead accepted as a whole; no individual-route observation is inferred, and
+unselected non-Card families and ordinary Event paths remain unrun. On 2026-08-03
+the human lead declared the approved
+M6.7.0-M6.7.5 source-development matrix complete and canceled M6.7.6; multiplayer vanilla
+overrides moved to Future Outlook and are not part of M6.7. The final regression passed
+`165/165`, synchronized payloads were repeatable and identical, the installed-plugin
+independent Mod built successfully, and the human lead reported the in-game effects passed.
+Tier 1, Tier 2/SelfTest, the current-catalog headed no-op, and all unselected paths remain
+explicitly unrun. The durable result is
+`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`. Record a documented public route or
+fixed reviewed Adapter for each requested operation/category before implementation; never
+generate ungrounded Harmony, reflection, or IL from a prompt.
 
 ## Dependency Contract
 
@@ -115,6 +168,34 @@ Surfaces open-mod currently generates include:
 - complete documented Custom Card Piles Package authoring across combat/run lifetime,
   headless/top-bar/bottom-corner/ExtraHand presentation, public screens/views/hotkeys,
   deterministic visibility, native Card movement, localization, and ExtraHand interaction.
+- the M6.7.0 vanilla grounding kernel: checked `0.107.1` catalog, exact internal and
+  localized-display-title alias resolver,
+  empty semantic manifest, expected-baseline/fingerprint/conflict validation, and no-op
+  scaffold/build/deployment wiring.
+- M6.7.1 Public Card Overrides for type/rarity/target, appended tags, evaluated Energy/Star
+  costs, conditional playability, result piles, title/description/type-text composition,
+  hover tips, native gold/red glow, capability-owned variables, recipe-backed `OnPlay`
+  before/after/replacement, and owner draw/discard/exhaust composition.
+- M6.7.2 Public Visual Overrides for all 44 public Card-material/external-asset providers:
+  exact vanilla Card/CardPool, Relic, Power, Potion, Orb, Act, Event/Ancient, Encounter,
+  Affliction, Enchantment, and Modifier targets; Mod-local Material/texture/PackedScene/
+  Spine/directory/list resources; deterministic raster normalization where an established
+  `gen_sprite.py` role matches; typed/path fallback; same-surface conflicts; and cleanup.
+- M6.7.3 Existing Ancient Extensions for the nine pinned `AncientEventModel` targets:
+  public multi-option append or one fixed complete initial-option replacement; nested
+  conditions, visible/locked rules, fixed Gold/HP/Max HP costs, typed Hover Tips and
+  relic-backed presentation, ordered deterministic outcomes, deck upgrade/remove/
+  transform/enchant selection, fixed custom rewards, Mod-owned subsequent pages, native
+  finish/choice history, full shipped-language `events.json`, and separate M6.7.2 visuals.
+- M6.7.4 Existing Vanilla Availability for pinned epoch gates and Card/Relic/Potion pool
+  add/remove/move membership, with Relic/Potion fixed epoch/disable filters, complete
+  baseline simulation, primary-pool checks, singleplayer scope, and existing-instance
+  preservation.
+- M6.7.5 Existing Vanilla Non-Card Data and Behavior for Relic/Potion/Power/Orb/
+  Enchantment/Affliction/Monster public owner-hook composition; all pinned public effect,
+  numeric, decision, and typed Orb callbacks; sixteen intrinsic data routes; complete
+  checked lifecycle/body replacements; Monster move graphs; paired Encounter rosters; and
+  ordinary Event options/pages with full shipped-language `events.json`.
 
 Generated readability APIs include conditional Card Hand Glow, up to three safe-corner
 Relic labels, and one top-left Power label from the RitsuLib Extra Badges family. Intent
@@ -131,22 +212,36 @@ Preserve these important boundaries:
 - Custom Card Piles use official public RitsuLib APIs only. Generated Mods must not recreate
   the framework's native-Hand bridge, patch pile internals, or narrow the documented Package
   merely because a selected consumer lacks a focused proof.
+- Pinned Affliction `AfterApplied()` and `BeforeRemoved()` are synchronous `void` methods.
+  A complete M6.7.5 lifecycle replacement may suppress them only with empty generated
+  effect lists; async `OnPlay` and public owner-hook composition remain available.
 - The fixed Character resource control is 220x32 at offset 160 with a text fallback and
   must remain disjoint from native Energy.
-- Custom locked-selection/map-marker presentation, custom Ancient models/backgrounds/
-  layouts/options/rewards, production animation beyond the bounded cues, line audio,
-  the custom multi-target Potion lifecycle limitation, arbitrary material/audio,
+- Custom locked-selection/map-marker presentation, new Ancient models, global native
+  dialogue/room replacement, Ancient behavior outside the fixed M6.7.3 option/page/effect
+  vocabulary, randomized outcome/RNG rewrites, special combat and direct merchant/rest/
+  treasure transitions,
+  production animation beyond the bounded cues, line audio,
+  the custom multi-target Potion lifecycle limitation, global acquisition weighting,
+  Card/Character/Event permanent disable without a reviewed route, behavior-bearing scene/material
+  generation outside the promoted M6.7.2 resource routes, audio,
   remote-player UI, alternative Energy, retained-card zones, and one-click Workshop
-  publishing retain their recorded boundaries. M6.7 categories are not generated until a
-  documented public route is recorded for the requested operation/category.
+  publishing retain their recorded boundaries. Outside the promoted M6.7.1 public Card,
+  M6.7.2 public visual, M6.7.3 existing-Ancient, M6.7.4 availability, and M6.7.5 non-Card
+  data/behavior routes, nonempty M6.7 operations are not generated until their delivery
+  package records and promotes a documented public/fixed-Adapter route for the requested
+  operation/category. Source-specific weighting and unpromoted disable surfaces remain
+  unsupported. Multiplayer vanilla overrides are future work outside M6.7 and remain
+  unsupported until a separately selected track promotes them.
 
 For the exact active inventory, read
 `games/sts2/tests/content-capability-graph.md`.
 
 ## Art Contract
 
-`gen_sprite.py` is framework-neutral. RitsuLib `*AssetProfile` consumers own runtime
-wiring. The verified Character profiles are selection portrait/background, top-panel
+`gen_sprite.py` is framework-neutral. RitsuLib `*AssetProfile` consumers or an exact
+M6.7.2 external visual provider own runtime wiring. The verified Character profiles are
+selection portrait/background, top-panel
 main/outline icons, combat/rest/merchant static bodies, five full-energy layers, and
 distinct large/text Energy icons. Optional combat cues are a private combat-only frame
 set, not a profile-global animation replacement.
@@ -169,8 +264,9 @@ not silently select a paid backend. Every acquisition path converges on determin
 - `skills/`: generated portable Agent Skills payload from `publish.sh --portable`.
 - `.agents/plugins/marketplace.json`: repo-local Codex marketplace entry.
 
-Edit source under `games/sts2/`; never hand-edit generated payload contents. Regenerate
-both committed payloads after source changes.
+Edit source under `games/sts2/`; never hand-edit generated payload contents. Regenerate and
+validate both committed payloads after source changes. The M6.7 closure payloads were
+synchronized from that source and accepted through the reinstalled plugin.
 
 ## Verification
 
@@ -186,6 +282,13 @@ Keep verification proportional:
 4. Use a fresh natural-language acceptance Mod only when the current
    `documents/IMPLEMENTATION_PLAN.md` explicitly schedules a full-pipeline gate or the
    human lead asks for one. Record durable evidence, then retire the acceptance Mod.
+
+M6.7 used a temporary milestone-level batching exception approved by the human lead on
+2026-08-03 and closed on 2026-08-04 after one final source regression, synchronized
+payloads, an independent installed-plugin build, and the lead's representative in-game
+acceptance. Do not rerun that milestone gate or expand it into an exhaustive provider/hook
+matrix. Preserve the unrun Tier 1, Tier 2/SelfTest, current-catalog no-op, and unselected
+paths recorded in `documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`.
 
 Do not turn a focused change into an unscheduled end-to-end acceptance exercise. Local
 documentation or tooling changes that cannot affect generated runtime behavior need only

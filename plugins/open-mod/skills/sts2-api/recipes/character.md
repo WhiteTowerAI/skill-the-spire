@@ -15,6 +15,12 @@ Read `reference/ritsulib-adapter.md` first. When static art is selected, also
 read `reference/character-presentation.md` and `reference/art-contract.md`.
 When combat cues are selected, additionally read `reference/character-combat-cues.md`.
 
+This recipe creates a new Mod-owned Character. For a pinned existing vanilla Character's
+fresh unlock gate, resolve it through `reference/vanilla-overrides.md` and then use
+`reference/vanilla-availability-overrides.md`. M6.7.4 permits a singleplayer pinned-epoch
+requirement only; it does not permit permanent disable, pool replacement, or registration
+as a generated-Mod Character.
+
 ## Registration and model shell
 
 Use the pinned open-mod scaffold. Do not invoke an Alchyr/BaseLib character

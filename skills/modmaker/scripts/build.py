@@ -38,6 +38,7 @@ from ritsu_profile import (
     validate_restore_assets,
     validate_runtime_asset,
 )
+from vanilla_overrides import VanillaOverrideError, validate_project_override_manifest
 
 DIAG_RE = re.compile(r"error|warning|错误|警告|CS\d|MSB\d", re.IGNORECASE)
 
@@ -139,6 +140,15 @@ def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path
         raise RitsuProfileError(
             f"generated Mod directory contains a framework payload: {', '.join(present)}"
         )
+    override_manifest = project_dir / "openmod" / "vanilla-overrides.json"
+    deployed_override_manifest = mods_dir / "openmod" / "vanilla-overrides.json"
+    if override_manifest.is_file():
+        if not deployed_override_manifest.is_file():
+            raise RitsuProfileError("deployed Mod is missing openmod/vanilla-overrides.json")
+        if override_manifest.read_bytes() != deployed_override_manifest.read_bytes():
+            raise RitsuProfileError(
+                "deployed openmod/vanilla-overrides.json differs from the validated source"
+            )
 
 
 def main(argv: list[str]) -> int:
@@ -173,6 +183,8 @@ def main(argv: list[str]) -> int:
         print(f"[build] resource manifest OK: {resource_summary}")
         dialogue_summary = validate_project_ancient_dialogue(project_dir, mod_name)
         print(f"[build] Ancient dialogue OK: {dialogue_summary}")
+        override_summary = validate_project_override_manifest(project_dir, mod_name)
+        print(f"[build] vanilla override manifest OK: {override_summary}")
         if args.skip_runtime_check:
             print("[build] WARNING: runtime/host validation skipped; this build cannot satisfy Tier 1")
         else:
@@ -185,7 +197,7 @@ def main(argv: list[str]) -> int:
             print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
             runtime = Path(args.runtime_dir) if args.runtime_dir else Path(mods_root_text) / PROFILE.runtime_mod_id
             print(f"[build] runtime OK: {validate_runtime_asset(runtime)}")
-    except (OSError, AncientDialogueValidationError, RitsuProfileError) as exc:
+    except (OSError, AncientDialogueValidationError, RitsuProfileError, VanillaOverrideError) as exc:
         print(f"[build] RitsuLib profile FAILED: {exc}", file=sys.stderr)
         return 2
 

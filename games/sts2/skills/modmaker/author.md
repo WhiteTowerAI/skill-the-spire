@@ -16,6 +16,18 @@ second framework branch into this file.
 ## 0. Read the quirks and the recipe first
 
 - Read `quirks.md` before writing any C#.
+- For `surface: vanilla model override`, read `reference/vanilla-overrides.md`. Read
+  `reference/vanilla-visual-overrides.md` for selected visual operations and
+  `reference/vanilla-card-overrides.md` for non-asset Card operations, or
+  `reference/vanilla-ancient-overrides.md` for an exact existing Ancient's initial options
+  and subsequent pages. Read `reference/vanilla-availability-overrides.md` for availability
+  and `reference/vanilla-non-card-overrides.md` for exact existing non-Card data/behavior,
+  before any new-content recipe. Resolve the exact catalog target,
+  lower only promoted public/fixed-Adapter routes, and use `recipes/card.md` solely for
+  selected effect commands. Do not register a replacement vanilla model.
+  If the SPEC requests vanilla Card base-description replacement, removal, or hiding, stop:
+  do not convert it to description fragments or author code until the user explicitly
+  accepts before/after composition and the SPEC records `compose`.
 - Query the **sts2-api** skill for the recipe matching SPEC's **element**:
   `recipes/relic.md` for a relic, `recipes/potion.md` for a potion, `recipes/card.md`
   for a card. For a **card or power**, also read `reference/mechanics.md` first
@@ -108,8 +120,134 @@ second framework branch into this file.
   `reference/rest-site-options.md` before writing either class. Keep its current
   Relic/singleplayer/free-or-fixed-Gold boundary and stop for a Card/Modifier owner,
   post-payment choice, arbitrary transaction, same-site repeat, or multiplayer request.
+- Make every generated `.cs` file namespace-complete on its own. Copy the `using` required
+  by every symbol into the file that uses it; never rely on a different snippet, file, or
+  non-global import. In particular, `RegisterPatch<T>()` requires
+  `using STS2RitsuLib.Patching.Core;`, and `GoldLossType` requires
+  `using MegaCrit.Sts2.Core.Entities.Gold;`. Recheck imports per file before the first build.
 
 ## 1. Write the element class
+
+**Existing vanilla visual override** - add
+`<ModName>Code/VanillaOverrides/VisualOverrides.cs`:
+
+- Group accepted operations by public provider surface. Register one provider per selected
+  surface with the stable Mod key from `vanilla-visual-overrides.md`; match every exact
+  catalog concrete type inside that provider and return `null` for all other models.
+- Return checked Mod-local paths for path providers and typed `ResourceLoader` results for
+  Material/Texture/PackedScene providers. Filter directories and resource lists as the
+  reference requires. Never register a second model or use a new-content `AssetProfile` as
+  a substitute for an external provider.
+- Emit every selected surface as a separate visual manifest operation. Path/resource
+  alternatives for one target surface conflict. Keep optional-resource absence as vanilla
+  fallback and stop before build when a required resource is absent.
+- Use existing `gen_sprite.py` specs only for matching raster roles. Material, PackedScene,
+  Spine, and layer-directory inputs must already be authored local resources; do not ask an
+  image model to fabricate them.
+
+**Existing vanilla Card behavior override** - add one
+`<ModName>Code/VanillaOverrides/<TargetType>Override.cs` per exact target:
+
+- Start from `CardCapability`, or `CardPlayCapability` when any `OnPlay` operation is
+  present. Implement only contributor interfaces selected by the accepted operations.
+- Add one registered capability and one stable
+  `ConfigureDefaultModelCapabilities<TargetType>` modifier in `MainFile.Content.cs`. Never
+  register the vanilla Card as Mod content and never construct a model-backed capability
+  directly.
+- Aggregate all operations for that target into the one class. Preserve manifest order in
+  costs, rules, fragments, effects, and owner hooks. One replacement may coexist with
+  ordered composition; a second replacement is a conflict.
+- Capability variables live on the capability, update from the owner upgrade callbacks,
+  and are the only new variables allowed. Reading a checked owner variable is allowed;
+  mutating the vanilla Card's canonical variable set is not.
+- `BeforeOwnerCardOnPlay` returns `false` after compose-before effects and `true` after a
+  complete replacement. Do not reproduce payment, target selection, history, result-pile,
+  enchantment, affliction, or later-hook stages from the native wrapper.
+- Owner draw/discard/exhaust composition guards the exact owner instance. Do not implement
+  transform carry-over; a transformed Card with a different identity must not inherit the
+  old target's override.
+- Write every accepted operation to `openmod/vanilla-overrides.json` with the exact checked
+  baseline and public route. Keep the manifest, class, and localization behavior in sync.
+- If one requested operation is outside the promoted table, stop that operation explicitly;
+  do not hide a patch, reflection expression, or raw method name inside otherwise valid C#.
+
+**Existing vanilla Ancient initial-options override** - add
+`<ModName>Code/VanillaOverrides/AncientOverrides.cs` and follow
+`reference/vanilla-ancient-overrides.md` exactly:
+
+- For `append`, register one `ModAncientOptionRule` per manifest operation before ModelDb
+  freezes. Its factory may return multiple options in manifest order after applying each
+  `visible_when`; use the public priority and duplicate-text policy literally.
+- For `replace`, install the Package's one fixed fingerprinted postfix through RitsuLib's
+  patcher. Dispatch only by exact catalog type, let the original wrapper retain its
+  `_generatedOptions` list, mutate that same list, preserve the native blocked Proceed
+  state, and run before RitsuLib's append postfix. Do not generate any other patch shape.
+- Use the full public `EventOption` localization constructor with Mod-local `events.json`.
+  Recompute visibility, lock state, and affordability whenever a page is built; pay one
+  fixed cost first, then await effects/selectors/rewards in manifest order before the next
+  step. Build typed Hover Tips and relic-backed presentation only through their public
+  factories.
+- Lower `stay` directly. Lower `page` and `finish` only through the two fixed fingerprinted
+  `SetEventState` and `Done` UnsafeAccessor helpers in the reference. `Done()` owns native
+  choice history; never substitute `StartPreFinished()` or hand-edit Ancient state.
+- Put every option `.title`/`.description` and page description in every shipped language's
+  `<ModName>/localization/<lang>/events.json`. Do not put these behavior keys in
+  `ancients.json`, which remains the custom-Character dialogue table.
+- Emit one exact checked manifest operation per target route. Multiple appends may compose;
+  one same-target replacement conflicts with every append/replacement in this Mod. Selected
+  M6.7.2 Ancient/Event visuals remain separate manifest operations and contain no scripts.
+- Preserve the vanilla Ancient class, ModelId, room, opening dialogue, save identity,
+  allowance gate, ambient audio, and native finish lifecycle. Stop for a new Ancient,
+  global dialogue replacement, random/RNG rewrite, special combat, direct room transition,
+  multiplayer, or any prompt-derived private/patch route.
+
+**Existing vanilla availability** — add `<ModName>Code/VanillaOverrides/AvailabilityOverrides.cs`
+and follow `reference/vanilla-availability-overrides.md` exactly:
+
+- For public epoch routes, call `RequireEpoch` once per exact target before unlock rules
+  freeze. Accept only the catalog's 57 epoch IDs. Cards, Characters, ordinary Events, and
+  shared Darv are the public host slice; act-owned Ancients and permanent Card/Character/
+  Event disable are not silently substituted.
+- For public pool `add`, call `ModHelper.AddModelToPool` with the catalog concrete model
+  and pool types before `ModelDb` reads `All*` or `All*Ids`. Never register a vanilla model
+  through `ModContentRegistry` or claim its ownership.
+- For Relic/Potion epoch gates and pool `remove`/`move`, install only the fixed cataloged
+  `IPatchMethod` targets and fingerprints. Relic/Potion epoch patches cover the base pool
+  and all six concrete vanilla overrides because the game overrides `GetUnlocked*`.
+  Dispatch by exact ModelId from the validated manifest table and pass unrelated models
+  unchanged. A failed `PatchAll()` is a load failure.
+- Lower a pool move as public destination add plus the fixed source getter filter. Keep
+  existing Cards/Relics/Potions in their current deck/inventory/belt and preserve every
+  instance. Use the simulated manifest order and the declared primary pool; never patch
+  private caches or invent a reward-weight hook.
+- Emit the exact source baseline, route fingerprint/dependencies, action, source/destination,
+  `existing_instances: preserve`, `expected_primary_pool_model_id`, and singleplayer scope
+  in `openmod/vanilla-overrides.json`. Stop for debug pools, wrong pool category, duplicate
+  add, missing source, final-pool removal, weighting, multiplayer, or prompt-derived patch
+  code.
+
+**Existing vanilla non-Card data/behavior** - add one target-grouped file under
+`<ModName>Code/VanillaOverrides/` and follow
+`reference/vanilla-non-card-overrides.md` exactly:
+
+- Public owner-hook composition uses the matching typed RitsuLib capability. Register and
+  attach one capability per semantic order group to the exact vanilla type. Override only
+  the selected pinned hook signature; implement real owner/side/context guards and await
+  every effect. Do not register the vanilla model or accept an unavailable hook context.
+- Complete owner-hook replacement installs only the checked run/combat stream postfixes
+  after RitsuLib capability expansion. Remove the selected original owner by exact ModelId,
+  retain all capabilities, and pass every unrelated model through unchanged.
+- Intrinsic data uses only the target-specific checked getter Adapter. Consolidate inherited
+  getter targets, dispatch on exact ModelId, and apply the validated set/delta result. Do
+  not edit canonical instances or backing fields.
+- Complete lifecycle/body replacement installs every required fingerprinted dependency and
+  suppresses the original exactly once. Task bodies return one awaited generated helper;
+  synchronous Affliction apply/remove fields remain empty. Build complete Monster state
+  machines, keep Encounter actual/all-possible rosters identical, and keep ordinary Event
+  options/pages under the required `<MOD_ID>_EVENT_*` localization namespace.
+- Emit each operation, exact baseline, fingerprint/dependencies, singleplayer scope, and
+  complete semantic body in `openmod/vanilla-overrides.json`. Stop one unsupported operation
+  explicitly instead of hiding raw Harmony/reflection/IL in an otherwise valid file.
 
 **Relic** — add `<ModName>Code/Relics/<RelicName>.cs`. Use the recipe skeleton, then:
 
@@ -571,12 +709,19 @@ the placeholder/native fallback. The combat override returns `null` when its che
 is absent, so RitsuLib resumes that resolved profile fallback without a missing-resource
 load. Placeholder mode emits no Character asset or combat cue set. The static combat body
 remains the cue fallback; Cast, Spine, and unpromoted consumers are not supported.
+For an **existing vanilla visual override**, placeholder is valid only when its manifest
+resource is optional: emit the checked provider, let the missing resource return `null`,
+and preserve that vanilla surface. A required visual operation cannot use placeholder;
+stop and obtain the accepted resource before build.
 
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
 Supported sprite specs (see `sts2-api` → `reference/art-contract.md` and
 `reference/character-presentation.md` and `reference/character-combat-cues.md` for the full
-contracts). Character generation covers
+contracts). For an existing vanilla texture override, select a matching established spec
+by consumer role, normalize into the manifest's Mod-local path, and preserve every
+unselected surface. Do not use this branch for Material, PackedScene, Spine, or directory
+resources. Character generation covers
 nine promoted static profiles and one optional bounded cue bundle; locked selection and
 map marker remain explicit gaps.
 - **`--spec card`** — the one portrait a normal card loads, **1000×760 landscape**, full-

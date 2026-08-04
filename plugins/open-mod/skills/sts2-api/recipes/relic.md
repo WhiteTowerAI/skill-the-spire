@@ -29,6 +29,12 @@ If the Relic declares supplemental corner values, also read
 `../reference/extra-corner-labels.md`. That reference owns the specs provider, safe-corner
 and text bounds, refresh/removal, cleanup, and headed consumer proof.
 
+If the request changes an existing vanilla Relic's fresh availability or pool membership,
+resolve the target through `../reference/vanilla-overrides.md` and then read
+`../reference/vanilla-availability-overrides.md`. That reference owns the promoted
+singleplayer epoch-gate, pool-add, and pool-membership routes; do not replace the vanilla
+model or add a second content registration.
+
 ## The skeleton (fill only the marked spot)
 
 Add ONE file under `<ModName>Code/Relics/<RelicName>.cs`:

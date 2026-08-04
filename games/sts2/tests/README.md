@@ -15,6 +15,15 @@ The historical private-repair Package 4 result is retained in
 promotion proof and current literal exceptions are recorded under
 `games/sts2/experimental/card-pile-extra-hand/official-v054-proof/`; the formal route is
 `sts2-api/reference/card-piles.md`.
+The M6.7.0 catalog, localized-title aliases, no-op manifest, fail-closed checks, and
+repeatable real-host collector development result are recorded in
+`documents/history/M67_GROUNDING_KERNEL_RESULTS.md`. The complete M6.7 delivery and
+representative acceptance are recorded in
+`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`; the separate current-catalog headed
+no-op remains intentionally unrun. The later fail-closed Card-description and generated-file
+namespace repair is recorded separately in
+`documents/history/M67_POST_ACCEPTANCE_GENERATION_QUALITY_REPAIR.md`; it does not alter or
+rerun the milestone acceptance.
 
 ## Model
 
@@ -32,19 +41,43 @@ public Package unsupported.
    schedules a full user-pipeline gate or the human lead requests one, then retire it after
    recording the outcome.
 
+M6.7 used batched verification by human-lead decision and closed on 2026-08-04. The final
+source regression, payload parity/repeatability, local-plugin refresh, independent build,
+and representative human-led in-game acceptance completed. M6.7.6 was canceled and moved
+to Future Outlook. Tier 1, Tier 2/SelfTest, the current-catalog headed no-op, and every
+unselected check remain unrun, not passed; do not rerun the closed milestone gate.
+
 Host ownership:
 
 | Host | Owns |
 |---|---|
-| `CombatPlayer` | content core, computed Card values, custom Card Piles/ExtraHand, hand emphasis, Relic/Power extra labels, advanced targeting, stateful relics, Scry, Character combat cues |
+| `CombatPlayer` | content core, computed Card values, custom Card Piles/ExtraHand, hand emphasis, Relic/Power extra labels, advanced targeting, stateful relics, Scry, Character combat cues, and M6.7.1 existing-Card property/text/play/owner-hook behavior |
 | `CombatEnemy` | Monster + Encounter, move vocabulary, combat/bestiary body |
 | `MapNode` / Character | Event outcomes/presentation, bounded forced follow-up, native Ancient/Architect dialogue |
 | real Rest Site / `MapNode` | Relic-owned option absence/gray/payment/stay/repeat/icon matrix |
 | `RunStart` / Character | Foundation, static art/theme, combat cues, resource/UI, ordered buffer |
+| `ModelDb`/localization after preload + offline PE metadata | M6.7 version catalog identity, stable title keys and 14-language display aliases, runtime semantic snapshot, adapter signatures/fingerprints, and no-op manifest grounding |
+| nearest native visual consumers | M6.7.2 Card/CardPool, Relic/Power/Potion/Orb, Act, Event/Ancient, Encounter, Affliction/Enchantment/Modifier public visual providers; selected Card and Darv providers were included in the representative Mod accepted as a whole, while other providers remain unrun |
+| native Ancient room | M6.7.3 initial-option append/replacement, visible/locked/cost/tip/relic presentation, ordered outcomes, selectors/rewards, page graph, native finish/choice history, and M6.7.2 visual composition; selected Darv replacement/page/portrait was included in the representative Mod accepted as a whole, while other routes remain unrun |
+| `ModelDb` pools / unlock consumers | M6.7.4 public epoch gates plus Card/Relic/Potion pool add and fixed membership/epoch Adapters; one Card pool move was included in the representative Mod accepted as a whole, while cache timing, fresh-acquisition order/RNG, duplicates, and save variants remain unrun |
+| combat/run owner streams, concrete non-Card lifecycle hosts, `CombatEnemy`, and ordinary Event room | M6.7.5 all public Relic/Potion/Power/Orb/Enchantment/Affliction/Monster owner hooks, intrinsic data, complete lifecycle/body replacements, Monster move graphs, paired Encounter rosters, and Event options/pages; selected Relic/Monster/Encounter routes were included in the representative Mod accepted as a whole, while unselected families remain unrun |
 
 Tier 1 requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof and `selftest done`. Trigger logs, terminal markers, and
 model-only state are diagnostics, not behavior proof.
+
+The M6.7.0 collector's strict Tier 2 proves that its checked snapshot was written with the
+expected model count and assembly/file hashes. It is not gameplay-behavior or presentation
+proof for a vanilla edit. M6.7.1 through M6.7.5 are the five promoted operation Packages.
+M6.7.1 focused tests and compile-only check pass. M6.7.2 focused manifest/resource tests
+pass, while its earlier Package-specific C# compile was not run. M6.7.3 focused manifest/
+localization/catalog/documentation-route tests, M6.7.4 focused manifest/catalog/
+documentation-route tests, and M6.7.5 focused 40-test checks/Python syntax pass. The final
+regression passed `165/165`; payloads synchronized repeatably; and the independent
+installed-plugin Mod built with zero warnings/errors. The human lead reported that the
+representative Mod's effect test passed; no individual Card, Relic, Darv, Monster, or
+Encounter observation is inferred. This does not prove the unselected providers, hooks,
+availability modes, ordinary Event paths, or save variants.
 
 Use one representative real host for a shared Package lifecycle. Add separate cases only
 for materially different behavior or presentation risks; do not create one support gate per

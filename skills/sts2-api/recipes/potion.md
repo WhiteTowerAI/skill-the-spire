@@ -16,6 +16,12 @@ When SPEC declares a filtered live-creature target, read
 Potion only; `potion + many` must stop authoring because queued zero-target execution
 cannot preserve the Potion.
 
+If the request changes an existing vanilla Potion's fresh availability or pool membership,
+resolve the target through `reference/vanilla-overrides.md` and then read
+`reference/vanilla-availability-overrides.md`. That reference owns the promoted
+singleplayer epoch-gate, pool-add, and pool-membership routes; do not replace the vanilla
+model or register it as Mod-owned content.
+
 Register once from `MainFile.RegisterContent()`:
 
 ```csharp

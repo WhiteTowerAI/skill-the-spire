@@ -18,7 +18,114 @@ adapter records those details in `MEMORY.md` after the SPEC is frozen.
 
 ## Write `SPEC.md`
 
-Use the block for the element type. **Relic:**
+Use the block for the element type. **Existing vanilla model override:**
+
+```markdown
+# SPEC - <Mod Name>
+
+- **contract**: sts2-content-semantic/v1
+- **mod id**: <stable mod identity>
+- **author**: <author>
+- **content**:
+  - surface: vanilla model override
+  - requested target: <the user's exact name plus Character qualifier when needed>
+  - resolved target: <exact checked ModelId, category, and current display title>
+  - preserve: vanilla identity and every untouched behavior/presentation surface
+- **operations** (accepted order):
+  - id: <stable semantic id>
+    mode: adjust | compose | replace | availability | visual
+    surface: <named player-facing behavior/data/visual surface>
+    desired result: <plain game terms and exact values>
+    base expectation: <the player-facing current value checked with the catalog>
+    upgrade behavior: unchanged | <exact changed behavior>
+    localization effect: none | <exact new/replacement player text>
+    timing/order: <set then delta; before/after original; fragment/rule order>
+    multiplayer scope: singleplayer | deterministic all peers
+    compatibility: required | optional
+- **effects** (only for behavior operations):
+  - trigger: <play/owner/non-Card lifecycle or exact game event>
+  - condition: <bounded declarative live-state condition>
+  - sequence: <ordered grounded Card recipe effects and exact values>
+  - target: owner | play target | event target | all enemies | random enemy
+- **non-Card behavior** (only for promoted M6.7.5 operations):
+  - family: owner hook | intrinsic data | lifecycle | monster moves | encounter roster |
+    ordinary event options
+  - composition: before original | after original | replace complete selected surface
+  - scope: any | owner | owner side
+  - replacement body: <all lifecycle effects, move states, roster entries, or Event pages>
+- **ancient flow** (only for an existing Ancient initial-options operation):
+  - initial choices: append | replace all
+  - rule condition: <bounded singleplayer owner/run/deck/model condition>
+  - priority: <integer, append only>
+  - duplicate text: skip | keep (append only)
+  - options:
+    - id: <stable Mod-local id>
+      text: <player-facing title and description>
+      visible when: <condition>
+      enabled when: <condition>
+      cost: none | <fixed Gold/HP/Max HP amount and lethal policy>
+      hover: none | <known Card/Relic/Potion/Power entries>
+      relic image: none | <known relic>
+      effects: <ordered fixed effects, deck selectors, rewards, and optional weak shake>
+      next: stay | page <PAGE_ID> | finish
+  - pages:
+    - id: <PAGE_ID>
+      description: <player-facing text>
+      options: <same complete option shape>
+- **visual resources** (only for promoted visual operations):
+  - operation: <operation id>
+    role: <frame/portrait/icon/scene/layers/etc.>
+    source: generate | local-authored-resource
+    requirement: required | optional
+    fallback: preserve the exact vanilla surface
+- **explicit non-goals**: <unselected behavior/data/visual surfaces and any applicable
+  package boundaries>
+- **verification scenario**: <nearest real consumer for every selected operation>
+```
+
+Resolve and disambiguate the target through `reference/vanilla-overrides.md` before
+freezing this block. Put catalog digest,
+concrete type, required baseline subset, public route ids, capability class, localization
+keys, exact resource paths, and manifest operations in `MEMORY.md`, not in the user-facing
+SPEC. Read `reference/vanilla-visual-overrides.md` for selected visual surfaces and
+`reference/vanilla-card-overrides.md` for non-asset Card surfaces. For an exact existing
+Ancient, read `reference/vanilla-ancient-overrides.md`, preserve its model/room/opening
+dialogue/save identity/native finish history, and freeze every replacement option and
+reachable page explicitly. Stop if any required operation falls outside those promoted
+Packages. One Mod may target multiple existing models; repeat the `content` and ordered
+`operations` blocks per exact target.
+
+Record each requested `mode` literally. Never rewrite a vanilla Card base-description
+replacement (replace, remove, or hide the original body) as `compose` or as
+`before_base`/`after_base` text. RitsuLib `0.5.4` has no promoted route for that request, so
+stop before accepting the SPEC. A composition may enter the SPEC only after the user
+explicitly accepts that visibly different result, even when every numeric value is already
+final or the user asked not to repeat questions.
+
+For M6.7.4 availability, record one exact target and one ordered operation per requested
+epoch or pool change. An epoch operation records `state: require_epoch | disabled`, the
+exact pinned epoch when required, and `multiplayer: singleplayer`. Public epoch gating is
+limited to Cards, Characters, ordinary Events, and shared Darv; Relic/Potion gating uses
+the fixed reviewed Adapter and its complete dependency list. A pool operation records
+`action: add | remove | move`, the source/destination pool ModelIds, `existing_instances:
+preserve`, `expected_primary_pool_model_id`, and `multiplayer: singleplayer`. Copy the
+complete catalog pool membership into the baseline and reject a debug pool, duplicate
+transition, missing source, or removal of the final pool. Read
+`reference/vanilla-availability-overrides.md` before freezing the SPEC. Source weighting,
+act-owned Ancient gating, permanent Card/Character/Event disable, and multiplayer remain
+explicit gaps rather than prompt-derived patches.
+
+For M6.7.5, read `reference/vanilla-non-card-overrides.md`. Record public owner-hook
+composition in game terms with exact trigger/scope/condition/order/result. Record intrinsic
+data as a final enum/boolean/integer or integer delta. A complete lifecycle/body replacement
+must freeze every callback field, Monster state and edge, Encounter monster/slot entry, or
+ordinary Event option/reachable page in the selected surface. Ordinary Event text uses
+Mod-local `<MOD_ID>_EVENT_*` keys in every shipped `events.json`; Ancient targets stay on
+M6.7.3. All M6.7.5 operations remain singleplayer. Do not turn missing event context,
+undeclared capability state, synchronous Affliction effects, multiplayer, or another
+uncataloged body into generated patch code.
+
+**Relic:**
 
 ```markdown
 # SPEC — <Mod Name>

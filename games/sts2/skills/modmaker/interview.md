@@ -34,10 +34,25 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      headless/top-bar/bottom-left/bottom-right/ExtraHand presentation, public pile screens,
      and explicit Card movement.
    - **Current authoring recipes: relic, potion, card, custom card piles, enemy encounter,
-     event, and bounded character composition.**
-     (*Editing* an existing
-     vanilla card/relic/potion has no current recipe — if that's the ask, say so and offer
-     to build the closest **new** element instead.)
+     event, bounded character composition, and promoted existing-model overrides.** If the
+     request edits an existing vanilla model, resolve it through
+     `reference/vanilla-overrides.md`. A requested visual surface in the 44-provider matrix
+     continues through `reference/vanilla-visual-overrides.md`. Non-asset operations for an
+     exact `CARD.*` target continue through `reference/vanilla-card-overrides.md`. Initial
+     options and subsequent pages for an exact existing Ancient continue through
+     `reference/vanilla-ancient-overrides.md`. Pinned epoch gates and Card/Relic/Potion
+     pool add/remove/move requests continue through
+     `reference/vanilla-availability-overrides.md`. Existing Relic/Potion/Power/Orb/
+     Enchantment/Affliction/Monster/Encounter/ordinary Event data and behavior continue
+     through `reference/vanilla-non-card-overrides.md`; other operations report the
+     unpromoted package and stop. Offer a closest **new** element only as a separate user
+     choice, never as an automatic substitution.
+   - **Fail closed on vanilla Card base-description replacement.** If the user asks to
+     replace, remove, or hide the original description body, explain that RitsuLib `0.5.4`
+     exposes only before/after description fragments and pause before writing SPEC or
+     scaffolding. Never reinterpret the request as appended text. Continue only after the
+     user explicitly accepts a before/after composition; confirmed numbers or a request not
+     to repeat questions does not authorize that downgrade.
 2. **Trigger / usage / how it's played:**
    - **Custom Card Piles Package**: infer every stated pile and ask only for player-visible
      ambiguity: does it reset each fight or persist for the run; is it hidden, a top-bar/
@@ -46,6 +61,23 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      sorting, hotkeys, hover behavior, or visual callbacks are requested, record the
      requested behavior in game terms. Do not ask for enum names, delegates, or framework
      APIs; ask for exact coordinates only when the user requested an exact custom layout.
+   - **Existing vanilla Ancient**: resolve the exact Ancient first, then determine whether
+     the Mod appends choices or replaces the complete initial choice list. For every choice,
+     capture when it is visible, when it is locked, its one fixed Gold/HP/Max HP/no cost,
+     any Card/Relic/Potion/Power shown on hover, ordered consequences, and whether it stays,
+     opens a named page, or finishes the Ancient. Capture every reachable page the same way.
+     Ask about lethal HP/Max HP payment only when the wording leaves it unclear. Preserve
+     the Ancient's original model, room, opening dialogue, save identity, and native finish
+     history without asking; replacing those is a separate unsupported request.
+   - **Existing vanilla non-Card data/behavior**: resolve the exact target and capture only
+     player-facing intent. For data, capture the desired final enum/boolean/integer or
+     integer delta. For an owner hook, capture the real trigger, owner/side scope, condition,
+     ordered fixed result, and whether it composes before/after the original owner or
+     completely replaces that owner's hook stream. For complete Relic/Potion/Power/Orb/
+     Enchantment/Affliction behavior, Monster moves, Encounter roster, or ordinary Event
+     options, confirm that all behavior on that named surface is being replaced and freeze
+     the whole lifecycle/state/roster/page graph. Do not ask for hook names, getter names,
+     patch methods, or fingerprints.
    - **Relic**: when does the effect happen? Map the user's words to a lifecycle
      moment — "start of combat", "start of each turn", "when you play a card",
      "start of each floor". If they said it, don't re-ask. If it remembers progress
@@ -193,7 +225,10 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
       it. The same identity, costume, camera, apparent scale, pivot, and baseline remain
       locked across all four sheets, and adjacent cells use small in-between pose changes
       because the sequences play quickly. The established
-     static specs and all nine Character output specs are live-verified. Orb support is
+     static specs and all nine Character output specs are live-verified. M6.7.2 may reuse a
+     matching static spec for a vanilla texture override, but its Material, PackedScene,
+     Spine-resource, and background-directory routes require an existing local authored
+     resource rather than an image call. Orb support is
      icon-only, and Event raster support does not include custom phobia or custom-layout
      assets. Generate the initial event
      portrait plus only later-page portraits the user's concept explicitly calls for; do
@@ -222,7 +257,9 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      bestiary move previews as later-animation gaps. For an event, offer the normal initial portrait
      and any explicitly requested later-page image change. The separate code-native
      `portrait_halo` and the built-in `trial_noble` profile need no image backend. Preserve
-     requests for custom phobia art, arbitrary VFX, custom-layout, or Ancient art as gaps.
+     requests for new-content custom phobia art or behavior-bearing arbitrary VFX/layouts
+     as gaps. An exact existing Event/Ancient visual consumer may use only the promoted
+     resource route in `vanilla-visual-overrides.md`.
 
 ## Defaults (apply silently unless the user specified otherwise)
 
@@ -402,6 +439,35 @@ art boundary: normal initial plus explicit page portraits; no custom phobia/cust
   VFX boundary: code-native portrait_halo or curated built-in trial_noble, no arbitrary VFX;
   text boundary: descriptions only, bounded vanilla tags, plain titles
 ```
+
+For an **existing vanilla Ancient override**:
+
+```
+element: existing vanilla Ancient override
+target: <user wording> -> <exact resolved Ancient and current display title>
+initial choices: append | replace all
+rule: always | <plain condition>; priority <int, append only>;
+  duplicate text: skip | keep (append only)
+options:
+  - id: <stable local id>; text: <title and description>; visible when <condition>;
+    enabled when <condition>; cost <none|N Gold|N HP|N Max HP, lethal yes/no>;
+    hover <none|known Card/Relic/Potion/Power>; relic image <none|known relic>;
+    effects <ordered damage/heal/Gold/Max HP/model grant/deck selection/custom reward/shake>;
+    next <stay|page PAGE_ID|finish>
+pages:
+  - id: <PAGE_ID>; description: <text>; options: <same option shape>
+visual composition: none | <exact M6.7.2 Ancient/Event visual surfaces>
+preserve: original Ancient model, room, opening dialogue, save identity, allowance gate,
+  and native finish/choice-history lifecycle
+boundary: singleplayer; no new Ancient, global dialogue replacement, line audio,
+  randomized outcome rewrite, special combat, or direct merchant/rest/treasure transition
+```
+
+Default to `append`, `always`, priority `0`, skipping duplicate text, nonlethal payment,
+no hover/relic image/shake, and `finish` only when those choices are not stated and the
+default cannot alter the user's concept. A replacement must describe the complete initial
+choice list and at least one reachable finish path; never silently preserve unspecified
+vanilla choices inside a replacement.
 
 For a **character**:
 

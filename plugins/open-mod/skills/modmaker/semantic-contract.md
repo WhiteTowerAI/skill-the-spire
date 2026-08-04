@@ -28,7 +28,7 @@ not replace or rename the shared sections.
 - **content**:
   - name: <player-facing name>
     surface: card | relic | potion | power | keyword | enchantment | orb |
-      custom card pile | enemy encounter | event | character
+    custom card pile | enemy encounter | event | character | vanilla model override
     logical id: <stable local stem, before adapter-specific id decoration>
     relations: <none | directed source -> dependent relationships>
 - **registration**:
@@ -90,6 +90,44 @@ and move. The same declared calculation owns the displayed value and effect requ
 those phases cannot observe equivalent state, authoring stops instead of keeping a second
 display-only formula. Damage, Block, Energy icons, Star icons, raw typed Power, and applied
 typed Power remain distinct roles because their normal game modifiers differ.
+
+An existing vanilla model override starts with exact target resolution from
+`reference/vanilla-overrides.md` and records the user's target name, exact resolved model
+identity, untouched-surface preservation, and ordered semantic operations. Each operation
+states adjust/compose/replace/availability/visual intent, the player-facing surface and
+desired result, expected current behavior, upgrade/localization effect, timing, multiplayer
+scope, and compatibility criticality. The adapter owns the catalog digest, concrete type,
+baseline subset, public route id, capability identity, and manifest encoding. A prompt never
+provides a method name or implementation body. M6.7.1 permits the non-asset Card surfaces
+in `reference/vanilla-card-overrides.md`. M6.7.2 permits every visual surface in the
+44-provider `reference/vanilla-visual-overrides.md` matrix. A visual operation additionally
+records the player-facing resource role, generate-versus-local authoring intent, whether it
+is required, and exact vanilla fallback; paths and Godot types remain adapter output. An
+exact existing Ancient may use the M6.7.3 initial-option append or complete replacement
+routes in `reference/vanilla-ancient-overrides.md`. Record append/replace intent, rule
+condition/priority/dedup behavior, every ordered option and reachable page, visible/enabled
+conditions, one fixed cost, typed hover/relic presentation, ordered consequences, and each
+stay/page/finish edge. Preserve the original Ancient model, room, opening dialogue, save
+identity, allowance gate, and native finish history. M6.7.4 permits pinned availability
+operations in `reference/vanilla-availability-overrides.md`: public epoch requirements for
+Cards, Characters, ordinary Events, and shared Darv; Relic/Potion epoch filters; and
+Card/Relic/Potion pool add/remove/move. Record the full source membership baseline,
+singleplayer/preserve-instance scope, fixed Adapter dependencies, and simulated primary
+pool after each ordered transition. Do not turn weighting, act-owned Ancient filtering,
+permanent Card/Character/Event disable, or multiplayer into an invented route. M6.7.5
+permits the exact non-Card matrix in `reference/vanilla-non-card-overrides.md`: public
+owner-hook composition/replacement for Relic, Potion, Power, Orb, Enchantment, Affliction,
+and Monster; checked intrinsic data; and complete lifecycle, Monster move, Encounter roster,
+or ordinary Event option/page replacement. Record exact trigger/scope/order, final data,
+or the whole replacement graph and preserve untouched wrappers/identity. An operation
+outside these five Packages remains an explicit gap rather than a partial edit.
+
+The adapter must preserve the user's operation mode; it cannot turn `replace` into
+`compose` to fit an available route. In particular, replacing, removing, or hiding a
+vanilla Card's original description is a base-description replacement and is unsupported
+by the pinned RitsuLib `0.5.4` Package. Stop and obtain explicit acceptance of a
+before/after fragment alternative before changing the semantic intent. Finalized values or
+an instruction not to repeat questions never authorizes a different player-facing result.
 
 Advanced creature targeting is an optional Card/Potion surface extension. Keep it in
 player-facing terms and add one declaration with `consumer: card | potion`, `mode: one |
@@ -160,6 +198,8 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Character Ancient dialogue | cataloged natural target, first/explicit/repeat visit, ordered speaker/text/prompts, Architect attackers | native Ancient + production Architect |
 | Card Scry helper | top-X amount, discard-any choice, upgrade delta, singleplayer boundary | `CombatPlayer` with visible native selector |
 | Advanced creature targeting | consumer, one/many mode, stable Mod-local target id, declarative live-Creature predicate, zero-target lifecycle | `CombatPlayer` plus headed mouse/controller targeting |
+| Existing vanilla model override | exact resolved identity, ordered operation intent, preserved surfaces; visual role/source/requirement/fallback when selected | nearest real consumer for each promoted operation; deferred during M6.7 batch development |
+| Existing Ancient initial options | append or complete replacement; rule condition/priority/dedup; ordered options/pages; visibility/lock/cost/tips/relic/effects; stay/page/finish graph | native Ancient room and choice-history lifecycle; deferred during M6.7 batch development |
 
 The adapter may require additional technical inputs internally, but those belong in
 the selected adapter reference and generated source, never in the semantic fields.

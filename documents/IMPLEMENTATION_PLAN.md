@@ -16,12 +16,19 @@ acceptance and its explicit lead-approved verification exceptions are recorded i
 M6.6 is closed by explicit human-lead decision. Packages 1, 2A, 2B, 2C, 3, 4, and 5 are
 implemented with their literal focused results and exceptions recorded under
 `documents/history/` or the retained Package 4 official-version proof. Package 4 was
-promoted on official RitsuLib `0.5.4` under the Package-level support rule. M6.7 work is not
-implemented until its scheduled development gates pass. Per
+promoted on official RitsuLib `0.5.4` under the Package-level support rule. Per
 `AGENTS.md`, official Package semantics plus a public API in the pinned profile are enough
 for support, while confirmed problems are recorded as limitations.
 
-Do not prepare or claim a GitHub release. Closing M6.6 does not start M6.7 automatically.
+M6.7 is closed by explicit human-lead decision on 2026-08-04. M6.7.0 through M6.7.5
+implement the approved grounding, public Card, public visual, existing-Ancient,
+availability, and non-Card data/behavior Packages. M6.7.6 was canceled and multiplayer
+vanilla overrides moved to Future Outlook. The final regression passed `165/165`, plugin
+and portable payloads were synchronized repeatably, an independent Mod built from the
+reinstalled plugin, and the human lead reported that the representative in-game effects
+passed. The consolidated result and literal exceptions are recorded in
+`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`. Do not prepare or claim a GitHub
+release.
 
 ## Dependency Boundary
 
@@ -61,380 +68,124 @@ their result is recorded.
 
 ## Current Work
 
-Continue triaging bugs found through real user testing. No M6.5 gate remains scheduled.
-On 2026-07-29, the human lead reported the headed Prismwright acceptance successful,
-explicitly waived the remaining Tier 2/self-test harness, and directed retirement. The
-load marker and runtime profile matched; the strict log parser separately reported only
-engine-shutdown resource-leak messages after the headed session. M6.5 is closed by that
-lead decision rather than by claiming those omitted checks passed.
+No M6.7 development or acceptance work remains. The milestone is closed, both generated
+payloads agree with `games/sts2/`, and the installed-plugin acceptance is recorded in
+`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`. The earlier
+`documents/history/M67_GROUNDING_KERNEL_RESULTS.md` remains the interim kernel evidence.
 
-M6.6 Package 2A completed on 2026-07-29 with its omitted strict Tier 2 harness recorded as
-an exception. Package 5's first headed Darv/Architect proof failed: both scenes stopped
-after their first visible line. The proof fixture and pipeline contracts are repaired, and
-the rebuilt proof passed the human lead's headed Darv and Architect recheck. The current
-log confirms the PCK load, both native routes, clean progression, and no fresh error block;
-the absent structured state marker and `selftest done` remain an explicit strict Tier 2
-exception. The focused proof project and deployed Mod were retired after recording this
-evidence. Package 1 then passed its human-lead mouse/controller host matrix, with exact
-single- and multi-target trigger records and no fresh target-Mod error. Its absent automated
-`selftest done` and unrun queued-target-invalidation cases remain explicit strict Tier 2
-exceptions. Package 3 then passed its human-lead native Rest Site matrix for absence,
-disabled/enabled state, payment, exact outcome, repeatability, native-option coexistence,
-controller focus, custom framing, and Heal-icon fallback. Per lead instruction, no log read
-was performed; the exact Tier 1 log gate and strict `selftest done` remain exceptions. Do
-not reopen these retired proofs or Prismwright, and do not start M7. Package 2B/2C then
-passed its human-led hand/Relic matrix and, after narrowing Power authoring to one top-left
-label, its crowded 16:9/16:10 Power-row recheck. Strict Tier 1 passed; strict Tier 2 was not
-run. See `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Official RitsuLib `0.5.4`
-now contains the native-Hand ExtraHand lifecycle missing from `0.5.0`. On 2026-08-02 the
-unmodified official runtime loaded and registered the focused proof; setup assertions passed,
-and the human lead accepted native-Hand shortcut isolation, target cancellation restoration,
-and consecutive mouse play of all three ExtraHand Cards. A host save-backup cleanup error
-prevented strict Tier 1, and no structured `selftest done` ran; the lead waived strict Tier 2
-and promoted the complete documented Custom Card Piles Package under the support rule.
+The independent `VanillaReforged` workspace and deployment are retained because deletion
+was not authorized. They are disposable evidence rather than maintained fixtures. Do not
+recreate or rerun the M6.7 milestone gate, and do not begin a multiplayer follow-on or any
+other Package without a later human-lead selection. Tier 1, Tier 2/SelfTest, the separate
+current-catalog headed no-op, and every unselected route remain unrun rather than passed.
+
+Post-acceptance feedback exposed two generation-quality defects: a vanilla Card
+base-description replacement was silently downgraded to appended text, and two generated
+files needed missing imports for `RegisterPatch<T>()` and `GoldLossType`. The source and both
+repository payloads now fail closed on the first conflict and compile-check the second. This
+maintenance repair does not reopen M6.7; its focused evidence is recorded in
+`documents/history/M67_POST_ACCEPTANCE_GENERATION_QUALITY_REPAIR.md`.
+
+Continue triaging bugs found through real user testing, but do not reopen the retired M6.5
+or M6.6 proofs. Their literal results, waivers, and unrun checks remain historical evidence,
+not gates to rerun for M6.7.
 
 ## M6.6 - Capability Expansion (Closed)
 
-M6.6 is closed. Its completed formal scope is Packages 1, 2A, 2B, 2C, 3, 4, and 5.
+M6.6 is closed. Keep only its active support and limitation summary here; the linked history
+files own exact proof steps, headed observations, waivers, and unrun checks.
 
-### Shared implementation and promotion rules
+| Package | Implemented support | Retained boundary and evidence |
+| --- | --- | --- |
+| 1 - advanced targeting | Mod-local deterministic single-target Cards/Potions and multi-target Cards with native selection, cancellation, and resolution-time checks | Custom `potion + many` retains the pinned queued-consumption limitation. See `documents/history/M66_ADVANCED_TARGETING_RESULTS.md`. |
+| 2A - computed values | One preview/execution formula for computed Damage, Block, Energy, Stars, raw typed Power, amount-given Power, and localized DynamicVar tooltips | Literal headed result and omitted strict Tier 2 are in `documents/history/M66_COMPUTED_VALUES_RESULTS.md`. |
+| 2B/2C - readability | Ordered fixed-color Card hand emphasis, up to three safe-corner Relic labels, and one top-left Power label | Intent remains a supported public Extra Badges consumer but has no generated authoring route. Strict Tier 2 was not run. See `documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. |
+| 3 - Rest Site options | Singleplayer Relic-owned options with free/fixed Gold, deterministic outcomes, once-per-site/run repeatability, native stay/leave behavior, and checked custom/Heal-fallback icons | Card/Modifier owners, variable or non-Gold costs, arbitrary transactions, same-site repeat, and multiplayer remain outside the slice. See `documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`. |
+| 4 - Custom Card Piles | Complete documented RitsuLib `0.5.4` Package across combat/run scopes, five presentation styles including ExtraHand, public views/hotkeys, native movement, localization, and callbacks | Generated Mods use only the public framework route and never recreate the native-Hand bridge. The accepted focused result and strict verification exceptions are in `documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`. |
+| 5 - Character dialogue | Character-local dialogue across the nine cataloged native Ancient and Architect scenes while preserving native models, layouts, options, and outcomes | This is Character contribution, not global dialogue or Ancient replacement. See `documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`. |
 
-Use the Package-level rule in `AGENTS.md` for support decisions. Once official product
-semantics identify a RitsuLib Package and the pinned `0.5.4` profile confirms its public
-members, all documented public consumers are supported. Record a confirmed problem as the
-smallest known limitation.
+The Package-level support rule, dependency boundary, and literal verification rules now live
+in `AGENTS.md`. Do not reopen M6.6 implementation details in this active plan unless a
+confirmed regression changes the current support boundary.
 
-Before finishing a selected implementation slice, it must have:
+## M6.7 - Version-Bound Vanilla Content Overrides and Behavior Composition (Closed)
 
-1. a semantic interview/SPEC shape that describes player-visible intent rather than C# API
-   names, including owner, lifetime, initial state, transitions, localization, and fallback;
-2. one grounded `sts2-api` recipe and pinned RitsuLib `0.5.4` adapter route, without
-   BaseLib, copied baseline code, private patches, or arbitrary generated reflection;
-3. deterministic checks for calculations, filtering, ordering, payment, and state rules,
-   plus build/manifest checks that preserve the RitsuLib-only dependency boundary;
-4. the nearest representative real-game proof for each materially different lifecycle or
-   presentation risk selected for this implementation, with structured post-state evidence
-   for behavior and a headed check where targeting, controller focus, text fit, color, or
-   non-overlap is the actual evidence claimed; and
-5. updated source documentation and support graph, followed by regeneration and parity
-   validation of both committed payloads.
-
-An explicit human-lead decision may accept a focused manual host result in place of a
-scheduled automated gate. Record that omission as a verification exception; never relabel
-it as a strict Tier 2 pass.
-
-Update `games/sts2/tests/content-capability-graph.md` when support or a known limitation is
-grounded. State unfinished authoring or unrun verification directly instead of inventing a
-status for it. Ordinary package work does not schedule another fresh natural-language
-acceptance Mod; add such a gate to this plan first if the milestone later needs one.
-
-### Package 1 - Advanced Card and Potion target types
-
-**Implemented as of 2026-07-29 for Card one/many and Potion one.** Semantic
-intake, SPEC, authoring, deterministic contract tests, pinned RitsuLib routes, and focused
-real-host mouse/controller review cover the bounded slice. The human lead accepted zero-
-target rejection, valid-target filtering, cancellation/payment behavior, native reticles,
-normal result-pile/Potion lifecycle, exact observed deltas, and post-resolution cleanup.
-The proof had Tier 1 and no fresh target-Mod error, but no automated `selftest done`;
-queued selected-target invalidation and a queued multi Card losing every candidate were not
-run and remain explicit verification exceptions. See
-`documents/history/M66_ADVANCED_TARGETING_RESULTS.md`.
-
-**Semantic intake.** Add a bounded target declaration that records whether the consumer is
-a Card or Potion, whether it selects one or affects many, a stable Mod-local target ID, and
-a declarative creature predicate. Single-target rules may combine candidate state, acting
-player state, and source Card/Potion state; multi-target rules may use candidate and acting
-player state. Every predicate must remain deterministic at selection and execution time.
-Prefer reusable named families such as attacking enemies, blocking or nonblocking enemies,
-tied highest/lowest-HP enemies, full-life enemies, anyone, or everyone over generated
-one-off predicate code.
-
-**RitsuLib route and lifecycle.** Register deterministic Mod-scoped single- or multi-target
-`TargetType` values through `CustomTargetType`. For single-target registration, use
-`CustomTargetContext` only when the predicate genuinely needs the source Card/Potion in
-addition to the candidate creature and acting player; do not imply source-aware
-multi-target registration. This surface targets live combat `Creature` objects; it does not
-target Cards in hand, corpses, map objects, or arbitrary game objects.
-
-- A single-target consumer must filter candidates consistently for mouse and controller,
-  allow normal cancellation, handle no legal candidates, and revalidate the selected
-  creature when play/use resolves.
-- A multi-target Card executes once with no selected creature. Its effect must call the
-  appropriate `GetTargets(...)` extension at resolution time and apply the effect exactly
-  once to each returned creature.
-- Cancellation or loss of all valid targets must not spend resources, consume a Potion, or
-  strand a Card outside its normal lifecycle. Successful execution must retain the normal
-  Card result-pile and Potion-use behavior.
-
-**Pinned-profile boundary found during implementation research.** On STS2 `0.107.1` with
-RitsuLib `0.4.67`, `potion + many` cannot satisfy the zero-target consumption rule:
-`UsePotionAction` accepts the multi-target `null` target and does not recheck
-`PassesCustomUsabilityCheck` before `OnUseWrapper` removes the Potion. The first slice
-therefore supports single-target Card, single-target Potion, and multi-target Card only.
-Custom multi-target Potion authoring has a pinned lifecycle limitation until a grounded
-RitsuLib change and version update add execution-time zero-target cancellation. Generated
-Mods must not compensate with Harmony, reflection, IL, or remove-then-restore behavior.
-
-**First proof matrix.** Prove a source-aware single-target Card, a single-target Potion, and
-a player-aware multi-target Card rather than inferring one lifecycle from another. Cover
-zero, one, and multiple legal candidates; mouse/controller selection where applicable;
-cancellation; a candidate becoming invalid; and an exact structured list of affected
-creature IDs and state deltas. Visually check the reticle/selection affordance and confirm
-that invalid creatures cannot be selected.
-
-**Not in the first slice.** Arbitrary object targeting, selecting Cards or map nodes,
-retargeting dead creatures, global interoperability registration for other Mods, and custom
-targeting UI layouts remain unsupported because no matching documented public route is
-grounded in the pinned profile. A future API review may add supported routes before any
-implementation work is scheduled.
-
-### Package 2 - Gameplay readability
-
-This planning group contains three separately scheduled feature Packages. Implementing one
-does not implement another. Support still follows the documented RitsuLib Package boundary
-rather than per-consumer proof gates.
-
-#### 2A. Computed previews, icon variables, and variable tooltips
-
-**Implemented as of 2026-07-29.** Semantic intake, SPEC, authoring, a
-grounded RitsuLib `0.4.67` recipe, and deterministic contract checks now cover this slice.
-The focused `ComputedValuesProof` host established live changing text, modifier-aware
-Damage/Block, neutral Energy/Star gains, typed Poison amount-given behavior, formatter
-boundaries, reflow, and localized null-icon tooltips. The human lead accepted every headed
-and behavior case. No structured `selftest done` harness was run, so strict Tier 2 remains
-an explicit exception. This promotion does not include 2B or 2C.
-
-Extend semantic card text so one declared calculation feeds both the displayed dynamic
-value and the live effect. Route damage and block through `ComputedDamage` and
-`ComputedBlock` so previews continue to receive normal Strength, Dexterity, Vulnerable,
-Frail, enchantment, and preview-hook adjustments. Use an untyped plain computed value only
-for numbers that intentionally do not pass through damage/block or Power-application hooks.
-
-- Add `ComputedEnergy` and `ComputedStars` for runtime-changing Energy and Star icon counts.
-  Ground localization on the pinned formatter contract (`energyIcons()` and `starIcons()`);
-  the obsolete local `{X:stars()}` wording must never return to generated recipes.
-- Use `ComputedPower<T>` for a typed Power value and
-  `ComputedPowerAmountGiven<T>` when the number means Power applied to a creature and must
-  receive normal Power amount-given hooks.
-- Allow `.WithSharedTooltip(...)` only from a declared localization entry. Dynamic-variable
-  tooltip text and any optional icon belong in `static_hover_tips` localization and need a
-  deterministic fallback when the icon is omitted.
-- Never maintain a display-only copy of a formula. The recipe should generate one semantic
-  calculation or shared helper consumed by description rendering and effect execution.
-
-Contract tests should cover zero, positive, and changing values; upgrade/base forms; relevant
-combat modifiers; and the difference between raw computed numbers and hook-aware damage,
-block, or Power amounts. The hosted proof must show the card text changing before play and
-then record an outcome equal to that final preview. For Energy/Stars, prove zero-valued
-rendering, multiple icons, tooltip rendering, and text reflow without clipping or stale
-glyphs.
-
-#### 2B. Conditional hand glow and outline
-
-The official Card Hand Glow tutorial defines conditional vanilla gold/red meaning,
-arbitrary colors, priority, and the unplayable-Card visibility choice. The pinned RitsuLib
-source confirms the public family, so it is supported. The work below adds the open-mod
-authoring route and verifies it in game.
-
-**Implementation status (2026-07-30):** semantic intake, the grounded authoring reference,
-Card recipe/author routing, and static contract coverage are implemented. The focused
-real-host review is reserved for the human lead and remains open; no headed or strict Tier 2
-result is claimed yet.
-
-Add declarative hand emphasis only when it communicates an actionable state. Use gold glow
-for an active bonus or stronger effect line and red glow for a warning or unavailable
-condition. The generated slice uses ordered fixed-color rules; every rule needs a stable
-priority because the highest-priority active rule wins, with later-listed rules winning a
-tie. Whether a rule remains visible while the Card is unplayable must be an explicit
-semantic choice, not an adapter default.
-
-Keep predicates cheap and side-effect-free. Generated fixed rules do not poll every frame;
-their conditions must change through normal combat-state refreshes. The recipe must define
-no-active-rule, one-active-rule, and conflicting-rule results.
-Prove activation, deactivation, priority resolution, changes in Card playability, hover/drag,
-and hand enter/leave cleanup. A headed check must confirm that the emphasis is legible but
-does not obscure cost, art, text, rarity, selection, or native playable-state feedback.
-
-#### 2C. Relic and Power extra corner amount labels
-
-Extra Badges is supported for Power, Relic, and Intent: the official tutorial supplies
-product semantics for all three consumers and the pinned source confirms their public
-provider/change-source surfaces. This implementation covers Relic and Power only. Intent
-remains outside the schedule by human-lead decision.
-
-**Implementation status (2026-07-30):** semantic intake, the grounded Relic/Power reference,
-recipes/author routing, static contract coverage, and focused host review are complete. The
-human-led review passed the hand-emphasis and Relic cases, then found that multiple Power
-preset bands overflowed an adjacent Power in a crowded 16:9 row. Power authoring was
-narrowed to one top-left supplemental label; the rebuilt proof passed the 16:9/16:10
-Power-row recheck and strict Tier 1. Strict Tier 2 was not run. See
-`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`.
-
-Allow bounded supplemental labels on Relic and Power hosts through their public provider
-surfaces. These labels supplement, rather than replace, the vanilla amount/value
-counter. The generated semantic shape declares host, one of three distinct safe preset
-corners, plain or bounded-color text, update trigger, and removal condition. It permits at
-most three labels, limits visible text to 4 characters on Relics and 6 on Powers, and does
-not expose bottom-right or arbitrary custom rectangles through normal authoring.
-
-Use the RitsuLib invalidation events when underlying state changes without a normal host
-display event; do not poll every frame. Relics may use up to three distinct
-top-left/top-right/bottom-left labels. Powers may use one top-left supplemental label; the
-pinned preset bands are not clipped, so do not combine Power corners or generate a custom
-rectangle as an unproved workaround. Prove Relic zero/one/multiple and Power zero/one,
-rich-text formatting, state-driven update, removal, host destruction, and combat transition
-cleanup. Headed checks must cover common aspect ratios and crowded Relic/Power cases,
-preserve the vanilla counter, and reject overlap with native icons, tooltips, or adjacent
-labels.
-
-Intent authoring remains removed from active M6.6 work by human-lead decision on 2026-07-30;
-that scheduling decision does not make the public Extra Badges consumer unsupported. Its official
-meaning is auxiliary same-intent information such as additional triggered hits. A separate
-debuff or other visible effect keeps its own native intent, and an ordinary repeated
-identical attack keeps the native multi-attack intent. Adding an Intent recipe remains a
-future pipeline task and does not start with this Relic/Power implementation.
-
-### Package 3 - Owned custom Rest Site options
-
-**Semantic intake.** Model the first supported slice as an action contributed by one
-generated-Mod-local Relic. Declare its localized title/description, owner, eligibility,
-repeatability, enabled/disabled rule, optional icon, cost, and asynchronous outcome.
-Separate absence (the owner is ineligible) from visible-but-disabled (the option exists but
-cannot be paid for or used now). Card/Modifier owners remain outside this slice.
-
-**RitsuLib route and outcome.** Implement the action with `ModRestSiteOptionTemplate` and
-have the owner contribute it through `TryModifyRestSiteOptions`. Prevent duplicate insertion
-when the host rebuilds or revisits its option list. `IsEnabled` must match the same payment
-predicate used at click time, and a disabled option must use the native grayed-out state.
-Resolve cost and outcome atomically: if payment or final eligibility fails, neither side may
-partially apply. Await the complete outcome before returning control to the Rest Site, then
-apply the declared stay/leave behavior. A missing or invalid custom icon must fall back to a
-checked native presentation rather than hiding or breaking the option.
-
-**First proof matrix.** In the real Rest Site host, prove absent, present-and-disabled, and
-present-and-enabled states; a failed payment; a successful click with structured resource
-and outcome deltas; option-list rebuild without duplication; return to or departure from the
-Rest Site; and a second visit according to the repeatability contract. Headed checks cover
-localization, icon fallback, gray state, controller focus, and coexistence with native Rest
-Site options. This first package does not claim remote-player ownership or multiplayer
-coordination.
-
-**Implemented (2026-07-30).** The bounded Relic-owned singleplayer slice is available.
-`M66RestSiteProof` passed the human lead's native absent/gray/enabled/payment/outcome/list-
-rebuild/repeatability/controller/custom-icon/fallback matrix. The `gold` console command on
-the pinned host ignores negative values, so the lead used normal Shop spending to establish
-the insufficient-Gold state. No post-session log read or strict structured harness ran;
-those remain explicit exceptions. See
-`documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`.
-
-### Package 4 - Custom Card Piles Package
-
-**Implemented and promoted on 2026-08-02.** The official tutorials establish the Custom
-Card Piles Package and official RitsuLib `0.5.4` provides its public stable-host APIs.
-Formal authoring covers both combat-only and run-persistent scopes; Headless, TopBarDeck,
-BottomLeft, BottomRight, and ExtraHand styles; default, preset, and custom anchors; icon,
-hover-tip, visibility, hotkey, default/custom open, and complete pile-screen view settings;
-native awaited Card movement and live pile access; required localization; and ExtraHand
-layout, glow, manual play, transform resolver, and visual callbacks.
-
-The generated Mod registers Mod-owned piles through the single deferred content pack and
-uses public RitsuLib/STS2 commands. It does not ship the historical private repair or patch
-RitsuLib/native pile internals. Support follows the complete documented Package, not only
-the ExtraHand consumer exercised by the focused proof. The selected generated SPEC still
-owns capacity/order/duplicate rules, exact movement triggers, lifecycle/reset/persistence,
-and the UI behavior that its verification must exercise.
-
-The retained official `0.5.4` proof used no consumer patch. Its setup assertions confirmed
-five native-Hand holders, three separate ExtraHand holders, capacity/overflow, and idle
-holder separation. The human lead accepted target cancellation restoration, numbered
-shortcut isolation, and consecutive mouse play of Stored Guard, Stored Strike, and Stored
-Sweep. The effect callbacks reached the normal Play pile. Strict Tier 1 did not pass due to
-a host save-backup cleanup error, and the proof emitted no structured `selftest done`; the
-human lead accepted the result and waived strict Tier 2 for promotion. Those literal
-exceptions do not narrow Package support.
-
-### Package 5 - Custom Character dialogue in native Ancient scenes
-
-**Implemented as of 2026-07-29 after repaired headed recheck.** The
-semantic intake, pinned nine-target catalog, flat localization lowering, build preflight,
-RitsuLib route, and deterministic contract checks are implemented. The first
-`M66AncientProof` headed run exposed an unmounted localization PCK, an invalid proof-only
-Energy asset prefix that broke native Event controls, and no Ancient Card for Darv's
-unchanged Dusty Tome option. The repair mounts the PCK, uses a checked native proof asset,
-registers a Mod-local Ancient Card, and adds regression contracts. In the rebuilt proof,
-the human lead observed Mod-local text and normal progression through Darv and the
-production Architect path. The current log confirms the PCK mount, two Darv entries, the
-real final-act Architect transition, and no fresh error block. It does not contain the
-structured state marker or `selftest done`, so strict Tier 2 is an explicit exception. This
-package does not include custom Ancient content or global dialogue replacement.
-
-This package adds Character-specific dialogue to cataloged vanilla Ancient encounters while
-preserving their native event model, scene, background, options, rewards, and progression.
-It is a Character capability, not an M6.7 vanilla replacement: the generated Mod contributes
-a new dialogue branch for its own Character instead of changing dialogue used by existing
-Characters. Keep the first slice singleplayer and separate from custom Ancient creation or
-layout authoring.
-
-**Semantic intake.** Add an optional Character dialogue block keyed by a natural-language
-Ancient name resolved through a pinned STS2 `0.107.1` Ancient catalog. Each dialogue group
-declares its first/repeat or explicit visit rule and contains ordered lines with speaker
-(`Character` or `Ancient`), text, and the transition prompt after each non-terminal line.
-Architect groups additionally declare the bounded start/end attacker presentation as
-`None`, `Player`, `Architect`, or `Both`. The SPEC stores these meanings, not raw localization
-keys, line indexes, `r` suffixes, or enum strings.
-
-**RitsuLib route and localization.** Compile the semantic groups into the flat
-`ancients.json` shape
-`<ANCIENT_ENTRY>.talk.<CHARACTER_ENTRY>.<DIALOGUE_INDEX>-<LINE_INDEX>.<speaker>` and matching
-`.next`, repeat, visit, and Architect attacker entries. Rely on RitsuLib's registered
-`AncientDialoguePopulateLocKeysPatch` to append these lines to the native
-`AncientDialogueSet`; generated Mods must not emit their own Harmony/reflection injection.
-Continue supplying the Character's public `NameColor`, `GetArchitectAttackVfx()`, and a
-complete Architect dialogue. The debug-only missing-Architect fallback is diagnostic
-recovery, not a production fallback.
-
-Validate target and Character entry IDs, contiguous dialogue and line indexes, one repeat
-mode per group, a transition prompt for every non-terminal line, no orphan metadata, bounded
-supported rich-text tags, and identical structural keys across shipped languages. Resolve
-unknown or ambiguous Ancient names as interview/build errors. Do not expose line-level SFX
-in the first slice because production audio remains unsupported.
-
-**First proof matrix.** Contract checks load each generated localization table through the
-pinned parser and assert exact dialogue count, line order/speaker, visit routing, repeat
-mode, transition prompts, and Architect start/end attackers. A maintained `RunStart` or
-`MapNode` Ancient harness must select the exact custom Character and sweep every cataloged
-vanilla Ancient target, proving that its Character-specific dialogue resolves once and that
-the encounter returns to its normal options/outcome after the final line. Cover first and
-repeat visits and a missing/invalid-key negative case without relying on the debug fallback.
-
-Use headed review for one normal Ancient and The Architect. Confirm the native name banner,
-Ancient/Character speech styling and Character color, text fit, mouse/controller progression,
-normal option restoration, and untouched scene/background. The Architect proof additionally
-checks the selected attack presentation, every referenced attack VFX, and clean run-end
-progression. This promotes only dialogue in native Ancient scenes; custom Ancient models,
-backgrounds/layouts, option/reward authoring, audio, and remote-player presentation remain
-unsupported because the current baseline has no matching documented public route. A future
-API review may add supported routes before any implementation plan is added.
-
-### M6.6 completion
-
-Packages 1, 2A, 2B, 2C, 3, 4, and 5 are complete with their literal verification results
-and exceptions recorded. The human lead promoted Package 4 on official RitsuLib `0.5.4`
-and accepted its focused headed result with strict Tier 2 waived. M6.7 remains planned and
-starts only after explicit human-lead selection.
-
-## M6.7 - Version-Bound Vanilla Content Overrides and Behavior Composition
-
-M6.7 is the planned follow-on milestone for generated Mods that intentionally alter existing
+M6.7 is the closed milestone for generated Mods that intentionally alter existing
 base-game content. It is not limited to Card numbers: the target is a broad semantic system
 for data, availability, behavior, and presentation changes across Cards, Relics, Potions,
 Powers, Monsters/Encounters, and Events where the current authoring vocabulary and a grounded
 host adapter can express the requested result.
 
-M6.7 planning does not start implementation, and no M6.7 surface is currently generated.
-Begin it only after the human lead selects the milestone. The scope may be refined as the
-version catalog reveals real model shapes, but do not shrink the product goal to a small
-handwritten whitelist merely because some targets need maintained adapters.
+The human lead selected M6.7 on 2026-08-02, started M6.7.0 on 2026-08-03, and closed the
+milestone on 2026-08-04. The no-op grounding source surface and first five operation
+Packages through M6.7.5 Non-Card Data and Behavior are implemented and delivered. The
+scope may be refined as the version catalog reveals real model shapes, but do not shrink the
+product goal to a small handwritten target whitelist merely because some operations need
+reusable, maintained adapters.
+
+### Grounded route classes and first operation matrix
+
+Classify every operation/category pair before authoring it:
+
+- **Public:** official tutorial semantics and a direct public RitsuLib `0.5.4` route apply to
+  the vanilla consumer.
+- **Probe:** a public route appears type-compatible with vanilla models, but the documented
+  examples do not establish that use; run one focused real-host probe before promotion.
+- **Adapter:** open-mod owns one reviewed STS2 `0.107.1` implementation with an exact target,
+  signature, semantic baseline, and structural fingerprint. Prompts select a cataloged
+  operation; they never generate a patch body.
+- **Not generated:** no complete grounded route exists yet. Research may later move that
+  cell into one of the three classes above.
+
+The initial matrix is grounded in the official tutorial pages for
+[Capabilities](https://tutorials.sts2modding.com/04-18-add-capability/),
+[Lifecycle Events](https://tutorials.sts2modding.com/04-23-lifecycle-events/),
+[Patch System](https://tutorials.sts2modding.com/04-24-patch-system/), and
+[Content Registry](https://tutorials.sts2modding.com/04-27-content-registry/), plus the exact
+public source and docs in the pinned `baselines/STS2-RitsuLib` `0.5.4` checkout. Tutorial
+semantics do not override a missing or incompatible pinned signature.
+
+Official capability guidance establishes that `ModelCapability` can attach to concrete
+vanilla `AbstractModel` types and that owner hooks can compose before or after the owner.
+Lifecycle events are primarily observation surfaces, not a general replacement mechanism,
+and the normal content registries register Mod-owned types rather than rewrite vanilla
+pools. The pinned source further establishes these narrower facts:
+
+- Card property contributors can override type, rarity, and target; Card tags can only be
+  appended and deduplicated. Energy/Star contributors alter evaluated local cost, not a
+  canonical printed field. Title fragments can replace the base title, while description
+  contributors append/prepend fragments rather than replace the vanilla base description.
+- Capability-owned dynamic variables are separate from variables owned by the vanilla
+  model. `CardPlayCapability` can publicly suppress the owner's `OnPlay`; no equally general
+  public suppression route is confirmed for Relic, Potion, Power, Monster, or Event bodies.
+- `ExternalCardMaterialOverrideRegistry` explicitly accepts base-game Cards. The external
+  asset registry covers Relic, Power, Potion, Orb, Act, Event, Encounter, Ancient,
+  Affliction, Enchantment, and Modifier consumers. It does not expose a vanilla Monster-body
+  provider.
+- `AncientOption<TAncient>(ModAncientOptionRule)` publicly appends options to an existing
+  Ancient with condition, priority, and duplicate-text handling. The fixed `0.107.1`
+  `GenerateInitialOptionsWrapper` retained-list postfix provides complete initial-option
+  replacement without replacing the event class, while the protected `SetEventState` and
+  `Done` targets provide Mod-owned pages and native choice-history completion. All three
+  Adapter IL bodies are cataloged and fail closed on drift.
+
+The first reviewed matrix is:
+
+| Content | Adjust data | Compose behavior | Replace behavior | Availability | Visual |
+| --- | --- | --- | --- | --- | --- |
+| Card | Public for type/rarity/target, appended tags, evaluated Energy/Star cost, play state/result, title, and description fragments; no promoted route for canonical variables, tag removal, or base-description replacement | Public | Public for `OnPlay`; Adapter for other entry points | Public pinned-epoch gate and pool add; fixed pool remove/move Adapter; no permanent disable or global weighting | Public |
+| Character | Not generated | Not generated | Not generated | Public pinned-epoch gate; no permanent disable or pool Adapter | Public |
+| Relic / Potion | Adapter | Public typed owner hooks | Adapter | Public pool add; fixed pool remove/move and epoch/disable Adapters | Public |
+| Power / Orb | Adapter | Public typed owner hooks | Adapter | Source-specific Adapter; no generic acquisition pool | Public |
+| Enchantment / Affliction | Adapter | Public typed owner hooks | Adapter | Source-specific Adapter | Public |
+| Monster | Adapter for stats and cataloged move/intent values | Public typed owner hooks | Adapter for move/AI entry points | Encounter/source Adapter | Public for Encounter assets; Monster body is not generated |
+| Existing Ancient | Adapter for cataloged initial-choice data only | Public multi-option append plus Mod-owned pages | Fixed Adapter replaces the complete initial option list while preserving the native event class/lifecycle | Public pinned-epoch gate only for shared `EVENT.DARV`; act-owned Ancients unchanged | Public |
+| Ordinary Event | Adapter for cataloged options/outcomes | Only through a grounded target route | Adapter | Public pinned-epoch gate; no permanent disable or source weighting | Public |
+| Act / Modifier | No generic first-wave data route | Not generated | Not generated | Not generated | Public |
+
+This matrix is the initial implementation boundary, not a claim of completed support. Expand
+it by reusable operation shape and content category, not by silently special-casing one named
+vanilla object.
 
 ### Product model and semantic operations
 
@@ -450,10 +201,14 @@ Expose these operation families:
 3. **Replace:** suppress one declared original behavior entry point and execute a complete
    generated recipe in its place. Unrelated lifecycle, identity, assets, and save data remain
    vanilla.
-4. **Availability:** add, remove, move, or reweight an existing model in a declared pool,
-   reward source, unlock surface, or multiplayer-availability surface.
-5. **Disable acquisition:** stop new runs from obtaining content while retaining the model
-   so old saves and existing run state remain readable. This is not physical model deletion.
+4. **Availability:** add, remove, move, or apply a source-specific weighting operation to an
+   existing model in a declared pool, reward source, unlock surface, or multiplayer surface.
+5. **Visual:** replace one public, cataloged material, texture, scene, or icon consumer while
+   preserving the vanilla model identity and unrelated presentation.
+
+Disable acquisition is an Availability mode: stop new runs from obtaining content while
+retaining the model so old saves and existing run state remain readable. It is not physical
+model deletion.
 
 Each operation must declare target model/category, operation mode, affected surface, desired
 value or behavior, base and upgrade forms where applicable, localization effect, multiplayer
@@ -462,13 +217,21 @@ are distinct conflict semantics and must not be inferred from wording after SPEC
 
 ### Version catalog and target grounding
 
-Build a generated, reviewable vanilla-content catalog for every supported STS2 version. The
-first catalog targets the existing pinned `0.107.1` host; supporting a later patch requires a
-new catalog and proof, not silent reuse of old targets. The catalog should record, where
-applicable:
+Build a deterministic, reviewable vanilla-content catalog for every supported STS2 version.
+The first catalog targets the pinned `0.107.1` host; supporting a later patch requires a new
+catalog and proof, not silent reuse of old targets. Produce it from two bounded collectors:
+
+- a game-host collector for `ModelDb` identity, pool/source membership, public properties,
+  canonical dynamic-variable observations, and base/upgrade runtime snapshots; and
+- an offline assembly collector for exact adapter method signatures, metadata identity, and
+  structural/IL fingerprints without copying game implementation into generated Mods.
+
+The merged catalog should record, where applicable:
 
 - stable `ModelId`, concrete model type, content category, pool/source membership, rarity,
   costs, tags/keywords, target/result behavior, and multiplayer constraint;
+- stable title localization table/key pairs and checked display-title aliases for every
+  language exposed by the pinned game host, without retaining machine-local overrides;
 - canonical named dynamic variables, their concrete types/value properties, base values,
   upgrade deltas, and localization placeholders;
 - acquisition/unlock hosts, common public behavior entry points, and whether an existing
@@ -478,24 +241,35 @@ applicable:
 - known special consumers such as generated token Cards, Powers applied by a Card, enemy
   move/intent pairs, Event scenes, and cached pool/reward views.
 
-Resolve natural-language names through this catalog and fail on ambiguity. A required edit
+Resolve exact internal names and localized display titles through this catalog and fail on
+ambiguity. This does not imply free-form grammar, synonyms, or gameplay-description
+understanding. A required edit
 must check its expected target and baseline fingerprint before applying. Missing types,
 changed signatures, unexpected canonical values, or incompatible variable types fail closed
 with a useful diagnostic; do not guess a replacement target after a game update. Catalog
 metadata is research/compatibility data, not permission to copy game source or assets into a
 generated Mod.
 
+Every generated override Mod emits a semantic manifest containing the pinned host/profile,
+resolved `ModelId`, operation ID and mode, expected baseline, chosen public route or adapter,
+scope, ordering, and compatibility criticality. M6.7.0 requires repeatable catalog output,
+useful failures for ambiguous/missing names, fail-closed version/fingerprint drift,
+overlap detection, and a no-op manifest that validates through scaffold/build preflight.
+The separate current-localized-catalog no-op build/load remains intentionally unrun; payload
+delivery passed through the consolidated M6.7 closure.
+
 ### Layer 1 - Data, metadata, upgrade, and presentation overrides
 
 The first promoted layer should cover broad balance-style edits rather than a few named
 Cards:
 
-- Card Energy/Star cost, named base and upgraded values, ordinary rarity, card type, tags,
-  keywords, replay count, and other cataloged properties;
-- target type and result pile only when the unchanged or replacement behavior is compatible
-  with the new target/result lifecycle;
+- public Card type, rarity, target, appended tags, evaluated Energy/Star cost, playability,
+  result pile, title replacement, and description/tooltip fragments;
+- canonical Card variables, upgrade deltas, tag/keyword removal, replay count, and base-text
+  replacement only after a cataloged Adapter owns the exact vanilla storage/consumer route;
 - ordinary Relic, Potion, Power, Monster, and move/intent values when they are exposed as
-  properties or named variables, with maintained adapters for common literal-value shapes;
+  cataloged properties or named variables, through maintained adapters for reusable model
+  shapes rather than a universal property contributor;
 - generated-token and applied-Power routing, so a request against a source Card can resolve
   the actual model that owns the number; and
 - matching title/description/tooltip changes when the original text does not already consume
@@ -506,28 +280,42 @@ normal Strength, Dexterity, Vulnerable, Frail, enchantment, and preview hooks st
 Baseline cost edits must occur before normal temporary/global cost modifiers rather than
 overwriting their final result. Base, upgrade preview, upgraded instance, downgrade, clone,
 transform, save/load, and card-library/reward consumers must all observe the same override.
-Never ship a text-only or effect-only numeric edit.
+Never ship a text-only or effect-only numeric edit. Treat a public Energy/Star contributor as
+an evaluated local-cost operation unless a separate Adapter proves a canonical baseline edit;
+do not describe the contributor as mutating the vanilla printed field.
 
 Use RitsuLib default model capabilities and property contributors where they express the
-semantic layer. Where no public property/variable override exists, route through a maintained
-version-catalog adapter registered with `IPatchMethod`; do not generate a new patch shape for
+semantic layer. Capability-owned dynamic variables do not overwrite variables owned by the
+vanilla model. Where no public property/variable override exists, route through a maintained
+version-catalog Adapter registered with `IPatchMethod`; do not generate a new patch shape for
 each prompt.
 
 ### Layer 2 - Pool, reward, unlock, and availability overrides
 
-Support declarative add/remove/move/reweight operations for cataloged content pools and
-acquisition sources, including character/Colorless pools, Relic tiers, Potion/reward sources,
-Neow/Ancient-style sources where grounded, unlock requirements, and bounded multiplayer
-availability. Treat pool membership, appearance weight, unlock state, and owned-instance
-behavior as separate fields.
+Start with a focused probe of `ModUnlockRegistry.RequireEpoch<TModel, TEpoch>` against
+cataloged vanilla Card, Relic, Potion, and room-Event targets. Its implementation appears to
+filter by `ModelId`, but official examples establish Mod-owned content only. Promote vanilla
+disable/re-gating only for the target families whose fresh-run and existing-save behavior the
+probe proves.
+
+Implement Card, Relic, and Potion pool add/remove/move through fixed-version Adapters over
+their canonical `AllCards`, `AllRelics`, and `AllPotions` hosts. Preserve `ModelDb`
+registration, identity, and old-save readability; update or reject affected cached IDs and
+Card pool resolution; and prevent duplicate membership. Do not register a vanilla type as
+Mod-owned content through the ordinary content registry.
+
+Appearance weighting is source-specific. Many sources use rarity, uniform lists, or their
+own deterministic RNG rather than one shared weight field. Add a weighting operation only
+after cataloging that exact reward/shop/Ancient/other source and its RNG consumption. Treat
+pool membership, source weight, unlock state, and owned-instance behavior as separate fields.
 
 This layer may edit existing availability and unlock metadata already owned by a cataloged
 vanilla model or acquisition source. It does not schedule authoring new Story or Epoch
 content, new progression tracks, or new unlock systems; those would be separate new-content
 capabilities with their own persistence, presentation, and compatibility contracts.
 
-Disabling newly added vanilla content removes its future acquisition routes but leaves the
-model registered for existing saves. Moving or reweighting content must not duplicate it,
+Disabling vanilla content removes its future acquisition routes but leaves the model
+registered for existing saves. Moving or source-specific weighting must not duplicate it,
 must preserve deterministic selection/RNG consumption, and must specify whether current runs
 are affected. Prove card library/compendium views, rewards, shops or source-specific choices,
 fresh runs, and loading a save that already owns the disabled content.
@@ -543,9 +331,10 @@ new content.
   Card; replacement uses the public suppression result to prevent the original `OnPlay` and
   runs one complete generated effect. Generate matching variables, description, target,
   payment, upgrade, result-pile, preview, and applied-Power behavior together.
-- **Relics, Potions, Powers, and Monsters:** use typed owner capabilities for additional
-  hook behavior. A complete replacement must suppress only the cataloged original hook/use/
-  move entry points through a maintained adapter, then run the generated hook vocabulary
+- **Relics, Potions, Powers, Orbs, Enchantments, Afflictions, and Monsters:** use typed owner
+  capabilities for additional hook behavior. Public hooks compose; they do not imply owner
+  suppression. A complete replacement must suppress only the cataloged original hook/use/
+  move entry points through a maintained Adapter, then run the generated hook vocabulary
   exactly once.
 - **Conditions and cadence:** provide reusable semantic filters such as Card type, target
   side, source, threshold, first/Nth time per turn/combat, at most/exactly N, and enabled
@@ -554,9 +343,16 @@ new content.
 - **Monster/Encounter behavior:** support move damage, intent, sequence, fixed-turn openings,
   and bounded conditional selection through the existing grounded move vocabulary. Unusual
   AI state machines or animation-coupled transitions may use a cataloged target adapter.
-- **Events:** support option eligibility, costs, rewards, and generated outcomes through the
-  current Event recipes. Scene/layout replacement, unusual chains, or private async state
-  machines remain target-adapter work rather than free-form patch generation.
+- **Existing Ancients:** use public `AncientOption<TAncient>` rules for appended options or
+  the one fixed retained-list Adapter for complete initial-option replacement. Support
+  nested conditions, visibility/lock state, fixed Gold/HP/Max HP costs, typed option
+  presentation, ordered deterministic outcomes, deck selectors, fixed custom rewards, and
+  Mod-owned page branches. Finish through native `Done()` so the original event model,
+  room, save identity, allowance gate, and Ancient choice history remain intact.
+- **Ordinary Events:** option eligibility, costs, rewards, and generated outcomes require a
+  cataloged target Adapter; lifecycle observation alone is not a general option replacement
+  route. Scene/layout replacement, unusual chains, or private async state machines remain
+  target-specific work rather than free-form patch generation.
 
 When the current game has removed a model or required asset entirely, recreating it is new
 content, not a vanilla override. It may reuse the normal authoring pipeline only when the
@@ -588,27 +384,86 @@ patch owners found on required targets. Do not promise automatic compatibility w
 Mod also replaces the same behavior. A conflicting required replacement should fail visibly
 rather than become silent last-writer-wins behavior.
 
-Singleplayer proofs come first, but multiplayer is an intended M6.7 surface rather than a
-permanent exclusion. Promote multiplayer per edit family only after all peers use an
-identical override manifest and real-host evidence proves deterministic state, choices,
-RNG, saves, remote presentation, and disconnect behavior where relevant.
+Detect all overlapping operations inside one generated Mod. External visual registries use
+provider order and key replacement but expose no public complete provider inventory or
+priority contract across Mods, so cross-Mod visual conflict diagnostics are best-effort and
+must not be described as complete. Required behavior replacements still use whatever patch-
+owner information is publicly inspectable and fail visibly on a known conflict.
 
-### Proposed delivery sequence
+All promoted M6.7 operations remain singleplayer. Multiplayer promotion is outside this
+milestone and is recorded under Future Outlook rather than as a pending delivery Package.
 
-1. Build the version catalog, name resolver, expected-baseline/fingerprint checks, and an
-   emitted override manifest with no gameplay changes.
-2. Promote Card data/metadata/upgrade edits, then matching localization and all normal Card
-   consumers.
-3. Promote acquisition disable plus Card/Relic/Potion pool movement and deterministic
-   weighting.
-4. Promote Card behavior composition/replacement by reusing current Card, Power, target,
-   payment, and result-pile recipes.
-5. Promote Relic/Potion/Power numeric and hook behavior, including reusable cadence/filter
-   templates and checked suppression adapters.
-6. Promote Monster/Encounter move edits, followed by bounded Event option/outcome edits.
-7. Add multiplayer promotion per already-proved edit family; leave exceptional content on
-   named catalog adapters instead of blocking the broad generic layers.
+### Delivery packages
 
+1. **M6.7.0 - Grounding Kernel (complete):** both
+   catalog collectors, the exact name/alias resolver, runtime semantic snapshots,
+   expected-baseline/signature/fingerprint checks,
+   semantic override manifest, same-Mod conflict detection, and fail-closed diagnostics are
+   implemented. The checked `0.107.1` catalog contains 1624 vanilla models, 1580 stable
+   title sources, 1537 English and Simplified Chinese titles, all 14 pinned language
+   columns and exact assembly identity. It now includes 4165 reviewed Adapter fingerprints:
+   the previous twenty plus 4145 M6.7.5 targets. It promotes M6.7.1 through M6.7.5. Repeated
+   localized-title collector runs produced the
+   same snapshot hash and
+   passed their collector-only strict Tier 1/Tier 2 check. The separate current-catalog
+   headed no-op remains intentionally unrun; final regression and payload delivery passed
+   through the consolidated closure. It makes no gameplay change. See the interim record
+   in `documents/history/M67_GROUNDING_KERNEL_RESULTS.md`.
+2. **M6.7.1 - Public Card Overrides (complete):** the
+   checked Package covers the grounded non-asset public Card contributors,
+   capability-owned variables, public `OnPlay` composition/replacement, and owner lifecycle
+   hooks. Focused tests and a compile-only check pass; selected Card routes were included
+   in the built consolidated Mod that the human lead accepted as a whole. Canonical
+   DynamicVar edits, destructive
+   metadata edits, assets, acquisition, and transform carry-over remain outside this
+   Package.
+3. **M6.7.2 - Public Visual Overrides (complete):**
+   the checked Package covers all 44 public Card-material/external-asset providers across
+   Card/CardPool, Relic, Power, Potion, Orb, Act, Event/Ancient, Encounter, Affliction,
+   Enchantment, and Modifier targets. Exact Mod-local Material/texture/PackedScene/Spine/
+   directory/list resources, deterministic raster normalization where a current spec
+   matches, runtime fallback, cleanup, and same-surface conflicts are implemented in the
+   skill/manifest pipeline. There is no vanilla Monster-body external provider. Focused
+   manifest/resource tests pass; selected Card and Darv visual providers were included in
+   the built consolidated Mod that the human lead accepted as a whole. No individual-
+   provider observation is inferred. Other providers and AI image generation were not run.
+   Preserve the documented limit on cross-Mod provider conflict diagnosis.
+4. **M6.7.3 - Existing Ancient Extensions (complete):** support public multi-option append
+   and one fixed fingerprinted complete
+   initial-option replacement Adapter for the nine pinned native Ancients. Lower nested
+   conditions, visible/locked choices, fixed Gold/HP/Max HP costs, typed Hover Tips,
+   relic-backed presentation, ordered fixed outcomes, deck upgrade/remove/transform/
+   enchant selection, fixed custom rewards, bounded shake, Mod-owned subsequent pages, and
+   native `Done()` finish/choice history. Localize all option/page text through Mod-local
+   `events.json`; compose requested existing-Ancient visuals through M6.7.2. Preserve the
+   native class, room, opening dialogue, save identity, allowance gate, and ambient audio.
+   Focused tests pass; the selected Darv route was included in the built consolidated Mod
+   that the human lead accepted as a whole. Other Ancient routes remain unrun.
+5. **M6.7.4 - Availability (complete):** promote the
+   public `RequireEpoch` route for 57 pinned vanilla epochs across Card, Character, ordinary
+   Event, and shared `EVENT.DARV`; fixed Relic/Potion epoch or permanent-disable filters;
+   and Card/Relic/Potion pool add plus remove/move membership Adapters. Pool manifests copy
+   complete `ModelDb` baselines, simulate ordered transitions, require the pinned primary
+   pool, preserve existing instances, reject debug/empty transitions, and remain
+   singleplayer-only. Focused manifest/catalog/document-route tests pass; one Card pool move
+   was included in the built consolidated Mod that the human lead accepted as a whole.
+   Cache timing, unlock UI,
+   fresh-acquisition order/RNG, duplicates, and existing-save variants remain unrun. Global
+   weighting and Card/Character/Event permanent disable remain outside this Package.
+6. **M6.7.5 - Non-Card Data and Behavior (complete):** promote all public owner-hook
+   consumers for Relic/Potion/Power/Orb/
+   Enchantment/Affliction/Monster, including all 100 asynchronous `AbstractModel` hooks,
+   26 numeric hooks, 28 decisions, and four typed Orb callbacks. Add sixteen intrinsic data
+   routes and complete checked lifecycle/body replacement for those families, complete
+   Monster move graphs, paired runtime/all-possible Encounter rosters, and complete ordinary
+   Event options plus Mod-owned pages. The checked catalog contains 4141 target-specific
+   M6.7.5 method fingerprints and four shared stream/flow boundaries. All operations remain
+   singleplayer. Focused 40-test manifest/catalog/localization/documentation checks and
+   Python syntax pass; selected Relic, Monster, and Encounter routes were included in the
+   built consolidated Mod that the human lead accepted as a whole. Unselected owner/
+   lifecycle families and ordinary
+   Event routes remain unrun. Affliction synchronous apply/remove callbacks are the one
+   narrow lifecycle limitation recorded in the Package reference.
 This sequence is a dependency order, not a requirement to wait for every content category
 before finishing an earlier layer. Do not claim broad "vanilla editing" from one sample
 Card: record the exact documented Package, operation families, model categories, and
@@ -616,25 +471,31 @@ verification that actually ran.
 
 ### Proof and M6.7 completion
 
-Each promoted edit family needs deterministic before/after snapshots plus the nearest real
-host. Data edits prove base/upgrade display and live effect, normal modifiers, clones,
-downgrade, save/load, and a later combat. Availability edits prove fresh acquisition views,
-RNG/order, duplicate absence, and existing-save survival. Behavior replacement proves the
-original body was suppressed exactly once, the replacement executed exactly once, and
-normal payment, targeting, hooks, history, result piles, rewards, and cleanup remain intact.
-Monster/Event edits also require intent/option presentation and transition-state evidence.
+The human lead selected and completed a representative, not exhaustive, acceptance. The
+final source regression passed `165/165`; Python compilation and six skill-root validations
+passed; plugin and portable payloads were reproducible with 161 effective files each and
+zero differences; and the local plugin was reinstalled with zero file-hash differences
+from the repository payload.
 
-Add negative tests for ambiguous names, wrong host version, baseline drift, missing patch
-targets, overlapping edits, unsupported variable types, and conflicting replacements. A
-headed check is required only for actual presentation claims; do not schedule a fresh full
-acceptance Mod unless this plan is later amended to require one.
+The fresh independent `VanillaReforged` Mod used that installed payload and built with zero
+warnings and zero errors. Its 13 semantic operations sampled three concise groups:
 
-M6.7 may close when the final approved operation/category matrix is implemented, documented,
-and represented accurately in the support graph; retained target adapters have current-host
-proof; verification exceptions are recorded rather than counted as passes; generated
-payloads agree; and the human lead explicitly closes the milestone. Targets outside that
-matrix remain unimplemented. Support them only after the official semantics and pinned
-public route are known.
+1. **Run and player combat:** Ironclad Strike text/variables/complete play replacement,
+   Card frame plus optional missing-banner fallback, Ironclad-to-Silent pool move, and a
+   Burning Blood owner hook.
+2. **Native Ancient room:** Darv complete initial options, fixed Gold effect, Mod-owned
+   page/native finish, and initial portrait override.
+3. **Enemy combat:** Fuzzy Wurm Crawler fixed HP and complete move graph plus the weak
+   Encounter's paired runtime/all-possible roster.
+
+On 2026-08-04 the human lead reported that the independent-session effect test passed and
+explicitly closed M6.7. Tier 1, Tier 2/SelfTest, the separate current-catalog headed no-op,
+and every unselected visual provider, hook, family, availability mode, ordinary Event,
+save/load, multiplayer, and cross-Mod path remain unrun. The exact build evidence, literal
+human report, hashes, and exceptions are in
+`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`. Do not rerun or expand this closed
+milestone gate. Targets outside the delivered matrix still require official semantics and
+a pinned public or fixed-Adapter route before promotion.
 
 ## Current Boundaries
 
@@ -646,18 +507,34 @@ fixed templates. Combat cues remain the private, combat-only, all-or-nothing
 bodies, production audio/materials, or multiplayer presentation.
 
 Locked-selection presentation, Character-specific card trails, additional combat cue
-states, custom Ancient models/backgrounds/layouts/options/rewards, Ancient line audio and
-global dialogue replacement, alternative Energy, arbitrary Event layouts/chains, and one-
-click Workshop publishing retain their current unsupported boundaries. Remaining M6.6 work
-and all planned M6.7 vanilla-override work are not yet implemented; missing proof alone does
-not decide Package support.
+states, new Ancient models, global native Ancient dialogue/room replacement, Ancient line
+audio, randomized outcome/RNG rewrites, special combat, direct merchant/rest/treasure
+transitions, Ancient behavior outside the fixed M6.7.3 option/page/effect vocabulary,
+alternative Energy, arbitrary Event behavior/chains, and one-click Workshop publishing
+retain their current unsupported boundaries. M6.7.3 replaces a complete initial option list
+only through its fixed reviewed Adapter; it does not replace the Ancient model or enable
+arbitrary prompt-derived patching.
+
+Only the promoted M6.7.1 public Card, M6.7.2 public visual, M6.7.3 existing-Ancient, M6.7.4
+availability, and M6.7.5 non-Card data/behavior operations are generated. Every other
+nonempty M6.7 operation waits for its delivery Package to promote a grounded route. Missing
+implementation or verification means exactly that and does not redefine an official
+RitsuLib Package boundary.
 Unversioned target guessing and arbitrary generated Harmony/reflection/IL remain outside
 M6.7 entirely.
 
 ## Future Outlook
 
-Optional Mod settings and persistence remain a later possibility outside the provisional
-M6.6 package list. A future design may cover settings pages with toggles, sliders, choices,
-and key bindings plus RitsuLib's Global, Profile, and run-owned save scopes. Generate these
-only when a Mod request actually needs configuration or durable state; do not add a settings
-page to every simple Mod. No implementation package is currently scheduled.
+Multiplayer vanilla overrides are future work, not M6.7.6. The human lead canceled that
+Package on 2026-08-03 so M6.7 development ends at M6.7.5. A future separately selected
+track may promote an already-proved singleplayer operation family only after every peer
+uses an identical manifest and real-host evidence covers deterministic state and RNG,
+choices, save/load, remote presentation, targeted synchronization, timeouts/disconnect
+cleanup, and host authority where relevant. Singleplayer evidence must never be relabeled
+as multiplayer support.
+
+Optional Mod settings and persistence remain a later possibility outside the closed M6.6
+scope and closed M6.7 matrix. A future design may cover settings pages with toggles, sliders,
+choices, and key bindings plus RitsuLib's Global, Profile, and run-owned save scopes. Generate
+these only when a Mod request actually needs configuration or durable state; do not add a
+settings page to every simple Mod. No implementation package is currently scheduled.

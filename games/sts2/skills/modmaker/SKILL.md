@@ -129,9 +129,29 @@ normalization contract; native-tool, Vofy, and local-file outputs call its `impo
 command. See `author.md` §4 and `sts2-api` → `reference/art-contract.md`. The
 managed-credit route is live-verified through Vofy + an in-game `.pck` on Windows;
 host-native tool availability is runtime-dependent, and macOS/Linux remains best-effort.
-*Editing existing* vanilla content is still out; historical capability bridges are not a
-general vanilla-editing recipe.
+M6.7 grounds requests against a checked `0.107.1` vanilla catalog and emits a semantic
+override manifest in every new scaffold. Route existing content first to
+`sts2-api/reference/vanilla-overrides.md`. A selected public visual surface continues
+through the complete 44-provider M6.7.2 Package in `reference/vanilla-visual-overrides.md`.
+An exact existing Card's non-asset operations may continue through the M6.7.1 Package in
+`reference/vanilla-card-overrides.md`. An exact existing Ancient's initial options and
+subsequent page branches may continue through the M6.7.3 Package in
+`reference/vanilla-ancient-overrides.md`, including public append or the reviewed fixed
+replacement Adapter. Availability requests for pinned epoch gates or Card/Relic/Potion pool
+membership may continue through the M6.7.4 Package in
+`reference/vanilla-availability-overrides.md`. Existing Relic/Potion/Power/Orb/
+Enchantment/Affliction/Monster/Encounter/ordinary Event data or behavior may continue
+through the M6.7.5 Package in `reference/vanilla-non-card-overrides.md`. Other operations
+stop at their exact unpromoted boundary. Historical
+capability bridges are not a general editing recipe.
 If a request needs what isn't wired, say so plainly rather than half-doing it.
+
+Treat vanilla Card base-description replacement as a blocking capability conflict. When a
+user asks to replace, remove, or hide the original description body, explain that the pinned
+RitsuLib `0.5.4` route can only compose text before or after it and stop before SPEC or
+scaffold. Never silently downgrade `replace` to `compose`; proceed only after the user
+explicitly accepts the visibly different composition, even if values are final or they asked
+not to repeat questions.
 
 A RitsuLib Package documented by the official tutorials is supported when its public API
 exists in the pinned profile. If this shipped pack still lacks its SPEC block or recipe,

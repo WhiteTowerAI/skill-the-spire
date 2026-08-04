@@ -77,6 +77,11 @@ unselected modules.
 | Card Hand Glow | `ShouldGlowGoldInternal` / `ShouldGlowRedInternal`; `CardHandOutline<TCard>(ModCardHandOutlineRules<TCard>)` | native hand outline | generated with ordered fixed-color rules; headed host result remains literal |
 | Extra Badges | Power/Relic/Intent extra-label providers and change sources with `ExtraIconAmountLabelSpec` | native Power/Relic/Intent corners | Relic: up to three safe corners; Power: one top-left label because preset bands overlap in crowded rows; Intent supported but not scheduled |
 | Custom Card Piles | `.CardPileOwned(...)` + `ModCardPileSpec` + native `CardPileCmd` | headless, top-bar, bottom-corner, ExtraHand, and pile-screen consumers | complete documented Package; selected behavior uses `reference/card-piles.md` |
+| Existing vanilla Card behavior | M6.7 catalog/resolver + one registered default `CardCapability` per target | preserve vanilla identity and untouched consumers | `reference/vanilla-card-overrides.md`; M6.7.1 public package promoted |
+| Existing vanilla visual surface | M6.7 catalog/resolver + exact-type provider in the public Card-material/external-asset registries | checked Mod-local resource with vanilla fallback | `reference/vanilla-visual-overrides.md`; complete 44-provider M6.7.2 Package promoted |
+| Existing vanilla Ancient options | public `AncientOption<TAncient>` append or one fixed fingerprinted retained-list replacement Adapter; fixed `SetEventState`/`Done` flow access | native Ancient room, Mod-local pages, choice history, and optional M6.7.2 visuals | `reference/vanilla-ancient-overrides.md`; M6.7.3 append/replacement Package promoted |
+| Existing vanilla availability | public `RequireEpoch` plus `ModHelper.AddModelToPool`; fixed Relic/Potion unlock filters and Card/Relic/Potion membership adapters | preserve vanilla model identity and existing instances while changing fresh acquisition | `reference/vanilla-availability-overrides.md`; M6.7.4 promoted singleplayer epoch/pool Package |
+| Other existing vanilla operation | M6.7 catalog/resolver plus a later selected public capability or reviewed adapter | preserve vanilla identity and untouched consumers | `reference/vanilla-overrides.md`; grounding only until its package is promoted |
 
 Registration remains data-driven: pool/act/availability comes from the semantic
 `registration` section and is translated once by the adapter. Do not add a parallel
@@ -407,11 +412,16 @@ invariants in one `CombatPlayer` run, ending at
 
 Official product semantics plus a public API in this pinned profile support the documented
 Package and its public consumers. Missing authoring work or verification does not change
-that. Keep actual no-route boundaries explicit: alternative Energy,
-arbitrary Event layouts/VFX, Ancient custom layouts, animation,
-materials, multiplayer presentation, audio, run-persistent Character resources, and direct
-merchant/rest/treasure transitions. M6.7 vanilla editing remains planned and is not
-generated. The promoted Scry helper remains singleplayer-only and generated-Mod
+that. Keep actual no-route boundaries explicit: alternative Energy, behavior-bearing
+arbitrary Event layouts/VFX, new Ancient models and global native-dialogue/room replacement,
+Ancient flow outside the M6.7.3 fixed option/page vocabulary, animation beyond packaged
+public resources, multiplayer
+presentation, audio, run-persistent Character resources,
+and direct merchant/rest/treasure transitions. M6.7.1 Card operations and M6.7.2 public
+visual operations, M6.7.3 existing-Ancient option/branch operations, and M6.7.4 pinned
+epoch/pool availability operations are generated. Global weighting, unpromoted permanent
+disable surfaces, and every other vanilla operation remain gated by a later grounded
+Package. The promoted Scry helper remains singleplayer-only and generated-Mod
 local; it does not broaden those multiplayer or interoperability boundaries. Custom
 multi-target Potions retain a known limitation until the pinned host/framework can cancel
 an empty queued group before consumption.
