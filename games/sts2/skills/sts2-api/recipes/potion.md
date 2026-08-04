@@ -1,272 +1,128 @@
 # Recipe: Potion
 
-> A copy-adaptable, **known-good** pattern for a single STS2 potion. Every signature
-> here was confirmed against decompiled `sts2.dll` + BaseLib — not guessed. Content
-> facts (which effects exist, realistic numbers, vanilla analogs) come from
-> `reference/potions-snapshot.md` (sourced from spire-codex). The skill fills only
-> the **effect logic**; everything else (class skeleton, pool attribute,
-> localization, base class) is templated.
->
-> Vanilla potions to imitate: `BlockPotion` (self-buff), `FirePotion` (single-target
-> damage), `StrengthPotion` (apply a Power). Pairs with `recipes/relic.md` — read the
-> relic recipe's ID/loc-key rule; potions derive keys the same way.
+> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The hosted
+> `RitsuCardProof` run registered `EmberDraft` through the public content pack,
+> procured it, used it on a real enemy, and proved exact damage in a RitsuLib-only run.
 
-## When to use
+## Contract
 
-The request maps to a **potion** when it's a **one-shot consumable the player drinks/
-uses**, not a passive item they own (relic) or a card they play. Phrasings: "a potion
-that…", "when you drink it…", "a one-time…". Potions are **actively used** (there's a
-Use action), so the effect fires in `OnUse` — there is **no combat-lifecycle hook**
-like a relic's `AfterSideTurnStart`.
+A Potion is a one-shot consumable. Its availability belongs in one content-pack
+registration, its behavior belongs in `OnUse`, and its art belongs in one
+`PotionAssetProfile`. Do not add `[Pool]`, a per-Mod potion base class, or a second
+registration path.
 
-## Scaffold difference from relics (do this first)
+When SPEC declares a filtered live-creature target, read
+`reference/advanced-targeting.md`. The pinned profile supports a custom single-target
+Potion only; `potion + many` must stop authoring because queued zero-target execution
+cannot preserve the Potion.
 
-The Alchyr content template scaffolds `Cards/`, `Powers/`, `Relics/` folders and a
-mod base class for each — **but NOT `Potions/`**. So before authoring:
+If the request changes an existing vanilla Potion's fresh availability or pool membership,
+resolve the target through `reference/vanilla-overrides.md` and then read
+`reference/vanilla-availability-overrides.md`. That reference owns the promoted
+singleplayer epoch-gate, pool-add, and pool-membership routes; do not replace the vanilla
+model or register it as Mod-owned content.
 
-1. Create the folder `<ModName>Code/Potions/`.
-2. Add a mod potion **base class** (mirrors the generated `<ModName>Relic`/`<ModName>Power`
-   bases — it resolves the icon path to a loose PNG). **Custom potions extend THIS base, not
-   `CustomPotionModel` directly** — the base is what wires the icon getter; a direct subclass
-   leaves it null and the icon silently falls back to the default even with a PNG present
-   (same footgun as powers — see `recipes/power.md`).
-
-   Potion art is a **loose 256×256 `.png`**, same as relics/powers — *not* a `.tres` atlas.
-   (BaseLib patches `PotionModel`'s image getter to `CustomPackedImagePath` and its docstring
-   says a png path is a valid `Texture2D`; live-verified 2026-07-08.) The template does **not**
-   scaffold a `PotionImagePath` helper (it has no `Potions/` folder), so add one to
-   `<ModName>Code/Extensions/StringExtensions.cs`, mirroring the generated `RelicImagePath`:
+Register once from `MainFile.RegisterContent()`:
 
 ```csharp
-// in StringExtensions.cs — mirrors the generated RelicImagePath/PowerImagePath
-public static string PotionImagePath(this string path)
-{
-    path = Path.Join(MainFile.ResPath, "images", "potions", path);
-    if (ResourceLoader.Exists(path)) return path;
-    MainFile.Logger.Info("Could not find potion image path: " + path);
-    return Path.Join(MainFile.ResPath, "images", "potions", "potion.png");  // template default
-}
+RitsuLibFramework.CreateContentPack(ModId)
+    .Potion<SharedPotionPool, <PotionName>>()
+    .Apply();
 ```
 
-```csharp
-using BaseLib.Abstracts;      // CustomPotionModel
-using BaseLib.Extensions;     // RemovePrefix
-using <ModName>.<ModName>Code.Extensions;   // PotionImagePath
+`SharedPotionPool` is the default. Use a character pool only when SPEC makes the Potion
+character-specific. RitsuLib derives the public entry as `MOD_POTION_TYPENAME`, for
+example `RitsuCardProof` + `EmberDraft` becomes
+`RITSU_CARD_PROOF_POTION_EMBER_DRAFT`.
 
-namespace <ModName>.<ModName>Code.Potions;
-
-/// Base class for this mod's potions — wires the icon to images/potions/<slug>.png.
-/// Potion has ONE image getter (bar icon, hover, and use all reuse the same texture — there
-/// is NO separate big/ file, unlike relic/power). CustomPackedOutlinePath is left null →
-/// falls back to the vanilla outline (harmless, same as relic's outline).
-public abstract class <ModName>Potion : CustomPotionModel
-{
-    //Loads from <ModName>/images/potions/<slug>.png
-    public override string CustomPackedImagePath =>
-        $"{Id.Entry.RemovePrefix().ToLowerInvariant()}.png".PotionImagePath();
-}
-```
-
-## The skeleton (fill only the marked spot)
-
-Add ONE file under `<ModName>Code/Potions/<PotionName>.cs`:
+## Skeleton
 
 ```csharp
 using System.Threading.Tasks;
-using BaseLib.Utils;                                  // [Pool]
-using MegaCrit.Sts2.Core.Commands;                    // CreatureCmd, PlayerCmd, PowerCmd
-using MegaCrit.Sts2.Core.Entities.Cards;              // TargetType (potions share the card enum)
-using MegaCrit.Sts2.Core.Entities.Creatures;          // Creature
-using MegaCrit.Sts2.Core.Entities.Potions;            // PotionRarity, PotionUsage
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;     // PlayerChoiceContext
-using MegaCrit.Sts2.Core.Models.PotionPools;          // SharedPotionPool + character pools
-using MegaCrit.Sts2.Core.ValueProps;                  // ValueProp
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Potions;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.ValueProps;
+using STS2RitsuLib.Scaffolding.Content;
 
-namespace <ModName>.<ModName>Code.Potions;
+namespace <ModName>.Potions;
 
-[Pool(typeof(SharedPotionPool))]                      // REQUIRED — omitting it throws at registration
-public sealed class <PotionName> : <ModName>Potion    // the mod base above (image path)
+public sealed class <PotionName> : ModPotionTemplate
 {
     public override PotionRarity Rarity => PotionRarity.Common;
-    public override PotionUsage Usage  => PotionUsage.CombatOnly;   // or AnyTime / Automatic
-    public override TargetType TargetType => TargetType.AnyPlayer;  // self-buff; AnyEnemy for damage
-
-    protected override async Task OnUse(PlayerChoiceContext choiceContext, Creature? target)
-    {
-        AssertValidForTargetedPotion(target);         // guards null target for a targeted potion
-
-        // ─────────── EFFECT LOGIC — the ONLY part the skill writes ───────────
-        // (See "Effect building blocks". Pick the block matching SPEC's effect.)
-        // ─────────────────────────────────────────────────────────────────────
-
-        MainFile.Logger.Info("[T2MOD-SELFTEST] <PotionName> used: <what happened>");
-    }
-}
-```
-
-## The three abstract properties (all REQUIRED)
-
-| Property | Type | Pick by |
-|---|---|---|
-| `Rarity` | `PotionRarity` = `None, Common, Uncommon, Rare, Event, Token` | SPEC; default `Common` |
-| `Usage` | `PotionUsage` = `None, CombatOnly, AnyTime, Automatic` | `CombatOnly` for damage/block/most buffs; `AnyTime` for heal/max-HP/card gen; `Automatic` fires without manual use |
-| `TargetType` | `TargetType` (shared with cards) | self-buff → **`AnyPlayer`** (potions target a player creature, NOT `Self`); one enemy → `AnyEnemy`; whole room → `AllEnemies` |
-
-> ⚠️ Self-buff potions use **`AnyPlayer`**, not `Self`. Potion targeting differs from
-> card targeting (see `PotionModel.IsValidTarget` in the decompile): a self potion
-> still passes the owner's creature as `target`. Copy `BlockPotion` (`AnyPlayer`), not
-> a card, for a self effect.
-
-## Trigger
-
-Override **`protected override async Task OnUse(PlayerChoiceContext choiceContext,
-Creature? target)`** — this runs when the player uses the potion. There is no hook to
-pick like relics; all potion effects go here. `target` is the chosen creature
-(guaranteed non-null for a targeted potion after `AssertValidForTargetedPotion`);
-`base.Owner` is the `Player` who drank it, `base.Owner.Creature` their body.
-
-## Effect building blocks (confirmed APIs — literal-amount overloads)
-
-Use the `decimal`+`ValueProp` overloads so you write plain numbers, not `DynamicVar`s.
-**`ValueProp.Unpowered`** is the damage type for relics/potions/powers.
-
-```csharp
-// DAMAGE to the target enemy (TargetType.AnyEnemy):
-await CreatureCmd.Damage(choiceContext, target, 20m, ValueProp.Unpowered, base.Owner.Creature, null);
-
-// DAMAGE to all enemies (TargetType.AllEnemies) — pass the enemy list:
-var enemies = target.CombatState.GetCreaturesOnSide(CombatSide.Enemy);   // needs ...Core.Combat
-await CreatureCmd.Damage(choiceContext, enemies, 10m, ValueProp.Unpowered, base.Owner.Creature, null);
-
-// BLOCK on the target player (TargetType.AnyPlayer):
-await CreatureCmd.GainBlock(target, 12m, ValueProp.Unpowered, null);
-
-// HEAL:
-await CreatureCmd.Heal(target, 10m);
-
-// APPLY A POWER (Strength/Dexterity/Weak/Vulnerable/Poison...):
-await PowerCmd.Apply<StrengthPower>(choiceContext, target, 2m, base.Owner.Creature, null);
-//   ^ power classes live in MegaCrit.Sts2.Core.Models.Powers; confirm the exact
-//     class name via grounding.md (content: potions-snapshot; code: the decompile).
-
-// ENERGY / DRAW (player-level; good for AnyTime utility potions):
-await PlayerCmd.GainEnergy(2m, base.Owner);
-await PlayerCmd.Draw(3, base.Owner);   // Draw's signature: maintainer to confirm + fold in (not yet canary-verified)
-```
-
-For an effect not listed, follow `grounding.md`: match the closest vanilla row in
-`reference/potions-snapshot.md` for realistic numbers and check the rest of the pack
-(`reference/mechanics.md`, `errors.md`) for the Cmd. If it's genuinely not in the
-pack, report a pack gap — **do not guess a Cmd name** (the maintainer grounds new
-Cmds offline).
-
-## Localization (ships in the .pck)
-
-Table is **`potions`** (not `relics`). Add to `<ModName>/localization/eng/potions.json`.
-Keys are **FLAT and prefixed**, same derivation as relics, plus one potion-only key:
-
-```json
-{
-  "<PREFIX>-<SLUG>.title":                 "Display Name",
-  "<PREFIX>-<SLUG>.description":            "What the potion does, shown on hover.",
-  "<PREFIX>-<SLUG>.selectionScreenPrompt":  "Prompt shown if the potion asks the player to choose."
-}
-```
-
-`selectionScreenPrompt` is only needed if the effect prompts a choice (card select,
-etc.); harmless to include a short one otherwise.
-
-## ID / loc-key derivation (same rule as relics — MEMORIZE)
-
-`Id.Entry = "<PREFIX>-<SLUG>"` where `SLUG = Slugify(ClassName)` (CamelCase split +
-UPPER_SNAKE) and `PREFIX = <first namespace segment>.ToUpperInvariant()`. Class
-`SwiftBrew` in namespace `SwiftBrew.*` → `SWIFTBREW-SWIFT_BREW`, so keys are
-`SWIFTBREW-SWIFT_BREW.title` etc. — **flat string keys, not nested JSON.** The
-`potions` LocTable is a flat `Dictionary<string,string>`. Override with
-`[CustomID("EXACT-ID")]` if needed. (Full rationale in `recipes/relic.md`.)
-
-## Rarity & pool
-
-`[Pool(typeof(...))]` (from `BaseLib.Utils`) is **required** — omitting it throws the
-same registration exception relics do (errors.md). Pools
-(`MegaCrit.Sts2.Core.Models.PotionPools`):
-- **`SharedPotionPool`** — colorless, any character. **Default choice** (46 of 63
-  vanilla potions are here).
-- `IroncladPotionPool`, `SilentPotionPool`, `DefectPotionPool`, `RegentPotionPool`,
-  `NecrobinderPotionPool` — character-specific.
-
-## Pre-flight checklist (catches the common silent failures)
-
-- [ ] Created `<ModName>Code/Potions/` + the `<ModName>Potion` base class + the `PotionImagePath` helper (template omits all three).
-- [ ] Class is `public sealed`, extends the mod potion base (NOT `CustomPotionModel` directly — else the custom icon silently falls back to default).
-- [ ] `[Pool(typeof(SharedPotionPool))]` present (else BaseLib throws at registration).
-- [ ] All three abstract props overridden: `Rarity`, `Usage`, `TargetType`.
-- [ ] `TargetType` matches the effect (self-buff = `AnyPlayer`, not `Self`).
-- [ ] `AssertValidForTargetedPotion(target)` first if the potion targets.
-- [ ] Effect in `OnUse`; all `Cmd`s `await`ed; `ValueProp.Unpowered` for damage/block.
-- [ ] `potions.json` has `<PREFIX>-<SLUG>.{title,description}` — **flat, prefixed keys**, table `potions`.
-- [ ] `[T2MOD-SELFTEST]` marker logged in `OnUse` (for tier-2 verify) + the load marker in MainFile (tier-1).
-
-## Full worked examples (verified vanilla, copy-adapt)
-
-**Self-buff / block — `BlockPotion` (Common, AnyPlayer):**
-```csharp
-[Pool(typeof(SharedPotionPool))]
-public sealed class BlockBrew : <ModName>Potion
-{
-    public override PotionRarity Rarity => PotionRarity.Common;
-    public override PotionUsage Usage  => PotionUsage.CombatOnly;
-    public override TargetType TargetType => TargetType.AnyPlayer;
-
-    protected override async Task OnUse(PlayerChoiceContext choiceContext, Creature? target)
-    {
-        AssertValidForTargetedPotion(target);
-        await CreatureCmd.GainBlock(target, 12m, ValueProp.Unpowered, null);
-        MainFile.Logger.Info("[T2MOD-SELFTEST] BlockBrew used: +12 block");
-    }
-}
-```
-
-**Single-target damage — `FirePotion` (Common, AnyEnemy):**
-```csharp
-[Pool(typeof(SharedPotionPool))]
-public sealed class Firebomb : <ModName>Potion
-{
-    public override PotionRarity Rarity => PotionRarity.Common;
-    public override PotionUsage Usage  => PotionUsage.CombatOnly;
+    public override PotionUsage Usage => PotionUsage.CombatOnly;
     public override TargetType TargetType => TargetType.AnyEnemy;
 
-    protected override async Task OnUse(PlayerChoiceContext choiceContext, Creature? target)
+    public override PotionAssetProfile AssetProfile => new(
+        ImagePath: "res://<ModName>/images/potions/<slug>.png");
+
+    protected override async Task OnUse(
+        PlayerChoiceContext choiceContext, Creature? target)
     {
         AssertValidForTargetedPotion(target);
-        await CreatureCmd.Damage(choiceContext, target, 20m, ValueProp.Unpowered, base.Owner.Creature, null);
-        MainFile.Logger.Info("[T2MOD-SELFTEST] Firebomb used: 20 dmg to target");
+        await CreatureCmd.Damage(
+            choiceContext, target, 4m, ValueProp.Unpowered,
+            Owner.Creature, null);
+        MainFile.Logger.Info(
+            "[T2MOD-SELFTEST] <ModName> <PotionName> used: damage=4");
     }
 }
 ```
-`potions.json`:
+
+Omit the `AssetProfile` override in placeholder mode. For generated art, use one checked
+256x256 PNG at `images/potions/<slug>.png`; `OutlinePath` may remain null so the original
+fallback stays available.
+
+## Target and effect rules
+
+- Enemy damage uses `TargetType.AnyEnemy` and a non-null target.
+- Player buffs normally use `TargetType.AnyPlayer`; the selected target is a player
+  creature, unlike a self-targeting Card.
+- Room-wide effects use the matching all-target `CreatureCmd` overload.
+- A filtered single target uses the stable registered value and keeps
+  `AssertValidForTargetedPotion(target)`. RitsuLib revalidates it before removal; follow
+  `reference/advanced-targeting.md` for registration and mouse/controller proof.
+- Never lower a filtered many-target Potion to `AllEnemies`, restore it after removal, or
+  generate a patch. Report the pinned-profile gap.
+- Potion damage, Block, and Power effects normally use `ValueProp.Unpowered`.
+- `OnUse` must await every Cmd. A diagnostic `used:` line does not prove behavior.
+
+Common grounded operations:
+
+```csharp
+await CreatureCmd.GainBlock(target, 12m, ValueProp.Unpowered, null);
+await CreatureCmd.Heal(target, 10m);
+await PowerCmd.Apply<StrengthPower>(
+    choiceContext, target, 2m, Owner.Creature, null);
+await PlayerCmd.GainEnergy(2m, Owner);
+```
+
+## Localization
+
+Ship `localization/eng/potions.json` with flat public-entry keys:
+
 ```json
 {
-  "FIREBOMB-FIREBOMB.title": "Firebomb",
-  "FIREBOMB-FIREBOMB.description": "Deal 20 damage to target enemy."
+  "<MOD>_POTION_<TYPE>.title": "Display Name",
+  "<MOD>_POTION_<TYPE>.description": "Deal 4 damage."
 }
 ```
 
-## Verify (tier-1 + tier-2)
+Add `.selectionScreenPrompt` only when the Potion opens a selector.
 
-1. Build: PckPacker uncommented, `dotnet build -c Release` → `.dll`+`.pck` into
-   `mods/<ModName>/`. (Details: `build.md`.) **Note:** without a custom sprite the potion
-   loads on the template's default icon (the `PotionImagePath` `Exists()` fallback) — that's
-   expected placeholder behavior, not a failure. To ship custom art, drop a 256×256 PNG at
-   `images/potions/<slug>.png` (via `gen_sprite.py --spec potion`) and rebuild the `.pck`
-   (see `reference/art-contract.md`).
-2. Launch, grep `godot.log` for the load marker (tier-1).
-3. Tier-2: dev console (backtick, auto-enabled when modded) → **`potion <PREFIX>-<SLUG>`**
-   → in a combat, use the potion (target if needed) → confirm the effect and grep the
-   `used:` marker.
+## Verification
 
-> ⚠️ The potion console command is **`potion <id>`** — there is **no `add`/`remove`
-> subcommand** (unlike `relic [add|remove] <id>`). It also matches the id **exactly**
-> (uppercased), NOT by substring, so you must pass the full `<PREFIX>-<SLUG>` — e.g.
-> `potion FIREBOMB-FIREBOMB`, not just `FIREBOMB`. A run must be in progress. Confirmed
-> against `PotionConsoleCmd.cs` in the decompile.
+The `CombatPlayer` harness must:
+
+1. resolve the Potion from `ModelDb.AllPotions` and check its title;
+2. call `PotionCmd.TryToProcure(potion.ToMutable(), player)`;
+3. drive `potion.EnqueueManualUse(target)` and wait for the queued action;
+4. assert the concrete post-state and emit one `state proof:` marker;
+5. reach `selftest done` with no fresh error.
+
+The R3 proof observed
+`RITSU_CARD_PROOF_POTION_EMBER_DRAFT`, title `Ember Draft`, and enemy HP
+`27 -> 23`. A missing custom atlas sprite warning is expected in placeholder mode; a
+fresh error is not.

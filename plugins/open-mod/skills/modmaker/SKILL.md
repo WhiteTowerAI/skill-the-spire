@@ -1,11 +1,8 @@
 ---
 name: modmaker
-display_name: STS2 Mod Maker
-short_description: Turn one sentence into a working Slay the Spire 2 mod
-default_prompt: "Use /modmaker to build a Slay the Spire 2 mod from a natural-language description."
 description: |
   Build a working Slay the Spire 2 mod from a one-sentence natural-language
-  description. Use when the user wants Claude to create, generate, or
+  description. Use when the user wants Codex to create, generate, or
   build an STS2 mod (a relic, card, potion, or similar element) end to end —
   scaffold, author, build, and verify it loads in-game.
 ---
@@ -16,36 +13,166 @@ Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
 
-## Scope right now — relic + potion + card + power/combo, automated two-tier verify
+## Scope right now — core elements; Character Foundation; RitsuLib resource/UI and ordered semantic buffer; interaction-aware two-tier verify
 
-This skill turns one sentence into a known-good **relic, potion, or card** end to end,
-verifies it **loads** (tier-1) AND that its **effect actually fires** (tier-2, now
+This skill turns one sentence into a known-good **relic, potion, card, enemy encounter,
+World Node/event, or minimal playable character Foundation** end to end, including custom card keywords, card enchantments,
+and custom orbs when the concept needs reusable vocabulary, a persistent Card
+modification, or an orb passive/evoke mechanic. It verifies the mod **loads** (tier-1)
+AND that its **effect actually fires** (tier-2, now
 automated by an in-process self-test harness — no dev-console typing), and when a stage
 fails runs the **bounded automated repair loop** (`repair.md`) to diagnose → fix →
 re-verify within a hard retry cap. A **custom power** (buff/debuff) is supported too,
-usually as the dependency of a card/relic that applies it — and that card→power link is
-checked as a **combo** by the tier-2 harness. **Custom art (M5.5)** is now wired and
-live-verified for **all four element types — card portraits, relic icons, power icons, and
-potion icons** (each a loose PNG the game loads directly; no `.tres` atlas authoring) — the
-user picks placeholder (default, fast) or generate via a bring-your-own image backend
-(`tools/gen_sprite.py`; see `author.md` §4 and `sts2-api` → `reference/art-contract.md`).
-*Editing existing* vanilla content (needs Harmony patching, not a recipe) is still out.
+usually as the dependency of a card/relic that applies it. An **enemy encounter** is a
+custom monster + the encounter that spawns it, authored as one vertical slice and proven
+through the **`CombatEnemy`** scenario (enter the encounter, confirm the monster, end the
+turns needed to traverse its declared cycle/branches, and assert move history plus exact
+player/monster HP, Block, Power, debuff, and multi-hit state). Grounded move vocabulary
+includes self buff/custom Power with a downstream consequence, player debuff, block/heal,
+multi-attack, composite actions, deterministic cycles, and conditional branches. One
+checked 360×360 static monster body is supported in combat and bestiary, with an explicit
+built-in fallback when absent. Spine and move animation are later extensions.
+An **event** is a normal map event with nested pages/options, authored as one semantic
+Event and proven through the **`MapNode`** scenario (enter the event room,
+read its localized options, drive every independent SPEC outcome, and observe exact state,
+page, overlay, combat, and map results). Supported outcomes include public Cmd
+combinations, conditional/locked multi-page choices, blocking card-selection and custom-
+reward overlays, plus one resumable or terminal special combat per mutable Event instance.
+Special combat may carry extra rewards and always uses an explicit resume-vs-map branch;
+direct merchant/rest/treasure room transitions remain unsupported. Its normal
+initial portrait and explicitly authored later-page portraits can be generated as
+3440×1613 loose PNGs. Initial art has an existence-checked vanilla fallback; missing page
+art retains the current portrait. Normal-layout Events may also emit the one live-verified
+code-native `portrait_halo` VFX profile with Fast Mode handling and explicit cleanup across
+page, portrait, combat, and finish transitions. Page and option descriptions may also use
+the live-verified bounded vanilla Event rich-text vocabulary (emphasis, semantic colors,
+`jitter`, and `sine`) through the native label, with no generated VFX node. Custom phobia
+art, arbitrary VFX, and custom/Ancient scenes remain out. Normal Events also support native
+Card/relic acquisition presentation, one preference-respecting `weak_short` screen shake,
+and the curated built-in `trial_noble` VFX at its vanilla host/placement with explicit
+cleanup.
+One additional bounded Event composition is implemented: a solo custom Quest Card
+may force one custom Event from an Unknown MapPoint in one specified act. The target stays
+out of ordinary Event pools and one named option completes/removes the token. This public-
+hook path does not authorize arbitrary chains, vanilla edits, multiplayer semantics, or a
+new save-roundtrip claim.
+A **Character Foundation** uses the selected framework adapter's character template. It
+appears in the real character-select UI, starts a run
+with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
+3 energy, and one grounded public starter mechanic through `RunStart` + `CombatPlayer`.
+The adapter owns exactly-once registration. Static presentation is a separate opt-in layer
+with nine promoted profiles: selection portrait/background, top-panel icon, non-Spine
+combat/rest/merchant bodies, five-layer energy, and distinct 256x256 large/24x24 rich-text
+Energy icons. The M6.5 Character-wide color/frame contract is also implemented.
+Deterministic top-icon and generated-Relic outlines are implemented. A separate
+bounded non-Spine combat layer supports private `Idle`/`Attack`/`Hit`/`Dead` frame
+sequences with one shared geometry and an all-or-nothing static fallback. Locked selection,
+map marker, custom Ancient models/layouts, `Cast`, Spine, trails, audio, and broader
+animation retain explicit boundaries. Character-specific dialogue in the nine cataloged
+native Ancient/Architect scenes is a separate localization-only capability: it preserves
+native scenes/options/rewards/progression and uses RitsuLib's registered population patch.
+Read `reference/ancient-dialogue.md`; do not generate Harmony/reflection injection.
+Read `reference/character-presentation.md` and `reference/character-combat-cues.md` for
+their respective visual layers.
+Two **advanced capability contracts are implemented with RitsuLib**:
+a combat-owned nonnegative resource using `SecondaryResourceCmd` with explicit
+gain/affordability/all-or-nothing spend/reset plus public `RegisterCombatUi`, and a bounded
+ordered semantic buffer using combat-attached semantic values while source Cards use native
+Play -> Discard. The fixed 220x32 icon+text control keeps a text-only fallback and a 160px
+offset from native Energy. Route only to `reference/character-resource.md` and
+`reference/ordered-card-buffer.md`. Retaining played Cards in a `CustomPile` is unsupported.
+Do not invent alternative-energy patches, zone UI, persistence, C/D access, or
+`OpenMod.Runtime`.
+The **Scry helper** is also implemented for a Card that inspects the top X Draw
+cards and discards any number. It is generated-Mod-local, uses the native visible selector
+and discard lifecycle, returns a structured result, and is explicitly singleplayer-only.
+Route it only to `reference/scry-helper.md`; do not add BaseLib, global Scry hooks, or a
+multiplayer fallback.
+The bounded **advanced targeting** route supports deterministic filtered live-creature
+targets for single-target Cards, single-target Potions, and multi-target Cards. It keeps
+native mouse/controller selection, execution-time validation, payment/Potion retention,
+and normal Card result piles. Route it only to `reference/advanced-targeting.md`.
+Multi-target Potions have a pinned lifecycle limitation because queued empty-target
+execution cannot cancel before consumption; do not generate a patch or restore the Potion.
+The implemented **Relic-owned Rest Site option** route is singleplayer-only and bounded to
+free or fixed Gold cost plus one deterministic preflightable outcome. It distinguishes
+absence from native disabled state, rechecks payment at selection time, supports once per
+Rest Site or once per run, and may preserve the other native options once. Route it only
+to `reference/rest-site-options.md`. Card/Modifier owners, arbitrary transactions,
+same-site repeat, and multiplayer remain unsupported until separate proof.
+Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
+the source by its actual type and checks the dependent observation, so a card→power link
+cannot pass merely because both models loaded. “Combo” is not a content type.
+Two core **stateful relic** families are implemented: Happy Flower-style counters
+cross combats and save/resume through `SavedAttachedState<SpecificRelic,int/bool>`, while
+Stone Calendar-style timing
+reads the current combat's `TurnNumber`. Tier-2 proves `N-1`, threshold, reset/carry-over,
+and the save round trip where applicable. Turn-local event counts, once-per-combat flags,
+previous-turn memory, and limited run uses have grounded patterns but remain provisional
+until their scenario canaries. A counter is state on its real element, not a new element
+  type. **Custom static art** is now wired and live-verified for the established **eight specs — card
+  portraits, relic icons, power icons, potion icons, enchantment icons, orb icons, static monster bodies, and normal-event
+  initial/page portrait slots** (each a loose PNG the game loads directly; no `.tres` atlas authoring)
+  plus nine Character static profiles: selection portrait/background, top-panel icon, static
+  non-Spine combat/rest/merchant bodies, five-layer full energy, and distinct large/text
+  Energy icons, and the optional bounded four-action Character combat-cue bundle.
+  Orb support is icon-only and retains its explicit vanilla Spine scene/channel-SFX
+  fallbacks. Locked Character selection and map-marker normalizers are grounded but not
+  promoted; see `reference/character-presentation.md`. The
+user picks placeholder (default, fast) or custom art. When the current agent runtime
+actually exposes a host-native raster image tool, prefer that route (Codex calls it
+`image_gen` and its built-in mode needs no `OPENAI_API_KEY`); otherwise use an already-
+authenticated Vofy CLI, a bring-your-own HTTP backend, or a local image. Do not infer
+native image capability from the text-model name or from an installed instruction file:
+the tool itself must be callable. All custom routes converge on the `tools/gen_sprite.py`
+normalization contract; native-tool, Vofy, and local-file outputs call its `import`
+command. See `author.md` §4 and `sts2-api` → `reference/art-contract.md`. The
+managed-credit route is live-verified through Vofy + an in-game `.pck` on Windows;
+host-native tool availability is runtime-dependent, and macOS/Linux remains best-effort.
+M6.7 grounds requests against a checked `0.107.1` vanilla catalog and emits a semantic
+override manifest in every new scaffold. Route existing content first to
+`sts2-api/reference/vanilla-overrides.md`. A selected public visual surface continues
+through the complete 44-provider M6.7.2 Package in `reference/vanilla-visual-overrides.md`.
+An exact existing Card's non-asset operations may continue through the M6.7.1 Package in
+`reference/vanilla-card-overrides.md`. An exact existing Ancient's initial options and
+subsequent page branches may continue through the M6.7.3 Package in
+`reference/vanilla-ancient-overrides.md`, including public append or the reviewed fixed
+replacement Adapter. Availability requests for pinned epoch gates or Card/Relic/Potion pool
+membership may continue through the M6.7.4 Package in
+`reference/vanilla-availability-overrides.md`. Existing Relic/Potion/Power/Orb/
+Enchantment/Affliction/Monster/Encounter/ordinary Event data or behavior may continue
+through the M6.7.5 Package in `reference/vanilla-non-card-overrides.md`. Other operations
+stop at their exact unpromoted boundary. Historical
+capability bridges are not a general editing recipe.
 If a request needs what isn't wired, say so plainly rather than half-doing it.
+
+Treat vanilla Card base-description replacement as a blocking capability conflict. When a
+user asks to replace, remove, or hide the original description body, explain that the pinned
+RitsuLib `0.5.4` route can only compose text before or after it and stop before SPEC or
+scaffold. Never silently downgrade `replace` to `compose`; proceed only after the user
+explicitly accepts the visibly different composition, even if values are final or they asked
+not to repeat questions.
+
+A RitsuLib Package documented by the official tutorials is supported when its public API
+exists in the pinned profile. If this shipped pack still lacks its SPEC block or recipe,
+say exactly what authoring work is missing; do not call the public API unsupported,
+silently omit the request, or improvise source outside the pack.
 
 ## Stage files
 
-Read each from `${CLAUDE_PLUGIN_ROOT}/skills/modmaker/` only when you reach that stage.
+Read each from `./` only when you reach that stage.
 
 | File | Purpose | When to read |
 |------|---------|--------------|
 | `interview.md` | One short clarifying round → intake | Pipeline start (after resume check) |
+| `semantic-contract.md` | Framework-neutral SPEC envelope, adapter inputs, and diagnostic record | Before writing SPEC |
 | `spec.md` | Write `SPEC.md` (the design contract) | After interview |
-| `scaffold.md` | `dotnet new` + manifest + PckPacker wiring | After spec |
+| `scaffold.md` | Pinned RitsuLib project + manifest + compat wiring | After spec |
 | `author.md` | Write the C# element + localization + marker | After scaffold |
 | `build.md` | `dotnet build` → .dll/.pck/.json into mods/ | After author |
 | `verify.md` | Launch + log-assert load (tier-1) + automated tier-2 self-test (manual fallback) | After build |
 | `repair.md` | Bounded diagnose → fix → re-verify sub-loop | Whenever build/verify fails |
-| `quirks.md` | STS2/BaseLib gotchas | Before writing any C# |
+| `quirks.md` | STS2/selected-adapter gotchas | Before writing any C# |
 | *(sts2-api skill)* | Recipes, command APIs, error fixes | Whenever you need a concrete STS2 answer |
 
 ## Pipeline
@@ -59,29 +186,36 @@ User: one sentence ("a relic that ...")
  1. INTERVIEW (interview.md) — ONE short round, only for genuinely ambiguous
     things (element type? rarity? exact trigger?). Non-blocking defaults for the rest.
     |
- 2. SPEC (spec.md) — write SPEC.md: element type, name, rarity, trigger, effect
-    in game terms, art plan. Show the user a plain-language summary to confirm.
+ 2. SPEC (semantic-contract.md + spec.md) — write a framework-neutral SPEC: element type,
+    name, type-specific host/starter contract, trigger, effect in game terms, any state
+    event/threshold/lifetime/reset/persistence, fallback, proof, and art plan.
+    Show the user a plain-language summary to confirm.
     |
- 3. SCAFFOLD (scaffold.md) — dotnet new from the Alchyr template (once), set the
-    manifest, uncomment PckPacker.
+ 3. SCAFFOLD (scaffold.md) — resolve the selected framework/host profile once, then emit
+    its project, manifest, and package wiring.
     |
  4. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
-    plus power.md if the effect needs a custom buff/debuff), write the Custom*Model
-    subclass filling ONLY the effect logic, add localization JSON, inject both
-    [T2MOD-SELFTEST] markers, and emit the arg-gated tier-2 self-test harness
+    monster+encounter/event/character, plus the selected Event outcome/VFX/rich-text/
+    native-presentation/forced-follow-up/Scry references or power.md
+    when selected by SPEC),
+    translate the same semantic SPEC through the selected adapter, add localization,
+    inject the shared framework/version and [T2MOD-SELFTEST] diagnostics, and emit the
+    arg-gated tier-2 self-test harness
     (SelfTest.cs, step 2.5 — reference/selftest-harness.md). Then the ART sub-step
     (author.md §4): per SPEC's art plan, leave placeholder (default) or generate a
-    custom card portrait via tools/gen_sprite.py (BYO backend). Art never blocks —
+    custom source through the selected route and pass it to tools/gen_sprite.py import. Art never
+    blocks —
     a missing sprite falls back to the template default. Regenerate = re-run + rebuild.
     |
- 5. BUILD (build.md) — tools/build.py → .dll/.pck/.json into mods/ (the .pck rebuild is
-    what makes any custom art reach the game). On failure: go to REPAIR (repair.md).
+ 5. BUILD (build.md) — tools/build.py validates the pinned host/package/runtime profile,
+    deploys the Mod's own DLL/manifest, and packs its resource tree when present. On
+    failure: go to REPAIR (repair.md).
     |
  6. VERIFY (verify.md) — launch via steam_appid.txt, grep godot.log for the marker
-    and mod-named errors (tier-1). Then run the tier-2 self-test unattended
-    (launch.py --self-test → the harness drives itself into combat and fires the
-    effect → grep the fired/used marker). Fall back to the manual dev-console guide
-    only if the harness can't reach combat. Never claim the effect is verified when
+    and fresh-run error blocks (tier-1). Then run the tier-2 self-test unattended
+    (launch.py --self-test → the harness drives the required combat/event/run-start scenario and
+    asserts concrete post-state → grep its structured state proof). Fall back to the manual dev-console guide
+    only if the harness can't reach its scenario. Never claim the effect is verified when
     only load was. On failure: go to REPAIR (repair.md).
     |
  7. FINALIZE — summarize what was built, where the artifacts are, and which tier
@@ -98,9 +232,10 @@ User: one sentence ("a relic that ...")
 Keep important state in files in the work dir so the pipeline survives long
 threads and context compaction:
 
-- **SPEC.md** — the design contract (element, name, rarity, trigger, effect, art).
+- **SPEC.md** — the design contract (element, name, rarity, trigger, effect, state
+  lifetime/reset/persistence when applicable, art).
 - **PLAN.md** — stage checklist + status; update after each stage.
-- **MEMORY.md** — discoveries, chosen ids, derived loc keys, what worked/failed.
+- **MEMORY.md** — discoveries, chosen ids, derived loc keys, and what worked/failed.
 
 **Resume-check first**: if these exist, continue from the artifacts, not from
 conversational memory.
@@ -108,13 +243,13 @@ conversational memory.
 ## Verify on observed reality, never "it compiled"
 
 A green build is not success. The mod must **load** (tier-1: log marker greppable,
-no mod-named errors) and its **effect must fire** (tier-2: driven automatically by the
-in-process self-test harness and grepped from the log — no human triggering). Report
-exactly which tier was reached; a harness that couldn't reach combat is tier-1, not a
+no fresh-run errors) and its **effect must fire** (tier-2: driven automatically by the
+in-process self-test harness, then independently state-asserted — no human triggering). Report
+exactly which tier was reached; a harness that couldn't reach its scenario is tier-1, not a
 tier-2 failure of the mod. See `verify.md`.
 
 ## When you need a concrete STS2 answer
 
-Use the **sts2-api** skill (`${CLAUDE_PLUGIN_ROOT}/skills/sts2-api`) with a targeted query rather
+Use the **sts2-api** skill (`../sts2-api`) with a targeted query rather
 than guessing an API — e.g. "relic: combat-start hook signature and energy Cmd",
 or "errors.md: no .pck produced". Do not load the whole pack into context.

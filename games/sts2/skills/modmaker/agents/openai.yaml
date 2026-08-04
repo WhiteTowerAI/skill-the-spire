@@ -1,0 +1,7 @@
+interface:
+  display_name: "STS2 Mod Maker"
+  short_description: "Build verified STS2 mods from plain-language ideas"
+  default_prompt: "Use $modmaker to build and verify a Slay the Spire 2 mod from my idea."
+
+policy:
+  allow_implicit_invocation: true

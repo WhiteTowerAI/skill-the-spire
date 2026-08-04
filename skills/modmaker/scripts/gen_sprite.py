@@ -14,8 +14,9 @@ upstream; this tool only runs when the user chose a custom sprite):
 Both then NORMALIZE + PLACE identically: optional magenta (#FF00FF) chroma-key →
 fit/center to the exact contract size (reference/art-contract.md) → write <slug>.png at
 the exact sub-path under the mod's images/ dir. Dropping that file in and rebuilding the
-.pck (build.py) is the whole "install a custom sprite" operation — BaseLib's base class
-resolves it; a missing file falls back to the template default (= the placeholder).
+  .pck (build.py) is the whole "install a custom sprite" operation — the selected
+  framework asset profile resolves it; a missing file falls back to the template default
+  (= the placeholder).
 
 We do NOT bundle or default to any provider (§7.1: bring-your-own-backend). No key is
 committed. A missing/invalid config makes `generate` fail with a clear message and a
@@ -38,13 +39,17 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import random
 import sys
 import urllib.request
 import urllib.error
 from pathlib import Path
 
+from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
+from character_cues import remove_magenta
+
 try:
-    from PIL import Image
+    from PIL import Image, ImageFilter, ImageOps
 except ImportError:
     print("[gen_sprite] Pillow is required for the art pipeline. Install it with:\n"
           "  python -m pip install Pillow\n"
@@ -60,8 +65,26 @@ except ImportError:
 # card 1000×760 (2026-07-08); relic + power 256×256 (2026-07-08, canary-relic "Bauble" +
 # canary-power "Smolder" — bar/status icon, big detail-popup, and power's apply/expire
 # notification all render correctly). potion 256×256 also live-verified (2026-07-08,
-# canary-potion "Fizz") — BaseLib DOES accept a loose PNG via CustomPackedImagePath (no
+# canary-potion "Fizz") — RitsuLib's PotionAssetProfile accepts a loose PNG (no
 # .tres atlas needed); potion has ONE image texture (no big/), drawn tilted ~45° right.
+# Every normal-event portrait slot is a 3440x1613 loose PNG. The initial slot reaches
+# EventModel.CreateInitialPortrait through CustomEventModel.CustomInitialPortraitPath;
+# authored later-page slots reach the same TextureRect through NEventRoom.SetPortrait.
+# The initial contract was live-verified on 2026-07-17, and the reused MapNode run verified
+# a second page slot plus missing-phobia fallback and portrait-child cleanup on 2026-07-20.
+# enchantment is one 64x64 loose icon. The 2026-07-17 CanaryEnchantment headed run
+# observed the same custom resource in both the real NCard enchantment tab and the card's
+# hover tooltip, then preserved the attached enchantment's Block behavior.
+# orb art has two independent contracts. This spec owns only the loose 100x100 icon used
+# by the hover tooltip and NOrb flash particles. CanaryOrb live-verified both consumers on
+# 2026-07-17. The persistent combat body is a separate Spine scene and is never emitted by
+# this raster normalizer.
+# monster is a static-body profile, not an animation contract. RitsuLib renders the loose
+# texture one-to-one through RitsuGodotNodeFactories, so the normalized pixel dimensions
+# also define the combat/bestiary footprint. RitsuMonsterProof live-verified the 360x360
+# texture in both consumers with generated bounds/intent nodes on 2026-07-22.
+# rest_site_option is one opaque 256x169 button image. M66RestSiteProof live-verified the
+# custom framing and native Heal fallback in real NRestSiteButton consumers on 2026-07-30.
 # fit: "cover"   = fill the whole rect, crop overflow (a full-bleed illustration the
 #                  game frames itself, e.g. a card portrait). Opaque.
 #      "contain" = fit inside with transparent padding (a cut-out object on a keyed
@@ -71,44 +94,58 @@ except ImportError:
 #         scene filling the frame window, not an object on transparency). Overridable
 #         per call with --chroma / --no-chroma.
 # ---------------------------------------------------------------------------
-# NOTE: `card` writes to card_portraits/**big**/<slug>.png — that is the ONLY portrait
-# BaseLib loads (it Harmony-patches the getter to CustomPortraitPath, which the Alchyr
-# template maps to big/). The outer card_portraits/<slug>.png is dead code, so we don't
-# emit it. A normal card is 1000×760 landscape; 606×852 "full art" is Ancient-rarity only
+# NOTE: RitsuLib's `CardAssetProfile.PortraitPath` resolves
+# card_portraits/<slug>.png. A normal card is 1000×760 landscape; 606×852 "full art" is
+# Ancient-rarity only
 # and we don't make Ancient cards (see reference/art-contract.md).
 #
-# relic/power/potion: vanilla STS2 loads these icons from Godot `.tres` sprite-atlases
-# (atlases/relic_atlas.sprites/<id>.tres, power_atlas, relic_outline_atlas, potion_atlas —
-# see RelicModel/PowerModel/PotionModel + CustomPotionModel in the decompile). BUT the icon
-# getters accept a loose PNG too: for relic/power the Alchyr template OVERRIDES the getters
-# to point at loose PNGs under images/relics|powers/ (Exists()+fallback); for potion BaseLib
-# itself patches PotionModel's image getter to CustomPotionModel.CustomPackedImagePath and
-# its docstring says "You may pass the path to a png" — so we hand-add a PotionImagePath
-# helper to the potion base and feed a plain 256×256 PNG, no atlas authoring. A relic also
-# has a `<slug>_outline.png` (hover/selection white outline); a missing outline falls back to
-# the template's relic_outline.png (confirmed fine live). power has NO outline; potion has an
-# optional CustomPackedOutlinePath we leave null (same fallback logic).
+# relic/power/potion: RitsuLib's asset profiles accept loose PNGs and retain checked
+# fallbacks. Relic and power use small + big icons; potion uses one 256×256 icon. A relic also
+# gets a deterministic `<slug>_outline.png`; a missing outline retains the template fallback.
+# Power has NO outline; PotionAssetProfile.OutlinePath stays null with its own fallback.
 #
-# extra_sub_paths: relic AND power are each drawn from TWO loose-PNG getters the Alchyr
-# template overrides (both confirmed live + in the decompile — RelicModel/PowerModel patched
-# by BaseLib to the template's Custom*IconPath):
+# extra_sub_paths: relic AND power each use TWO loose-PNG profile paths:
 #   relic → relics/<slug>.png (relic-bar icon)  +  relics/big/<slug>.png (detail/inspect popup)
 #   power → powers/<slug>.png (combat status icon) + powers/big/<slug>.png (the big
 #           apply/expire NOTIFICATION popup that jumps out for a few seconds)
 # They're separate files (the template ships both <x>.png and big/<x>.png), so writing only
 # the small icon leaves the big popup on the placeholder. We write the same normalized image
-# to both. `card` writes only big/ (the outer bar path is dead code under BaseLib).
-# potion has only ONE image getter (CustomPackedImagePath); the detail/inspect view scales
+# to both. `card` writes only its single RitsuLib portrait path.
+# potion has only ONE image profile path; the detail/inspect view scales
 # that same texture up — there is no separate big/ file — so potion's extra_sub_paths is [].
-# (A relic also has PackedIconOutlinePath → relics/<slug>_outline.png, the hover outline; we
-# don't emit it yet — missing falls back to the template's relic_outline.png, which the user
-# confirmed looks fine. power has no outline. beta icon paths default null — ignore.)
+# enchantment likewise has ONE icon getter. NCard contexts and the hover tooltip reuse the
+# same EnchantmentModel.Icon texture, so there is no big/ variant.
+# orb likewise has ONE icon getter, but its combat body remains a separate scene contract.
+# Character assets stay independent because their RitsuLib profiles feed different consumers. Background,
+# rest, and merchant add raw text-scene wrappers after import; full energy uses five layers.
+# Static-profile verification is not a claim that a PNG can replace Spine animation.
+# Relic and Character top-panel outlines are deterministic opaque-white silhouettes expanded
+# from the final normalized main icon alpha. They spend no additional acquisition call.
+# Missing files retain RitsuLib's checked fallback. Power has no outline; beta paths stay null.
 SPECS: dict[str, dict] = {
-    "card":       {"sub_path": "card_portraits/big",   "extra_sub_paths": [],             "size": (1000, 760), "verified": True,  "fit": "cover",   "chroma": False},
+    "card":       {"sub_path": "card_portraits",       "extra_sub_paths": [],             "size": (1000, 760), "verified": True,  "fit": "cover",   "chroma": False},
     "relic":      {"sub_path": "relics",               "extra_sub_paths": ["relics/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "power":      {"sub_path": "powers",               "extra_sub_paths": ["powers/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "potion":     {"sub_path": "potions",              "extra_sub_paths": [],             "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
+    "event":      {"sub_path": "events",               "extra_sub_paths": [],             "size": (3440, 1613), "verified": True,  "fit": "cover",   "chroma": False},
+    "enchantment": {"sub_path": "enchantments",         "extra_sub_paths": [],             "size": (64, 64),    "verified": True,  "fit": "contain", "chroma": True},
+    "orb":        {"sub_path": "orbs",                 "extra_sub_paths": [],             "size": (100, 100),  "verified": True,  "fit": "contain", "chroma": True},
+    "monster":    {"sub_path": "monsters",             "extra_sub_paths": [],             "size": (360, 360),  "verified": True,  "fit": "contain", "chroma": True},
+    "rest_site_option": {"sub_path": "rest_site_options", "extra_sub_paths": [],          "size": (256, 169),  "verified": True,  "fit": "cover",   "chroma": False},
 }
+SPECS.update(CHARACTER_ART_BUNDLE.sprite_specs())
+CUE_SPECS = set(CHARACTER_ART_BUNDLE.cue_specs)
+ALL_SPECS = set(SPECS) | CUE_SPECS
+FRAGMENT_CLEANUP_SPECS = {"enchantment", "orb", "monster"}
+CHARACTER_SOFT_CHROMA_SPECS = {
+    slot.spec
+    for slot in CHARACTER_ART_BUNDLE.slots
+    if slot.alpha == "transparent" and slot.generation_calls > 0
+}
+REFERENCE_FAMILIES = CHARACTER_ART_BUNDLE.reference_families()
+DERIVED_OUTLINE_SPECS = {"character_icon", "relic"}
+OUTLINE_EXPANSION_RATIO = 0.03
+OUTLINE_COLOR = (255, 255, 255)
 
 
 def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
@@ -122,9 +159,15 @@ def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]
     return info["size"]
 
 
+def cue_sheet_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
+    if override:
+        return override
+    action = CHARACTER_ART_BUNDLE.cue_action(spec)
+    return action.columns * 512, action.rows * 512
+
+
 # --- normalize primitives (magenta chroma-key adapted from agent-sprite-forge,
-#     reference/baselines; re-implemented here, single-pass since the prompt
-#     guarantees a flat #FF00FF background) ------------------------------------
+#     reference/baselines; M6 cut-outs also remove disconnected model debris) ---
 
 def chroma_key_magenta(img: "Image.Image", threshold: int = 100) -> "Image.Image":
     """Make near-#FF00FF pixels transparent. Single pass over RGBA data."""
@@ -141,15 +184,93 @@ def chroma_key_magenta(img: "Image.Image", threshold: int = 100) -> "Image.Image
     return img
 
 
+def remove_cutout_fragments(img: "Image.Image", alpha_threshold: int = 8) -> "Image.Image":
+    """Keep the central subject cluster while dropping disconnected background debris."""
+    img = img.convert("RGBA")
+    width, height = img.size
+    alpha = img.getchannel("A")
+    alpha_pixels = alpha.load()
+    visited = bytearray(width * height)
+    components: list[list[int]] = []
+
+    for y in range(height):
+        for x in range(width):
+            start = y * width + x
+            if visited[start]:
+                continue
+            visited[start] = 1
+            if alpha_pixels[x, y] <= alpha_threshold:
+                continue
+
+            component = [start]
+            stack = [start]
+            while stack:
+                index = stack.pop()
+                px, py = index % width, index // width
+                for ny in range(max(0, py - 1), min(height, py + 2)):
+                    for nx in range(max(0, px - 1), min(width, px + 2)):
+                        neighbor = ny * width + nx
+                        if visited[neighbor]:
+                            continue
+                        visited[neighbor] = 1
+                        if alpha_pixels[nx, ny] > alpha_threshold:
+                            component.append(neighbor)
+                            stack.append(neighbor)
+            components.append(component)
+
+    if len(components) <= 1:
+        return img
+
+    canvas_center_x = (width - 1) / 2
+    canvas_center_y = (height - 1) / 2
+    primary = min(
+        components,
+        key=lambda component: min(
+            ((index % width) - canvas_center_x) ** 2
+            + ((index // width) - canvas_center_y) ** 2
+            for index in component
+        ),
+    )
+    primary_x = [index % width for index in primary]
+    primary_y = [index // width for index in primary]
+    left, right = min(primary_x), max(primary_x)
+    top, bottom = min(primary_y), max(primary_y)
+    padding = max(2, round(max(right - left + 1, bottom - top + 1) * 0.25))
+    min_area = max(3, round(len(primary) * 0.01))
+
+    keep = bytearray(width * height)
+    for component in components:
+        component_x = [index % width for index in component]
+        component_y = [index // width for index in component]
+        center_x = (min(component_x) + max(component_x)) / 2
+        center_y = (min(component_y) + max(component_y)) / 2
+        near_subject = (
+            left - padding <= center_x <= right + padding
+            and top - padding <= center_y <= bottom + padding
+        )
+        companion = min_area <= len(component) <= len(primary) and near_subject
+        if component is primary or companion:
+            for index in component:
+                keep[index] = 1
+
+    pixels = list(img.getdata())
+    img.putdata([
+        pixel if keep[index] else (0, 0, 0, 0)
+        for index, pixel in enumerate(pixels)
+    ])
+    return img
+
+
 def fit_into_rect(img: "Image.Image", size: tuple[int, int], fit: str,
-                  fill: float = 1.0) -> "Image.Image":
+                  fill: float = 1.0, crop_to_content: bool = True) -> "Image.Image":
     """Scale img to the exact contract rect. 'cover' fills and center-crops;
     'contain' fits inside (× fill) on a transparent canvas. Crops to the
     non-transparent bbox first so keyed art centers on the subject."""
     img = img.convert("RGBA")
-    bbox = img.getbbox()
-    if bbox:
-        img = img.crop(bbox)
+    if crop_to_content:
+        bbox = img.getbbox()
+        if bbox:
+            img = img.crop(bbox)
     tw, th = size
     sw, sh = img.size
     if sw == 0 or sh == 0:
@@ -165,17 +286,120 @@ def fit_into_rect(img: "Image.Image", size: tuple[int, int], fit: str,
     return canvas
 
 
+def fit_into_footprint(img: "Image.Image", size: tuple[int, int], footprint,
+                       opaque_canvas: bool) -> "Image.Image":
+    """Preserve a source composition inside a host-safe box or bottom-align a cut-out."""
+    img = img.convert("RGBA")
+    left, top, right, bottom = footprint.content_box
+    box_width, box_height = right - left, bottom - top
+    if footprint.alpha_content:
+        bbox = img.getchannel("A").getbbox()
+        if bbox is None:
+            raise SystemExit("[gen_sprite] Character combat footprint is empty")
+        img = img.crop(bbox)
+    if img.width == 0 or img.height == 0:
+        raise SystemExit("[gen_sprite] Character visible footprint has no image content")
+
+    if opaque_canvas:
+        backdrop = ImageOps.fit(
+            img.convert("RGB"), size, Image.Resampling.LANCZOS
+        ).filter(ImageFilter.GaussianBlur(radius=max(1, round(min(size) * 0.03))))
+        canvas = backdrop.convert("RGBA")
+    else:
+        canvas = Image.new("RGBA", size, (0, 0, 0, 0))
+
+    scale = min(box_width / img.width, box_height / img.height)
+    normalized_size = (
+        max(1, round(img.width * scale)),
+        max(1, round(img.height * scale)),
+    )
+    normalized = img.resize(normalized_size, Image.Resampling.LANCZOS)
+    x = left + (box_width - normalized.width) // 2
+    if footprint.baseline_y is None:
+        y = top + (box_height - normalized.height) // 2
+    else:
+        y = footprint.baseline_y - normalized.height
+    canvas.alpha_composite(normalized, (x, y))
+    return canvas
+
+
+def outline_expansion_radius(size: tuple[int, int]) -> int:
+    """Use one proportional, integer dilation radius for every supported outline."""
+    return max(1, round(min(size) * OUTLINE_EXPANSION_RATIO))
+
+
+def outline_safe_fill(size: tuple[int, int]) -> float:
+    """Reserve one dilation radius on the fitted dimension so the outline is not clipped."""
+    minimum = min(size)
+    return (minimum - 2 * outline_expansion_radius(size)) / minimum
+
+
+def derive_alpha_outline(img: "Image.Image") -> "Image.Image":
+    """Return a filled white silhouette expanded from every nonzero final-alpha pixel."""
+    rgba = img.convert("RGBA")
+    source_alpha = rgba.getchannel("A")
+    if source_alpha.getbbox() is None:
+        raise SystemExit("[gen_sprite] cannot derive an outline from empty final alpha")
+    alpha = source_alpha.point(lambda value: 255 if value else 0)
+    radius = outline_expansion_radius(rgba.size)
+    expanded = alpha.filter(ImageFilter.MaxFilter(radius * 2 + 1))
+    outline = Image.new("RGBA", rgba.size, (*OUTLINE_COLOR, 0))
+    outline.putalpha(expanded)
+    return outline
+
+
 def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
                         size: tuple[int, int], do_chroma: bool, fit: str,
                         log) -> Path:
     """The load-bearing step shared by generate + import: key → fit → place."""
     log(f"source size {src.size}, target {size}, chroma={do_chroma}, fit={fit}")
+    info = SPECS[spec]
+    footprint = info.get("visible_footprint")
     img = src
     if do_chroma:
-        img = chroma_key_magenta(img)
-        log("applied magenta chroma-key")
-    img = fit_into_rect(img, size, fit)
-    info = SPECS[spec]
+        if spec in CHARACTER_SOFT_CHROMA_SPECS:
+            img = remove_magenta(img, threshold=180, edge_threshold=200)
+            log("applied edge-connected soft magenta chroma-key")
+            img = remove_cutout_fragments(img)
+            log("removed disconnected Character cut-out background fragments")
+        else:
+            threshold = 180 if spec in FRAGMENT_CLEANUP_SPECS else 100
+            img = chroma_key_magenta(img, threshold=threshold)
+            log("applied magenta chroma-key")
+    if footprint is not None:
+        img = fit_into_footprint(
+            img,
+            size,
+            footprint,
+            opaque_canvas=not footprint.alpha_content,
+        )
+        log(
+            f"applied {footprint.host} content box {footprint.content_box}"
+            + (
+                f" and baseline {footprint.baseline_y}"
+                if footprint.baseline_y is not None
+                else ""
+            )
+        )
+    else:
+        img = fit_into_rect(
+            img,
+            size,
+            fit,
+            fill=outline_safe_fill(size) if spec in DERIVED_OUTLINE_SPECS else 1.0,
+            crop_to_content=spec != "character_energy",
+        )
+    if do_chroma and spec in FRAGMENT_CLEANUP_SPECS:
+        img = remove_cutout_fragments(img)
+        img = fit_into_rect(img, size, fit)
+        log("removed disconnected cut-out background fragments")
+    if footprint is not None:
+        try:
+            alpha_bounds = CHARACTER_ART_BUNDLE.validate_visible_footprint(spec, img)
+        except CharacterArtValidationError as exc:
+            raise SystemExit(f"[gen_sprite] {exc}") from exc
+        if alpha_bounds is not None:
+            log(f"validated normalized alpha bounds {alpha_bounds}")
     # write the primary path + any extra paths the game reads for this spec (e.g. a relic's
     # big/ detail-popup icon). The first is returned as the canonical dest.
     dest = None
@@ -187,6 +411,14 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
         log(f"wrote {p} ({p.stat().st_size:,} bytes) at {img.size}")
         if dest is None:
             dest = p
+    if spec in DERIVED_OUTLINE_SPECS:
+        outline = derive_alpha_outline(img)
+        outline_path = out_dir / info["sub_path"] / f"{slug}_outline.png"
+        outline.save(outline_path, "PNG")
+        log(
+            f"wrote {outline_path} ({outline_path.stat().st_size:,} bytes) at "
+            f"{outline.size} with {outline_expansion_radius(outline.size)}px white expansion"
+        )
     return dest
 
 # --- BYO backend (OpenAI-images-compatible HTTP) ---------------------------
@@ -432,33 +664,48 @@ def make_logger(out_dir: Path):
 
 # --- few-shot reference images ---------------------------------------------
 
-def resolve_references(ref_arg: str, max_refs: int, log,
-                       spec: str | None = None) -> list[Path] | None:
+def resolve_references(
+    ref_arg: str | None,
+    max_refs: int,
+    log,
+    spec: str | None = None,
+    identity_reference: str | None = None,
+) -> list[Path] | None:
     """Turn --reference (a dir of style samples, or a comma-separated file list) into a
-    capped list of image Paths for the few-shot edit call. Returns None if nothing
+    randomly capped list of image Paths for the few-shot edit call. Returns None if nothing
     usable is found (caller falls back to plain text-to-image, never blocks).
 
-    Spec-aware subdir selection: a card portrait, a relic icon, and a power icon look
-    nothing alike, so the shipped art-samples/ dir is split into card/ relic/ power/
-    subdirs. When a --reference token is a directory that CONTAINS a subdir named after
-    the current --spec, we descend into that subdir — so the caller passes the samples
-    ROOT and gets the right kind automatically. A flat dir (no such subdir) keeps the old
-    behavior (use its images directly), so old callers and custom dirs still work."""
+    Spec-aware subdir selection: different families look nothing alike, so the shipped
+    art-samples/ dir is split into per-spec subdirs. When a --reference
+    token is a directory that CONTAINS a subdir named after the current --spec, we descend
+    into it. A root with no matching subdir contributes only its own direct image files,
+    never another family's subdir. A custom flat dir keeps the old behavior."""
     IMG_EXT = (".png", ".jpg", ".jpeg", ".webp")
     def images_in(d: Path) -> list[Path]:
         return [f for f in sorted(d.iterdir()) if f.suffix.lower() in IMG_EXT]
 
+    try:
+        identity = CHARACTER_ART_BUNDLE.validate_identity_reference(
+            spec or "", Path(identity_reference) if identity_reference else None
+        )
+    except CharacterArtValidationError as exc:
+        raise SystemExit(f"[gen_sprite] {exc}") from exc
+
     paths: list[Path] = []
-    for token in str(ref_arg).split(","):
+    for token in str(ref_arg or "").split(","):
         token = token.strip()
         if not token:
             continue
         p = Path(token)
         if p.is_dir():
-            spec_subdir = (p / spec) if spec else None
+            reference_family = REFERENCE_FAMILIES.get(spec, spec) if spec else None
+            spec_subdir = (p / reference_family) if reference_family else None
             if spec_subdir and spec_subdir.is_dir():
                 imgs = images_in(spec_subdir)
-                log(f"reference: using spec subdir {spec_subdir.name}/ ({len(imgs)} images)")
+                log(
+                    f"reference: using spec subdir {spec_subdir.name}/ "
+                    f"for {spec} ({len(imgs)} images)"
+                )
                 paths.extend(imgs)
             else:
                 paths.extend(images_in(p))
@@ -466,39 +713,112 @@ def resolve_references(ref_arg: str, max_refs: int, log,
             paths.append(p)
         else:
             log(f"reference not found (skipped): {token}")
+    if max_refs and len(paths) > max_refs:
+        paths = random.SystemRandom().sample(paths, max_refs)
+    paths = list(dict.fromkeys(paths))
+    if identity is not None:
+        paths.append(identity)
+        log(f"identity reference: {identity.name}")
     if not paths:
         log("no usable reference images — falling back to text-to-image")
         return None
-    if max_refs and len(paths) > max_refs:
-        # even stride so a directory of many samples still spans styles, not just the first N
-        step = len(paths) / max_refs
-        paths = [paths[int(i * step)] for i in range(max_refs)]
     log(f"using {len(paths)} reference image(s): {[p.name for p in paths]}")
     return paths
 
 
 # --- command handlers -------------------------------------------------------
 
+def stage_character_cue_source(
+    source: "Image.Image",
+    spec: str,
+    slug: str,
+    images_root: Path,
+    log,
+) -> tuple[Path, bool]:
+    """Stage one action sheet; normalize runtime cues only when all four exist."""
+    action = CHARACTER_ART_BUNDLE.cue_action(spec)
+    if slug.lower() != action.name:
+        raise SystemExit(
+            f"[gen_sprite] cue spec {spec!r} requires --slug {action.name!r}"
+        )
+    if images_root.name.lower() != "images":
+        raise SystemExit(
+            "[gen_sprite] Character cue import requires --out <project>/<ModName>/images"
+        )
+
+    project_root = images_root.resolve().parent.parent
+    source_dir = project_root / "art-sources" / "character-cues"
+    review_dir = project_root / "art-review" / "character-cues"
+    source_dir.mkdir(parents=True, exist_ok=True)
+    destination = source_dir / f"{action.name}.png"
+    temporary = source_dir / f".{action.name}.tmp.png"
+    source.convert("RGBA").save(temporary, "PNG")
+    temporary.replace(destination)
+    log(f"staged {action.name} action sheet -> {destination}")
+
+    cue_contract = CHARACTER_ART_BUNDLE.combat_cues
+    if cue_contract is None:
+        raise SystemExit("[gen_sprite] Character combat cue contract is unavailable")
+    sources = {
+        item.name: source_dir / f"{item.name}.png"
+        for item in cue_contract.actions
+    }
+    missing = [name for name, path in sources.items() if not path.is_file()]
+    if missing:
+        log(f"cue bundle waiting for action sheet(s): {missing}")
+        return destination, False
+
+    from character_cues import CharacterCueError, process_bundle
+
+    try:
+        process_bundle(sources, images_root, review_dir)
+    except CharacterCueError as exc:
+        raise SystemExit(
+            "[gen_sprite] Character cue bundle failed deterministic QC; existing runtime "
+            f"cues were not changed: {exc}"
+        ) from exc
+    runtime_dir = images_root / "charui" / "cues"
+    log(f"normalized complete Character cue bundle -> {runtime_dir}")
+    return runtime_dir, True
+
+
 def cmd_generate(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     log, flush = make_logger(out_dir)
-    info = SPECS[args.spec]
-    size = resolve_size(args.spec, args.size)
+    cue_spec = args.spec in CUE_SPECS
+    info = SPECS.get(args.spec)
+    size = cue_sheet_size(args.spec, args.size) if cue_spec else resolve_size(args.spec, args.size)
     try:
         cfg = load_config(Path(args.config) if args.config else None)
-        refs = resolve_references(args.reference, args.max_refs, log, spec=args.spec) if args.reference else None
+        refs = resolve_references(
+            args.reference,
+            args.max_refs,
+            log,
+            spec=args.spec,
+            identity_reference=args.identity_reference,
+        )
         src = call_backend(cfg, args.prompt, size, log, references=refs)
         # default follows the spec (cut-out icon → key; full-bleed illustration → don't);
         # explicit --chroma / --no-chroma override it.
-        do_chroma = info["chroma"]
-        if args.chroma:
-            do_chroma = True
-        if args.no_chroma:
-            do_chroma = False
-        dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
-                                   do_chroma, info["fit"], log)
+        if cue_spec:
+            dest, complete = stage_character_cue_source(
+                src, args.spec, args.slug, out_dir, log
+            )
+        else:
+            do_chroma = info["chroma"]
+            if args.chroma:
+                do_chroma = True
+            if args.no_chroma:
+                do_chroma = False
+            dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
+                                       do_chroma, info["fit"], log)
     finally:
         flush()
+    if cue_spec:
+        status = "normalized complete bundle" if complete else "staged; bundle incomplete"
+        print(f"[gen_sprite] generated {args.spec} '{args.slug}' -> {status}")
+        print(str(dest))
+        return 0
     print(f"[gen_sprite] generated {args.spec} '{args.slug}' -> {dest.name} at {size[0]}x{size[1]}")
     print(str(dest))
     return 0
@@ -507,21 +827,30 @@ def cmd_generate(args: argparse.Namespace) -> int:
 def cmd_import(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     log, flush = make_logger(out_dir)
-    info = SPECS[args.spec]
-    size = resolve_size(args.spec, args.size)
+    cue_spec = args.spec in CUE_SPECS
+    info = SPECS.get(args.spec)
+    size = cue_sheet_size(args.spec, args.size) if cue_spec else resolve_size(args.spec, args.size)
     src_path = Path(args.input)
     if not src_path.is_file():
         print(f"[gen_sprite] input file not found: {src_path}", file=sys.stderr)
         return 2
     try:
-        src = Image.open(src_path)
-        # import defaults to NO chroma-key (user's image is assumed already cut),
-        # unless they explicitly ask for it with --chroma.
-        do_chroma = bool(args.chroma)
-        dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
-                                   do_chroma, info["fit"], log)
+        with Image.open(src_path) as src:
+            if cue_spec:
+                dest, complete = stage_character_cue_source(
+                    src, args.spec, args.slug, out_dir, log
+                )
+            else:
+                do_chroma = bool(args.chroma)
+                dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
+                                           do_chroma, info["fit"], log)
     finally:
         flush()
+    if cue_spec:
+        status = "normalized complete bundle" if complete else "staged; bundle incomplete"
+        print(f"[gen_sprite] imported {args.spec} '{args.slug}' -> {status}")
+        print(str(dest))
+        return 0
     print(f"[gen_sprite] imported {args.spec} '{args.slug}' -> {dest.name} at {size[0]}x{size[1]}")
     print(str(dest))
     return 0
@@ -533,9 +862,17 @@ def cmd_list_specs(_args: argparse.Namespace) -> int:
     for name, info in SPECS.items():
         size = f'{info["size"][0]}x{info["size"][1]}' if info["size"] else "(unverified)"
         chroma = "on" if info["chroma"] else "off"
-        star = "" if info["verified"] else "  *unverified size"
+        star = "" if info["verified"] else "  *not live-verified"
         print(f'{name:<11} {info["sub_path"]:<30} {size:<12} {info["fit"]:<8} {chroma}{star}')
-    print("\n* size not source-measured — pass --size WxH and confirm in-game.")
+    for spec in CHARACTER_ART_BUNDLE.cue_specs:
+        action = CHARACTER_ART_BUNDLE.cue_action(spec)
+        layout = f"{action.rows}x{action.columns} sheet"
+        print(
+            f"{spec:<11} {'art-sources/character-cues':<30} "
+            f"{layout:<12} {'grid':<8} on"
+        )
+    if any(not info["verified"] for info in SPECS.values()):
+        print("\n* contract is source-grounded but still requires headed in-game proof.")
     return 0
 
 
@@ -552,7 +889,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     g = sub.add_parser("generate", help="Generate via a BYO OpenAI-compatible backend.")
-    g.add_argument("--spec", required=True, choices=sorted(SPECS))
+    g.add_argument("--spec", required=True, choices=sorted(ALL_SPECS))
     g.add_argument("--slug", required=True, help="lowercased prefix-stripped id, e.g. firebolt")
     g.add_argument("--prompt", required=True)
     g.add_argument("--out", required=True, help="the mod's <ModName>/images dir")
@@ -561,15 +898,20 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--reference", help="few-shot STS2 style references: a dir (e.g. the "
                    "sts2-api art-samples/) or comma-separated image files. Sent to the "
                    "backend's /images/edits endpoint so output matches the game style. "
-                   "Requires a backend that accepts reference images (e.g. gpt-image-1 "
-                   "edits, Gemini/nano-banana, ComfyUI). Omit → plain text-to-image.")
-    g.add_argument("--max-refs", type=int, default=3, help="cap reference images (default 3)")
+                   "Requires a backend that accepts reference images (e.g. gpt-image "
+                   "edits or Gemini/nano-banana). Omit → plain text-to-image.")
+    g.add_argument("--max-refs", type=int, default=3,
+                   help="randomly sample at most three style references; identity is added separately")
+    g.add_argument(
+        "--identity-reference",
+        help="normalized Character selection portrait; required for identity-sensitive body/cue assets",
+    )
     g.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
     g.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")
     g.set_defaults(func=cmd_generate)
 
     i = sub.add_parser("import", help="Normalize + place a local image (no HTTP).")
-    i.add_argument("--spec", required=True, choices=sorted(SPECS))
+    i.add_argument("--spec", required=True, choices=sorted(ALL_SPECS))
     i.add_argument("--slug", required=True)
     i.add_argument("--input", required=True, help="path to the source image")
     i.add_argument("--out", required=True, help="the mod's <ModName>/images dir")

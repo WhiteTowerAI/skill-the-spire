@@ -2,9 +2,8 @@
 AGENT_MEMORY.md
 baselines/
 
-# Published skill output — rendered from games/*/skills/ by publish.sh. Generated,
-# not source; regenerate with ./publish.sh --agent claude.
-.claude/
+# Local Codex development payload. Generated from games/*/skills/ by publish.sh.
+.agents/skills/
 
 # Python cache from scripts/publish
 __pycache__/
@@ -12,3 +11,10 @@ __pycache__/
 # Tool scratch output (build.ps1 writes full dotnet output here to keep the
 # console quiet). Regenerated each build.
 .build.log
+
+# Maintainer-only M6.7 assembly catalog build output.
+games/sts2/tools/assembly_catalog/bin/
+games/sts2/tools/assembly_catalog/obj/
+
+# Local image-generation credentials. Never commit provider keys.
+art-backend.json

@@ -1,208 +1,182 @@
 # open-mod
 
-**open-mod** is a free, open-source skill that turns one plain-English sentence
-into a real, working game mod — no coding required. You describe what you want,
-and the skill scaffolds, writes, builds, and verifies a mod that actually loads
-and runs in-game.
+open-mod is a free, open-source Codex plugin that turns a plain-language idea into a
+working Slay the Spire 2 mod. It interviews only when a decision matters, writes a
+semantic spec, scaffolds and authors the project, builds it, launches the real game, and
+checks both load and behavior.
 
-First supported game: **Slay the Spire 2 (STS2)**.
+The first supported game is **Slay the Spire 2 (STS2)**.
 
-> **Status: M5.5 complete; M6 Core is next.** open-mod reliably makes **relics,
-> potions, cards, and custom powers** (including a card that applies its own power),
-> proves both that the mod **loads** and that its **effect actually fires** in-game,
-> repairs common build errors automatically, and supports placeholder or generated art
-> for all four types. Editing vanilla content and one-click Steam Workshop publishing
-> remain out of scope today. See [Current limits](#current-limits).
+> **Unreleased development version: 0.6.0.** The generated-mod pipeline now targets only RitsuLib
+> `0.4.62` on STS2 stable `0.107.1`. The BaseLib implementation path has been retired.
+> The migration and external clean-workspace Codex acceptance are complete; details are
+> archived in `documents/history/RITSULIB_MIGRATION_RESULTS.md`. A GitHub release is
+> deliberately deferred while remaining bugs are fixed. M6.5 acceptance is closed; its
+> lead-approved Prismwright result is archived in
+> `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. M6.6 computed values, bounded
+> advanced targeting, native custom-Character Ancient dialogue, and bounded Relic-owned
+> Rest Site options are individually implemented; M6.6 itself remains open.
 
----
+The provisional M6.6 capability roadmap and planned M6.7 version-bound vanilla-content
+override track are maintained in `documents/IMPLEMENTATION_PLAN.md`. Support is declared at
+the documented RitsuLib Package level when its public API exists in the pinned profile.
 
-## What you'll need first
+## Requirements
 
-open-mod drives the normal STS2 modding toolchain, so you need a machine set up to
-build STS2 mods:
+1. Slay the Spire 2 stable `0.107.1`, installed through Steam.
+2. .NET SDK `9.0` or newer (`dotnet --version`).
+3. Python 3. On Windows, use a real python.org/Anaconda installation rather than the
+   non-working Windows Store `python3` shim.
+4. RitsuLib `0.4.62`, installed in the STS2 Mods directory with the `0.107.1` compat
+   variant. Use the release from
+   [BAKAOLC/STS2-RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib); the installed
+   runtime must contain `lib/0.107.1/STS2-RitsuLib.dll` or the equivalent direct compat
+   asset.
+5. Codex with plugin support.
 
-1. **Slay the Spire 2**, installed via Steam. Note your install path (e.g.
-   `D:\Steam\steamapps\common\Slay the Spire 2`).
-2. **.NET SDK 9.0 or newer** — check with `dotnet --version`.
-3. **BaseLib** — the community modding library open-mod builds on. Subscribe to it
-   on the Steam Workshop (search "BaseLib" for STS2), then launch the game once so
-   Steam downloads it.
-4. **A compatible coding agent** — Claude Code is the fully verified path; the portable
-   package also targets Codex, Cursor, OpenClaw, and other Agent Skills consumers.
-5. **Python 3**. On Windows, install Python from python.org — the `python3` command
-   preinstalled by Windows may be a non-working Store placeholder.
+You do not need BaseLib, an Alchyr template, Godot, MegaDot, or PckPacker. The generated
+project uses open-mod's pinned scaffold and bundled Python build/packaging tools.
 
-The very first time you make a mod, the skill will also install the STS2 project
-template (`dotnet new install Alchyr.Sts2.Templates`) if it isn't already present.
+## Install In Codex
 
----
+Until `0.6.0` is merged and published from GitHub, install the current local checkout as a
+repo marketplace:
 
-## Install (one time)
-
-No clone, no build step, no fixed working directory — install once and `/modmaker`
-is available from anywhere.
-
-**Claude Code** (native plugin) — run these two commands:
-
-```
-/plugin marketplace add WhiteTowerAI/open-mod
-/plugin install open-mod@open-mod
+```powershell
+codex plugin marketplace add D:\path\to\open-mod
+codex plugin add open-mod@open-mod
 ```
 
-The first registers this repository as a plugin marketplace; the second installs
-the `open-mod` plugin (the mod-maker skill, the STS2 knowledge pack, and the build
-tools). To update later, run `/plugin marketplace update open-mod`.
+Start a new Codex thread after installation so it loads the new skills and tools. The
+plugin is defined by `.agents/plugins/marketplace.json` and
+`plugins/open-mod/.codex-plugin/plugin.json`.
 
-**Other agents** (Codex, Cursor, OpenClaw, …) — use the cross-agent installer:
+The portable Agent Skills payload remains available for compatible non-plugin hosts:
 
-```
+```powershell
 npx skills add WhiteTowerAI/open-mod
 ```
 
-This drops the skill into wherever your agent looks for skills. Both paths pull
-straight from GitHub.
+## Make A Mod
 
-That's it. `/modmaker` now works in any project.
+Invoke the skill in Codex:
 
-> **A note on other agents:** the STS2 *knowledge* (recipes, mechanics, error
-> fixes) works the same everywhere. The build/verify **tools** are cross-platform
-> Python, but the full one-command build → self-test loop is currently proven on
-> **Windows + Claude Code**; on other setups you may need to run the build/launch
-> steps yourself. See [Current limits](#current-limits).
-
-> **Prefer the dev flow?** Contributors who want to edit the skill in-place can
-> still clone the repo and run `./publish.sh --agent claude` (see
-> [For contributors](#for-contributors)).
-
----
-
-## Make a mod
-
-In Claude Code (any project, once the plugin is installed), run the skill and
-describe your mod in one sentence:
-
-```
-/modmaker
+```text
+$modmaker
 ```
 
-Then say what you want, for example:
+Then describe the mod in ordinary language, for example:
 
-> a relic that heals you 5 HP at the start of every combat
+> A relic that gives 5 Block at the start of every third turn.
 
-The skill takes it from there. It will:
+The skill will:
 
-1. **Ask you at most one short round of questions** — only if something's genuinely
-   unclear (e.g. how rare the relic should be). Plain language, no jargon.
-2. **Show you a plan** in plain words and confirm it with you.
-3. **Scaffold, write, and build** the mod.
-4. **Launch the real game and check its log** to prove the mod loads with no errors.
-5. **Run an unattended in-process self-test**: the generated mod drives itself into a
-   minimal combat, fires the effect, and records the observed marker. If navigation
-   cannot reach combat, the skill falls back to a guided manual check and reports
-   load-only rather than pretending behavior was verified.
+1. Ask at most one compact round of questions when the answer changes the implementation.
+2. Show a plain-language plan and record the accepted semantic contract.
+3. Create a pinned RitsuLib project and author the required content.
+4. Build and install the mod into STS2's Mods directory.
+5. Launch the real game for Tier 1 load verification.
+6. Run the closest hosted self-test for Tier 2 behavior verification when that host is
+   supported; otherwise report the exact manual fallback without pretending it passed.
 
-The standard verification path requires no dev-console typing or menu clicks. You can
-still launch the game afterward to play with the finished mod yourself.
+## Supported Surface
 
----
+The current RitsuLib-only generator implements:
 
-## Play it in-game
+- cards, relics, potions, powers, keywords, enchantments, and orbs;
+- filtered live-creature targeting for single-target Cards/Potions and multi-target Cards,
+  including native mouse/controller selection and cancellation;
+- singleplayer top-X Scry through a generated-Mod-local helper;
+- conditional Card hand emphasis with ordered fixed-color rules, priority, and explicit
+  unplayable visibility;
+- up to three bounded supplemental Relic labels in safe corners, or one top-left Power
+  label, with explicit refresh and removal;
+- monsters and encounters with deterministic and conditional move vocabularies;
+- Events / World Nodes with pages, options, public Cmd outcomes, selections, rewards,
+  resumable or terminal special combat, bounded rich text and VFX, and one bounded solo
+  Quest Card to forced-Event composition;
+- playable Character Foundation with exact pools, starters, HP, and Energy;
+- custom-Character localization dialogue in the nine cataloged native Ancient and
+  Architect scenes, preserving native models, layouts, options, and outcomes;
+- singleplayer Relic-owned Rest Site options with free/fixed Gold, deterministic outcomes,
+  once-per-site/run repeatability, native stay/leave behavior, and checked custom/fallback
+  button art;
+- stateful relic cadence with combat-local and run-persistent state;
+- combat-only secondary resources with all-or-nothing payment and a public fixed live UI;
+- ordered semantic card-play buffers whose source Cards follow normal Play -> Discard;
+- placeholder, local, or generated static art for the grounded content families, including
+  nine verified Character profiles;
+- optional private combat-only Character `Idle`/`Attack`/`Hit`/`Dead` frame cues with an
+  all-or-nothing static fallback.
 
-When the skill finishes, your mod is already installed into the game's `mods/`
-folder and has normally passed both automated verification tiers. To play with it:
+The official RitsuLib Extra Badges Package also supports Intent because its documented
+public API exists in the pinned profile. Intent badge authoring is not part of the current
+implementation plan.
 
-1. Launch Slay the Spire 2 and start a run.
-2. Open the developer console with the **`` ` ``** (backtick) key; close it with
-   `Esc`. Debug commands are available because the game is running modded.
-3. Grant the element using the exact ID the skill reports:
-   - relic: `relic add <ID>`
-   - potion: `potion <ID>`
-   - card: `card <ID>`
-4. Use or trigger it normally. This is for your own play and visual inspection — it
-   is not the primary proof path, which the skill already ran automatically.
+Static art acquisition prefers a callable host-native raster tool (`image_gen` in Codex),
+then the explicitly selected Vofy, compatible HTTP backend, or local-image route. Tool
+availability is detected at runtime. A skill file or model name alone is not proof that
+image generation is callable, and open-mod never silently switches to a paid backend.
 
-If the automatic harness could not navigate into combat, these same steps become its
-honest manual fallback; the skill will tell you exactly what to enter and will only
-claim Tier 2 after the effect marker is observed.
+## Current Limits
 
-> **Where are the files?** The mod lands in
-> `…\Slay the Spire 2\mods\<YourModName>\` (the `.dll` + `.pck` + `.json`). The mod's
-> source project is created in a folder you choose, outside this repo.
+The exact known limitations and unsupported public routes live in the capability graph:
 
----
+- custom multi-target Potions have a confirmed lifecycle limitation;
+- arbitrary Card/object/map targeting has no supported public route;
+- remaining M6.6 CardPile/ExtraHand authoring work and planned M6.7 vanilla-content
+  overrides are not yet implemented by the generator;
+- hand emphasis whose condition changes without a normal combat-state refresh, arbitrary
+  extra-label rectangles, bottom-right extra labels, and Intent badge authoring;
+- Card/Modifier-owned Rest Site options, variable or non-Gold Rest Site costs, arbitrary
+  transactions, same-site repeat, or multiplayer Rest Site extensions;
+- retained-card custom-zone UI or hidden retained played cards;
+- alternative Energy engine hooks;
+- run-persistent or remote-player Character resources and UI;
+- multiplayer/replay Scry or global cross-Mod Scry hooks;
+- production Character animation beyond the bounded combat cues, arbitrary materials,
+  audio, or multiplayer presentation;
+- custom Character Ancient models/layouts/options/rewards/audio/VFX, global dialogue
+  replacement, and unproved locked-selection/map-marker art;
+- arbitrary Event VFX/layouts, direct merchant/rest/treasure transitions, or more than one
+  special combat from the same mutable Event instance;
+- one-click Steam Workshop publishing.
 
-## Current limits
+## Verification Model
 
-open-mod is still young. Today it does the following well, and is honest about the rest:
+Tier 1 requires the exact load marker and no fresh error block. Tier 2 additionally
+requires a structured post-state marker and `selftest done`. A successful build, a trigger
+log, or a screenshot by itself is not behavior proof. Player-visible state is part of
+correctness whenever open-mod owns UI or presentation.
 
-- ✅ **Relics, potions, cards, and custom powers** — including a card that applies
-  its own custom power (the multi-element "combo" case).
-- ✅ **Load verification** — it proves the mod loads in-game, not just "it compiled".
-- ✅ **Effect verification (automated)** — the mod carries an in-process self-test
-  that drives itself into a combat and confirms the effect fires, with no dev-console
-  typing. It falls back to a guided manual check and reports load-only if the
-  self-test can't reach combat.
-- ✅ **Automatic error-repair** — a bounded loop diagnoses and fixes common build
-  failures, then re-verifies.
-- ✅ **Custom art for all four types** — card portraits and relic/power/potion icons
-  are live-verified. Placeholder art remains the zero-setup default; generation uses
-  your own compatible image backend and falls back safely if unavailable.
-- ⏳ **Not yet:** editing existing vanilla content, content beyond the current four
-  combat-oriented types (M6), and one-click Steam Workshop publishing.
-- ⚠️ **Platform verification:** the complete build → launch → self-test loop is proven
-  on Windows + Claude Code. The tools have macOS/Linux and portable-agent paths, but
-  those combinations have not yet been live-verified. Registry directory listing is
-  also still open; direct GitHub install already works.
+Fresh natural-language acceptance mods are disposable. Durable contract and hosted proof
+ownership live in `games/sts2/tests/`; completed evidence is indexed under
+`documents/history/`.
 
-If you ask for something outside this, the skill will tell you plainly rather than
-half-build it.
+## For Contributors
 
-## Troubleshooting
+Edit only the source under `games/sts2/`:
 
-- **`/modmaker` doesn't appear** — confirm the plugin installed: run `/plugin` and
-  check `open-mod` is listed and enabled. If you installed from a local clone
-  instead, make sure you ran `./publish.sh --agent claude` and opened Claude Code
-  with the `open-mod` repo as the working directory.
-- **`publish.sh` says no working Python** — the Windows Store `python3` is a
-  placeholder. Install real Python 3 from python.org and reopen your shell.
-- **An element shows placeholder art** — placeholder is the default fast path, not a
-  failure. To generate custom art, choose it during intake and provide a compatible
-  image backend configuration; if generation fails, the mod deliberately remains on
-  the working placeholder rather than blocking the build.
+- `games/sts2/skills/modmaker/`: staged orchestrator;
+- `games/sts2/skills/sts2-api/`: lazy recipes and grounded references;
+- `games/sts2/tools/`: scaffold, build, launch, log, and art tools.
 
-## For contributors
+Regenerate, do not hand-edit, the two committed payloads:
 
-The skill source lives under `games/sts2/` (orchestrator in
-`games/sts2/skills/modmaker/`, the STS2 knowledge pack in
-`games/sts2/skills/sts2-api/`, cross-platform Python tools in `games/sts2/tools/`).
-Source files use `${VAR}` placeholders; `publish.sh` renders them three ways:
+```powershell
+& '<Git-install>\bin\bash.exe' './publish.sh' '--plugin'
+& '<Git-install>\bin\bash.exe' './publish.sh' '--portable'
+```
 
-- **`./publish.sh --agent claude`** — the dev flow. Renders into `.claude/skills/`
-  (git-ignored, regenerate don't commit) with tool paths pointing at
-  `games/sts2/tools/`. Testable in-place when Claude Code is opened here.
-- **`./publish.sh --plugin`** — the Claude ship flow. Renders the committed plugin
-  payload into `plugins/open-mod/{skills,tools}/` with paths pointing at
-  `${CLAUDE_PLUGIN_ROOT}`, so the installed plugin works from any cwd.
-- **`./publish.sh --portable`** — the cross-agent ship flow. Renders the committed
-  top-level `skills/` (the layout `npx skills add` discovers) with tools bundled in
-  `skills/modmaker/scripts/` and referenced by **relative** path (no
-  `${CLAUDE_PLUGIN_ROOT}` off Claude).
+The local Codex development shape is generated with `./publish.sh --agent codex` under
+`.agents/skills/` and is git-ignored.
 
-Both ship payloads **are committed** (the marketplaces fetch them from git) — re-run
-the relevant publish after any source change and commit the result. Don't hand-edit
-the generated trees; see `plugins/open-mod/GENERATED.md` and `skills/GENERATED.md`.
+Run the normal checks before handing off:
 
-The tools are **Python** (`build.py` / `launch.py` / `grep_log.py`), so they are
-designed for Windows/macOS/Linux; invoke with `python` (on Windows the bare `python3`
-is often the Store shim). Windows is live-verified; the macOS/Linux path defaults are
-best-effort until tested on those systems.
+```powershell
+python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
+python -m compileall -q games/sts2/tools scripts/publish plugins/open-mod/skills skills
+git diff --check
+```
 
-The marketplace manifest is `.claude-plugin/marketplace.json`; the plugin manifest
-is `plugins/open-mod/.claude-plugin/plugin.json`. Planning and research docs are in
-`documents/`. See `CLAUDE.md` and `AGENTS.md` before contributing.
-
-## License
-
-See [LICENSE](./LICENSE).
-
-
+Read `AGENTS.md` before changing the repository. See `LICENSE` for licensing.

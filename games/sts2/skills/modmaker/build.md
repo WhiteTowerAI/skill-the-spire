@@ -1,47 +1,77 @@
-# Build — compile to .dll + .pck + .json in mods/
+# Build - compile and deploy the pinned RitsuLib Mod
 
-Goal: run the R1 build. On success the `.dll`, `.pck`, and `.json` land in the
-game's `mods/<ModName>/` automatically (the template's copy targets). On failure,
-capture the real compiler error and go to `repair.md` (the bounded repair loop).
+Goal: validate the selected framework profile, build the Mod, and deploy only its own
+artifacts to the stable host.
 
 ## Run
 
 ```bash
-python ${GAME_TOOLS_DIR}/build.py --project-dir <mod project path from MEMORY.md>
+python ${GAME_TOOLS_DIR}/build.py --project-dir <project path from MEMORY.md> --mod-name <ModName>
 ```
 
-This wraps `dotnet build -c Release`. Path discovery (`Sts2PathDiscovery.props`)
-resolves the game + mods folders from the registry — no override needed on the dev box.
-(The tools are Python so they run the same on Windows/macOS/Linux; invoke with
-`python`, not `python3` — on Windows the bare `python3` is often the Store shim.)
+Before MSBuild, the tool verifies:
+
+- project package `STS2.RitsuLib.Compat.0.107.1` is exactly `0.5.4`;
+- no BaseLib/Alchyr dependency appears in the project or manifest;
+- the manifest depends only on `STS2-RitsuLib >= 0.5.4` and targets host `0.107.1`;
+- `has_pck` is `true` exactly when the authored Mod resource tree is non-empty;
+- the installed host's `release_info.json` is stable `0.107.1`;
+- `mods/STS2-RitsuLib` contains the matching direct compat runtime or a variant-pack
+  `lib/0.107.1/STS2-RitsuLib.dll` with matching marker and manifest hash;
+- any generated Character `ancients.json` uses the pinned vanilla target catalog,
+  contiguous dialogue/line structure, valid visit/repeat/Architect metadata, matching
+  Character entries, and identical keys across shipped languages.
+- when present, `openmod/vanilla-overrides.json` has the pinned host/profile/catalog
+  digest, matching Mod id, grounded baselines/routes, no same-Mod conflict, and only
+  operations promoted by the current catalog. M6.7.1 accepts the exact public Card routes
+  in `reference/vanilla-card-overrides.md`; M6.7.2 accepts the 44 exact visual routes and
+  validates their required/optional Mod-local resources through
+  `reference/vanilla-visual-overrides.md`; M6.7.3 accepts exact existing-Ancient option
+  append/replacement/page-flow routes in `reference/vanilla-ancient-overrides.md`, including
+  exact Adapter/dependency fingerprints and complete per-language `events.json` keys.
+  M6.7.4 accepts the exact epoch and Card/Relic/Potion pool routes in
+  `reference/vanilla-availability-overrides.md`, including complete pool baselines,
+  Relic/Potion override dependencies, and ordered primary-pool checks. Every other nonempty
+  route still fails closed.
+
+After the build it checks the NuGet lock resolved the exact compat package, copies the
+Mod's DLL/manifest/PDB through the generated MSBuild target, packs
+`<project-dir>/<ModName>/` when resources exist, and rejects a generated directory that
+contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
+For a new scaffold it also requires the deployed override manifest and compares its bytes
+with the source document that passed preflight. Legacy projects without a source override
+manifest remain valid.
+
+`--runtime-dir <path>` may point at an explicitly selected runtime folder or release zip.
+`--skip-runtime-check` is a compile-only escape hatch and can never satisfy Tier 1.
 
 ## Expect
 
-- `0 warnings, 0 errors`.
-- `mods/<ModName>/` now holds `<ModName>.dll`, `<ModName>.pck`, `<ModName>.json`
-  (and `.pdb`). The script lists them and warns if the `.pck` is missing.
+- build summary: `0 warnings, 0 errors`;
+- profile lines report `frameworkVersion=0.5.4`, `host=0.107.1`, and `compat=0.107.1`;
+- `mods/<ModName>/` contains `<ModName>.dll`, `<ModName>.json`, optional PDB, and a PCK
+  only when the Mod owns resources;
+- RitsuLib remains in its separate `mods/STS2-RitsuLib/` folder.
 
-## If it fails
+## Failure classes
 
-Go to `repair.md`. It reads the diagnostic lines `build.py` prints (and the full
-`<ProjectDir>/.build.log` if needed), keys on the **compiler code + symbol**,
-consults sts2-api `errors.md`, applies **one** fix, and rebuilds — bounded to 3
-attempts, stopping if the same signature survives. Common M2/M3 hits it knows:
+- `required compile asset ... Do not use the default beta-facing package` means the
+  project selected a floating/main package. Restore the pinned compat reference.
+- `host ... required stable 0.107.1` means the installed game branch is wrong. Stop; do
+  not compile against another host.
+- `no matching 0.107.1 RitsuLib variant` means the runtime asset is missing/wrong. Install
+  the compat zip or verified variant pack; do not fall back to a root beta DLL.
+- `[ancient-dialogue]` or an Ancient localization detail in the profile failure means the
+  generated flat table is structurally unsafe. Fix the reported semantic group/key; do not
+  bypass the preflight or enable the debug missing-Architect fallback.
+- `[vanilla-overrides]` with an Ancient target/route/page/localization/fingerprint detail
+  means the M6.7.3 manifest, generated flow, or `events.json` drifted. Fix the named
+  semantic operation or generated source; never relax the catalog or swap in a guessed
+  patch target.
+- `manifest has_pck must be ...` means authored localization/art/scenes and the manifest
+  disagree. Set the boolean to match the resource tree before rebuilding.
+- ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
 
-- **No `.pck`, only `.dll`** → PckPacker still commented in the csproj. Uncomment it
-  (scaffold.md step 2), rebuild.
-- **`CS8602` null deref on `Owner.PlayerCombatState`** → capture once with the
-  null-forgiving operator: `var combat = Owner.PlayerCombatState!;`.
-- **`CS0246`/`CS0117`/`CS1061` unknown type/member** → a guessed API. Do NOT guess
-  again — find the real symbol in the sts2-api pack (the recipe's "Effect building
-  blocks", `errors.md`, `reference/mechanics.md`). If the pack genuinely doesn't
-  carry it, that's a **pack gap** — report it, don't invent a name.
-- **`Slay the Spire 2 data not found`** → the game path didn't resolve; pass it or
-  check `Sts2PathDiscovery.props`.
-
-Do not thrash: one change per attempt, and if a fix doesn't move the error, step
-back to a different cause rather than tweaking the same spot (see repair.md).
-
-## On success
-
-Mark `build` done in `PLAN.md`, note the mods path in `MEMORY.md`, go to `verify.md`.
+On success, mark `build` done in `PLAN.md`, record the resolved Mods path and profile in
+`MEMORY.md`, and continue to `verify.md`. If `--skip-runtime-check` was used, record that
+the runtime profile was not checked.

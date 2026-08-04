@@ -7,7 +7,7 @@
 > must show the *current* number. This file grounds the three mechanisms that make
 > that work, so each recipe can reference it instead of re-deriving it.
 >
-> Every signature below was confirmed against the STS2 + BaseLib decompile by the
+> Every signature below was confirmed against the pinned STS2/RitsuLib API surface by the
 > maintainer, not guessed. When a recipe needs a number/description/enum concept, it
 > points here.
 
@@ -27,7 +27,7 @@ protected override IEnumerable<DynamicVar> CanonicalVars => new[]
 };
 ```
 
-**Read** the value for game logic (always the *base*, never the preview):
+**Read a static variable** for game logic from its base value:
 
 ```csharp
 decimal v = base.DynamicVars["DamageIncrease"].BaseValue;   // .IntValue for int
@@ -52,7 +52,10 @@ protected override void OnUpgrade() => base.DynamicVars.Damage.UpgradeValueBy(3m
 
 `DynamicVar` also carries `EnchantedValue` and `PreviewValue` (display-only, reflect
 enchantments / power hooks). **Never use `PreviewValue` for logic** — it's for the
-number shown on the card. Use `BaseValue`.
+number shown on the card. `BaseValue` is correct for the static vars above, but it is only
+a fallback/baseline on RitsuLib computed variables. A calculated Card effect must use the
+matching `ComputeDynamicValue`, `ComputeEnergyValue`, `ComputeStarsValue`, or
+`ComputePowerValue<T>` extension from `reference/card-computed-values.md`.
 
 ## 2. SmartFormat descriptions — showing the current number
 
@@ -76,7 +79,7 @@ precise token/args before relying on one you haven't seen used:**
 | `{Damage:diff()}` | HighlightDifferences | Colors the number green/red vs. its base (upgrade/buff preview). The common one for card values. |
 | `{X:diffInverse()}` | HighlightDifferencesInverse | Same, flipped (green when lower is better). |
 | `{Cost:energyIcons()}` | EnergyIcons | Renders energy-cost glyphs. |
-| `{X:stars()}` | StarIcons | Star glyphs. |
+| `{X:starIcons()}` | StarIcons | Star glyphs. Zero renders no glyph; a positive count repeats the glyph. |
 | `{X:percentMore()}` / `:percentLess()` | PercentMore/Less | "X% more/less" phrasing. |
 | `{X:showIfUpgraded()}` | ShowIfUpgraded | Emits text only on the upgraded card. |
 | `{X:abs()}` | AbsoluteValue | Absolute value (for powers that store a signed amount). |
@@ -97,7 +100,9 @@ sets read from the decompile (STS2 v0.107.1 — a game update could add members)
   Osty`. ⚠️ **potions self-target with `AnyPlayer`, not `Self`** (see
   `recipes/potion.md`); cards may use `Self` (no target selection). `AnyEnemy` =
   single enemy w/ selection; `AllEnemies` = all, no selection. `TargetType.IsSingleTarget()`
-  is a helper.
+  is a helper. Filtered live-creature targets are dynamic values registered through the
+  pinned adapter; read `advanced-targeting.md` instead of inventing enum members or
+  predicates in a surface recipe.
 - **`CardType`** (`Entities.Cards`): `None, Attack, Skill, Power, Status, Curse, Quest`.
 - **`CardRarity`** (`Entities.Cards`): `None, Basic, Common, Uncommon, Rare, Ancient,
   Event, Token, Status, Curse, Quest`. (Starter cards like Strike use `Basic`;
@@ -115,14 +120,56 @@ sets read from the decompile (STS2 v0.107.1 — a game update could add members)
   `Unblockable`, `Unpowered | Unblockable` combine (Poison uses the latter).
   `props.IsPoweredAttack()` gates Strength/Vulnerable modifiers.
 
+## 4. Counter Power amount domains
+
+Every custom `PowerStackType.Counter` needs an explicit **amount domain** in `SPEC.md`.
+The default is nonnegative (`[0, unbounded]`). Use a signed domain only when negative
+stacks have intentional gameplay semantics (Strength/Dexterity-style), and record every
+finite lower or upper bound.
+
+The runtime types do **not** supply this contract for you:
+
+- `PowerVar<T>` is a card `DynamicVar` for the amount an effect requests. It has no
+  minimum/maximum API and does not constrain the mutable Power instance.
+- `AllowNegative => false` controls when an existing Power is removed after an amount
+  change. It does not reject a negative amount when `PowerCmd.Apply<T>` creates the first
+  instance.
+- `PowerCmd.Apply<T>` is therefore for gaining/applying a Power. For a nonnegative
+  Counter, never pass a negative amount to it to consume stacks.
+
+To consume a nonnegative Counter, get the existing instance with
+`Creature.GetPower<T>()`, clamp the actual spend to `0..power.Amount`, and call
+`PowerCmd.ModifyAmount` on that instance. If there is no instance, spend zero and do
+nothing. Internal consumption passes `null, null` for applier/card source, matching vanilla
+`VigorPower`/`Decrement`. Amount hooks can rewrite an offset, so the SPEC domain constrains
+the final observable amount as well as the request: capture `ModifyAmount`'s returned raw
+new amount, re-read the retained instance, and assert/log those post-hook values.
+`recipes/power.md` has the copyable Cmd sequence and finite-bound rule.
+
+## 5. Stateful timing and counters
+
+DynamicVars and Power amounts are not a general lifecycle contract. When an effect
+remembers turns/cards/uses, route to `stateful-mechanics.md` and specify the advancing
+event, threshold phase, `turn|combat|run` lifetime, reset, persistence, and boundary
+proof. In particular, a run-persistent relic counter uses RitsuLib
+`SavedAttachedState<SpecificRelic, int/bool>`, while a combat-local turn trigger reads
+`PlayerCombatState.TurnNumber`.
+
 ## Where each recipe leans on this file
 
 - **`recipes/power.md`** — DynamicVars (§1) for the stack/scaling number, `{Amount}` +
-  formatters (§2) for the description, `PowerType`/`PowerStackType` (§3).
+  formatters (§2) for the description, `PowerType`/`PowerStackType` (§3), and the
+  required Counter amount-domain contract (§4).
 - **`recipes/card.md`** — `DamageVar`/`BlockVar` in `CanonicalVars` (§1), `OnUpgrade`,
   `{Damage:diff()}` (§2), `CardType`/`CardRarity`/`TargetType` in the constructor (§3).
+- **`reference/card-computed-values.md`** — calculated Card roles, preview/execution
+  parity, Energy/Star icon formatting, typed Power amount-given hooks, and variable
+  tooltips.
+- **`reference/advanced-targeting.md`** — deterministic custom `TargetType` registration,
+  single/multi resolution, payment/consumption lifecycle, and headed selection proof.
 - **relics/potions** — mostly literal amounts + plain descriptions; they only need §3
-  (enums). They reach here only for a scaling effect.
+  (enums). They reach here only for a scaling effect. A stateful relic additionally
+  routes to `stateful-mechanics.md` (§5); potion saved state is not implemented.
 
 When this file lacks a specific value or formatter, follow `grounding.md`: at runtime
 that means the rest of the pack (recipes, `build-constraints.md`, snapshots,

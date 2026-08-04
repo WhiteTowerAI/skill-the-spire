@@ -1,87 +1,73 @@
-# Scaffold — create the mod project skeleton
+# Scaffold - create the pinned RitsuLib project
 
-Goal: produce a compilable, empty STS2 content-mod project via the Alchyr
-template, wire the manifest, and enable the `.pck` build. No effect logic yet.
+Goal: generate the smallest open-mod-owned STS2 project from the semantic SPEC.
+This is one adapter-owned path, not a second copy of the historical BaseLib recipes.
 
-## 0. Toolchain check (once)
+## Pinned profile
+
+```text
+profile: ritsulib-0.5.4-sts2-0.107.1
+compile package: STS2.RitsuLib.Compat.0.107.1 0.5.4
+runtime Mod id: STS2-RitsuLib
+host: STS2 stable 0.107.1
+```
+
+The default `STS2.RitsuLib` package follows the newest beta-facing game API and is a
+hard failure here. Do not use an Alchyr template, BaseLib package, BaseLib runtime, or
+PckPacker target as a fallback.
+
+## 1. Toolchain and location
+
+Require .NET SDK 9 and Python 3. Choose a dedicated empty outer directory outside the
+skill repository. Its leaf name must differ from `<ModName>`; the Mod resource tree may
+later use `<project-dir>/<ModName>/`.
 
 ```powershell
-dotnet --version          # need 9.0+
-dotnet new list | Select-String alchyr   # is the template installed?
+dotnet --version
+python ${GAME_TOOLS_DIR}/scaffold.py `
+  --project-dir <absolute-empty-outer-directory> `
+  --mod-name <ModName> `
+  --author <Author>
 ```
 
-If the template is missing, install it once:
+`<ModName>` is a C# identifier without spaces. The generator refuses a nonempty directory
+and never overwrites an existing project.
 
-```powershell
-dotnet new install Alchyr.Sts2.Templates
-```
+## 2. Generated contract
 
-## 1. Scaffold
+The project contains:
 
-Pick a work location OUTSIDE this skill repo (the mod is the user's artifact, not
-part of the published skill). **Three hard rules — skip any and you get a split,
-polluted layout that costs several tool calls to untangle (real M4 rework):**
+- `<ModName>.csproj` with the exact compat package and `Sts2ApiCompat=0.107.1`;
+- `RitsuLibAutoCopy=false` and an empty `RitsuLibDeployDir`, so the consumer never bundles
+  the framework DLL;
+- `<ModName>.json` with only `STS2-RitsuLib >= 0.5.4`, `min_game_version=0.107.1`,
+  `has_dll=true`, and `has_pck=false` for the empty scaffold;
+- `Sts2PathDiscovery.props` plus optional `local.props` support;
+- `openmod/vanilla-overrides.json` pinned to the checked `0.107.1` catalog with an empty
+  `operations` array; authoring may fill it only through a promoted operation package;
+- `<ModName>Code/MainFile.cs`, whose exact load marker records public RitsuLib version
+  metadata and the actual loaded `Sts2ApiCompat` assembly metadata.
 
-1. **The template outputs into the CURRENT directory, not a subfolder.** So `cd`
-   into a dedicated **empty** outer folder first, then run `dotnet new` there. Never
-   run it from a directory that already holds other projects (it scatters the csproj,
-   `<ModName>Code/`, manifest, `project.godot` across that directory).
-2. **The outer folder name must NOT equal `<ModName>`.** The template creates a
-   *resource* subdir also named `<ModName>` (holding `localization/`, `images/`), so
-   an outer folder of the same name collides on case-insensitive filesystems
-   (Windows/macOS). Use a distinct name like `<modname>-mod` (M1's `m1-gamblers-coin`
-   ≠ `GamblersCoin` is why it worked).
-3. **If SPEC/PLAN/MEMORY were written in step 2, put them in that outer folder** and
-   `cd` in before scaffolding — don't create a `<ModName>/` dir for them (it clashes
-   with rule 2 and the template's resource subdir).
+RitsuLib is installed as its own runtime Mod from either the matching
+`STS2.RitsuLib.Compat.0.107.1.0.5.4.github.zip` or the verified variant pack. Never copy
+`STS2-RitsuLib.dll` into `<ModName>`.
 
-```powershell
-mkdir <modname>-mod            # dedicated, empty, name != <ModName>
-cd <modname>-mod               # template writes into CWD
-dotnet new alchyrsts2contentmod -n <ModName> -M <Author>
-```
+When authoring adds localization, images, or scenes, place them under
+`<project-dir>/<ModName>/` and set `has_pck=true`. `build.py` packs that resource tree with
+the shared open-mod packer; there is no framework-specific PCK branch.
 
-- `<ModName>`: PascalCase, **no spaces** (from SPEC `mod name`). Becomes the
-  csproj/assembly name, the `mods/<ModName>/` folder, and the manifest `id`.
-- `-M <Author>`: author string (SPEC `author`, default `OpenMod`).
+The override manifest is a loose build/deployment artifact, not a Godot resource and not
+part of the PCK. Do not delete it from a new scaffold. For an accepted existing-model SPEC,
+fill it only with the M6.7.1 Card operations in `vanilla-card-overrides.md` and/or the
+M6.7.2 visual operations in `vanilla-visual-overrides.md` and/or the M6.7.3 existing-Ancient
+option/branch operations in `vanilla-ancient-overrides.md` and/or M6.7.4 availability
+operations in `vanilla-availability-overrides.md`; leave it empty for new content
+and unpromoted operations. Put every selected visual resource under
+`<project-dir>/<ModName>/` and keep its required/optional flag literal. Legacy projects
+created before M6.7.0 may remain without this file.
 
-The template lays out (confirmed from the M1 golden mod):
-- `<ModName>.csproj`, `<ModName>.json` (manifest), `project.godot`, `Sts2PathDiscovery.props` at the ROOT.
-- `<ModName>Code/` — C# source, with `MainFile.cs` and per-type folders
-  (`Relics/`, `Cards/`, `Powers/`, ...). `<ModName>Code/Relics/<ModName>Relic.cs`
-  is the mod's relic base class (resolves image paths); your concrete relic
-  extends it. `<ModName>Code/Cards/<ModName>Card.cs` is the mod's **card base
-  class** (also scaffolded — resolves card portrait paths); your concrete card
-  extends it. **Note:** there is **no `Potions/` folder or base class** — a potion
-  mod creates both in `author.md` (see `recipes/potion.md` "Scaffold difference").
-  Powers need no base class (auto-discovered; see `recipes/power.md`).
-- `<ModName>/` — resources: `localization/eng/*.json`, `images/...`.
+## 3. Record state
 
-## 2. Enable the `.pck` (PckPacker)
-
-The template ships the PckPacker package reference **commented out**. Localization
-and images only reach the game through the `.pck`, so uncomment it in the csproj:
-
-```xml
-<PackageReference Include="BSchneppe.StS2.PckPacker" Version="0.1.1" PrivateAssets="All" />
-```
-
-(This is errors.md's first entry — "no .pck produced". Do it now, not after a
-failed verify.) No MegaDot needed; plain `dotnet build` then emits the `.pck`.
-
-## 3. Manifest (`<ModName>.json`)
-
-Confirm/set:
-- `id`, `name` = `<ModName>`; `author` = SPEC author.
-- `description` = a one-line human description of the mod.
-- `has_pck: true`, `has_dll: true`, `affects_gameplay: true`.
-- `dependencies`: keep the `BaseLib` entry. The csproj auto-resolves `min_version`
-  to the installed BaseLib at build time — don't hand-edit it.
-- `min_game_version`: leave the template default unless the user targets a specific build.
-
-## 4. Record the path
-
-Write the project's absolute path into `MEMORY.md` (build/verify need it). Mark
-`scaffold` done in `PLAN.md`, then go to `author.md`.
-
-Do NOT build yet — there's no effect and no marker until `author.md`.
+Write the absolute project path and profile id to `MEMORY.md`, mark `scaffold` done in
+`PLAN.md`, and continue to `author.md`. Do not build before the selected content and
+diagnostics are authored.

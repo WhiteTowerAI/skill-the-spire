@@ -1,10 +1,10 @@
 # Recipe: Relic
 
-> A copy-adaptable, **known-good** pattern for a single STS2 relic, distilled from
-> the hand-built "Gambler's Coin" golden mod (M1_RESULTS.md). Every signature here
-> was confirmed against decompiled `sts2.dll` + BaseLib 3.3.2 — not guessed. The
-> goal: the skill fills only the **effect logic**; everything else (class skeleton,
-> pool attribute, localization, image paths) is templated.
+> A copy-adaptable, **known-good** RitsuLib pattern for a single STS2 relic. Registration,
+> localization, combat-start Energy, and the empty asset fallback were confirmed against
+> STS2 `0.107.1`, RitsuLib `0.4.67`, and the hosted `RitsuCardProof` run. The skill fills
+> only the effect logic; `ModRelicTemplate`, content-pack registration, localization, and
+> `RelicAssetProfile` are adapter-owned.
 >
 > Vanilla relics to imitate: `Lantern` (combat-start energy), `FurCoat` (seeded RNG).
 
@@ -15,29 +15,54 @@ player *owns* (not a card they play, not a one-shot potion). Triggers are combat
 or run-lifecycle events: "at the start of combat…", "whenever you play a card…",
 "the first time each turn…", "at the start of each floor…".
 
+If the relic remembers progress ("every N", "once per combat", "last turn", limited
+uses), read `../reference/stateful-mechanics.md` before choosing a field or hook. The
+state lifetime is part of the SPEC; it is not an implementation detail.
+
+If the Relic owns a custom Rest Site action, also read
+`../reference/rest-site-options.md`. That reference owns the first singleplayer-only
+free/fixed-Gold slice, final selection-time checks, repeatability, native stay/leave
+lifecycle, and icon fallback. Do not adapt the ordinary combat-trigger skeleton below into
+a Rest Site option by guessing UI methods.
+
+If the Relic declares supplemental corner values, also read
+`../reference/extra-corner-labels.md`. That reference owns the specs provider, safe-corner
+and text bounds, refresh/removal, cleanup, and headed consumer proof.
+
+If the request changes an existing vanilla Relic's fresh availability or pool membership,
+resolve the target through `../reference/vanilla-overrides.md` and then read
+`../reference/vanilla-availability-overrides.md`. That reference owns the promoted
+singleplayer epoch-gate, pool-add, and pool-membership routes; do not replace the vanilla
+model or add a second content registration.
+
 ## The skeleton (fill only the marked spot)
 
-Assume a mod scaffolded with `dotnet new alchyrsts2contentmod -n <ModName> -M <Author>`.
 Add ONE file under `<ModName>Code/Relics/<RelicName>.cs`:
 
 ```csharp
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BaseLib.Utils;                              // [Pool]
 using MegaCrit.Sts2.Core.Combat;                  // CombatSide, ICombatState
 using MegaCrit.Sts2.Core.Commands;                // PlayerCmd, RelicCmd, DamageCmd, PowerCmd...
 using MegaCrit.Sts2.Core.Entities.Creatures;      // Creature
 using MegaCrit.Sts2.Core.Entities.Relics;         // RelicRarity
-using MegaCrit.Sts2.Core.Models.RelicPools;       // SharedRelicPool + character pools
 using MegaCrit.Sts2.Core.Random;                  // Rng
+using STS2RitsuLib.Scaffolding.Content;            // ModRelicTemplate, RelicAssetProfile
 
-namespace <ModName>.<ModName>Code.Relics;
+namespace <ModName>.Relics;
 
-[Pool(typeof(SharedRelicPool))]                   // REQUIRED — omitting it throws at registration
-public sealed class <RelicName> : <ModName>Relic  // <ModName>Relic is the template base (sets image paths)
+public sealed class <RelicName> : ModRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Common;
+
+    private static string RelicImage(string fileName) =>
+        "res://<ModName>/images/relics/" + fileName;
+
+    public override RelicAssetProfile AssetProfile => new(
+        RelicImage("<slug>.png"),
+        RelicImage("<slug>_outline.png"),
+        RelicImage("big/<slug>.png"));
 
     // Pick the hook that matches the trigger (see "Trigger hooks" below).
     public override async Task AfterSideTurnStart(CombatSide side,
@@ -59,37 +84,75 @@ public sealed class <RelicName> : <ModName>Relic  // <ModName>Relic is the templ
 
 ## Localization (ships in the .pck)
 
-Add entries to `<ModName>/localization/eng/relics.json`. **Keys are FLAT and
-prefixed** — this is the #1 silent-failure footgun (see the ID rule below):
+Add entries to `<ModName>/localization/eng/relics.json`. Keys are flat and use the exact
+RitsuLib public entry:
 
 ```json
 {
-  "<PREFIX>-<SLUG>.title":       "Display Name",
-  "<PREFIX>-<SLUG>.description":  "What the relic does, shown on hover.",
-  "<PREFIX>-<SLUG>.flavor":       "Flavor text."
+  "<MOD>_RELIC_<TYPE>.title": "Display Name",
+  "<MOD>_RELIC_<TYPE>.description": "What the relic does, shown on hover.",
+  "<MOD>_RELIC_<TYPE>.flavor": "Flavor text."
 }
 ```
 
-## The ID / loc-key derivation rule (MEMORIZE — silent failure if wrong)
+Register it exactly once in `MainFile.Content.cs`; the pool generic is its availability
+contract:
 
-The final `Id.Entry` a relic gets, and therefore its loc keys and icon name:
+```csharp
+RitsuLibFramework.CreateContentPack(ModId)
+    .Relic<SharedRelicPool, Relics.<RelicName>>()
+    .Apply();
+```
 
-1. **Base entry** = `ModelDb.GetEntry` = `StringHelper.Slugify(ClassName)` =
-   split CamelCase on boundaries + UPPERCASE. `GamblersCoin` → `GAMBLERS_COIN`.
-2. **Prefix** = BaseLib prepends `<first namespace segment>.ToUpperInvariant() + "-"`.
-   Namespace `GamblersCoin.GamblersCoinCode.Relics` → first segment `GamblersCoin`
-   → `GAMBLERSCOIN-`.
-3. **Final** `Id.Entry` = `GAMBLERSCOIN-GAMBLERS_COIN`. So loc keys are
-   `GAMBLERSCOIN-GAMBLERS_COIN.title` etc. — **flat string keys, not nested JSON.**
-4. **Icon file** = prefix stripped + lowercased → `gamblers_coin.png` (the template
-   base class resolves this; falls back to placeholder `relic.png` if missing).
+If SPEC selects vanilla text effects, read `reference/content-text-effects.md`. Relic
+descriptions may author balanced `blue`, `gold`, `green`, `purple`, and `red` spans; the
+standard relic Hover Tip renders that same description. Keep title and flavor plain.
 
-Worked example → `GamblersCoin` class in namespace `GamblersCoin.*`:
-- Id.Entry: `GAMBLERSCOIN-GAMBLERS_COIN`
-- loc keys: `GAMBLERSCOIN-GAMBLERS_COIN.{title,description,flavor}`
-- icon: `<ModName>/images/relics/gamblers_coin.png` (+ `_outline`, + `big/`)
+## The ID / loc-key derivation rule
 
-To override the derived id, put `[CustomID("EXACT-ID")]` on the class.
+RitsuLib derives `Id.Entry` as `MOD_CATEGORY_TYPENAME`, normalizing every segment to
+uppercase snake case. Mod id `GamblersCoin`, Relic class `GamblersCoin` becomes
+`GAMBLERS_COIN_RELIC_GAMBLERS_COIN`; use that exact stem in `relics.json`. If a published
+entry must survive a type rename, pass `ModelPublicEntryOptions.FromStem(...)` to the
+content-pack registration. Do not add another id mechanism.
+
+For custom icons, override `RelicAssetProfile` with the exact main, outline, and big paths
+shown above. `gen_sprite.py` derives the 256x256 filled-white outline from final main alpha
+using the shared 3% rule (8 pixels) without another acquisition call. RitsuLib checks each
+path and retains its template/base-game fallback when a file is absent; leave the whole
+profile empty in placeholder mode.
+
+## Optional extra badges
+
+Implement `IRelicExtraIconAmountLabelSpecsProvider` on the same Relic class. Return zero to
+three `ExtraIconAmountLabelSpec.Plain(...)` or bounded `RichText(...)` entries in SPEC
+order, using each of `TopLeft`, `TopRight`, and `BottomLeft` at most once. Preserve the
+native bottom-right counter and the four-visible-character limit.
+
+If badge text follows the Relic's displayed state, mutate that state and call
+`InvokeDisplayAmountChanged()`. For a separate field with no host display refresh,
+implement `IRelicExtraIconAmountLabelsChangeSource`, declare
+`event Action? RelicExtraIconAmountLabelsInvalidated`, and invoke it once after the state
+mutation. Returning no spec after the removal condition makes RitsuLib remove the label.
+Do not poll or generate custom rectangles.
+
+## Optional owned Rest Site action
+
+Keep the Relic registered exactly once through the normal content pack. Add one separate
+`ModRestSiteOptionTemplate` class and contribute it from the Relic's
+`TryModifyRestSiteOptions`; the option itself is not content-pack registered.
+
+Use the reference page's `ShouldOffer` / `CanPay` split. `TryModifyRestSiteOptions` owns
+absence and duplicate prevention; `IsEnabled` owns native gray state; `OnSelect` repeats
+the final eligibility/payment check before any command. A false result mutates nothing and
+leaves the current Rest Site list intact. A true result awaits fixed Gold payment and the
+deterministic outcome, marks once-per-run state only after success, and lets the native
+host remove the selected option.
+
+Put option title/description beside the Relic's keys in `relics.json`. A generated option
+icon is one verified `rest_site_option` 256x169 image at
+`images/rest_site_options/<slug>.png`. Resolve absence to the native Heal icon before
+building `RestSiteOptionAssetProfile`; do not return a missing custom path.
 
 ## Trigger hooks (override the one matching the request)
 
@@ -101,6 +164,10 @@ There is NO `ICombatHook` to implement; just override the method.
 |---|---|---|
 | "at the start of combat" | `AfterSideTurnStart(CombatSide, IReadOnlyList<Creature>, ICombatState)` | Guard `TurnNumber <= 1`. **This is the combat-start hook** — same one Lantern uses. Fires every turn otherwise. |
 | "at the start of each turn" | `AfterSideTurnStart(...)` | Same hook, no TurnNumber guard (still guard `participants.Contains(Owner.Creature)`). |
+| "every N turns" across combats | `AfterSideTurnStart(...)` | `SavedAttachedState<SpecificRelic, int>` modulo progress; never clear it at combat end. See `stateful-mechanics.md`. |
+| "on turn N" / "every N turns this combat" | start: `AfterSideTurnStart(...)`; end: `BeforeSideTurnEnd(...)` | Read `Owner.PlayerCombatState.TurnNumber` (`== N` or `% N == 0`); no saved counter. |
+| "every N cards this turn" | `AfterCardPlayed(...)` + `BeforeSideTurnStart(...)` reset | Owner-card guard; ordinary turn-local field. |
+| "once per combat" | the real trigger + `AfterRoomEntered(CombatRoom)` reset | Ordinary bool; reset only on combat entry. |
 | pre-combat setup (no energy) | `BeforeCombatStart()` | Fires once before turn 1. **Do NOT grant energy here** — the turn-1 energy reset wipes it. |
 
 > ⚠️ Do not use `BeforeCombatStart()` for energy. Confirmed: `PlayerCombatState`
@@ -144,8 +211,9 @@ invented catalog: use `reference/mechanics.md` for shared Cmd/value foundations,
 failure signatures. If the exact symbol is still absent, follow `grounding.md` and report
 a pack gap — never guess a Cmd name.
 
-**Always** call `Flash()` when the relic visibly triggers, and log the effect marker as
-the tier-2 observation contract used by the automated self-test harness:
+**Always** call `Flash()` when the relic visibly triggers, and log a diagnostic marker.
+The automated harness uses it to localize the trigger, but independently asserted state is
+the Tier-2 proof:
 ```csharp
 MainFile.Logger.Info($"[T2MOD-SELFTEST] <RelicName> fired: {outcome} energy {before} -> {after}");
 ```
@@ -156,29 +224,40 @@ MainFile.Logger.Info($"[T2MOD-SELFTEST] <RelicName> fired: {outcome} energy {bef
 Uncommon, Rare, Shop, Event, Ancient`. Use **`Common`** for a normal droppable
 relic unless the request implies otherwise.
 
-`[Pool(typeof(...))]` (from `BaseLib.Utils`) is **required**. Pools
-(`MegaCrit.Sts2.Core.Models.RelicPools`):
+The pool is required once as the first generic argument to `.Relic<TPool,TRelic>()`.
+Pools (`MegaCrit.Sts2.Core.Models.RelicPools`):
 - `SharedRelicPool` — colorless, drops for **any** character. **Default choice.**
 - `IroncladRelicPool`, `SilentRelicPool`, `DefectRelicPool`, `RegentRelicPool`,
   `NecrobinderRelicPool` — character-specific.
 
 ## Pre-flight checklist (catches the common silent failures)
 
-- [ ] Class is `public sealed`, extends the template `<ModName>Relic` base.
-- [ ] `[Pool(typeof(SharedRelicPool))]` present (else BaseLib throws).
+- [ ] Class is `public sealed` and extends `ModRelicTemplate`.
+- [ ] Exactly one `.Relic<TPool,TRelic>()` registration exists in `MainFile.Content.cs`.
 - [ ] `Rarity` overridden.
 - [ ] Correct hook overridden; combat-start uses `AfterSideTurnStart` + `TurnNumber <= 1`.
+- [ ] If stateful: event/threshold/phase/lifetime/reset/persistence match SPEC; run state
+      uses `SavedAttachedState<SpecificRelic, int/bool>` with a Mod-qualified name;
+      combat turns use `PlayerCombatState.TurnNumber`.
+- [ ] If it owns a Rest Site action: singleplayer guard, stable namespaced option ID,
+      duplicate check, shared offer/payment predicate, final click-time recheck,
+      success-only repeatability mutation, declared stay/leave behavior, and native Heal
+      icon fallback all match `reference/rest-site-options.md`.
 - [ ] `participants.Contains(Owner.Creature)` guard present.
 - [ ] All `Cmd`/RNG calls `await`ed.
-- [ ] `relics.json` has `<PREFIX>-<SLUG>.{title,description,flavor}` — **flat, prefixed keys**.
-- [ ] Icon at `images/relics/<slug>.png` (+ `_outline`, + `big/`) or placeholder left in place.
-- [ ] `[T2MOD-SELFTEST]` marker logged on trigger (for tier-2 verify).
+- [ ] `relics.json` has `<MOD>_RELIC_<TYPE>.{title,description,flavor}` flat keys.
+- [ ] Main/derived-outline/big files exist at their exact paths and the three-field
+      `RelicAssetProfile` is wired, or the placeholder profile is left empty.
+- [ ] `[T2MOD-SELFTEST]` diagnostic marker logged on trigger; `SelfTest` asserts post-state.
+- [ ] If it has extra badges: at most three unique safe corners, bounded visible text,
+      exactly one refresh path per mutation, removal, and the native main counter preserved.
+- [ ] Stateful SelfTest proves `N-1`, threshold, reset/carry-over, and a
+      `SavedProperties.From`/`Fill` round trip for run-persistent state.
 
 ## Full golden example (Gambler's Coin — verified firing in-game)
 
 ```csharp
-[Pool(typeof(SharedRelicPool))]
-public sealed class GamblersCoin : GamblersCoinRelic
+public sealed class GamblersCoin : ModRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Common;
 
@@ -207,19 +286,18 @@ public sealed class GamblersCoin : GamblersCoinRelic
 `relics.json`:
 ```json
 {
-  "GAMBLERSCOIN-GAMBLERS_COIN.title": "Gambler's Coin",
-  "GAMBLERSCOIN-GAMBLERS_COIN.description": "At the start of each combat, flip a coin. Heads: double your Energy. Tails: lose all your Energy.",
-  "GAMBLERSCOIN-GAMBLERS_COIN.flavor": "Heads I win. Tails you lose."
+  "GAMBLERS_COIN_RELIC_GAMBLERS_COIN.title": "Gambler's Coin",
+  "GAMBLERS_COIN_RELIC_GAMBLERS_COIN.description": "At the start of each combat, flip a coin. Heads: double your Energy. Tails: lose all your Energy.",
+  "GAMBLERS_COIN_RELIC_GAMBLERS_COIN.flavor": "Heads I win. Tails you lose."
 }
 ```
 
 ## Verify (tier-1 + tier-2)
 
-1. Build: uncomment `BSchneppe.StS2.PckPacker` in the csproj, `dotnet build -c Release`
-   → `.dll`+`.pck` land in the game `mods/<ModName>/`. (Details: `build.md`.)
-2. Launch `SlayTheSpire2.exe` (needs `steam_appid.txt`=`2868840` in game dir),
-   grep `%APPDATA%\SlayTheSpire2\logs\godot.log` for `... loaded ok` (tier-1).
-3. Tier-2: open the dev console with **`` ` ``** (auto-enabled when modded), run
-   `relic add <PREFIX>-<SLUG>` in an active run, enter combat, grep the log for the
-   `fired:` marker. (Details: `behavior-test.md`.)
+1. Build with `tools/build.py`; it validates the pinned compat/runtime, packs resources,
+   and deploys only the Mod's own artifacts.
+2. Run `verify.md` Tier 1 and confirm the exact RitsuLib profile marker.
+3. Run the `CombatPlayer` self-test. Obtain the Relic before combat, let the real
+   `AfterSideTurnStart` hook fire, assert the concrete state delta, and grep the structured
+   `state proof:` line. A `fired:` diagnostic alone is not Tier 2.
 

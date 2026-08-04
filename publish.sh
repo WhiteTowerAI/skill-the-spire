@@ -2,35 +2,24 @@
 # Publish the open-mod STS2 skill source into a runtime-specific layout.
 #
 # Turns the source under games/sts2/skills/ (which uses ${VAR} placeholders)
-# into a ready-to-load skill tree. For Claude Code that is .claude/skills/.
+# into a ready-to-load Codex or portable Agent Skills tree.
 #
 # Usage:
-#   ./publish.sh --agent claude [--out <target_dir>] [--force]
-#   ./publish.sh --agent claude               # defaults --out to this repo root
-#   ./publish.sh --plugin [--force]           # render the committed Claude plugin payload
+#   ./publish.sh --agent codex [--out <target_dir>] [--force]
+#   ./publish.sh --agent codex                # defaults --out to this repo root
+#   ./publish.sh --plugin [--force]           # render the committed Codex plugin payload
 #   ./publish.sh --portable [--force]         # render the committed cross-agent payload (skills.sh)
 #
 # Three shapes:
-#   --agent claude : the DEV flow. Renders skills into <out>/.claude/skills/ (git-ignored)
-#                    with tool paths pointing at games/sts2/tools/ — testable in-place when
-#                    Claude Code is opened with this repo as cwd.
-#   --plugin       : the Claude SHIP flow. Renders into plugins/open-mod/{skills,tools}/
-#                    (COMMITTED) with tool/skill paths pointing at ${CLAUDE_PLUGIN_ROOT}/...
-#                    so the mod maker works from any cwd once installed via the plugin
-#                    marketplace (/plugin marketplace add WhiteTowerAI/open-mod).
-#                    ${CLAUDE_PLUGIN_ROOT} is left un-rendered on purpose — Claude Code
-#                    substitutes it at load time.
+#   --agent codex  : the DEV flow. Renders into <out>/.agents/skills/ (git-ignored).
+#   --plugin       : the Codex SHIP flow. Renders into plugins/open-mod/skills/
+#                    (COMMITTED), including tools in the modmaker skill's scripts/ folder.
 #   --portable     : the CROSS-AGENT ship flow. Renders into the repo's top-level skills/
 #                    (COMMITTED) — the layout skills.sh (`npx skills add`) auto-discovers and
 #                    installs into Codex / Cursor / OpenClaw / etc. Tools are bundled inside
 #                    skills/modmaker/scripts/ and referenced by RELATIVE path (the AgentSkills
-#                    spec convention — no ${CLAUDE_PLUGIN_ROOT} variable exists off Claude).
-#                    The three tools are Python (.py), so they run on Windows/macOS/Linux.
-#
-# Mirrors the shape of htdt/godogen's publish.sh, trimmed to one game (STS2)
-# and, for now, one runtime (Claude Code). The codex branch is stubbed: the
-# variable values are wired but the codex-specific metadata step is deferred to
-# a later milestone, so `--agent codex` currently errors out with a clear message.
+#                    spec convention).
+#                    The bundled tools are Python (.py), so they run on Windows/macOS/Linux.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -58,6 +47,10 @@ find_python() {
         fi
     done
     return 1
+}
+
+count_files() {
+    "$PYTHON" -c 'import pathlib, sys; print(sum(path.is_file() for path in pathlib.Path(sys.argv[1]).rglob("*")))' "$1"
 }
 
 while [ $# -gt 0 ]; do
@@ -91,56 +84,31 @@ if [ "$MODE_COUNT" -gt 1 ]; then
     usage; exit 1
 fi
 
-# Common command/name values (Claude Code runtime). The command names are stored
-# WITHOUT a leading slash (see the render_dir.py call note); the source templates
-# supply the "/" literally.
-AGENT_NAME="Claude"
-MODMAKER_COMMAND="modmaker"
-STS2_API_COMMAND="sts2-api"
+# The source description names the runtime, while all installed paths stay relative to
+# the current skill so Codex can relocate/cache the plugin safely.
+AGENT_NAME="Codex"
 
 if [ "$PLUGIN" -eq 1 ]; then
-    # SHIP flow: render the committed plugin payload. Tool/skill paths point at
-    # ${CLAUDE_PLUGIN_ROOT}, which Claude Code resolves to the plugin's install
-    # dir at load time — so we pass it through render_dir.py UN-substituted by
-    # simply never giving it as a key. Single-quote to stop bash from expanding it.
-    PLUGIN_ROOT_VAR='${CLAUDE_PLUGIN_ROOT}'
     SKILLS_DIR_REL="plugins/open-mod/skills"
-    TOOLS_DIR_REL="plugins/open-mod/tools"
-    MODMAKER_SKILL_DIR="$PLUGIN_ROOT_VAR/skills/modmaker"
-    STS2_API_SKILL_DIR="$PLUGIN_ROOT_VAR/skills/sts2-api"
-    GAME_TOOLS_DIR="$PLUGIN_ROOT_VAR/tools"
 elif [ "$PORTABLE" -eq 1 ]; then
-    # CROSS-AGENT ship flow: committed top-level skills/ that skills.sh discovers.
-    # No ${CLAUDE_PLUGIN_ROOT} off Claude, so tools live inside the modmaker skill
-    # (skills/modmaker/scripts/) and are referenced by RELATIVE path. Skill-internal
-    # file refs are also relative (each skill dir is the agent's read root).
     SKILLS_DIR_REL="skills"
-    TOOLS_DIR_REL="skills/modmaker/scripts"
-    MODMAKER_SKILL_DIR="."
-    STS2_API_SKILL_DIR="."
-    GAME_TOOLS_DIR="scripts"
 else
     case "$AGENT" in
-        claude)
-            SKILLS_DIR_REL=".claude/skills"
-            ;;
         codex)
-            echo "error: --agent codex is not wired yet (deferred to a later milestone)." >&2
-            echo "The source keeps the \${VAR} placeholders so this is a small add later." >&2
-            exit 1
+            SKILLS_DIR_REL=".agents/skills"
             ;;
         *)
-            echo "error: pass --plugin (Claude ship), --portable (cross-agent ship), or --agent claude (dev)." >&2
+            echo "error: pass --plugin (Codex ship), --portable (cross-agent ship), or --agent codex (dev)." >&2
             usage; exit 1 ;;
     esac
-    MODMAKER_SKILL_DIR="$SKILLS_DIR_REL/modmaker"
-    STS2_API_SKILL_DIR="$SKILLS_DIR_REL/sts2-api"
-    # DEV flow: tools stay with the source (not copied); reference them there.
-    GAME_TOOLS_DIR="games/sts2/tools"
 fi
 
-# Default target: this repo root (so /modmaker is testable in-place; plugin
-# payload lands under plugins/open-mod/ here for commit).
+TOOLS_DIR_REL="$SKILLS_DIR_REL/modmaker/scripts"
+MODMAKER_SKILL_DIR="."
+STS2_API_SKILL_DIR="../sts2-api"
+GAME_TOOLS_DIR="../modmaker/scripts"
+
+# Default target: this repo root.
 if [ -z "$OUT" ]; then
     OUT="$REPO_ROOT"
 fi
@@ -156,24 +124,11 @@ mkdir -p "$TMP/modmaker" "$TMP/sts2-api"
 cp -R "$SRC/modmaker/." "$TMP/modmaker/"
 cp -R "$SRC/sts2-api/." "$TMP/sts2-api/"
 
-# NOTE on the command values: MODMAKER_COMMAND/STS2_API_COMMAND are the leaf slash-
-# command names WITHOUT a leading slash ("modmaker", not "/modmaker"). The source
-# templates write the slash literally ("/${MODMAKER_COMMAND}"). This dodges Git Bash's
-# MSYS path conversion, which rewrites a bare "/modmaker" argv entry into a Windows
-# path ("D:/Git/modmaker") before python sees it — while leaving real path args
-# (like $HELPERS) correctly converted.
 $PYTHON "$HELPERS/render_dir.py" "$TMP" \
     "AGENT_NAME=$AGENT_NAME" \
-    "MODMAKER_COMMAND=$MODMAKER_COMMAND" \
-    "STS2_API_COMMAND=$STS2_API_COMMAND" \
     "MODMAKER_SKILL_DIR=$MODMAKER_SKILL_DIR" \
     "STS2_API_SKILL_DIR=$STS2_API_SKILL_DIR" \
     "GAME_TOOLS_DIR=$GAME_TOOLS_DIR"
-
-# Make the pack a fork-context lookup skill (keeps it out of main context).
-if [ -f "$TMP/sts2-api/SKILL.md" ]; then
-    $PYTHON "$HELPERS/inject_claude_lookup_frontmatter.py" "$TMP/sts2-api/SKILL.md"
-fi
 
 if [ "$FORCE" -eq 1 ] && [ -d "$SKILLS_DIR_ABS" ]; then
     echo "Force: cleaning $SKILLS_DIR_ABS"
@@ -192,31 +147,31 @@ else
     cp -R "$TMP/sts2-api/." "$SKILLS_DIR_ABS/sts2-api/"
 fi
 
-# Ship flows (plugin + portable) bundle the cross-platform Python tools next to the
-# skills so the rendered tool paths resolve after install. Only the .py tools are
-# shipped (the legacy .ps1 stay as source in games/sts2/tools/, not distributed).
-if [ "$PLUGIN" -eq 1 ] || [ "$PORTABLE" -eq 1 ]; then
-    TOOLS_DIR_ABS="$TARGET/$TOOLS_DIR_REL"
-    # Clean any stale tools (e.g. legacy .ps1 from an earlier publish) then ship .py.
-    rm -rf "${TOOLS_DIR_ABS:?}"
-    mkdir -p "$TOOLS_DIR_ABS"
-    for t in "$REPO_ROOT"/games/sts2/tools/*.py; do
-        cp "$t" "$TOOLS_DIR_ABS/"
-    done
-fi
+# Bundle the cross-platform Python tools inside the modmaker skill for every mode.
+TOOLS_DIR_ABS="$TARGET/$TOOLS_DIR_REL"
+rm -rf "${TOOLS_DIR_ABS:?}"
+mkdir -p "$TOOLS_DIR_ABS"
+for t in "$REPO_ROOT"/games/sts2/tools/*.py; do
+    # Catalog collection is a repository-maintainer workflow with a C# project/template;
+    # generated Mods need only the checked catalog and vanilla_overrides.py validator.
+    if [ "$(basename "$t")" = "collect_vanilla_catalog.py" ]; then
+        continue
+    fi
+    cp "$t" "$TOOLS_DIR_ABS/"
+done
 
 echo "Published STS2 skill for $AGENT_NAME -> $SKILLS_DIR_ABS"
-echo "  modmaker:  $(find "$SKILLS_DIR_ABS/modmaker" -type f | wc -l) files"
-echo "  sts2-api:  $(find "$SKILLS_DIR_ABS/sts2-api" -type f | wc -l) files"
+echo "  modmaker:  $(count_files "$SKILLS_DIR_ABS/modmaker") files"
+echo "  sts2-api:  $(count_files "$SKILLS_DIR_ABS/sts2-api") files"
 if [ "$PLUGIN" -eq 1 ]; then
-    echo "  tools:     $(find "$TOOLS_DIR_ABS" -type f | wc -l) files"
-    echo "Committed plugin payload ready. Test locally with:"
-    echo "  /plugin marketplace add $REPO_ROOT"
-    echo "  /plugin install open-mod@open-mod"
+    echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in skills/modmaker/scripts/)"
+    echo "Committed Codex plugin payload ready. Test locally with:"
+    echo "  codex plugin marketplace add $REPO_ROOT"
+    echo "  codex plugin add open-mod@open-mod"
 elif [ "$PORTABLE" -eq 1 ]; then
-    echo "  tools:     $(find "$TOOLS_DIR_ABS" -type f | wc -l) files (in skills/modmaker/scripts/)"
+    echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in skills/modmaker/scripts/)"
     echo "Committed cross-agent payload ready. Install into any agent with:"
     echo "  npx skills add WhiteTowerAI/open-mod"
 else
-    echo "Reload skills in Claude Code, then run /$MODMAKER_COMMAND."
+    echo "Start a new Codex thread, then invoke \$modmaker."
 fi

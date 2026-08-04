@@ -11,7 +11,8 @@
   Two modes:
    - default (tier-1): launch, wait a fixed -WaitSeconds, close. Proves it loads.
    - -SelfTest (tier-2): pass --t2selftest so the mod's in-process harness drives itself
-     from the main menu into a minimal combat and fires the effect with zero interaction.
+     from the main menu into the hosted scenario required by the mod and fires the effect
+     with zero interaction.
      Instead of a fixed wait, POLL the log until the harness prints its terminal marker
      ([T2MOD-SELFTEST] <ModName> selftest done | selftest FAILED), bounded by -WaitSeconds.
      Requires -ModName so we know whose marker to wait for.
@@ -71,7 +72,7 @@ if (-not (Test-Path $appid)) {
 $argList = @()
 if ($SelfTest) {
     $argList += '--t2selftest'
-    Write-Host "[launch] SELF-TEST mode: passing --t2selftest; harness will self-drive to combat"
+    Write-Host "[launch] SELF-TEST mode: passing --t2selftest; harness will self-drive its scenario"
 }
 Write-Host "[launch] starting SlayTheSpire2.exe ..."
 $proc = if ($argList.Count -gt 0) {
@@ -101,8 +102,8 @@ if ($SelfTest) {
         if ($txt -match $failRe) { $outcome = 'failed'; break }
     }
     switch ($outcome) {
-        'done'    { Write-Host "[launch] harness reported: selftest DONE (effect driven; grep for the fired/used marker now)" }
-        'failed'  { Write-Host "[launch] harness reported: selftest FAILED (couldn't reach/drive combat) -- verify.md: fall back to manual, report tier-1 only" }
+        'done'    { Write-Host "[launch] harness reported: selftest DONE (scenario driven; grep for the type-specific effect marker now)" }
+        'failed'  { Write-Host "[launch] harness reported: selftest FAILED (couldn't reach/drive its scenario) -- verify.md: fall back to manual, report tier-1 only" }
         default   { Write-Host "[launch] TIMEOUT after ${WaitSeconds}s with no terminal marker -- treat as harness setup failure (manual fallback)" }
     }
 } else {
@@ -117,4 +118,4 @@ if (-not $proc.HasExited) {
     if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
 }
 
-Write-Host "[launch] done. Now run grep_log.ps1 -ModName $ModName $(if($SelfTest){'-Tier2Pattern ''fired|used|selftest done'''}) to check the fresh log."
+Write-Host "[launch] done. Now run grep_log.ps1 -ModName $ModName $(if($SelfTest){'-Tier2Pattern ''<type-specific-effect-pattern>'''}) to check the fresh log."

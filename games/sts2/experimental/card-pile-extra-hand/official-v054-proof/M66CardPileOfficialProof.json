@@ -1,0 +1,18 @@
+{
+  "id": "M66CardPileOfficialProof",
+  "name": "M66CardPileOfficialProof",
+  "author": "open-mod",
+  "description": "Official RitsuLib 0.5.4 CardPile and ExtraHand lifecycle proof",
+  "version": "0.0.0",
+  "min_game_version": "0.107.1",
+  "pck_name": "M66CardPileOfficialProof",
+  "has_pck": true,
+  "has_dll": true,
+  "dependencies": [
+    {
+      "id": "STS2-RitsuLib",
+      "min_version": "0.5.4"
+    }
+  ],
+  "affects_gameplay": true
+}

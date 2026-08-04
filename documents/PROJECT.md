@@ -1,284 +1,235 @@
-# Project Brief: Text-to-Mod Skill
+# open-mod project
 
-> This document describes the intent, scope, and design of the project.
-> Its primary audience is an AI coding agent (Claude Code / Codex) that will
-> help build and iterate on this project. It is written to convey *what we
-> want to build and why*, so the agent can reason about tradeoffs and make
-> good engineering decisions.
->
-> Status: living brief; core decisions remain locked. The concrete skill/package shape
-> and one-command installation described below shipped in M5. Current execution status
-> lives in `CLAUDE.md` and `IMPLEMENTATION_PLAN.md`.
->
-> Decisions locked (2026-07-01):
-> - **First target game:** Slay the Spire 2.
-> - **Local game assumed installed** so we can launch it and close the loop.
-> - **First agent runtime:** Claude Code (Codex is a later target).
+## Product
 
----
+open-mod gives non-programmers a credible path from one sentence to a working game mod.
+It is a Codex plugin, not a web form or a code-snippet generator. The agent collaborates
+with the user, records a semantic contract, writes the project, builds it, runs the real
+game, and reports what was actually verified.
 
-## 1. One-line summary
+The first game is Slay the Spire 2. The project stays one game deep until the workflow and
+support model are mature enough to extract a reusable platform.
 
-A **skill** (usable by Claude Code and Codex) that lets ordinary, non-programmer
-players create game mods just by describing what they want in natural language.
-Goal: **text-to-mod** — the user says what they want, the skill does *all* the
-engineering work and hands back a mod that actually loads and runs in-game.
+## Release State
 
-First target: **Slay the Spire 2**.
+Version `0.6.0` is the first RitsuLib-only, externally accepted development baseline:
 
-## 2. Strategy: one game first, then a platform
+- host: STS2 stable `0.107.1`;
+- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.5.4`;
+- runtime dependency: `STS2-RitsuLib >= 0.5.4`;
+- primary runtime: Codex plugin;
+- secondary distribution: portable Agent Skills payload.
 
-We deliberately do NOT start with a general-purpose tool. We start with a
-**mod studio for one specific game (Slay the Spire 2)**, get the full loop
-working end to end, and only then generalize into a universal "make a game mod"
-tool.
+BaseLib is no longer an implementation option. Historical BaseLib and Downfall checkouts
+are offline research archives, not generated dependencies or runtime inputs.
 
-- **Phase 1 (now):** nail text-to-mod for Slay the Spire 2.
-- **Phase 2 (later):** turn the game-specific knowledge into a reusable
-  template (see §10 "game pack") so we can add more games — and eventually let
-  the community add games — turning a one-game tool into a platform.
+The migration and clean-workspace Codex acceptance are complete; the migration record is
+archived in `documents/history/RITSULIB_MIGRATION_RESULTS.md`. `0.6.0` remains unreleased
+while user-test bugs are fixed. M6.5 closed through the lead-approved Prismwright headed
+acceptance recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; no GitHub
+release is currently planned.
 
-## 3. What a "skill" is here
+## User Experience
 
-A **skill** is a package that a coding agent (Claude Code or Codex) loads to gain
-a specialized capability — instructions + scripts + reference material the agent
-follows. The user installs it once, then invokes it by describing what they want.
+The desired interaction is:
 
-The concrete shape is now shipped: editable source under `games/sts2/`, a native Claude
-Code plugin under `plugins/open-mod/`, and a portable Agent Skills tree under `skills/`.
-`publish.sh` renders all three install/development shapes from the same source.
+```text
+plain-language idea
+  -> one compact clarification round when needed
+  -> plain-language plan
+  -> semantic SPEC.md
+  -> pinned scaffold and grounded recipes
+  -> author and package
+  -> real-game load proof
+  -> hosted behavior proof or an honest manual boundary
+```
 
-### 3.1 Distribution: one-command install delivered
+The skill should preserve unusual mechanics instead of flattening them to the nearest easy
+effect. It should recommend concrete defaults, avoid jargon, and tell the user when an idea
+crosses the supported boundary.
 
-The shipping experience no longer requires a clone, manual `publish.sh`, or a fixed
-working directory:
+## Architecture
 
-- **Claude Code:** `/plugin marketplace add WhiteTowerAI/open-mod`, then
-  `/plugin install open-mod@open-mod`.
-- **Portable Agent Skills:** `npx skills add WhiteTowerAI/open-mod` for Codex, Cursor,
-  OpenClaw, and other compatible consumers.
+The product has three layers:
 
-The Claude plugin uses `${CLAUDE_PLUGIN_ROOT}` for cwd-independent tool paths; the portable
-shape bundles relative Python tools under the skill. This closes the installation-mechanism
-goal established at M2. Remaining distribution work is narrower: registry-directory
-**discoverability**, a live install/run in a non-Claude agent, and macOS/Linux live
-verification. Windows + Claude Code is the fully proven end-to-end path today.
-## 4. The user and the problem
+1. `modmaker` owns the staged workflow and resumable project state (`SPEC.md`, `PLAN.md`,
+   `MEMORY.md`).
+2. `sts2-api` owns lazy, grounded game knowledge: recipes, lifecycle contracts, art
+   consumers, official-product-semantics distillations, verification hosts, and error
+   fixes.
+3. Python tools own deterministic scaffold, profile validation, build/package, launch,
+   log parsing, and sprite normalization.
 
-**Who:** a Slay the Spire 2 player who enjoys the game but cannot program at all.
+The semantic contract stays framework-neutral. RitsuLib details are concentrated in the
+pinned scaffold/profile and the adapter/reference surface. Generated source is preferred
+over a shared open-mod runtime until multiple independent consumers justify a versioned
+binary.
 
-**Why it's painful today:** if such a player just asks a raw AI to "make me a
-mod," the AI guesses at the game's rules and conventions — and STS2 has *no
-official mod API*, so even skilled help is working from community-reverse-
-engineered knowledge. The result almost always fails to install or fails to run.
-Making a working mod today requires knowing the game's mod format (`Mod.json`),
-C#/Harmony patching, the build tooling, and packaging — none of which a normal
-player has.
+## Verification Philosophy
 
-**What success looks like for them:** they type one sentence and, a short while
-later, the thing they described is actually playable in their game — without
-writing or understanding a single line of code.
+A documented RitsuLib feature Package is supported when the official tutorials establish
+its player-facing use and its public API exists in the pinned profile. This applies to all
+documented public consumers in the Package; confirmed defects become narrow limitations,
+while only missing public routes are unsupported. Recipes and host runs tell us what the
+generator currently implements and what we actually observed, not whether the Package is
+supported.
 
-## 5. First target game: Slay the Spire 2 — modding facts
+Compilation is necessary but insufficient. Use the lightest proof that establishes the
+changed invariant:
 
-Verified 2026-07-01 (community sources; the scene is young and moving fast, so
-re-verify before building):
+- local assertions for pure calculations;
+- a hosted real-game scenario for lifecycle and behavior;
+- visible evidence when open-mod owns presentation;
+- a fresh natural-language Mod only for an explicitly scheduled end-to-end acceptance
+  gate.
 
-- **Engine:** a MegaCrit fork of **Godot 4.5.1** (the original STS was Java/LibGDX;
-  the sequel is a different stack entirely).
-- **Mod language / format:** mods are written in **C#**, identified to the game
-  by a **`Mod.json`** manifest, alongside model/data definitions and
-  localization files. Code behavior is patched at runtime via **Harmony**.
-- **No official mod API.** Nearly all modding knowledge is community-gathered by
-  decompiling the game (e.g. the `spire-codex` project). This is exactly the gap
-  our **game pack** (§10) fills.
-- **Built-in mod loader (good news for us):** the launcher has a
-  **"Load with mods"** option, and STS2 shipped with an integrated mod loader
-  from day one — so launching the game with our mod for the closed-loop test
-  (§6 step 3) is feasible.
-- **Steam Workshop: LIVE.** Verified 2026-07-01 — the STS2 Workshop hub
-  (`steamcommunity.com/app/2868840/workshop/`) is open and the community is
-  already publishing and subscribing to mods (30+ items on the browse page;
-  individual items show working Subscribe buttons). So distribution *can* go
-  through Workshop subscribe, not just manual file copy. Our core loop still
-  builds and tests the mod **locally** ("Load with mods"); publishing to
-  Workshop is an optional final step (see §8).
-- **BepInEx / dev console:** community uses BepInEx for script injection; the
-  dev console (locked in the EA build) has been re-enabled by the community and
-  is useful for testing.
+Tier 1 means loaded with no fresh error. Tier 2 means a structured post-state marker plus
+`selftest done`. Record only the checks that actually ran; none is silently inferred from
+another.
 
-> ⚠️ Prior art to be aware of: a **"STS2 Modding Assistant MCP"** already exists
-> on Nexus Mods (mod #345). It connects to Claude Code / Cursor / etc. and
-> exposes ~151 tools to decompile the game and generate mods. It is an
-> MCP + general tool-set aimed at people comfortable driving an AI. Our
-> differentiator is the opposite end: a **one-sentence, non-programmer-facing
-> text-to-mod flow**, backed by a curated **game pack** and an **auto-repair
-> closed loop**. We should study it, not ignore it. (§12)
+## Distribution
 
-## 6. What "text-to-mod" means in practice — the user journey
+The Codex plugin manifest is `plugins/open-mod/.codex-plugin/plugin.json`; the repo-local
+marketplace is `.agents/plugins/marketplace.json`. Both skills and their tools are bundled
+inside the plugin with relative paths, so installation is independent of the user's current
+workspace.
 
-From the user's point of view (example uses a "Gambler's Coin" relic idea — a
-Slay the Spire concept, not the Balatro Joker from the original notes):
+The portable payload at `skills/` follows the Agent Skills layout. Both payloads are
+generated from `games/sts2/` and committed because installers consume repository content
+directly.
 
-1. **Install (once, ~1 min).** The player runs one command in their AI assistant
-   to install our skill. Like installing an app — ready to use immediately.
+## Product Boundaries
 
-2. **Describe the idea (like chatting).** The player types plainly, e.g.:
-   > "Make me a relic called 'Gambler's Coin', fairly high rarity. Effect: at
-   > the start of each combat there's a 50% chance I gain double energy that
-   > turn, and a 50% chance I gain no energy that turn."
+The current product supports the surfaces in
+`games/sts2/tests/content-capability-graph.md`. The M6.7.0 grounding kernel identifies and
+validates pinned vanilla targets, and the authoritative source now emits the promoted
+M6.7.1 public Card, M6.7.2 complete public visual, M6.7.3 existing-Ancient, M6.7.4
+availability, and M6.7.5 non-Card data/behavior override Packages. Generated plugin/
+portable payloads are synchronized with that source. The human lead ended M6.7 source
+development at M6.7.5 on 2026-08-03, canceled M6.7.6, and closed the milestone on
+2026-08-04 after the independent representative acceptance passed. Multiplayer vanilla
+overrides are future work outside this milestone. See
+`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md` for the literal result and unrun paths.
+The post-acceptance generation-quality repair that blocks silent Card-description
+downgrades and compile-checks per-file imports is recorded in
+`documents/history/M67_POST_ACCEPTANCE_GENERATION_QUALITY_REPAIR.md`; it does not reopen the
+milestone.
+The current product does not imply arbitrary patching, retained-card zones, alternative
+Energy, multiplayer UI, Spine/production Character motion or audio, behavior-bearing
+arbitrary Event layouts beyond exact packaged public visual resources, or Workshop
+publishing.
 
-3. **The tool works automatically (visible, step by step).** The player just
-   waits and watches it:
-   - ✅ Understand the idea and translate it into game-recognized settings
-     (relic type, rarity, tier, trigger, effect).
-   - ✅ Write the relic's actual C# code and `Mod.json` entry.
-   - ✅ Wire up the relic art (placeholder image first, so it's at least visible).
-   - ✅ Package the mod and put it in the game's correct mods location.
-   - ✅ Auto-launch the game ("Load with mods") to test, confirming the relic
-     really appears in-game and its effect really triggers.
+The focused M6.5 Character art and presentation packages are implemented:
+role-based identity references without a separate Character sheet, corrected
+selection/combat visible footprints, a structured card/UI theme, alpha-derived
+Character/Relic outlines, one Character-specific Energy layer plus four fixed templates,
+and geometry-stable non-Spine `Idle`/`Attack`/`Hit`/`Dead` combat cues. The fresh
+natural-language Prismwright acceptance is closed with its explicit lead-approved
+verification exceptions recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`.
+Characters keep the game-native shared map-marker fallback; locked selection, Character
+card trails, and a `Cast` cue remain unsupported.
 
-4. **Player verifies in-game.** The player starts a run, obtains the "Gambler's
-   Coin" relic, and the effect actually works. From one sentence to playable,
-   with zero code written by the user.
+M6.6 is closed by explicit human-lead decision. Package 2A computed Card
+values, Package 5 custom-Character dialogue in native Ancient scenes, Package 1 advanced
+creature targeting, and the bounded Package 3 Relic-owned Rest Site option slice are
+implemented. Package 1 covers single-target Cards, single-target Potions, and
+multi-target Cards through deterministic Mod-local live-creature filters and native
+mouse/controller selection; multi-target Potions have a pinned lifecycle limitation.
+Package 3 covers
+singleplayer Relic-owned options with free/fixed Gold, deterministic preflightable outcomes,
+once-per-site/run repeatability, native stay/leave behavior, and checked custom/Heal-fallback
+button art. Its human-lead acceptance, skipped log check, and omitted strict Tier 2 harness
+are recorded in `documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`.
 
-**When something breaks:** the tool reads the game's own error output/logs,
-fixes itself, and re-tests. This **error → auto-repair → re-test** loop is the
-single biggest difference between us and "a user just poking at a raw AI."
+Package 2B/2C authoring is implemented in the generation pipeline: Cards may declare
+ordered fixed-color hand-emphasis rules with priority and explicit unplayable visibility,
+Relics may declare up to three bounded supplemental labels in distinct safe corners, and
+Powers may declare one top-left label with explicit refresh/removal. The Power boundary was
+narrowed after multiple un-clipped preset bands overflowed an adjacent Power in the human
+lead's crowded 16:9 row. The rebuilt proof passed the human-led 16:9/16:10 recheck and strict
+Tier 1; strict Tier 2 was not run. The result is recorded in
+`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Package 4 Custom Card Piles is
+implemented across the complete documented public Package on official RitsuLib `0.5.4`.
+It includes combat/run scopes, all five UI styles, preset/custom anchors, public pile-screen
+capabilities, visibility/hotkeys, native movement/localization, and ExtraHand layout/manual
+play/callbacks. The human lead accepted the focused unmodified-runtime ExtraHand recheck;
+strict structured Tier 2 was waived rather than run. Intent belongs to Extra Badges but was removed from M6.6
+work by the human lead on 2026-07-30; current generated 2C authoring is Relic/Power only.
+Optional Mod settings with Global/Profile/run-owned persistence remain future outlook
+outside the closed M6.6 scope.
 
-## 7. Scope of engineering tasks the skill owns
+M6.7 is the closed milestone for version-bound overrides of existing vanilla content. Its
+product goal is broader than numeric Card balance: generated Mods may eventually adjust
+data and upgrades, alter acquisition/pools, compose behavior, or replace a grounded behavior
+entry point while preserving the vanilla model identity and untouched assets. A pinned
+version catalog, semantic override manifest, checked RitsuLib capability/adapter routes,
+conflict diagnostics, and proportional real-host evidence are required before any category
+is implemented. Support follows the same tutorial-plus-public-API rule as the rest of the
+project; arbitrary prompt-generated Harmony/reflection/IL is not part of the design.
 
-The skill is responsible for the entire pipeline (per §6):
+M6.7.0 source development implements that grounding kernel for STS2 `0.107.1`: a runtime
+`ModelDb` collector, offline PE metadata collector, checked 1624-model catalog, exact internal and localized
+display-title alias resolver across 14 pinned languages, semantic manifest and
+expected-baseline/adapter/conflict validation, scaffold/build/deployment
+wiring, and fail-closed diagnostics. Repeated localized-title collection passed its
+collector-only literal checks. The current-catalog headed no-op remained intentionally
+unrun. At closure, the full regression passed, generated payloads synchronized repeatably,
+and a fresh nonempty Mod built from the reinstalled plugin in an independent workspace.
+The human lead then reported that its representative in-game effects passed. Tier 1, Tier
+2/SelfTest, and unselected routes remain explicit exceptions rather than passes.
+The catalog now has 4165 reviewed, fingerprinted Adapter targets: the previous twenty plus
+4145 M6.7.5 targets. It promotes five operation Packages.
+`m6.7.1-public-card-overrides` covers the grounded non-asset public Card contributors,
+capability-owned variables, and public play/owner-hook composition. Canonical DynamicVar
+edits, base-description replacement/removal/hiding, destructive metadata edits, acquisition,
+and transform carry-over remain outside that Package. Such description intent stops before
+SPEC unless the user explicitly accepts before/after composition. `m6.7.2-public-visual-overrides`
+covers all 44 public RitsuLib `0.5.4`
+Card-material and external-asset providers across the 12 catalog target families that have
+such a route. It checks exact Mod-local Material/texture/PackedScene/Spine/directory/list
+resources, preserves vanilla fallback, rejects path/resource alternatives on one surface,
+and records process-wide provider cleanup/cross-Mod conflict limits. RitsuLib exposes no
+external vanilla Monster-body provider. Focused manifest/resource tests pass. Its earlier
+Package-specific C# compile remained unrun, while the consolidated acceptance built and
+included selected Card and Darv visual providers; the human lead accepted the Mod as a
+whole, so no individual-provider observation is inferred.
+`m6.7.3-existing-ancient-overrides`
+covers the nine pinned native
+Ancients through public multi-option append or one fixed complete initial-option replacement
+Adapter. It includes nested conditions, visible/locked rules, fixed Gold/HP/Max HP costs,
+typed Hover Tips and relic-backed presentation, ordered deterministic effects, deck
+upgrade/remove/transform/enchant selection, fixed custom rewards, Mod-owned subsequent
+pages, native `Done()` finish/choice history, full shipped-language `events.json`, and
+separate M6.7.2 visual composition. The replacement and protected page/finish calls are the
+three Ancient Adapter targets and fail closed on IL drift; `TheArchitect` is rejected
+because it is an ordinary Event in `0.107.1`. Focused manifest/localization/catalog tests
+pass. The consolidated Mod included one Darv replacement/page/portrait route and was
+accepted as a whole; no individual-route observation is inferred, and other Ancient routes
+remain unrun. `m6.7.4-availability` is the fourth promoted
+Package. It covers the 57 pinned
+public epoch IDs for Card, Character, ordinary Event, and shared `EVENT.DARV`, Relic/Potion
+epoch or permanent-disable filters through fixed six-dependency Adapters, and Card/Relic/
+Potion pool add/remove/move routes. Pool baselines are simulated in manifest order, require
+the pinned primary pool, preserve existing instances, reject debug/empty transitions, and
+are singleplayer-only. Focused manifest/catalog/document-route tests pass; representative
+pool-move behavior was included in the consolidated Mod that was accepted as a whole. No
+individual-route observation is inferred. Cache
+timing, unlock UI, fresh-acquisition ordering/RNG, duplicate absence, and existing-save
+variants remain unrun. `m6.7.5-non-card-data-behavior` is the fifth promoted
+Package. It covers seven public typed owner-capability families with every pinned public
+effect/numeric/decision hook and the four typed Orb callbacks, sixteen intrinsic data
+routes, complete checked lifecycle/body replacements, Monster move graphs, paired
+Encounter rosters, and ordinary Event options/pages. All operations are singleplayer.
+Affliction synchronous apply/remove callbacks may only be suppressed with empty generated
+effect lists; async `OnPlay` and owner hooks remain supported. Focused 40-test manifest/
+catalog/localization/documentation checks and Python syntax pass. The consolidated Mod
+included selected Relic, Monster, and Encounter routes and was accepted as a whole; no
+individual-route observation is inferred, and unselected owner/lifecycle families and
+ordinary Event routes remain unrun. The full regression and
+payload synchronization passed at milestone closure. Other nonempty vanilla operations
+remain rejected until a later Package promotes their grounded route.
 
-- Interpreting the natural-language request into a concrete mod spec.
-- Scaffolding the mod in the game's correct format / structure.
-- Generating the code, config, and manifest to the game's conventions.
-- Providing assets via the **art pipeline** (see §7.1): per sprite, the user
-  chooses placeholder vs. generate; generation backend is user-configured.
-- Packaging the mod and placing it where the game loads mods from.
-- Launching the game to validate the mod loads and the behavior triggers.
-- Reading errors and auto-repairing, then re-validating — iterating until it works.
-
-### 7.1 Art / sprite pipeline (REQUIRED feature)
-
-Whenever a mod needs a new sprite (relic icon, card portrait, etc.), the skill
-must let the **user decide per sprite**, not silently pick one:
-
-- **Choice per sprite: placeholder OR generate.** For each needed sprite, offer
-  (a) use a **placeholder** for now (the template's default art — keeps the loop
-  fast and the mod immediately testable), or (b) **generate a new sprite**. The
-  user can mix: placeholder some, generate others.
-- **User-chosen generation backend.** If the user picks "generate," the *user*
-  decides how the image is produced — their **own image-gen API** (configurable:
-  provider + key + model) or a **local model**. We do NOT hardcode or bundle a
-  single provider; we provide the plumbing (prompt → backend → correctly-sized,
-  correctly-placed sprite) and let the user point it at whatever they want.
-- **Correct output regardless of source.** Whether placeholder or generated, the
-  asset must land at the right path and exact size the game expects (e.g. card
-  portrait 1000x760), so a `.pck` rebuild (Path A / PckPacker) picks it up.
-- **Why required:** closes the one concrete feature gap vs. AgentTheSpire (which
-  ships an art pipeline). Placeholder-first stays the default for speed; real
-  generation is opt-in and BYO-backend so users aren't locked to our choice.
-
-Design resolved (M5.5, card portrait first): the **backend config** is a
-provider-agnostic `art-backend.json` (`{base_url, api_key, model}`, OpenAI-images
--compatible — no provider bundled, BYO) read by `tools/gen_sprite.py`; the **prompt
-template** per sprite type lives in `sts2-api/reference/art-contract.md` (card portrait
-done: subject-centered, no text/border, full-bleed); **regenerate/tweak** is an art
-sub-step after AUTHOR and before BUILD — re-run `gen_sprite.py` with an adjusted prompt,
-then rebuild the `.pck`. The exact sprite **path + size contract** (a normal card's one
-portrait is `1000×760`; 606×852 full art is Ancient-only, out of scope;
-relic/power/potion icons are 256×256 loose PNGs, all four types live-verified) is recorded in
-`art-contract.md`. `gen_sprite.py` also has an `import` mode for a
-user-supplied local image. Placeholder stays the default (a missing sprite falls back to
-the template art), so art never blocks the pipeline.
-
-## 8. Out of scope (for now)
-
-- **Other games** — Phase 2. Phase 1 is Slay the Spire 2 only.
-- **Codex runtime** — later target; build and validate on Claude Code first.
-- **Publishing to Steam Workshop** — Workshop IS live for STS2, but Phase 1
-  ends at a mod that works locally. Auto-publishing to Workshop is a later,
-  opt-in step (and should always ask first). The user installs/tests locally.
-- **Bundling a specific image-gen provider / hosting inference** — the art
-  pipeline (§7.1) IS in scope, but generation is **bring-your-own-backend**
-  (user configures their own API or local model). We ship the plumbing, not a
-  chosen provider or hosted image generation. High-quality original audio, and
-  polished/curated original art beyond what the user's chosen backend produces,
-  remain later.
-- **Complex / total-conversion mods** — start with single-element mods (one
-  relic, one card, one potion), not sweeping overhauls.
-
-## 9. Constraints & assumptions
-
-- **First runtime: Claude Code** (Codex is an eventual target, not Phase 1).
-- **The game is installed locally** on the user's machine and can be launched
-  with mods — this is required for the auto-test / closed-loop step (§6.3).
-- The user is a non-programmer; the experience must be conversational and
-  require no manual file editing or tooling knowledge.
-- STS2 is in Early Access with **no official mod API**; our knowledge base is
-  community-derived and must be re-verified as the game and scene change.
-- <!-- TODO: platform — validate on Windows first (current dev environment);
-     STS2/Steam is cross-platform, so note macOS/Linux path differences later. -->
-- <!-- TODO: a C# toolchain (.NET SDK) is needed to build the mod — does the
-     skill assume it's present, or install/guide it? -->
-
-## 10. Our moat: the "game pack"
-
-The sharp question: *why us, not the user just asking an AI themselves?*
-
-Answer: we build a **game pack** — a game-specific manual we feed the AI up front,
-containing the game's internal rules, the standard/correct way to write things
-(`Mod.json` conventions, Harmony patch patterns), common errors, and working
-runnable examples. Because STS2 has no official API, this curated knowledge is
-the difference between "gamble on luck" and "reliably works."
-
-- Building this pack (est. **~1–1.5 weeks** of focused work) is the core moat —
-  it's the effort others won't bother to put in.
-- The pack is a **replicable template**: to support another eligible game, make
-  another pack in the same format. This is the path from a one-game tool to a
-  general platform, and it's where the community could contribute packs too.
-
-<!-- TODO: define the concrete structure/format of a game pack so it can be
-     authored once and reused as a template. Likely contents: manifest schema,
-     code recipes per element type (relic/card/potion), known-good examples,
-     error→fix catalog, launch/test procedure. -->
-
-## 11. Success criteria / MVP
-
-MVP: a non-programmer types one sentence describing a single Slay the Spire 2
-element (e.g. one relic), and the skill produces a mod that **installs, loads,
-and actually works in the game**, with the auto-repair loop handling failures
-along the way.
-
-## 12. Open questions
-
-**Two risks gate the whole promise — prototype these FIRST (see
-BASELINE_RESEARCH.md for detail):**
-- **R1 — Headless/CLI publish.** STS2's mod build generates the `.pck` via Godot,
-  and the docs only show doing it from Rider. We need a fully no-IDE
-  `dotnet`/MSBuild publish of `.dll`+`.pck` (there's a `GodotPublish` target and
-  a `DOTNET_ROOT` hint suggesting it's possible). If this can't be automated,
-  the pipeline breaks.
-- **R2 — Automated in-game verification.** There's no documented headless test
-  mode. We *can* launch without Steam (`steam_appid.txt` = `2868840`), read
-  `godot.log`, and spawn content via the dev console — but asserting "the effect
-  actually triggered" automatically needs scripting the dev console, an in-mod
-  self-test that logs a marker, or log-assertion. This is our headline
-  differentiator, so validate it early. **Update: `Gennadiyev/STS2MCP` (421★)
-  and `LightEnding/autoSpire` already expose live in-game state to an agent —
-  likely reusable for the hard "did the effect fire?" tier instead of building
-  a harness from scratch. See COMPETITIVE_LANDSCAPE.md.**
-
-**Other open items:**
-- §9: Windows-first is assumed for dev; when do we handle macOS/Linux path
-  differences? (mod paths and the game binary differ per OS.)
-- §9: .NET SDK 9.0+ and MegaDot (Godot) must be present — does the skill assume
-  them, detect them, or guide install?
-- §7/§10: Placeholder-first art is the native STS2 workflow (template ships a
-  default `card.png`); where/when do "real" assets come from?
-- §5: Study the existing **STS2 Modding Assistant MCP** (Nexus #345) and the
-  `spire-codex` decompile project — reuse vs. differentiate. (A background agent
-  is currently sweeping for other competitors/prior art.)
-- §10: Can BaseLib's `Custom*Model` + "copy a similar base card" pattern make
-  single-element mods near-templated, leaving the LLM only the effect logic?
+M6.7 development stops at those five operation Packages. Multiplayer promotion is not a
+sixth M6.7 Package; it remains a separate future systems track requiring identical peer
+manifests, deterministic synchronized state/RNG, save/load, remote presentation, and
+disconnect handling before any operation family can be promoted.
