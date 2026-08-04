@@ -492,7 +492,7 @@ tier-1 verify silently finds nothing. Use the shared envelope from
 `semantic-contract.md`:
 
 ```csharp
-Logger.Info("[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
+Logger.Info($"[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion={Const.Version} host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
 Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 

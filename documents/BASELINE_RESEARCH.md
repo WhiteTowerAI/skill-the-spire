@@ -14,6 +14,11 @@ open-mod targets:
 - Codex plugin distribution plus a portable Agent Skills payload;
 - cross-platform Python tools, with the complete loop currently verified on Windows.
 
+The official RitsuLib Steam Workshop item is `3747602295`. Consumer builds may reuse that
+runtime directly when its manifest, version floor, exact `0.107.1` variant marker, and hash
+validate. Compile-time authoring remains pinned to the exact Compat NuGet package; a
+complete user-level NuGet cache may be reused across isolated Codex process profiles.
+
 `baselines/STS2-RitsuLib` is the maintainer checkout for API and compat research. Runtime
 projects use the pinned package and installed runtime variant rather than copying that
 checkout.

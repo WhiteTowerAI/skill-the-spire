@@ -14,6 +14,54 @@ import build  # noqa: E402
 
 
 class BuildTests(unittest.TestCase):
+    def test_shared_user_nuget_cache_requires_complete_pinned_package(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            packages = home / ".nuget" / "packages"
+            package = packages / build.PROFILE.package_id.lower() / build.PROFILE.framework_version
+
+            selected, source = build.select_nuget_packages_dir(
+                None, environ={}, home=home
+            )
+            self.assertIsNone(selected)
+            self.assertEqual("dotnet default", source)
+
+            (package / "lib" / "net9.0").mkdir(parents=True)
+            (package / "buildTransitive").mkdir()
+            (package / "lib" / "net9.0" / build.PROFILE.runtime_dll).write_bytes(b"dll")
+            (package / "buildTransitive" / f"{build.PROFILE.package_id}.targets").write_text(
+                "<Project />\n", encoding="utf-8"
+            )
+            (package / (
+                f"{build.PROFILE.package_id.lower()}."
+                f"{build.PROFILE.framework_version}.nupkg"
+            )).write_bytes(b"package")
+
+            selected, source = build.select_nuget_packages_dir(
+                None, environ={}, home=home
+            )
+            self.assertEqual(packages, selected)
+            self.assertEqual("shared user cache", source)
+
+    def test_explicit_nuget_cache_precedes_environment_and_user_cache(self) -> None:
+        selected, source = build.select_nuget_packages_dir(
+            "explicit-cache",
+            environ={"NUGET_PACKAGES": "environment-cache"},
+            home=Path("user-home"),
+        )
+        self.assertEqual(Path("explicit-cache"), selected)
+        self.assertEqual("explicit", source)
+
+    def test_msbuild_property_uses_selected_dotnet_environment(self) -> None:
+        completed = mock.Mock(returncode=0, stdout="value\n")
+        with mock.patch.object(build.subprocess, "run", return_value=completed) as run:
+            env = {"NUGET_PACKAGES": "shared-cache"}
+            self.assertEqual(
+                "value",
+                build.get_msbuild_property(Path("Proof.csproj"), "ModsPath", env),
+            )
+            self.assertEqual(env, run.call_args.kwargs["env"])
+
     def test_resource_manifest_must_match_authored_assets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

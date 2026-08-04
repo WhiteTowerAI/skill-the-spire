@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -33,6 +34,7 @@ from ritsu_profile import (
     PROFILE,
     RitsuProfileError,
     find_manifest,
+    resolve_runtime_asset,
     validate_host_version,
     validate_project_contract,
     validate_restore_assets,
@@ -54,11 +56,16 @@ def find_csproj(project_dir: Path, mod_name: str | None) -> Path | None:
     return csprojs[0]
 
 
-def get_msbuild_property(csproj: Path, property_name: str) -> str | None:
+def get_msbuild_property(
+    csproj: Path,
+    property_name: str,
+    dotnet_env: dict[str, str] | None = None,
+) -> str | None:
     try:
         res = subprocess.run(
             ["dotnet", "msbuild", str(csproj), f"-getProperty:{property_name}", "-nologo"],
             capture_output=True, text=True, encoding="utf-8", errors="replace",
+            env=dotnet_env,
         )
     except OSError:
         return None
@@ -68,7 +75,12 @@ def get_msbuild_property(csproj: Path, property_name: str) -> str | None:
     return lines[-1] if lines else None
 
 
-def locate_mods_dir(log_text: str, csproj: Path, mod_name: str) -> Path | None:
+def locate_mods_dir(
+    log_text: str,
+    csproj: Path,
+    mod_name: str,
+    dotnet_env: dict[str, str] | None = None,
+) -> Path | None:
     """Find the mods/<ModName>/ folder the build copied into.
 
     1. Match a path ending in .../mods/<ModName> in the build log (locale-agnostic;
@@ -83,12 +95,51 @@ def locate_mods_dir(log_text: str, csproj: Path, mod_name: str) -> Path | None:
         if m:
             return Path(m.group(1))
 
-    mods_root = get_msbuild_property(csproj, "ModsPath")
+    mods_root = get_msbuild_property(csproj, "ModsPath", dotnet_env)
     if mods_root:
         candidate = Path(mods_root) / mod_name
         if candidate.is_dir():
             return candidate
     return None
+
+
+def _has_pinned_compile_package(packages_dir: Path) -> bool:
+    package = packages_dir / PROFILE.package_id.lower() / PROFILE.framework_version
+    required = (
+        package / "lib" / "net9.0" / PROFILE.runtime_dll,
+        package / "buildTransitive" / f"{PROFILE.package_id}.targets",
+        package / f"{PROFILE.package_id.lower()}.{PROFILE.framework_version}.nupkg",
+    )
+    return all(path.is_file() for path in required)
+
+
+def select_nuget_packages_dir(
+    explicit: str | None,
+    *,
+    environ: dict[str, str] | None = None,
+    home: Path | None = None,
+) -> tuple[Path | None, str]:
+    """Reuse a real user cache when dotnet's sandbox profile points somewhere else."""
+    environ = environ if environ is not None else os.environ
+    if explicit:
+        return Path(explicit).expanduser(), "explicit"
+
+    configured = environ.get("NUGET_PACKAGES", "").strip()
+    if configured:
+        return Path(configured).expanduser(), "environment"
+
+    user_cache = (home if home is not None else Path.home()) / ".nuget" / "packages"
+    if _has_pinned_compile_package(user_cache):
+        return user_cache, "shared user cache"
+    return None, "dotnet default"
+
+
+def dotnet_environment(packages_dir: Path | None) -> dict[str, str] | None:
+    if packages_dir is None:
+        return None
+    env = os.environ.copy()
+    env["NUGET_PACKAGES"] = str(packages_dir)
+    return env
 
 
 def pack_project_assets(project_dir: Path, mod_name: str, mods_dir: Path) -> bool:
@@ -160,7 +211,10 @@ def main(argv: list[str]) -> int:
                          "Defaults to the single .csproj found in project-dir.")
     ap.add_argument("--runtime-dir", default=None,
                     help="Installed RitsuLib directory or release zip. Defaults to "
-                         "<resolved ModsPath>/STS2-RitsuLib.")
+                         "the game mods directory, then the official Steam Workshop item.")
+    ap.add_argument("--nuget-packages-dir", default=None,
+                    help="Shared NuGet global-packages directory. Defaults to NUGET_PACKAGES, "
+                         "then a complete ~/.nuget/packages cache, then dotnet's default.")
     ap.add_argument("--skip-runtime-check", action="store_true",
                     help="Compile-only escape hatch. Tier-1 verification must not use it.")
     args = ap.parse_args(argv)
@@ -175,6 +229,12 @@ def main(argv: list[str]) -> int:
         print(f"No .csproj found in {project_dir}", file=sys.stderr)
         return 2
     mod_name = args.mod_name or csproj.stem
+    nuget_packages, nuget_source = select_nuget_packages_dir(args.nuget_packages_dir)
+    dotnet_env = dotnet_environment(nuget_packages)
+    if nuget_packages is None:
+        print(f"[build] NuGet cache: {nuget_source}")
+    else:
+        print(f"[build] NuGet cache: {nuget_packages} ({nuget_source})")
 
     try:
         summary = validate_project_contract(project_dir, mod_name)
@@ -188,23 +248,38 @@ def main(argv: list[str]) -> int:
         if args.skip_runtime_check:
             print("[build] WARNING: runtime/host validation skipped; this build cannot satisfy Tier 1")
         else:
-            sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir")
-            mods_root_text = get_msbuild_property(csproj, "ModsPath")
+            sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir", dotnet_env)
+            mods_root_text = get_msbuild_property(csproj, "ModsPath", dotnet_env)
             if not sts2_dir_text or not mods_root_text:
                 raise RitsuProfileError(
                     "MSBuild did not resolve Sts2Dir/ModsPath; set Sts2Dir in local.props"
                 )
             print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
-            runtime = Path(args.runtime_dir) if args.runtime_dir else Path(mods_root_text) / PROFILE.runtime_mod_id
-            print(f"[build] runtime OK: {validate_runtime_asset(runtime)}")
+            runtime = resolve_runtime_asset(
+                Path(sts2_dir_text),
+                Path(mods_root_text),
+                Path(args.runtime_dir) if args.runtime_dir else None,
+            )
+            if runtime.alternates:
+                alternatives = ", ".join(str(path) for path in runtime.alternates)
+                print(
+                    "[build] WARNING: duplicate RitsuLib installs found; "
+                    f"using {runtime.source} and ignoring {alternatives}"
+                )
+            print(f"[build] runtime source: {runtime.source} -> {runtime.path}")
+            print(f"[build] runtime OK: {validate_runtime_asset(runtime.path)}")
     except (OSError, AncientDialogueValidationError, RitsuProfileError, VanillaOverrideError) as exc:
         print(f"[build] RitsuLib profile FAILED: {exc}", file=sys.stderr)
         return 2
 
     print(f"[build] dotnet build -c Release  ({csproj.name})")
+    build_command = ["dotnet", "build", str(csproj), "-c", "Release"]
+    if nuget_packages is not None:
+        build_command.append("-p:RestoreIgnoreFailedSources=true")
     res = subprocess.run(
-        ["dotnet", "build", str(csproj), "-c", "Release"],
+        build_command,
         capture_output=True, text=True, encoding="utf-8", errors="replace",
+        env=dotnet_env,
     )
     log_text = (res.stdout or "") + (res.stderr or "")
     code = res.returncode
@@ -232,7 +307,7 @@ def main(argv: list[str]) -> int:
         print(f"[build] RitsuLib restore FAILED: {exc}", file=sys.stderr)
         return 2
 
-    mods_dir = locate_mods_dir(log_text, csproj, mod_name)
+    mods_dir = locate_mods_dir(log_text, csproj, mod_name, dotnet_env)
 
     if mods_dir and mods_dir.is_dir():
         try:

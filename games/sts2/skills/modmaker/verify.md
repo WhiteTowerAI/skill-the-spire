@@ -18,7 +18,8 @@ python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName>
   waits ~25s, and closes it.
 - `grep_log.py` reads the **current** `godot.log` in full. The verifier passes
   only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
-  `framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1`, with no
+  `framework=RitsuLib`, an actual `frameworkVersion>=0.5.4`, and exact
+  `host=0.107.1 compat=0.107.1`, with no
   error/exception block after that
   boundary. It includes multiline stack context and global errors whose header does not
   name the mod. It also reports the `RUNNING MODDED` flag. Two exact, stack-qualified
@@ -63,7 +64,8 @@ python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "<stat
 
 The `--tier2-pattern` selects the SPEC invariant from structured
 `[T2MOD-SELFTEST] <ModName> state proof:` lines. Every proof also records
-`framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1`. Use concrete
+`framework=RitsuLib`, the actual loaded version, and exact
+`host=0.107.1 compat=0.107.1`. Use concrete
 expected/observed vocabulary:
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
 `"cadence cross-combat threshold.*observed=0/4"`,

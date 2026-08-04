@@ -17,6 +17,15 @@ flow. The validators reject a floating/beta-facing RitsuLib package, a wrong com
 variant, a wrong host, extra framework references, a malformed manifest, and a framework
 DLL copied into the generated Mod.
 
+Keep the exact `0.5.4` Compat package as the compile baseline. At runtime accept an actual
+RitsuLib version at or above that floor only when the exact `0.107.1` direct/variant asset,
+marker, and manifest hash validate. Discover the game-local runtime first, then official
+Steam Workshop item `3747602295`; do not copy either source into the generated project.
+
+For restore, reuse an explicit shared cache, `NUGET_PACKAGES`, or a complete pinned package
+under the real user's `~/.nuget/packages`. This cache selection is process-local and must
+not write a machine path into the generated project.
+
 ## Registration
 
 - Add each selected model exactly once through the scaffold's partial content hook.
@@ -64,9 +73,11 @@ raw key, so Tier 1/Tier 2 must resolve the real consumer.
 
 ## Runtime Variant
 
-The installed RitsuLib runtime must expose the `0.107.1` compat DLL and marker/hash through
-its variant manifest, or be a direct `0.107.1` compat asset. A missing or mismatched variant
-is a hard actionable failure. Never skip runtime/host validation for Tier 1.
+The installed RitsuLib runtime, whether game-local or from official Workshop item
+`3747602295`, must be version `>= 0.5.4` and expose the `0.107.1` compat DLL and marker/hash
+through its variant manifest, or be a direct `0.107.1` compat asset. A missing or
+mismatched variant is a hard actionable failure. Never skip runtime/host validation for
+Tier 1.
 
 ## Re-Grounding
 

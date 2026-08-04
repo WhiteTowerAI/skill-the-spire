@@ -105,6 +105,24 @@ class GrepLogTests(unittest.TestCase):
         self.assertEqual(1, code)
         self.assertIn("profile is missing or mismatched", output)
 
+    def test_tier1_accepts_newer_compatible_runtime_version(self) -> None:
+        code, output = self.run_grep([
+            "RUNNING MODDED",
+            f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
+            "framework=RitsuLib frameworkVersion=0.5.9 host=0.107.1 compat=0.107.1",
+        ])
+        self.assertEqual(0, code)
+        self.assertIn("Framework profile   : MATCH", output)
+
+    def test_tier1_rejects_runtime_older_than_minimum(self) -> None:
+        code, output = self.run_grep([
+            "RUNNING MODDED",
+            f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
+            "framework=RitsuLib frameworkVersion=0.5.3 host=0.107.1 compat=0.107.1",
+        ])
+        self.assertEqual(1, code)
+        self.assertIn("frameworkVersion>=0.5.4", output)
+
     def test_mod_named_exception_fails(self) -> None:
         code, output = self.run_grep(
             self.baseline() + [f"ERROR {self.mod} NullReferenceException"]

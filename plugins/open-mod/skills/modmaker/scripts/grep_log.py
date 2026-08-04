@@ -28,7 +28,7 @@ import re
 import sys
 from pathlib import Path
 
-from ritsu_profile import PROFILE
+from ritsu_profile import PROFILE, is_supported_runtime_version
 
 
 LOG_RECORD_RE = re.compile(
@@ -50,10 +50,21 @@ SENTRY_SHUTDOWN_RE = re.compile(
 )
 PROFILE_FIELDS = (
     "framework=RitsuLib",
-    f"frameworkVersion={PROFILE.framework_version}",
     f"host={PROFILE.host_version}",
     f"compat={PROFILE.host_version}",
 )
+FRAMEWORK_VERSION_RE = re.compile(r"(?:^|\s)frameworkVersion=(?P<version>[^\s]+)")
+PROFILE_EXPECTATION = (
+    f"framework=RitsuLib frameworkVersion>={PROFILE.framework_version} "
+    f"host={PROFILE.host_version} compat={PROFILE.host_version}"
+)
+
+
+def has_supported_framework_profile(line: str | None) -> bool:
+    if line is None or not all(field in line for field in PROFILE_FIELDS):
+        return False
+    match = FRAMEWORK_VERSION_RE.search(line)
+    return match is not None and is_supported_runtime_version(match.group("version"))
 
 
 def default_log_path() -> Path:
@@ -172,7 +183,7 @@ def main(argv: list[str]) -> int:
     load_match = load_matches[-1] if load_matches else None
     load_index = load_match[0] if load_match else None
     load_line = load_match[1] if load_match else None
-    profile_ok = load_line is not None and all(field in load_line for field in PROFILE_FIELDS)
+    profile_ok = has_supported_framework_profile(load_line)
     run_lines = lines[load_index:] if load_index is not None else lines
     done_line = next((ln for ln in run_lines if done_marker in ln), None)
     failed_line = next((ln for ln in run_lines if failed_marker in ln), None)
@@ -215,7 +226,7 @@ def main(argv: list[str]) -> int:
     print()
     print(f"RUNNING MODDED flag : {'YES' if modded else 'NOT SEEN (mod may not have loaded)'}")
     print(f"Tier-1 load marker  : {('FOUND => ' + load_line) if load_line else 'NOT FOUND -- mod did not log its init marker'}")
-    print(f"Framework profile   : {'MATCH' if profile_ok else 'MISSING/MISMATCHED -- expected ' + ' '.join(PROFILE_FIELDS)}")
+    print(f"Framework profile   : {'MATCH' if profile_ok else 'MISSING/MISMATCHED -- expected ' + PROFILE_EXPECTATION}")
     if tier2_pattern:
         if tier2_lines:
             print(f"Tier-2 state proof  : FOUND ({len(tier2_lines)}) => {tier2_lines[0]}")

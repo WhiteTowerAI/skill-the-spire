@@ -216,9 +216,10 @@ returns four implementation records:
 3. **diagnostics** - framework/compat/host identity and adapter status;
 4. **proof route** - the closest hosted suite and the structured invariant it must emit.
 
-The first target profile is `ritsulib-0.5.4-sts2-0.107.1`. There is no compatibility
-fallback to the historical framework and no beta-facing variant selection. If the
-profile cannot be resolved, authoring stops with an actionable diagnostic and the
+The first compile profile is `ritsulib-0.5.4-sts2-0.107.1`. The actual runtime may be a
+newer RitsuLib release when it retains the checked `0.107.1` compat variant. There is no
+fallback to the historical framework and no beta-facing variant selection. If the profile
+cannot be resolved, authoring stops with an actionable diagnostic and the
 placeholder/fallback remains the documented outcome.
 
 ## Diagnostic envelope
@@ -227,9 +228,9 @@ Build, load, and Tier-2 records use the same fields. The existing exact load mar
 retained so current verification tools remain compatible.
 
 ```text
-[OPENMOD-FRAMEWORK] phase=<build|load|tier2> mod=<mod-id> framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1 adapter=<surface>/<contract-version> status=<selected|resolved|fallback|failed>
+[OPENMOD-FRAMEWORK] phase=<build|load|tier2> mod=<mod-id> framework=RitsuLib frameworkVersion=<actual-loaded-version> host=0.107.1 compat=0.107.1 adapter=<surface>/<contract-version> status=<selected|resolved|fallback|failed>
 [T2MOD-SELFTEST] <ModName> loaded ok
-[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1 expected=<...> observed=<...>
+[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=<actual-loaded-version> host=0.107.1 compat=0.107.1 expected=<...> observed=<...>
 ```
 
 `status=failed` must include a short reason such as `missing-compat-asset` or

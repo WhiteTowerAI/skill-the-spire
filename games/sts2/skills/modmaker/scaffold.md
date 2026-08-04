@@ -48,9 +48,15 @@ The project contains:
 - `<ModName>Code/MainFile.cs`, whose exact load marker records public RitsuLib version
   metadata and the actual loaded `Sts2ApiCompat` assembly metadata.
 
-RitsuLib is installed as its own runtime Mod from either the matching
-`STS2.RitsuLib.Compat.0.107.1.0.5.4.github.zip` or the verified variant pack. Never copy
+RitsuLib remains a separate runtime Mod. Reuse the official Steam Workshop item
+`3747602295` when it is already installed; `build.py` checks the game `mods/` directory
+first and then that item in the Steam library that owns STS2. Only install the matching
+compat zip or verified variant pack when neither source exists. Never copy
 `STS2-RitsuLib.dll` into `<ModName>`.
+
+The exact Compat NuGet package remains the reproducible compile input. It is distinct from
+the runtime installation. `build.py` reuses `NUGET_PACKAGES` or a complete user-level
+`~/.nuget/packages` cache even when `dotnet` runs under an isolated Codex sandbox profile.
 
 When authoring adds localization, images, or scenes, place them under
 `<project-dir>/<ModName>/` and set `has_pck=true`. `build.py` packs that resource tree with

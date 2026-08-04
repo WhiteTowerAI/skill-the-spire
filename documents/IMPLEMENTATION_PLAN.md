@@ -86,6 +86,13 @@ repository payloads now fail closed on the first conflict and compile-check the 
 maintenance repair does not reopen M6.7; its focused evidence is recorded in
 `documents/history/M67_POST_ACCEPTANCE_GENERATION_QUALITY_REPAIR.md`.
 
+The selected post-closure installation repair now reuses official Steam Workshop RitsuLib
+item `3747602295`, preserves local-before-Workshop duplicate precedence, accepts runtime
+versions `>= 0.5.4` only with the exact `0.107.1` variant contract, and reuses a complete
+real-user NuGet cache when Codex isolates `dotnet` under another profile. The compile
+package remains exactly `0.5.4`; this tooling work does not reopen M6.7 or float its API
+baseline.
+
 Continue triaging bugs found through real user testing, but do not reopen the retired M6.5
 or M6.6 proofs. Their literal results, waivers, and unrun checks remain historical evidence,
 not gates to rerun for M6.7.

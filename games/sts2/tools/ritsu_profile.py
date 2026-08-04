@@ -23,6 +23,8 @@ class RitsuProfile:
     package_id: str = "STS2.RitsuLib.Compat.0.107.1"
     runtime_mod_id: str = "STS2-RitsuLib"
     runtime_dll: str = "STS2-RitsuLib.dll"
+    steam_app_id: str = "2868840"
+    workshop_item_id: str = "3747602295"
 
     @property
     def profile_id(self) -> str:
@@ -35,6 +37,82 @@ class RitsuProfile:
 
 PROFILE = RitsuProfile()
 _BASELIB_RE = re.compile(r"baselib|alchyr\.sts2", re.IGNORECASE)
+_VERSION_RE = re.compile(
+    r"^v?(?P<numeric>\d+(?:\.\d+){1,3})(?:[-+][0-9A-Za-z.-]+)?$"
+)
+
+
+@dataclass(frozen=True)
+class RuntimeAssetSelection:
+    path: Path
+    source: str
+    alternates: tuple[Path, ...] = ()
+
+
+def _version_key(value: object) -> tuple[int, ...]:
+    text = str(value).strip()
+    match = _VERSION_RE.fullmatch(text)
+    if match is None:
+        raise RitsuProfileError(f"invalid RitsuLib runtime version {text!r}")
+    parts = tuple(int(part) for part in match.group("numeric").split("."))
+    return parts + (0,) * (4 - len(parts))
+
+
+def is_supported_runtime_version(value: object) -> bool:
+    try:
+        return _version_key(value) >= _version_key(PROFILE.framework_version)
+    except RitsuProfileError:
+        return False
+
+
+def workshop_runtime_dir(sts2_dir: Path) -> Path | None:
+    """Resolve the official Workshop item beside the Steam library owning STS2."""
+    resolved = sts2_dir.resolve()
+    steamapps = next(
+        (path for path in (resolved, *resolved.parents) if path.name.casefold() == "steamapps"),
+        None,
+    )
+    if steamapps is None:
+        return None
+    return (
+        steamapps
+        / "workshop"
+        / "content"
+        / PROFILE.steam_app_id
+        / PROFILE.workshop_item_id
+    )
+
+
+def resolve_runtime_asset(
+    sts2_dir: Path,
+    mods_root: Path,
+    explicit: Path | None = None,
+) -> RuntimeAssetSelection:
+    """Select the runtime path using the same local-before-Workshop source order as STS2."""
+    if explicit is not None:
+        return RuntimeAssetSelection(explicit, "explicit")
+
+    candidates: list[tuple[str, Path]] = [
+        ("mods directory", mods_root / PROFILE.runtime_mod_id),
+    ]
+    workshop = workshop_runtime_dir(sts2_dir)
+    if workshop is not None:
+        candidates.append(("Steam Workshop", workshop))
+
+    installed = [(source, path) for source, path in candidates if path.is_dir()]
+    if not installed:
+        searched = ", ".join(str(path) for _, path in candidates)
+        raise RitsuProfileError(
+            "RitsuLib runtime was not found in the game mods directory or the official "
+            f"Steam Workshop item {PROFILE.workshop_item_id}; searched: {searched}"
+        )
+
+    source, selected = installed[0]
+    return RuntimeAssetSelection(
+        selected,
+        source,
+        tuple(path for _, path in installed[1:]),
+    )
 
 
 def find_manifest(project_dir: Path, mod_name: str) -> Path:
@@ -208,12 +286,14 @@ def _check_variant_manifest_entry(entry: dict, dll_hash: str) -> None:
         raise RitsuProfileError("runtime variant DLL hash does not match ritsulib-variants.manifest")
 
 
-def _check_runtime_manifest(data: dict) -> None:
+def _check_runtime_manifest(data: dict) -> str:
     if data.get("id") != PROFILE.runtime_mod_id:
         raise RitsuProfileError("RitsuLib runtime manifest has an unexpected id")
-    if data.get("version") != PROFILE.framework_version:
+    version = str(data.get("version", "")).strip()
+    if _version_key(version) < _version_key(PROFILE.framework_version):
         raise RitsuProfileError(
-            f"RitsuLib runtime manifest version is not {PROFILE.framework_version}"
+            f"RitsuLib runtime manifest version {version!r} is older than the required "
+            f"minimum {PROFILE.framework_version}"
         )
     if str(data.get("min_game_version", "")).removeprefix("v") != PROFILE.host_version:
         raise RitsuProfileError(
@@ -221,6 +301,7 @@ def _check_runtime_manifest(data: dict) -> None:
         )
     if data.get("dependencies") not in ([], None):
         raise RitsuProfileError("RitsuLib runtime manifest unexpectedly declares dependencies")
+    return version
 
 
 def validate_runtime_asset(path: Path) -> str:
@@ -240,7 +321,9 @@ def validate_runtime_asset(path: Path) -> str:
             if "mod_manifest.json" not in names:
                 raise RitsuProfileError("RitsuLib runtime asset is missing mod_manifest.json")
             try:
-                _check_runtime_manifest(json.loads(_read_zip_text(archive, "mod_manifest.json")))
+                runtime_version = _check_runtime_manifest(
+                    json.loads(_read_zip_text(archive, "mod_manifest.json"))
+                )
             except json.JSONDecodeError as exc:
                 raise RitsuProfileError(f"invalid RitsuLib runtime manifest: {exc}") from exc
             if has_variant:
@@ -263,7 +346,9 @@ def validate_runtime_asset(path: Path) -> str:
                 _check_variant_manifest_entry(entry, _sha256_zip_entry(archive, variant_prefix + PROFILE.runtime_dll))
             elif _read_zip_text(archive, "compat-target.txt").strip() != PROFILE.host_version:
                 raise RitsuProfileError(f"runtime marker compat-target.txt is not {PROFILE.host_version}")
-        return f"{path.name}: compat {PROFILE.host_version}"
+        return (
+            f"{path.name}: RitsuLib {runtime_version}, compat {PROFILE.host_version}"
+        )
 
     root = path
     if root.is_dir() and root.name.lower() != PROFILE.runtime_mod_id.lower():
@@ -279,7 +364,9 @@ def validate_runtime_asset(path: Path) -> str:
             f"runtime directory {root} is missing {PROFILE.runtime_dll} or mod_manifest.json"
         )
     try:
-        _check_runtime_manifest(json.loads(runtime_manifest.read_text(encoding="utf-8")))
+        runtime_version = _check_runtime_manifest(
+            json.loads(runtime_manifest.read_text(encoding="utf-8"))
+        )
     except (OSError, json.JSONDecodeError) as exc:
         raise RitsuProfileError(f"invalid RitsuLib runtime manifest {runtime_manifest}: {exc}") from exc
     variant_dir = root / "lib" / PROFILE.host_version
@@ -302,11 +389,11 @@ def validate_runtime_asset(path: Path) -> str:
         if entry is None:
             raise RitsuProfileError(f"runtime variant manifest does not declare {PROFILE.host_version}")
         _check_variant_manifest_entry(entry, _sha256_file(dll))
-        return f"{root}: compat {PROFILE.host_version}"
+        return f"{root}: RitsuLib {runtime_version}, compat {PROFILE.host_version}"
     if direct_marker.is_file():
         if direct_marker.read_text(encoding="utf-8").strip() != PROFILE.host_version:
             raise RitsuProfileError(f"runtime marker {direct_marker} is not {PROFILE.host_version}")
-        return f"{root}: compat {PROFILE.host_version}"
+        return f"{root}: RitsuLib {runtime_version}, compat {PROFILE.host_version}"
     raise RitsuProfileError(
         f"runtime directory {root} has no matching {PROFILE.host_version} RitsuLib variant; "
         "refusing to fall back to the beta-facing DLL"

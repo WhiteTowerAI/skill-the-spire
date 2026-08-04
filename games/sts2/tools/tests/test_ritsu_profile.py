@@ -14,6 +14,7 @@ sys.path.insert(0, str(TOOLS_DIR))
 from ritsu_profile import (  # noqa: E402
     PROFILE,
     RitsuProfileError,
+    resolve_runtime_asset,
     validate_host_version,
     validate_project_contract,
     validate_runtime_asset,
@@ -103,6 +104,78 @@ class RitsuProfileTests(unittest.TestCase):
                     }),
                 )
             self.assertIn(PROFILE.host_version, validate_runtime_asset(archive))
+
+    def test_newer_runtime_version_is_accepted_but_older_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "STS2-RitsuLib"
+            variant = root / "lib" / PROFILE.host_version
+            variant.mkdir(parents=True)
+            (root / PROFILE.runtime_dll).write_bytes(b"loader")
+            (variant / PROFILE.runtime_dll).write_bytes(b"dll")
+            (variant / "compat-target.txt").write_text(
+                PROFILE.host_version + "\n", encoding="utf-8"
+            )
+            (root / "ritsulib-variants.manifest").write_text(json.dumps({
+                "schema": 1,
+                "variants": [{
+                    "compatTarget": PROFILE.host_version,
+                    "directory": f"lib/{PROFILE.host_version}",
+                    "assembly": PROFILE.runtime_dll,
+                    "sha256": hashlib.sha256(b"dll").hexdigest(),
+                }],
+            }), encoding="utf-8")
+
+            manifest = {
+                "id": PROFILE.runtime_mod_id,
+                "version": "0.5.9",
+                "min_game_version": PROFILE.host_version,
+                "dependencies": [],
+            }
+            manifest_path = root / "mod_manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            self.assertIn("RitsuLib 0.5.9", validate_runtime_asset(root))
+
+            manifest["version"] = "0.5.3"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(RitsuProfileError, "older than the required minimum"):
+                validate_runtime_asset(root)
+
+    def test_runtime_discovery_reuses_official_workshop_item(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            steamapps = Path(tmp) / "steamapps"
+            game = steamapps / "common" / "Slay the Spire 2"
+            mods = game / "mods"
+            workshop = (
+                steamapps
+                / "workshop"
+                / "content"
+                / PROFILE.steam_app_id
+                / PROFILE.workshop_item_id
+            )
+            game.mkdir(parents=True)
+            workshop.mkdir(parents=True)
+
+            selected = resolve_runtime_asset(game, mods)
+            self.assertEqual("Steam Workshop", selected.source)
+            self.assertEqual(workshop, selected.path)
+            self.assertEqual((), selected.alternates)
+
+            local = mods / PROFILE.runtime_mod_id
+            local.mkdir(parents=True)
+            selected = resolve_runtime_asset(game, mods)
+            self.assertEqual("mods directory", selected.source)
+            self.assertEqual(local, selected.path)
+            self.assertEqual((workshop,), selected.alternates)
+
+    def test_runtime_discovery_reports_both_searched_locations(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp) / "steamapps" / "common" / "Slay the Spire 2"
+            game.mkdir(parents=True)
+            with self.assertRaisesRegex(
+                RitsuProfileError,
+                f"official Steam Workshop item {PROFILE.workshop_item_id}",
+            ):
+                resolve_runtime_asset(game, game / "mods")
 
     def test_wrong_runtime_variant_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

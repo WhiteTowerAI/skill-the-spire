@@ -98,6 +98,12 @@ The portable payload at `skills/` follows the Agent Skills layout. Both payloads
 generated from `games/sts2/` and committed because installers consume repository content
 directly.
 
+Generated projects keep the exact `0.5.4` Compat package as their reproducible compile
+input while reusing a complete user NuGet cache across Codex sandbox identities. At
+runtime, build preflight uses a validated game-local RitsuLib first or official Steam
+Workshop item `3747602295` when local installation is absent; it accepts a newer framework
+release only when the exact `0.107.1` variant contract remains intact.
+
 ## Product Boundaries
 
 The current product supports the surfaces in

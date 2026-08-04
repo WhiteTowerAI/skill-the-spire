@@ -115,6 +115,9 @@ generate ungrounded Harmony, reflection, or IL from a prompt.
 
 - Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.5.4`.
 - Runtime manifests depend only on `STS2-RitsuLib >= 0.5.4`.
+- Runtime discovery reuses a validated game-local install or official Steam Workshop item
+  `3747602295`; newer RitsuLib versions are accepted only with the exact `0.107.1` compat
+  variant, marker, and manifest hash. The compile package remains exactly `0.5.4`.
 - Generated Mods must not reference, package, or depend on BaseLib.
 - Do not use Alchyr templates or restore historical BaseLib implementation snippets.
 - `baselines/BaseLib-StS2` and `baselines/downfall` are offline historical research only.
