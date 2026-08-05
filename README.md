@@ -9,8 +9,10 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 
 > **Unreleased development version: 0.6.0.** Generated Mods target STS2 stable `0.107.1`
 > with RitsuLib `0.5.4`. The BaseLib migration and M6.5-M6.7 implementation tracks are
-> closed. M7.1-M7.5 design-intelligence work is implemented; M7.6 human-owned playtest
-> tuning has not started. A GitHub release is not currently authorized.
+> closed. M7 Design Intelligence is closed: M7.1-M7.5 are implemented, and M7.6 closed
+> through a human-led external whole-skill evaluation with explicit limitations. M8
+> End-to-End Product Integrity is planned but has not started; M8.1 is the next selectable
+> Package. A GitHub release is not currently authorized.
 
 ## Requirements
 
@@ -112,7 +114,7 @@ Important boundaries include:
 
 The capability graph is authoritative when this summary and a detailed boundary differ.
 
-## Design Intelligence
+## Design And Product Integrity
 
 M7.1-M7.5 add adaptive routing, pinned Character design grammar, mechanic/content/balance
 planning, durable current/future scope, DESIGN-to-SPEC traceability, cross-surface coherence,
@@ -120,8 +122,28 @@ and bounded revision propagation. These are authoring-workflow capabilities; the
 expand the runtime support graph.
 
 Static scenarios and validators prove the shipped contracts, not balance, enjoyment,
-translation quality, visual quality, or real-game behavior. M7.6 will cover human-owned
-playtest feedback only after explicit selection.
+translation quality, visual quality, or real-game behavior. M7.6 closed through an external
+Watcher whole-skill evaluation. Its human-owned result was that the Mod was playable but
+not very good; the record does not claim a successful tuning loop or complete Character
+acceptance.
+
+M8 is planned to preserve one literal product contract across request, capability
+preflight, DESIGN, SPEC, generation, semantic repair/backtracking, existing proportional
+verification, literal reporting, and platform reproduction. A mechanic will count as
+complete only when its behavior, lifecycle, rules text, keyword/Hover Tip discoverability,
+localization, preview, and presentation agree through shared facts on the existing semantic
+route, not a list of mechanic-specific reminders or a parallel capability catalog. Complex
+mechanics will resolve to maintained exact capabilities with conformance evidence instead
+of per-Mod approximations; a failing claimed route will block until repaired or narrowed.
+Launch tooling will own and clean up only the process tree it starts on Windows and macOS.
+DESIGN will preserve the user's literal completion claim; prototype, slice, and run-capable
+labels remain optional descriptions rather than a closed taxonomy. None of the M8 flow is
+implemented yet.
+
+The active plan contains a new-session start protocol and an execution contract for every
+M8 Package: exact prerequisites, source scope, work order, and result record.
+An instruction to start M8 begins M8.1. M8.4 was removed; M8.5 and M8.6 keep their numbers.
+M8.5 may be selected independently after M8.1 only by explicit human-lead instruction.
 
 ## Verification Model
 
@@ -130,9 +152,18 @@ a structured post-state marker and `selftest done`. A successful build, trace va
 trigger log, model response, or screenshot does not substitute for runtime behavior or
 presentation evidence.
 
+M8.2 conformance and M8.6 acceptance use the existing verification model to bind behavior
+to matching real rules text, keyword/Hover Tip, lifecycle, preview, and presentation
+consumers. M8.5 binds a platform completion claim to verified cleanup of the launcher-owned
+process tree. There is no separate M8 evidence-reporting Package.
+
 Fresh natural-language acceptance Mods are used only for an explicitly scheduled
 full-pipeline gate or direct human-lead request. Durable ownership lives in
 `games/sts2/tests/`; completed evidence is indexed under `documents/history/`.
+
+The Watcher evaluation closes M7 and supplies M8 baseline evidence; it is not the planned
+M8 final acceptance project. M8.6 schedules one clean installed whole-skill gate only after
+the preceding M8 Packages close and the human lead selects its request and host.
 
 ## For Contributors
 

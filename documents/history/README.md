@@ -47,10 +47,17 @@ repository proof rather than a generated acceptance project.
 - `M72_NATIVE_DESIGN_GRAMMAR_RESULTS.md`;
 - `M73_MECHANIC_CONTENT_BALANCE_RESULTS.md`;
 - `M74_SCOPE_TRACEABILITY_RESULTS.md`; and
-- `M75_COHERENCE_RESULTS.md`.
+- `M75_COHERENCE_RESULTS.md`; and
+- `M76_WHOLE_SKILL_EVALUATION_RESULTS.md`.
 
-M7.0 was canceled as a standalone evaluation Package. M7.6 has no result file because it
-has not started.
+M7.0 was canceled as a standalone evaluation Package. M7.1-M7.5 are implemented source
+results. M7.6 closed through the external human-led Watcher whole-skill evaluation rather
+than a new source-workflow Package, and the human lead closed M7 on 2026-08-05. Its record
+includes the later process-cleanup, player-facing-semantic, and maintained-capability
+findings that feed M8. M8 is the active planned milestone, no Package has started, and M8.1
+is next selectable. The active plan, not this archive, owns each Package's execution
+contract and current status. The human lead removed M8.4; M8.5 and M8.6 retain their
+numbers.
 
 ## Research And Retired Evidence
 

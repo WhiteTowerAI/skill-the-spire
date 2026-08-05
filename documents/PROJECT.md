@@ -14,12 +14,11 @@ against pinned public/fixed routes, builds the Mod, and reports verification lit
 ## Release State
 
 `0.6.0` is an unreleased RitsuLib-only development baseline for STS2 stable `0.107.1` and
-RitsuLib `0.5.4`. BaseLib has been removed from generated projects. M6.5, M6.6, and M6.7
-are closed; their detailed results and exceptions live under `documents/history/`.
+RitsuLib `0.5.4`. BaseLib has been removed from generated projects. M6.5, M6.6, M6.7, and
+M7 are closed; their detailed results and exceptions live under `documents/history/`.
 
-M7 Design Intelligence and User Experience is active. M7.0 was canceled as a standalone
-evaluation Package. M7.1 through M7.5 are implemented and synchronized into both committed
-payloads:
+M7.0 was canceled as a standalone evaluation Package. M7.1 through M7.5 are implemented
+and synchronized into both committed payloads:
 
 - M7.1 infers fast, co-design, or revision and preserves direct resume;
 - M7.2 grounds Character Foundation recommendations in the pinned native starter inventory;
@@ -27,8 +26,24 @@ payloads:
 - M7.4 writes adaptive DESIGN before a validated current-slice SPEC; and
 - M7.5 checks selected identity/presentation surfaces and propagates revisions narrowly.
 
-M7.6 human-owned playtest feedback and tuning has not started. No GitHub release is
-currently authorized or planned.
+M7.6 closed through a human-led external whole-skill evaluation rather than a new source
+Package. The Watcher evaluation built, loaded, and exercised a bounded state subset on
+macOS; the human lead reported that it was playable but not very good. That is not a
+successful tuning-loop, complete Character, or broad route-acceptance claim. The exact
+result is `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`.
+
+M8 End-to-End Product Integrity is planned but has not started. It will address literal
+deliverable scope, complete player-facing operation semantics, maintained exact capability
+preflight, semantic backtracking, and cross-platform installed reproducibility with owned-
+process cleanup. One final clean installed whole-skill acceptance is scheduled only after
+the preceding M8 Packages close. No M8 implementation, acceptance run, payload publication,
+or GitHub release is currently authorized.
+
+No M8 Package is in progress. M8.1 is next selectable. The New-Session Start Protocol and
+five retained Package Execution Contracts in `documents/IMPLEMENTATION_PLAN.md` are the
+handoff: a later session instructed to start or continue M8 reads the first eligible
+contract and executes it without rebuilding the roadmap or skipping prerequisites. M8.4
+was removed by the human lead; M8.5 and M8.6 retain their numbers.
 
 ## User Experience
 
@@ -42,6 +57,13 @@ plain-language idea
   -> run proportional load/behavior verification when required
   -> report passes, failures, and unrun checks literally
 ```
+
+M8 plans to strengthen this flow with a literal deliverable contract, exact operation
+preflight, one behavior/text/tooltip/lifecycle/presentation contract, semantic-impact repair
+backtracking, and durable cross-platform reproduction with no launcher-owned process left
+behind. Existing literal reporting and verification ownership remain in force; M8 adds no
+separate evidence-reporting subsystem. The diagram above remains the currently implemented
+flow until those Packages are selected and delivered.
 
 A complete narrow request retains a zero-question path. Ambiguous work receives materially
 different player-facing options with trade-offs, not an exhaustive questionnaire. Revision
@@ -88,6 +110,13 @@ enjoyment, or runtime behavior.
    scenarios, and deterministic regressions.
 5. `plugins/open-mod/` and `skills/` are generated Codex-plugin and portable payloads.
 
+Planned M8 work crosses these ownership boundaries rather than creating a separate runtime
+framework. `modmaker` will own deliverable, complete player-facing semantics, and
+backtracking flow; `sts2-api` maintained exact semantic routes and capability promotion;
+tools reproducible platform and owned-process cleanup; tests capability conformance,
+Package behavioral cases, and final whole-skill coverage. This planning does not authorize
+source edits yet.
+
 Edit source under `games/sts2/`; regenerate both payloads through `publish.sh`. Generated
 Mods use the pinned compile package and discover a validated game-local or official
 Workshop RitsuLib runtime. They never copy the maintainer checkout or depend on BaseLib.
@@ -123,10 +152,20 @@ host for changed runtime behavior or presentation. Fresh end-to-end acceptance i
 for an explicit milestone gate or human-lead request. Historical evidence is immutable and
 does not become a reusable test fixture.
 
+M8 will make that ownership operation-complete: state behavior, lifecycle, rules text,
+DynamicVars/keywords, Hover Tips, localization, preview, and real presentation must agree.
+Those obligations will use machine-checkable metadata on the existing authoritative route,
+not a mechanic-name checklist or second capability catalog. Maintained complex helpers must
+prove their selection, ordering, movement, hooks, degenerate states, and input modes; a
+claimed route that fails conformance blocks until repaired or narrowed. A claimed platform
+run also ends only after the tool confirms that its owned process tree is gone.
+
 M7.1-M7.5 are prompt/design workflow changes. Their deterministic scenarios and validators
 prove shipped contracts only. Two focused read-only forward-model prompts exercised M7.5
-conflict and revision behavior; no full M7 forward-model matrix, generated Mod, Tier 1,
-Tier 2, headed design review, or human playtest is inferred.
+conflict and revision behavior. The later external Watcher evaluation supplies bounded
+build/Tier/human evidence under its own result record; it does not retroactively prove the
+full M7 forward-model matrix, all generated operations, headed design quality, visual
+quality, or successful playtest tuning.
 
 Current commands and exact verification ownership live in `games/sts2/tests/README.md`.
 

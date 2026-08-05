@@ -47,11 +47,11 @@ and representative human-led in-game acceptance completed. M6.7.6 was canceled a
 to Future Outlook. Tier 1, Tier 2/SelfTest, the current-catalog headed no-op, and every
 unselected check remain unrun, not passed; do not rerun the closed milestone gate.
 
-## M7 authoring-quality verification
+## M7 authoring-quality verification and closure
 
 The human lead canceled M7.0 as a standalone evaluation Package on 2026-08-04. Behavioral
 cases travel with M7.1 routing, M7.2 native grammar, M7.3 design planning, M7.4 scope/
-traceability, M7.5 coherence, and M7.6 playtest revision. M7.1 is implemented with
+traceability, and M7.5 coherence. M7.1 is implemented with
 `m71-routing-scenarios.md` and
 `tools/tests/test_m71_routing.py`: fast, co-design, revision, direct resume,
 material-question filtering, contradictions, unsupported requests, and decision-preserving
@@ -108,6 +108,17 @@ and complete matrix, generated Mods, runtime loading, Tier 1, Tier 2, headed rev
 translation/visual review, and human artifact review remain unrun. The complete source/
 payload result is recorded in `documents/history/M75_COHERENCE_RESULTS.md`.
 
+M7.6 closed through a human-led external whole-skill evaluation rather than a shipped
+source Package. The copied Watcher project records a macOS build, Tier 1, a bounded
+SelfTest, and the human observation that the Mod was playable but not very good. The
+harness did not drive Scry, composed Draw, Rushdown, Devotion, or draw-pile exhaustion;
+one unconditional aggregate assertion and the final narrative overclaimed Scry coverage.
+No post-observation DESIGN/SPEC delta and same-hypothesis replay occurred. The exact result
+and exceptions are in
+`documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`. By explicit human-lead decision,
+that evaluation closes M7 without claiming a M7.6 source implementation, successful tuning
+loop, polished Character, or complete runtime matrix.
+
 Evaluate three layers:
 
 1. **Deterministic contract:** required artifact sections, stable semantic fields, exact
@@ -132,8 +143,41 @@ rewrite of historical proof.
 
 When an M7 Package changes generated runtime behavior or presentation, use the same nearest
 real-host rule as any other implementation change. Prompt-only work needs no game launch.
-M7.6 may prepare a human-executable playtest hypothesis and observation form, but it must
-never invent the observations or relabel simulated personas as acceptance.
+Real-player observations remain human-owned and may not be fabricated or replaced by
+simulated personas.
+
+## M8 whole-skill verification plan
+
+M8 is planned and has not started. M8.1 is next selectable; later Packages wait on the
+prerequisites and exact execution contracts in `documents/IMPLEMENTATION_PLAN.md`. The
+Watcher evaluation is baseline failure evidence, not the final acceptance project. Package
+cases must verify the decision each Package adds:
+
+1. a literal completion claim cannot silently grow beyond the accepted current slice;
+   complete single-element Mods keep their real product shape, while identity-critical or
+   non-default player experiences map through existing DESIGN/SPEC operations;
+2. identity-critical operations resolve to exact current routes before generation, while
+   supported-but-unimplemented and unsupported remain distinct literal facts; reusable
+   complex mechanics use maintained implementations with conformance cases for selection,
+   ordering, movement, hooks, degenerate states, and input modes instead of local
+   approximations; a claimed route that fails conformance blocks until its maintained
+   implementation is repaired or its limitation is narrowed;
+3. repair routing distinguishes implementation-equivalent, contract-fulfillment, accepted
+   semantic-change, and missing-capability outcomes, returning only to the artifact that
+   owns the changed fact;
+4. claimed Windows/macOS installed workflows reproduce without mutating installed skills,
+   track the process tree they create, and finish with no owned game child running; and
+5. after M8.1-M8.3 and M8.5 close, one human-lead-selected M8.6 clean installed acceptance
+   exercises the complete contract without reusing or repairing Watcher.
+
+M8.6 is the only planned fresh natural-language full-pipeline gate and is not authorized to
+run yet. Human play owns any claim about decision quality, comprehension, enjoyment, or
+tuning; Tier 1/Tier 2 retain their existing literal meanings. M8.4 and its proposed separate
+evidence-reporting subsystem were removed; existing verification ownership remains active.
+
+The Watcher Exhaust-text, Scry, Hover Tip, Wrath, and leaked-process observations are audit
+inputs for those generic contracts. They do not become five special-case assertions and do
+not change a support row without current pinned maintainer grounding.
 
 Host ownership:
 

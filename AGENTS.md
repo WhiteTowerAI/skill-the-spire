@@ -111,10 +111,10 @@ explicitly unrun. The durable result is
 fixed reviewed Adapter for each requested operation/category before implementation; never
 generate ungrounded Harmony, reflection, or IL from a prompt.
 
-M7 Design Intelligence and User Experience is the active authoring milestone, selected by
-the human lead on 2026-08-04. The human lead canceled M7.0 as a standalone up-front
-evaluation Package on the same day; its essential behavioral cases are owned by M7.1,
-M7.2, M7.4, and M7.6 instead.
+M7 Design Intelligence and User Experience is closed by explicit human-lead decision on
+2026-08-05. The human lead canceled M7.0 as a standalone up-front evaluation Package on
+2026-08-04; its essential behavioral cases traveled with the Packages that changed those
+behaviors. M7.1 through M7.5 are implemented in source.
 M7.1 adaptive Interview and routing is implemented in the source workflow. It adds an
 inferred fast/co-design/revision route before Interview, direct unfinished-project resume,
 material-question filtering, constrained contradiction/unsupported handling, and bounded
@@ -174,14 +174,40 @@ conflict and bounded revision. The first conflict run exposed a missing temporar
 `conflict` status; after the contract repair, its focused rerun correctly stopped before
 SPEC. The Event case and complete three-case matrix were not independently run. No human
 artifact review, game acceptance, Tier 1, or Tier 2 is inferred.
-The durable result is `documents/history/M75_COHERENCE_RESULTS.md`. M7.6 has not started.
-M7 improves how the skill understands, discusses, scopes, records, and revises a Mod design;
-it does not expand the runtime support graph. Its target flow adds adaptive routing, a
-durable `DESIGN.md`, pinned STS2-native design grammar, explicit current-deliverable versus
-future-vision scope, design-to-`SPEC.md` traceability, and human-owned playtest tuning.
-Each M7 Package must carry the smallest behavioral cases that prove its own decisions;
-there is no separate corpus gate before M7.1. Simple, unambiguous requests retain a fast
-path rather than receiving a full GDD process.
+The durable source result is `documents/history/M75_COHERENCE_RESULTS.md`.
+M7.6 closed through a human-led external whole-skill evaluation on macOS rather than a new
+source-workflow Package. The generated Watcher Character/content-set Mod built, loaded,
+and completed a bounded SelfTest record; the human lead's controlling playtest observation
+was that it was playable but the result was not very good. Scry, composed Draw, Rushdown,
+Devotion, draw-pile exhaustion, complete presentation, and a post-feedback DESIGN/SPEC
+revision/replay were not proved. Do not infer a polished Character, complete Tier 2 matrix,
+successful tuning loop, or M7.6 source implementation. The durable result and exact
+exceptions are in `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`.
+
+M7 improved how the skill understands, discusses, scopes, records, and revises a Mod
+design; it did not expand the runtime support graph. Simple, unambiguous requests retain a
+fast path rather than receiving a full GDD process.
+
+M8 End-to-End Product Integrity is the active planned milestone. It addresses the whole
+skill: literal deliverable contracts, exact semantic capability preflight, semantic
+backtracking, cross-platform installed-workflow reproducibility, and one final clean
+whole-skill acceptance. M8 has not started. No Package is in progress; M8.1 Literal
+Deliverable Contract is the next selectable Package. The human lead removed M8.4 on
+2026-08-05; M8.5 and M8.6 retain their numbers. The Watcher evaluation is baseline evidence,
+not the M8 final acceptance Mod.
+Its concrete Exhaust-text, Scry, Hover Tip, Wrath, and leaked-process observations are not
+a Watcher repair queue. They define three whole-skill controls: complete player-facing
+operation semantics, maintained semantic capabilities with conformance proof, and
+cross-platform ownership of every process the tools start.
+Do not begin M8.1, edit installed payloads in place, run a fresh acceptance, or publish a
+payload/release without later human-lead instruction. The active Package plan is
+`documents/IMPLEMENTATION_PLAN.md`. Its New-Session Start Protocol and Package Execution
+Contracts are authoritative: when the lead says "start M8" or "continue M8", select or
+resume the first eligible Package, read its listed source, and execute that contract rather
+than re-planning the milestone or asking the lead to choose among later Packages. Never
+skip a prerequisite. Closing a Package requires its named history result plus synchronized
+status in the current documents that own changed facts; the result must also list current
+documents reviewed but left unchanged.
 
 Pre-M7 maintenance removed the retired Wayfinder proof identity and exact proof values from
 generic Character verification/reference text. Historical facts remain under
@@ -202,6 +228,12 @@ present in the current source or payloads.
 - `baselines/BaseLib-StS2` and `baselines/downfall` are offline historical research only.
 - `baselines/STS2-RitsuLib` is the maintainer research checkout; generated Mods consume
   the pinned package/runtime profile instead of copying it.
+- `baselines/decomp` is the gitignored maintainer-only STS2 `0.107.1` decompiled research
+  snapshot, as confirmed by the human lead. It contains the full game decompile, a focused
+  `RelicModel` extract, and decompiled Mod analyzers. The original DLL hash/provenance
+  sidecar was not retained, so recheck every promoted version-bound fact against the pinned
+  `0.107.1` assembly/catalog or current installed game. Never copy, compile, package, or
+  ship decompiled code; private/internal implementation does not establish a supported route.
 - `baselines/SlayTheSpire2ModdingTutorials` is the official-tutorial product-semantics
   checkout pinned at `5a9110b`. It establishes intended use and documented feature-Package
   membership, not stable-version signatures; exact APIs still come from RitsuLib `0.5.4`.
@@ -237,6 +269,17 @@ M7 design recommendations must remain inside this same runtime boundary. A broad
 vision may be recorded in `DESIGN.md`, but the current deliverable slice and `SPEC.md` must
 contain only promoted operations or explicit gaps. General game-design confidence never
 authorizes ungrounded Harmony, reflection, Publicizer, or IL.
+
+M8 planning does not change the current support graph. M8.2 may promote a reusable generic
+capability only through maintainer-owned pinned research, an exact public/fixed route,
+semantic-conformance cases, documentation, and synchronized payload validation. Until
+then, an identity-critical behavior with no maintained exact implementation is a blocking
+generation gap, not permission for a consumer project to approximate or replace it. A
+currently claimed route that fails its maintained semantic contract must also block until
+the shared implementation is repaired or the limitation is narrowed. Machine-checkable M8.2
+metadata belongs with the existing authoritative recipe/reference route; do not create a
+separately maintained capability catalog beside those routes and the current capability
+graph.
 
 Surfaces open-mod currently generates include:
 
@@ -351,8 +394,12 @@ not silently select a paid backend. Every acquisition path converges on determin
   scaffold -> author -> build -> verify -> bounded repair. An unchanged unfinished project
   resumes directly at its first incomplete stage; a pre-M7.4 project backfills DESIGN from
   accepted SPEC without restarting its interview.
-- Remaining planned M7 flow: the current grounded author/build/verify pipeline ->
-  human-owned M7.6 playtest feedback and bounded design revision.
+- Planned M8 flow adds a literal completion claim and exact semantic preflight before
+  generation; treats behavior, lifecycle, rules text, keyword/DynamicVar and Hover Tip
+  discoverability, localization, preview, and real-consumer presentation as one operation;
+  semantic-impact repair returns to the artifact that owns the changed fact; and the
+  installed workflow must reproduce without in-place skill edits or an owned child process
+  left running. None of that planned flow is implemented yet.
 - `games/sts2/skills/sts2-api/`: lazy recipes, references, and error catalog.
 - `games/sts2/tools/`: cross-platform Python build/launch/log/art wrappers.
 - `games/sts2/tests/`: current support graph and verification ownership.
@@ -409,6 +456,15 @@ alternatives and trade-offs, STS2-native defaults, supported-slice grounding,
 and refusal to fabricate playtest evidence. A
 documentation- or prompt-only M7 change does not require a real-game run unless it changes
 generated runtime behavior or presentation.
+
+M8 tests must preserve end-to-end product meaning rather than merely add another document
+schema. Cases travel with the Package that changes the behavior and must cover literal
+completion claims; exact maintained operation routes; behavior/lifecycle/rules-text/
+keyword/Hover-Tip/localization/preview/presentation parity in real consumers; complex
+mechanic selection, ordering, movement, hooks, degenerate states, and input modes; semantic
+repair backtracking; and immutable installed workflows that clean up only their owned
+process trees and leave no owned child running. M8.6 is the only planned fresh natural-
+language whole-skill gate; it is not authorized to run yet.
 
 Tier 1 requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof plus `selftest done`. Trigger logs and model-only state do not

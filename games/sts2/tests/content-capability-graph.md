@@ -6,9 +6,10 @@ its public API exists in the pinned profile. Confirmed problems are written as n
 limitations. Missing public routes are unsupported. Implementation and verification facts
 are stated directly, without readiness levels or evidence badges.
 
-M7 Design Intelligence and User Experience is authoring work, not a new runtime capability.
-The human lead canceled standalone M7.0 and distributed behavioral cases to the Packages
-that change those behaviors. M7.1 adaptive Interview and routing is implemented with fast,
+M7 Design Intelligence and User Experience is closed authoring work, not a runtime
+capability. The human lead canceled standalone M7.0 and distributed behavioral cases to
+the Packages that changed those behaviors. M7.1 adaptive Interview and routing is
+implemented with fast,
 co-design, revision, direct resume, and its six semantic routing scenarios. M7.2 native
 design grammar is implemented with lazy Character-only grounding, a checked five-Character
 starter inventory, exact native-shaped proposals, explicit fact/convention/decision
@@ -24,6 +25,25 @@ deliverable or `SPEC.md`. M7.5 proportional coherence review is implemented with
 identity anchors, six selected expression surfaces, fail-closed conflicts, deliberate
 tension, and bounded revision impact queues. It also changes no runtime row and cannot
 promote a new art, localization, Event, Character, or other operation.
+
+M7.6 closed through an external human-led Watcher whole-skill evaluation rather than a new
+source Package. Its bounded build/Tier record, human observation that the Mod was playable
+but not very good, overclaim findings, and unrun paths are recorded in
+`documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`. No copied-project observation
+changes a support row without current pinned maintainer grounding.
+
+M8 End-to-End Product Integrity is planned and has not started; M8.1 is next selectable.
+M8.4 was removed; M8.5 and M8.6 retain their numbers. Deliverable, capability-preflight,
+backtracking, and platform work add no runtime row by themselves. The Watcher observations
+make Card behavior metadata, deck inspection/selection/movement, mechanic Hover Tips,
+incoming/outgoing scalar modifiers, and launcher-owned process cleanup explicit M8 audit
+inputs. A copied-project approximation or missing player-facing surface is not promotion
+evidence. Runtime support remains the table below until pinned maintainer research, an exact
+public/fixed route, semantic-conformance coverage, documentation, and payload validation
+ground a selected reusable capability Package. M8 may also find that an existing row's
+generated route fails its maintained contract; that route must then block generation until
+repaired or recorded as the smallest exact limitation rather than being approximated per
+Mod.
 
 ## Supported
 

@@ -23,6 +23,22 @@ complete user-level NuGet cache may be reused across isolated Codex process prof
 projects use the pinned package and installed runtime variant rather than copying that
 checkout.
 
+## STS2 0.107.1 Decompiled Research Baseline
+
+The gitignored `baselines/decomp` directory is the maintainer-only decompiled snapshot made
+from STS2 `0.107.1`, as confirmed by the human lead. It contains the full game decompile in
+`sts2_full/`, a focused `sts2/RelicModel.cs` extract, and decompiled Mod analyzers under
+`modanalyzers/`. It is useful for locating candidate public signatures, lifecycle flow,
+commands, enums, Hover Tip consumers, and host behavior before checking the authoritative
+pinned substrate.
+
+The snapshot did not retain the original DLL hash or a separate provenance record, so its
+identity cannot be mechanically reverified from the decompiled files alone. Every
+version-bound fact promoted into open-mod must still be checked against the pinned
+`0.107.1` assembly/catalog or the current installed game. Never copy, compile, package, or
+ship decompiled code. A private/internal implementation found here does not create a
+supported route.
+
 ## Official RitsuLib Product-Semantics Baseline
 
 The gitignored maintainer checkout `baselines/SlayTheSpire2ModdingTutorials` tracks
@@ -367,11 +383,14 @@ tree also records separately licensed third-party code/assets, and individual im
 audio, Spine, and shader provenance cannot be inferred from the root license. Study
 behavior and code shape; do not redistribute or use those assets as generation references.
 
-## M7 Design-Intelligence Research
+## M7 Design-Intelligence Research And Closure
 
 The human lead selected M7 Design Intelligence and User Experience for planning on
-2026-08-04. This research changes authoring workflow and design quality; it does not add a
-runtime Package or widen the capability graph.
+2026-08-04 and closed it on 2026-08-05. This research changed authoring workflow and design
+quality; it did not add a runtime Package or widen the capability graph. M7.1-M7.5 are the
+implemented source Packages. M7.6 closed through the human-led external Watcher whole-skill
+evaluation recorded in `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`, not a new
+source Package or successful tuning claim.
 
 ### Local CCGS baseline
 
@@ -549,6 +568,62 @@ travel with the Package that changes the behavior and evaluate semantics and dec
 quality rather than exact prose. Real-player observations remain human evidence; no design
 framework or simulated persona may fabricate them.
 
+The external Watcher evaluation then tested the installed workflow as a whole. It showed
+that local design, trace, build, and state-proof success can coexist with a player-facing
+result the human lead considers not very good. Its value is the cross-stage failure shape:
+identity-critical hypotheses entered current scope, player-visible repairs moved forward
+without design backtracking, individually accepted fallbacks accumulated, a minimum
+registrable content set was treated as evaluable, generated implementation/test/reporting
+shared assumptions, macOS success used consumer-session repair, and generic findings stayed
+mixed into project state. Those findings close M7 and become M8 input; they do not
+retroactively change the pinned support graph.
+
+The human lead later identified five concrete symptoms in that same run: the skill-launched
+game process remained open; Exhaust behavior was absent from Card rules text; Scry was only
+an inaccurate approximation; expected Hover Tips were missing; and Wrath omitted its
+incoming-damage multiplier. The useful research result is not five Watcher patches. The
+symptoms expose three reusable failure classes: launch without owned-process cleanup,
+state mutation separated from its complete player-facing semantics, and complex mechanics
+implemented without a maintained exact capability and conformance contract.
+
+## M8 End-to-End Product-Integrity Research Inputs
+
+M8 treats end-to-end semantic fidelity as a product contract across the whole skill:
+
+```text
+request -> literal deliverable -> exact route -> design/spec -> generated behavior
+        -> semantic repair/backtrack -> proportional verification/human observation
+        -> literal report -> reproducible installed result
+```
+
+The active plan retains five bounded Packages. M8.4 was removed by the human lead; M8.5 and
+M8.6 retain their numbers:
+
+- M8.1 literal completion claims and required player experiences carried by the existing
+  DESIGN/SPEC trace; prototype, slice, and run-capable are examples rather than a closed
+  taxonomy;
+- M8.2 exact semantic capability preflight backed by maintained reusable implementations and
+  route-local machine-checkable metadata, with selected generic gaps promoted through pinned
+  maintainer research rather than consumer-session approximation or a second catalog;
+- M8.3 artifact-owned semantic continuity and backtracking when repair changes behavior or
+  any required explanatory/presentation surface;
+- M8.5 repository-owned Windows/macOS installed-workflow reproducibility with scoped graceful/
+  forced cleanup and proof that no launcher-owned game child remains; and
+- M8.6 one clean installed whole-skill acceptance after the preceding Packages close, covering
+  both runtime state and its complete player-facing semantics.
+
+No Package has started; M8.1 is next selectable. Concrete implementation ownership,
+ordered steps, and fixed result-record names live in the active implementation plan so a
+later session does not need to reinterpret these research inputs. Intermediate Packages
+record their work and results; M8.6 owns the final clean whole-skill judgment.
+
+No generic Watcher discovery is promoted from the copied project alone. Exact API,
+lifecycle, platform, and payload conclusions still require the repository's pinned source
+and proportionate maintained evidence. M8.2 may promote a selected reusable capability
+family only through that normal grounded process; until then the literal request blocks
+instead of receiving an approximation. This does not authorize prompt-derived Harmony,
+reflection, Publicizer, or IL or broaden multiplayer support.
+
 ## Reused Design Ideas
 
 The active architecture still borrows these durable ideas from the initial survey:
@@ -566,8 +641,9 @@ The active architecture still borrows these durable ideas from the initial surve
   dependency;
 - **official RitsuLib tutorials:** product semantics and documented Package membership,
   never stable-version signature authority or a runtime dependency;
-- **STS2/game decompile:** exact public command, lifecycle, enum, and host signatures used
-  by maintainers to improve the shipped pack;
+- **`baselines/decomp`:** maintainer-confirmed STS2 `0.107.1` decompiled research used to
+  locate candidate public commands, lifecycle flow, enums, Hover Tip consumers, and host
+  behavior; promoted facts still require the pinned identity checks above;
 - **image tool research:** acquisition is optional and source-independent; deterministic
   normalization and verified consumers matter more than the image backend.
 
@@ -579,9 +655,9 @@ current same-version product-depth reference under the narrower rules above. The
 tutorial checkout is an active semantics baseline, but remains maintainer-only. None of
 these checkouts may be used to scaffold, author, build, repair, or run a generated Mod.
 
-CCGS is active M7 workflow research but remains maintainer-only and is not required to build
-or install `0.6.0`. Other Claude-specific baselines may remain for historical comparison;
-the product and publish flow target Codex.
+CCGS remains retained M7 workflow research but is maintainer-only and is not required to
+build or install `0.6.0`. Other Claude-specific baselines may remain for historical
+comparison; the product and publish flow target Codex.
 
 ## Decision Rules
 
