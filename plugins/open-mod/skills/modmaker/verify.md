@@ -121,11 +121,7 @@ requires the exact load marker and `selftest done`.
   piles, visible order, capacity and overflow behavior, one generated-history entry, exact
   configured output/effect, `AttachedState` ownership, and a distinct empty state/UI in
   combat 2. Reject retained-card, hidden-zone, and `skipVisuals` substitutions.
-- For a Scry Card, follow `reference/scry-helper.md`: require one visible native selector
-  and a pending Card play task before
-  confirmation, plus zero/empty/short/full cases, exact seen/discarded/unselected order,
-  source result pile, one history/hook dispatch per discarded Card, and an explicit
-  singleplayer restriction. Do not require another headed run after this combined proof.
+- For a Scry Card, see `surfaces/card.md` § Proof matrix.
 - For advanced Card/Potion targeting, follow `reference/advanced-targeting.md`: require
   the source-aware single Card, single Potion, and player-aware multi Card as distinct real
   consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
@@ -156,10 +152,7 @@ rename it an automated Tier-2 pass.
 
 ### Gameplay-readability headed acceptance
 
-For Card hand emphasis, read `reference/card-hand-emphasis.md`. Put the real Card in hand
-and drive no-active, activation, deactivation, conflict winner, unplayable show/hide,
-hover/drag, and hand enter/leave states. Confirm that cost, art, rules text, rarity,
-selection, and native playable feedback remain readable.
+For Card hand emphasis, see `surfaces/card.md` § Gameplay-readability headed acceptance.
 
 For Relic/Power extra labels, read `reference/extra-corner-labels.md`. Obtain the real hosts
 and drive Power zero/one plus Relic zero/one/bounded-multiple, plain/rich text, state
@@ -273,8 +266,7 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
 3. Grant the element by its `<PREFIX>-<SLUG>` id:
    - **relic:** `relic add <PREFIX>-<SLUG>` (`add` is default; matching is substring `Contains`).
    - **potion:** `potion <PREFIX>-<SLUG>` (**no `add`**, **exact** match; run in progress).
-   - **card:** `card <PREFIX>-<SLUG>` spawns into **hand** (**no `add`**, **exact** match;
-     run in progress, hand not full).
+   - **card:** see `surfaces/card.md` § Manual fallback.
    - **enemy encounter:** `fight <PREFIX>-<ENCOUNTER_SLUG>` enters the custom encounter
      (run in progress). Confirm the custom monster spawned before ending the turn.
    - **event:** `event <PREFIX>-<SLUG>` enters the custom event (**exact** match; run in
@@ -282,7 +274,7 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
    - **character:** select the custom character on the real character screen and click
      Confirm; there is no console shortcut that proves character-select presence.
 4. Trigger it: **relic** → enter a combat; **potion** → use it (pick a target if targeted);
-   **card** → play it (target an enemy for an attack; `energy 3` first for headroom);
+   **card** → see `surfaces/card.md` § Manual fallback;
    **enemy encounter** → end enough turns to traverse the declared cycle; confirm every
    move's visible intent and exact HP/Block/Power change, and drive each conditional outcome;
    **event** → choose the specified options and confirm each exact Cmd/selection/reward

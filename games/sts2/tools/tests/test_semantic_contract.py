@@ -4,6 +4,8 @@ import re
 import unittest
 from pathlib import Path
 
+import skill_prose
+
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 MODMAKER_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "modmaker"
@@ -11,6 +13,21 @@ STS2_API_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "sts2-api"
 
 
 def surface_block(text: str, heading: str, next_heading: str) -> str:
+    """The SPEC envelope for one surface, wherever it now lives.
+
+    A surface whose envelope/driver/proof are co-located owns a `surfaces/<slug>.md`
+    page; that page IS the block. Otherwise fall back to slicing the shared stage
+    page between two headings.
+    """
+    slug = heading.rstrip(":").strip().lower().replace(" ", "-")
+    if slug in skill_prose.surface_names():
+        # Only the envelope is framework-neutral; the same page's author section
+        # legitimately names framework types. Slice the envelope section alone.
+        page = skill_prose.surface(slug)
+        envelope = re.search(r"## SPEC envelope\n(.*?)(?=\n## )", page, re.DOTALL)
+        if not envelope:
+            raise AssertionError(f"surfaces/{slug}.md has no '## SPEC envelope' section")
+        return envelope.group(1)
     match = re.search(
         rf"\*\*{re.escape(heading)}\*\*.*?(?=\*\*{re.escape(next_heading)}\*\*)",
         text,
@@ -27,9 +44,9 @@ class SemanticContractTests(unittest.TestCase):
         cls.contract = (MODMAKER_DIR / "semantic-contract.md").read_text(
             encoding="utf-8"
         )
-        cls.spec = (MODMAKER_DIR / "spec.md").read_text(encoding="utf-8")
+        cls.spec = skill_prose.stage("spec")
         cls.interview = (MODMAKER_DIR / "interview.md").read_text(encoding="utf-8")
-        cls.author = (MODMAKER_DIR / "author.md").read_text(encoding="utf-8")
+        cls.author = skill_prose.stage("author")
 
     def test_contract_has_all_shared_semantic_sections(self) -> None:
         for field in (

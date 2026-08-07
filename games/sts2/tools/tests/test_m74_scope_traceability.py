@@ -6,6 +6,8 @@ import sys
 import unittest
 from pathlib import Path
 
+import skill_prose
+
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 MODMAKER_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "modmaker"
@@ -27,8 +29,8 @@ class M74ScopeTraceabilityContractTests(unittest.TestCase):
         cls.interview = (MODMAKER_DIR / "interview.md").read_text(encoding="utf-8")
         cls.design = (MODMAKER_DIR / "design.md").read_text(encoding="utf-8")
         cls.contract = (MODMAKER_DIR / "semantic-contract.md").read_text(encoding="utf-8")
-        cls.spec = (MODMAKER_DIR / "spec.md").read_text(encoding="utf-8")
-        cls.author = (MODMAKER_DIR / "author.md").read_text(encoding="utf-8")
+        cls.spec = skill_prose.stage("spec")
+        cls.author = skill_prose.stage("author")
         cls.scenarios = SCENARIOS_PATH.read_text(encoding="utf-8")
         cls.design_example = design_trace._extract_json_block(
             cls.design,

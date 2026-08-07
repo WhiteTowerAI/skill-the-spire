@@ -4,6 +4,8 @@ import re
 import unittest
 from pathlib import Path
 
+import skill_prose
+
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 MODMAKER_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "modmaker"
@@ -23,7 +25,7 @@ class M73DesignPlanningContractTests(unittest.TestCase):
         cls.api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
         cls.route = (MODMAKER_DIR / "route.md").read_text(encoding="utf-8")
         cls.interview = (MODMAKER_DIR / "interview.md").read_text(encoding="utf-8")
-        cls.spec = (MODMAKER_DIR / "spec.md").read_text(encoding="utf-8")
+        cls.spec = skill_prose.stage("spec")
         cls.mechanic = (DESIGN_DIR / "mechanic-planning.md").read_text(encoding="utf-8")
         cls.content_set = (DESIGN_DIR / "content-set-planning.md").read_text(encoding="utf-8")
         cls.balance = (DESIGN_DIR / "balance-planning.md").read_text(encoding="utf-8")

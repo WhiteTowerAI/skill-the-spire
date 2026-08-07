@@ -4,6 +4,8 @@ import re
 import unittest
 from pathlib import Path
 
+import skill_prose
+
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 MODMAKER_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "modmaker"
@@ -20,7 +22,7 @@ class M71RoutingContractTests(unittest.TestCase):
         cls.skill = (MODMAKER_DIR / "SKILL.md").read_text(encoding="utf-8")
         cls.route = (MODMAKER_DIR / "route.md").read_text(encoding="utf-8")
         cls.interview = (MODMAKER_DIR / "interview.md").read_text(encoding="utf-8")
-        cls.spec = (MODMAKER_DIR / "spec.md").read_text(encoding="utf-8")
+        cls.spec = skill_prose.stage("spec")
         cls.scenarios = SCENARIOS_PATH.read_text(encoding="utf-8")
 
     def test_route_stage_precedes_adaptive_interview(self) -> None:

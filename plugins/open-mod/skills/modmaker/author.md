@@ -311,35 +311,7 @@ and follow `reference/vanilla-availability-overrides.md` exactly:
 - Put an optional loose PNG in `PotionAssetProfile`; omit the override for the checked
   placeholder fallback.
 
-**Card** — add `<ModName>Code/Cards/<CardName>.cs` and extend `ModCardTemplate`:
-
-- Pass `cost, CardType, CardRarity, TargetType` to `base(...)`. A card that targets the
-  player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions).
-- For an advanced target, pass the registered value from
-  `reference/advanced-targeting.md`. A single Card uses `cardPlay.Target`; a multi Card
-  gates zero candidates through `IsPlayable`, executes once with `null`, and resolves the
-  live creature list with `GetTargets()` inside `OnPlay`.
-- Add exactly one `.Card<TPool,TCard>()` step to `MainFile.Content.cs`; use
-  `ColorlessCardPool` unless SPEC selects a character pool. Do not add a pool attribute.
-- Declare static scaling numbers in `CanonicalVars`
-  (`DamageVar`/`BlockVar`/`PowerVar<T>`), never literals; bump them in `OnUpgrade()`.
-  For a SPEC calculated value, instead follow `reference/card-computed-values.md`: emit
-  one pure bounded helper, select the matching computed variable role, account for upgrade
-  preview and play-transition timing, and execute through the matching `Compute*Value`
-  extension. `PreviewValue` remains display-only and `BaseValue` is not a computed result.
-- Fill **only** the `OnPlay` effect block with the recipe's confirmed Cmds
-  (`DamageCmd.Attack(...).FromCard(this).Targeting(...).Execute(...)`, `CreatureCmd.GainBlock`
-  with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
-  targeted card. `await` every Cmd. If a custom power is needed, author it first
-  (`recipes/power.md`) and register it once through `.Power<T>()`.
-- If SPEC selects Scry, read `reference/scry-helper.md`, emit its attributed
-  `<ModName>Code/Helpers/OpenModScry.cs`, and await `OpenModScry.Execute` from `OnPlay`
-  using the real `PlayerChoiceContext`, `Owner`, and a scaling `DynamicVar("Scry", X)`.
-  Do not add BaseLib, a global hook/service, or a multiplayer fallback.
-- For hand emphasis, keep one native gold/red rule on the Card or append one typed ordered
-  ruleset to the existing content-pack builder. Generate fixed colors with
-  `RefreshEveryFrame: false`; stop if the condition can change without a normal combat-state
-  refresh.
+**Card** — see `surfaces/card.md` § Author the element class.
 
 **Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend
 `ModPowerTemplate`:
@@ -543,7 +515,7 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    (`<ModName>.<ModName>Code`) so it reaches `MainFile.Logger`.
 2. Fill **exactly one** source DRIVER body based on the source element's real type:
    **relic** → `BeforeCombat` (grant it, its `AfterSideTurnStart` fires on its own);
-   **card** → `InCombat` (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`);
+   **card** → see `surfaces/card.md` § Self-test driver body;
    **potion** → `InCombat` (`TryToProcure` → `EnqueueManualUse`);
    **advanced target** → keep the same real Card/Potion driver, then use
    `reference/advanced-targeting.md` to assert exact affected creature IDs, payment or
@@ -608,17 +580,8 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    run-lifetime `SavedAttachedState` additionally round-trips through
    `SavedProperties.From`/`Fill`; a run cadence must enter a second combat rather than
    mutating the attached value directly to simulate carry-over.
-   A **Scry card** selects the focused `CombatPlayer` variant in
-   `reference/scry-helper.md`: cover zero/empty/short with an automated selector, then
-   play the real Card and prove the visible `NSimpleCardSelectScreen`, pending play task,
-   selected/unselected order, normal source result pile, discard history, and one known
-   `AfterCardDiscarded` effect. Keep the whole matrix in one headed run and retain the
-   singleplayer assertion.
-   A **calculated-value Card** uses the focused matrix in
-   `reference/card-computed-values.md`: cover Damage/Block modifiers, zero and changing
-   Energy/Star icon counts, raw versus amount-given typed Power, base/upgrade display, and
-   the real hand-Card tooltip. Structured post-state proves behavior; headed observation
-   separately proves text, icon reflow, and tooltip presentation.
+   A **Scry card** and a **calculated-value Card** each select their focused matrix in
+   `surfaces/card.md` § Self-test driver body.
    A **Relic-owned Rest Site option** uses the focused real-host matrix in
    `reference/rest-site-options.md`: absent owner, insufficient-Gold gray state,
    render-then-remove-Gold failed selection with zero deltas, exact successful

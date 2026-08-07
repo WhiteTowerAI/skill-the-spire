@@ -381,70 +381,8 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
 
 **Card** (cost/type/target + upgrade replace trigger; loc table is `cards`, no flavor,
 plus an optional `selectionScreenPrompt`; art is the scaffolded card portrait):
-
-```markdown
-# SPEC — <Mod Name>
-
-- **contract**: sts2-content-semantic/v1
-- **mod id**: <stable mod identity>
-- **author**: <author>
-- **content**:
-  - name: <shown name>
-  - surface: card
-  - logical id: <stable local stem, e.g. blade_dance>
-  - kind: Attack | Skill | Power
-  - rarity: Basic | Common | Uncommon | Rare
-  - relations: <none | custom power/keyword/enchantment/orb dependencies>
-- **registration**:
-  - availability: shared | character:<name>
-  - ownership: player
-  - placement: <plain-language card-pool rule>
-- **localization**:
-  - fields: title=<shown name>; description=<hover text>; optional selection prompt
-  - formatting: dynamic value placeholders; plain | bounded vanilla rich text
-  - text spans: <description phrase -> semantic color intent>
-  - variable tooltips: none | <value name -> localized title; description; optional icon>
-- **effects**:
-  - trigger: play
-  - target: one enemy | all enemies | self
-  - advanced target: none | use the shared declaration below
-  - cost: <energy integer, default 1>
-  - sequence: <ordered game-term effect with exact values>
-  - helper: none | Scry top <X>, discard any number, singleplayer only
-  - scaling: <named base values, e.g. damage 6; block 5; strength 2>
-  - upgrade: <named value deltas, e.g. damage +3>
-  - calculated values: none | one or more
-    - <name>: role <plain | damage | block | Energy icons | Star icons | raw typed Power |
-      applied typed Power>; formula <one deterministic expression>; inputs <complete list>;
-      domain <integer [min,max]>; upgrade <same | exact change>; evaluation <before play |
-      after normal payment and move>
-- **state**: none | see the stateful-mechanic contract below
-- **presentation**:
-  - assets: card portrait; placeholder | generate
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
-  - native presentation: standard card body/preview
-  - hand emphasis: none | one or more ordered rules
-    - rule: <stable local rule name; repeat in precedence order>
-      meaning: <actionable bonus, warning, or other player-facing state>
-      condition: <plain-language active rule>
-      color: gold | red | custom <plain color>
-      priority: <integer; highest active rule wins>
-      while unplayable: show | hide
-- **fallback**:
-  - missing asset: checked template card portrait
-  - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
-- **proof**:
-  - scenario: CombatPlayer
-  - driver: play the real card against its declared target
-  - invariants: <exact expected/observed state, result pile, and dependent effects>
-  - boundary cases: <upgrade/state/relationship cases; for calculated values include
-    zero/positive/changing input, domain bounds, base/upgrade, normal modifiers, final
-    preview vs effect result, icon reflow, and variable tooltip; for Scry include
-    zero/empty/short/full, order, discard hooks/history, awaited selector, and
-    singleplayer restriction; or none>
-- **adapter output** (written to MEMORY after acceptance): resolved content id,
-  localization keys, asset profile, and framework diagnostic record
-```
+its envelope, element class, and proof matrix live together in `surfaces/card.md`. Read
+that page for `surface: card`.
 
 When a Card or Potion selects a filtered live-creature target, replace that surface's
 `advanced target: none` field with this block at the same indentation (top-level for a
