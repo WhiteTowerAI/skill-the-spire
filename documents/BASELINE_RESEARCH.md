@@ -612,7 +612,8 @@ M8.6 retain their numbers:
 - M8.6 one clean installed whole-skill acceptance after the preceding Packages close, covering
   both runtime state and its complete player-facing semantics.
 
-No Package has started; M8.1 is next selectable. Concrete implementation ownership,
+M8.0 skill structure restructuring is closed; M8.1 is next selectable.
+Concrete implementation ownership,
 ordered steps, and fixed result-record names live in the active implementation plan so a
 later session does not need to reinterpret these research inputs. Intermediate Packages
 record their work and results; M8.6 owns the final clean whole-skill judgment.

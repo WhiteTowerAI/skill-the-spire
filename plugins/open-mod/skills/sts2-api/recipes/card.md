@@ -460,7 +460,7 @@ public sealed class Bulk : ModCardTemplate
 
 1. Build with `tools/build.py`; it packs the generated resource tree and deploys the
    Mod's own `.dll`, `.json`, and `.pck`. A no-art card loads with a placeholder
-   portrait — expected in M4, not a failure. If load *errors*, that's a repair signal.
+   portrait — expected, not a failure. If load *errors*, that's a repair signal.
 2. Run `verify.md`: Tier 1 checks the load marker; automated Tier 2 spawns/plays the card,
    asserts its concrete state delta, and greps the structured `state proof:` line.
    A calculated-value Card uses the focused behavior/presentation matrix in

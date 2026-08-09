@@ -21,6 +21,12 @@ independently: a valid path or successful PCK build is not render evidence.
 
 ## Profile and consumer matrix
 
+The sizes in this matrix are a readable view of the code-owned art contract, projected into
+`reference/catalogs/art-contract-sts2-0.107.1.json`. That catalog also carries each slot's
+output path, alpha policy, required/optional status, fallback, and generation-call budget.
+The status column below is this page's own: it records how strongly each consumer has been
+observed, which is not something the contract holds.
+
 | profile | RitsuLib surface | real consumer | status |
 |---|---|---|---|
 | selection portrait, 132x195 | `AssetProfile.Ui.CharacterSelectIconPath` | `NCharacterSelectButton.%Icon` and selected panel | visible and screenshot-proven |
@@ -217,7 +223,7 @@ not prove the rich-text consumer.
 The static proof is independent from the public resource/control proof; read
 `character-resource.md` for its fixed control, offset, fallback, and non-overlap contract.
 
-## M6.5 card/UI theme
+## Card/UI theme
 
 One Character-local theme contract owns `NameColor`, `EnergyLabelOutlineColor`,
 `DeckEntryCardColor`, `EnergyOutlineColor`, frame target RGB/brightness, both Energy-icon

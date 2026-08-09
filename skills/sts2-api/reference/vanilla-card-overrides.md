@@ -1,6 +1,6 @@
 # Public overrides for existing vanilla Cards
 
-Use this reference after `vanilla-overrides.md` resolves an exact `CARD.*` target. M6.7.1
+Use this reference after `vanilla-overrides.md` resolves an exact `CARD.*` target. This route
 is pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. It changes existing Card instances by
 attaching a registered default `CardCapability`; it does not register a second Card,
 mutate `ModelDb`, or generate Harmony, reflection, Publicizer, or IL.
@@ -33,7 +33,7 @@ type for every small text or number change.
 
 These routes include all non-asset Card contributor interfaces needed by the current
 semantic authoring vocabulary. Card frame/portrait/banner material providers are promoted
-separately by M6.7.2 in `vanilla-visual-overrides.md` because they require asset packaging
+separately in `vanilla-visual-overrides.md` because they require asset packaging
 and presentation contracts. `HasTurnEndInHandEffect` alone
 only asks the game to call the vanilla Card's own protected handler; do not turn it on
 without a grounded compatible owner behavior. A target-bound override must not implement
@@ -124,7 +124,7 @@ static partial void RegisterContent()
     var content = RitsuLibFramework.GetContentRegistry(ModId);
     content.RegisterModelCapability<StrikeIroncladOverride>();
     content.ConfigureDefaultModelCapabilities<StrikeIronclad>(
-        "m671-card-strike-ironclad",
+        "override-card-strike-ironclad",
         (_, capabilities) => capabilities.Add<StrikeIroncladOverride>());
 }
 ```
@@ -250,8 +250,7 @@ every shipped language required by the accepted SPEC and preserve SmartFormat va
 Changing a gameplay effect and its player-facing text is one operation plan, even though
 the manifest records separate ordered surfaces.
 
-During the M6.7 batch window, run focused manifest tests and one compile-only project that
-contains representative selected interfaces. Do not claim real-game behavior, preview,
-clone/save, transform, payment, targeting, result-pile, or presentation proof until the
-consolidated M6.7 host program runs. At closure, cover those paths for every promoted family
-and keep every unrun path as an explicit exception rather than a pass.
+Never claim real-game behavior, preview, clone/save, transform, payment, targeting,
+result-pile, or presentation proof that was not observed in a real host. A focused manifest
+test and a successful compile establish neither. Report every unrun path as an explicit
+exception rather than a pass.

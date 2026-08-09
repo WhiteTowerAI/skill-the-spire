@@ -99,6 +99,6 @@ ratios, then confirm that labels remain readable and do not overlap the native i
 counter, tooltip, or adjacent labels. It must also confirm removal and cleanup after host
 destruction or combat transition.
 
-Intent belongs to the supported public Extra Badges Package, but Intent authoring is not
-scheduled in the active M6.6 work. Do not adapt this Relic/Power recipe to Intent and do not
-describe that scheduling boundary as unsupported.
+Intent belongs to the supported public Extra Badges Package, but no Intent authoring recipe
+exists yet. Do not adapt this Relic/Power recipe to Intent, and do not describe that missing
+recipe as an unsupported capability.

@@ -85,7 +85,7 @@ with valid card/relic/potion pools and exact starter deck/relic, and proves HP, 
 The adapter owns exactly-once registration. Static presentation is a separate opt-in layer
 with nine promoted profiles: selection portrait/background, top-panel icon, non-Spine
 combat/rest/merchant bodies, five-layer energy, and distinct 256x256 large/24x24 rich-text
-Energy icons. The M6.5 Character-wide color/frame contract is also implemented.
+Energy icons. The Character-wide color/frame contract is also implemented.
 Deterministic top-icon and generated-Relic outlines are implemented. A separate
 bounded non-Spine combat layer supports private `Idle`/`Attack`/`Hit`/`Dead` frame
 sequences with one shared geometry and an all-or-nothing static fallback. Locked selection,
@@ -151,41 +151,40 @@ normalization contract; native-tool, Vofy, and local-file outputs call its `impo
 command. See `author.md` §4 and `sts2-api` → `reference/art-contract.md`. The
 managed-credit route is live-verified through Vofy + an in-game `.pck` on Windows;
 host-native tool availability is runtime-dependent, and macOS/Linux remains best-effort.
-M6.7 grounds requests against a checked `0.107.1` vanilla catalog and emits a semantic
-override manifest in every new scaffold. Route existing content first to
-`sts2-api/reference/vanilla-overrides.md`. A selected public visual surface continues
-through the complete 44-provider M6.7.2 Package in `reference/vanilla-visual-overrides.md`.
-An exact existing Card's non-asset operations may continue through the M6.7.1 Package in
-`reference/vanilla-card-overrides.md`. An exact existing Ancient's initial options and
-subsequent page branches may continue through the M6.7.3 Package in
-`reference/vanilla-ancient-overrides.md`, including public append or the reviewed fixed
-replacement Adapter. Availability requests for pinned epoch gates or Card/Relic/Potion pool
-membership may continue through the M6.7.4 Package in
-`reference/vanilla-availability-overrides.md`. Existing Relic/Potion/Power/Orb/
-Enchantment/Affliction/Monster/Encounter/ordinary Event data or behavior may continue
-through the M6.7.5 Package in `reference/vanilla-non-card-overrides.md`. Other operations
-stop at their exact unpromoted boundary. Historical
-capability bridges are not a general editing recipe.
-If a request needs what isn't wired, say so plainly rather than half-doing it.
+Requests against existing vanilla content are grounded on a checked `0.107.1` catalog, and
+every new scaffold emits a semantic override manifest. Route existing content first to
+`sts2-api/reference/vanilla-overrides.md`, then to the reference that owns the surface:
 
-Treat vanilla Card base-description replacement as a blocking capability conflict. When a
-user asks to replace, remove, or hide the original description body, explain that the pinned
-RitsuLib `0.5.4` route can only compose text before or after it and stop before SPEC or
-scaffold. Never silently downgrade `replace` to `compose`; proceed only after the user
-explicitly accepts the visibly different composition, even if values are final or they asked
-not to repeat questions.
+- a public visual surface — `reference/vanilla-visual-overrides.md` (44 providers);
+- an exact existing Card's non-asset operations — `reference/vanilla-card-overrides.md`;
+- an existing Ancient's initial options and page branches, by public append or the reviewed
+  fixed replacement Adapter — `reference/vanilla-ancient-overrides.md`;
+- pinned epoch gates and Card/Relic/Potion pool membership —
+  `reference/vanilla-availability-overrides.md`;
+- existing Relic/Potion/Power/Orb/Enchantment/Affliction/Monster/Encounter/ordinary Event
+  data or behavior — `reference/vanilla-non-card-overrides.md`.
+
+Other operations stop at their exact unpromoted boundary (INV-3, INV-7).
+
+Vanilla Card base-description replacement is the case to recognize by name, because the
+substitution looks harmless: when a user asks to replace, remove, or hide the original
+description body, the pinned RitsuLib `0.5.4` route can only compose text **before or after**
+it. That is a visible difference, so it is `INV-5` — explain it, stop before SPEC or scaffold,
+and never downgrade `replace` to `compose` on your own.
 
 A RitsuLib Package documented by the official tutorials is supported when its public API
-exists in the pinned profile. If this shipped pack still lacks its SPEC block or recipe,
-say exactly what authoring work is missing; do not call the public API unsupported,
-silently omit the request, or improvise source outside the pack.
+exists in the pinned profile. If this shipped pack still lacks its SPEC block or recipe, that
+is missing authoring work, not an unsupported API (INV-3).
 
 ## Stage files
 
-Read each from `./` only when you reach that stage.
+Read each from `./` only when you reach that stage. `invariants.md` is
+the one exception: read it at pipeline start and keep it in context, because its rules
+constrain every stage rather than one.
 
 | File | Purpose | When to read |
 |------|---------|--------------|
+| `invariants.md` | The eight rules every stage obeys, stated once | Pipeline start; stays in context |
 | `route.md` | Infer fast / co-design / revision and preserve settled decisions | Pipeline start (after state check) |
 | `interview.md` | Resolve only material open decisions → intake | After routing when a decision is still open |
 | `design.md` | Write adaptive `DESIGN.md`, current/future scope, coherence contract, and stable IDs | After Interview, or to backfill a pre-M7.4 project |
@@ -204,7 +203,7 @@ Read each from `./` only when you reach that stage.
 ```text
 User: one sentence ("a relic that ...")
     |
- 0. STATE CHECK — read DESIGN.md when present, then SPEC.md / PLAN.md / MEMORY.md.
+ 0. STATE CHECK — read invariants.md, then DESIGN.md when present, then SPEC.md / PLAN.md / MEMORY.md.
     If the user requested no change, skip to the first unfinished stage. If they requested
     a change, preserve the existing artifacts and continue through the revision route.
     |
@@ -253,8 +252,7 @@ User: one sentence ("a relic that ...")
     and fresh-run error blocks (tier-1). Then run the tier-2 self-test unattended
     (launch.py --self-test → the harness drives the required combat/event/run-start scenario and
     asserts concrete post-state → grep its structured state proof). Fall back to the manual dev-console guide
-    only if the harness can't reach its scenario. Never claim the effect is verified when
-    only load was. On failure: go to REPAIR (repair.md).
+    only if the harness can't reach its scenario (INV-1). On failure: go to REPAIR (repair.md).
     |
  9. FINALIZE — summarize what was built, where the artifacts are, and which tier
     of verification was reached.
@@ -284,11 +282,10 @@ resume without a general interview.
 
 ## Verify on observed reality, never "it compiled"
 
-A green build is not success. The mod must **load** (tier-1: log marker greppable,
-no fresh-run errors) and its **effect must fire** (tier-2: driven automatically by the
-in-process self-test harness, then independently state-asserted — no human triggering). Report
-exactly which tier was reached; a harness that couldn't reach its scenario is tier-1, not a
-tier-2 failure of the mod. See `verify.md`.
+`INV-1` and `INV-2` own this. What the two tiers concretely are: the mod must **load**
+(tier-1: log marker greppable, no fresh-run errors) and its **effect must fire** (tier-2:
+driven automatically by the in-process self-test harness, then independently state-asserted —
+no human triggering). See `verify.md`.
 
 ## When you need a concrete STS2 answer
 

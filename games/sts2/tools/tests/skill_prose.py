@@ -31,6 +31,12 @@ _STAGE_PAGES: dict[str, tuple[Path, ...]] = {
     "verify": (MODMAKER_DIR / "verify.md",),
 }
 
+# `invariants.md` is in every corpus because it is in context at every stage:
+# the orchestrator reads it at pipeline start and keeps it, so a stage page may
+# name `INV-3` instead of restating it. A test asserting the *rule* should read
+# the corpus; one asserting a stage's own stage-specific detail can read the file.
+INVARIANTS_PAGE = MODMAKER_DIR / "invariants.md"
+
 
 def surface_pages() -> tuple[Path, ...]:
     """Every per-element surface page, in stable order."""
@@ -48,14 +54,22 @@ def join(paths: tuple[Path, ...]) -> str:
 
 
 def stage(name: str) -> str:
-    """Full corpus for one pipeline stage: its page plus the surface pages."""
-    pages = _STAGE_PAGES[name] + surface_pages()
-    return join(pages)
+    """Full corpus for one pipeline stage: its page, invariants, and surfaces."""
+    return join(stage_paths(name))
 
 
 def stage_paths(name: str) -> tuple[Path, ...]:
     """The exact files making up a stage corpus (for per-file assertions)."""
-    return _STAGE_PAGES[name] + surface_pages()
+    return _STAGE_PAGES[name] + (INVARIANTS_PAGE,) + surface_pages()
+
+
+def with_invariants(*pages: Path) -> str:
+    """One or more stage pages plus the always-loaded invariants.
+
+    For a stage that has no surface dispatch (route, interview, design, repair):
+    the rule may live in `invariants.md` while the stage adds only its own detail.
+    """
+    return join(tuple(pages) + (INVARIANTS_PAGE,))
 
 
 def surface(element: str) -> str:

@@ -74,8 +74,6 @@ def generate(
     <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\\$(MSBuildProjectName).json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
-    <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)\\openmod" Condition="Exists('$(MSBuildProjectDirectory)\\openmod\\vanilla-overrides.json')" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\\openmod\\vanilla-overrides.json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)\\openmod" Condition="Exists('$(MSBuildProjectDirectory)\\openmod\\vanilla-overrides.json')" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
   </Target>
 </Project>

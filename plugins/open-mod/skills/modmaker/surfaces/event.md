@@ -1,0 +1,211 @@
+# Surface: event (World Node)
+
+Everything the pipeline needs for one Event, in one place: the SPEC envelope it must declare,
+the element class the author writes, and the proof its verification owes. Read this page at
+the `spec.md`, `author.md`, and `verify.md` stages when `element: event`.
+
+One semantic Event with nested pages/options; scenario is `MapNode`; supported outcomes
+include blocking selections/rewards and one resumable or terminal special combat per mutable
+Event instance; normal portraits and the bounded `portrait_halo` profile plus bounded vanilla
+description rich text are supported, while custom phobia art, arbitrary VFX, and
+custom/Ancient scenes are not.
+
+## SPEC envelope
+
+```markdown
+# SPEC — <Mod Name>
+
+- **element**: event
+- **logical id**: <stable local stem, e.g. gilded_signpost>
+- **mod id**: <stable mod identity>
+- **author**: <author>
+- **acts**: all | <Glory | Hive | Overgrowth | Underdocks>
+- **opening**: <initial page description>
+- **displayed values**: none | <value name -> the option/page text that shows it; declare one
+  name per number the player reads, and reference it as a placeholder>
+- **options**:
+  - id: <stable option stem, e.g. follow_the_sign>
+    title: <button title>
+    description: <button consequence text>
+    effect: <ordered game-term consequence with numbers, including any blocking overlay>
+    availability: always | gated by <exact run-state condition>
+    hover tips: none | enabled-only <content name + upgrade/amount state>
+    relic presentation: none | <relic name; normal title/description/metadata; image gap>
+    lethal warning: none | HP cost <exact decimal> | Max HP cost <exact decimal>
+    acquisition presentation: none | native Card <name> to Deck | native relic <name>
+    screen shake: none | `weak_short`
+    next: finish <RESULT_KEY> | page <PAGE_KEY> | special combat <ENCOUNTER>
+- **special combat**: none | <encounter logical id + monster/group HP and grounded move cycle>
+- **combat completion**: resume page <PAGE_KEY> | map (exactly one when combat exists)
+- **extra combat rewards**: none | <owned reward types and amounts>
+- **scenario**: MapNode
+- **observe**: custom event room entered; formatted text and real option UI; every declared
+  option present with its declared enabled/locked state; exact outcome/selection/reward
+  post-state; encounter identity; expected Resume page or direct map
+- **art**: placeholder | generate (normal/default layout only; every selected slot is an
+  opaque 3440x1613 portrait)
+- **portrait slots**:
+  - initial: `<event-slug>`
+  - `<PAGE_KEY>`: `<event-slug>_<page-key-lower>` (only when explicitly requested)
+- **art source**: runtime-imagegen | vofy | byo-http | local-image (generate only)
+- **art subject/style**: <opening situation; focal subject left, darker UI space right>
+- **art fallback**: initial uses the verified vanilla portrait; absent page art retains
+  the current portrait
+- **event VFX**: none | `portrait_halo` | `trial_noble`
+- **VFX pages**: <PAGE_KEY -> unique node name, color/mood; normal layout only>
+- **VFX cleanup**: free owned named nodes before page/portrait/combat/finish transitions;
+  Instant Fast Mode is static for `portrait_halo`; `trial_noble` inherits host process mode
+- **event text effects**: none | vanilla
+- **text spans**: <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis, aqua/blue/
+  gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
+- **forced follow-up**: none | Quest token <logical id> -> target Event <logical id>
+- **forced act**: none | <exact zero-based act index plus player-facing act name>
+- **forced trigger**: carrying one token; next entered Unknown MapPoint in the forced act
+- **target pool rule**: target is excluded from ordinary Event placement; the token route
+  is its only supported entry
+- **token completion**: <named target option> completes the quest, removes all matching
+  tokens from the deck, and restores ordinary room/Event behavior
+- **forced-follow-up boundary**: solo; one token class/target/act; no arbitrary chains,
+  vanilla edits, duplicate-token rewards, multiplayer, or new save-roundtrip claim
+- **option presentation gaps**: <locked-option tips, normal-layout relic image, or none>
+- **unsupported transitions**: merchant, rest site, and treasure room
+- **derived ids** (adapter resolves after the semantic SPEC is accepted):
+  - Event logical id plus title/page/option localization fields
+```
+
+Each option id is stable semantic input; the adapter derives any method and localization
+keys from it. If special combat exists, the spec also owns the custom monster + encounter
+dependency from `surfaces/monster.md`; do not leave `<ENCOUNTER>` abstract.
+
+## Numbers the player reads should be declared values
+
+The engine substitutes the Event's `DynamicVars` into every option title, option description,
+and page description at render time. Vanilla depends on this: `TrashHeap` declares
+`new HpLossVar(8m)` and `new GoldVar(100)`, and `SlipperyBridge` mutates
+`DynamicVars["HpLoss"].BaseValue` as its HP cost escalates — one localization key serving
+several different costs.
+
+Write the number once as a declared value and reference it as a placeholder in the localized
+text. A literal is acceptable only for a single fixed-cost option whose number appears in one
+place. Prefer the declared value whenever:
+
+- the cost or reward changes across pages or repeat visits;
+- the same number appears in both the effect Cmd and the localized text, where they can
+  silently diverge; or
+- a `lethal warning` states a cost that must stay identical to the value the effect applies.
+
+Record each one in `displayed values`.
+
+## Author the element class
+
+**Event / World Node** — create `<ModName>Code/Events/` and add `<Name>.cs` from
+`recipes/event.md`:
+
+- Extend `ModEventTemplate`; no `[Pool]`, constructor/manual registration, or second content
+  pack. Use `.SharedEvent<T>()` for all-act placement or `.ActEvent<TAct,T>()` when scoped.
+- Declare each SPEC `displayed value` in `CanonicalVars` (or compute it in `CalculateVars()`)
+  and reference it as a placeholder in `events.json`, so text and effect share one source.
+- For a forced follow-up, also author the one unplayable Quest Card exactly from
+  `reference/forced-followup-event.md`: Quest type/rarity, cost `-1`, no upgrades, and the
+  two public hook overrides guarded by the exact act. The target Event returns false from
+  `IsAllowed`; do not place it in the ordinary Event pool. The source grant rejects a
+  duplicate, and the named target option completes/removes all matching tokens.
+- Ship flat `events.json` keys for the normalized Event entry, `INITIAL`, every explicit
+  option key, and every result page. Use `InitialOptionKey`/`ModOptionKey`; callback method
+  names do not mint localization keys.
+- `GenerateInitialOptions()` returns the authored options. Each method uses the confirmed
+  public Cmd/selection/reward vocabulary against `Owner`, awaits blocking overlays, logs
+  the observed state delta, then follows SPEC with `SetEventFinished`, `SetEventState`, or
+  one special-combat transition.
+- If any option enters combat, author its monster + encounter dependency from
+  `surfaces/monster.md`, set `IsShared => true`, and call
+  `EnterCombatWithoutExitingEvent<TEncounter>(extraRewards, shouldResumeAfterCombat)`.
+  A resumable branch overrides `Resume(AbstractRoom)` and restores its exact named page;
+  a terminal branch proceeds to the map. Never emit a second combat from the same mutable
+  Event instance or a direct merchant/rest/treasure room transition.
+- Fill `EventAssetProfile.InitialPortraitPath` with the recipe's existence check: use the generated
+  `images/events/<event-slug>.png` when present, otherwise the verified vanilla
+  `this_or_that.png` fallback, and filter the missing convention-derived path from
+  `GetAssetPaths`. For every explicitly requested page portrait, check
+  `images/events/<event-slug>_<page-key-lower>.png` and call `NEventRoom.SetPortrait`
+  immediately before the page transition; when absent, retain the current portrait. Clean
+  owned portrait child nodes before a switch.
+- When SPEC selects `portrait_halo`, emit the exact bounded helper from
+  `reference/event-vfx.md`, attach page profiles through `OnRoomEnter`/the portrait host,
+  honor Instant/Fast mode, and explicitly `QueueFreeSafely` every owned named root before
+  page, portrait, combat, or finish transitions. Do not promote RitsuLib's arbitrary custom
+  VFX/layout routes. Custom phobia
+  art, arbitrary VFX, custom layouts, and Ancient background assets remain unsupported.
+- When SPEC selects vanilla Event text effects, apply only the exact bounded tags from
+  `reference/event-text-effects.md` around the named phrases in `events.json` page/option
+  descriptions. Keep titles plain; emit no helper node or cleanup code.
+- When an enabled option selects typed Hover Tips, pass the exact grounded
+  `HoverTipFactory` values through `EventOption`; do not emit a locked-option workaround. For
+  relic-backed presentation, use `CreateModRelicOption<T>` for native title/description/metadata and
+  keep semantic acquisition in a separate awaited `RelicCmd.Obtain<T>`. Preserve the
+  normal-layout relic image as a presentation gap rather than generating an Ancient Event.
+- When a choice pays HP or Max HP, apply `ThatDoesDamage` or `ThatDecreasesMaxHp` to the
+  generated option using the exact decimal cost used by its Cmd. The helper is warning-only,
+  and its exact-cost boundary is inclusive; never substitute differently rounded values or
+  warning-colored text.
+- When a choice acquires a Card, await one `CardPileCmd.Add` and pass that exact successful
+  result to `CardCmd.PreviewCardPileAdd`; when it acquires a relic, emit exactly one awaited
+  `RelicCmd.Obtain<T>`. Do not create duplicate models or custom preview holders.
+- When SPEC selects `weak_short`, call `NGame.Instance?.ScreenShake(ShakeStrength.Weak,
+  ShakeDuration.Short)` once after the named successful consequence and before its page
+  transition. Never read or replace the player's multiplier.
+- When SPEC selects `trial_noble`, emit the exact preloaded scene/portrait-host helper from
+  `reference/event-native-presentation.md`, keep its vanilla `(292,68)` placement and
+  inherited process mode, and `QueueFreeSafely` the owned named root before transitions.
+
+Event mechanics route to `recipes/event.md`, full outcomes to
+`reference/event-outcomes.md`, the optional halo to `reference/event-vfx.md`, and bounded
+description styling to `reference/event-text-effects.md`. Enabled typed option tips, normal
+relic-backed text/metadata, and exact HP/Max HP warnings route to
+`reference/event-option-presentation.md`. A selected forced follow-up routes to
+`reference/forced-followup-event.md`. Native Card/relic acquisition presentation,
+`weak_short` screen shake, and `trial_noble` route to
+`reference/event-native-presentation.md`.
+
+## Self-test driver body
+
+**event** → the **`MapNode`** variant: enter the canonical custom event, then drive real
+option UI. The focused body is in `reference/selftest-harness.md` § event.
+
+## Proof matrix
+
+- Require one real UI path per independent SPEC outcome family. Blocking card/reward overlays
+  must finish before their post-state assertion.
+- **Assert the option set before choosing.** The driver selects one option by exact title, so
+  a `GenerateInitialOptions()` that produces fewer or more options than SPEC declares goes
+  unnoticed. Assert that every declared option id is present on its page, with its declared
+  enabled/locked state, before driving any of them.
+- **Drive each gated option both ways.** For any option whose `availability` is gated, prove
+  the locked state as well as the enabled one by changing the real run-state condition — the
+  same standard a monster's conditional branch is held to. A predicate that never gates
+  correctly otherwise passes.
+- A special combat must identify the custom encounter and prove exactly one authored
+  completion path: named `Resume` page or direct map. Use a fresh Event instance if SPEC
+  independently exercises both forms; never start two combats from one mutable Event.
+- The final structured marker lists identical expected/observed outcome families.
+
+## Manual fallback (only when the harness cannot reach its scenario)
+
+Grant it:
+
+   - **event:** `event <PREFIX>-<SLUG>` enters the custom event (**exact** match; run in
+     progress). Confirm the localized option appears before choosing it.
+
+Trigger it:
+
+   **event** → choose the specified options and confirm each exact Cmd/selection/reward
+   consequence. For special combat, confirm the requested custom encounter and then the
+   named return page or direct map. For `portrait_halo`, visually inspect configured pages
+   and confirm no stale overlay survives a page switch or combat entry. For vanilla Event
+   text effects, inspect the named colored/moving phrase on each authored page and confirm
+   the prior page's text is gone after the transition.
+   For native acquisition presentation, confirm the real Card preview and relic top-bar
+   animation, and for `trial_noble` confirm its exact initial-page placement and absence on
+   the result page. A `weak_short` shake must terminate and must honor a disabled setting.
+   A forced follow-up cannot be proved by the `event` console shortcut; if its automated
+   real-Unknown driver cannot run, report Tier 1 rather than claiming the hook behavior.

@@ -1,7 +1,7 @@
 # Public visual overrides for existing vanilla models
 
 Use this reference after `vanilla-overrides.md` resolves an exact target whose request is
-visual. M6.7.2 is pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. It promotes all 44 public
+visual. These routes are pinned to STS2 `0.107.1` and RitsuLib `0.5.4` and cover all 44 public
 providers in `ExternalCardMaterialOverrideRegistry` and `ExternalAssetOverrideRegistry`;
 the number of headed examples does not narrow this Package.
 
@@ -193,12 +193,11 @@ either registry's `Clear()`, because that removes other Mods' providers.
 
 ## Boundaries and checks
 
-During the M6.7 batch window, run focused manifest/resource tests and at most one
-representative compile-only check. Defer real presentation hosts, full regression, payload
-publication/parity, and final results to consolidated M6.7 closure. A successful manifest,
-resource existence check, PCK pack, or compile is not headed visual proof.
+A focused manifest/resource test and a representative compile establish the manifest and the
+build, nothing more. A successful manifest, resource existence check, PCK pack, or compile is
+not headed visual proof — only the real presentation host is.
 
-At closure, group routes by their nearest real consumer: Card hand/full view and CardPool;
+Group routes by their nearest real consumer when verifying: Card hand/full view and CardPool;
 Relic/Power/Potion/Orb combat UI and previews; Act map/rest/background; Event/Ancient;
 Encounter room/map/history; and Affliction/Enchantment/Modifier consumers. Verify fallback
 by removing one optional resource and confirm untouched surfaces remain vanilla. Keep

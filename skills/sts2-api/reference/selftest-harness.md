@@ -938,7 +938,7 @@ proof-only node cannot hide broken RitsuLib wiring. Then finish combat and enter
 to assert the real `NRestSiteCharacter` and `NMerchantCharacter` with their 512x512 bodies.
 Capture settled selection, combat/top-panel/energy, RestSite, and Shop screenshots.
 
-For the M6.5 card/UI theme, replace the shared compact-icon assertion with two
+For the Card/UI theme, replace the shared compact-icon assertion with two
 independent consumers. Assert the Character/card-pool properties equal all four theme
 colors; `PoolFrameMaterial` is the cached theme `ShaderMaterial` with exact
 `target_color`/`brightness`; `BigEnergyIconPath` and `TextEnergyIconPath` are distinct,
@@ -1253,13 +1253,13 @@ observations. A model-generated list cannot prove them. When the human lead rese
 headed run, do not launch the game automatically; provide the exact console route and keep
 an unrun strict `selftest done` as an explicit verification exception.
 
-## Deferred: the headless / menu-skip path (design seam, not built in M5)
+## Deferred: the headless / menu-skip path (design seam, not built)
 
 The fragile part is `NavigateToRunAsync` (scene-tree paths shift across versions). The
 game's own **menu-skip** sequence removes it entirely — `NSceneBootstrapper.StartNewRun`
 does `RunState.CreateForNewRun(...)` → `RunManager.Instance.SetUpNewSingleplayer(runState,
 false, null)` → `Launch()` → `EnterRoomDebug(...)`, no UI at all. When headless is taken
-up (M5 follow-on), swap `NavigateToRunAsync` for that; the rest of the harness is
+up, swap `NavigateToRunAsync` for that; the rest of the harness is
 unchanged. Not built now — it touches `_game.RootSceneContainer`/`SetActInternal`, which
 need their own mod-reachability grounding first.
 

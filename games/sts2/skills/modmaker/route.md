@@ -20,7 +20,7 @@ compact artifact from settled facts, assign trace IDs, validate it, and then res
 only if the existing artifacts contain a material contradiction; do not invent rationale,
 rejected alternatives, or future vision.
 If a new project has accepted `DESIGN.md` but no SPEC/PLAN yet, resume at SPEC without
-rerunning Route or Interview.
+rerunning Route or Interview. Every resume path here is `INV-6`: the artifacts are the state.
 If the user asks to change an existing Mod or its artifacts, use the revision route even
 when the change looks small.
 
@@ -61,12 +61,12 @@ user-supplied playtest observation.
 - Read the existing artifacts before asking anything.
 - Summarize a delta as **keep**, **change**, **check**, and **re-verify**. Omit empty groups.
 - Ask only about a contradiction or missing choice introduced by the requested change.
-- Preserve unrelated decisions, rejected alternatives, content, identifiers, and completed
-  stages. Never restart the general interview.
+- `INV-6` covers the rest of the project: unrelated decisions, rejected alternatives, content,
+  identifiers, and completed stages stay as they are, and the general interview does not restart.
 - After confirmation, update DESIGN first, then only the affected SPEC operations and
   trace; reopen only the PLAN stages invalidated by the delta.
-- Treat playtest observations as user-reported evidence. Routing a report does not prove the
-  observation, diagnose balance automatically, or implement the M7.6 tuning loop.
+- A playtest observation arrives as user-reported evidence (`INV-4`). Routing it does not
+  diagnose balance automatically or start an automated tuning loop.
 
 The route may change when new information changes the request. Briefly state why, keep all
 settled decisions, and continue from the smallest affected decision.
@@ -98,7 +98,7 @@ surface and load the smallest applicable set:
 An exact narrow Card stays on the fast path without loading mechanic, content-set, or
 balance planning merely because the Card contains a cost or effect number. Record `none`
 when no design reference applies. Native grammar remains Character-specific; for other
-surfaces, record `none` in the `native grammar` handoff even when an M7.3 planning
+surfaces, record `none` in the `native grammar` handoff even when a planning
 reference is loaded. A narrow exact Card keeps the same question economy: run its compact
 mechanics/naming check without loading coherence review unless the request introduces a
 second intentional expression or a material conflict.
@@ -134,11 +134,10 @@ For contradictory input, quote or closely paraphrase the two conflicting require
 explain the player-facing consequence, and ask one constrained resolution question. Do not
 pick the convenient interpretation or discard either requirement silently.
 
-For an unsupported operation, state the exact current boundary before SPEC or scaffold.
-Preserve the intended player experience and offer at most two supported alternatives only
-when they keep that intent. Explain the visible trade-off and continue only after explicit
-acceptance. A request to avoid questions never authorizes a downgrade, invented route, or
-silent omission.
+For an unsupported operation, state the exact current boundary before SPEC or scaffold
+(`INV-3`). Preserve the intended player experience and offer at most two supported
+alternatives only when they keep that intent. Each one is a visible difference, so it needs
+the explicit acceptance `INV-5` requires — including when the user asked to be asked less.
 
 ## Handoff
 
@@ -159,7 +158,7 @@ scope signals: <requested now; explicitly later; accepted placeholder; explicitl
 coherence signals: <selected expressive surfaces and any apparent cross-artifact conflict>
 ```
 
-M7.1 does not define or generate the full `DESIGN.md` schema, current/future split, or
-design-to-SPEC traceability. M7.2 and M7.3 do not add them either. M7.4 owns those
-contracts and now implements them through `design.md` and `design_trace.py`. Read an existing `DESIGN.md` as
+Routing itself does not define or generate the `DESIGN.md` schema, the current/future split,
+or design-to-SPEC traceability, and neither do the design-grammar or planning references.
+`design.md` owns those contracts and implements them with `design_trace.py`. Read an existing `DESIGN.md` as
 authoritative creative/scope state and route only the smallest unresolved delta.

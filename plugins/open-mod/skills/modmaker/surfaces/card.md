@@ -23,6 +23,13 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   - kind: Attack | Skill | Power
   - rarity: Basic | Common | Uncommon | Rare
   - relations: <none | custom power/keyword/enchantment/orb dependencies>
+  - keywords: none | <keyword name> — <the shared rule its tooltip states>
+    native or mod: native | mod
+    behavior owner: <the element that implements the rule>
+  - enchantment: none | <name> — <what it adds to this card>
+    amount: <value and bounds>
+    host restriction: <which cards may legally carry it>
+    stacking: replaces an existing enchantment | not stackable
 - **registration**:
   - availability: shared | character:<name>
   - ownership: player
@@ -32,6 +39,8 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   - formatting: dynamic value placeholders; plain | bounded vanilla rich text
   - text spans: <description phrase -> semantic color intent>
   - variable tooltips: none | <value name -> localized title; description; optional icon>
+  - engine-composed text: none | <each native keyword, mod keyword, or enchantment
+    `extraCardText` the engine appends to this card's rendered description>
 - **effects**:
   - trigger: play
   - target: one enemy | all enemies | self

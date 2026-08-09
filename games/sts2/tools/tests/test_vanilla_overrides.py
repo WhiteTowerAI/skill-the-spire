@@ -2743,7 +2743,10 @@ public static partial class MainFile
 
             manifest_path = project / overrides.MANIFEST_RELATIVE_PATH
             self.assertTrue(manifest_path.is_file())
-            self.assertIn("openmod\\vanilla-overrides.json", (project / "Proof.csproj").read_text())
+            csproj = (project / "Proof.csproj").read_text()
+            self.assertIn("<None Include=\"openmod\\vanilla-overrides.json\"", csproj)
+            # It is a build-time input, so it must never be copied into mods/<ModName>/.
+            self.assertNotIn("DestinationFolder=\"$(ModsPath)$(MSBuildProjectName)\\openmod\"", csproj)
             summary = overrides.validate_project_override_manifest(project, "Proof")
             self.assertIn("operations=0", summary)
 
@@ -2783,26 +2786,53 @@ public static partial class MainFile
                 )
                 run.assert_not_called()
 
-    def test_deployed_override_manifest_must_match_validated_source(self) -> None:
+    def _deployed_proof_tree(self, root: Path) -> tuple[Path, Path]:
+        """A validated source project plus its deployed Mod directory."""
+        project = root / "project"
+        deployed = root / "mods" / "Proof"
+        source_override = project / overrides.MANIFEST_RELATIVE_PATH
+        source_override.parent.mkdir(parents=True)
+        deployed.mkdir(parents=True)
+        (project / "Proof.json").write_text("{}\n", encoding="utf-8")
+        (deployed / "Proof.json").write_text("{}\n", encoding="utf-8")
+        (deployed / "Proof.dll").write_bytes(b"proof")
+        source_override.write_text('{"source": true}\n', encoding="utf-8")
+        return project, deployed
+
+    def test_the_override_sidecar_is_not_deployed_into_the_mod_tree(self) -> None:
+        """The game parses every deployed `.json` as a manifest, so the sidecar stays home."""
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            project = root / "project"
-            deployed = root / "mods" / "Proof"
-            source_override = project / overrides.MANIFEST_RELATIVE_PATH
-            deployed_override = deployed / overrides.MANIFEST_RELATIVE_PATH
-            source_override.parent.mkdir(parents=True)
-            deployed_override.parent.mkdir(parents=True)
-            (project / "Proof.json").write_text("{}\n", encoding="utf-8")
-            (deployed / "Proof.json").write_text("{}\n", encoding="utf-8")
-            (deployed / "Proof.dll").write_bytes(b"proof")
-            source_override.write_text('{"source": true}\n', encoding="utf-8")
-            deployed_override.write_text('{"source": false}\n', encoding="utf-8")
+            project, deployed = self._deployed_proof_tree(Path(tmp))
 
-            with self.assertRaisesRegex(build.RitsuProfileError, "differs from"):
-                build.validate_deployed_artifacts(project, "Proof", deployed)
-
-            deployed_override.write_bytes(source_override.read_bytes())
             build.validate_deployed_artifacts(project, "Proof", deployed)
+
+            self.assertTrue((project / overrides.MANIFEST_RELATIVE_PATH).is_file())
+            self.assertFalse((deployed / overrides.MANIFEST_RELATIVE_PATH).exists())
+
+    def test_build_prunes_a_stale_deployed_override_sidecar(self) -> None:
+        """An existing project deployed by an older build self-heals on the next build."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project, deployed = self._deployed_proof_tree(Path(tmp))
+            stale = deployed / overrides.MANIFEST_RELATIVE_PATH
+            stale.parent.mkdir(parents=True)
+            stale.write_text('{"source": true}\n', encoding="utf-8")
+
+            build.validate_deployed_artifacts(project, "Proof", deployed)
+
+            self.assertFalse(stale.exists())
+            self.assertFalse(stale.parent.exists())
+            self.assertTrue((deployed / "Proof.json").is_file())
+
+    def test_any_other_deployed_json_fails_the_build(self) -> None:
+        """One rule, not one exception: only the Mod's own manifest may be loose JSON."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project, deployed = self._deployed_proof_tree(Path(tmp))
+            phantom = deployed / "data" / "future-sidecar.json"
+            phantom.parent.mkdir(parents=True)
+            phantom.write_text('{"schema": "whatever"}\n', encoding="utf-8")
+
+            with self.assertRaisesRegex(build.RitsuProfileError, "data/future-sidecar.json"):
+                build.validate_deployed_artifacts(project, "Proof", deployed)
 
 
 if __name__ == "__main__":

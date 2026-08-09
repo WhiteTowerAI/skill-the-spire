@@ -16,21 +16,44 @@ successful tuning result is inferred.
 M8 End-to-End Product Integrity is the active planned milestone. It turns the Watcher
 evaluation's cross-stage findings into changes across modmaker routing, capability
 grounding, artifact traceability, repair, content-set scope, cross-platform tooling, and
-final installed acceptance. No M8 Package has started. M8.1 is the next selectable Package.
-M8.4 Independent Verification and Evidence-Derived Reporting was removed by the human lead
-on 2026-08-05; M8.5 and M8.6 retain their numbers. Planning this milestone does not itself
-authorize M8.1 implementation, a new acceptance Mod, payload publication, or a GitHub
-release.
+final installed acceptance. M8.4 Independent Verification and Evidence-Derived Reporting
+was removed by the human lead on 2026-08-05; M8.5 and M8.6 retain their numbers.
+
+**M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on
+2026-08-10.** All five approved changes are implemented in source and both committed payloads
+are synchronized. The shipped pack now reads one file per element, projects its art contract
+from code into a catalog, splits diagnostic from preventive rules, states support rather than
+which Package promoted it, and states each cross-stage invariant once. Its durable result is
+`documents/history/M80_SKILL_STRUCTURE_RESULTS.md`.
+
+Closing it did not resolve everything it found. Three of thirteen recorded cross-check
+mismatches remain open and are live contradictions in the shipped pack: two envelope forms
+where `semantic-contract.md` claims authority six surfaces do not honor, the character
+resource/ordered-buffer envelope-proof split, and the absence of any check comparing a
+generated project's `SPEC.md` against its surface envelope. The lead deferred all three to
+M8.2 on 2026-08-10, because the envelope decision overlaps M8.2's recorded ownership and the
+other two depend on it. Nine of the ten co-located surfaces have never been piloted.
+
+**M8.1 Literal Deliverable Contract is next selectable.** Its execution contract must be
+written against the structure M8.0 left behind and confirmed with the human lead before
+implementation. M8.1-M8.6 are recorded as intent only: the plain-language result in the
+Package Plan table is the whole of their current planning.
+
+Closing M8.0 does not itself authorize M8.1 implementation, a new acceptance Mod, payload
+publication, or a GitHub release.
 
 ## New-Session Start Protocol
 
 A new coding session must not re-plan M8 from scratch. After reading `AGENTS.md` and the
 active documents, it must use this sequence:
 
-1. Read the Package Status table below and the complete execution contract for the first
-   Package marked **Next selectable** or **In progress**.
+1. Read the Package Status table below and, for the first Package marked **Next selectable**
+   or **In progress**, its execution contract if it has one. M8.1-M8.6 currently hold intent
+   only; M8.0's contract is retained as a closed record and must not be re-executed.
 2. If the human lead says only "start M8" or "continue M8", select or resume that Package.
    Do not ask the human to choose among later Packages and do not begin the final acceptance.
+   If the Package to resume is M8.1-M8.6, its execution contract must be written and
+   confirmed with the human lead before implementation, against the current file layout.
 3. Read the listed authoritative source files before editing. Inspect current dirty changes
    and preserve unrelated work, especially `usertest_M76/`.
 4. Implement only that Package's work order. A later Package may be read for interface
@@ -116,222 +139,205 @@ Existing artifact ownership remains:
 
 ## Package Plan
 
-There is no standalone M8.0 evaluator. The Watcher record is the baseline evidence, and
-the smallest behavioral cases travel with the Package that changes a decision. It is not
-the final M8 acceptance project.
+M8.0 is a restructuring and evaluation layer, not a separate acceptance project: it changes
+how the shipped pack is organized, and it is measured by piloting real authoring through the
+reorganized pack. There is no separate M8.0 evaluator Mod. The Watcher record remains the
+baseline evidence, and the smallest behavioral cases travel with the Package that changes a
+decision.
+
+M8.1-M8.6 rows below are intent only. Do not add technical detail to them here; each
+Package's execution contract is written when it is selected.
 
 | Package | Status | Prerequisite | Plain-language result |
 | --- | --- | --- | --- |
-| M8.1 - literal deliverable contract | **Next selectable** | M7 closed | Before making anything, state the exact completion claim and the player experiences required now; prototype/slice/run-capable labels are optional descriptions, not a closed taxonomy. |
-| M8.2 - exact semantic capability conformance and preflight | Waiting | M8.1 closed | Complex mechanics come from one maintained exact implementation; unsupported or broken routes block instead of becoming an approximation. |
+| M8.0 - skill structure restructuring | **Closed 2026-08-10** | M7 closed | The shipped pack is organized so an author reads one file per element instead of three per stage, data lives in queryable catalogs instead of prose, and hardening rules are stated once; contradictions between what a SPEC can declare and what a proof demands become visible. Three found contradictions remain open and moved to M8.2. |
+| M8.1 - literal deliverable contract | **Next selectable** | M8.0 closed | Before making anything, state the exact completion claim and the player experiences required now; prototype/slice/run-capable labels are optional descriptions, not a closed taxonomy. |
+| M8.2 - exact semantic capability conformance and preflight | Waiting | M8.1 closed | Complex mechanics come from one maintained exact implementation; unsupported or broken routes block instead of becoming an approximation. Also owns whether a native engine capability the SPEC grammar cannot yet declare is a grammar gap or a capability-promotion decision, and inherits M8.0's three open envelope mismatches on that same decision. |
 | M8.3 - semantic continuity and backtracking | Waiting | M8.2 closed | If implementation or repair changes what the player gets, return to the owning design/spec decision instead of patching forward. |
 | M8.5 - cross-platform reproducible installed workflow | Waiting; may be selected independently after M8.1 | M8.1 closed | The committed installed skill works reproducibly on Windows and macOS and cleans up only the process tree it started. Default order remains M8.2 then M8.3 unless the human lead explicitly selects M8.5 earlier. |
 | M8.6 - clean installed whole-skill acceptance | Waiting | M8.1-M8.3 and M8.5 closed, plus human-selected request/host | Run one fresh broad request from an untouched installed payload and let the result prove the whole workflow. |
 
 ## Package Execution Contracts
 
-### M8.1 - Literal Deliverable Contract
+M8.1-M8.6 hold intent in the Package Plan table and receive a contract when selected.
+Contracts for those Packages were not written in advance, because M8.0 relocated the files
+they would name; that layout is now settled, so M8.1's contract is written against it.
 
-**Authoritative source scope:**
+The M8.0 contract below is **retained as a closed record**, not as a work order. Do not
+re-execute it. Its value to a later session is the found-mismatch list and the reasoning behind
+the three left open.
 
-- `games/sts2/skills/modmaker/SKILL.md`, `route.md`, `interview.md`, `design.md`,
-  `semantic-contract.md`, and `spec.md`;
-- `games/sts2/tools/design_trace.py`;
-- new behavioral cases in `games/sts2/tests/m81-deliverable-contract-scenarios.md`; and
-- new focused contracts in
-  `games/sts2/tools/tests/test_m81_deliverable_contract.py`.
+### M8.0 - Skill Structure Restructuring — closed 2026-08-10
 
-**Work order:**
+**Problem (as stated when the Package opened).** The shipped pack was organized by authoring
+stage, so one element's rules were split across files: a Card's envelope lived in `spec.md`, its
+driver body in `author.md`, and its proof matrix in `verify.md`, hundreds of lines apart. Prose
+also carried data that belonged in catalogs, diagnostic scars sat on main paths, project history
+was mixed into runtime instruction, and hardening rules were restated per stage with drifting
+wording.
 
-1. Extend the existing `open-mod-design/v1` scope block rather than adding a second DESIGN
-   contract. Record one concise `completion_claim` in the user's terms and a bounded list of
-   `required_player_experiences` tied to current `D-###` decisions.
-2. Treat `mechanic proof`, `playable slice`, and `run-capable content set` as useful examples,
-   not an enum. A complete single Card, Relic, Event, visual override, revision, or other
-   supported product may keep its literal shape without being relabeled as a prototype.
-3. Record only identity-critical or explicitly non-default player-facing requirements in
-   DESIGN. M8.2 capability routes supply their normal lifecycle/text/tip/preview/
-   presentation obligations; do not make every fast request enumerate not-applicable
-   surfaces or ask the user to classify internal metadata.
-4. Update routing and Interview so an exact narrow request retains the zero-question fast
-   path. Ask only when two plausible completion claims would produce materially different
-   current scope; the number of questions remains governed by the existing material-question
-   filter rather than a new hard limit.
-5. Carry the completion claim and current required experiences through the existing
-   `open-mod-spec-trace/v1` operations. `design_trace.py` must fail before scaffold when a
-   current required experience has no owning operation, a SPEC operation has no current
-   design owner, or the reported completion claim exceeds the accepted current slice.
-6. Keep future vision in DESIGN only. A placeholder, deferred item, or technical fallback
-   cannot satisfy a required literal invariant unless the user explicitly approved that
-   player-visible result.
-7. Add semantic scenarios for a complete single-element Mod, an ambiguous "working
-   Character", a requested run-capable set whose current contents are only a vertical
-   slice, and a focused revision that must preserve the existing completion claim.
+The layout did not merely cost tokens; it hid a class of defect. When an element's
+envelope and its proof matrix cannot be read together, a proof can demand a value the
+envelope has no field to declare, and nothing in the workflow surfaces the contradiction.
 
-**Result record:** `documents/history/M81_LITERAL_DELIVERABLE_RESULTS.md`.
+**Five approved changes.**
 
-### M8.2 - Exact Semantic Capability Conformance And Preflight
+1. **Co-locate by element, not by stage.** `surfaces/<element>.md` holds that element's
+   {envelope + driver body + proof matrix}. `spec.md` shrinks to shared rules plus a
+   pointer to `surfaces/<element>.md`.
+2. **Extract data into queryable form.** Art-contract tables and character starting facts
+   are data. `design/catalogs/character-foundation-sts2-0.107.1.json` already exists while
+   `character-foundation.md` restates the same table in prose. The vanilla-override set is
+   the proven pattern in this repository: 1624 models and 4165 fingerprints live in JSON
+   while prose states only the rules. Apply that pattern beyond the largest dataset.
+3. **Split scars by kind.** Diagnostic scars ("if you see X, the cause is Y") move to
+   `errors.md`, which exists for them; the main path keeps only "on failure, read
+   `errors.md`". Preventive scars (for example: do not name the working directory after the
+   Mod) stay where they fire, compressed to a one-line constraint without full history.
+4. **Move project history out of runtime files.** `IMPLEMENTATION_PLAN.md` and
+   `documents/history/` already own it. Runtime instruction needs "these operations are
+   supported", not "M6.7.1 promoted them".
+5. **Consolidate hardening rules.** One `invariants.md` that stages reference instead of
+   restating. "Never misreport a Tier" is currently written separately in `SKILL.md`,
+   `verify.md`, and `repair.md` with wording that does not match.
 
-**Prerequisite:** M8.1 is closed and its completion claim/required experiences are available
-to preflight.
+**Execution order.** Not 1 through 5. The approved order is: card pilot -> one real run ->
+pilot packaging fix -> remaining nine surfaces -> changes 2 and 3 -> change 4 as wrap-up ->
+change 5 evaluated separately. The packaging fix was inserted by the human lead on
+2026-08-07; see the packaging-defect record below.
 
-**Authoritative source scope:**
+**Progress.**
 
-- `games/sts2/skills/modmaker/semantic-contract.md`, `spec.md`, and `author.md`;
-- `games/sts2/skills/sts2-api/SKILL.md`, `grounding.md`, relevant recipes/references, and
-  especially `reference/scry-helper.md`, `reference/mechanics.md`,
-  `reference/content-text-effects.md`, and `recipes/card.md`;
-- new validator `games/sts2/tools/semantic_capabilities.py`;
-- new scenarios `games/sts2/tests/m82-semantic-capability-scenarios.md`; and
-- new tests `games/sts2/tools/tests/test_m82_semantic_capabilities.py`.
+- Card pilot: **done**. `surfaces/card.md` co-located by `c5452d8`.
+- One real run: **done and passing**. A pilot Mod authored only through `surfaces/card.md`
+  reached `[PASS] Tier-2 verified` on STS2 `0.107.1` with RitsuLib `0.5.4`, asserting 13
+  state proofs across base and upgraded play, including result-pile membership.
+- Pilot packaging fix: **done**. Present in both committed payloads, which were synchronized
+  from source on 2026-08-10 after the nine-surface step.
+- Remaining nine surfaces: **done**, source only. All ten are co-located, all ten are
+  reachable from `spec.md`, and the nine inline bodies were removed from `author.md`/
+  `verify.md` rather than left duplicated. The carry-forward cross-check ran and is recorded
+  in `games/sts2/tests/m80-surface-cross-check.md`: eleven mismatches found at that step,
+  eight fixed, three left open with reasons.
+- Change 2 (extract data into queryable form): **done**, source only. The art contract is
+  projected from its code definition into
+  `sts2-api/reference/catalogs/art-contract-sts2-0.107.1.json` by
+  `gen_sprite.py export-contract`, and the three prose views plus the Character starter table
+  are locked to their data by tests that fail in both directions. The comparison found
+  mismatch 12: the cue sheet grid was written columns-first in four prose copies and printed
+  rows-first by `list-specs`, live on the only non-square sheet. The human lead also approved
+  surfacing the Character inventory's native HP range and Starter relic ids, which the loaded
+  design grammar had never stated while requiring `starting HP` on every custom Character;
+  their effects stay unstated because the pinned catalog has no relic effect text. Focused
+  tests are `246/246`, up from `231`.
+- Change 3 (split scars by kind): **done**, source only. `quirks.md` and `errors.md` already
+  existed as the two homes; the split is now stated as a rule about *when* a line is needed —
+  constraints followed before a failure versus signatures matched after one. Three diagnostic
+  clusters left the main path (`build.md` § Failure classes, `repair.md`'s per-mechanic
+  localization, `verify.md`'s restated tier-1 causes), with four missing signatures and the
+  boundary discrimination merged into `errors.md` first; the preventive log-rotation and
+  MSB1008/CS8602 rules stayed where they fire, compressed. Net 67 lines off the main path,
+  +68 into the catalog. Found a pointer that had never resolved: `verify.md` referenced an
+  `errors.md` "Verification harness" section that does not exist, for a console failure the
+  catalog had no entry for. `test_surface_cross_check.py` now resolves every `errors.md §`
+  pointer. Focused tests are `248/248`.
+- Change 4 (move project history out of runtime instruction): **done**, source only. Classified
+  ~190 milestone-id occurrences by what the id does, then removed only two classes: bookkeeping
+  ("M6.7.1 accepts X" → the reference that owns X) and ids standing in for the artifact that owns
+  a contract ("M7.4 owns `DESIGN.md`" → the `design.md` stage owns it). Manifest keys, Tier 2
+  markers, resume-compatibility boundaries, and evidence attributions were kept as load-bearing.
+  Two real defects surfaced: both route lists stopped at four packages while `build.py` validates
+  five, and six reference pages instructed readers to follow the M6.7 batch-window verification
+  exception that closed 2026-08-04 — an expired policy authorizing deferral of real-host proof.
+  Six tests were repointed from milestone wording to the rule each sentence carries.
+  `test_surface_cross_check.py` guards both removed classes and found a seventh expired-policy
+  occurrence the manual sweep missed. Down to 45 occurrences. Focused tests are `249/249`.
+- Change 5 (consolidate hardening rules): **done**. Reading for the pattern rather
+  than the named instance found eight rules in one shape, each a way the product ends up false
+  while every local stage passes; they are `INV-1` through `INV-8` in
+  `modmaker/invariants.md`. The change as specified had a flaw that had to be corrected first:
+  under lazy loading, replacing a rule with a pointer leaves *zero* copies whenever the target
+  was not read, which is worse than three drifting copies. So `invariants.md` is the one page
+  read at pipeline start and kept in context. Two candidate rules were deliberately left where
+  they fire, because each applies at one stage only — the repair attempt cap and the art-consent
+  boundary. Recorded as mismatch 13, on a third axis: prose against the same rule stated in
+  another file. Focused tests are `256/256`.
+- Payload regeneration: **done**. Both committed payloads regenerated from source on 2026-08-10
+  after change 5, carrying all five changes. Rendering verified repeatable and the two modmaker
+  trees identical; no payload was installed or run.
+- Open mismatches 1 and 7: **deferred to M8.2** by human-lead decision on 2026-08-10. The envelope
+  form is a contract-version migration that overlaps M8.2's recorded ownership, and mismatch 7's
+  destination depends on it. Both remain live contradictions in the shipped pack until M8.2.
 
-**Work order:**
+Every approved change in this Package's work order is implemented and both payloads are
+synchronized. Closing M8.0 and selecting M8.1 remain human-lead decisions.
 
-1. First implement the common kernel for the four M8.2 audit families: add one small marked
-   capability-contract block to each existing authoritative recipe/reference route selected
-   by those families. The block records version, exact invariant, owner/consumer boundary,
-   lifecycle, shared semantic facts, required player-facing surfaces, and the smallest
-   known limitation. Other existing routes remain unchanged until a later selected need;
-   do not create a manually maintained central catalog beside the routes and capability graph.
-2. Make `semantic_capabilities.py` follow an audited operation's existing `supported_route`,
-   read that route's marked contract, and reject an unknown/unimplemented route,
-   incompatible owner/lifecycle, or missing required surface before authoring.
-3. Then audit four reusable families against official product semantics, pinned RitsuLib `0.5.4`
-   source, the `0.107.1` game substrate/catalog, and current generated recipes: Card
-   lifecycle/behavior metadata and its explanatory text; deck inspection, selection, and
-   movement mechanics such as Scry; mechanic Hover Tips; and incoming/outgoing numeric
-   modifiers such as damage multipliers.
-4. For each family, keep Package support and current generator implementation separate. A
-   family closes with either a maintained exact route or the smallest explicit blocking
-   limitation; it does not need speculative expansion beyond the observed generic gap.
-5. Change authoring so normal consumer Mods select the maintained route rather than receive
-   newly improvised mechanic code. Share structured facts such as values, keywords,
-   direction, lifecycle, and selection/movement semantics between behavior and explanatory
-   surfaces. Author localized text separately, then validate that it covers those facts.
-6. If an existing generated route fails the audit, block that route until the shared source
-   is repaired or the capability graph records the narrow limitation. If a needed generic
-   route is absent, use maintainer-owned pinned research and the normal promotion process;
-   never research or patch it ad hoc in a consumer project.
-7. Add conformance cases for exact state transition, selection and cancellation, ordering,
-   destination/history/hooks, degenerate states, mouse/controller input where applicable,
-   plus matching rules text, keyword/DynamicVar, Hover Tip, localization, and preview.
-8. Any repair that changes generated runtime behavior or presentation receives the nearest
-   maintained real-host proof. Static/catalog proof alone must be reported as such.
+**The pilot's other two findings.** Both are contract defects, not packaging, and both are
+instances of the class the carry-forward cross-check is meant to catch. They are recorded here
+so a co-located surface is never mistaken for a validated one:
 
-**Result record:** `documents/history/M82_SEMANTIC_CAPABILITY_RESULTS.md`.
+1. *Engine-composed text must not be re-authored.* A self-exhausting Card must not write
+   "Exhaust" in its description: `CardKeywordOrder` appends the keyword text automatically,
+   and vanilla `Impervious`/`Offering` carry none of it in their own description. Following
+   `surfaces/card.md` as written produces the duplicate. The same risk applies wherever the
+   engine or framework composes player-facing text, including mod keywords with
+   `includeInCardHoverTip: true` and the Enchantment/Affliction tips folded into a Card's
+   `HoverTips`. Fix shape to be decided from the full cross-check, not from the Card alone.
+2. *A driver that asserts only the obvious delta under-proves the element.* The documented
+   Card driver asserts damage only, so a Card whose core mechanic is its result pile passes
+   while that mechanic is broken. Any Card with a non-default result pile owes that assertion
+   in the recipe itself. Audit the equivalent identity mechanic per surface: relic trigger
+   boundary, Power stack decay/expiry, Potion belt consumption, Orb channel/passive/evoke,
+   Enchantment host restriction, Monster move graph, Event option/page coverage, Character
+   starter-deck identity.
 
-### M8.3 - Semantic Continuity And Backtracking
+**Pilot verdict on change 1.** Change 1 predicted that co-location would make "a proof
+requires a field the envelope lacks" visible at a glance, and that the gap was partly caused
+by the old layout. Both held. The contradiction now reads within one file: the Card envelope
+has no field to declare a native keyword, while the same file's proof matrix requires
+`result pile` as an invariant, 42 lines apart. Before `c5452d8` those statements sat in
+`spec.md` roughly 44 lines apart with a third in `verify.md`, across files. The moved
+`relations:` line is byte-identical before and after, confirming the refactor relocated the
+text without altering it, so the contradiction predates the refactor and was inherited, not
+introduced.
 
-**Prerequisite:** M8.2 is closed, so current operations have stable maintained route
-contracts and surface obligations.
+**Recorded weakening of that verdict.** The pilot card was deliberately chosen to force a
+non-default result pile, so the test was aimed rather than blind. The supportable claim is
+that co-location makes the cross-check possible in a single read, not that it performs the
+check. Two enforcement gaps remained open at the pilot; one is now partly closed.
+`tools/tests/test_surface_cross_check.py` pairs each mandatory envelope field with the proof
+case that observes it, and it found three mismatches the manual ten-surface read had missed,
+which is the strongest available evidence that a mechanical check was the missing piece rather
+than more careful reading. Still open: `design_trace.py` accepts invented SPEC fields silently,
+and nothing checks a *generated* project's `SPEC.md` against its surface envelope. That second
+one needs the envelope-form decision recorded as open mismatch 1.
 
-**Authoritative source scope:**
+**Carry-forward for the remaining nine surfaces.**
 
-- `games/sts2/skills/modmaker/SKILL.md`, `route.md`, `design.md`, `spec.md`, `repair.md`,
-  and `semantic-contract.md`;
-- `games/sts2/tools/design_trace.py` and `coherence_trace.py` where their existing ownership
-  applies;
-- new scenarios `games/sts2/tests/m83-semantic-continuity-scenarios.md`; and
-- new tests `games/sts2/tools/tests/test_m83_semantic_continuity.py`.
+1. Run an explicit envelope-versus-proof-matrix cross-check while co-locating each surface.
+2. Collect mismatches across all ten elements before fixing any of them, so one fix shape is
+   decided from the full set rather than generalized from the Card alone.
+3. Record every mismatch found, including ones left unfixed, so a co-located surface is never
+   mistaken for a validated one.
 
-**Work order:**
+**Packaging defect found by the pilot: fixed 2026-08-07.** The build deployed
+`openmod/vanilla-overrides.json` inside the Mod tree, where the game's recursive manifest
+scan (`ModManager.ReadModsInDirRecursive`) parses every `.json` at any depth as a Mod
+manifest and logs a missing-`id` error for it. Every generated Mod carried it. The human lead
+selected it as the first fix, ahead of the remaining nine surfaces, because it cost every
+user a frightening undocumented error line; that reorders the approved execution order below
+and nothing else.
 
-1. Route every discovery or repair through four outcomes with explicit artifact ownership:
-   implementation-equivalent repair updates source/MEMORY and reruns affected checks;
-   contract-fulfillment repair keeps DESIGN but corrects affected SPEC/source/localization
-   and reruns its surface checks; accepted product-semantic change updates DESIGN before
-   SPEC; missing capability routes back to M8.2 and blocks.
-2. A product-semantic change reopens only affected `D-###` decisions, records
-   keep/change/check/re-verify impact, then regenerates affected `OP-###` operations and
-   reruns both traces before authoring resumes. A contract-fulfillment repair never changes
-   the accepted completion claim merely to make current output pass.
-3. A missing maintained capability routes back to M8.2's maintainer queue and blocks the
-   consumer project. It must not become an accepted local fallback merely because it builds.
-4. Make `PLAN.md` record the current stage, `backtrack_to`, affected design/operation IDs,
-   reason, and checks invalidated by the change. Resume at the earliest invalidated stage,
-   not at the last command that failed.
-5. Preserve unrelated settled decisions, rejected alternatives, future scope, and evidence.
-   Superseded hypotheses leave the current path and remain only in bounded history.
-6. Cover an equivalent compile repair, missing Card text, missing Hover Tip, a mechanic
-   substitution, and a revision affecting one of several identity anchors.
+The sidecar is a build-time input with no runtime consumer, so `scaffold.py` no longer copies
+it into `mods/<ModName>/`, and `build.py` now enforces the general rule rather than the single
+case: only `<ModName>.json` may be loose JSON in a deployed Mod, a copy left by an older
+build is pruned so existing projects self-heal, and any other deployed non-manifest `.json`
+fails the build. Authored JSON belongs inside the `.pck`. Proved on Windows in one log: a
+fresh probe scanned one manifest with no error and passed Tier 1, while a Mod built by the
+older scaffold still showed the phantom error in the same run. An existing installed Mod
+keeps the error until it is rebuilt.
 
-**Result record:** `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md`.
-
-### M8.5 - Cross-Platform Reproducible Installed Workflow
-
-**Prerequisite:** M8.1 is closed. M8.5 is operationally independent of M8.2-M8.3 and may be
-selected early by explicit human-lead instruction; otherwise follow the default Package
-order and begin it after M8.3.
-
-**Authoritative source scope:**
-
-- `games/sts2/tools/launch.py`, `launch.ps1`, `build.py`, `grep_log.py`, and
-  `ritsu_profile.py` as required by discovered platform drift;
-- `games/sts2/skills/modmaker/build.md`, `verify.md`, and `repair.md`;
-- `games/sts2/tools/tests/test_verification_tools.py` plus new
-  `games/sts2/tools/tests/test_m85_platform_workflow.py`; and
-- installed plugin/portable payload validation scripts already owned by `publish.sh` and
-  `scripts/publish/`.
-
-**Work order:**
-
-1. Make `launch.py` the canonical cross-platform process owner. `launch.ps1` must delegate
-   to it or have explicit parity coverage; it cannot retain a divergent cleanup contract.
-2. Refuse to adopt or terminate a game process that existed before the launch. Record the
-   created root identity and owned descendants. On macOS, first research and prove a route
-   that preserves normal bundle/Steam/Godot launch semantics while retaining the actual game
-   PID or process-group ownership. The current short-lived `open` helper is not sufficient;
-   direct bundle-executable launch is only one candidate until verified.
-3. Put cleanup in an unconditional finalization path for success, failure, timeout, and
-   interruption. Prefer graceful termination, then use a bounded forced cleanup only for
-   the recorded owned tree. Verify that no owned descendant remains before reporting done.
-4. Make discovery, deployment, log location, compat identity, and argument passing explicit
-   for Windows and macOS. Consumer-session path edits or installed-cache source edits must
-   not count as success.
-5. Record the installed source/payload identity before a consumer build and verify it did
-   not change. Confirm generated output comes from the committed synchronized payload.
-6. Add mocked process-tree tests for pre-existing processes, normal exit, timeout, child
-   survival, interruption, and scoped forced cleanup. Add PID-reuse protection only if the
-   selected ownership strategy can actually encounter it. Then obtain literal repository-
-   owned installed-workflow evidence on both Windows and macOS.
-
-**Result record:** `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`.
-
-### M8.6 - Clean Installed Whole-Skill Acceptance
-
-**Prerequisites:** M8.1-M8.3 and M8.5 are closed; both committed payloads are synchronized;
-the human lead explicitly selects the broad request and host; and no older acceptance
-project is reused.
-
-**Authoritative scope:** the clean installed plugin or portable payload, a fresh external
-workspace, the generated DESIGN/SPEC/PLAN/MEMORY artifacts, and repository-owned tools.
-M8.6 does not start by editing source.
-
-**Work order:**
-
-1. Record installed payload version/hash, target host, clean workspace, requested product
-   shape, and the human-selected experience question before generation.
-2. Run the ordinary installed skill from request through deliverable contract, capability
-   preflight, DESIGN/SPEC confirmation, author/build, proportional verification, and final
-   literal report. Do not patch the installed skill or copied payload.
-3. Require every selected mechanic's behavior, lifecycle, rules text, keyword/Hover Tip,
-   localization, preview, and presentation obligations to have literal evidence or remain
-   visibly failed/unrun.
-4. Use normal human play for comprehension, decision quality, enjoyment, or tuning claims.
-   Record the human's exact observation separately from technical Tier evidence.
-5. If the run exposes a product-integrity defect, stop the acceptance, route it back to the
-   owning M8 Package, repair source there, republish, and restart with a fresh workspace.
-   Do not repair the acceptance Mod into a pass.
-6. Finish by proving launcher-owned process cleanup. Report each technical check from its
-   actual tool/log result and each experience observation from the human who supplied it;
-   failed and unrun checks remain explicit rather than being absorbed into an aggregate pass.
-
-**Result record:** `documents/history/M86_CLEAN_WHOLE_SKILL_ACCEPTANCE_RESULTS.md`.
-
-Each Package requires the smallest semantic cases that prove its own decisions. M8.6 is the
-only planned fresh full-pipeline gate. Do not recreate or repair Watcher as that gate, and
-do not start it before M8.1-M8.3 and M8.5 are closed and the human lead selects the request
-and host.
+**Result record:** `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`.
 
 ## Verification Policy
 

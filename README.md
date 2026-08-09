@@ -11,8 +11,9 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 > with RitsuLib `0.5.4`. The BaseLib migration and M6.5-M6.7 implementation tracks are
 > closed. M7 Design Intelligence is closed: M7.1-M7.5 are implemented, and M7.6 closed
 > through a human-led external whole-skill evaluation with explicit limitations. M8
-> End-to-End Product Integrity is planned but has not started; M8.1 is the next selectable
-> Package. A GitHub release is not currently authorized.
+> End-to-End Product Integrity is active: M8.0 skill structure restructuring is closed
+> and M8.1 is the next selectable Package. A GitHub release is not currently
+> authorized.
 
 ## Requirements
 
@@ -140,10 +141,13 @@ DESIGN will preserve the user's literal completion claim; prototype, slice, and 
 labels remain optional descriptions rather than a closed taxonomy. None of the M8 flow is
 implemented yet.
 
-The active plan contains a new-session start protocol and an execution contract for every
-M8 Package: exact prerequisites, source scope, work order, and result record.
-An instruction to start M8 begins M8.1. M8.4 was removed; M8.5 and M8.6 keep their numbers.
-M8.5 may be selected independently after M8.1 only by explicit human-lead instruction.
+The active plan contains a new-session start protocol and, for each selected Package, an
+execution contract: exact prerequisites, source scope, work order, and result record.
+M8.1-M8.6 carry plain-language intent only and receive a contract when selected.
+An instruction to start M8 selects M8.1 literal deliverable contract, whose contract is written
+and confirmed before implementation. M8.4 was removed;
+M8.5 and M8.6 keep their numbers. M8.5 may be selected independently after M8.1 only by
+explicit human-lead instruction.
 
 ## Verification Model
 

@@ -93,12 +93,12 @@ strong, preserve the fantasy where possible by tightening access, condition, tim
 opportunity cost, or cap before flattening the distinctive payoff.
 
 Do not claim BALANCED from a formula alone. Report the working value, comparison,
-sensitivity, dominance risk, and evidence needed from a human playtest. M7.6 owns the
+sensitivity, dominance risk, and evidence needed from a human playtest. A tuning loop would own the
 observation-driven tuning loop and must not fabricate those observations.
 
 ## Handoff
 
 Carry the formula contract, economy audit, chosen working values, independent tuning knobs,
-low/working/high sensitivity, dominance risks, and open evidence needs into the M7.3 design
+low/working/high sensitivity, dominance risks, and open evidence needs into the design
 capsule. Lower only the exact accepted current values and supported operations into
-`SPEC.md`; M7.4 owns durable design rationale and traceability.
+`SPEC.md`; `DESIGN.md` owns durable design rationale and traceability.

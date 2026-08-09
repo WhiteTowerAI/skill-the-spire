@@ -20,8 +20,11 @@ class M71RoutingContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.skill = (MODMAKER_DIR / "SKILL.md").read_text(encoding="utf-8")
-        cls.route = (MODMAKER_DIR / "route.md").read_text(encoding="utf-8")
-        cls.interview = (MODMAKER_DIR / "interview.md").read_text(encoding="utf-8")
+        # Route and interview carry the always-loaded invariants: a rule the
+        # pipeline obeys at every stage is stated in `invariants.md` and named,
+        # not restated per stage.
+        cls.route = skill_prose.with_invariants(MODMAKER_DIR / "route.md")
+        cls.interview = skill_prose.with_invariants(MODMAKER_DIR / "interview.md")
         cls.spec = skill_prose.stage("spec")
         cls.scenarios = SCENARIOS_PATH.read_text(encoding="utf-8")
 
@@ -71,7 +74,9 @@ class M71RoutingContractTests(unittest.TestCase):
         for delta_field in ("keep", "change", "check", "re-verify"):
             self.assertIn(delta_field, route)
             self.assertIn(delta_field, spec)
-        self.assertIn("preserve unrelated decisions", route)
+        # The preservation rule is INV-6, stated once and named by the stage.
+        self.assertIn("inv-6", route)
+        self.assertIn("unrelated decisions, rejected alternatives", route)
         self.assertIn("reopen only the plan stages invalidated", route)
 
     def test_conflicts_and_unsupported_routes_stop_before_spec(self) -> None:
@@ -79,13 +84,23 @@ class M71RoutingContractTests(unittest.TestCase):
         self.assertIn("two conflicting requirements", route)
         self.assertIn("one constrained resolution question", route)
         self.assertIn("state the exact current boundary before spec or scaffold", route)
-        self.assertIn("continue only after explicit acceptance", route)
-        self.assertIn("never authorizes a downgrade, invented route, or silent omission", route)
+        # Explicit acceptance of a visible difference is INV-5; refusing to
+        # substitute an ungrounded route is INV-3. The stage names both.
+        self.assertIn("inv-5", route)
+        self.assertIn("inv-3", route)
+        self.assertIn("continue only after the user", route)
+        self.assertIn("asked not to be asked again", route)
 
-    def test_m71_does_not_claim_m74_artifact_contract(self) -> None:
+    def test_routing_does_not_claim_the_design_artifact_contract(self) -> None:
+        """Routing must disclaim the DESIGN schema and name the stage that owns it.
+
+        The rule is the ownership boundary, not which milestone established it. M8.0 change 4
+        removed the milestone numbering from this sentence; the disclaimer and the pointer to
+        `design.md` are what carry the contract.
+        """
         route = normalized(self.route)
-        self.assertIn("m7.1 does not define or generate the full `design.md` schema", route)
-        self.assertIn("m7.4 owns those contracts", route)
+        self.assertIn("does not define or generate the `design.md` schema", route)
+        self.assertIn("`design.md` owns those contracts", route)
 
     def test_scenario_matrix_covers_required_inputs_and_semantic_rubric(self) -> None:
         headings = [

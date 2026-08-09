@@ -32,18 +32,26 @@ macOS; the human lead reported that it was playable but not very good. That is n
 successful tuning-loop, complete Character, or broad route-acceptance claim. The exact
 result is `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`.
 
-M8 End-to-End Product Integrity is planned but has not started. It will address literal
+M8 End-to-End Product Integrity is the active milestone. It addresses literal
 deliverable scope, complete player-facing operation semantics, maintained exact capability
 preflight, semantic backtracking, and cross-platform installed reproducibility with owned-
 process cleanup. One final clean installed whole-skill acceptance is scheduled only after
-the preceding M8 Packages close. No M8 implementation, acceptance run, payload publication,
-or GitHub release is currently authorized.
+the preceding M8 Packages close. No acceptance run, payload publication, or GitHub release is
+currently authorized.
 
-No M8 Package is in progress. M8.1 is next selectable. The New-Session Start Protocol and
-five retained Package Execution Contracts in `documents/IMPLEMENTATION_PLAN.md` are the
-handoff: a later session instructed to start or continue M8 reads the first eligible
-contract and executes it without rebuilding the roadmap or skipping prerequisites. M8.4
-was removed by the human lead; M8.5 and M8.6 retain their numbers.
+M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 2026-08-10. The
+shipped pack now reads one file per element instead of three per stage, projects its art contract
+from code into a catalog, separates diagnostic signatures from preventive constraints, states what
+is supported rather than which Package promoted it, and states each cross-stage invariant once.
+Both committed payloads are synchronized. Three of the thirteen contradictions it found remain
+open and were deferred to M8.2, and nine of the ten co-located surfaces have never been piloted;
+the durable result is `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`.
+
+M8.1 Literal Deliverable Contract is next selectable and needs its execution contract written
+against the settled layout and confirmed with the human lead first. The New-Session Start Protocol
+in `documents/IMPLEMENTATION_PLAN.md` is the handoff: a later session instructed to start or
+continue M8 selects M8.1 without rebuilding the roadmap or skipping prerequisites. M8.1-M8.6 are
+recorded as intent only. M8.4 was removed by the human lead; M8.5 and M8.6 retain their numbers.
 
 ## User Experience
 

@@ -329,7 +329,7 @@ This contract is deliberately static. Attack/hurt/death/cast triggers do not ani
 death uses the game's non-Spine fade, and `HasDeathSfx => false` avoids a nonexistent
 custom-id death event. There is no separate phobia body, so phobia mode retains the same
 static texture. Spine skeleton/atlas/animation, animated move previews, and distinct phobia
-skins are later extensions, not R4 gates.
+skins are later extensions, not current gates.
 
 ## Type + Scenario proof (`CombatEnemy`)
 

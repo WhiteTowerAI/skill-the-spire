@@ -1,7 +1,7 @@
 # Verify — prove it loads (tier-1), then that the effect fires (tier-2)
 
-Goal: verify on **observed reality**, not "it compiled". Two tiers. Always report
-which tier you reached; never claim the effect is verified when only load was.
+Goal: verify on **observed reality**, not "it compiled" (`INV-2`). Two tiers, and which one
+you reached is itself a reported fact (`INV-1`).
 
 ## Tier-1 — does it load? (automated, guaranteed)
 
@@ -26,24 +26,18 @@ python ../modmaker/scripts/grep_log.py --mod-name <ModName>
   base-game cleanup blocks are reported but ignored: abandon deleting a nonexistent
   `current_run.save.backup`, and native Sentry close during launcher termination. Similar
   headers without those cleanup stacks still fail.
-- **Why no byte offset:** STS2 archives the previous log (to
-  `godot<timestamp>.log`) and starts a fresh `godot.log` on every launch, so the
-  current file already holds exactly this run. Do NOT try to slice the log by a
-  pre-launch byte offset — a stale offset from the old file points into the wrong
-  place in the new file and makes a working mod look like it failed to load. This
-  was a real bug; read the whole current log instead.
+- Read the whole current log. Never slice it by a pre-launch byte offset: STS2 archives the
+  previous log and starts a fresh `godot.log` each launch, so a stale offset points into the
+  wrong file and makes a working Mod look like it failed to load.
 
-**PASS** = marker found, no fresh-run error blocks. **FAIL** → go to `repair.md`. It
-distinguishes the two tier-1 failure modes and fixes accordingly:
+**PASS** = marker found, no fresh-run error blocks. **FAIL** → go to `repair.md`.
 
-- **framework marker missing/mismatched** → the selected compat profile did not resolve;
-  stop with the adapter's `missing-compat-asset` or `host-mismatch` diagnostic.
-- **load marker NOT FOUND but `RUNNING MODDED` = YES** → the mod loaded but logged no
-  marker: it wasn't injected by the selected adapter (author.md step 2), or
-  the code change never rebuilt. (Distinct from the log-rotation false-FAIL, which
-  errors.md already retired.)
-- **fresh error/exception block** → registration/load/runtime threw; use the selected
-  adapter's registration and localization diagnostics rather than guessing a fix.
+Tier 1 has three distinct failure modes, and they are not interchangeable: a **framework
+marker** missing or mismatched is a profile/scaffold problem, a **load marker NOT FOUND while
+`RUNNING MODDED` = YES** means the Mod loaded but emitted no marker, and a **fresh
+error/exception block** means registration or runtime threw. Match the exact signature in
+`../sts2-api/errors.md` § Verification and § Registration And Localization for the
+cause and fix; do not guess one.
 
 A code/csproj fix only reaches the game through a fresh build, so repair **rebuilds
 first**, then re-runs tier-1 — bounded to 3 attempts.
@@ -52,7 +46,7 @@ This is the guaranteed check: it proves "installs + loads + registered".
 
 ## Tier-2 — does the effect fire? (automated harness, the headline)
 
-**Tier-2 is now unattended** (M5). The mod ships an arg-gated in-process harness
+**Tier-2 is unattended.** The mod ships an arg-gated in-process harness
 (`SelfTest.cs`, author.md step 2.5). Launched with `--self-test`, it drives itself from the
 main menu into the required hosted scenario and fires the effect — **no dev-console typing,
 no human triggering**. You then grep its independently asserted state proof.
@@ -102,43 +96,22 @@ requires the exact load marker and `selftest done`.
   harness must assert `N-1`, threshold, and reset/carry-over before it emits `selftest done`;
   run-save state also asserts a real save/fill round trip. Use the multi-combat
   variant in `reference/selftest-harness.md`.
-- For a multi-move enemy, one HP delta is likewise insufficient. Before the terminal proof,
-  the harness must execute every SPEC move/branch outcome and assert its move history,
-  concrete creature/Power state, downstream buff consequence, and multi-hit result count.
-- For a Character Foundation, the final proof is valid only after the harness has asserted
-  exactly one content-pack-registered model, the real selected/unlocked button, runtime
-  identity and exact SPEC HP/Max HP, exact typed Card/Relic/Potion pools and member models,
-  every independently registered supporting Power, exact starter deck/relic multisets, and
-  designed MaxEnergy. The unlocked Card pool must also fill Shop's native colored Attack,
-  Skill, and Power slots without falling back to another character's pool. Derive every
-  expected identity, count, value, and terminal summary from the current `SPEC.md`; never
-  reuse a retired proof Mod's constants or marker.
-- For a character resource, require gain, affordable and unaffordable checks, one exact
-  successful payoff, one rejected spend with no mutation/negative state, live counter
-  values, public `RegisterCombatUi` attachment, the fixed 220x32 control at offset 160,
-  a disjoint native-Energy global rect, and a distinct zero state/counter in combat 2.
-- For an ordered semantic buffer/dynamic output, require exact source/compile-card result
-  piles, visible order, capacity and overflow behavior, one generated-history entry, exact
-  configured output/effect, `AttachedState` ownership, and a distinct empty state/UI in
-  combat 2. Reject retained-card, hidden-zone, and `skipVisuals` substitutions.
+- For a multi-move enemy, one HP delta is likewise insufficient. See `surfaces/monster.md`
+  § Proof matrix.
+- For a Character Foundation, see `surfaces/character.md` § Proof matrix. Its opening
+  paragraph is the gate the final proof must clear before it is valid.
+- For a character resource or an ordered semantic buffer/dynamic output, see
+  `surfaces/character.md` § Proof matrix. Character is the only surface that selects either
+  capability, so that page owns both proofs.
 - For a Scry Card, see `surfaces/card.md` § Proof matrix.
 - For advanced Card/Potion targeting, follow `reference/advanced-targeting.md`: require
   the source-aware single Card, single Potion, and player-aware multi Card as distinct real
   consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
   queued invalidation, unchanged rejected payment/Potion state, and normal Card result
   pile. `potion + many` remains a known lifecycle limitation.
-- For a Relic-owned Rest Site option, follow `reference/rest-site-options.md`: require the
-  real native room, absent/disabled/enabled states, final click-time payment rejection with
-  no deltas, exact successful Gold/outcome/history deltas, no duplicate after rebuild,
-  declared stay/leave and second-visit repeatability, explicit singleplayer mode, custom
-  icon, and missing-icon native fallback. Model-generated option lists are diagnostics,
-  not hosted proof.
-- For an Event, require one real UI path per independent SPEC outcome family. Blocking
-  card/reward overlays must finish before their post-state assertion. A special combat must
-  identify the custom encounter and prove exactly one authored completion path: named
-  `Resume` page or direct map. Use a fresh Event instance if SPEC independently exercises
-  both forms; never start two combats from one mutable Event. The final structured marker
-  lists identical expected/observed outcome families.
+- For a Relic-owned Rest Site option, see `surfaces/relic.md` § Proof matrix, which follows
+  `reference/rest-site-options.md`.
+- For an Event, see `surfaces/event.md` § Proof matrix.
 
 ### Advanced-target headed acceptance
 
@@ -147,8 +120,7 @@ The structured state proof does not establish selection UI. In the same focused
 then checks the exact matrix from `reference/advanced-targeting.md`: mouse and controller
 can select only legal single targets, cancel returns normally, zero legal targets cannot
 commit the action, multi-target reticles appear only on the resolved creatures, and no
-reticle remains after resolution. Record the visible result as manually observed; do not
-rename it an automated Tier-2 pass.
+reticle remains after resolution. This is a manually observed result (`INV-1`).
 
 ### Gameplay-readability headed acceptance
 
@@ -162,8 +134,8 @@ labels must remain unobstructed.
 
 When the human lead reserves this review, do not launch the game or take screenshots.
 Build/deploy the focused proof and provide exact console commands plus the matrix above.
-Record the lead's reported observations separately; any unrun Tier 1 or structured Tier 2
-gate remains an explicit exception.
+Record the lead's reported observations separately (`INV-1`); any unrun Tier 1 or structured
+Tier 2 gate remains an explicit exception.
 
 ### Rest Site option headed acceptance
 
@@ -172,7 +144,7 @@ Build and deploy the focused proof, then provide the exact dev-console route fro
 `reference/rest-site-options.md`. The reviewer checks native localization, custom and
 fallback icon framing, gray state, mouse click, controller focus loop, native-option
 coexistence, failed-payment retention, successful list rebuild, and the declared second
-visit. Record the reported matrix separately from Tier 1 and strict Tier 2; an unrun
+visit. Record the reported matrix separately from Tier 1 and strict Tier 2 (`INV-1`); an unrun
 structured harness remains an exception, never a pass.
 
 On the pinned host, `gold -N` is not a removal command: negative values are ignored. Use
@@ -216,7 +188,7 @@ assertion plus visual inspection. In particular:
   exact 132x195 portrait, 1920x1200 background, normal and outlined 88x88 top-panel
   textures under one `NTopBarPortrait`, and 512x512 non-Spine
   combat body in their real hosts. Full energy asserts one native counter with five 256x256
-  custom layers and its live number label. For the M6.5 theme, automatically assert all
+  custom layers and its live number label. For the Character theme, automatically assert all
   four exact color values, frame shader target/brightness, distinct existing icon paths,
   the 256x256 large icon in a real hand card's `NCard.%EnergyIcon`, and the 24x24 path in a
   real `EnergyIconsFormatter` card-description result. Enter real RestSite and Shop hosts and assert their
@@ -256,42 +228,28 @@ unverified; do not infer it from a resource path, `.pck` build, or primary view.
   failure of the mod. Fall back to the **manual guide below**, and if that's not feasible,
   report **tier-1 only** honestly.
 
+This tells you *which* failure you have. For the cause and fix of each, match the signature in
+`../sts2-api/errors.md` § Verification, and § Behavior for a state proof that
+reports a wrong observed value.
+
 ### Manual fallback (only if the harness reported FAILED / timed out)
 
-Ask the user to drive it by hand via the dev console — the pre-M5 path:
+Ask the user to drive it by hand via the dev console:
 
 1. Start a run in STS2 (the mod is loaded — tier-1 confirmed it).
 2. Open the **dev console** with **`` ` `` (backtick)** (also `'`, `*`, `^`, `Shift+8`);
    close with `Esc`. Debug commands are auto-enabled because the game is running modded.
-3. Grant the element by its `<PREFIX>-<SLUG>` id:
-   - **relic:** `relic add <PREFIX>-<SLUG>` (`add` is default; matching is substring `Contains`).
-   - **potion:** `potion <PREFIX>-<SLUG>` (**no `add`**, **exact** match; run in progress).
-   - **card:** see `surfaces/card.md` § Manual fallback.
-   - **enemy encounter:** `fight <PREFIX>-<ENCOUNTER_SLUG>` enters the custom encounter
-     (run in progress). Confirm the custom monster spawned before ending the turn.
-   - **event:** `event <PREFIX>-<SLUG>` enters the custom event (**exact** match; run in
-     progress). Confirm the localized option appears before choosing it.
-   - **character:** select the custom character on the real character screen and click
-     Confirm; there is no console shortcut that proves character-select presence.
-4. Trigger it: **relic** → enter a combat; **potion** → use it (pick a target if targeted);
-   **card** → see `surfaces/card.md` § Manual fallback;
-   **enemy encounter** → end enough turns to traverse the declared cycle; confirm every
-   move's visible intent and exact HP/Block/Power change, and drive each conditional outcome;
-   **event** → choose the specified options and confirm each exact Cmd/selection/reward
-    consequence. For special combat, confirm the requested custom encounter and then the
-    named return page or direct map. For `portrait_halo`, visually inspect configured pages
-    and confirm no stale overlay survives a page switch or combat entry. For vanilla Event
-    text effects, inspect the named colored/moving phrase on each authored page and confirm
-    the prior page's text is gone after the transition.
-    For native acquisition presentation, confirm the real Card preview and relic top-bar
-    animation, and for `trial_noble` confirm its exact initial-page placement and absence on
-    the result page. A `weak_short` shake must terminate and must honor a disabled setting.
-    A forced follow-up cannot be proved by the `event` console shortcut; if its automated
-    real-Unknown driver cannot run, report Tier 1 rather than claiming the hook behavior.
-   **character** → confirm HP, starter deck/relic, and standard 3 energy after run start;
-   enter combat and observe the named starter mechanic's exact state delta. When combat
-   cues are selected, watch one full Idle loop, play an Attack, take one Hit, and reach Dead;
-   confirm the first two return to Idle, Dead holds its last pose, and no anchor jumps.
+3. Grant the element and 4. trigger it: each surface page owns both steps in its
+   § Manual fallback — `surfaces/card.md`, `surfaces/relic.md`, `surfaces/potion.md`,
+   `surfaces/monster.md`, `surfaces/event.md`, `surfaces/character.md`. A Power, keyword, or
+   enchantment has no route of its own and is driven through its host Card; an orb is driven
+   through its declared channel host.
+
+   Two constraints hold across all of them. A `<PREFIX>-<SLUG>` id is matched differently per
+   command — `relic add` is substring `Contains`, while `potion`, `card`, and `event` are exact
+   and take no `add`. And a forced follow-up cannot be proved by the `event` shortcut at all:
+   direct entry skips the forcing behavior, so if its automated real-Unknown driver cannot run,
+   report Tier 1 rather than claiming the hook behavior.
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
    game** (closing rotates the log away):
 
@@ -299,8 +257,8 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
 python ../modmaker/scripts/grep_log.py --mod-name <ModName> --tier2-pattern "<state-proof-pattern>"
 ```
 
-If the console won't open or `add` says "Unable to create", see errors.md "Verification
-harness". The automated PASS still requires a structured harness state proof. A manual
+If the console won't open or `add` says "Unable to create", match
+`../sts2-api/errors.md` § Verification. The automated PASS still requires a structured harness state proof. A manual
 fallback may be reported as **manually observed** only when the user confirms the concrete
 state change; otherwise report tier-1 only.
 
@@ -315,5 +273,6 @@ summarize for the user in plain language:
 > the harness couldn't reach its scenario>**. Artifacts are in `mods/<ModName>/`.
 > <If tier-2 not observed: the harness marker it stopped on, and the manual check.>
 
-Be honest about the tier. A loaded-but-effect-unobserved mod is tier-1, not tier-2 —
-and a `selftest FAILED` is a harness miss, not proof the effect is broken.
+The template's two branches are `INV-1` in the form the user reads. Pick the branch the run
+earned: a loaded-but-effect-unobserved mod takes the second one, and so does a
+`selftest FAILED`.

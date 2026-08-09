@@ -1,7 +1,7 @@
 # Existing vanilla Ancient overrides
 
 Use this reference after `vanilla-overrides.md` resolves an exact `EVENT.*` target with
-`content_kind: ancient`. M6.7.3 is pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. It
+`content_kind: ancient`. These routes are pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. They
 supports both public initial-option append and one reviewed, fingerprinted initial-option
 replacement Adapter while preserving the vanilla model, room, dialogue, save identity,
 and Ancient choice-history lifecycle.
@@ -228,10 +228,10 @@ using STS2RitsuLib;
 using STS2RitsuLib.Patching.Core;
 
 var patcher = RitsuLibFramework.CreatePatcher(
-    MainFile.ModId, "m673-ancient-overrides", "M6.7.3 Ancient overrides");
+    MainFile.ModId, "ancient-overrides", "Ancient option overrides");
 patcher.RegisterPatch<AncientInitialOptionsReplacementPatch>();
 if (!patcher.PatchAll())
-    throw new InvalidOperationException("M6.7.3 Ancient Adapter failed to apply.");
+    throw new InvalidOperationException("Ancient override Adapter failed to apply.");
 ```
 
 This is the only generated Harmony route in the Package. Do not derive another patch from
@@ -329,7 +329,7 @@ are complete table entries. Build preflight rejects missing files, keys, and emp
 Do not put these non-dialogue keys in `ancients.json`; that table remains owned by native
 Ancient dialogue and the existing custom-Character dialogue Package.
 
-M6.7.2 composes with this Package for exact existing Ancient visuals: Event background,
+`vanilla-visual-overrides.md` composes with these routes for exact existing Ancient visuals: Event background,
 layout, initial portrait, VFX, Ancient map icons, and run-history icons. Each requested
 visual is still its own checked operation/resource. A visual override changes a scene
 resource, not Ancient behavior; do not attach generated scripts or hide gameplay in a
@@ -344,8 +344,8 @@ private state. New Ancient models, global native dialogue replacement, line audi
 randomized outcomes/RNG rewrites, special combat, direct merchant/rest/treasure
 transitions, and multiplayer remain outside this Package.
 
-During the M6.7 batch window, run focused manifest/localization tests, static
-signature/fingerprint checks, and at most a representative compile-only check. Defer real
-Ancient room behavior, choice history, locked/tip/relic presentation, page selectors,
-reward overlays, visual composition, full regression, and payload synchronization to the
-consolidated M6.7 close. An accepted manifest or compilation is not real-host proof.
+A focused manifest/localization test, a static signature/fingerprint check, and a
+representative compile establish the manifest and the build, nothing more. Real Ancient room
+behavior, choice history, locked/tip/relic presentation, page selectors, reward overlays, and
+visual composition are proved only by observing them in a real Ancient room. An accepted
+manifest or a successful compilation is not real-host proof.

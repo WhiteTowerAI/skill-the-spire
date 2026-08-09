@@ -10,7 +10,7 @@ existing vanilla Ancient's initial options or subsequent pages, resolve it throu
 subclass/register a second Ancient or copy this new-content lifecycle over the native one.
 For a fresh unlock gate on an exact ordinary vanilla Event or shared `EVENT.DARV`, use
 `reference/vanilla-availability-overrides.md`. That route requires one pinned epoch and
-singleplayer scope; act-owned Ancients and permanent Event disable remain outside M6.7.4.
+singleplayer scope; act-owned Ancients and permanent Event disable remain outside the availability routes.
 
 For the full option-result vocabulary (blocking card selections, custom rewards,
 conditional pages, and resumable/terminal special combat), also read

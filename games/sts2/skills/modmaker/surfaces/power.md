@@ -1,0 +1,114 @@
+# Surface: power
+
+Everything the pipeline needs for one custom Power, in one place: the SPEC envelope it must
+declare, the element class the author writes, and the proof its verification owes. Read
+this page at the `spec.md`, `author.md`, and `verify.md` stages for every authored custom
+Power, whether it stands alone or is a dependency of a Card, relic, or potion.
+
+## SPEC envelope
+
+Include one block for every authored custom Power.
+
+```markdown
+- **element**: power
+- **logical id**: <stable local stem>
+- **mod id**: <stable mod identity>
+- **type**: Buff | Debuff
+- **stack type**: Counter | Single
+- **amount domain**: `[0, unbounded]` (default for Counter) | `[<min>, <max>]`
+- **signed amounts**: no (default) | yes - <what negative stacks mean>
+- **effect**: <precise hook/passive behavior, with numbers>
+- **lifetime**: permanent | decays <amount> at <boundary> | removed when <condition>
+- **display**:
+  - title: <shown name>
+  - description: <hover text using {Amount}>
+  - smartDescription: <usually the same text; required>
+  - text effects: none | vanilla
+  - text spans: <description phrase -> blue/gold; apply to smartDescription too>
+  - extra badges: none | one
+    - meaning: <player-facing auxiliary value distinct from Amount>
+      value: <state value or bounded display rule>
+      corner: top-left
+      format: plain | bounded color rich text; at most 6 visible characters
+      refresh: <state change that updates it>
+      remove: <condition that hides/removes it>
+- **art**: placeholder | generate
+- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
+- **proof**:
+  - invariants: <exact expected/observed amount and the dependent effect it causes>
+  - lifetime case: <the observation that proves the declared lifetime; required whenever
+    lifetime is not "permanent">
+- **derived ids** (adapter resolves after the semantic SPEC is accepted):
+  - logical id: `<stable local stem>`
+  - localization fields: `title`, `description`, `smartDescription`
+  - asset role: power icon
+```
+
+`amount domain` is mandatory for every custom `Counter`. Keep the nonnegative default
+unless the design explicitly defines negative-stack behavior; `AllowNegative` is an
+implementation property, not a substitute for this SPEC decision. Write finite bounds
+as numbers rather than leaving them implicit. `Single` is a flag-like Power with hidden
+amount 1, so it does not need a Counter domain.
+
+`lifetime` is mandatory because a Power that never decays is a different design from one
+that does, and the two are indistinguishable in a single-turn proof — see § Proof matrix.
+
+A signed domain has a presentation consequence worth deciding deliberately: the engine
+re-derives the displayed polarity from the current amount, so a Power whose amount crosses
+zero flips its label color mid-combat. If that is not intended, keep the nonnegative default.
+
+`{Amount}` is substituted by the engine, and the Hover Tip is composed from `title` plus
+`description`/`smartDescription`. Write the placeholder, never a literal stack count, and do
+not hand-write a second copy of the tip text.
+
+Hand emphasis and extra badges are product semantics, not styling escape hatches. Record
+why the player needs the signal and the game-state rule that owns it; never record RitsuLib
+interfaces, predicates, `Color` objects, raw markup, rectangles, or invalidation event names
+in SPEC. Relics use at most three distinct safe corners; Powers use at most one top-left
+label because their preset label bands overlap in crowded rows. Every extra badge supplements
+the native Power main amount instead of replacing it. Intent belongs to the public Extra
+Badges Package and remains supported there, but it has no generated SPEC block because no
+authoring recipe exists for it yet.
+
+## Author the element class
+
+**Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend `ModPowerTemplate`:
+
+- Add exactly one `.Power<TPower>()` step to `MainFile.Content.cs`; do not rely on
+  reflection discovery or add a pool attribute.
+- Declare `Type`, `StackType`, and the SPEC amount domain. Clamp caller-owned changes and
+  use `PowerCmd.ModifyAmount` to consume an existing nonnegative Counter.
+- Emit `.title`, `.description`, and `.smartDescription` under the exact normalized public
+  entry. Use `PowerAssetProfile` only for checked icon paths.
+- Implement a non-permanent SPEC `lifetime` explicitly: tick it from the declared boundary
+  hook with `PowerCmd.TickDownDuration(this)`. A Power that only ever gains amount is a
+  permanent Power regardless of intent.
+- For extra badges, implement `IPowerExtraIconAmountLabelSpecsProvider`; return only active
+  bounded specs, never exceeding one `TopLeft` label, and add
+  `IPowerExtraIconAmountLabelsChangeSource` only when the label state changes without
+  `InvokeDisplayAmountChanged()`.
+
+## Self-test driver body
+
+A custom Power has no scenario of its own: it is driven through its real host. Use the
+host's driver — a Card host uses `InCombat` per `surfaces/card.md` — and add the Power
+assertions below to that run.
+
+## Proof matrix
+
+- Assert the applied amount with exact expected/observed values.
+- Assert the dependent effect the amount causes, so the Power is proved to *do* something
+  rather than merely exist at the right count.
+- **Assert the declared lifetime.** Applied-amount plus one effect delta both observe the
+  same turn, so a Power declared to decay passes that pair even when it never ticks — a
+  temporary debuff silently becomes permanent. Whenever `lifetime` is not `permanent`,
+  advance past the declared boundary and assert the reduced amount, then assert removal at
+  zero. A Power declaring `permanent` records that and needs no extra case.
+- Assert `Type` when the design depends on it being a Buff or a Debuff — it drives player-
+  visible polarity and is never observed by an amount assertion alone.
+- **Assert the declared amount domain at its bounds.** A single applied-amount assertion sits
+  in the middle of the domain, so an unclamped Counter passes it while exceeding a finite
+  maximum or going negative on consumption. For every finite bound, drive past it and assert
+  the amount stopped there; for the nonnegative default, consume more than the current amount
+  and assert no instance with a negative amount appears.
+- For a signed domain, assert the negative-stack meaning declared in SPEC.

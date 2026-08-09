@@ -24,7 +24,9 @@ class M73DesignPlanningContractTests(unittest.TestCase):
         cls.modmaker_skill = (MODMAKER_DIR / "SKILL.md").read_text(encoding="utf-8")
         cls.api_skill = (STS2_API_DIR / "SKILL.md").read_text(encoding="utf-8")
         cls.route = (MODMAKER_DIR / "route.md").read_text(encoding="utf-8")
-        cls.interview = (MODMAKER_DIR / "interview.md").read_text(encoding="utf-8")
+        # The interview stage reads the always-loaded invariants too, so a rule
+        # it names rather than restates still resolves.
+        cls.interview = skill_prose.with_invariants(MODMAKER_DIR / "interview.md")
         cls.spec = skill_prose.stage("spec")
         cls.mechanic = (DESIGN_DIR / "mechanic-planning.md").read_text(encoding="utf-8")
         cls.content_set = (DESIGN_DIR / "content-set-planning.md").read_text(encoding="utf-8")
@@ -126,7 +128,9 @@ class M73DesignPlanningContractTests(unittest.TestCase):
             self.assertIn(field, interview)
         self.assertIn("highest-impact open design decision first", interview)
         self.assertIn("never invent a fixed power percentage", interview)
-        self.assertIn("never call static reasoning, compilation", interview)
+        # Refusing to call reasoning or a compile "balanced" is INV-4.
+        self.assertIn("inv-4", interview)
+        self.assertIn("do not make a value balanced, fun", interview)
 
     def test_spec_lowers_only_accepted_exact_supported_behavior(self) -> None:
         spec = normalized(self.spec)
@@ -136,20 +140,30 @@ class M73DesignPlanningContractTests(unittest.TestCase):
             "keep unsupported operations in `gaps`",
             "pause before freezing spec",
             "playtest-only balance hypothesis",
-            "never write `balanced`, `fun`, or fabricated playtest evidence",
+            # A hypothesis may not become a SPEC fact; INV-4 states why.
+            "may never become is a spec fact (`inv-4`)",
         ):
             self.assertIn(contract, spec)
         self.assertIn("design role:", spec)
-        self.assertIn("m7.4 owns the durable `design.md`", spec)
+        # The durable fact is which stage owns DESIGN.md, not the milestone that added it.
+        self.assertIn("the `design.md` stage owns the durable `design.md`", spec)
 
-    def test_every_reference_preserves_m74_and_runtime_boundaries(self) -> None:
+    def test_every_reference_defers_the_durable_artifact_and_runtime_boundaries(self) -> None:
+        """Each planning reference must disclaim the durable artifact and route to SPEC.
+
+        M8.0 change 4 removed the milestone numbering that used to carry these sentences. The
+        durable rules are the ownership boundary (a planning reference produces a capsule, not
+        `DESIGN.md`), the lowering target (`SPEC.md`), and balance's refusal to own playtest
+        evidence it cannot produce.
+        """
         for reference in (self.mechanic, self.content_set, self.balance):
             text = normalized(reference)
-            self.assertIn("m7.4", text)
+            self.assertIn("design.md", text)
             self.assertIn("spec.md", text)
         self.assertIn("not a runtime route", normalized(self.mechanic))
         self.assertIn("do not fabricate", normalized(self.content_set))
-        self.assertIn("m7.6 owns", normalized(self.balance))
+        self.assertIn("evidence needed from a human playtest", normalized(self.balance))
+        self.assertIn("a tuning loop would own", normalized(self.balance))
 
     def test_scenario_matrix_covers_required_cases_and_rubric(self) -> None:
         headings = [

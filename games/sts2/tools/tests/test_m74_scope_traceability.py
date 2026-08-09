@@ -78,13 +78,18 @@ class M74ScopeTraceabilityContractTests(unittest.TestCase):
         design = normalized(self.design)
         for disposition in ("**must:**", "**placeholder:**", "**defer:**", "**out-of-scope:**"):
             self.assertIn(disposition, design)
+        # Explicit acceptance of a visible difference is INV-5, stated once in
+        # `invariants.md` and named by the stages that must obtain it.
+        scope_corpus = normalized(
+            self.design + self.route + skill_prose.read(skill_prose.INVARIANTS_PAGE)
+        )
         for contract in (
             "blocking_gaps",
             "do not freeze design, write spec, scaffold",
-            "continue only after explicit acceptance",
+            "continue only after the user",
             "request to avoid questions does not permit a silent downgrade",
         ):
-            self.assertIn(contract, normalized(self.design + self.route))
+            self.assertIn(contract, scope_corpus)
 
     def test_instruction_examples_form_one_valid_bidirectional_trace(self) -> None:
         self.assertEqual(

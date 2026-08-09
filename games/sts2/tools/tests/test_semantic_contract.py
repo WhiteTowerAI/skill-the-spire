@@ -286,7 +286,12 @@ class SemanticContractTests(unittest.TestCase):
         self.assertIn("Return zero to three", " ".join(relic_recipe.split()))
         self.assertNotIn("zero/one/bounded-multiple provider output", power_recipe)
         self.assertNotIn("corner: top-left | top-right | bottom-left | custom", self.spec)
-        self.assertIn("Intent authoring is not scheduled", normalized_badges)
+        # The product boundary is that Intent stays a supported public consumer while no
+        # authoring recipe exists, so this recipe must not be adapted to it. M8.0 change 4
+        # removed the milestone scheduling wording that used to carry that rule; the rule
+        # itself is what this pins.
+        self.assertIn("no Intent authoring recipe exists", normalized_badges)
+        self.assertIn("Do not adapt this Relic/Power recipe to Intent", normalized_badges)
 
     def test_stateful_mechanics_preserve_lifetime_reset_and_save_semantics(self) -> None:
         stateful = (

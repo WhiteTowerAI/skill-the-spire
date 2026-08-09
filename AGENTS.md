@@ -133,7 +133,11 @@ bound to the pinned assembly identity and the five native starter decks; exact t
 all ten Character-specific Strike/Defend models. Three semantic scenarios cover an
 unspecified starter deck, a Character/content-set request, and a deliberate departure. No
 independent forward-model run, game acceptance, Tier 1, or Tier 2 is inferred. The durable
-result is `documents/history/M72_NATIVE_DESIGN_GRAMMAR_RESULTS.md`.
+result is `documents/history/M72_NATIVE_DESIGN_GRAMMAR_RESULTS.md`. M8.0 change 2 added the
+inventory's native HP range, the 99 Gold constant, and the five Starter relic ids to that
+reference, since a custom Character SPEC must supply `starting HP`. The pinned catalog has no
+relic effect text: name a native Starter relic as an analogy and never describe its behavior
+from memory.
 M7.3 mechanic, content-set, and balance planning is implemented in the source workflow.
 It adds three independently lazy references for meaningful mechanic decisions and loops,
 content-role/interaction coverage, and evidence-bounded formulas/economies. Balance uses a
@@ -188,18 +192,76 @@ M7 improved how the skill understands, discusses, scopes, records, and revises a
 design; it did not expand the runtime support graph. Simple, unambiguous requests retain a
 fast path rather than receiving a full GDD process.
 
-M8 End-to-End Product Integrity is the active planned milestone. It addresses the whole
+M8 End-to-End Product Integrity is the active milestone. It addresses the whole
 skill: literal deliverable contracts, exact semantic capability preflight, semantic
 backtracking, cross-platform installed-workflow reproducibility, and one final clean
-whole-skill acceptance. M8 has not started. No Package is in progress; M8.1 Literal
-Deliverable Contract is the next selectable Package. The human lead removed M8.4 on
-2026-08-05; M8.5 and M8.6 retain their numbers. The Watcher evaluation is baseline evidence,
-not the M8 final acceptance Mod.
+whole-skill acceptance. M8.0 is closed; **M8.1 Literal Deliverable Contract is next
+selectable** and needs its execution contract written against the settled layout and confirmed
+with the human lead before implementation. M8.1-M8.6 hold plain-language intent only until
+selected. The human lead removed M8.4 on 2026-08-05; M8.5 and M8.6 retain their numbers. The
+Watcher evaluation is baseline evidence, not the M8 final acceptance Mod.
+
+M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 2026-08-10. It
+reorganized the shipped pack so an author reads one file per element instead of three per
+stage. All ten elements are co-located under `games/sts2/skills/modmaker/surfaces/`; the Card
+pilot has a real `[PASS] Tier-2 verified` run behind it and the other nine are co-located and
+cross-checked but never piloted. Its cross-check record now holds thirteen mismatches, of which
+three remain open and are live contradictions in the shipped pack: the flat
+`element:` envelope form on six surfaces contradicts the canonical nested form
+`semantic-contract.md` declares itself source-of-truth for, the character resource/ordered
+buffer keep their envelopes in `spec.md` while their proof moved to the surface page, and no
+mechanical check compares a generated project's `SPEC.md` against its surface envelope. Read
+`games/sts2/tests/m80-surface-cross-check.md` before treating any surface page as validated;
+being co-located and checked is not the same as being correct.
+
+Change 4 is closed in source. The shipped pack states what is supported, not which Package
+promoted it: a milestone id remains only where it is load-bearing — a manifest key like
+`m6.7.1-public-card-overrides`, a Tier 2 marker, a resume-compatibility boundary such as
+`pre-M7.4`, or an evidence attribution naming the run that grounded a fact. Do not reintroduce
+a milestone id into a section heading, and never leave an instruction scoped to a closed
+process window; `test_surface_cross_check.py` fails on both. That sweep found six reference
+pages still telling readers to follow the M6.7 batch-window verification exception, which
+closed on 2026-08-04.
+
+Change 3 is closed in source. Diagnostic scars ("signature X means cause Y") live in
+`sts2-api/errors.md`; preventive rules live where they fire, with `modmaker/quirks.md` holding
+the ones an author needs before writing C#. The split is by *when* a line is needed:
+constraints followed before a failure, signatures matched after one. A stage page delegates to
+`errors.md` rather than restating a cause-and-fix list, and
+`test_surface_cross_check.py` resolves every `errors.md §` pointer.
+
+Change 2 is also closed in source. The art contract's exact values stay in `gen_sprite.SPECS`
+and `character_art.CHARACTER_ART_BUNDLE` and are projected into
+`games/sts2/skills/sts2-api/reference/catalogs/art-contract-sts2-0.107.1.json` by
+`gen_sprite.py export-contract`. Never hand-edit that catalog and never treat it as a second
+definition; change a size in the code and re-export. `test_art_contract_catalog.py` fails when
+the catalog is stale or when any of the three prose views disagrees with it. Comparing prose
+against code found mismatch 12: the combat-cue sheet grid is columns-first everywhere in prose
+but was printed rows-first by `list-specs`, live on the only non-square sheet.
+
+Change 5 is closed in source. The eight rules that fire at every stage are stated once in
+`modmaker/invariants.md` as `INV-1` through `INV-8`; a stage page names the invariant and adds
+only its own stage-specific detail. That page is the one exception to lazy loading: it is read at
+pipeline start and kept in context, because a pointer replacing a rule in a page that may not be
+read leaves zero copies of it, which is worse than several drifting copies. Do not demote it to
+lazy loading, do not restate an invariant in a stage page, and do not consolidate a rule that
+fires at one stage only — the repair attempt cap and the art-consent boundary stay where they
+fire. `test_invariants.py` fails on a dangling `INV-n`, an invariant no stage names, a
+restatement of a canonical phrasing, and a lost eager-load registration.
+
+Both committed payloads were regenerated from source on 2026-08-10 after change 5 and carry all
+five changes; rendering is repeatable and no payload was installed or run. The three open
+mismatches were deferred to M8.2 by the human lead on 2026-08-10: the envelope form is a
+contract-version migration overlapping M8.2's recorded ownership, and the other two depend on that
+decision. The durable result is `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`. Do not
+re-execute the closed M8.0 contract in `documents/IMPLEMENTATION_PLAN.md`; it is retained as a
+record of what was found, not as a work order.
 Its concrete Exhaust-text, Scry, Hover Tip, Wrath, and leaked-process observations are not
 a Watcher repair queue. They define three whole-skill controls: complete player-facing
 operation semantics, maintained semantic capabilities with conformance proof, and
 cross-platform ownership of every process the tools start.
-Do not begin M8.1, edit installed payloads in place, run a fresh acceptance, or publish a
+M8.1 is selectable, but write and confirm its execution contract with the human lead before
+implementing it. Do not edit installed payloads in place, run a fresh acceptance, or publish a
 payload/release without later human-lead instruction. The active Package plan is
 `documents/IMPLEMENTATION_PLAN.md`. Its New-Session Start Protocol and Package Execution
 Contracts are authoritative: when the lead says "start M8" or "continue M8", select or
@@ -381,6 +443,11 @@ selection portrait/background, top-panel
 main/outline icons, combat/rest/merchant static bodies, five full-energy layers, and
 distinct large/text Energy icons. Optional combat cues are a private combat-only frame
 set, not a profile-global animation replacement.
+
+The exact paths, sizes, fit, chroma, and fallbacks live in `gen_sprite.SPECS` and
+`character_art.CHARACTER_ART_BUNDLE`; read them as data in the generated
+`sts2-api/reference/catalogs/art-contract-sts2-0.107.1.json` rather than re-deriving a size.
+Cue sheet grids are columns x rows of 512x512 cells.
 
 Host-native image generation is optional. Use it only when a callable raster tool returns
 a local image. Do not infer availability from a text-model name or installed skill, and do

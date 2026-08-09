@@ -208,8 +208,13 @@ def extract_action(
 
     rows, cols = contract["rows"], contract["cols"]
     if raw.width % cols or raw.height % rows:
+        # Name the axes. A bare "NxM" grid reads as WxH to anyone who just produced the
+        # sheet, which is the opposite order, and that ambiguity is how a wrong-shaped
+        # sheet gets requested in the first place.
         raise CharacterCueError(
-            f"{action} sheet size {raw.size} is not divisible by its {rows}x{cols} grid"
+            f"{action} sheet size {raw.width}x{raw.height} is not divisible by its "
+            f"{cols} cols x {rows} rows grid "
+            f"(expected {cols * 512}x{rows * 512})"
         )
     cleaned = remove_magenta(raw.copy(), threshold, edge_threshold)
     cell_width, cell_height = raw.width // cols, raw.height // rows

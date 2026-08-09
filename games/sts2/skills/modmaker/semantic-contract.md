@@ -24,7 +24,7 @@ change to this envelope requires a contract-version bump and a migration note.
 Include these sections once per SPEC. Surface-specific blocks may add fields, but must
 not replace or rename the shared sections.
 
-Before this envelope, include the M7.4 `open-mod-spec-trace/v1` block from `spec.md`. Every
+Before this envelope, include the `open-mod-spec-trace/v1` block from `spec.md`. Every
 emitted semantic operation appears once with a stable `OP-###`, one or more current
 `D-###` requirements, its semantic target, and its shipped supported route. The trace is a
 generation allowlist: deferred/out-of-scope design items never appear in this envelope.
@@ -78,6 +78,15 @@ generation allowlist: deferred/out-of-scope design items never appear in this en
   - boundary cases: <reset, save, zero/short/full, branch, or unsupported case>
 ```
 
+`keyword` and `enchantment` are contract surface identities for adapter routing and keep their
+own Surface-inputs rows below, but neither is standalone content: a keyword owns shared
+vocabulary whose named behavior lives in a host element, and an enchantment is always attached
+to a host Card. Both are therefore declared as nested blocks inside their host Card's
+`content:` section rather than as their own top-level block. `orb` is real content with its own
+identity and slot lifecycle, so it keeps a full block even though every one of its behaviors
+runs through a host. See `surfaces/keyword.md`, `surfaces/enchantment.md`, and
+`surfaces/orb.md`.
+
 The `effects`, `state`, and `proof` sections are semantic. For example, “at the
 start of combat, double current energy” is valid; a particular method name is not.
 Likewise, “shared relic pool” is valid; a pool attribute or registration call is
@@ -104,23 +113,23 @@ states adjust/compose/replace/availability/visual intent, the player-facing surf
 desired result, expected current behavior, upgrade/localization effect, timing, multiplayer
 scope, and compatibility criticality. The adapter owns the catalog digest, concrete type,
 baseline subset, public route id, capability identity, and manifest encoding. A prompt never
-provides a method name or implementation body. M6.7.1 permits the non-asset Card surfaces
-in `reference/vanilla-card-overrides.md`. M6.7.2 permits every visual surface in the
+provides a method name or implementation body. The override routes permit the non-asset Card surfaces
+in `reference/vanilla-card-overrides.md`. They permit every visual surface in the
 44-provider `reference/vanilla-visual-overrides.md` matrix. A visual operation additionally
 records the player-facing resource role, generate-versus-local authoring intent, whether it
 is required, and exact vanilla fallback; paths and Godot types remain adapter output. An
-exact existing Ancient may use the M6.7.3 initial-option append or complete replacement
+exact existing Ancient may use the initial-option append or complete replacement
 routes in `reference/vanilla-ancient-overrides.md`. Record append/replace intent, rule
 condition/priority/dedup behavior, every ordered option and reachable page, visible/enabled
 conditions, one fixed cost, typed hover/relic presentation, ordered consequences, and each
 stay/page/finish edge. Preserve the original Ancient model, room, opening dialogue, save
-identity, allowance gate, and native finish history. M6.7.4 permits pinned availability
+identity, allowance gate, and native finish history. They permit pinned availability
 operations in `reference/vanilla-availability-overrides.md`: public epoch requirements for
 Cards, Characters, ordinary Events, and shared Darv; Relic/Potion epoch filters; and
 Card/Relic/Potion pool add/remove/move. Record the full source membership baseline,
 singleplayer/preserve-instance scope, fixed Adapter dependencies, and simulated primary
 pool after each ordered transition. Do not turn weighting, act-owned Ancient filtering,
-permanent Card/Character/Event disable, or multiplayer into an invented route. M6.7.5
+permanent Card/Character/Event disable, or multiplayer into an invented route. Non-Card data/behavior overrides
 permits the exact non-Card matrix in `reference/vanilla-non-card-overrides.md`: public
 owner-hook composition/replacement for Relic, Potion, Power, Orb, Enchantment, Affliction,
 and Monster; checked intrinsic data; and complete lifecycle, Monster move, Encounter roster,
@@ -204,8 +213,8 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Character Ancient dialogue | cataloged natural target, first/explicit/repeat visit, ordered speaker/text/prompts, Architect attackers | native Ancient + production Architect |
 | Card Scry helper | top-X amount, discard-any choice, upgrade delta, singleplayer boundary | `CombatPlayer` with visible native selector |
 | Advanced creature targeting | consumer, one/many mode, stable Mod-local target id, declarative live-Creature predicate, zero-target lifecycle | `CombatPlayer` plus headed mouse/controller targeting |
-| Existing vanilla model override | exact resolved identity, ordered operation intent, preserved surfaces; visual role/source/requirement/fallback when selected | nearest real consumer for each promoted operation; deferred during M6.7 batch development |
-| Existing Ancient initial options | append or complete replacement; rule condition/priority/dedup; ordered options/pages; visibility/lock/cost/tips/relic/effects; stay/page/finish graph | native Ancient room and choice-history lifecycle; deferred during M6.7 batch development |
+| Existing vanilla model override | exact resolved identity, ordered operation intent, preserved surfaces; visual role/source/requirement/fallback when selected | nearest real consumer for each promoted operation; deferred during source development |
+| Existing Ancient initial options | append or complete replacement; rule condition/priority/dedup; ordered options/pages; visibility/lock/cost/tips/relic/effects; stay/page/finish graph | native Ancient room and choice-history lifecycle; deferred during source development |
 
 The adapter may require additional technical inputs internally, but those belong in
 the selected adapter reference and generated source, never in the semantic fields.

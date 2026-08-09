@@ -148,8 +148,9 @@ simulated personas.
 
 ## M8 whole-skill verification plan
 
-M8 is planned and has not started. M8.1 is next selectable; later Packages wait on the
-prerequisites and exact execution contracts in `documents/IMPLEMENTATION_PLAN.md`. The
+M8.0 skill structure restructuring is closed; M8.1 is next selectable.
+Later Packages wait on the prerequisites in `documents/IMPLEMENTATION_PLAN.md`, and each
+receives its execution contract when selected rather than in advance. The
 Watcher evaluation is baseline failure evidence, not the final acceptance project. Package
 cases must verify the decision each Package adds:
 
@@ -178,6 +179,70 @@ evidence-reporting subsystem were removed; existing verification ownership remai
 The Watcher Exhaust-text, Scry, Hover Tip, Wrath, and leaked-process observations are audit
 inputs for those generic contracts. They do not become five special-case assertions and do
 not change a support row without current pinned maintainer grounding.
+
+`tools/tests/test_surface_cross_check.py` owns the structural half of M8.0 change 1: every
+`skills/modmaker/surfaces/<element>.md` page is complete or explicitly states it owns no
+envelope, every `surfaces/<x>.md § Heading` pointer resolves to a real page and heading, and
+each mandatory envelope field is paired with the proof case that observes it. It is a prose
+contract check, not a behavior proof — it cannot tell whether a surface generates a working
+Mod. The mismatches it and the manual pass found, including the three left unfixed, are in
+`m80-surface-cross-check.md`; that file is the record of which surfaces have been checked,
+which is a different question from which surfaces are correct.
+
+`tools/tests/test_art_contract_catalog.py` owns M8.0 change 2's art half. The exact values
+stay in `gen_sprite.SPECS` and `character_art.CHARACTER_ART_BUNDLE`, because `fit`, `chroma`,
+and the visible footprints are normalization behavior rather than documentation;
+`gen_sprite.py export-contract` projects them into
+`sts2-api/reference/catalogs/art-contract-sts2-0.107.1.json`. The test asserts the committed
+catalog still equals the code, that its digest is self-consistent, that every size in the
+three prose views equals the catalog's, that every catalog spec has a prose row, and that the
+cue grid's column order is labeled wherever it appears.
+
+It establishes that the four copies cannot drift apart. It does not establish that any size
+is right in-game — that remains owned by the headed runs recorded in `art-contract.md`. It
+also deliberately does not compare the `consumer` column in
+`reference/character-presentation.md` to the bundle's `consumer` strings: that column is
+prose paraphrase of the same consumer, so an exact comparison would report normal rewording
+as drift. Only sizes and spec coverage are mechanically decidable there.
+
+It also owns M8.0 change 4's history-in-runtime guard: no milestone id in a shipped-pack heading,
+and no instruction scoped to a closed process window (`batch window`, `consolidated M6.7`,
+`At closure,`). It deliberately does not forbid every milestone id, because manifest keys, Tier 2
+markers, resume-compatibility boundaries, and evidence attributions all need theirs. The second
+half is the load-bearing one: it catches an instruction that has silently expired, which is worse
+than stale bookkeeping because a reader can still follow it.
+
+The same file owns M8.0 change 3's two structural checks: every `errors.md § Section` pointer in
+a modmaker page resolves to a real section, and a delegating stage keeps no rival cause-and-fix
+list (`build.md` has no `## Failure classes`; `quirks.md` states rules without the error codes
+`errors.md` owns). The first exists because change 3 trades inline detail for pointers, and one
+pointer in `verify.md` had never resolved. Neither check judges whether a cataloged fix works.
+
+`tools/tests/test_invariants.py` owns M8.0 change 5. `skills/modmaker/invariants.md` is the one
+home for the eight rules that fire at every stage, and the test holds both halves of that
+contract: every `INV-n` reference in a modmaker page resolves to a defined rule, every defined
+rule is named by at least one stage, eight canonical phrasings appear in exactly one file, the
+specific restatements change 5 removed stay removed, and `SKILL.md` still registers the page as
+read at pipeline start rather than lazily.
+
+That last check is the one the design rests on. Consolidating a rule into a page a run might not
+read would leave zero copies of it, which is worse than several drifting copies — so the pointer
+is only safe while the page is eagerly loaded. The test does not observe a run obeying an
+invariant it reached through a pointer, and its single-definition list covers eight phrasings
+rather than every sentence, so a ninth restatement elsewhere would not fail. Two hardening rules
+are deliberately not in `invariants.md` because each fires at one stage: the repair attempt cap
+and the art-route consent boundary.
+
+`test_m72_native_grammar.py` covers the same class for Character starting facts. There the
+JSON inventory is already the authority, so the added cases derive each prose starter row —
+deck entries, total, HP, and Starter relic id — from that inventory instead of restating them
+a third time, and assert the native HP range and Gold constant the grammar now states.
+
+One of those cases guards a grounding limit rather than a value. The pinned catalog carries
+relic id, localized title, and rarity but no effect text, so `character-foundation.md` may
+name a native Starter relic as an analogy and must not describe what it does; the test asserts
+that caveat is present. Deleting the caveat fails. Adding relic effects later requires a
+checked source, not recall.
 
 Host ownership:
 

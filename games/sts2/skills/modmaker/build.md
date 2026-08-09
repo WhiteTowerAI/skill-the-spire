@@ -24,16 +24,19 @@ Before MSBuild, the tool verifies:
   Character entries, and identical keys across shipped languages.
 - when present, `openmod/vanilla-overrides.json` has the pinned host/profile/catalog
   digest, matching Mod id, grounded baselines/routes, no same-Mod conflict, and only
-  operations promoted by the current catalog. M6.7.1 accepts the exact public Card routes
-  in `reference/vanilla-card-overrides.md`; M6.7.2 accepts the 44 exact visual routes and
-  validates their required/optional Mod-local resources through
-  `reference/vanilla-visual-overrides.md`; M6.7.3 accepts exact existing-Ancient option
-  append/replacement/page-flow routes in `reference/vanilla-ancient-overrides.md`, including
-  exact Adapter/dependency fingerprints and complete per-language `events.json` keys.
-  M6.7.4 accepts the exact epoch and Card/Relic/Potion pool routes in
-  `reference/vanilla-availability-overrides.md`, including complete pool baselines,
-  Relic/Potion override dependencies, and ordered primary-pool checks. Every other nonempty
-  route still fails closed.
+  operations the current catalog promotes. Each override family is accepted by its own
+  reference, and every route outside them fails closed:
+  - `reference/vanilla-card-overrides.md` — exact public Card routes;
+  - `reference/vanilla-visual-overrides.md` — the 44 exact visual routes, plus their
+    required/optional Mod-local resources;
+  - `reference/vanilla-ancient-overrides.md` — existing-Ancient option append/replacement
+    and page-flow routes, exact Adapter/dependency fingerprints, and complete per-language
+    `events.json` keys;
+  - `reference/vanilla-availability-overrides.md` — epoch and Card/Relic/Potion pool routes,
+    complete pool baselines, Relic/Potion override dependencies, and ordered primary-pool
+    checks;
+  - `reference/vanilla-non-card-overrides.md` — non-Card data and behavior routes, including
+    owner-hook streams and checked lifecycle replacements.
 
 Before querying MSBuild, the tool reuses an explicit `--nuget-packages-dir`, the
 `NUGET_PACKAGES` environment value, or a complete pinned package in the real user's
@@ -44,9 +47,12 @@ After the build it checks the NuGet lock resolved the exact compat package, copi
 Mod's DLL/manifest/PDB through the generated MSBuild target, packs
 `<project-dir>/<ModName>/` when resources exist, and rejects a generated directory that
 contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
-For a new scaffold it also requires the deployed override manifest and compares its bytes
-with the source document that passed preflight. Legacy projects without a source override
-manifest remain valid.
+It also keeps the deployed Mod free of any loose `.json` other than `<ModName>.json`: the
+game parses every `.json` under a Mod directory, at any depth, as a Mod manifest and logs a
+load error for each one without an `id`. `openmod/vanilla-overrides.json` is a build-time
+input that stays in the project directory; a copy left by an older build is deleted, and any
+other deployed non-manifest `.json` fails the build. Authored JSON belongs inside the `.pck`.
+Legacy projects without a source override manifest remain valid.
 
 `--runtime-dir <path>` may point at an explicitly selected runtime folder or release zip.
 `--nuget-packages-dir <path>` may select a shared NuGet global-packages directory.
@@ -61,26 +67,18 @@ manifest remain valid.
   only when the Mod owns resources;
 - RitsuLib remains separate in the game `mods/` directory or its official Workshop item.
 
-## Failure classes
+## On failure
 
-- `required compile asset ... Do not use the default beta-facing package` means the
-  project selected a floating/main package. Restore the pinned compat reference.
-- `host ... required stable 0.107.1` means the installed game branch is wrong. Stop; do
-  not compile against another host.
-- `RitsuLib runtime was not found` means neither the local runtime nor official Workshop
-  item is installed. Subscribe to item `3747602295` or install the compat/variant pack.
-- `no matching 0.107.1 RitsuLib variant` means the discovered runtime is incompatible.
-  Do not fall back to a root beta DLL.
-- `[ancient-dialogue]` or an Ancient localization detail in the profile failure means the
-  generated flat table is structurally unsafe. Fix the reported semantic group/key; do not
-  bypass the preflight or enable the debug missing-Architect fallback.
-- `[vanilla-overrides]` with an Ancient target/route/page/localization/fingerprint detail
-  means the M6.7.3 manifest, generated flow, or `events.json` drifted. Fix the named
-  semantic operation or generated source; never relax the catalog or swap in a guessed
-  patch target.
-- `manifest has_pck must be ...` means authored localization/art/scenes and the manifest
-  disagree. Set the boolean to match the resource tree before rebuilding.
-- ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
+Read `${STS2_API_SKILL_DIR}/errors.md` § Build And Profile and match the exact signature
+before changing anything. It carries the cause and fix for every profile, manifest, pack,
+Ancient-dialogue, and vanilla-override failure this stage can emit.
+
+Two rules that decide *where* the fix goes, and are not in the catalog:
+
+- A `RitsuLib profile FAILED` / `RitsuLib restore FAILED` contract error is fixed in the
+  package, manifest, host, or runtime variant chosen at `scaffold.md`. Never enter a C#
+  repair loop for one.
+- Ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
 
 On success, mark `build` done in `PLAN.md`, record the resolved Mods path and profile in
 `MEMORY.md`, and continue to `verify.md`. If `--skip-runtime-check` was used, record that

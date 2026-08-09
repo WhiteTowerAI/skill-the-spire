@@ -114,6 +114,74 @@ class M72NativeGrammarContractTests(unittest.TestCase):
                 research[character_id]["starting_relics"][0],
             )
 
+    def test_prose_starter_table_is_derived_from_the_checked_inventory(self) -> None:
+        """M8.0 change 2: the prose table is a view of the catalog, not a third copy.
+
+        The starter decks live in the JSON inventory, this prose table, and this file's own
+        `EXPECTED_DECKS`. `EXPECTED_DECKS` is an independent expectation checked against the
+        pinned catalog, so it is a verification point. The prose table is a restatement, and
+        nothing checked it -- a hand edit here could contradict the inventory the design
+        conversation actually loads. Derive every row instead of hardcoding it.
+        """
+        for character in self.inventory["characters"]:
+            identifier = str(character["id"])
+            rows = [
+                line
+                for line in self.grammar.splitlines()
+                if line.startswith(f"| {identifier.capitalize()} ")
+            ]
+            with self.subTest(character=identifier):
+                self.assertEqual(
+                    1, len(rows), f"{identifier} needs exactly one starter-table row"
+                )
+                row = rows[0]
+                for entry in character["starting_deck"]:
+                    self.assertIn(
+                        f"{entry['count']} `{entry['card_type']}`",
+                        row,
+                        f"{identifier} row must state the inventory's exact deck entry",
+                    )
+                total = sum(int(entry["count"]) for entry in character["starting_deck"])
+                self.assertIn(
+                    f"| {total} |",
+                    row,
+                    f"{identifier} row total must equal its inventory deck size",
+                )
+                self.assertIn(
+                    f"| {character['starting_hp']} |",
+                    row,
+                    f"{identifier} row must state the inventory's starting HP",
+                )
+                self.assertIn(
+                    f"`{character['starting_relic']}`",
+                    row,
+                    f"{identifier} row must name the inventory's Starter relic",
+                )
+
+    def test_grammar_states_native_hp_range_gold_constant_and_relic_effect_limit(self) -> None:
+        """The HP a Character SPEC must supply needs a native range to reason against.
+
+        `surfaces/character.md` requires `starting HP`, so the design conversation decides
+        that number on every custom Character. Before M8.0 change 2 the inventory held all
+        five native values and the loaded grammar stated none of them, leaving the number
+        unanchored. Gold is a constant and is stated as one so it is not mistaken for a
+        decision.
+
+        The relic caveat is load-bearing: the pinned catalog carries relic id, title, and
+        rarity but no effect text, so naming a Starter relic is grounded while describing
+        what it does is not.
+        """
+        hp_values = [int(c["starting_hp"]) for c in self.inventory["characters"]]
+        gold_values = {int(c["starting_gold"]) for c in self.inventory["characters"]}
+        self.assertEqual(1, len(gold_values), "this case assumes Gold is a native constant")
+
+        self.assertIn(f"`{min(hp_values)}` to `{max(hp_values)}`", self.grammar)
+        self.assertIn(f"{gold_values.pop()} Gold", self.grammar)
+
+        grammar = normalized(self.grammar)
+        self.assertIn("not** recorded in the pinned catalog", grammar)
+        self.assertIn("does from memory", grammar)
+
     def test_all_character_strike_and_defend_facts_match_the_pinned_catalog(self) -> None:
         models = {model["id"]: model for model in self.catalog["models"]}
         stems = ("IRONCLAD", "SILENT", "DEFECT", "NECROBINDER", "REGENT")
@@ -198,7 +266,9 @@ class M72NativeGrammarContractTests(unittest.TestCase):
             "deliberate native departure",
         ):
             self.assertIn(field, spec)
-        self.assertIn("m7.4 `design.md` traceability", normalized(self.grammar))
+        # The rule is that this bounded basis is not the durable DESIGN traceability, not
+        # which milestone introduced that separation.
+        self.assertIn("not `design.md` traceability", normalized(self.grammar))
 
     def test_scenario_matrix_covers_required_inputs_and_semantic_rubric(self) -> None:
         headings = [

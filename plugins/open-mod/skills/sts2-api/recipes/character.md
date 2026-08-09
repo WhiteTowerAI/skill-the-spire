@@ -4,11 +4,11 @@
 > Foundation and M6.5 presentation proofs. This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
 > the nine promoted static presentation profiles, and the bounded non-Spine
-> Idle/Attack/Hit/Dead combat cues. Selected R5 resource/buffer/UI
+> Idle/Attack/Hit/Dead combat cues. Selected resource/buffer/UI
 > capability details live in `reference/character-resource.md` and
 > `reference/ordered-card-buffer.md`; this Foundation recipe does not duplicate them or
 > promote Ancient, Spine, Cast, trails, arbitrary custom materials, multiplayer
-> presentation, or audio. Its bounded M6.5 theme uses only RitsuLib's public
+> presentation, or audio. Its bounded theme uses only RitsuLib's public
 > pool-material helper.
 
 Read `reference/ritsulib-adapter.md` first. When static art is selected, also
@@ -17,7 +17,7 @@ When combat cues are selected, additionally read `reference/character-combat-cue
 
 This recipe creates a new Mod-owned Character. For a pinned existing vanilla Character's
 fresh unlock gate, resolve it through `reference/vanilla-overrides.md` and then use
-`reference/vanilla-availability-overrides.md`. M6.7.4 permits a singleplayer pinned-epoch
+`reference/vanilla-availability-overrides.md`, which permits a singleplayer pinned-epoch
 requirement only; it does not permit permanent disable, pool replacement, or registration
 as a generated-Mod Character.
 

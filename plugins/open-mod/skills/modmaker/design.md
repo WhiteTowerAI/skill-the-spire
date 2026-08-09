@@ -25,7 +25,7 @@ Every new or revised Mod gets `DESIGN.md`, but only include useful sections:
 - **Fast:** contract, route, one-sentence intent, accepted/defaulted decision, compact scope
   ledger, one compact coherence anchor/check, and no empty full-design ceremony. A complete
   exact Card should fit in a short capsule and require no new question.
-- **Co-design:** add the selected alternatives/trade-off and only the relevant M7.2/M7.3
+- **Co-design:** add the selected alternatives/trade-off and only the relevant native-grammar and planning
   planning sections: fantasy, core decision/loop, content relationships, formula/economy,
   tuning knobs, dominance concern, and open hypotheses.
 - **Revision:** preserve stable IDs, settled and rejected decisions, and unrelated scope.
@@ -128,7 +128,7 @@ validation; keep explanations in plain language.
 
 ## Design Notes
 
-<omit on the fast path; otherwise include only relevant M7.2/M7.3 capsule fields,
+<omit on the fast path; otherwise include only relevant native-grammar and planning capsule fields,
 rejected alternatives, tuning hypotheses, and evidence that could change the design>
 
 ## Scope Ledger
@@ -250,8 +250,8 @@ python ../modmaker/scripts/coherence_trace.py --design DESIGN.md
 ```
 
 Stop on an unknown design/anchor reference, unresolved conflict, invalid surface, or an
-empty revision impact queue. The validator checks structure and references, not subjective
-quality or human acceptance.
+empty revision impact queue. The validator checks structure and references. A green run is
+not quality or human acceptance (`INV-4`).
 
 Use one combined DESIGN/current-slice/SPEC confirmation before scaffolding. Summarize
 **build now**, **placeholder**, and **later/not included**; omit empty groups. Do not ask for

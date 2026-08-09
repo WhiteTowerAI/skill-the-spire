@@ -28,13 +28,23 @@ Keep these categories explicit in reasoning and artifacts:
 
 ## Pinned starter facts
 
-| Character | Exact native starter deck | Total | Identity teaching cards |
-| --- | --- | ---: | --- |
-| Ironclad | 5 `StrikeIronclad`, 4 `DefendIronclad`, 1 `Bash` | 10 | Bash introduces Vulnerable |
-| Silent | 5 `StrikeSilent`, 5 `DefendSilent`, 1 `Neutralize`, 1 `Survivor` | 12 | Neutralize and Survivor introduce Weak and discard |
-| Defect | 4 `StrikeDefect`, 4 `DefendDefect`, 1 `Zap`, 1 `Dualcast` | 10 | Zap and Dualcast introduce Orb channel/evoke play |
-| Necrobinder | 4 `StrikeNecrobinder`, 4 `DefendNecrobinder`, 1 `Bodyguard`, 1 `Unleash` | 10 | Bodyguard and Unleash introduce Osty |
-| Regent | 4 `StrikeRegent`, 4 `DefendRegent`, 1 `FallingStar`, 1 `Venerate` | 10 | Falling Star and Venerate introduce debuffs and Stars |
+| Character | Exact native starter deck | Total | HP | Starter relic | Identity teaching cards |
+| --- | --- | ---: | ---: | --- | --- |
+| Ironclad | 5 `StrikeIronclad`, 4 `DefendIronclad`, 1 `Bash` | 10 | 80 | `BurningBlood` | Bash introduces Vulnerable |
+| Silent | 5 `StrikeSilent`, 5 `DefendSilent`, 1 `Neutralize`, 1 `Survivor` | 12 | 70 | `RingOfTheSnake` | Neutralize and Survivor introduce Weak and discard |
+| Defect | 4 `StrikeDefect`, 4 `DefendDefect`, 1 `Zap`, 1 `Dualcast` | 10 | 75 | `CrackedCore` | Zap and Dualcast introduce Orb channel/evoke play |
+| Necrobinder | 4 `StrikeNecrobinder`, 4 `DefendNecrobinder`, 1 `Bodyguard`, 1 `Unleash` | 10 | 66 | `BoundPhylactery` | Bodyguard and Unleash introduce Osty |
+| Regent | 4 `StrikeRegent`, 4 `DefendRegent`, 1 `FallingStar`, 1 `Venerate` | 10 | 75 | `DivineRight` | Falling Star and Venerate introduce debuffs and Stars |
+
+All five start with 99 Gold, so starting Gold is a native constant rather than a
+per-Character decision. Native starting HP spans `66` to `80`; the low end pairs with
+Necrobinder's summon support and the high end with Ironclad's self-damage costs, so HP is
+part of a Character's risk profile rather than a free number.
+
+These five relic identities are the pinned internal ids. Their exact effects are **not**
+recorded in the pinned catalog, which carries relic id, localized title, and rarity but no
+effect text. Do not state what a native Starter relic does from memory: name it as an
+analogy, and read the current game or `recipes/relic.md` before asserting its behavior.
 
 Each Character owns distinct Strike and Defend model types, but all five display as
 `Strike` / `Defend` in English and `打击` / `防御` in Simplified Chinese. All ten are
@@ -68,7 +78,7 @@ If the central mechanic is still unknown and materially changes the teaching pai
 about that one high-impact player decision first. Then propose the complete deck. If the
 mechanic is clear, present the exact proposal at confirmation without adding a deck
 question. A Character/content-set request loads this same Foundation grammar first; full
-pool roles, archetype coverage, economy, and balance planning remain M7.3 work.
+pool roles, archetype coverage, economy, and balance planning remain the planning references' work.
 
 Use native analogies deliberately:
 
@@ -108,5 +118,5 @@ For a Character, carry these fields into the Character Foundation block in `SPEC
 - deliberate departure plus onboarding, compatibility, and balance consequences, or
   `none`.
 
-This bounded design basis is not M7.4 `DESIGN.md` traceability and does not authorize an
+This bounded design basis is not `DESIGN.md` traceability and does not authorize an
 unsupported operation.

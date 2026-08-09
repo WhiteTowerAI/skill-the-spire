@@ -54,10 +54,19 @@ M7.0 was canceled as a standalone evaluation Package. M7.1-M7.5 are implemented 
 results. M7.6 closed through the external human-led Watcher whole-skill evaluation rather
 than a new source-workflow Package, and the human lead closed M7 on 2026-08-05. Its record
 includes the later process-cleanup, player-facing-semantic, and maintained-capability
-findings that feed M8. M8 is the active planned milestone, no Package has started, and M8.1
-is next selectable. The active plan, not this archive, owns each Package's execution
+findings that feed M8. The active plan, not this archive, owns each Package's execution
 contract and current status. The human lead removed M8.4; M8.5 and M8.6 retain their
 numbers.
+
+## M8 Results
+
+- `M80_SKILL_STRUCTURE_RESULTS.md` — skill structure restructuring, closed 2026-08-10.
+
+M8 is the active milestone. M8.0 is closed and M8.1 literal deliverable contract is next
+selectable. Unlike most records here, the M8.0 result points at a file that is still active
+instruction rather than archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md`
+holds three unresolved mismatches deferred to M8.2, so it must be read before treating any
+surface page as validated.
 
 ## Research And Retired Evidence
 

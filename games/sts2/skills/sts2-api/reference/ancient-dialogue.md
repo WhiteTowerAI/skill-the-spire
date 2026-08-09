@@ -3,7 +3,7 @@
 This capability adds localization-defined dialogue for a registered Mod Character to a
 cataloged vanilla Ancient. It preserves the vanilla Event model, scene, background,
 options, rewards, progression, and selection rules. It is not custom Ancient creation or
-an M6.7 vanilla replacement.
+a vanilla override replacement.
 
 ## Pinned STS2 0.107.1 catalog
 

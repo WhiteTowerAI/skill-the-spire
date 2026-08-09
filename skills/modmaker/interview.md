@@ -12,8 +12,8 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
   different choices and trade-offs. Revision asks only about the requested delta.
 - **Ask only material questions.** Everything else gets a sensible default that is stated
   later, not presented as another decision.
-- **Preserve settled decisions.** Do not re-ask or silently replace anything already fixed
-  by the prompt or project artifacts.
+- **Preserve settled decisions** (`INV-6`). Anything already fixed by the prompt or project
+  artifacts is not a question.
 - **No jargon.** Say "when does it happen?" not "which combat hook?". Never ask
   about classes, namespaces, or APIs.
 - **Keep the interaction proportional.** Batch up to three independent short questions;
@@ -32,9 +32,9 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
   identity-changing revision. Derive anchors from settled decisions, not new lore. Name
   any exact cross-artifact conflict and ask only when the repair is a creative choice.
 
-## Compact M7.3 planning pass
+## Compact planning pass
 
-Run this pass only when `route.md` selected one or more M7.3 planning references. Resolve
+Run this pass only when `route.md` selected one or more planning references. Resolve
 the highest-impact open design decision first, then use accepted choices and safe defaults
 to complete only the relevant parts of the capsule below.
 
@@ -57,15 +57,14 @@ to complete only the relevant parts of the capsule below.
 
 Ask only about an unresolved choice whose answers change player behavior or the current
 supported implementation. Offer two or three structures rather than number-only variants
-when the mechanic itself is unclear. A missing measurement, trigger rate, formula input,
-or human playtest result remains an open hypothesis; never call static reasoning,
-compilation, or a proposed value balanced or fun.
+when the mechanic itself is unclear. A missing measurement, trigger rate, formula input, or
+human play result stays an open hypothesis (`INV-4`).
 
-This pass produces a compact planning capsule. M7.3 did not itself define a durable
-artifact; the following `design.md` stage now records the capsule, current/future scope,
-and M7.4 traceability without re-asking its settled decisions.
+This pass produces a compact planning capsule, not a durable artifact. The following
+`design.md` stage records the capsule, current/future scope, and traceability without
+re-asking its settled decisions.
 
-## Compact M7.5 coherence pass
+## Compact coherence pass
 
 Run this pass only when `route.md` selected coherence review. Use one to three observable
 identity anchors from accepted decisions, then inspect only selected mechanics, naming,
@@ -572,7 +571,7 @@ options:
     next <stay|page PAGE_ID|finish>
 pages:
   - id: <PAGE_ID>; description: <text>; options: <same option shape>
-visual composition: none | <exact M6.7.2 Ancient/Event visual surfaces>
+visual composition: none | <exact Ancient/Event visual surfaces>
 preserve: original Ancient model, room, opening dialogue, save identity, allowance gate,
   and native finish/choice-history lifecycle
 boundary: singleplayer; no new Ancient, global dialogue replacement, line audio,
