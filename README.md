@@ -11,9 +11,9 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 > with RitsuLib `0.5.4`. The BaseLib migration and M6.5-M6.7 implementation tracks are
 > closed. M7 Design Intelligence is closed: M7.1-M7.5 are implemented, and M7.6 closed
 > through a human-led external whole-skill evaluation with explicit limitations. M8
-> End-to-End Product Integrity is active: M8.0 skill structure restructuring is closed
-> and M8.1 is the next selectable Package. A GitHub release is not currently
-> authorized.
+> End-to-End Product Integrity is active: M8.0 skill structure restructuring is closed,
+> M8.1 literal deliverable contract is implemented in source, and M8.2 is the next
+> selectable Package. A GitHub release is not currently authorized.
 
 ## Requirements
 
@@ -63,11 +63,12 @@ The skill will:
 
 1. Resume an unfinished project or infer a fast, co-design, or revision route.
 2. Ask only questions whose answers materially change the Mod.
-3. Write `DESIGN.md` for intent, scope, coherence, and revision impact.
+3. Write `DESIGN.md` for the deliverable claim, intent, scope, coherence, and revision impact.
 4. Write a validated `SPEC.md` containing only exact supported operations generated now.
 5. Scaffold, author, build, package, and deploy the Mod.
 6. Run the proportional load/behavior checks owned by the changed surface.
-7. Report every pass, failure, fallback, and unrun check literally.
+7. Settle every required player experience against its evidence, then report each pass,
+   failure, fallback, and unrun check literally.
 
 A complete narrow request keeps a zero-question fast path. Character requests receive an
 exact native-shaped starter proposal rather than a blank deck questionnaire. Unsupported
@@ -137,17 +138,23 @@ route, not a list of mechanic-specific reminders or a parallel capability catalo
 mechanics will resolve to maintained exact capabilities with conformance evidence instead
 of per-Mod approximations; a failing claimed route will block until repaired or narrowed.
 Launch tooling will own and clean up only the process tree it starts on Windows and macOS.
-DESIGN will preserve the user's literal completion claim; prototype, slice, and run-capable
-labels remain optional descriptions rather than a closed taxonomy. None of the M8 flow is
-implemented yet.
+
+The literal completion claim is the part now implemented. Every `DESIGN.md` states what the
+user has when the Mod is done, the player experiences required for that claim to be honest,
+how each one will be settled, and what the claim does not include. Prototype, slice, and
+run-capable stay optional descriptions rather than a closed taxonomy — nothing branches on the
+wording. The final report is generated from a `PLAN.md` ledger that settles each required
+experience against evidence its method actually accepts, so a summary cannot claim more than
+the run earned. The remaining M8 flow — capability preflight, one-operation surface parity,
+semantic backtracking, and platform reproduction — is not implemented yet.
 
 The active plan contains a new-session start protocol and, for each selected Package, an
 execution contract: exact prerequisites, source scope, work order, and result record.
-M8.1-M8.6 carry plain-language intent only and receive a contract when selected.
-An instruction to start M8 selects M8.1 literal deliverable contract, whose contract is written
-and confirmed before implementation. M8.4 was removed;
-M8.5 and M8.6 keep their numbers. M8.5 may be selected independently after M8.1 only by
-explicit human-lead instruction.
+M8.2-M8.6 carry plain-language intent only and receive a contract when selected.
+An instruction to continue M8 selects M8.2 exact semantic capability conformance and
+preflight, whose contract is written and confirmed before implementation. M8.4 was removed;
+M8.5 and M8.6 keep their numbers. M8.5 may be selected independently only by explicit
+human-lead instruction.
 
 ## Verification Model
 

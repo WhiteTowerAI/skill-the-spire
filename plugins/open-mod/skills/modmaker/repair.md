@@ -142,3 +142,12 @@ is why a fix you just proved does not go straight into it:
 On convergence: mark the stage done in `PLAN.md`, note the fix in `MEMORY.md`, and
 continue the pipeline from where you were (build → verify → finalize). On stop:
 leave the report above and the failed-stage state; do not advance.
+
+A fix that changes whether a required experience holds must not leave `PLAN.md`'s settlement
+ledger describing the run before the fix. Clear the affected `E-###` entries so Finalize
+settles them against the rebuilt Mod; a stale `observed` from an earlier attempt is evidence
+for a build that no longer exists (`INV-2`).
+
+That is the whole of this stage's obligation. Whether a repair *changed what the player gets*
+— and therefore whether the claim, a design decision, or the scope itself has to change — is
+not decided here.

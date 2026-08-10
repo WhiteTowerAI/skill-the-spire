@@ -31,6 +31,14 @@ generated operation lacks a current design source and supported semantic route.
 `coherence_trace.py` validates the proportional identity anchors, selected surface checks,
 resolved conflict state, and revision impact queue before SPEC.
 
+`DESIGN.md` also carries one literal deliverable claim: what the user has when this is done,
+the `E-###` player experiences required for that claim to be honest, how each will be settled,
+and what the claim does not include. `deliverable_trace.py` checks its structure and design
+trace before SPEC, and at Finalize checks `PLAN.md`'s settlement ledger — every required
+experience has an outcome, and no outcome claims more than its evidence type carries. A
+requirement is not an experience: a generated operation can pass while the thing the player
+was promised is false.
+
 Turn a non-programmer's one-sentence idea into an STS2 mod that actually loads
 and runs in-game. You drive a staged pipeline; each stage is a separate file you
 read **only when you reach it** — this keeps context small.
@@ -187,7 +195,7 @@ constrain every stage rather than one.
 | `invariants.md` | The eight rules every stage obeys, stated once | Pipeline start; stays in context |
 | `route.md` | Infer fast / co-design / revision and preserve settled decisions | Pipeline start (after state check) |
 | `interview.md` | Resolve only material open decisions → intake | After routing when a decision is still open |
-| `design.md` | Write adaptive `DESIGN.md`, current/future scope, coherence contract, and stable IDs | After Interview, or to backfill a pre-M7.4 project |
+| `design.md` | Write adaptive `DESIGN.md`: deliverable claim, current/future scope, coherence contract, and stable IDs | After Interview, or to backfill a pre-M7.4 project |
 | `semantic-contract.md` | Framework-neutral SPEC envelope, adapter inputs, and diagnostic record | Before writing SPEC |
 | `spec.md` | Write exact current `SPEC.md` plus validated coherence/design traces | After DESIGN |
 | `scaffold.md` | Pinned RitsuLib project + manifest + compat wiring | After spec |
@@ -217,6 +225,8 @@ User: one sentence ("a relic that ...")
     the delta and never re-asks settled facts.
     |
  3. DESIGN (design.md) — write the adaptive durable intent, scope, and coherence artifact.
+    State the literal deliverable claim: what exists when this is done, the E-### player
+    experiences required for it to be honest, and what the claim does not include.
     Every current MUST/PLACEHOLDER receives stable design and operation IDs; DEFER and
     OUT-OF-SCOPE remain outside generation. Check only selected expressive surfaces against
     accepted identity anchors. On revision, record the ordered impact/re-evaluation queue.
@@ -254,8 +264,10 @@ User: one sentence ("a relic that ...")
     asserts concrete post-state → grep its structured state proof). Fall back to the manual dev-console guide
     only if the harness can't reach its scenario (INV-1). On failure: go to REPAIR (repair.md).
     |
- 9. FINALIZE — summarize what was built, where the artifacts are, and which tier
-    of verification was reached.
+ 9. FINALIZE — settle every required experience in PLAN.md's ledger as observed,
+    unobserved, or exception with its evidence, validate it against the claim, then
+    summarize from the ledger: what was proved, what was not, what was never included,
+    where the artifacts are, and which tier each claim rests on.
     |
 10. REPAIR (repair.md) — shared sub-loop invoked by 7/8: read the real error,
     consult sts2-api errors.md, apply ONE fix, re-run only the failed stage.
@@ -268,11 +280,13 @@ User: one sentence ("a relic that ...")
 Keep important state in files in the work dir so the pipeline survives long
 threads and context compaction:
 
-- **DESIGN.md** — player intent, decisions, current/future scope, tuning hypotheses,
-  coherence anchors/surface checks, revision impact queue, and accepted boundaries.
+- **DESIGN.md** — the deliverable claim and its required/excluded player experiences, plus
+  player intent, decisions, current/future scope, tuning hypotheses, coherence
+  anchors/surface checks, revision impact queue, and accepted boundaries.
 - **SPEC.md** — exact current generated operations, semantic behavior, supported routes,
   state lifetime/reset/persistence, presentation/fallback, and design trace.
-- **PLAN.md** — stage checklist + status; update after each stage.
+- **PLAN.md** — stage checklist + status, and the deliverable settlement ledger; update
+  after each stage.
 - **MEMORY.md** — discoveries, chosen ids, derived loc keys, and what worked/failed.
 
 **State-check first**: if these exist, continue from the artifacts, not from

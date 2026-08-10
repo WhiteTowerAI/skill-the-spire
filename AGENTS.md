@@ -195,11 +195,12 @@ fast path rather than receiving a full GDD process.
 M8 End-to-End Product Integrity is the active milestone. It addresses the whole
 skill: literal deliverable contracts, exact semantic capability preflight, semantic
 backtracking, cross-platform installed-workflow reproducibility, and one final clean
-whole-skill acceptance. M8.0 is closed; **M8.1 Literal Deliverable Contract is next
-selectable** and needs its execution contract written against the settled layout and confirmed
-with the human lead before implementation. M8.1-M8.6 hold plain-language intent only until
-selected. The human lead removed M8.4 on 2026-08-05; M8.5 and M8.6 retain their numbers. The
-Watcher evaluation is baseline evidence, not the M8 final acceptance Mod.
+whole-skill acceptance. M8.0 and M8.1 are implemented; **M8.2 exact semantic capability
+conformance and preflight is next selectable** and needs its execution contract written
+against the settled layout and confirmed with the human lead before implementation.
+M8.2-M8.6 hold plain-language intent only until selected. The human lead removed M8.4 on
+2026-08-05; M8.5 and M8.6 retain their numbers. The Watcher evaluation is baseline evidence,
+not the M8 final acceptance Mod.
 
 M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 2026-08-10. It
 reorganized the shipped pack so an author reads one file per element instead of three per
@@ -260,7 +261,26 @@ Its concrete Exhaust-text, Scry, Hover Tip, Wrath, and leaked-process observatio
 a Watcher repair queue. They define three whole-skill controls: complete player-facing
 operation semantics, maintained semantic capabilities with conformance proof, and
 cross-platform ownership of every process the tools start.
-M8.1 is selectable, but write and confirm its execution contract with the human lead before
+
+M8.1 Literal Deliverable Contract is implemented in source and synchronized into both payloads
+on 2026-08-10. Every `DESIGN.md` carries one `open-mod-deliverable:v1` claim: what the user has
+when this is done, the `E-###` player experiences required for that claim to be honest, one
+`settled_by` method per experience from exactly `tier-2-structured`, `tier-1-load`,
+`headed-human`, or `user-decision`, and what the claim does not include. `shape` is free text on
+purpose — prototype/slice/run-capable are optional descriptions, not a closed taxonomy, and no
+route branches on its value. The combined confirmation leads with the claim; Finalize settles
+every experience in `PLAN.md`'s ledger as `observed`, `unobserved`, or `exception` with its
+evidence and generates the user-facing report from that ledger. `deliverable_trace.py` checks the
+claim before SPEC and the ledger at finalize, where neither existing validator runs, and it fails
+when an outcome outruns its evidence type — a `tier-2-structured` experience is not `observed`
+because tier-1 passed, and `user-decision` records acceptance rather than observation. There is
+no `INV-9`: the rule fires at finalize only, so it stays where it fires. A project without the
+block resumes unchanged. Keep the distinction the Package exists for: a requirement is not an
+experience, and a generated operation can pass while the thing the player was promised is false.
+Focused tests are `298/298`; no generated Mod, game launch, Tier 1, Tier 2, or forward-model run
+is claimed. The durable result is `documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md`.
+
+M8.2 is selectable, but write and confirm its execution contract with the human lead before
 implementing it. Do not edit installed payloads in place, run a fresh acceptance, or publish a
 payload/release without later human-lead instruction. The active Package plan is
 `documents/IMPLEMENTATION_PLAN.md`. Its New-Session Start Protocol and Package Execution
@@ -457,16 +477,17 @@ not silently select a paid backend. Every acquisition path converges on determin
 ## Architecture
 
 - Current `games/sts2/skills/modmaker/`: state check -> inferred fast/co-design/revision
-  route -> adaptive interview -> coherence-checked `DESIGN.md` -> validated current-slice `SPEC.md` ->
-  scaffold -> author -> build -> verify -> bounded repair. An unchanged unfinished project
+  route -> adaptive interview -> claim-bearing, coherence-checked `DESIGN.md` -> validated
+  current-slice `SPEC.md` -> scaffold -> author -> build -> verify -> ledger-settled finalize,
+  with bounded repair. An unchanged unfinished project
   resumes directly at its first incomplete stage; a pre-M7.4 project backfills DESIGN from
   accepted SPEC without restarting its interview.
-- Planned M8 flow adds a literal completion claim and exact semantic preflight before
-  generation; treats behavior, lifecycle, rules text, keyword/DynamicVar and Hover Tip
-  discoverability, localization, preview, and real-consumer presentation as one operation;
-  semantic-impact repair returns to the artifact that owns the changed fact; and the
-  installed workflow must reproduce without in-place skill edits or an owned child process
-  left running. None of that planned flow is implemented yet.
+- The literal completion claim before generation is implemented. Still planned for later M8
+  Packages: exact semantic preflight; treating behavior, lifecycle, rules text,
+  keyword/DynamicVar and Hover Tip discoverability, localization, preview, and real-consumer
+  presentation as one operation; semantic-impact repair returning to the artifact that owns
+  the changed fact; and an installed workflow that reproduces without in-place skill edits or
+  an owned child process left running. None of those four is implemented yet.
 - `games/sts2/skills/sts2-api/`: lazy recipes, references, and error catalog.
 - `games/sts2/tools/`: cross-platform Python build/launch/log/art wrappers.
 - `games/sts2/tests/`: current support graph and verification ownership.

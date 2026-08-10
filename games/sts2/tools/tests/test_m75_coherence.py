@@ -111,7 +111,14 @@ class M75CoherenceContractTests(unittest.TestCase):
         self.assertIn("`conflicts` must be empty", design)
 
     def test_file_validator_rejects_route_drift(self) -> None:
-        mismatched = self.design.replace('"route": "fast",', '"route": "revision",', 1)
+        # Anchor on the coherence block rather than "the first route line in the file":
+        # DESIGN.md carries several marked blocks that each declare a route, so a
+        # positional replace silently mutates whichever one happens to come first.
+        head, _, tail = self.design.partition(coherence_trace.COHERENCE_START)
+        self.assertTrue(tail, "design.md must contain the coherence block")
+        mismatched = head + coherence_trace.COHERENCE_START + tail.replace(
+            '"route": "fast",', '"route": "revision",', 1
+        )
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "DESIGN.md"
             path.write_text(mismatched, encoding="utf-8")

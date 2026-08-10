@@ -39,6 +39,16 @@ process cleanup. One final clean installed whole-skill acceptance is scheduled o
 the preceding M8 Packages close. No acceptance run, payload publication, or GitHub release is
 currently authorized.
 
+M8.0 reorganized the shipped pack so an author reads one file per element; three of its found
+contradictions remain open and were deferred to M8.2. M8.1 is implemented in source: every
+`DESIGN.md` now carries one literal deliverable claim — what the user has when this is done,
+the `E-###` player experiences required for that claim to be honest, how each will be settled,
+and what the claim does not include — and Finalize generates its report from a `PLAN.md`
+settlement ledger instead of free prose. `deliverable_trace.py` checks the claim before SPEC and
+the ledger at finalize, where no other validator runs. A requirement is not an experience: a
+generated operation can pass while the thing the player was promised is false. The result is
+`documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md`.
+
 M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 2026-08-10. The
 shipped pack now reads one file per element instead of three per stage, projects its art contract
 from code into a catalog, separates diagnostic signatures from preventive constraints, states what
@@ -47,10 +57,11 @@ Both committed payloads are synchronized. Three of the thirteen contradictions i
 open and were deferred to M8.2, and nine of the ten co-located surfaces have never been piloted;
 the durable result is `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`.
 
-M8.1 Literal Deliverable Contract is next selectable and needs its execution contract written
-against the settled layout and confirmed with the human lead first. The New-Session Start Protocol
-in `documents/IMPLEMENTATION_PLAN.md` is the handoff: a later session instructed to start or
-continue M8 selects M8.1 without rebuilding the roadmap or skipping prerequisites. M8.1-M8.6 are
+M8.2 exact semantic capability conformance and preflight is next selectable and needs its
+execution contract written against the settled layout and confirmed with the human lead first. It
+also inherits M8.0's three open envelope mismatches. The New-Session Start Protocol
+in `documents/IMPLEMENTATION_PLAN.md` is the handoff: a later session instructed to continue M8
+selects M8.2 without rebuilding the roadmap or skipping prerequisites. M8.2-M8.6 are
 recorded as intent only. M8.4 was removed by the human lead; M8.5 and M8.6 retain their numbers.
 
 ## User Experience

@@ -155,10 +155,20 @@ coherence reference: none | design/coherence-review.md
 revision delta: none | <keep/change/check/re-verify summary>
 gaps: none | <unsupported intent awaiting an explicit choice>
 scope signals: <requested now; explicitly later; accepted placeholder; explicitly excluded>
+deliverable signals: <what the user seems to expect to have when this is done, in their own
+  words; the player experiences they would check first; anything their wording implies that
+  this deliverable will not contain>
 coherence signals: <selected expressive surfaces and any apparent cross-artifact conflict>
 ```
 
+`deliverable signals` is observation, not a new question. Take it from what the user already
+said — "just a card to test" and "a character I can actually play a run with" imply very
+different finished things, and the difference is usually already in the prompt. When the
+request genuinely does not imply a scale, record what it does say and let `design.md` state
+the inferred shape at confirmation like any other default.
+
 Routing itself does not define or generate the `DESIGN.md` schema, the current/future split,
-or design-to-SPEC traceability, and neither do the design-grammar or planning references.
-`design.md` owns those contracts and implements them with `design_trace.py`. Read an existing `DESIGN.md` as
-authoritative creative/scope state and route only the smallest unresolved delta.
+the deliverable claim, or design-to-SPEC traceability, and neither do the design-grammar or
+planning references. `design.md` owns those contracts and implements them with
+`design_trace.py` and `deliverable_trace.py`. Read an existing `DESIGN.md` as authoritative
+creative/scope state and route only the smallest unresolved delta.

@@ -265,14 +265,60 @@ state change; otherwise report tier-1 only.
 ## Finalize
 
 Update `PLAN.md` (check the verify boxes for the tiers actually reached) and record the
-checks that actually ran in `MEMORY.md`. Then
-summarize for the user in plain language:
+checks that actually ran in `MEMORY.md`.
 
-> Built **<Title>** (Common relic). It **loads in-game** (verified) and its effect
-> **<fired automatically in its self-test scenario / is written but not yet observed —
-> the harness couldn't reach its scenario>**. Artifacts are in `mods/<ModName>/`.
-> <If tier-2 not observed: the harness marker it stopped on, and the manual check.>
+### Settle the deliverable claim first
 
-The template's two branches are `INV-1` in the form the user reads. Pick the branch the run
-earned: a loaded-but-effect-unobserved mod takes the second one, and so does a
-`selftest FAILED`.
+Before writing anything for the user, settle every required experience in `DESIGN.md`'s
+`open-mod-deliverable:v1` block. Fill `PLAN.md`'s settlement ledger with one entry per
+`E-###`, then generate the summary **from that ledger**. Writing the summary first and the
+ledger afterward defeats the check: the ledger exists so the report cannot say more than the
+run earned.
+
+Each entry records one outcome:
+
+| Outcome | Means |
+|---|---|
+| `observed` | The evidence this experience's `settled_by` requires actually exists |
+| `unobserved` | The check that would settle it ran and did not establish it |
+| `exception` | The check did not run, was waived, or is reserved for a human |
+
+`evidence` quotes or names the concrete thing that settled it — the structured state-proof
+line, the load marker, the human's reported observation, the user's acceptance. `observed`
+also records `evidence_kind`, and it must be evidence that experience's `settled_by` can
+actually accept: a `tier-2-structured` experience is not `observed` because tier-1 passed,
+and a `headed-human` experience no human looked at is an `exception`. `unobserved` and
+`exception` both require a `note` saying what is missing. Then run:
+
+```bash
+python ${GAME_TOOLS_DIR}/deliverable_trace.py --design DESIGN.md --plan PLAN.md
+```
+
+This is the one validator that runs here rather than before SPEC, because it is the only
+check that compares what was promised against what happened. It fails on a required
+experience with no settlement and on an outcome that outruns its evidence type.
+
+An `unobserved` or `exception` outcome is not a failure to hide — it is the honest state of a
+run whose harness could not reach its scenario, or whose art nobody has looked at yet. What
+it may never become is silence.
+
+### Report from the ledger
+
+> Built **<Title>** (Common relic). <Claim restated in one sentence.>
+>
+> What was proved: <each `observed` experience in plain words>.
+> Not proved: <each `unobserved`/`exception` experience, with what is missing>.
+> Not included: <the excluded experiences that a reader of the claim would ask about>.
+>
+> Artifacts are in `mods/<ModName>/`.
+
+Say which tier each claim rests on in the user's own terms — "its effect fired automatically
+in its self-test scenario" for a structured proof, "it loads and registers, but the effect
+hasn't been observed yet" for tier-1 only, "you accepted template art for this build" for a
+`user-decision`. This is `INV-1` in the form the user reads.
+
+Two failures this replaces, both from the same real run: a closing summary that called a
+mechanic verified while the same record disclosed the harness never drove it, and a
+deliverable whose accumulated placeholders were never read back as one thing. If every
+required experience is `observed`, say so plainly and stop — a fully earned claim needs no
+hedging.

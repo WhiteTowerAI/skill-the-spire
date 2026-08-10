@@ -148,7 +148,7 @@ simulated personas.
 
 ## M8 whole-skill verification plan
 
-M8.0 skill structure restructuring is closed; M8.1 is next selectable.
+M8.0 skill structure restructuring is closed; M8.1 is implemented in source.
 Later Packages wait on the prerequisites in `documents/IMPLEMENTATION_PLAN.md`, and each
 receives its execution contract when selected rather than in advance. The
 Watcher evaluation is baseline failure evidence, not the final acceptance project. Package
@@ -217,6 +217,31 @@ a modmaker page resolves to a real section, and a delegating stage keeps no riva
 list (`build.md` has no `## Failure classes`; `quirks.md` states rules without the error codes
 `errors.md` owns). The first exists because change 3 trades inline detail for pointers, and one
 pointer in `verify.md` had never resolved. Neither check judges whether a cataloged fix works.
+
+`tools/tests/test_m81_deliverable_contract.py` and `tools/deliverable_trace.py` own M8.1. The
+validator has two modes because the contract is checked at two points: before SPEC it checks the
+claim's structure and that every `E-###` traces to a current design item, and at finalize it
+checks `PLAN.md`'s settlement ledger against that claim. The second mode is the reason a third
+validator exists at all — `coherence_trace.py` and `design_trace.py` both run before SPEC, so
+until now nothing compared what was promised against what the run earned.
+
+The load-bearing cases are the evidence-sufficiency ones: a `tier-2-structured` experience
+cannot be `observed` because tier-1 passed, a `headed-human` experience cannot be settled by a
+harness, and `user-decision` records acceptance rather than observation. That last distinction is
+what stops "the user agreed to template art" from later reading as "the art was checked". The
+behavioral matrix is `m81-deliverable-contract-scenarios.md`: an exact Card whose claim stays one
+line, a Character content set that names its slice shape and combined exclusions, and a claim
+whose harness never drove it.
+
+`shape` is deliberately presence-only. prototype/slice/run-capable are optional descriptions, so
+a validator that accepted only known words would create the closed taxonomy this Package refuses
+to create; one test asserts unusual wording still passes.
+
+These are contract and prose checks. They establish that the workflow cannot report more than it
+earned without failing a check. They do not establish that a generated Mod loads, behaves
+correctly, or is any good, and no forward-model run, generated Mod, Tier 1, or Tier 2 is claimed
+by this Package. Checking whether a required experience has an exact maintained route, and
+backtracking when one fails, belong to later Packages.
 
 `tools/tests/test_invariants.py` owns M8.0 change 5. `skills/modmaker/invariants.md` is the one
 home for the eight rules that fire at every stage, and the test holds both halves of that

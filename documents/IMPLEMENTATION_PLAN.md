@@ -34,13 +34,19 @@ generated project's `SPEC.md` against its surface envelope. The lead deferred al
 M8.2 on 2026-08-10, because the envelope decision overlaps M8.2's recorded ownership and the
 other two depend on it. Nine of the ten co-located surfaces have never been piloted.
 
-**M8.1 Literal Deliverable Contract is next selectable.** Its execution contract must be
-written against the structure M8.0 left behind and confirmed with the human lead before
-implementation. M8.1-M8.6 are recorded as intent only: the plain-language result in the
-Package Plan table is the whole of their current planning.
+**M8.1 Literal Deliverable Contract is implemented in source** and synchronized into both
+payloads on 2026-08-10. Its execution contract was written against the structure M8.0 left
+behind and confirmed with the human lead, including the three decisions it left open. Every
+`DESIGN.md` now carries one deliverable claim, and Finalize reports from a `PLAN.md` settlement
+ledger rather than free prose. Focused tests are `298/298`. Closing the Package remains a
+human-lead decision. The durable result is
+`documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md`.
 
-Closing M8.0 does not itself authorize M8.1 implementation, a new acceptance Mod, payload
-publication, or a GitHub release.
+M8.2-M8.6 are recorded as intent only: the plain-language result in the Package Plan table is
+the whole of their current planning.
+
+Neither closed Package authorizes a new acceptance Mod, payload publication, or a GitHub
+release.
 
 ## New-Session Start Protocol
 
@@ -48,11 +54,12 @@ A new coding session must not re-plan M8 from scratch. After reading `AGENTS.md`
 active documents, it must use this sequence:
 
 1. Read the Package Status table below and, for the first Package marked **Next selectable**
-   or **In progress**, its execution contract if it has one. M8.1-M8.6 currently hold intent
-   only; M8.0's contract is retained as a closed record and must not be re-executed.
+   or **In progress**, its execution contract if it has one. M8.2-M8.6 currently hold intent
+   only; the M8.0 and M8.1 contracts are retained as records of completed work and must not
+   be re-executed.
 2. If the human lead says only "start M8" or "continue M8", select or resume that Package.
    Do not ask the human to choose among later Packages and do not begin the final acceptance.
-   If the Package to resume is M8.1-M8.6, its execution contract must be written and
+   If the Package to resume is M8.2-M8.6, its execution contract must be written and
    confirmed with the human lead before implementation, against the current file layout.
 3. Read the listed authoritative source files before editing. Inspect current dirty changes
    and preserve unrelated work, especially `usertest_M76/`.
@@ -145,27 +152,134 @@ reorganized pack. There is no separate M8.0 evaluator Mod. The Watcher record re
 baseline evidence, and the smallest behavioral cases travel with the Package that changes a
 decision.
 
-M8.1-M8.6 rows below are intent only. Do not add technical detail to them here; each
+M8.2-M8.6 rows below are intent only. Do not add technical detail to them here; each
 Package's execution contract is written when it is selected.
 
 | Package | Status | Prerequisite | Plain-language result |
 | --- | --- | --- | --- |
 | M8.0 - skill structure restructuring | **Closed 2026-08-10** | M7 closed | The shipped pack is organized so an author reads one file per element instead of three per stage, data lives in queryable catalogs instead of prose, and hardening rules are stated once; contradictions between what a SPEC can declare and what a proof demands become visible. Three found contradictions remain open and moved to M8.2. |
-| M8.1 - literal deliverable contract | **Next selectable** | M8.0 closed | Before making anything, state the exact completion claim and the player experiences required now; prototype/slice/run-capable labels are optional descriptions, not a closed taxonomy. |
-| M8.2 - exact semantic capability conformance and preflight | Waiting | M8.1 closed | Complex mechanics come from one maintained exact implementation; unsupported or broken routes block instead of becoming an approximation. Also owns whether a native engine capability the SPEC grammar cannot yet declare is a grammar gap or a capability-promotion decision, and inherits M8.0's three open envelope mismatches on that same decision. |
+| M8.1 - literal deliverable contract | **Implemented in source 2026-08-10** | M8.0 closed | Before making anything, state the exact completion claim and the player experiences required now; prototype/slice/run-capable labels are optional descriptions, not a closed taxonomy. |
+| M8.2 - exact semantic capability conformance and preflight | **Next selectable** | M8.1 closed | Complex mechanics come from one maintained exact implementation; unsupported or broken routes block instead of becoming an approximation. Also owns whether a native engine capability the SPEC grammar cannot yet declare is a grammar gap or a capability-promotion decision, and inherits M8.0's three open envelope mismatches on that same decision. |
 | M8.3 - semantic continuity and backtracking | Waiting | M8.2 closed | If implementation or repair changes what the player gets, return to the owning design/spec decision instead of patching forward. |
 | M8.5 - cross-platform reproducible installed workflow | Waiting; may be selected independently after M8.1 | M8.1 closed | The committed installed skill works reproducibly on Windows and macOS and cleans up only the process tree it started. Default order remains M8.2 then M8.3 unless the human lead explicitly selects M8.5 earlier. |
 | M8.6 - clean installed whole-skill acceptance | Waiting | M8.1-M8.3 and M8.5 closed, plus human-selected request/host | Run one fresh broad request from an untouched installed payload and let the result prove the whole workflow. |
 
 ## Package Execution Contracts
 
-M8.1-M8.6 hold intent in the Package Plan table and receive a contract when selected.
+M8.2-M8.6 hold intent in the Package Plan table and receive a contract when selected.
 Contracts for those Packages were not written in advance, because M8.0 relocated the files
 they would name; that layout is now settled, so M8.1's contract is written against it.
 
 The M8.0 contract below is **retained as a closed record**, not as a work order. Do not
 re-execute it. Its value to a later session is the found-mismatch list and the reasoning behind
 the three left open.
+
+### M8.1 - Literal Deliverable Contract — implemented in source 2026-08-10
+
+**Problem.** The workflow records requirements but never states what the finished thing is.
+`DESIGN.md`'s scope ledger is a `D-###` requirement table and `SPEC.md`'s trace is an `OP-###`
+generation allowlist. Neither answers "what does the user have when this is done", and nothing
+binds the final report to that answer. Four concrete gaps, each located in current source:
+
+1. **No statement of the whole.** The Watcher run delivered a nine-Card vertical slice with
+   all-placeholder presentation and several acknowledged fallbacks, and every local stage
+   passed. Because no artifact ever said "this will be an evaluable slice, not a run-capable
+   Character", the disappointing result violated no contract. (M7.6 finding 1.)
+2. **No player-experience obligation.** A `D-###` is a requirement ("Wrath doubles incoming
+   damage") and an `OP-###` is a generated operation. "The player enters Wrath and then takes
+   more damage" is neither. Watcher's Wrath shipped without the multiplier while all of its
+   operations passed.
+3. **No link from claim to final report.** `verify.md` § Finalize is a two-branch prose
+   template. `INV-1` keeps *tier* reporting honest, but nothing compares the report against
+   what was promised. Watcher's closing narrative called Scry verified while the same record
+   disclosed that Scry was never driven.
+4. **No combined view of accumulated fallbacks.** Each `PLACEHOLDER` is individually accepted
+   and `design.md` is explicit that it "remains player-visible current behavior", but no
+   artifact reads "all art placeholder + three composed-instead-of-replaced behaviors +
+   slice-scale pool" as one player experience. (M7.6 finding 4.)
+
+**Three decisions, confirmed by the human lead on 2026-08-10.**
+
+1. The settlement ledger lives in `PLAN.md`, which already owns literal pipeline and
+   backtracking status; experience settlement is the deliverable's completion status.
+   `MEMORY.md` keeps its existing job of recording which checks actually ran.
+2. `repair.md` gets only a staleness rule: a repair that changes an experience outcome may not
+   leave the ledger stale. Substantive backtracking to the owning artifact remains M8.3.
+3. The claim is a third independent marked block, not a field inside the scope block. Rationale
+   is the existing one-block-one-stamp-one-validator precedent, and an absent block being an
+   unambiguous "predates M8.1" signal — the same way an absent coherence block signals
+   pre-M7.5. A merged field would force `open-mod-design/v2` plus a migration path, and would
+   make "old file" and "author forgot the field" indistinguishable. The recorded cost is a
+   third JSON block in `DESIGN.md`, which runs against M8.0's structural compression.
+
+   One argument offered for this decision was wrong and is not part of it: that a merged field
+   would collide with a contract version M8.2 must migrate. The SPEC envelope M8.2 owns
+   (`sts2-content-semantic/v1`) and the DESIGN scope block (`open-mod-design/v1`) are separate
+   stamps. What survives is weaker — M8.2 already carries one migration, and keeping M8.1
+   purely additive means a project created between the two Packages passes through one rather
+   than two.
+
+**Work order.**
+
+1. **`DESIGN.md` gains `open-mod-deliverable:v1`.** Fields: `claim`, one sentence in the user's
+   own terms for what exists when this is done; `shape`, a free-text descriptor
+   ("one Card", "nine-Card evaluable slice", "run-capable Character") that the validator checks
+   for presence only, never against an enum, because prototype/slice/run-capable are optional
+   descriptions and not a closed taxonomy; `required_experiences`, stable `E-###` items each
+   carrying a player-observable statement, its `design_ids`, and one `settled_by` method; and
+   `excluded_experiences`, what a reasonable reader of the claim would expect that is not
+   there. The last field is where gap 4 becomes one readable list.
+2. **`settled_by` uses a fixed small set** aligned to what the pack already distinguishes:
+   `tier-2-structured`, `tier-1-load`, `headed-human`, `user-decision`. The fourth is
+   deliberately not evidence of observation — it records that the user accepted a stated
+   difference, which is where an accepted `PLACEHOLDER` lands.
+3. **The combined confirmation restates the claim.** `spec.md`'s single
+   DESIGN/current-slice/SPEC confirmation currently shows build-now / placeholder / later. It
+   adds the claim and the excluded list, so what the user approves before scaffold is the shape
+   of the finished thing rather than only requirement rows.
+4. **Finalize generates its report from a settlement ledger.** Each `E-###` resolves to
+   `observed`, `unobserved`, or `exception` with the evidence that settled it; the user-facing
+   summary is written from that ledger. An unsettled required experience may not be reported as
+   delivered, and a `headed-human` experience no human observed is an `exception`, never a pass.
+5. **New `deliverable_trace.py`, two modes.** Pre-SPEC checks `E-###` form and uniqueness, that
+   each traces to at least one current design item, that `settled_by` is in the allowed set, and
+   that `claim`/`shape` are nonempty. Finalize checks that every `E-###` has an outcome and that
+   no outcome exceeds what its evidence type permits. This is a third validator beside
+   `coherence_trace.py` and `design_trace.py`; it earns its place by checking at finalize, where
+   neither existing tool runs.
+6. **No `INV-9`.** The claim-versus-report rule fires at finalize only, and `invariants.md`
+   deliberately keeps single-stage rules where they fire, as the repair attempt cap and the
+   art-consent boundary already do. The rule belongs in `verify.md`.
+7. **Resume compatibility.** A project without the block resumes unchanged, reusing the
+   pre-M7.5 coherence precedent. Any new or revised design writes it.
+
+**Out of scope, stated so it is not absorbed.** M8.1 does not check that a required experience
+has an exact route (M8.2), does not add text/keyword/Hover-Tip/localization parity checks
+(M8.2), does not implement backtracking when an experience fails (M8.3), does not run a fresh
+acceptance Mod (M8.6, unauthorized), and does not widen the capability graph.
+
+**Proportional checks.** Prompt, tooling, and documentation only; no generated runtime behavior
+or presentation changes, so no game launch. Focused Python tests plus regenerated and validated
+plugin and portable payloads. Behavioral cases are
+`games/sts2/tests/m81-deliverable-contract-scenarios.md` with
+`tools/tests/test_m81_deliverable_contract.py`: an exact Card whose claim stays one line, a
+Character/content-set claim that names its slice shape and excluded experiences, and a
+claim-versus-report mismatch where the harness reached only tier-1 — the generalized form of
+Watcher's Scry overclaim.
+
+**Outcome.** Every item in the work order is implemented in source and both payloads are
+synchronized. Focused tests are `298/298`, up from `256`. Two pre-existing tests were repaired
+rather than the source they tested: one asserted `PLAN.md` owns "stage status only", which the
+ledger changes, and one mutated "the first `route:` line in `design.md`" to prove coherence
+route-drift detection — a positional replace that used to hit the scope block, now hits the
+deliverable block, and had silently stopped testing what it claimed. Adding a third block is
+what exposed that latent fragility.
+
+The claim contract checks structure and evidence sufficiency. It cannot judge whether a claim is
+the right claim, and a green pre-SPEC run means well-formed rather than delivered. No generated
+Mod, game launch, Tier 1, Tier 2, or forward-model run is claimed.
+
+**Result record:** `documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md`.
 
 ### M8.0 - Skill Structure Restructuring — closed 2026-08-10
 

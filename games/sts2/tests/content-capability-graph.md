@@ -32,9 +32,11 @@ but not very good, overclaim findings, and unrun paths are recorded in
 `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`. No copied-project observation
 changes a support row without current pinned maintainer grounding.
 
-M8 End-to-End Product Integrity is active: M8.0 skill structure restructuring is closed
-and M8.1 is next selectable. M8.0 reorganized shipped-pack structure and added
-no runtime row; no surface gained or lost support through it.
+M8 End-to-End Product Integrity is active: M8.0 skill structure restructuring is closed,
+M8.1 literal deliverable contract is implemented in source, and M8.2 is next selectable.
+M8.0 reorganized shipped-pack structure and added no runtime row; M8.1 added an artifact
+claim, a settlement ledger, and a validator. Neither changed a support row, and no surface
+gained or lost support through either.
 M8.4 was removed; M8.5 and M8.6 retain their numbers. Deliverable, capability-preflight,
 backtracking, and platform work add no runtime row by themselves. The Watcher observations
 make Card behavior metadata, deck inspection/selection/movement, mechanic Hover Tips,

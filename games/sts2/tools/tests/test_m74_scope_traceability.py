@@ -60,10 +60,13 @@ class M74ScopeTraceabilityContractTests(unittest.TestCase):
 
     def test_artifact_ownership_and_adaptive_depth_are_explicit(self) -> None:
         design = normalized(self.design)
+        # PLAN owns status, not creative intent or operations. It also owns the
+        # deliverable settlement ledger, so assert the rule rather than the word
+        # "only" — the boundary that matters is which artifact owns which fact.
         for artifact, ownership in (
             ("`design.md`", "player intent"),
             ("`spec.md`", "exact framework-neutral operations"),
-            ("`plan.md`", "stage status only"),
+            ("`plan.md`", "stage status"),
             ("`memory.md`", "resolved technical identities"),
         ):
             self.assertIn(artifact, design)

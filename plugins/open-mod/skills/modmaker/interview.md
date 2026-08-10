@@ -18,6 +18,11 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
   about classes, namespaces, or APIs.
 - **Keep the interaction proportional.** Batch up to three independent short questions;
   keep dependent co-design decisions incremental.
+- **Never ask for the deliverable claim.** Carry `deliverable signals` forward from
+  `route.md` and let `design.md` write the claim from the settled intake. "What kind of
+  deliverable do you want?" is exactly the workflow-mode question routing already refuses to
+  ask. Ask only when the user's own words point at two materially different finished things
+  and the answer changes which operations get generated.
 - **Expose real conflicts.** Contradictory or unsupported requirements pause before SPEC;
   use `route.md`'s constrained resolution and explicit-acceptance rules.
 - **Ground Character proposals first.** For a Character or Character/content-set request,
@@ -427,6 +432,8 @@ coherence reference: none | design/coherence-review.md
 revision delta: none | <keep/change/check/re-verify summary>
 gaps: none | <unsupported intent awaiting explicit acceptance>
 scope signals: <requested now; explicitly later; accepted placeholder; explicitly excluded>
+deliverable signals: <expected finished thing in the user's words; the player experiences
+  they would check first; what their wording implies that this will not contain>
 identity anchors: none | <one to three accepted observable promises>
 coherence surfaces: none | <selected surface -> anchor expression or deliberate tension>
 coherence conflicts: none | <exact conflicting artifacts/decisions awaiting resolution>
@@ -632,7 +639,7 @@ resource: <name>; gain <sources/amounts>; spend <cost/payoff>; floor 0; reset co
 buffer: <name>; values <semantic values>; source destination Discard; order <rule>; capacity <N>; overflow reject; compile <trigger/formula/output>
 ```
 
-Do not write files here — `design.md` writes durable intent/scope and `spec.md` lowers its
-current slice. If fast routing found nothing material to ask, skip straight to `design.md`
+Do not write files here — `design.md` writes the durable claim, intent, and scope, and
+`spec.md` lowers the current slice. If fast routing found nothing material to ask, skip straight to `design.md`
 with the inferred intake. If this is a revision, preserve every unrelated design decision,
 stable ID, and existing SPEC operation outside the confirmed delta.

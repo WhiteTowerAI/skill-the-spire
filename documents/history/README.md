@@ -61,12 +61,16 @@ numbers.
 ## M8 Results
 
 - `M80_SKILL_STRUCTURE_RESULTS.md` — skill structure restructuring, closed 2026-08-10.
+- `M81_DELIVERABLE_CONTRACT_RESULTS.md` — literal deliverable contract, implemented in source
+  2026-08-10.
 
-M8 is the active milestone. M8.0 is closed and M8.1 literal deliverable contract is next
-selectable. Unlike most records here, the M8.0 result points at a file that is still active
-instruction rather than archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md`
-holds three unresolved mismatches deferred to M8.2, so it must be read before treating any
-surface page as validated.
+M8 is the active milestone. M8.0 is closed and M8.1 is implemented in source. Unlike most
+records here, the M8.0 result points at a file that is still active instruction rather than
+archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md` holds three unresolved
+mismatches deferred to M8.2, so it must be read before treating any surface page as validated.
+
+The M8.1 record is the one to read before assuming a claim block is optional: it states what the
+contract checks, and equally what a green validator does not establish.
 
 ## Research And Retired Evidence
 

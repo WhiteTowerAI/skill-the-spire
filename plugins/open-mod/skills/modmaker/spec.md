@@ -14,12 +14,14 @@ adapter records those details in `MEMORY.md` after the SPEC is frozen.
 
 ## Lower accepted design state
 
-The `design.md` stage owns the durable `DESIGN.md`: current/future slicing, design-to-SPEC
-traceability, accepted identity anchors, selected surface checks, resolved coherence state,
-and the revision impact/re-evaluation queue. Before lowering, run:
+The `design.md` stage owns the durable `DESIGN.md`: the deliverable claim and its required/
+excluded player experiences, current/future slicing, design-to-SPEC traceability, accepted
+identity anchors, selected surface checks, resolved coherence state, and the revision
+impact/re-evaluation queue. Before lowering, run:
 
 ```powershell
 python ../modmaker/scripts/coherence_trace.py --design DESIGN.md
+python ../modmaker/scripts/deliverable_trace.py --design DESIGN.md
 ```
 
 Do not write or update SPEC while a coherence conflict remains. Coherence rationale,
@@ -92,12 +94,19 @@ unresolved design conflict):
 
 ```powershell
 python ../modmaker/scripts/coherence_trace.py --design DESIGN.md
+python ../modmaker/scripts/deliverable_trace.py --design DESIGN.md
 python ../modmaker/scripts/design_trace.py --design DESIGN.md --spec SPEC.md
 ```
 
 Stop before confirmation or scaffold on any validation error. Fix the artifact that owns
 the mismatch; never delete a future requirement or invent a supported route to make the
 validator green.
+
+Every required experience must be reachable by the operations you just wrote. If an `E-###`
+has no operation that could make it true, the claim is promising something this slice does
+not build: either the operation is missing from SPEC, or the experience belongs in
+`excluded_experiences`. Resolve it in `DESIGN.md` and revalidate — do not quietly drop the
+experience, and do not add an operation the user never accepted.
 
 For revision, update only operations named by confirmed UPDATE/REVIEW queue outcomes.
 PRESERVE entries never become SPEC operations. Reopen Author/Build/Verify only when the
@@ -599,7 +608,23 @@ Rules for this round:
 - [ ] build
 - [ ] verify (tier-1 load)
 - [ ] verify (tier-2 effect, automated via the self-test harness)
+- [ ] settle the deliverable claim (one entry per required experience)
+
+## Deliverable settlement
+
+<!-- open-mod-settlement:v1:start -->
+```json
+{
+  "contract": "open-mod-settlement/v1",
+  "settlements": []
+}
 ```
+<!-- open-mod-settlement:v1:end -->
+```
+
+Seed the ledger empty and leave it empty until Finalize. It is the run's record of which
+required experiences were actually earned, so an entry written before its evidence exists is
+the exact failure the ledger is here to prevent (`INV-1`). `verify.md` § Finalize fills it.
 
 Update the checkboxes as you finish each stage 鈥?this is what state check reads.
 
@@ -625,9 +650,15 @@ details are derived once and remain resumable:
 ## Confirm with the user
 
 Show one **plain-language** DESIGN/current-slice/SPEC summary and get a yes before
-scaffolding. Start with **build now**, **placeholder**, and **later/not included**, omitting
-empty groups; then use the applicable compact element summary below. Do not request separate
-approval for DESIGN and SPEC:
+scaffolding. Lead with the deliverable claim in one sentence, then **build now**,
+**placeholder**, and **later/not included**, omitting empty groups; then use the applicable
+compact element summary below. Do not request separate approval for DESIGN and SPEC:
+
+State the claim in the user's terms and name what it does not include, in the same breath.
+"You'll have one playable Attack card you can add to a run — placeholder art, no other
+content" is the whole point of the claim: the user gets to disagree with the *shape* of the
+finished thing now, instead of discovering it at the end. Keep it to a clause or two; the
+excluded list is the short version of `excluded_experiences`, not a recital of it.
 
 > (relic) I'll build **<Title>**, a Common relic. At the start of combat it <effect
 > in plain words>. It'll drop for any character, with placeholder art for now. Sound right?
@@ -655,8 +686,9 @@ fast default), or "with custom art I'll generate for the portrait" if they chose
 generate for a card. Keep it one clause 鈥?don't turn the confirmation into an art
 interview (that already happened in `interview.md` / this stage's art plan).
 
-If they change intent or scope, update `DESIGN.md` first, then regenerate the affected SPEC
-operations and rerun `design_trace.py`. If they change only an exact current value, preserve
+If they change intent or scope, update `DESIGN.md` first — including the claim and any
+affected `E-###` — then regenerate the affected SPEC operations and rerun both
+`deliverable_trace.py` and `design_trace.py`. If they change only an exact current value, preserve
 the design IDs and update the owning DESIGN decision plus SPEC value before moving on. Then
 go to `scaffold.md`.
 
