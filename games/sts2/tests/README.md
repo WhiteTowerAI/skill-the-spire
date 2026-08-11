@@ -149,9 +149,10 @@ simulated personas.
 ## M8 whole-skill verification plan
 
 M8.0 skill structure restructuring, M8.1 literal deliverable contract, M8.2 exact semantic
-capability conformance and preflight, and M8.3 semantic continuity/backtracking are closed.
-Later Packages wait on the prerequisites in `documents/IMPLEMENTATION_PLAN.md`, and each
-receives its execution contract when selected rather than in advance. The
+capability conformance and preflight, M8.3 semantic continuity/backtracking, and M8.5
+cross-platform installed workflow are closed. M8.5 closed by explicit human-lead decision with
+unresolved exceptions and without an execution contract; its intended installed/process proof
+did not run. M8.6 waits on explicit human-lead selection and a confirmed execution contract. The
 Watcher evaluation is baseline failure evidence, not the final acceptance project. Package
 cases must verify the decision each Package adds:
 
@@ -167,8 +168,9 @@ cases must verify the decision each Package adds:
 3. repair routing distinguishes implementation-equivalent, contract-fulfillment, accepted
    semantic-change, and missing-capability outcomes, returning only to the artifact that
    owns the changed fact;
-4. claimed Windows/macOS installed workflows reproduce without mutating installed skills,
-   track the process tree they create, and finish with no owned game child running; and
+4. a claimed Windows/macOS installed workflow would need to reproduce without mutating installed
+   skills, track the process tree it creates, and finish with no owned game child running; M8.5
+   closed with this criterion unresolved and unproved; and
 5. after M8.1-M8.3 and M8.5 close, one human-lead-selected M8.6 clean installed acceptance
    exercises the complete contract without reusing or repairing Watcher.
 

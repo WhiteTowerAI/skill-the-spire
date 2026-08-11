@@ -564,12 +564,13 @@ class ShippedContractTests(unittest.TestCase):
         self.assertIn("active `open-mod-repair-routing/v1`", skill)
         self.assertIn("active `open-mod-repair-routing/v1`", route)
 
-    def test_inv5_fires_through_finalize_without_an_inv10(self) -> None:
+    def test_inv5_fires_through_finalize_and_inv10_is_separate(self) -> None:
         text = (MODMAKER_DIR / "invariants.md").read_text(encoding="utf-8")
         inv5 = text.split("## INV-5", 1)[1].split("## INV-6", 1)[0].lower()
         for stage in ("author", "verify", "repair", "finalize"):
             self.assertIn(stage, inv5)
-        self.assertNotIn("INV-10", text)
+        self.assertNotIn("localization", inv5)
+        self.assertIn("## INV-10 — Player-facing localization is bilingual", text)
 
 
 if __name__ == "__main__":

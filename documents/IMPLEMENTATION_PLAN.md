@@ -52,9 +52,12 @@ three of them in this Package's own earlier steps. The durable result is
 
 **M8.3 Semantic Continuity and Backtracking is closed by explicit human-lead decision on
 2026-08-11.**
-M8.5-M8.6 remain intent only: the plain-language result in the Package Plan table is the whole
-of their current planning. No Package authorizes a new acceptance Mod, payload publication,
-or a GitHub release.
+**M8.5 Cross-Platform Reproducible Installed Workflow is closed by explicit human-lead decision
+on 2026-08-12 with unresolved exceptions.** It never received an execution contract. Its bounded
+implemented result is the two maintenance sections below; macOS installed reproduction and
+launcher-owned process-tree cleanup remain unimplemented and unproved. M8.6 remains intent only
+and requires explicit human-lead selection. No Package authorizes a new acceptance Mod, payload
+publication, or a GitHub release.
 
 ## Pre-M8.5 Debug: local-only framework inputs
 
@@ -81,6 +84,26 @@ on 2026-08-11. Compile success, restore/offline behavior, cross-platform behavio
 Tier 2, and game acceptance remain outside this debug and are unrun here; any later coverage
 requires the relevant M8.6 acceptance or separate authorization. No such evidence is claimed.
 
+## Pre-M8.5 Maintenance: macOS executable-adjacent paths
+
+This user-requested repair on 2026-08-12 is maintenance before M8.5, not selection of M8.5 or
+M8.6. New scaffolds now generate and deploy canonical `mod_manifest.json`; one legacy
+`<ModName>.json` remains accepted for existing projects, but both names together fail before
+MSBuild. On macOS, generated `ModsPath`, scaffold-time local RitsuLib discovery, and
+`steam_appid.txt` use the executable-adjacent `SlayTheSpire2.app/Contents/MacOS/` directory,
+while host validation includes `SlayTheSpire2.app/Contents/Resources/release_info.json`.
+
+The full static regression passed `395/395`, including one Windows reference-only scaffold C#
+compile against the checked local Compat DLL. Both committed payloads were regenerated from
+source. This is static/Windows compile evidence only: no macOS host, installed-workflow,
+restore/offline, Tier 1, Tier 2, or game run occurred. The closed M8.0 record's
+`<ModName>.json` wording remains true of its historical Windows proof; it is not the current
+new-scaffold naming contract.
+
+These two maintenance changes are the implemented portion recorded when M8.5 later closed. They
+do not satisfy its intended platform/process completion claim. Closure did not trigger another
+payload generation.
+
 ## New-Session Start Protocol
 
 A new coding session must not re-plan M8 from scratch. After reading `AGENTS.md` and the
@@ -88,11 +111,11 @@ active documents, it must use this sequence:
 
 1. Read the Package Status table below and, for the first Package marked **Contract drafted;
    awaiting confirmation**, **In progress**, or **Implemented; awaiting closure**, its execution
-   contract. M8.0-M8.3 are closed records; do not re-execute them or begin M8.5/M8.6 without
+   contract. M8.0-M8.3 and M8.5 are closed records; do not re-execute them or begin M8.6 without
    later human-lead selection and a confirmed execution contract.
 2. If the human lead says only "start M8" or "continue M8", select or resume that Package.
    Do not ask the human to choose among later Packages and do not begin the final acceptance.
-   If the Package to resume is M8.3-M8.6, its execution contract must be written and
+   If the Package to resume is M8.6, its execution contract must be written and
    confirmed with the human lead before implementation, against the current file layout.
 3. Read the listed authoritative source files before editing. Inspect current dirty changes
    and preserve unrelated work.
@@ -185,8 +208,9 @@ reorganized pack. There is no separate M8.0 evaluator Mod. The Watcher record re
 baseline evidence, and the smallest behavioral cases travel with the Package that changes a
 decision.
 
-M8.3's row is backed by the closed execution contract below. M8.5-M8.6 remain intent only;
-do not add technical detail to those rows until each Package is selected.
+M8.3's row is backed by the closed execution contract below. M8.5 closed without an execution
+contract and is backed by its result record. M8.6 remains intent only; do not add technical
+detail to its row until it is selected.
 
 | Package | Status | Prerequisite | Plain-language result |
 | --- | --- | --- | --- |
@@ -194,13 +218,15 @@ do not add technical detail to those rows until each Package is selected.
 | M8.1 - literal deliverable contract | **Closed 2026-08-10** | M8.0 closed | Before making anything, state the exact completion claim and the player experiences required now; prototype/slice/run-capable labels are optional descriptions, not a closed taxonomy. |
 | M8.2 - exact semantic capability conformance and preflight | **Closed 2026-08-10** | M8.1 closed | Complex mechanics come from one maintained exact implementation; unsupported or broken routes block instead of becoming an approximation. Resolved M8.0's three deferred envelope mismatches on that same decision. Its two real-host proofs were deferred to M8.6. |
 | M8.3 - semantic continuity and backtracking | **Closed 2026-08-11** | M8.2 closed | If implementation or repair changes what the player gets, return to the owning design/spec decision instead of patching forward. |
-| M8.5 - cross-platform reproducible installed workflow | Waiting; may be selected independently after M8.1 | M8.1 closed | The committed installed skill works reproducibly on Windows and macOS and cleans up only the process tree it started. Default order remains M8.3 unless the human lead explicitly selects M8.5 earlier. |
+| M8.5 - cross-platform reproducible installed workflow | **Closed 2026-08-12 with unresolved exceptions** | M8.1 closed | The lead closed M8.5 after the bounded manifest and executable-adjacent path maintenance. No execution contract was drafted; macOS installed reproduction and launcher-owned process-tree cleanup remain unimplemented and unproved. |
 | M8.6 - clean installed whole-skill acceptance | Waiting | M8.1-M8.3 and M8.5 closed, plus human-selected request/host | Run one fresh broad request from an untouched installed payload and let the result prove the whole workflow. Also carries the two hook-participation proofs M8.2 deferred: one incoming-damage multiplier with its neutral case, and one collection edit preserving unrelated entries. |
 
 ## Package Execution Contracts
 
-M8.3's confirmed contract below is closed and retained as a record. M8.5-M8.6 still hold intent
-only in the Package Plan table.
+M8.3's confirmed contract below is closed and retained as a record. M8.5 never received an
+execution contract; its explicit closure, bounded implementation, and exceptions are recorded in
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.6 still holds intent only in the
+Package Plan table and is not authorized.
 
 The four closed contracts below are **retained records**, not work orders. Do not re-execute any
 of them. M8.0's value to a later session is its found-mismatch list and the reasoning

@@ -43,7 +43,7 @@ switching to an old template.
 - **Fix:** set the boolean to match the resource tree, then rebuild. Do not empty the tree to
   satisfy the flag.
 
-### Deployed Mod contains a loose `.json` other than `<ModName>.json`
+### Deployed Mod contains a loose `.json` other than `mod_manifest.json`
 
 - **Cause:** a build-time sidecar was copied into the deployed Mod. The game parses every
   `.json` under a Mod directory at any depth as a manifest and logs a load error for each one

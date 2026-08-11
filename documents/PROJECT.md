@@ -77,7 +77,7 @@ It adds one resumable active-repair decision to PLAN, validates four artifact-ow
 preview/presentation/proof as one impact view. Its `384`-test regression is static/workflow
 evidence; no generated Mod or game run occurred.
 The result is `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md`. M8.4 was removed by the human
-lead; M8.5 and M8.6 retain their numbers and are not started.
+lead; M8.5 and M8.6 retain their numbers.
 
 Generated-Mod localization is bilingual by contract in `sts2-content-semantic/v2`. A Mod with no
 localization tables remains language-neutral; once any table exists, English (`eng`) and
@@ -93,8 +93,24 @@ Scaffold keeps the RitsuLib `0.5.4` authoring baseline, pins the selected local 
 and hash, resolves game/framework assemblies locally, and copies the bundled Godot.NET SDK import
 set. Its player manifest remains `STS2-RitsuLib >= 0.5.4` even when the local compiler uses a
 newer compatible runtime. Its one focused scaffold contract test passed. No Mod compile,
-restore/offline, cross-platform, Tier 1, Tier 2, or game run was performed, and M8.5/M8.6
-remain unselected.
+restore/offline, cross-platform, Tier 1, Tier 2, or game run was performed by that maintenance.
+
+A subsequent pre-M8.5 maintenance repair makes generated macOS paths executable-adjacent:
+deployment and local RitsuLib discovery use the app bundle's `Contents/MacOS/mods/`, host
+validation reads `Contents/Resources/release_info.json`, and `steam_appid.txt` sits beside the
+inner executable. New projects use canonical `mod_manifest.json`; a single legacy
+`<ModName>.json` remains compatible and a dual-manifest project fails closed. The `395/395`
+static regression and one Windows reference-only scaffold C# compile passed, and both payloads
+were regenerated. No macOS host, installed-workflow, Tier 1, Tier 2, or game evidence is claimed;
+those checks do not prove the intended cross-platform workflow.
+
+M8.5 Cross-Platform Reproducible Installed Workflow closed by explicit human-lead decision on
+2026-08-12 with unresolved exceptions. No execution contract was ever drafted. The macOS
+installed workflow was not run, and the current `open -a` launch path plus held-`Popen` cleanup
+does not own or clean the launched game process tree. Restore/offline behavior, Tier 1, Tier 2,
+and game behavior remain unrun. The bounded result is
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`; closing it does not authorize or
+start M8.6.
 
 ## User Experience
 
@@ -113,8 +129,9 @@ M8 strengthens this flow. The literal deliverable contract, exact capability pre
 semantic-impact backtracking are implemented: DESIGN carries the claim, SPEC is checked against
 its surface and cited routes, and active repair returns to MEMORY, SPEC, DESIGN, or a shared route
 according to what changed. Durable cross-platform reproduction with no launcher-owned process left
-behind remains planned. Existing literal reporting and verification ownership remain in force;
-M8 adds no separate evidence-reporting subsystem.
+behind remains an unresolved M8.5 exception rather than a proved outcome. Existing literal
+reporting and verification ownership remain in force; M8 adds no separate evidence-reporting
+subsystem.
 
 A complete narrow request retains a zero-question path. Ambiguous work receives materially
 different player-facing options with trade-offs, not an exhaustive questionnaire. Revision

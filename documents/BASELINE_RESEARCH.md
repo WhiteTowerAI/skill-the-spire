@@ -16,11 +16,12 @@ open-mod targets:
 
 The official RitsuLib Steam Workshop item is `3747602295`. Consumer builds may reuse that
 runtime directly when its manifest, version floor, exact `0.107.1` variant marker, and hash
-validate. Compile-time authoring remains pinned to the exact Compat NuGet package; a
-complete user-level NuGet cache may be reused across isolated Codex process profiles.
+validate. Compile-time authoring uses that checked local Compat DLL plus the bundled
+`Godot.NET.Sdk 4.5.1` import set; generated projects have no framework `PackageReference`
+and do not depend on a user-level framework NuGet cache.
 
 `baselines/STS2-RitsuLib` is the maintainer checkout for API and compat research. Runtime
-projects use the pinned package and installed runtime variant rather than copying that
+projects use the validated installed runtime variant rather than copying that
 checkout.
 
 ## STS2 0.107.1 Decompiled Research Baseline
@@ -613,9 +614,13 @@ M8.6 retain their numbers:
   both runtime state and its complete player-facing semantics.
 
 M8.0 skill structure restructuring, M8.1 literal deliverable contract, M8.2 exact semantic
-capability conformance, and M8.3 semantic continuity/backtracking are closed. M8.3 closed by
-explicit human-lead decision on 2026-08-11; it changed workflow state and validation, not the
-runtime capability baseline.
+capability conformance, M8.3 semantic continuity/backtracking, and M8.5 cross-platform installed
+workflow are closed. M8.5 closed by explicit human-lead decision on 2026-08-12 without ever
+receiving an execution contract and with unresolved exceptions: its manifest and
+executable-adjacent path repairs have static/Windows compile evidence, but macOS installed
+reproduction and launcher-owned process-tree cleanup are unimplemented and unproved. This closure
+changes no runtime capability row and does not authorize M8.6. Its bounded record is
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`.
 Concrete implementation ownership,
 ordered steps, and fixed result-record names live in the active implementation plan so a
 later session does not need to reinterpret these research inputs. Intermediate Packages

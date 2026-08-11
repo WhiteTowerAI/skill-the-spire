@@ -109,7 +109,7 @@ Every new scaffold contains `openmod/vanilla-overrides.json`:
 the project directory and is never deployed into `mods/<ModName>/`: the game parses every
 `.json` under a deployed Mod directory as a Mod manifest and logs a load error for each one
 without an `id`. The generated C# carries the accepted operations at runtime, so the
-deployed Mod needs only its own `<ModName>.json`. `build.py` deletes a copy left by an older
+deployed Mod needs only its own `mod_manifest.json`. `build.py` deletes a copy left by an older
 build and fails on any other deployed non-manifest `.json`. Projects created before M6.7.0
 remain buildable without a manifest and are reported as legacy/non-override projects.
 

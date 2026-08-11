@@ -166,15 +166,26 @@ in a running game.
 
 M8.3 now routes implementation-equivalent, contract-fulfillment, accepted-semantic-change, and
 missing-capability repairs to their owning artifacts and validates resumable PLAN state. This is
-workflow/static evidence, not a generated-Mod or runtime proof. Cross-platform installed-workflow
-reproduction and final clean acceptance remain unimplemented.
+workflow/static evidence, not a generated-Mod or runtime proof. Final clean acceptance remains
+unimplemented.
+
+Pre-M8.5 maintenance now uses canonical `mod_manifest.json` for new projects and resolves macOS
+deployment, local runtime discovery, host metadata, and `steam_appid.txt` from the executable's
+real app-bundle layout. A single legacy `<ModName>.json` remains compatible. These are static and
+Windows compile fixture results; they are not macOS installed-workflow proof.
+
+M8.5 closed by explicit human-lead decision on 2026-08-12 with unresolved exceptions and without
+ever receiving an execution contract. The macOS installed workflow was not run, and the launcher
+still neither owns nor cleans up the game process tree created through `open -a`; no Tier 1,
+Tier 2, or game run occurred. Its durable result is
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. Closure does not authorize M8.6.
 
 The active plan contains a new-session start protocol and, for each selected Package, an
 execution contract: exact prerequisites, source scope, work order, and result record.
-M8.3's confirmed contract closed by explicit human-lead decision on 2026-08-11. M8.5-M8.6 retain
-plain-language intent only until selected and are not started. M8.4 was removed;
-M8.5 and M8.6 keep their numbers. M8.5 may be selected independently only by explicit
-human-lead instruction.
+M8.3's confirmed contract closed by explicit human-lead decision on 2026-08-11. M8.5 closed
+without a contract as recorded above. M8.6 retains plain-language intent only, is not started,
+and still requires explicit human-lead selection. M8.4 was removed; M8.5 and M8.6 keep their
+numbers.
 
 ## Verification Model
 
@@ -187,8 +198,9 @@ M8.6 acceptance uses the existing verification model to bind behavior to matchin
 text, keyword/Hover Tip, lifecycle, preview, and presentation consumers, and it now also
 carries the two hook-participation proofs M8.2 deferred: one element declaring an
 incoming-damage multiplier, and one collection edit that leaves unrelated entries intact.
-M8.5 binds a platform completion claim to verified cleanup of the launcher-owned
-process tree. There is no separate M8 evidence-reporting Package.
+M8.5 was intended to bind a platform completion claim to verified cleanup of the launcher-owned
+process tree, but closed with that proof and cleanup unresolved. There is no separate M8
+evidence-reporting Package.
 
 Fresh natural-language acceptance Mods are used only for an explicitly scheduled
 full-pipeline gate or direct human-lead request. Durable ownership lives in

@@ -65,8 +65,10 @@ numbers.
 - `M82_CAPABILITY_CONFORMANCE_RESULTS.md` — exact semantic capability conformance and preflight,
   closed 2026-08-10.
 - `M83_SEMANTIC_CONTINUITY_RESULTS.md` — semantic continuity and backtracking, closed 2026-08-11.
+- `M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md` - cross-platform installed workflow, closed by
+  explicit human-lead decision with unresolved exceptions on 2026-08-12.
 
-M8 is the active milestone; M8.0-M8.3 are closed. Unlike most
+M8 is the active milestone; M8.0-M8.3 and M8.5 are closed. Unlike most
 records here, the M8.0 result points at a file that is still active instruction rather than
 archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md` must be read before
 treating any surface page as validated, since nine of its ten surfaces have never been piloted.
@@ -79,6 +81,10 @@ The M8.2 record is the one to read before trusting a hook route. It carries two 
 session will need: the reachability rule that decides which surfaces a hook can reach at all, and
 an explicit exception — both of its real-host proofs were deferred to M8.6, so every route it added
 is implemented and has never been observed firing in a game.
+
+The M8.5 record is a closure-with-exceptions record, not cross-platform proof. No execution
+contract was drafted, no macOS installed workflow ran, and launcher-owned process-tree cleanup
+remains unimplemented. M8.6 remains unselected.
 
 ## Research And Retired Evidence
 

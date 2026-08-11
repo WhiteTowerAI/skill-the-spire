@@ -66,7 +66,10 @@ class SemanticContractTests(unittest.TestCase):
 
     def test_localization_contract_requires_english_and_chinese(self) -> None:
         self.assertIn("languages: [eng, zhs]", self.contract)
-        self.assertIn("exact English and Simplified Chinese text", self.contract)
+        self.assertIn(
+            "exact English and Simplified Chinese text",
+            " ".join(self.contract.split()),
+        )
         self.assertIn("localization/eng/", self.author)
         self.assertIn("localization/zhs/", self.author)
         for slug in ("card", "relic", "potion", "power", "orb", "monster", "event", "character"):

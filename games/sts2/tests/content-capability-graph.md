@@ -33,13 +33,14 @@ but not very good, overclaim findings, and unrun paths are recorded in
 changes a support row without current pinned maintainer grounding.
 
 M8 End-to-End Product Integrity is active: M8.0 skill structure restructuring, M8.1 literal
-deliverable contract, M8.2 exact semantic capability conformance, and M8.3 semantic continuity and
-backtracking are closed. M8.0 reorganized shipped-pack structure, M8.1 added an artifact claim plus
-settlement ledger, M8.2 added maintained hook-participation authoring and static preflight, and
-M8.3 added artifact-owned repair routing and backtracking validation. None changed a runtime
-support row, and no surface gained or lost support through them.
-M8.4 was removed; M8.5 and M8.6 retain their numbers. Deliverable, capability-preflight,
-backtracking, and platform work add no runtime row by themselves. The Watcher observations
+deliverable contract, M8.2 exact semantic capability conformance, M8.3 semantic continuity and
+backtracking, and M8.5 cross-platform installed workflow are closed. M8.5 closed by explicit
+human-lead decision with unresolved exceptions: its manifest and executable-adjacent path repair
+changed no runtime support row, while macOS installed reproduction and launcher-owned process-tree
+cleanup remain unimplemented and unproved. No surface gained or lost support through these
+Packages. M8.4 was removed; M8.5 and M8.6 retain their numbers. Deliverable,
+capability-preflight, backtracking, and platform work add no runtime row by themselves. The
+Watcher observations
 make Card behavior metadata, deck inspection/selection/movement, mechanic Hover Tips,
 incoming/outgoing scalar modifiers, and launcher-owned process cleanup explicit M8 audit
 inputs. A copied-project approximation or missing player-facing surface is not promotion

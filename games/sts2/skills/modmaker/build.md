@@ -52,12 +52,13 @@ After the build it rejects a restore that reintroduced a framework package, copi
 DLL/manifest/PDB through the generated MSBuild target, packs
 `<project-dir>/<ModName>/` when resources exist, and rejects a generated directory that
 contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
-It also keeps the deployed Mod free of any loose `.json` other than `<ModName>.json`: the
+It also keeps the deployed Mod free of any loose `.json` other than `mod_manifest.json`: the
 game parses every `.json` under a Mod directory, at any depth, as a Mod manifest and logs a
 load error for each one without an `id`. `openmod/vanilla-overrides.json` is a build-time
 input that stays in the project directory; a copy left by an older build is deleted, and any
 other deployed non-manifest `.json` fails the build. Authored JSON belongs inside the `.pck`.
-Legacy projects without a source override manifest remain valid.
+Legacy projects with one `<ModName>.json`, or without a source override manifest, remain valid;
+a project containing both manifest names fails before MSBuild.
 
 `--runtime-dir <path>` may point at an explicitly selected installed runtime folder. A release
 zip can be inspected separately but cannot be used to compile until it is installed.
@@ -67,7 +68,7 @@ zip can be inspected separately but cannot be used to compile until it is instal
 - build summary: `0 warnings, 0 errors`;
 - profile lines report the exact scaffold-pinned compile version, exact `host=0.107.1`, and
   exact `compat=0.107.1`;
-- `mods/<ModName>/` contains `<ModName>.dll`, `<ModName>.json`, optional PDB, and a PCK
+- `mods/<ModName>/` contains `<ModName>.dll`, `mod_manifest.json`, optional PDB, and a PCK
   only when the Mod owns resources;
 - RitsuLib remains separate in the game `mods/` directory or its official Workshop item.
 

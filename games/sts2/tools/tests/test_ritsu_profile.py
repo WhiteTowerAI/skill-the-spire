@@ -15,6 +15,8 @@ from ritsu_profile import (  # noqa: E402
     PROFILE,
     RitsuProfileError,
     RuntimeCompileProfile,
+    find_manifest,
+    local_mods_dir,
     resolve_runtime_asset,
     resolve_runtime_compile_profile,
     validate_host_version,
@@ -48,15 +50,29 @@ class RitsuProfileTests(unittest.TestCase):
             summary = validate_project_contract(project, "EmptyRitsu")
             self.assertIn(PROFILE.profile_id, summary)
             self.assertIn("local compile runtime 0.5.9", summary)
-            manifest = json.loads((project / "EmptyRitsu.json").read_text(encoding="utf-8"))
+            manifest = json.loads(
+                (project / "mod_manifest.json").read_text(encoding="utf-8")
+            )
             self.assertEqual(
                 manifest["dependencies"],
                 [{"id": "STS2-RitsuLib", "min_version": PROFILE.framework_version}],
             )
             csproj = (project / "EmptyRitsu.csproj").read_text(encoding="utf-8")
+            path_props = (project / "Sts2PathDiscovery.props").read_text(encoding="utf-8")
             main = (project / "EmptyRitsuCode" / "MainFile.cs").read_text(encoding="utf-8")
             self.assertNotIn("BaseLib", csproj)
             self.assertNotIn("<PackageReference", csproj)
+            self.assertIn('<None Include="mod_manifest.json" />', csproj)
+            self.assertIn(
+                "$(MSBuildProjectDirectory)\\mod_manifest.json",
+                csproj,
+            )
+            self.assertNotIn("$(MSBuildProjectName).json", csproj)
+            self.assertIn(
+                "<ModsPath Condition=\"'$(ModsPath)' == ''\">"
+                "$(Sts2Dir)/SlayTheSpire2.app/Contents/MacOS/mods/</ModsPath>",
+                path_props,
+            )
             self.assertIn("<RitsuLibCompileVersion>0.5.9</RitsuLibCompileVersion>", csproj)
             self.assertIn(
                 f"<RitsuLibCompileAssemblySha256>{compile_hash}</RitsuLibCompileAssemblySha256>",
@@ -90,6 +106,32 @@ class RitsuProfileTests(unittest.TestCase):
             self.assertIn("static partial void RegisterContent();", main)
             self.assertIn("RitsuLibFramework.CreateLogger(ModId)", main)
             self.assertIn('CompileFrameworkVersion = "0.5.9"', main)
+
+    def test_manifest_name_is_canonical_and_legacy_is_unambiguous(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            canonical = project / "mod_manifest.json"
+            legacy = project / "Canary.json"
+
+            canonical.write_text("{}\n", encoding="utf-8")
+            self.assertEqual(canonical, find_manifest(project, "Canary"))
+
+            canonical.unlink()
+            legacy.write_text("{}\n", encoding="utf-8")
+            self.assertEqual(legacy, find_manifest(project, "Canary"))
+
+            canonical.write_text("{}\n", encoding="utf-8")
+            with self.assertRaisesRegex(RitsuProfileError, "both canonical and legacy"):
+                find_manifest(project, "Canary")
+
+    def test_local_mods_dir_is_adjacent_to_the_platform_executable(self) -> None:
+        game = Path("steamapps") / "common" / "Slay the Spire 2"
+        self.assertEqual(game / "mods", local_mods_dir(game, "win32"))
+        self.assertEqual(game / "mods", local_mods_dir(game, "linux"))
+        self.assertEqual(
+            game / "SlayTheSpire2.app" / "Contents" / "MacOS" / "mods",
+            local_mods_dir(game, "darwin"),
+        )
 
     def test_generated_project_rejects_any_package_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -259,6 +301,18 @@ class RitsuProfileTests(unittest.TestCase):
             (release / "release_info.json").write_text(json.dumps({"version": "0.108.0"}), encoding="utf-8")
             with self.assertRaisesRegex(RitsuProfileError, "stable 0.107.1"):
                 validate_host_version(game)
+
+    def test_host_release_version_accepts_macos_bundle_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp) / "Slay the Spire 2"
+            resources = game / "SlayTheSpire2.app" / "Contents" / "Resources"
+            resources.mkdir(parents=True)
+            release = resources / "release_info.json"
+            release.write_text(
+                json.dumps({"version": "v" + PROFILE.host_version}),
+                encoding="utf-8",
+            )
+            self.assertIn(PROFILE.host_version, validate_host_version(game))
 
 
 if __name__ == "__main__":

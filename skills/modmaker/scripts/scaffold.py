@@ -14,6 +14,7 @@ from ritsu_profile import (
     PROFILE,
     RitsuProfileError,
     RuntimeCompileProfile,
+    local_mods_dir,
     resolve_runtime_asset,
     resolve_runtime_compile_profile,
     validate_host_version,
@@ -120,7 +121,7 @@ def generate(
     <Reference Include="STS2-RitsuLib" HintPath="$(RitsuLibCompileAssemblyPath)" Private="false" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="{mod_name}.json" />
+    <None Include="mod_manifest.json" />
     <None Include="openmod\\vanilla-overrides.json" Condition="Exists('openmod\\vanilla-overrides.json')" />
     <None Include="Directory.Build.props" />
     <None Include="Sts2PathDiscovery.props" />
@@ -137,7 +138,7 @@ def generate(
   <Target Name="CopyOpenModArtifacts" AfterTargets="Build">
     <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\\$(MSBuildProjectName).json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\\mod_manifest.json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
   </Target>
   <Import Project="{sdk_root}\\Sdk.targets" />
@@ -163,18 +164,18 @@ def generate(
     <Sts2Dir Condition="'$(Sts2Dir)' == '' and Exists('$(RegistrySts2Path)/data_sts2_windows_x86_64')">$(RegistrySts2Path)</Sts2Dir>
     <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(SteamLibraryPath)/common/Slay the Spire 2</Sts2Dir>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)/data_sts2_windows_x86_64</Sts2DataDir>
+    <ModsPath Condition="'$(ModsPath)' == ''">$(Sts2Dir)/mods/</ModsPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(IsLinux)' == 'true'">
     <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(HOME)/.local/share/Steam/steamapps/common/Slay the Spire 2</Sts2Dir>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)/data_sts2_linuxbsd_x86_64</Sts2DataDir>
+    <ModsPath Condition="'$(ModsPath)' == ''">$(Sts2Dir)/mods/</ModsPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(IsOSX)' == 'true'">
     <Sts2Dir Condition="'$(Sts2Dir)' == ''">$(HOME)/Library/Application Support/Steam/steamapps/common/Slay the Spire 2</Sts2Dir>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == '' and Exists('$(Sts2Dir)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64')">$(Sts2Dir)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64</Sts2DataDir>
     <Sts2DataDir Condition="'$(Sts2DataDir)' == ''">$(Sts2Dir)/SlayTheSpire2.app/Contents/Resources/data_sts2_macos_x86_64</Sts2DataDir>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ModsPath>$(Sts2Dir)/mods/</ModsPath>
+    <ModsPath Condition="'$(ModsPath)' == ''">$(Sts2Dir)/SlayTheSpire2.app/Contents/MacOS/mods/</ModsPath>
   </PropertyGroup>
 </Project>
 '''
@@ -223,7 +224,7 @@ public static partial class MainFile
     _write(project_dir / f"{mod_name}.csproj", csproj)
     _write(project_dir / "Directory.Build.props", directory_props)
     _write(project_dir / "Sts2PathDiscovery.props", path_props)
-    _write(project_dir / f"{mod_name}.json", json.dumps(manifest, indent=2) + "\n")
+    _write(project_dir / "mod_manifest.json", json.dumps(manifest, indent=2) + "\n")
     _write(project_dir / f"{mod_name}Code" / "MainFile.cs", source)
     _copy_bundled_godot_sdk(project_dir)
     if emit_override_manifest:
@@ -247,7 +248,7 @@ def main(argv: list[str]) -> int:
         validate_host_version(game_dir)
         runtime = resolve_runtime_asset(
             game_dir,
-            game_dir / "mods",
+            local_mods_dir(game_dir),
             Path(args.runtime_dir) if args.runtime_dir else None,
         )
         compile_profile = resolve_runtime_compile_profile(runtime.path)

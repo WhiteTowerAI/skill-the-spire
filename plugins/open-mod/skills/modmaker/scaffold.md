@@ -44,10 +44,12 @@ The project contains:
   input;
 - `RitsuLibAutoCopy=false` and an empty `RitsuLibDeployDir`, so the consumer never bundles
   the framework DLL;
-- `<ModName>.json` with only `STS2-RitsuLib >= 0.5.4` and
+- `mod_manifest.json` with only `STS2-RitsuLib >= 0.5.4` and
   `min_game_version=0.107.1`,
   `has_dll=true`, and `has_pck=false` for the empty scaffold;
-- `Sts2PathDiscovery.props` plus optional `local.props` support;
+- `Sts2PathDiscovery.props` plus optional `local.props` support; local Mods resolve beside
+  the host executable, which is the game root on Windows/Linux and
+  `SlayTheSpire2.app/Contents/MacOS/` on macOS;
 - `openmod/vanilla-overrides.json` pinned to the checked `0.107.1` catalog with an empty
   `operations` array; authoring may fill it only through a promoted operation package. It is
   a build-time input only — it stays in the project directory and is never deployed into
@@ -67,6 +69,10 @@ The manifest keeps the `0.5.4` player floor because authoring remains inside the
 baseline even when the local compile runtime is newer. If the installed runtime changes after
 scaffold, `build.py` stops and requires an explicit runtime-profile migration; it never silently
 changes either recorded identity or the player's minimum dependency.
+
+New projects use the canonical `mod_manifest.json` name. A project created by an older
+open-mod scaffold may retain its single `<ModName>.json`; `build.py` accepts that legacy form
+but fails when both names exist, because choosing one silently would make deployment ambiguous.
 
 When authoring adds localization, images, or scenes, place them under
 `<project-dir>/<ModName>/` and set `has_pck=true`. `build.py` packs that resource tree with

@@ -18,7 +18,12 @@ import build  # noqa: E402
 import collect_vanilla_catalog as collector  # noqa: E402
 import scaffold  # noqa: E402
 import vanilla_overrides as overrides  # noqa: E402
-from ritsu_profile import PROFILE  # noqa: E402
+from ritsu_profile import (  # noqa: E402
+    PROFILE,
+    local_mods_dir,
+    resolve_runtime_asset,
+    resolve_runtime_compile_profile,
+)
 
 
 ASSEMBLY_SHA256 = "a" * 64
@@ -2670,6 +2675,11 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         if host_and_data is None:
             self.skipTest("STS2 host is unavailable; set OPEN_MOD_STS2_DIR")
         host, data_dir = host_and_data
+        try:
+            runtime = resolve_runtime_asset(host, local_mods_dir(host))
+            compile_profile = resolve_runtime_compile_profile(runtime.path)
+        except ValueError as exc:
+            self.skipTest(f"checked local RitsuLib runtime is unavailable: {exc}")
 
         source = """using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Gold;
@@ -2705,7 +2715,12 @@ public static partial class MainFile
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             project = root / "reference-compile-project"
-            scaffold.generate(project, "ReferenceCompile", "OpenMod")
+            scaffold.generate(
+                project,
+                "ReferenceCompile",
+                "OpenMod",
+                compile_profile=compile_profile,
+            )
             (project / "ReferenceCompileCode" / "ReferenceImports.cs").write_text(
                 source, encoding="utf-8", newline="\n"
             )
@@ -2721,6 +2736,7 @@ public static partial class MainFile
                     f"-p:Sts2Dir={host}",
                     f"-p:Sts2DataDir={data_dir}",
                     f"-p:ModsPath={mods_path.as_posix()}/",
+                    f"-p:RitsuLibCompileAssemblyPath={compile_profile.assembly_path}",
                     "-p:RestoreIgnoreFailedSources=true",
                 ],
                 capture_output=True,

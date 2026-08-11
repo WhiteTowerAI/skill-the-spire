@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import hashlib
 import re
+import sys
 import zipfile
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -57,6 +58,18 @@ class RuntimeCompileProfile:
     version: str
     assembly_path: Path
     assembly_sha256: str
+
+
+def game_executable_dir(sts2_dir: Path, platform_name: str | None = None) -> Path:
+    """Return the directory the host uses as the root for executable-adjacent files."""
+    platform_name = platform_name or sys.platform
+    if platform_name == "darwin":
+        return sts2_dir / "SlayTheSpire2.app" / "Contents" / "MacOS"
+    return sts2_dir
+
+
+def local_mods_dir(sts2_dir: Path, platform_name: str | None = None) -> Path:
+    return game_executable_dir(sts2_dir, platform_name) / "mods"
 
 
 def _version_key(value: object) -> tuple[int, ...]:
@@ -126,12 +139,20 @@ def resolve_runtime_asset(
 
 
 def find_manifest(project_dir: Path, mod_name: str) -> Path:
-    candidates = (project_dir / f"{mod_name}.json", project_dir / "mod_manifest.json")
-    for path in candidates:
-        if path.is_file():
-            return path
+    canonical = project_dir / "mod_manifest.json"
+    legacy = project_dir / f"{mod_name}.json"
+    if canonical.is_file() and legacy.is_file():
+        raise RitsuProfileError(
+            "project contains both canonical and legacy Mod manifests "
+            f"({canonical.name}, {legacy.name}); keep exactly one"
+        )
+    if canonical.is_file():
+        return canonical
+    if legacy.is_file():
+        return legacy
     raise RitsuProfileError(
-        f"missing manifest: expected {mod_name}.json (or mod_manifest.json) in {project_dir}"
+        f"missing manifest: expected mod_manifest.json (or legacy {mod_name}.json) "
+        f"in {project_dir}"
     )
 
 
@@ -518,6 +539,7 @@ def validate_host_version(sts2_dir: Path) -> str:
         sts2_dir / "release_info.json",
         sts2_dir / "data_sts2_windows_x86_64" / "game" / "release_info.json",
         sts2_dir / "data_sts2_linuxbsd_x86_64" / "game" / "release_info.json",
+        sts2_dir / "SlayTheSpire2.app" / "Contents" / "Resources" / "release_info.json",
         sts2_dir / "SlayTheSpire2.app" / "Contents" / "Resources" / "game" / "release_info.json",
     ]
     for path in candidates:

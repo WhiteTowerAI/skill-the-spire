@@ -195,9 +195,9 @@ fast path rather than receiving a full GDD process.
 M8 End-to-End Product Integrity is the active milestone. It addresses the whole
 skill: literal deliverable contracts, exact semantic capability preflight, semantic
 backtracking, cross-platform installed-workflow reproducibility, and one final clean
-whole-skill acceptance. M8.0-M8.3 are closed; **M8.3 Semantic Continuity and Backtracking closed
-by explicit human-lead decision on 2026-08-11.** M8.5-M8.6 hold plain-language intent only until
-selected. The human lead removed M8.4 on
+whole-skill acceptance. M8.0-M8.3 and M8.5 are closed. **M8.5 Cross-Platform Reproducible
+Installed Workflow closed by explicit human-lead decision on 2026-08-12 with unresolved
+exceptions.** M8.6 holds plain-language intent only until selected. The human lead removed M8.4 on
 2026-08-05; M8.5 and M8.6 retain their numbers. The Watcher evaluation is baseline evidence,
 not the M8 final acceptance Mod.
 
@@ -336,8 +336,27 @@ starting M8.5: the `0.5.4` API baseline remains, while scaffold records the vali
 RitsuLib Compat DLL version/hash and uses local game/runtime references plus a bundled
 Godot.NET SDK import set; the player manifest floor remains `STS2-RitsuLib >= 0.5.4`. The one
 focused scaffold contract test passed on 2026-08-11. No Mod compile, restore/offline,
-cross-platform, Tier 1, Tier 2, or game evidence was run or claimed; M8.5 and M8.6 remain
-unselected.
+cross-platform, Tier 1, Tier 2, or game evidence was run or claimed by that maintenance.
+
+A second pre-M8.5 maintenance repair on 2026-08-12 corrected the macOS executable-adjacent
+layout without selecting M8.5. New scaffolds use canonical `mod_manifest.json`; a single legacy
+`<ModName>.json` remains buildable, while both names together fail closed. macOS deployment and
+local-runtime discovery use `SlayTheSpire2.app/Contents/MacOS/mods/`, host validation reads
+`SlayTheSpire2.app/Contents/Resources/release_info.json`, and `steam_appid.txt` is written beside
+the inner executable. The full static regression passed `395/395`, including one Windows
+reference-only scaffold C# compile, and both committed payloads were regenerated. No macOS host,
+installed-workflow, restore/offline, Tier 1, Tier 2, or game run occurred in that repair.
+
+M8.5 closed by explicit human-lead decision on 2026-08-12 with unresolved exceptions. No M8.5
+execution contract was ever drafted. The two pre-M8.5 maintenance changes above are its bounded
+implemented result, but they do not prove its intended cross-platform completion claim. The
+macOS installed workflow was not run, `launch.py` still starts the app through `open -a`, and
+cleanup still acts only on the held `Popen`; launcher-owned game-process discovery, scoped
+graceful/forced process-tree cleanup, and proof that no owned child remains are unimplemented.
+No restore/offline, Tier 1, Tier 2, or game run occurred. The maintenance code had already been
+regenerated into both payloads before closure; closure did not generate another payload. The
+durable result is `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. Closure does not
+authorize M8.6.
 
 Do not edit installed payloads in place, run a fresh acceptance, or publish a payload/release
 without later human-lead instruction. The active Package plan is
@@ -558,12 +577,10 @@ not silently select a paid backend. Every acquisition path converges on determin
 - The literal completion claim and exact semantic capability preflight before generation are
   both implemented: SPEC is validated against its surface envelope, each cited route and anchor
   must resolve, and a declared capability must be one the route provides and the surface can
-  receive. Still planned for later M8
-  Packages: treating behavior, lifecycle, rules text,
-  keyword/DynamicVar and Hover Tip discoverability, localization, preview, and real-consumer
-  presentation as one operation; semantic-impact repair returning to the artifact that owns
-  the changed fact; and an installed workflow that reproduces without in-place skill edits or
-  an owned child process left running. None of those three is implemented yet.
+  receive. Complete-operation impact and semantic repair ownership are implemented by M8.3.
+  M8.5 is closed with unresolved exceptions: executable-adjacent platform paths are repaired,
+  but cross-platform installed reproduction and launcher-owned process-tree cleanup remain
+  unimplemented and unproved. M8.6 final whole-skill acceptance is not selected.
 - `games/sts2/skills/sts2-api/`: lazy recipes, references, and error catalog.
 - `games/sts2/tools/`: cross-platform Python build/launch/log/art wrappers.
 - `games/sts2/tests/`: current support graph and verification ownership.

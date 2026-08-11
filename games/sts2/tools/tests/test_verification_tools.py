@@ -227,6 +227,21 @@ class GrepLogTests(unittest.TestCase):
 
 
 class LaunchOutcomeTests(unittest.TestCase):
+    def test_steam_appid_is_written_beside_the_platform_executable(self) -> None:
+        game = Path("steamapps") / "common" / "Slay the Spire 2"
+        self.assertEqual(
+            game / "steam_appid.txt",
+            launch.steam_appid_path(game, "win32"),
+        )
+        self.assertEqual(
+            game
+            / "SlayTheSpire2.app"
+            / "Contents"
+            / "MacOS"
+            / "steam_appid.txt",
+            launch.steam_appid_path(game, "darwin"),
+        )
+
     def test_done_is_success(self) -> None:
         self.assertEqual(0, launch.self_test_exit_code("done"))
 
