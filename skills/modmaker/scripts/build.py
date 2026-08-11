@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build a pinned STS2/RitsuLib Mod into the game's mods/ folder.
+"""Build a local-runtime STS2/RitsuLib Mod into the game's mods/ folder.
 
-Validates the open-mod RitsuLib profile before MSBuild, then verifies the resolved
-NuGet asset and deployed artifacts. RitsuLib itself is installed separately and is
-never copied into the generated Mod's directory.
+Validates the open-mod RitsuLib profile before MSBuild, then verifies the resolved local
+assembly and deployed artifacts. Framework assemblies are supplied by the game/runtime
+installation or bundled build SDK and are never copied into the generated Mod.
 
 On success prints the artifacts found in the mods folder. On failure prints the
 diagnostic lines from the dotnet output and exits non-zero (repair is handled by the
@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import subprocess
 import sys
@@ -29,14 +28,20 @@ from ancient_dialogue import (
     AncientDialogueValidationError,
     validate_project_ancient_dialogue,
 )
+from localization_contract import (
+    LocalizationContractError,
+    validate_project_localization,
+)
 from pack_pck import PackError, pack_assets
 from ritsu_profile import (
     PROFILE,
     RitsuProfileError,
     find_manifest,
     resolve_runtime_asset,
+    resolve_runtime_compile_profile,
     validate_host_version,
     validate_project_contract,
+    validate_project_runtime_profile,
     validate_restore_assets,
     validate_runtime_asset,
 )
@@ -101,45 +106,6 @@ def locate_mods_dir(
         if candidate.is_dir():
             return candidate
     return None
-
-
-def _has_pinned_compile_package(packages_dir: Path) -> bool:
-    package = packages_dir / PROFILE.package_id.lower() / PROFILE.framework_version
-    required = (
-        package / "lib" / "net9.0" / PROFILE.runtime_dll,
-        package / "buildTransitive" / f"{PROFILE.package_id}.targets",
-        package / f"{PROFILE.package_id.lower()}.{PROFILE.framework_version}.nupkg",
-    )
-    return all(path.is_file() for path in required)
-
-
-def select_nuget_packages_dir(
-    explicit: str | None,
-    *,
-    environ: dict[str, str] | None = None,
-    home: Path | None = None,
-) -> tuple[Path | None, str]:
-    """Reuse a real user cache when dotnet's sandbox profile points somewhere else."""
-    environ = environ if environ is not None else os.environ
-    if explicit:
-        return Path(explicit).expanduser(), "explicit"
-
-    configured = environ.get("NUGET_PACKAGES", "").strip()
-    if configured:
-        return Path(configured).expanduser(), "environment"
-
-    user_cache = (home if home is not None else Path.home()) / ".nuget" / "packages"
-    if _has_pinned_compile_package(user_cache):
-        return user_cache, "shared user cache"
-    return None, "dotnet default"
-
-
-def dotnet_environment(packages_dir: Path | None) -> dict[str, str] | None:
-    if packages_dir is None:
-        return None
-    env = os.environ.copy()
-    env["NUGET_PACKAGES"] = str(packages_dir)
-    return env
 
 
 def pack_project_assets(project_dir: Path, mod_name: str, mods_dir: Path) -> bool:
@@ -242,13 +208,8 @@ def main(argv: list[str]) -> int:
                     help="Mod name = csproj base name = mods/<ModName>/ folder. "
                          "Defaults to the single .csproj found in project-dir.")
     ap.add_argument("--runtime-dir", default=None,
-                    help="Installed RitsuLib directory or release zip. Defaults to "
+                    help="Installed RitsuLib directory. Defaults to "
                          "the game mods directory, then the official Steam Workshop item.")
-    ap.add_argument("--nuget-packages-dir", default=None,
-                    help="Shared NuGet global-packages directory. Defaults to NUGET_PACKAGES, "
-                         "then a complete ~/.nuget/packages cache, then dotnet's default.")
-    ap.add_argument("--skip-runtime-check", action="store_true",
-                    help="Compile-only escape hatch. Tier-1 verification must not use it.")
     args = ap.parse_args(argv)
 
     project_dir = Path(args.project_dir)
@@ -261,57 +222,64 @@ def main(argv: list[str]) -> int:
         print(f"No .csproj found in {project_dir}", file=sys.stderr)
         return 2
     mod_name = args.mod_name or csproj.stem
-    nuget_packages, nuget_source = select_nuget_packages_dir(args.nuget_packages_dir)
-    dotnet_env = dotnet_environment(nuget_packages)
-    if nuget_packages is None:
-        print(f"[build] NuGet cache: {nuget_source}")
-    else:
-        print(f"[build] NuGet cache: {nuget_packages} ({nuget_source})")
-
     try:
         summary = validate_project_contract(project_dir, mod_name)
         print(f"[build] profile OK: {summary}")
         resource_summary = validate_resource_manifest(project_dir, mod_name)
         print(f"[build] resource manifest OK: {resource_summary}")
+        localization_summary = validate_project_localization(project_dir, mod_name)
+        print(f"[build] localization OK: {localization_summary}")
         dialogue_summary = validate_project_ancient_dialogue(project_dir, mod_name)
         print(f"[build] Ancient dialogue OK: {dialogue_summary}")
         override_summary = validate_project_override_manifest(project_dir, mod_name)
         print(f"[build] vanilla override manifest OK: {override_summary}")
-        if args.skip_runtime_check:
-            print("[build] WARNING: runtime/host validation skipped; this build cannot satisfy Tier 1")
-        else:
-            sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir", dotnet_env)
-            mods_root_text = get_msbuild_property(csproj, "ModsPath", dotnet_env)
-            if not sts2_dir_text or not mods_root_text:
-                raise RitsuProfileError(
-                    "MSBuild did not resolve Sts2Dir/ModsPath; set Sts2Dir in local.props"
-                )
-            print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
-            runtime = resolve_runtime_asset(
-                Path(sts2_dir_text),
-                Path(mods_root_text),
-                Path(args.runtime_dir) if args.runtime_dir else None,
+        sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir")
+        mods_root_text = get_msbuild_property(csproj, "ModsPath")
+        if not sts2_dir_text or not mods_root_text:
+            raise RitsuProfileError(
+                "MSBuild did not resolve Sts2Dir/ModsPath; set Sts2Dir in local.props"
             )
-            if runtime.alternates:
-                alternatives = ", ".join(str(path) for path in runtime.alternates)
-                print(
-                    "[build] WARNING: duplicate RitsuLib installs found; "
-                    f"using {runtime.source} and ignoring {alternatives}"
-                )
-            print(f"[build] runtime source: {runtime.source} -> {runtime.path}")
-            print(f"[build] runtime OK: {validate_runtime_asset(runtime.path)}")
-    except (OSError, AncientDialogueValidationError, RitsuProfileError, VanillaOverrideError) as exc:
+        print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
+        runtime = resolve_runtime_asset(
+            Path(sts2_dir_text),
+            Path(mods_root_text),
+            Path(args.runtime_dir) if args.runtime_dir else None,
+        )
+        if runtime.alternates:
+            alternatives = ", ".join(str(path) for path in runtime.alternates)
+            print(
+                "[build] WARNING: duplicate RitsuLib installs found; "
+                f"using {runtime.source} and ignoring {alternatives}"
+            )
+        print(f"[build] runtime source: {runtime.source} -> {runtime.path}")
+        compile_runtime = resolve_runtime_compile_profile(runtime.path)
+        validate_project_runtime_profile(project_dir, mod_name, compile_runtime)
+        print(f"[build] runtime OK: {validate_runtime_asset(runtime.path)}")
+    except (
+        OSError,
+        AncientDialogueValidationError,
+        LocalizationContractError,
+        RitsuProfileError,
+        VanillaOverrideError,
+    ) as exc:
         print(f"[build] RitsuLib profile FAILED: {exc}", file=sys.stderr)
         return 2
 
     print(f"[build] dotnet build -c Release  ({csproj.name})")
-    build_command = ["dotnet", "build", str(csproj), "-c", "Release"]
-    if nuget_packages is not None:
-        build_command.append("-p:RestoreIgnoreFailedSources=true")
+    build_command = [
+        "dotnet",
+        "build",
+        str(csproj),
+        "-c",
+        "Release",
+        "-p:RestoreIgnoreFailedSources=true",
+        "-p:NuGetAudit=false",
+        f"-p:RitsuLibCompileAssemblyPath={compile_runtime.assembly_path}",
+    ]
     res = subprocess.run(
         build_command,
         capture_output=True, text=True, encoding="utf-8", errors="replace",
-        env=dotnet_env,
+        env=None,
     )
     log_text = (res.stdout or "") + (res.stderr or "")
     code = res.returncode
@@ -339,7 +307,7 @@ def main(argv: list[str]) -> int:
         print(f"[build] RitsuLib restore FAILED: {exc}", file=sys.stderr)
         return 2
 
-    mods_dir = locate_mods_dir(log_text, csproj, mod_name, dotnet_env)
+    mods_dir = locate_mods_dir(log_text, csproj, mod_name)
 
     if mods_dir and mods_dir.is_dir():
         try:

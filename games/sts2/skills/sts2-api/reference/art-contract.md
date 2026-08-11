@@ -38,6 +38,11 @@
 > `res://images/ui/rest_site/option_heal.png` before constructing
 > `RestSiteOptionAssetProfile`. The vanilla path derived from a custom `OptionId` is not a
 > usable fallback.
+> A generated Character explicitly selects the base-game Ironclad placeholder profile. Its
+> missing Energy resources resolve to `ironclad_energy_counter.tscn`,
+> `EnergyIconHelper.GetPath("ironclad")` (`energy_ironclad.tres`), and
+> `res://images/packed/sprite_fonts/ironclad_energy_icon.png`; they are never derived from a
+> theme palette name such as `red`.
 >
 > **Acquisition is source-independent.** When the current agent runtime exposes a
 > callable host-native raster image tool, it may create the source PNG without a separate

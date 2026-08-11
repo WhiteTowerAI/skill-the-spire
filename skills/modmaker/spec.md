@@ -12,6 +12,11 @@ write framework class names, namespaces, hook signatures, pool attributes, proje
 references, manifest fields, or resource paths in the user-facing SPEC. The selected
 adapter records those details in `MEMORY.md` after the SPEC is frozen.
 
+Under `INV-10`, copy DESIGN's fixed `eng`/`zhs` target into every localization section and
+record exact player-facing text for both languages. Preserve identical localization keys and
+SmartFormat tokens while translating meaning and tone; an English string copied unchanged as
+the Chinese value is not a translation.
+
 ## Lower accepted design state
 
 The `design.md` stage owns the durable `DESIGN.md`: the deliverable claim and its required/
@@ -290,6 +295,7 @@ envelope, element class, and proof matrix live together in `surfaces/potion.md`.
   - placement: custom Card Piles Package
   - scope: combat | run
 - **localization**:
+  - languages: [eng, zhs]
   - fields: title, description, empty
   - table intent: static hover tips
   - formatting: plain

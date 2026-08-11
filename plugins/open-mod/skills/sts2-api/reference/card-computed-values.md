@@ -174,8 +174,8 @@ cleanup after the input changes.
 ## Variable tooltips
 
 Attach a shared tooltip only when SPEC declares its text. Use a deterministic entry stem
-derived from the Card public entry and variable name, then author the two flat keys in
-`localization/eng/static_hover_tips.json`:
+derived from the Card public entry and variable name, then author the same two flat keys in
+both required languages' `static_hover_tips.json`:
 
 ```csharp
 ModCardVars.ComputedEnergy(

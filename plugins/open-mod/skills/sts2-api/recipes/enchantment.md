@@ -102,7 +102,8 @@ combat does not apply while the enchanted Card sits outside the combat piles.
 
 ## Localization
 
-Ship `localization/eng/enchantments.json`:
+Ship matching `localization/eng/enchantments.json` and
+`localization/zhs/enchantments.json`:
 
 ```json
 {

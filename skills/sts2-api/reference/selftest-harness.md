@@ -95,6 +95,23 @@ failure from a real effect bug:
   the trigger, but **not proof**: calculation/preview hooks can emit it without a committed
   state change.
 
+## Bilingual localization driver
+
+Every generated harness with player-facing localization uses the public
+`MegaCrit.Sts2.Core.Localization.LocManager` route before its scenario driver. Snapshot
+`LocManager.Instance.Language`; for `eng` and `zhs`, call `SetLanguage(language)` and resolve
+the SPEC's title/description/prompt/tip strings through the real model or UI consumer. Compare
+the returned formatted strings with that language's exact SPEC values and reject empty values,
+raw localization keys, and unresolved SmartFormat placeholders. Restore the original language
+in a `finally` block, matching the side-effect-free collector pattern in the pinned host.
+
+The generated helper receives surface-specific resolver functions rather than reading JSON
+directly. Reading the authored table would only prove the input file; resolving the real
+`LocString` proves that the packed table, public key, language switch, and consumer agree. Emit
+`state proof: bilingual localization expected=eng,zhs observed=eng,zhs` only after both passes.
+This proof establishes resolution, not translation quality; headed review remains the owner of
+tone, naturalness, clipping, and layout.
+
 ## Gameplay-readability proof additions
 
 For a Card with hand emphasis, also read `reference/card-hand-emphasis.md`. A focused

@@ -248,7 +248,7 @@ class PreflightRejectionTests(unittest.TestCase):
             "  - name: Probe\n"
             f"  - surface: {surface}\n"
             "- **registration**:\n  - availability: shared\n"
-            "- **localization**:\n  - fields: title=Probe\n"
+            "- **localization**:\n  - languages: [eng, zhs]\n  - fields: title=Probe\n"
             "- **effects**:\n  - trigger: play\n"
             "- **hook participation**: one\n"
             f"  - capability: {capability}\n"

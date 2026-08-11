@@ -28,6 +28,7 @@ custom/Ancient scenes are not.
   - ownership: room
   - placement: all acts | <Glory | Hive | Overgrowth | Underdocks>
 - **localization**:
+  - languages: [eng, zhs]
   - fields: title, initial page description, every option title/description and result page;
     all in `events.json` under Mod-local keys
   - table intent: flat `events.json` entries

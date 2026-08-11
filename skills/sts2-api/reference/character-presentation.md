@@ -48,6 +48,8 @@ observed, which is not something the contract holds.
 The promoted static profile is one declarative object:
 
 ```csharp
+public override string? PlaceholderCharacterId => "ironclad";
+
 public override CharacterAssetProfile AssetProfile => new()
 {
     Scenes = new()
@@ -108,9 +110,11 @@ entire opaque source composition inside `(6,8)-(126,187)`; the real button remai
 the viewport, and settled same-window Ironclad/Meridian comparison showed no additional
 zoom, UI occlusion, or host clipping.
 
-Missing/unused rows resolve against the template's placeholder/native profile. Do not
-invent a second getter path or patch. In particular, the RitsuLib Shop route does not need
-the historical `NMerchantCharacter._Ready()` prefix.
+Missing/unused rows resolve against the explicitly selected base-game Ironclad profile. For
+Energy this means `ironclad_energy_counter.tscn`; it must not be derived from the Character
+theme or an `EnergyColorName` such as `red`. Do not invent a second getter path or patch. In
+particular, the RitsuLib Shop route does not need the historical
+`NMerchantCharacter._Ready()` prefix.
 
 ## Combat cue composition
 
@@ -219,7 +223,11 @@ The pool icons stay separate from full energy and from one another. The card poo
 `energy_text.png` before returning `TextEnergyIconPath`. The large route must resolve the
 256x256 texture in a real hand card's `%EnergyIcon`. The text route must resolve the 24x24
 path in a real card description using `EnergyIconsFormatter`; seeing the large icon does
-not prove the rich-text consumer.
+not prove the rich-text consumer. When either custom file is absent, map the stable custom
+pool prefix to the corresponding original Ironclad resource: `EnergyIconHelper.GetPath("ironclad")`
+(`energy_ironclad.tres`) or
+`res://images/packed/sprite_fonts/ironclad_energy_icon.png`. Never synthesize the fallback
+from a palette label such as `red`.
 The static proof is independent from the public resource/control proof; read
 `character-resource.md` for its fixed control, offset, fallback, and non-overlap contract.
 

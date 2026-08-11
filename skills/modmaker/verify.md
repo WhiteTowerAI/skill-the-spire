@@ -7,6 +7,21 @@ Any difference found here is classified through `repair.md` before a fix. Write 
 the active PLAN route first; do not infer that every behavior difference is a consumer-local
 bug when the cited shared route may be violating its own contract (`INV-9`).
 
+## Bilingual localization proof
+
+Build preflight establishes the static half of `INV-10`: required directories, table/key
+parity, nonempty values, and SmartFormat token parity. Tier 2 owns the runtime half. Before
+driving the selected behavior, the generated harness snapshots `LocManager.Instance.Language`,
+switches through `eng` and `zhs` with the public `SetLanguage` route, and resolves every
+SPEC-required player-facing `LocString` through its real model/UI consumer. Compare against the
+exact text recorded for that language, reject raw keys and unresolved placeholders, and restore
+the original language in `finally`.
+
+Emit one structured `state proof:` naming both observed language codes only after both passes.
+One language resolving, static JSON parity, or a catalog lookup is not bilingual runtime proof.
+Use the reusable route in `reference/selftest-harness.md`; do not write the player's language
+setting or leave the verification language active after the check.
+
 ## Tier-1 — does it load? (automated, guaranteed)
 
 Launch STS2 without Steam, wait, then grep the log for the framework profile, exact load

@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+from localization_contract import REQUIRED_LANGUAGES
+
 
 class AncientDialogueValidationError(ValueError):
     """A generated Ancient localization table violates the pinned contract."""
@@ -468,6 +470,18 @@ def validate_project_ancient_dialogue(project_dir: Path, mod_name: str) -> str:
         raise AncientDialogueValidationError(
             "ancients.json is required for Character localization language(s): "
             + ", ".join(missing_languages)
+        )
+    missing_character_languages = sorted(table_languages - set(character_languages))
+    if missing_character_languages:
+        raise AncientDialogueValidationError(
+            "characters.json with the custom Character entry is required for Ancient "
+            "dialogue language(s): " + ", ".join(missing_character_languages)
+        )
+    missing_required_languages = sorted(set(REQUIRED_LANGUAGES) - table_languages)
+    if missing_required_languages:
+        raise AncientDialogueValidationError(
+            "custom-Character Ancient dialogue requires English and Simplified Chinese; "
+            "missing " + ", ".join(missing_required_languages)
         )
 
     reference_keys: set[str] | None = None

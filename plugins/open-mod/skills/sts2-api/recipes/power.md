@@ -134,7 +134,8 @@ Do not use `ModifyDamageMultiplicative` or the other four redirected hooks on an
 
 ## Localization
 
-Ship `localization/eng/powers.json` with the exact public entry:
+Ship matching `localization/eng/powers.json` and `localization/zhs/powers.json` with the
+exact public entry:
 
 ```json
 {

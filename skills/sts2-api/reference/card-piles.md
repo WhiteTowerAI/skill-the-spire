@@ -14,7 +14,8 @@ A Mod may declare one or more piles. Each pile records:
 - `style`: `headless`, `top bar deck`, `bottom left`, `bottom right`, or `extra hand`;
 - `anchor`: style default, a matching preset plus offset, or custom position plus pivot;
 - `icon`: none, checked Mod resource, or explicit built-in fallback;
-- `localization`: title, description, and empty text in every shipped language;
+- `localization`: title, description, and empty text in required `eng` and `zhs`, plus any
+  additional shipped language;
 - `open behavior`: default pile screen or one declared public `ICapstoneScreen` route;
 - `visibility`: one deterministic player/pile/room predicate or always visible;
 - `hover tip`: placement and screen offset;

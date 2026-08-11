@@ -36,6 +36,7 @@ encounter are inseparable: neither is usable without the other, and one recipe e
   - placement: <plain-language encounter placement rule>
   - valid acts: all | <Glory | Hive | Overgrowth | Underdocks>
 - **localization**:
+  - languages: [eng, zhs]
   - fields: monster `name`, one `moves.<MOVE_ID>.title` per declared move; encounter
     `title` and `loss`
   - table intent: monsters + encounters

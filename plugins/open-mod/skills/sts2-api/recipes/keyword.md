@@ -47,7 +47,8 @@ enum field or side-loaded keyword state.
 ## Behavior and localization
 
 Keep behavior in the host Card/Power/helper and gate it from the same keyword value when
-the rule is conditional. Ship `localization/eng/card_keywords.json`:
+the rule is conditional. Ship matching `localization/eng/card_keywords.json` and
+`localization/zhs/card_keywords.json`:
 
 ```json
 {

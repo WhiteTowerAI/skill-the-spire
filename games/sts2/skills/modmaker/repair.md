@@ -60,7 +60,9 @@ cited route together. Follow a shared value or meaning through every applicable 
 behavior, lifecycle/state/reset, rules text and engine-composed text, keyword/DynamicVar/Hover
 Tips, shipped localization, preview values, presentation, and proof. A surface may say a
 consumer is not applicable; silence is not a reason to skip it. Preserve unaffected operations
-and every `PRESERVE` queue entry.
+and every `PRESERVE` queue entry. A localization repair follows `INV-10`: update both required
+languages and preserve table/key/token parity rather than patching only the language that exposed
+the failure.
 
 The loop's own rule, on top of the invariants: **if an approach fails twice, change the
 hypothesis — don't keep patching the same spot.**

@@ -22,12 +22,14 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 2. .NET SDK `9.0` or newer (`dotnet --version`).
 3. Python 3. On Windows, use a real python.org/Anaconda installation rather than the
    non-working Windows Store `python3` shim.
-4. RitsuLib `0.5.4` with the `0.107.1` compat variant, installed locally or through the
-   official Steam Workshop item `3747602295`.
+4. RitsuLib `>=0.5.4` with the `0.107.1` compat variant, installed locally or through the
+   official Steam Workshop item `3747602295`. The Mod authoring project compiles directly
+   against the checked local runtime version and has no framework `PackageReference`.
 5. Codex with plugin support.
 
 You do not need BaseLib, an Alchyr template, Godot, MegaDot, or PckPacker. The generated
-project uses open-mod's pinned scaffold and bundled Python build/packaging tools.
+project uses open-mod's scaffold, bundled Godot.NET SDK import files, and bundled Python
+build/packaging tools.
 
 ## Install In Codex
 

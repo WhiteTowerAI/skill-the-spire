@@ -56,6 +56,31 @@ M8.5-M8.6 remain intent only: the plain-language result in the Package Plan tabl
 of their current planning. No Package authorizes a new acceptance Mod, payload publication,
 or a GitHub release.
 
+## Pre-M8.5 Debug: local-only framework inputs
+
+This is maintenance debugging before M8.5, not an M8.5 Package and not a change to the M8.5
+or M8.6 status. Generated projects keep the RitsuLib `0.5.4` API/capability baseline but
+compile against the exact validated local RitsuLib `0.107.1` Compat DLL selected at scaffold
+time. The scaffold copies the small `Godot.NET.Sdk 4.5.1` import set, emits local references
+for STS2, Harmony, GodotSharp, System.IO.Hashing, and RitsuLib, records the compile version
+and assembly hash, keeps the player dependency floor at `STS2-RitsuLib >= 0.5.4`, and rejects
+framework `PackageReference` entries. A runtime upgrade after scaffold requires an explicit
+profile migration; it is never silently adopted.
+
+### Debug test plan
+
+Only the scaffold contract is tested in this debug:
+
+```powershell
+python -m unittest games/sts2/tools/tests/test_ritsu_profile.py -k scaffold
+```
+
+That test checks the bundled SDK copy, local assembly references, absence of framework package
+references, compile version/hash pinning, and the unchanged `0.5.4` player minimum. It passed
+on 2026-08-11. Compile success, restore/offline behavior, cross-platform behavior, Tier 1,
+Tier 2, and game acceptance remain outside this debug and are unrun here; any later coverage
+requires the relevant M8.6 acceptance or separate authorization. No such evidence is claimed.
+
 ## New-Session Start Protocol
 
 A new coding session must not re-plan M8 from scratch. After reading `AGENTS.md` and the

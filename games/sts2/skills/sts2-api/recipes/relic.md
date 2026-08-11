@@ -84,8 +84,8 @@ public sealed class <RelicName> : ModRelicTemplate
 
 ## Localization (ships in the .pck)
 
-Add entries to `<ModName>/localization/eng/relics.json`. Keys are flat and use the exact
-RitsuLib public entry:
+Add the same entries to `<ModName>/localization/<lang>/relics.json` for both `eng` and
+`zhs`. Keys are flat and use the exact RitsuLib public entry:
 
 ```json
 {

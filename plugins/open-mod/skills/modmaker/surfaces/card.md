@@ -35,6 +35,7 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   - ownership: player
   - placement: <plain-language card-pool rule>
 - **localization**:
+  - languages: [eng, zhs]
   - fields: title=<shown name>; description=<hover text>; optional selection prompt
   - formatting: dynamic value placeholders; plain | bounded vanilla rich text
   - text spans: <description phrase -> semantic color intent>

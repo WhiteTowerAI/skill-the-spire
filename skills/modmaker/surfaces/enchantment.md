@@ -15,6 +15,10 @@ inside its host Card's envelope:
     stacking: replaces an existing enchantment | not stackable
 ```
 
+The host Card's `localization` section records exact English and Simplified Chinese
+title/description/optional `extraCardText`. The stable entry and any SmartFormat tokens are
+identical between languages.
+
 `host restriction` is a required line, not commentary: it is the enchantment's identity and
 the thing its proof must exercise — see § Proof matrix. Reviewed and accepted on 2026-08-07:
 enchantment and keyword stay host-scoped, while `orb` received its own envelope.
@@ -79,7 +83,8 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
   already reject Status/Curse/Quest card types and `Unplayable` deck cards, and reject a
   second enchantment unless `IsStackable`. An override may **add** restrictions; removing one
   is out of contract.
-- Ship `localization/eng/enchantments.json` with `.title`, `.description`, and — only when
+- Ship matching `localization/eng/enchantments.json` and
+  `localization/zhs/enchantments.json` with `.title`, `.description`, and — only when
   `HasExtraCardText` — `.extraCardText`.
 - Leave the host card's description free of both strings.
 

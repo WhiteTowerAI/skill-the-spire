@@ -13,7 +13,7 @@ the final report.
 
 - `DESIGN.md` owns player intent, accepted decisions, trade-offs, rejected alternatives,
   tuning hypotheses, the deliverable claim and its required/excluded player experiences,
-  current scope, future vision, and explicit boundaries.
+  current scope, future vision, required output languages, and explicit boundaries.
 - `SPEC.md` owns the exact framework-neutral operations generated now and their supported
   semantic routes.
 - `PLAN.md` owns stage status, the one active repair route, and the deliverable settlement
@@ -52,6 +52,11 @@ Every new or revised Mod gets `DESIGN.md`, but only include useful sections:
 Do not add pillars, lore, content-role tables, formulas, or rejected alternatives when the
 request never needed them. Do not omit a material accepted decision merely to keep the file
 short.
+
+Every new or revised design records English (`eng`) and Simplified Chinese (`zhs`) as its
+required output languages under `INV-10`. This fixed product requirement does not consume a
+`D-###` item and is not a question for the user. Preserve separately accepted wording and
+tone in each language; SPEC owns the exact bilingual strings generated now.
 
 ## The deliverable claim
 
@@ -185,6 +190,11 @@ validation; keep explanations in plain language.
 ## Intent
 
 <one player-facing sentence>
+
+## Languages
+
+- English (`eng`)
+- Simplified Chinese (`zhs`)
 
 ## Decisions
 

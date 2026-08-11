@@ -28,6 +28,7 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
   - ownership: player
   - placement: <plain-language potion-pool rule>
 - **localization**:
+  - languages: [eng, zhs]
   - fields: title=<shown name>; description=<hover text>; optional selectionScreenPrompt
     (only if the effect prompts a choice)
   - formatting: dynamic value placeholders; plain | bounded vanilla rich text

@@ -99,7 +99,8 @@ the Orb is evoked out — state that in SPEC if the design depends on it.
 
 ## Localization
 
-Ship `localization/eng/orbs.json` using the exact public entry:
+Ship matching `localization/eng/orbs.json` and `localization/zhs/orbs.json` using the exact
+public entry:
 
 ```json
 {

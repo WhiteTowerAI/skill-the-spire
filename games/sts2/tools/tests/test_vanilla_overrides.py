@@ -2780,7 +2780,6 @@ public static partial class MainFile
                             str(project),
                             "--mod-name",
                             "Proof",
-                            "--skip-runtime-check",
                         ]
                     ),
                 )

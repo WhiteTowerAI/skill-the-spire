@@ -25,6 +25,7 @@ the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
   - ownership: player
   - placement: <plain-language drop/pool rule>
 - **localization**:
+  - languages: [eng, zhs]
   - fields: title=<shown name>; description=<hover text>; flavor=<flavor line>
   - formatting: plain | bounded vanilla rich text
   - text spans: <description phrase -> semantic color intent>

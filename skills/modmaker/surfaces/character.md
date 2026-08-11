@@ -30,6 +30,7 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   - ownership: player
   - placement: character select screen
 - **localization**:
+  - languages: [eng, zhs]
   - fields: character name, description, and pronouns (in `characters.json`); all pool Card
     and Power titles/descriptions; all Ancient dialogue lines
   - table intent: `characters.json` plus element-specific tables
@@ -71,6 +72,8 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
     - card-frame target RGB: `<0..1, 0..1, 0..1>`
     - card-frame brightness: `<0..2>`
     - energy-icon palette: `<primary/accent/outline colors plus motif/material>`
+    - energy resource prefix: `<stable Mod-owned lookup key; never a palette name>`
+    - placeholder Energy fallback: Ironclad counter, large Card icon, and rich-text icon
   - character art profiles: none | selection | locked selection | top-panel icon |
     map marker | select background | combat body | rest body | merchant body | energy |
     large energy icon | text energy icon (do not infer one profile from another; mark
@@ -89,7 +92,10 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
     - fallback: one missing or invalid frame disables all cues and uses static combat body
     - explicit gaps: Cast, Spine, trails, audio, animated merchant/rest bodies
 - **fallback**:
-  - missing asset: Foundation-only template; selected profiles fill only their matched fields
+  - missing asset: Foundation-only template; selected profiles fill only their matched fields;
+    Energy uses `ironclad_energy_counter.tscn`, `EnergyIconHelper.GetPath("ironclad")`
+    (`energy_ironclad.tres`), and
+    `res://images/packed/sprite_fonts/ironclad_energy_icon.png`, never a theme-derived path
   - unavailable seam: preserve Foundation behavior or stop with an explicit unsupported boundary
 - **proof**:
   - scenario: RunStart + CombatPlayer
@@ -163,7 +169,9 @@ not been verified until that card has been played.
   dialogue. When SPEC selects other Ancient targets or richer Architect groups, lower the
   semantic blocks through `reference/ancient-dialogue.md`; do not author an injection patch.
 - Keep `CharacterAssetProfile` partial fallback semantics; selected Character static
-  profiles fill only the matching fields after headed proof. When combat cues are selected,
+  profiles fill only the matching fields after headed proof. Set the placeholder Character to
+  `ironclad`, and keep a stable Mod-owned `EnergyColorName` prefix for custom resource mapping;
+  never use a palette name such as `red` as the prefix or fallback. When combat cues are selected,
   read `reference/character-combat-cues.md` and emit only its private combat-owned
   Idle/Attack/Hit/Dead state machine; never fill profile-global `VisualCues`. A
   Foundation-only SPEC emits no patch infrastructure. A resource SPEC

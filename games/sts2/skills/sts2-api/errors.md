@@ -6,19 +6,22 @@ switching to an old template.
 
 ## Build And Profile
 
-### Required compile asset is `STS2.RitsuLib.Compat.0.107.1 0.5.4`
+### Generated project is missing a local compile asset
 
-- **Cause:** the project selected a floating/default RitsuLib package, another compat
-  target, or an additional framework package.
-- **Fix:** regenerate with `scaffold.py` or restore the exact pinned `PackageReference`,
-  `Sts2ApiCompat`, `RitsuLibAutoCopy=false`, and single runtime manifest dependency.
+- **Cause:** the bundled Godot SDK files, one local game DLL, or the scaffold-pinned
+  RitsuLib Compat DLL is missing; the project may also have reintroduced a framework
+  `PackageReference`.
+- **Fix:** regenerate with `scaffold.py`, restore the checked local host/runtime install,
+  and retain `Sts2ApiCompat`, `RitsuLibAutoCopy=false`, local assembly references, and the
+  single runtime manifest dependency. Do not add a NuGet framework package as a repair.
 
 ### Runtime asset does not contain the `0.107.1` compat DLL/marker
 
 - **Cause:** RitsuLib is missing, another host variant was installed, or its variant
   manifest/hash does not match.
-- **Fix:** install RitsuLib `0.5.4` with `lib/0.107.1/STS2-RitsuLib.dll`; do not use
-  `--skip-runtime-check` for Tier 1.
+- **Fix:** install RitsuLib `>=0.5.4` with `lib/0.107.1/STS2-RitsuLib.dll`, then scaffold or
+  explicitly migrate the project runtime profile. A release zip must be installed before it
+  can compile a Mod.
 
 ### Host version is not `0.107.1`
 
@@ -56,6 +59,13 @@ switching to an old template.
   differ across shipped languages.
 - **Fix:** fix the reported semantic group/key. Never bypass the preflight and never enable
   the debug missing-Architect fallback to make it pass.
+
+### `localization FAILED` with a language/table/key/token detail
+
+- **Cause:** one of required `eng`/`zhs` is absent, the language trees contain different
+  tables or keys, a value is empty, or a translation changed a SmartFormat token.
+- **Fix:** regenerate both language tables from SPEC's bilingual text, preserving exact table
+  names, keys, and token multisets. Do not copy English prose into `zhs` or weaken the validator.
 
 ### `[vanilla-overrides]` with a target/route/page/localization/fingerprint detail
 

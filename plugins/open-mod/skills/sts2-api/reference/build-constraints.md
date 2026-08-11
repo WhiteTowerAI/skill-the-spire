@@ -1,30 +1,34 @@
 # Build and load constraints
 
 Use this page before authoring registration/localization output and when a build/profile
-diagnostic fails. The active toolchain is the pinned open-mod RitsuLib profile.
+diagnostic fails. The active toolchain is the local-runtime open-mod RitsuLib profile.
 
 ## Pinned Profile
 
 - host: STS2 stable `0.107.1`;
-- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.5.4`;
+- authoring baseline: RitsuLib `0.5.4` public API and capability catalog;
+- compile runtime: the pinned local RitsuLib version, at least `0.5.4`;
+- bundled build SDK: `Godot.NET.Sdk` `4.5.1`;
 - `Sts2ApiCompat`: `0.107.1`;
-- runtime dependency: `STS2-RitsuLib >= 0.5.4`;
+- runtime dependency: `STS2-RitsuLib >= 0.5.4`; a newer local compile runtime does not raise
+  this player floor because generated code stays inside the `0.5.4` authoring/API baseline;
 - `RitsuLibAutoCopy`: `false`;
 - no framework DLL inside the generated Mod directory.
 
 Run `scaffold.py` and `build.py`; do not substitute a generic template or bare publish
-flow. The validators reject a floating/beta-facing RitsuLib package, a wrong compat
-variant, a wrong host, extra framework references, a malformed manifest, and a framework
-DLL copied into the generated Mod.
+flow. The validators reject a missing or drifting local runtime profile, a wrong compat
+variant, a wrong host, PackageReference framework dependencies, a malformed manifest, and
+a framework DLL copied into the generated Mod.
 
-Keep the exact `0.5.4` Compat package as the compile baseline. At runtime accept an actual
-RitsuLib version at or above that floor only when the exact `0.107.1` direct/variant asset,
-marker, and manifest hash validate. Discover the game-local runtime first, then official
-Steam Workshop item `3747602295`; do not copy either source into the generated project.
+Keep the authoring/API baseline at `0.5.4`. At compile time use the scaffold-pinned local
+RitsuLib version only when its exact `0.107.1` direct/variant asset, marker, and manifest
+hash validate. Discover the game-local runtime first, then official Steam Workshop item
+`3747602295`; do not copy the framework DLL into the deployed Mod.
 
-For restore, reuse an explicit shared cache, `NUGET_PACKAGES`, or a complete pinned package
-under the real user's `~/.nuget/packages`. This cache selection is process-local and must
-not write a machine path into the generated project.
+The generated consumer has no framework PackageReference. `Godot.NET.Sdk 4.5.1` is supplied
+by the skill asset, while `GodotSharp`, `System.IO.Hashing`, STS2, Harmony, and RitsuLib are
+resolved from the checked local game/runtime directories. No machine-specific absolute path
+is written into the generated project.
 
 ## Registration
 

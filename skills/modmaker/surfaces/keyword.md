@@ -14,6 +14,10 @@ element block**. Declare it inside its host Card's envelope:
     behavior owner: <the host element that implements it>
 ```
 
+The host Card's `localization` section records exact English and Simplified Chinese keyword
+title/description text. The stable entry and any SmartFormat tokens are identical between
+languages.
+
 That the keyword carries no behavior is the reason for this shape, and also the thing its
 proof must not assume — see § Proof matrix. This was reviewed and accepted on 2026-08-07:
 keyword and enchantment stay host-scoped, while `orb` received its own envelope.
@@ -38,7 +42,8 @@ description states only what that specific card does.
 the runtime add/remove helpers. The keyword owns vocabulary and tooltip text only; implement
 its named behavior in the host.
 
-- Ship `localization/eng/card_keywords.json` with `.title` and `.description` under the
+- Ship matching `localization/eng/card_keywords.json` and
+  `localization/zhs/card_keywords.json` with `.title` and `.description` under the
   exact `<MOD>_KEYWORD_<STEM>` entry.
 - For combat-time mutation, resolve the minted value once and use `card.AddModKeyword(value)`
   / `card.RemoveModKeyword(value)`. Do not generate a custom enum field or side-loaded

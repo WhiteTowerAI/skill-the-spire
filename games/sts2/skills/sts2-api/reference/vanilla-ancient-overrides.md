@@ -314,7 +314,8 @@ native button does not display Hover Tips; keep that existing presentation bound
 ## Localization and visual composition
 
 Every option prefix must start with `<MOD_ID>_ANCIENT_`. For every shipped localization
-directory, including required `eng`, `<ModId>/localization/<lang>/events.json` contains:
+directory, including required `eng` and `zhs`,
+`<ModId>/localization/<lang>/events.json` contains:
 
 ```json
 {

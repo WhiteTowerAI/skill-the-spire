@@ -1,13 +1,13 @@
-# Scaffold - create the pinned RitsuLib project
+# Scaffold - create the local-runtime RitsuLib project
 
 Goal: generate the smallest open-mod-owned STS2 project from the semantic SPEC. One
 adapter-owned path (`INV-7`).
 
-## Pinned profile
+## Authoring profile
 
 ```text
-profile: ritsulib-0.5.4-sts2-0.107.1
-compile package: STS2.RitsuLib.Compat.0.107.1 0.5.4
+authoring profile: ritsulib-0.5.4-sts2-0.107.1
+compile runtime: the checked local RitsuLib version (>= 0.5.4)
 runtime Mod id: STS2-RitsuLib
 host: STS2 stable 0.107.1
 ```
@@ -26,7 +26,9 @@ dotnet --version
 python ../modmaker/scripts/scaffold.py `
   --project-dir <absolute-empty-outer-directory> `
   --mod-name <ModName> `
-  --author <Author>
+  --author <Author> `
+  --game-dir <STS2-install-directory> `
+  --runtime-dir <optional-installed-RitsuLib-directory>
 ```
 
 `<ModName>` is a C# identifier without spaces. The generator refuses a nonempty directory
@@ -36,10 +38,14 @@ and never overwrites an existing project.
 
 The project contains:
 
-- `<ModName>.csproj` with the exact compat package and `Sts2ApiCompat=0.107.1`;
+- `<ModName>.csproj` with the bundled `Godot.NET.Sdk 4.5.1`, local game assembly references,
+  `Sts2ApiCompat=0.107.1`, and a pinned local RitsuLib version/assembly hash;
+- `openmod/sdk/Godot.NET.Sdk.4.5.1/`, copied from the skill asset and used only as a build
+  input;
 - `RitsuLibAutoCopy=false` and an empty `RitsuLibDeployDir`, so the consumer never bundles
   the framework DLL;
-- `<ModName>.json` with only `STS2-RitsuLib >= 0.5.4`, `min_game_version=0.107.1`,
+- `<ModName>.json` with only `STS2-RitsuLib >= 0.5.4` and
+  `min_game_version=0.107.1`,
   `has_dll=true`, and `has_pck=false` for the empty scaffold;
 - `Sts2PathDiscovery.props` plus optional `local.props` support;
 - `openmod/vanilla-overrides.json` pinned to the checked `0.107.1` catalog with an empty
@@ -55,9 +61,12 @@ first and then that item in the Steam library that owns STS2. Only install the m
 compat zip or verified variant pack when neither source exists. Never copy
 `STS2-RitsuLib.dll` into `<ModName>`.
 
-The exact Compat NuGet package remains the reproducible compile input. It is distinct from
-the runtime installation. `build.py` reuses `NUGET_PACKAGES` or a complete user-level
-`~/.nuget/packages` cache even when `dotnet` runs under an isolated Codex sandbox profile.
+The local runtime Compat DLL is the reproducible compile input for this project. The project
+records its framework version and SHA-256 but never writes a machine-specific absolute path.
+The manifest keeps the `0.5.4` player floor because authoring remains inside the `0.5.4` API
+baseline even when the local compile runtime is newer. If the installed runtime changes after
+scaffold, `build.py` stops and requires an explicit runtime-profile migration; it never silently
+changes either recorded identity or the player's minimum dependency.
 
 When authoring adds localization, images, or scenes, place them under
 `<project-dir>/<ModName>/` and set `has_pck=true`. `build.py` packs that resource tree with

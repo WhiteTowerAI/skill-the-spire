@@ -294,9 +294,10 @@ public sealed class <Name>Encounter : ModEncounterTemplate
 
 ## Localization
 
-Two JSON loc tables (the `AdditionalFiles` glob in the csproj already picks up any new
-`localization/eng/*.json`). Keys are flat, prefixed, and derived by the same rule as every
-other type (`Id.Entry = "<MOD>_<CATEGORY>_<TYPE>"`):
+Two JSON loc tables in each required language (the `AdditionalFiles` glob in the csproj
+already picks up `localization/<lang>/*.json`). The `eng` and `zhs` tables use identical flat,
+prefixed keys derived by the same rule as every other type
+(`Id.Entry = "<MOD>_<CATEGORY>_<TYPE>"`):
 
 - `monsters.json`: `<MOD>_MONSTER_<TYPE>.name` — **one key**.
 - `encounters.json`: `<MOD>_ENCOUNTER_<TYPE>.title` + `.loss` — **two keys**.

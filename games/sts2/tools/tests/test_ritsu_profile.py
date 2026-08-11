@@ -14,7 +14,9 @@ sys.path.insert(0, str(TOOLS_DIR))
 from ritsu_profile import (  # noqa: E402
     PROFILE,
     RitsuProfileError,
+    RuntimeCompileProfile,
     resolve_runtime_asset,
+    resolve_runtime_compile_profile,
     validate_host_version,
     validate_project_contract,
     validate_runtime_asset,
@@ -28,31 +30,78 @@ class RitsuProfileTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "outer project directory"):
                 generate(Path(tmp) / "EmptyRitsu", "EmptyRitsu", "OpenMod")
 
-    def test_generated_empty_project_is_pinned_and_base_lib_free(self) -> None:
+    def test_scaffold_uses_bundled_sdk_and_pinned_local_assemblies(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "empty-outer"
-            generate(project, "EmptyRitsu", "OpenMod")
+            compile_hash = hashlib.sha256(b"local-compat").hexdigest()
+            compile_profile = RuntimeCompileProfile(
+                "0.5.9",
+                Path(tmp) / "runtime" / PROFILE.runtime_dll,
+                compile_hash,
+            )
+            generate(
+                project,
+                "EmptyRitsu",
+                "OpenMod",
+                compile_profile=compile_profile,
+            )
             summary = validate_project_contract(project, "EmptyRitsu")
             self.assertIn(PROFILE.profile_id, summary)
+            self.assertIn("local compile runtime 0.5.9", summary)
             manifest = json.loads((project / "EmptyRitsu.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["dependencies"], [{"id": "STS2-RitsuLib", "min_version": "0.5.4"}])
+            self.assertEqual(
+                manifest["dependencies"],
+                [{"id": "STS2-RitsuLib", "min_version": PROFILE.framework_version}],
+            )
             csproj = (project / "EmptyRitsu.csproj").read_text(encoding="utf-8")
             main = (project / "EmptyRitsuCode" / "MainFile.cs").read_text(encoding="utf-8")
             self.assertNotIn("BaseLib", csproj)
+            self.assertNotIn("<PackageReference", csproj)
+            self.assertIn("<RitsuLibCompileVersion>0.5.9</RitsuLibCompileVersion>", csproj)
+            self.assertIn(
+                f"<RitsuLibCompileAssemblySha256>{compile_hash}</RitsuLibCompileAssemblySha256>",
+                csproj,
+            )
+            for reference in (
+                "sts2",
+                "0Harmony",
+                "GodotSharp",
+                "System.IO.Hashing",
+                "STS2-RitsuLib",
+            ):
+                self.assertIn(f'<Reference Include="{reference}"', csproj)
+            sdk = (
+                project
+                / "openmod"
+                / "sdk"
+                / f"Godot.NET.Sdk.{PROFILE.godot_sdk_version}"
+                / "Sdk"
+            )
+            for name in (
+                "Android.props",
+                "iOSNativeAOT.props",
+                "iOSNativeAOT.targets",
+                "Sdk.props",
+                "Sdk.targets",
+                "SdkPackageVersions.props",
+            ):
+                self.assertTrue((sdk / name).is_file(), name)
             self.assertIn("public static partial class MainFile", main)
             self.assertIn("static partial void RegisterContent();", main)
             self.assertIn("RitsuLibFramework.CreateLogger(ModId)", main)
+            self.assertIn('CompileFrameworkVersion = "0.5.9"', main)
 
-    def test_default_beta_package_is_rejected(self) -> None:
+    def test_generated_project_rejects_any_package_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "empty-outer"
             generate(project, "EmptyRitsu", "OpenMod")
             csproj = project / "EmptyRitsu.csproj"
             text = csproj.read_text(encoding="utf-8").replace(
-                PROFILE.package_id, "STS2.RitsuLib"
+                "</Project>",
+                '<ItemGroup><PackageReference Include="Example" Version="1.0.0" /></ItemGroup></Project>',
             )
             csproj.write_text(text, encoding="utf-8")
-            with self.assertRaisesRegex(RitsuProfileError, "default beta-facing"):
+            with self.assertRaisesRegex(RitsuProfileError, "must not declare PackageReference"):
                 validate_project_contract(project, "EmptyRitsu")
 
     def test_runtime_variant_directory_and_zip_are_checked(self) -> None:
@@ -79,6 +128,10 @@ class RitsuProfileTests(unittest.TestCase):
                 }],
             }), encoding="utf-8")
             self.assertIn(PROFILE.host_version, validate_runtime_asset(root))
+            compile_profile = resolve_runtime_compile_profile(root)
+            self.assertEqual(PROFILE.framework_version, compile_profile.version)
+            self.assertEqual(variant / PROFILE.runtime_dll, compile_profile.assembly_path)
+            self.assertEqual(hashlib.sha256(b"dll").hexdigest(), compile_profile.assembly_sha256)
 
             archive = Path(tmp) / "variant-pack.zip"
             with zipfile.ZipFile(archive, "w") as zf:

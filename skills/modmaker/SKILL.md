@@ -192,13 +192,13 @@ constrain every stage rather than one.
 
 | File | Purpose | When to read |
 |------|---------|--------------|
-| `invariants.md` | The nine rules every stage obeys, stated once | Pipeline start; stays in context |
+| `invariants.md` | The ten rules every stage obeys, stated once | Pipeline start; stays in context |
 | `route.md` | Infer fast / co-design / revision and preserve settled decisions | Pipeline start (after state check) |
 | `interview.md` | Resolve only material open decisions → intake | After routing when a decision is still open |
 | `design.md` | Write adaptive `DESIGN.md`: deliverable claim, current/future scope, coherence contract, and stable IDs | After Interview, or to backfill a pre-M7.4 project |
 | `semantic-contract.md` | Framework-neutral SPEC envelope, adapter inputs, and diagnostic record | Before writing SPEC |
 | `spec.md` | Write exact current `SPEC.md` plus validated coherence/design traces | After DESIGN |
-| `scaffold.md` | Pinned RitsuLib project + manifest + compat wiring | After spec |
+| `scaffold.md` | Local-runtime RitsuLib project + manifest + compat wiring | After spec |
 | `author.md` | Write the C# element + localization + marker | After scaffold |
 | `build.md` | `dotnet build` → .dll/.pck/.json into mods/ | After author |
 | `verify.md` | Launch + log-assert load (tier-1) + automated tier-2 self-test (manual fallback) | After build |
@@ -240,8 +240,8 @@ User: one sentence ("a relic that ...")
     semantic route per traced operation. Run design_trace.py, then show one combined
     DESIGN/current-slice/SPEC confirmation.
     |
- 5. SCAFFOLD (scaffold.md) — resolve the selected framework/host profile once, then emit
-    its project, manifest, and package wiring.
+ 5. SCAFFOLD (scaffold.md) — resolve the selected local framework/host profile once, then emit
+    its project, manifest, and local assembly wiring.
     |
  6. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
     monster+encounter/event/character, plus the selected Event outcome/VFX/rich-text/
@@ -256,7 +256,7 @@ User: one sentence ("a relic that ...")
     blocks —
     a missing sprite falls back to the template default. Regenerate = re-run + rebuild.
     |
- 7. BUILD (build.md) — tools/build.py validates the pinned host/package/runtime profile,
+ 7. BUILD (build.md) — tools/build.py validates the pinned host/local-runtime profile,
     deploys the Mod's own DLL/manifest, and packs its resource tree when present. On
     failure: go to REPAIR (repair.md).
     |

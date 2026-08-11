@@ -119,3 +119,13 @@ harder to see: the citation resolves, the recipe reads as grounding, and only th
 result reveals the gap.
 
 Fires at: spec, author, verify, repair.
+
+## INV-10 — Player-facing localization is bilingual
+
+Every player-facing localization table ships in English and Simplified Chinese. The two
+language trees carry the same tables and keys, every value is nonempty, and SmartFormat
+tokens stay identical so translation cannot change runtime substitution. A Mod with no
+player-facing localization tables is language-neutral; once one table exists, omitting either
+required language is a blocking contract failure.
+
+Fires at: design, spec, author, build, verify, repair, finalize.

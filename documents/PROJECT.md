@@ -79,6 +79,23 @@ evidence; no generated Mod or game run occurred.
 The result is `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md`. M8.4 was removed by the human
 lead; M8.5 and M8.6 retain their numbers and are not started.
 
+Generated-Mod localization is bilingual by contract in `sts2-content-semantic/v2`. A Mod with no
+localization tables remains language-neutral; once any table exists, English (`eng`) and
+Simplified Chinese (`zhs`) are both required with matching table names, keys, and SmartFormat
+tokens and with nonempty values. DESIGN and SPEC record the exact text, `INV-10` preserves the
+obligation through the workflow, and future Tier 2 checks switch through both languages before
+restoring the original language. Translation quality remains a human judgment. This source and
+payload implementation was not tested, built, launched, or otherwise verified by human-lead
+instruction, so it carries no runtime or game proof.
+
+A pre-M8.5 maintenance debug removes generated-project framework `PackageReference` entries.
+Scaffold keeps the RitsuLib `0.5.4` authoring baseline, pins the selected local Compat DLL version
+and hash, resolves game/framework assemblies locally, and copies the bundled Godot.NET SDK import
+set. Its player manifest remains `STS2-RitsuLib >= 0.5.4` even when the local compiler uses a
+newer compatible runtime. Its one focused scaffold contract test passed. No Mod compile,
+restore/offline, cross-platform, Tier 1, Tier 2, or game run was performed, and M8.5/M8.6
+remain unselected.
+
 ## User Experience
 
 ```text
@@ -156,8 +173,13 @@ deterministic PLAN validation, and tests own the fifteen cases. Remaining Packag
 platform/process cleanup in tools and final whole-skill coverage in tests.
 
 Edit source under `games/sts2/`; regenerate both payloads through `publish.sh`. Generated
-Mods use the pinned compile package and discover a validated game-local or official
-Workshop RitsuLib runtime. They never copy the maintainer checkout or depend on BaseLib.
+Mods use the `0.5.4` RitsuLib API baseline, then compile against the exact validated local
+RitsuLib Compat DLL selected at scaffold time. The project carries no framework
+`PackageReference`: the skill supplies the Godot.NET SDK import files and resolves STS2,
+Harmony, GodotSharp, System.IO.Hashing, and RitsuLib from the game/runtime installation.
+Runtime discovery prefers the game-local or official Workshop RitsuLib runtime, and an upgrade
+after scaffold requires an explicit profile migration. Generated Mods never copy the maintainer
+checkout or depend on BaseLib.
 
 ## Design Intelligence Boundary
 

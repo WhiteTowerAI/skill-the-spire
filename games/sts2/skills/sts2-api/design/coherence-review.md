@@ -17,7 +17,8 @@ Use only the current surfaces selected by the design:
 - **mechanics:** repeated player action, decision, feedback, and payoff;
 - **naming:** Character, mechanic, Card, relic, option, and page vocabulary;
 - **localization:** stable gameplay meaning, terminology, numbers, and intended tone across
-  shipped languages, without requiring word-for-word phrasing;
+  required `eng`/`zhs` and any additional shipped languages, without requiring word-for-word
+  phrasing;
 - **visuals:** selected motif, palette, silhouette/focal subject, and supported consumer;
 - **Event text:** situation, option wording, speaker voice, consequence, and page arc; and
 - **Character identity:** fantasy, Foundation teaching pair, Starter relic, resource, and

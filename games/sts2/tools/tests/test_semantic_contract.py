@@ -61,8 +61,17 @@ class SemanticContractTests(unittest.TestCase):
         ):
             self.assertIn(f"**{field}**", self.contract)
         self.assertIn("sts2-content-semantic/v2", self.contract)
-        # v1 examples are retained in the migration note; the canonical declaration is v2
+        # v1 is retained in the migration note; the canonical declaration is v2
         self.assertIn("sts2-content-semantic/v1", self.contract)
+
+    def test_localization_contract_requires_english_and_chinese(self) -> None:
+        self.assertIn("languages: [eng, zhs]", self.contract)
+        self.assertIn("exact English and Simplified Chinese text", self.contract)
+        self.assertIn("localization/eng/", self.author)
+        self.assertIn("localization/zhs/", self.author)
+        for slug in ("card", "relic", "potion", "power", "orb", "monster", "event", "character"):
+            with self.subTest(surface=slug):
+                self.assertIn("languages: [eng, zhs]", skill_prose.surface(slug))
 
     def test_simple_card_and_relic_spec_are_framework_neutral(self) -> None:
         relic = surface_block(self.spec, "Relic:", "Potion")

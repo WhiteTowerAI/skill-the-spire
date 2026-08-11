@@ -112,7 +112,8 @@ subject.
 
 ## Localization
 
-Ship `localization/eng/potions.json` with flat public-entry keys:
+Ship matching `localization/eng/potions.json` and `localization/zhs/potions.json` with flat
+public-entry keys:
 
 ```json
 {

@@ -28,6 +28,7 @@ for the whole SPEC by the host.
   - ownership: <the creature that carries it: player | enemy>
   - placement: applied by <the host element that applies it>
 - **localization**:
+  - languages: [eng, zhs]
   - fields: title=<shown name>; description=<hover text using {Amount}>
   - smartDescription: <usually the same text; required>
   - formatting: dynamic value placeholders; plain | bounded vanilla rich text

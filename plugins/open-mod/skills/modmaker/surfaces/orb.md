@@ -26,6 +26,7 @@ and its three behaviors are separate `effects` entries rather than one sequence.
   - ownership: player
   - placement: channelled by <the Card/relic/Power that channels it, and when>
 - **localization**:
+  - languages: [eng, zhs]
   - fields: title=<shown name>; description=<plain fallback text, read when no
     smartDescription resolves>
   - smartDescription: <text using {Passive} and {Evoke}; required for live values>
@@ -78,8 +79,8 @@ and its three behaviors are separate `effects` entries rather than one sequence.
 `.description` verbatim, with no substitution — so any value modified at runtime, Focus
 included, becomes invisible to the player while the tooltip keeps stating the base number.
 
-Ship all three keys in `localization/eng/orbs.json`, and put the placeholders in
-`smartDescription`:
+Ship all three keys in matching `localization/eng/orbs.json` and
+`localization/zhs/orbs.json`, and put the placeholders in `smartDescription`:
 
 ```json
 {

@@ -39,6 +39,7 @@ PROBE_SPEC = textwrap.dedent(
     - **registration**:
       - availability: shared
     - **localization**:
+      - languages: [eng, zhs]
       - fields: title=Probe
     - **effects**:
       - trigger: play

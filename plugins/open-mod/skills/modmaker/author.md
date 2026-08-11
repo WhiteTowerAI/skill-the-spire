@@ -222,7 +222,7 @@ second framework branch into this file.
 - Lower `stay` directly. Lower `page` and `finish` only through the two fixed fingerprinted
   `SetEventState` and `Done` UnsafeAccessor helpers in the reference. `Done()` owns native
   choice history; never substitute `StartPreFinished()` or hand-edit Ancient state.
-- Put every option `.title`/`.description` and page description in every shipped language's
+- Put every option `.title`/`.description` and page description in both required languages'
   `<ModName>/localization/<lang>/events.json`. Do not put these behavior keys in
   `ancients.json`, which remains the custom-Character dialogue table.
 - Emit one exact checked manifest operation per target route. Multiple appends may compose;
@@ -426,6 +426,12 @@ user launch never arms it — no menu driving, fully inert. It ships dormant ins
 
 ## 3. Write localization
 
+Apply `INV-10` to every player-facing string. Author both
+`<ModName>/localization/eng/` and `<ModName>/localization/zhs/` from the exact bilingual
+SPEC text. The directory trees, table names, keys, and SmartFormat tokens are identical;
+only the localized prose differs. Do not satisfy the Chinese table by copying its English
+value unchanged.
+
 When display `text effects` is `vanilla`, apply semantic `text spans` only after the plain
 description and SmartFormat placeholders are correct. Validate every tag against
 `reference/content-text-effects.md`, keep tags balanced, do not wrap `:diff()` values in
@@ -441,7 +447,8 @@ RitsuLib's registered population patch and emit no Harmony/reflection injection.
 **event**, write the normalized title/page/option/result keys
 to `events.json`; `InitialOptionKey` and `ModOptionKey` must match those explicit segments.
 
-For the JSON-backed types, add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
+For the JSON-backed types, add the same keys to
+`<ModName>/localization/<lang>/<table>.json` for both `eng` and `zhs` — **`relics.json`** for a
 relic, **`potions.json`** for a potion, **`cards.json`** for a card, **`powers.json`**
 for a custom power, **`monsters.json`** + **`encounters.json`** for an enemy encounter,
 **`events.json`** for an Event, and **`characters.json`** + **`ancients.json`** for a
@@ -469,7 +476,7 @@ produced by the RitsuLib adapter. Not nested JSON — a flat `Dictionary<string,
 An owned Rest Site option adds its stable namespaced `.title` and `.description` keys to
 the same `relics.json`; these are separate from the owner Relic's three model keys.
 When a calculated Card value declares a tooltip, also add its resolved `.title` and
-`.description` keys to `localization/eng/static_hover_tips.json`; omit the icon argument
+`.description` keys to each required language's `static_hover_tips.json`; omit the icon argument
 for the native null-icon fallback.
 
 ## 4. Art (per SPEC's art plan — placeholder or generate)
@@ -501,10 +508,16 @@ For an **enemy encounter**, the recipe checks `images/monsters/<slug>.png` and r
 `null` from `TryCreateCreatureVisuals()` when absent, so the explicit
 `MonsterAssetProfile` fallback scene loads without a missing-resource error. Skip to §5.
 For a **character**, leave optional `CharacterAssetProfile` rows unset so RitsuLib resolves
-the placeholder/native fallback. The combat override returns `null` when its checked PNG
-is absent, so RitsuLib resumes that resolved profile fallback without a missing-resource
-load. Placeholder mode emits no Character asset or combat cue set. The static combat body
-remains the cue fallback; Cast, Spine, and unpromoted consumers are not supported.
+the explicitly selected Ironclad placeholder/native fallback. Set
+`PlaceholderCharacterId => "ironclad"`: the full combat counter resolves
+`ironclad_energy_counter.tscn`; an absent large Card Energy icon resolves through
+`EnergyIconHelper.GetPath("ironclad")` (`energy_ironclad.tres`); and an absent rich-text
+Energy icon resolves `res://images/packed/sprite_fonts/ironclad_energy_icon.png`. Never
+derive an Energy fallback such as `energy_red` from the Character theme. The combat override
+returns `null` when its checked PNG is absent, so RitsuLib resumes that resolved profile
+fallback without a missing-resource load. Placeholder mode emits no Character asset or
+combat cue set. The static combat body remains the cue fallback; Cast, Spine, and
+unpromoted consumers are not supported.
 For an **existing vanilla visual override**, placeholder is valid only when its manifest
 resource is optional: emit the checked provider, let the missing resource return `null`,
 and preserve that vanilla surface. A required visual operation cannot use placeholder;
@@ -635,11 +648,14 @@ factory has no per-Character footprint style. Instead, existence-check the PNG i
 `TryCreateCreatureVisuals()` and call RitsuLib's public resource factory with the reviewed
 `VisualNodeStyle` scale/position; return `null` when absent so the resolved profile fallback
 continues normally. Emit minimal raw scenes for background/rest/merchant and the five-layer
-energy counter. The icon wrapper layers `icon_outline.png` behind `icon.png`; set
+energy counter. Its missing scene resolves through `PlaceholderCharacterId => "ironclad"`,
+never through the theme palette. The icon wrapper layers `icon_outline.png` behind `icon.png`; set
 `Ui.IconTexturePath`, `Ui.IconOutlineTexturePath`, and `Ui.IconPath` to the main PNG,
 outline PNG, and wrapper scene respectively. Return `energy_large.png` from
 `BigEnergyIconPath` and `energy_text.png` from `TextEnergyIconPath`, checking each resource
-independently before returning it.
+independently before returning it. Their checked fallbacks are
+`EnergyIconHelper.GetPath("ironclad")` and
+`res://images/packed/sprite_fonts/ironclad_energy_icon.png`, respectively.
 Locked/map consumers remain explicit gaps with inherited profile fallbacks.
 
 The character prompt must describe one original subject in the STS2 painterly style-only
@@ -684,7 +700,9 @@ frame, mount no playback node and use `combat.png`, then the resolved profile fa
 **Character-wide theme contract.** Emit one Character-local theme class and copy every
 explicit value from SPEC into it: `NameColor`, `EnergyLabelOutlineColor`,
 `DeckEntryCardColor`, `EnergyOutlineColor`, the card-frame target RGB/brightness, both
-Energy-icon paths, and the shared icon palette/motif. The Character and card-pool models
+Energy-icon paths, and the shared icon palette/motif. Keep one stable Mod-owned
+`EnergyColorName` prefix for all three pools; it is a lookup key, not a palette name. The
+Character and card-pool models
 must delegate to that class instead of repeating literals. Use RitsuLib's public
 `MaterialUtils.CreateReplaceHueShaderMaterial` once and return the cached material from
 `TypeListCardPoolModel.PoolFrameMaterial`; do not ship a custom shader or generate a card

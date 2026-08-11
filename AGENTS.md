@@ -321,6 +321,24 @@ commit, or push occurred. The durable result is
 `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md`. M8.3 closed by explicit human-lead
 decision on 2026-08-11; closure does not start M8.5/M8.6.
 
+Post-M8.3 maintenance makes generated-Mod localization bilingual by contract. Mods without any
+localization tables remain language-neutral; once a localization table exists,
+`sts2-content-semantic/v2` requires both English (`eng`) and Simplified Chinese (`zhs`) with
+identical tables, keys, and SmartFormat token multisets plus nonempty values. DESIGN and SPEC own
+the exact bilingual text, `INV-10` carries the requirement across stages, and future Tier 2
+language checks must exercise both languages before restoring the original language. Translation
+quality remains human-owned. This source and payload implementation was intentionally not tested,
+built, launched, or otherwise verified by human-lead instruction; do not infer runtime or game
+proof from its presence.
+
+Pre-M8.5 maintenance debugging moves generated projects to local-only framework inputs without
+starting M8.5: the `0.5.4` API baseline remains, while scaffold records the validated local
+RitsuLib Compat DLL version/hash and uses local game/runtime references plus a bundled
+Godot.NET SDK import set; the player manifest floor remains `STS2-RitsuLib >= 0.5.4`. The one
+focused scaffold contract test passed on 2026-08-11. No Mod compile, restore/offline,
+cross-platform, Tier 1, Tier 2, or game evidence was run or claimed; M8.5 and M8.6 remain
+unselected.
+
 Do not edit installed payloads in place, run a fresh acceptance, or publish a payload/release
 without later human-lead instruction. The active Package plan is
 `documents/IMPLEMENTATION_PLAN.md`. Its New-Session Start Protocol and Package Execution
@@ -340,16 +358,22 @@ present in the current source or payloads.
 
 ## Dependency Contract
 
-- Generated Mods target STS2 `0.107.1` and `STS2.RitsuLib.Compat.0.107.1` `0.5.4`.
-- Runtime manifests depend only on `STS2-RitsuLib >= 0.5.4`.
+- Generated Mods target STS2 `0.107.1`; the authoring/API baseline is
+  `STS2.RitsuLib.Compat.0.107.1` `0.5.4`, while each scaffold pins the checked local
+  RitsuLib Compat DLL it compiles against.
+- Runtime manifests depend only on `STS2-RitsuLib >= 0.5.4`. A newer scaffold-pinned local
+  compile version does not raise the player minimum because generated code remains inside the
+  `0.5.4` authoring/API baseline.
 - Runtime discovery reuses a validated game-local install or official Steam Workshop item
   `3747602295`; newer RitsuLib versions are accepted only with the exact `0.107.1` compat
-  variant, marker, and manifest hash. The compile package remains exactly `0.5.4`.
+  variant, marker, and manifest hash. Generated projects have no framework `PackageReference`:
+  the skill supplies the Godot.NET SDK import files and resolves the game/runtime assemblies
+  locally. A runtime upgrade after scaffold requires an explicit profile migration.
 - Generated Mods must not reference, package, or depend on BaseLib.
 - Do not use Alchyr templates or restore historical BaseLib implementation snippets.
 - `baselines/BaseLib-StS2` and `baselines/downfall` are offline historical research only.
 - `baselines/STS2-RitsuLib` is the maintainer research checkout; generated Mods consume
-  the pinned package/runtime profile instead of copying it.
+  the pinned local package/runtime profile instead of copying the maintainer checkout.
 - `baselines/decomp` is the gitignored maintainer-only STS2 `0.107.1` decompiled research
   snapshot, as confirmed by the human lead. It contains the full game decompile, a focused
   `RelicModel` extract, and decompiled Mod analyzers. The original DLL hash/provenance

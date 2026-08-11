@@ -242,8 +242,8 @@ should_refill_merchant_entry, should_stop_combat_from_ending,
 should_take_extra_turn
 ```
 
-Use the exact method signature from the pinned compile package for the selected semantic
-id. Do not infer overloads from another STS2 version.
+Use the exact method signature from the scaffold-pinned local Compat assembly for the selected
+semantic id. Do not infer overloads from another STS2 version.
 
 ## Intrinsic data routes
 
@@ -344,7 +344,7 @@ and at least one finish path.
 
 Every option prefix requires `.title` and `.description`; every page description key is a
 complete entry. Put all of them in every shipped
-`<ModName>/localization/<lang>/events.json`, including required `eng`. Build preflight
+`<ModName>/localization/<lang>/events.json`, including required `eng` and `zhs`. Build preflight
 rejects missing files, keys, or empty values. Event assets remain separate resource
 operations and contain no behavior scripts.
 

@@ -74,6 +74,7 @@ public sealed class <CharacterName>
     public override CharacterGender Gender => CharacterGender.Neutral;
     public override int StartingHp => InitialHp;
     public override int StartingGold => <gold>;
+    public override string? PlaceholderCharacterId => "ironclad";
     public override Color NameColor => <CharacterName>Theme.NameColor;
     public override Color EnergyLabelOutlineColor => <CharacterName>Theme.EnergyLabelOutlineColor;
     public override float AttackAnimDelay => 0.15f;
@@ -103,7 +104,7 @@ Use RitsuLib's public pool models:
 public sealed class <CardPool> : TypeListCardPoolModel
 {
     public override string Title => "<Character> Cards";
-    public override string EnergyColorName => "<color>";
+    public override string EnergyColorName => "<stable custom energy prefix>";
     public override Color DeckEntryCardColor => <CharacterName>Theme.DeckEntryCardColor;
     public override Color EnergyOutlineColor => <CharacterName>Theme.EnergyOutlineColor;
     public override Material? PoolFrameMaterial => <CharacterName>Theme.CardFrameMaterial;
@@ -114,14 +115,18 @@ public sealed class <CardPool> : TypeListCardPoolModel
 
 public sealed class <RelicPool> : TypeListRelicPoolModel
 {
-    public override string EnergyColorName => "<color>";
+    public override string EnergyColorName => "<stable custom energy prefix>";
 }
 
 public sealed class <PotionPool> : TypeListPotionPoolModel
 {
-    public override string EnergyColorName => "<color>";
+    public override string EnergyColorName => "<stable custom energy prefix>";
 }
 ```
+
+Use the same stable, Mod-owned prefix for all three pools. It is a lookup key, not a display
+color: never lower a palette name such as `red` into `EnergyColorName`, because missing
+custom art would make the engine request an ungrounded `energy_red` resource.
 
 Register every concrete member with its pool generic. Starter cards are
 `CardRarity.Basic`; the starter relic is `RelicRarity.Starter`. Before entering a
@@ -139,6 +144,7 @@ card-frame texture, so no generated frame image, custom shader, or `.tres` file 
 
 ```csharp
 using Godot;
+using MegaCrit.Sts2.Core.Helpers;
 using STS2RitsuLib.Utils;
 
 internal static class <CharacterName>Theme
@@ -163,10 +169,18 @@ internal static class <CharacterName>Theme
     public static string TextEnergyIconPath =>
         <CharacterName>.CharacterUi("energy_text.png");
 
+    public const string PlaceholderEnergyColorName = "ironclad";
+    public const string PlaceholderTextEnergyIconPath =
+        "res://images/packed/sprite_fonts/ironclad_energy_icon.png";
+
     public static string? ExistingLargeEnergyIconPath =>
-        ResourceLoader.Exists(LargeEnergyIconPath) ? LargeEnergyIconPath : null;
+        ResourceLoader.Exists(LargeEnergyIconPath)
+            ? LargeEnergyIconPath
+            : EnergyIconHelper.GetPath(PlaceholderEnergyColorName);
     public static string? ExistingTextEnergyIconPath =>
-        ResourceLoader.Exists(TextEnergyIconPath) ? TextEnergyIconPath : null;
+        ResourceLoader.Exists(TextEnergyIconPath)
+            ? TextEnergyIconPath
+            : PlaceholderTextEnergyIconPath;
 }
 ```
 
@@ -174,7 +188,11 @@ The large icon is a transparent 256x256 `character_energy_large` output consumed
 `EnergyIconHelper.GetPath` by a real `NCard.%EnergyIcon`. The text icon is a separate
 transparent 24x24 `character_energy_text` output consumed by `EnergyIconsFormatter` in
 rich-text card descriptions. Both use the SPEC's shared palette/motif brief, but each is
-composed and normalized for its own size. Missing files fall back independently.
+composed and normalized for its own size. Missing files fall back independently to the
+base-game Ironclad resources: `energy_ironclad.tres` for the large Card icon and
+`ironclad_energy_icon.png` for rich text. The full combat counter follows the explicit
+`PlaceholderCharacterId = "ironclad"` profile and resolves
+`ironclad_energy_counter.tscn`. Do not derive any fallback path from the theme color.
 
 Tier 2 asserts the exact pool sets, not only their counts, and separately asserts
 the exact starter deck/relic multisets. A non-starter pool card must never leak
@@ -236,8 +254,9 @@ Put the promoted paths in one `CharacterAssetProfile`:
 | text card energy | card-pool `TextEnergyIconPath` | checked 24x24 PNG |
 
 Locked selection and map marker paths may retain checked assets, but they are not
-pipeline-promoted until their real consumers are visibly proved. RitsuLib's
-resolved profile keeps the placeholder/native fallback for missing fields. Do not
+pipeline-promoted until their real consumers are visibly proved. RitsuLib's resolved
+profile keeps the explicitly selected Ironclad placeholder/native fallback for missing
+fields. Do not
 add the historical static-merchant prefix: the R4 Shop proof rendered a real
 `NMerchantCharacter` directly from the RitsuLib scene profile.
 

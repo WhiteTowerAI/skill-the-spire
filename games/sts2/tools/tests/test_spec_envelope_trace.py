@@ -7,8 +7,9 @@ could not be done while two envelope forms were both legal: six surfaces opened 
 `element:` key and ad-hoc top-level fields while card and relic used the nested form, so there
 was no single shape to validate against.
 
-v2 normalizes all ten, so this check becomes possible. It is deliberately structural: sections
-present, no invented top-level keys, contract line v2 or absent. It cannot tell whether a
+v2 normalizes all ten and adds the fixed bilingual localization declaration. The check remains
+structural: sections present, no invented top-level keys, current contract line, and exact
+required languages. It cannot tell whether a
 declared value is correct -- a SPEC can pass here and still describe the wrong Mod.
 
 The pre-v2 pass-through matters as much as the checks. A project written before this Package
@@ -44,6 +45,7 @@ VALID_V2_CARD = """# SPEC - Ember Step
   - ownership: player
   - placement: any character
 - **localization**:
+  - languages: [eng, zhs]
   - fields: title=Ember Step; description=Deal {Damage} damage.
   - formatting: dynamic value placeholders
 - **effects**:
@@ -113,6 +115,12 @@ class RejectionTests(unittest.TestCase):
             envelope.validate_spec_text(spoiled)
         self.assertIn("missing required shared sections", str(caught.exception))
         self.assertIn("fallback", str(caught.exception))
+
+    def test_missing_bilingual_localization_languages_fails(self) -> None:
+        spoiled = VALID_V2_CARD.replace("  - languages: [eng, zhs]\n", "")
+        with self.assertRaises(envelope.SpecEnvelopeError) as caught:
+            envelope.validate_spec_text(spoiled)
+        self.assertIn("missing required languages [eng, zhs]", str(caught.exception))
 
     def test_v2_spec_without_a_surface_line_fails(self) -> None:
         spoiled = VALID_V2_CARD.replace("  - surface: card\n", "")

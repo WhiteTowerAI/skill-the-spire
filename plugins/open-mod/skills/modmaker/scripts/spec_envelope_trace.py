@@ -12,13 +12,14 @@ flat `element:` opening with ad-hoc keys while card and relic used the nested fo
 was no single shape to validate against; `semantic-contract.md` claimed authority its own
 surfaces did not honor. v2 normalizes all ten, which is what makes this tool possible.
 
-Three checks, deliberately structural:
+Five checks, deliberately structural:
 
 1. every shared section the canonical envelope names is present;
 2. no top-level key outside the canonical set plus that surface's own declared fields; and
-3. the contract line is v2, or absent -- an absent line means a pre-v2 project, which resumes
+3. every localization section declares the required English and Simplified Chinese languages;
+4. the contract line is v2, while v1/absent projects resume under their existing terms; and
    unchanged rather than failing; and
-4. every declared `hook participation` names a capability the pinned catalog knows, with the
+5. every declared `hook participation` names a capability the pinned catalog knows, with the
    shape the catalog records, on a surface that can actually receive it.
 
 Check 4 is the one that closes the M7.6 Wrath class before generation. A hook declared on a
@@ -53,6 +54,7 @@ REQUIRED_SECTIONS = (
     "proof",
 )
 IDENTITY_KEYS = ("contract", "mod id", "author")
+REQUIRED_LOCALIZATION_LANGUAGES = ("eng", "zhs")
 
 # Top-level keys a surface may add beside the shared sections. Read from the shipped surface
 # pages rather than hardcoded, so a page and this validator cannot disagree about what that
@@ -61,6 +63,14 @@ SURFACE_PAGE_DIR = Path("skills") / "modmaker" / "surfaces"
 
 TOP_LEVEL_RE = re.compile(r"^-\s+\*\*(?P<key>[^*]+)\*\*\s*:", re.MULTILINE)
 SURFACE_RE = re.compile(r"^\s*(?:-\s+)?surface:\s*(?P<surface>[a-z][a-z ]*)", re.MULTILINE)
+LOCALIZATION_BLOCK_RE = re.compile(
+    r"^-\s+\*\*localization\*\*\s*:\s*$\n(?P<body>.*?)"
+    r"(?=^-\s+\*\*[^*]+\*\*\s*:|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+LOCALIZATION_LANGUAGES_RE = re.compile(
+    r"^\s*-\s+languages:\s*\[(?P<languages>[^\]]*)\]\s*$", re.MULTILINE
+)
 
 # A hook participation entry opens with its capability id and carries `shape:` beneath it. The
 # id is the pairing key `design_trace.py` matches against the route page; the shape is declared
@@ -328,6 +338,28 @@ def validate_hook_participation(text: str) -> int:
     return len(declarations)
 
 
+def validate_localization_languages(text: str) -> int:
+    """Require every v2 surface localization block to name the fixed language pair."""
+    blocks = list(LOCALIZATION_BLOCK_RE.finditer(text))
+    if not blocks:
+        raise SpecEnvelopeError("SPEC has no readable localization section")
+    for index, block in enumerate(blocks, start=1):
+        match = LOCALIZATION_LANGUAGES_RE.search(block.group("body"))
+        if match is None:
+            raise SpecEnvelopeError(
+                f"localization section {index} is missing required languages [eng, zhs]"
+            )
+        languages = tuple(
+            language.strip() for language in match.group("languages").split(",")
+        )
+        if languages != REQUIRED_LOCALIZATION_LANGUAGES:
+            raise SpecEnvelopeError(
+                f"localization section {index} languages must be [eng, zhs]; "
+                f"found [{', '.join(languages)}]"
+            )
+    return len(blocks)
+
+
 def validate_spec_text(text: str) -> tuple[str, int]:
     """Return the contract version validated and how many top-level keys were checked."""
     if CONTRACT_V2 not in text:
@@ -357,6 +389,7 @@ def validate_spec_text(text: str) -> tuple[str, int]:
         raise SpecEnvelopeError(
             "SPEC is missing required shared sections: " + ", ".join(missing)
         )
+    validate_localization_languages(text)
 
     invented = sorted(present - allowed)
     if invented:

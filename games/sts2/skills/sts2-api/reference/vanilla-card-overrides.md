@@ -246,7 +246,8 @@ upgrade level rather than subtracting from an unknown state.
 
 Capability localization lives in the normal Mod resource tree. Use stable capability-entry
 keys such as `<MOD>_MODEL_CAPABILITY_<TYPE>.extraDescription` in the selected table. Supply
-every shipped language required by the accepted SPEC and preserve SmartFormat variables.
+required `eng` and `zhs` plus every additional language named by the accepted SPEC, and
+preserve SmartFormat variables.
 Changing a gameplay effect and its player-facing text is one operation plan, even though
 the manifest records separate ordered surfaces.
 

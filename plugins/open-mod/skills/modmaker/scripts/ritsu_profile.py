@@ -20,6 +20,7 @@ class RitsuProfileError(ValueError):
 class RitsuProfile:
     framework_version: str = "0.5.4"
     host_version: str = "0.107.1"
+    godot_sdk_version: str = "4.5.1"
     package_id: str = "STS2.RitsuLib.Compat.0.107.1"
     runtime_mod_id: str = "STS2-RitsuLib"
     runtime_dll: str = "STS2-RitsuLib.dll"
@@ -47,6 +48,15 @@ class RuntimeAssetSelection:
     path: Path
     source: str
     alternates: tuple[Path, ...] = ()
+
+
+@dataclass(frozen=True)
+class RuntimeCompileProfile:
+    """The checked local assembly a generated Mod compiles against."""
+
+    version: str
+    assembly_path: Path
+    assembly_sha256: str
 
 
 def _version_key(value: object) -> tuple[int, ...]:
@@ -143,6 +153,13 @@ def _all_package_references(root: ET.Element) -> Iterable[tuple[str, str]]:
         yield package_id.strip(), version.strip()
 
 
+def _all_assembly_references(root: ET.Element) -> Iterable[str]:
+    for node in root.iter():
+        if node.tag.rsplit("}", 1)[-1] != "Reference":
+            continue
+        yield (node.attrib.get("Include") or "").strip()
+
+
 def _property_values(root: ET.Element, name: str) -> list[str]:
     values: list[str] = []
     for node in root.iter():
@@ -170,15 +187,41 @@ def validate_project_contract(project_dir: Path, mod_name: str | None = None) ->
     except ET.ParseError as exc:
         raise RitsuProfileError(f"invalid project XML in {csproj}: {exc}") from exc
 
-    refs = list(_all_package_references(root))
-    selected = [ref for ref in refs if ref[0].lower() == PROFILE.package_id.lower()]
-    ritsu_refs = [ref for ref in refs if "ritsulib" in ref[0].lower()]
-    if (len(selected) != 1 or selected[0][1] != PROFILE.framework_version
-            or ritsu_refs != selected):
-        detail = ", ".join(f"{name} {version or '<floating>'}" for name, version in refs) or "none"
+    package_refs = list(_all_package_references(root))
+    if package_refs:
+        detail = ", ".join(f"{name} {version or '<floating>'}" for name, version in package_refs)
         raise RitsuProfileError(
-            f"required compile asset is {PROFILE.package_id} {PROFILE.framework_version}; found {detail}. "
-            "Do not use the default beta-facing STS2.RitsuLib package."
+            "generated consumer projects compile from checked local assemblies and must not "
+            f"declare PackageReference entries; found {detail}"
+        )
+    sdk_dir = (
+        project_dir
+        / "openmod"
+        / "sdk"
+        / f"Godot.NET.Sdk.{PROFILE.godot_sdk_version}"
+        / "Sdk"
+    )
+    required_sdk_files = (
+        "Android.props",
+        "iOSNativeAOT.props",
+        "iOSNativeAOT.targets",
+        "Sdk.props",
+        "Sdk.targets",
+        "SdkPackageVersions.props",
+    )
+    missing_sdk_files = [name for name in required_sdk_files if not (sdk_dir / name).is_file()]
+    if missing_sdk_files:
+        raise RitsuProfileError(
+            f"generated project is missing bundled Godot.NET.Sdk {PROFILE.godot_sdk_version} "
+            "files: " + ", ".join(missing_sdk_files)
+        )
+    required_references = {"sts2", "0Harmony", "GodotSharp", "System.IO.Hashing", "STS2-RitsuLib"}
+    references = set(_all_assembly_references(root))
+    missing_references = sorted(required_references - references)
+    if missing_references:
+        raise RitsuProfileError(
+            "generated consumer project is missing local assembly references: "
+            + ", ".join(missing_references)
         )
     compat = _property_values(root, "Sts2ApiCompat")
     if PROFILE.host_version not in compat:
@@ -193,6 +236,17 @@ def validate_project_contract(project_dir: Path, mod_name: str | None = None) ->
     deploy_dirs = _property_values(root, "RitsuLibDeployDir")
     if any(value for value in deploy_dirs):
         raise RitsuProfileError("RitsuLibDeployDir must be empty for a generated consumer Mod")
+    compile_versions = _property_values(root, "RitsuLibCompileVersion")
+    if len(compile_versions) != 1 or not is_supported_runtime_version(compile_versions[0]):
+        raise RitsuProfileError(
+            f"RitsuLibCompileVersion must be one version >= {PROFILE.framework_version}; "
+            f"found {compile_versions or ['<unset>']}"
+        )
+    compile_hashes = _property_values(root, "RitsuLibCompileAssemblySha256")
+    if len(compile_hashes) != 1 or not re.fullmatch(r"[0-9A-Fa-f]{64}", compile_hashes[0]):
+        raise RitsuProfileError(
+            "RitsuLibCompileAssemblySha256 must be one SHA-256 digest for the local Compat DLL"
+        )
 
     manifest = find_manifest(project_dir, mod_name)
     try:
@@ -220,14 +274,51 @@ def validate_project_contract(project_dir: Path, mod_name: str | None = None) ->
         )
     if dependency.get("min_version") != PROFILE.framework_version:
         raise RitsuProfileError(
-            f"manifest dependency min_version must be {PROFILE.framework_version}; "
+            f"manifest dependency min_version must remain the API floor {PROFILE.framework_version}; "
             f"found {dependency.get('min_version')!r}"
         )
-    return f"{PROFILE.profile_id} ({PROFILE.package_id} {PROFILE.framework_version})"
+    return (
+        f"{PROFILE.profile_id} (local compile runtime {compile_versions[0]}, "
+        f"sha256={compile_hashes[0].lower()})"
+    )
+
+
+def validate_project_runtime_profile(
+    project_dir: Path,
+    mod_name: str,
+    runtime: RuntimeCompileProfile,
+) -> None:
+    """Require a build to use the version and Compat DLL identity pinned by scaffold."""
+    csproj = project_dir / f"{mod_name}.csproj"
+    try:
+        root = ET.fromstring(csproj.read_text(encoding="utf-8", errors="replace"))
+    except (OSError, ET.ParseError) as exc:
+        raise RitsuProfileError(f"cannot read generated project contract {csproj}: {exc}") from exc
+    expected_versions = _property_values(root, "RitsuLibCompileVersion")
+    expected_hashes = _property_values(root, "RitsuLibCompileAssemblySha256")
+    expected_version = expected_versions[0] if len(expected_versions) == 1 else None
+    expected_hash = expected_hashes[0].lower() if len(expected_hashes) == 1 else None
+    if expected_version != runtime.version or expected_hash != runtime.assembly_sha256.lower():
+        raise RitsuProfileError(
+            "local RitsuLib runtime differs from this project's pinned compile profile; "
+            "run the explicit runtime-profile migration before rebuilding"
+        )
+    manifest = find_manifest(project_dir, mod_name)
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RitsuProfileError(f"cannot read Mod manifest {manifest}: {exc}") from exc
+    dependencies = data.get("dependencies")
+    if not isinstance(dependencies, list) or not dependencies:
+        raise RitsuProfileError(f"manifest dependencies are missing from {manifest}")
+    if dependencies[0].get("min_version") != PROFILE.framework_version:
+        raise RitsuProfileError(
+            f"manifest runtime minimum must remain the API floor {PROFILE.framework_version}"
+        )
 
 
 def validate_restore_assets(project_dir: Path) -> None:
-    """Reject a resolved assets file that silently selected another Ritsu package."""
+    """Reject a restore that reintroduced framework packages into a local-only project."""
     assets = project_dir / ".godot" / "mono" / "temp" / "obj" / "project.assets.json"
     if not assets.is_file():
         return
@@ -236,16 +327,20 @@ def validate_restore_assets(project_dir: Path) -> None:
     except (OSError, json.JSONDecodeError) as exc:
         raise RitsuProfileError(f"cannot read NuGet restore assets {assets}: {exc}") from exc
     libraries = data.get("libraries", {})
-    expected = f"{PROFILE.package_id.lower()}/{PROFILE.framework_version}"
-    matches = [str(key).lower() for key in libraries if str(key).lower() == expected]
-    framework_libraries = [
-        str(key) for key in libraries
-        if "ritsulib" in str(key).lower() or _BASELIB_RE.search(str(key))
+    local_only_libraries = [
+        str(key)
+        for key in libraries
+        if (
+            "ritsulib" in str(key).lower()
+            or "godotsharp" in str(key).lower()
+            or "godot.sourcegenerators" in str(key).lower()
+            or _BASELIB_RE.search(str(key))
+        )
     ]
-    if not matches or [item.lower() for item in framework_libraries] != [expected]:
-        found = ", ".join(sorted(str(key) for key in libraries if "ritsulib" in str(key).lower())) or "none"
+    if local_only_libraries:
+        found = ", ".join(sorted(local_only_libraries))
         raise RitsuProfileError(
-            f"NuGet restore did not resolve {PROFILE.package_id} {PROFILE.framework_version}; found {found}"
+            "NuGet restore reintroduced local-only framework packages: " + found
         )
 
 
@@ -304,6 +399,70 @@ def _check_runtime_manifest(data: dict) -> str:
     return version
 
 
+def _runtime_root(path: Path) -> Path:
+    root = path
+    if root.is_dir() and root.name.lower() != PROFILE.runtime_mod_id.lower():
+        candidate = root / PROFILE.runtime_mod_id
+        if candidate.is_dir():
+            root = candidate
+    if not root.is_dir():
+        raise RitsuProfileError(f"RitsuLib runtime directory not found: {path}")
+    return root
+
+
+def resolve_runtime_compile_profile(path: Path) -> RuntimeCompileProfile:
+    """Return the exact local Compat assembly used to compile a generated Mod."""
+    if path.suffix.lower() == ".zip":
+        raise RitsuProfileError(
+            "a RitsuLib zip can be inspected but not used as a local compile assembly; "
+            "install its checked folder first"
+        )
+    root = _runtime_root(path)
+    root_dll = root / PROFILE.runtime_dll
+    runtime_manifest = root / "mod_manifest.json"
+    if not root_dll.is_file() or not runtime_manifest.is_file():
+        raise RitsuProfileError(
+            f"runtime directory {root} is missing {PROFILE.runtime_dll} or mod_manifest.json"
+        )
+    try:
+        runtime_version = _check_runtime_manifest(
+            json.loads(runtime_manifest.read_text(encoding="utf-8"))
+        )
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RitsuProfileError(f"invalid RitsuLib runtime manifest {runtime_manifest}: {exc}") from exc
+
+    variant_dir = root / "lib" / PROFILE.host_version
+    direct_marker = root / "compat-target.txt"
+    if variant_dir.is_dir():
+        dll = variant_dir / PROFILE.runtime_dll
+        marker = variant_dir / "compat-target.txt"
+        if not dll.is_file() or marker.read_text(encoding="utf-8").strip() != PROFILE.host_version:
+            raise RitsuProfileError(
+                f"runtime variant {variant_dir} is missing {PROFILE.runtime_dll} or the matching compat marker"
+            )
+        manifest_path = root / "ritsulib-variants.manifest"
+        if not manifest_path.is_file():
+            raise RitsuProfileError(f"runtime variant is missing {manifest_path.name}")
+        try:
+            variants = _variant_entries(json.loads(manifest_path.read_text(encoding="utf-8")))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RitsuProfileError(f"invalid runtime variant manifest {manifest_path}: {exc}") from exc
+        entry = next((item for item in variants if str(item.get("compatTarget")) == PROFILE.host_version), None)
+        if entry is None:
+            raise RitsuProfileError(f"runtime variant manifest does not declare {PROFILE.host_version}")
+        assembly_hash = _sha256_file(dll)
+        _check_variant_manifest_entry(entry, assembly_hash)
+        return RuntimeCompileProfile(runtime_version, dll, assembly_hash)
+    if direct_marker.is_file():
+        if direct_marker.read_text(encoding="utf-8").strip() != PROFILE.host_version:
+            raise RitsuProfileError(f"runtime marker {direct_marker} is not {PROFILE.host_version}")
+        return RuntimeCompileProfile(runtime_version, root_dll, _sha256_file(root_dll))
+    raise RitsuProfileError(
+        f"runtime directory {root} has no matching {PROFILE.host_version} RitsuLib variant; "
+        "refusing to fall back to the beta-facing DLL"
+    )
+
+
 def validate_runtime_asset(path: Path) -> str:
     """Validate an installed RitsuLib folder or release zip without loading a DLL."""
     if path.suffix.lower() == ".zip":
@@ -350,54 +509,8 @@ def validate_runtime_asset(path: Path) -> str:
             f"{path.name}: RitsuLib {runtime_version}, compat {PROFILE.host_version}"
         )
 
-    root = path
-    if root.is_dir() and root.name.lower() != PROFILE.runtime_mod_id.lower():
-        candidate = root / PROFILE.runtime_mod_id
-        if candidate.is_dir():
-            root = candidate
-    if not root.is_dir():
-        raise RitsuProfileError(f"RitsuLib runtime directory not found: {path}")
-    root_dll = root / PROFILE.runtime_dll
-    runtime_manifest = root / "mod_manifest.json"
-    if not root_dll.is_file() or not runtime_manifest.is_file():
-        raise RitsuProfileError(
-            f"runtime directory {root} is missing {PROFILE.runtime_dll} or mod_manifest.json"
-        )
-    try:
-        runtime_version = _check_runtime_manifest(
-            json.loads(runtime_manifest.read_text(encoding="utf-8"))
-        )
-    except (OSError, json.JSONDecodeError) as exc:
-        raise RitsuProfileError(f"invalid RitsuLib runtime manifest {runtime_manifest}: {exc}") from exc
-    variant_dir = root / "lib" / PROFILE.host_version
-    direct_marker = root / "compat-target.txt"
-    if variant_dir.is_dir():
-        dll = variant_dir / PROFILE.runtime_dll
-        marker = variant_dir / "compat-target.txt"
-        if not dll.is_file() or marker.read_text(encoding="utf-8").strip() != PROFILE.host_version:
-            raise RitsuProfileError(
-                f"runtime variant {variant_dir} is missing {PROFILE.runtime_dll} or the matching compat marker"
-            )
-        manifest_path = root / "ritsulib-variants.manifest"
-        if not manifest_path.is_file():
-            raise RitsuProfileError(f"runtime variant is missing {manifest_path.name}")
-        try:
-            variants = _variant_entries(json.loads(manifest_path.read_text(encoding="utf-8")))
-        except (OSError, json.JSONDecodeError) as exc:
-            raise RitsuProfileError(f"invalid runtime variant manifest {manifest_path}: {exc}") from exc
-        entry = next((item for item in variants if str(item.get("compatTarget")) == PROFILE.host_version), None)
-        if entry is None:
-            raise RitsuProfileError(f"runtime variant manifest does not declare {PROFILE.host_version}")
-        _check_variant_manifest_entry(entry, _sha256_file(dll))
-        return f"{root}: RitsuLib {runtime_version}, compat {PROFILE.host_version}"
-    if direct_marker.is_file():
-        if direct_marker.read_text(encoding="utf-8").strip() != PROFILE.host_version:
-            raise RitsuProfileError(f"runtime marker {direct_marker} is not {PROFILE.host_version}")
-        return f"{root}: RitsuLib {runtime_version}, compat {PROFILE.host_version}"
-    raise RitsuProfileError(
-        f"runtime directory {root} has no matching {PROFILE.host_version} RitsuLib variant; "
-        "refusing to fall back to the beta-facing DLL"
-    )
+    profile = resolve_runtime_compile_profile(path)
+    return f"{_runtime_root(path)}: RitsuLib {profile.version}, compat {PROFILE.host_version}"
 
 
 def validate_host_version(sts2_dir: Path) -> str:

@@ -37,6 +37,11 @@ from loose top-level keys into `content:` on the character surface. The capabili
 character resource, and ordered semantic buffer blocks moved from `spec.md` into
 `surfaces/character.md`, closing M8.0 mismatch 7.
 
+Every v2 localization section declares `languages: [eng, zhs]` and records the exact English
+and Simplified Chinese text for each player-facing field. The two language trees use identical
+tables, keys, and SmartFormat token multisets. This is a fixed product contract under `INV-10`,
+not an optional user preference.
+
 ## Canonical envelope
 
 Include these sections once per SPEC. Surface-specific blocks may add fields, but must
@@ -60,7 +65,8 @@ generation allowlist: deferred/out-of-scope design items never appear in this en
   - ownership: player | enemy | room | run | combat
   - placement: <plain-language pool/act/room rule>
 - **localization**:
-  - fields: <title/description/flavor/prompt/name/etc.>
+  - languages: [eng, zhs]
+  - fields: <title/description/flavor/prompt/name/etc.; exact eng and zhs text for each>
   - table intent: <cards/relics/... or in-code event/character text>
   - key rule: adapter derives stable content keys from logical id; SPEC records the
     resulting keys only after the adapter resolves them
@@ -257,11 +263,13 @@ returns four implementation records:
 3. **diagnostics** - framework/compat/host identity and adapter status;
 4. **proof route** - the closest hosted suite and the structured invariant it must emit.
 
-The first compile profile is `ritsulib-0.5.4-sts2-0.107.1`. The actual runtime may be a
-newer RitsuLib release when it retains the checked `0.107.1` compat variant. There is no
-fallback to the historical framework and no beta-facing variant selection. If the profile
-cannot be resolved, authoring stops with an actionable diagnostic and the
-placeholder/fallback remains the documented outcome.
+The authoring/API baseline is `ritsulib-0.5.4-sts2-0.107.1`. A generated project compiles
+against the exact local RitsuLib runtime selected at scaffold time, including its checked
+`0.107.1` compat DLL and SHA-256. A newer release is usable only when that exact compat
+variant, marker, and manifest hash validate; a later runtime upgrade requires an explicit
+profile migration. There is no fallback to the historical framework or beta-facing variant.
+If the local profile cannot be resolved, authoring stops with an actionable diagnostic and
+the placeholder/fallback remains the documented outcome.
 
 ## Diagnostic envelope
 

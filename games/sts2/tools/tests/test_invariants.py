@@ -30,7 +30,7 @@ import skill_prose
 
 
 INVARIANTS_PAGE = "invariants.md"
-EXPECTED_IDS = tuple(f"INV-{n}" for n in range(1, 10))
+EXPECTED_IDS = tuple(f"INV-{n}" for n in range(1, 11))
 
 # Canonical wording that must live in exactly one file. Each phrase is the
 # general statement of a rule that used to be restated per stage; a stage page
@@ -48,6 +48,7 @@ SINGLE_DEFINITION_PHRASES = (
     # broken shared route is not a repair; `repair.md` names the rule and adds only its own
     # stage detail.
     "An approximation inside the consumer project is not a repair",
+    "Every player-facing localization table ships in English and Simplified Chinese",
 )
 
 # Exact restatements removed by change 5, keyed by the file that held them.

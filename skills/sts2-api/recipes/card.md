@@ -332,8 +332,9 @@ Use `{X:showIfUpgraded()}` for text that should appear only on the upgraded card
 
 ## Localization (ships in the .pck)
 
-Table is **`cards`**. Add to `<ModName>/localization/eng/cards.json`. Keys are flat and
-use the exact RitsuLib public entry (`MOD_CARD_TYPENAME`):
+Table is **`cards`**. Add the same keys to
+`<ModName>/localization/<lang>/cards.json` for both `eng` and `zhs`. Keys are flat and use
+the exact RitsuLib public entry (`MOD_CARD_TYPENAME`):
 
 ```json
 {
@@ -349,7 +350,7 @@ JSON.** No `.flavor` for cards (relics only).
 
 Calculated icon variables use the pinned `{EnergyGain:energyIcons()}` and
 `{StarGain:starIcons()}` tokens. A declared variable tooltip adds flat `.title` and
-`.description` entries to `localization/eng/static_hover_tips.json`; see
+`.description` entries to both required languages' `static_hover_tips.json`; see
 `reference/card-computed-values.md` for the deterministic entry stem and null-icon
 fallback.
 
