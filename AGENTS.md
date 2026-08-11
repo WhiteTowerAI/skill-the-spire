@@ -195,10 +195,9 @@ fast path rather than receiving a full GDD process.
 M8 End-to-End Product Integrity is the active milestone. It addresses the whole
 skill: literal deliverable contracts, exact semantic capability preflight, semantic
 backtracking, cross-platform installed-workflow reproducibility, and one final clean
-whole-skill acceptance. M8.0, M8.1, and M8.2 are closed; **M8.3 semantic continuity and
-backtracking is next selectable** and needs its execution contract written
-against the settled layout and confirmed with the human lead before implementation.
-M8.3-M8.6 hold plain-language intent only until selected. The human lead removed M8.4 on
+whole-skill acceptance. M8.0-M8.3 are closed; **M8.3 Semantic Continuity and Backtracking closed
+by explicit human-lead decision on 2026-08-11.** M8.5-M8.6 hold plain-language intent only until
+selected. The human lead removed M8.4 on
 2026-08-05; M8.5 and M8.6 retain their numbers. The Watcher evaluation is baseline evidence,
 not the M8 final acceptance Mod.
 
@@ -309,9 +308,21 @@ were deferred to M8.6 by the human lead and did not run**, so every hook route i
 implemented-and-unproved rather than observed. The durable result is
 `documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`.
 
-M8.3 is selectable, but write and confirm its execution contract with the human lead before
-implementing it. Do not edit installed payloads in place, run a fresh acceptance, or publish a
-payload/release without later human-lead instruction. The active Package plan is
+M8.3 adds one optional `open-mod-repair-routing/v1` active PLAN block and
+`repair_trace.py`. Before any fix, classify the difference as implementation-equivalent
+(`MEMORY.md`), contract-fulfillment (`SPEC.md`), accepted-semantic-change (`DESIGN.md` first plus
+explicit acceptance), or missing-capability (shared recipe/reference block). `INV-5` now fires
+through Verify, Repair, and Finalize. Affected settlements clear, the earliest invalid stage
+reopens, and a complete operation follows behavior/lifecycle/text/tips/localization/preview/
+presentation/proof consumers together. Legacy PLAN files resume unchanged. Focused and full
+static regressions pass (`384` total); all six skill roots validate and both payloads are
+repeatable/effectively identical. No generated Mod, game, Tier 1, Tier 2, headed run, install,
+commit, or push occurred. The durable result is
+`documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md`. M8.3 closed by explicit human-lead
+decision on 2026-08-11; closure does not start M8.5/M8.6.
+
+Do not edit installed payloads in place, run a fresh acceptance, or publish a payload/release
+without later human-lead instruction. The active Package plan is
 `documents/IMPLEMENTATION_PLAN.md`. Its New-Session Start Protocol and Package Execution
 Contracts are authoritative: when the lead says "start M8" or "continue M8", select or
 resume the first eligible Package, read its listed source, and execute that contract rather

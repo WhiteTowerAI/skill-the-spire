@@ -211,9 +211,11 @@ constrain every stage rather than one.
 ```text
 User: one sentence ("a relic that ...")
     |
- 0. STATE CHECK — read invariants.md, then DESIGN.md when present, then SPEC.md / PLAN.md / MEMORY.md.
-    If the user requested no change, skip to the first unfinished stage. If they requested
-    a change, preserve the existing artifacts and continue through the revision route.
+  0. STATE CHECK — read invariants.md, then DESIGN.md when present, then SPEC.md / PLAN.md / MEMORY.md.
+    If PLAN has an active `open-mod-repair-routing/v1` decision, validate it with
+    repair_trace.py and resume that route before reading unchecked boxes. Otherwise, if the
+    user requested no change, skip to the first unfinished stage. If they requested a change,
+    preserve the existing artifacts and continue through the revision route.
     |
  1. ROUTE (route.md) — infer fast / co-design / revision and state it briefly. Do
     not ask the user to choose a workflow mode. Resume without an interview when no design
@@ -269,10 +271,11 @@ User: one sentence ("a relic that ...")
     summarize from the ledger: what was proved, what was not, what was never included,
     where the artifacts are, and which tier each claim rests on.
     |
-10. REPAIR (repair.md) — shared sub-loop invoked by 7/8: read the real error,
-    consult sts2-api errors.md, apply ONE fix, re-run only the failed stage.
-    Bounded (max 3 attempts; stop if the same signature survives a fix). On
-    convergence, resume the pipeline; on exhaustion, hand back a clear failure.
+ 10. REPAIR (repair.md) — classify every discovered difference before changing anything.
+    Only an implementation-equivalent or contract-fulfillment fix enters the bounded loop.
+    A player-visible change returns to DESIGN for explicit acceptance; a missing/broken shared
+    capability blocks upstream. On convergence, resume the earliest invalidated stage; on
+    exhaustion, hand back a clear failure.
 ```
 
 ## Files are state (resume after compaction)
@@ -285,14 +288,19 @@ threads and context compaction:
   anchors/surface checks, revision impact queue, and accepted boundaries.
 - **SPEC.md** — exact current generated operations, semantic behavior, supported routes,
   state lifetime/reset/persistence, presentation/fallback, and design trace.
-- **PLAN.md** — stage checklist + status, and the deliverable settlement ledger; update
-  after each stage.
-- **MEMORY.md** — discoveries, chosen ids, derived loc keys, and what worked/failed.
+- **PLAN.md** — stage checklist + status, one active repair-routing decision, and the
+  deliverable settlement ledger; update after each stage.
+- **MEMORY.md** — discoveries, chosen ids, derived loc keys, attempts, and completed repair
+  history.
 
 **State-check first**: if these exist, continue from the artifacts, not from
 conversational memory. Read `DESIGN.md` first as authoritative creative/scope state. For a
 pre-M7.4 unfinished project with SPEC but no DESIGN, use `design.md`'s compact backfill and
 resume without a general interview.
+
+A PLAN without `open-mod-repair-routing/v1` is legacy state and resumes unchanged. When the
+block exists and `active_repair` is not null, run `repair_trace.py` and follow its recorded
+route before the first unchecked box. Never backfill unchanged old projects.
 
 ## Verify on observed reality, never "it compiled"
 

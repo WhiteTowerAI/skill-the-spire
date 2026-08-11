@@ -3,6 +3,10 @@
 Goal: verify on **observed reality**, not "it compiled" (`INV-2`). Two tiers, and which one
 you reached is itself a reported fact (`INV-1`).
 
+Any difference found here is classified through `repair.md` before a fix. Write and validate
+the active PLAN route first; do not infer that every behavior difference is a consumer-local
+bug when the cited shared route may be violating its own contract (`INV-9`).
+
 ## Tier-1 — does it load? (automated, guaranteed)
 
 Launch STS2 without Steam, wait, then grep the log for the framework profile, exact load
@@ -222,11 +226,12 @@ unverified; do not infer it from a resource path, `.pck` build, or primary view.
   observed the exact SPEC state, driven end-to-end with zero interaction.
 - `selftest done` but the matching state proof is **absent** → the harness reached its
   scenario, but no accepted post-state assertion passed → a **real tier-2 behavior bug** →
-  `repair.md` (ordinary trigger markers may still reveal where behavior diverged).
+  classify in `repair.md` (ordinary trigger markers may still reveal where behavior diverged).
 - `selftest FAILED: <stage>` or timeout → the **harness couldn't reach/drive its scenario**
   (navigation/timing — a setup problem, not your effect). Do **not** report a tier-2
-  failure of the mod. Fall back to the **manual guide below**, and if that's not feasible,
-  report **tier-1 only** honestly.
+  failure of the mod or rewrite the element. Classify any harness navigation/timing repair as
+  implementation-equivalent, or fall back to the **manual guide below**; if that is not
+  feasible, report **tier-1 only** honestly.
 
 This tells you *which* failure you have. For the cause and fix of each, match the signature in
 `${STS2_API_SKILL_DIR}/errors.md` § Verification, and § Behavior for a state proof that
@@ -266,6 +271,15 @@ state change; otherwise report tier-1 only.
 
 Update `PLAN.md` (check the verify boxes for the tiers actually reached) and record the
 checks that actually ran in `MEMORY.md`.
+
+Before settling or reporting, require repair state to be clear:
+
+```bash
+python ${GAME_TOOLS_DIR}/repair_trace.py --design DESIGN.md --spec SPEC.md --plan PLAN.md --finalize
+```
+
+An active repair blocks Finalize. Classify a difference discovered while settling just like
+one found during Verify; clear affected `E-###` settlements and reopen only its recorded stages.
 
 ### Settle the deliverable claim first
 

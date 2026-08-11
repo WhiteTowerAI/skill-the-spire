@@ -12,9 +12,9 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 > closed. M7 Design Intelligence is closed: M7.1-M7.5 are implemented, and M7.6 closed
 > through a human-led external whole-skill evaluation with explicit limitations. M8
 > End-to-End Product Integrity is active: M8.0 skill structure restructuring, M8.1 literal
-> deliverable contract, and M8.2 exact semantic capability conformance and preflight are
-> closed. The two real-host proofs M8.2 owed are deferred to M8.6. M8.3 is the next
-> selectable Package. A GitHub release is not currently authorized.
+> deliverable contract, M8.2 exact semantic capability conformance and preflight, and M8.3
+> semantic continuity/backtracking are closed. The two real-host proofs M8.2 owed are deferred
+> to M8.6. A GitHub release is not currently authorized.
 
 ## Requirements
 
@@ -162,14 +162,15 @@ element compiles, ships, and never fires. The two real-host proofs that capabili
 deferred to the final acceptance gate, so every hook route is implemented and not yet observed
 in a running game.
 
-The remaining M8 flow — one-operation surface parity, semantic backtracking, and platform
-reproduction — is not implemented yet.
+M8.3 now routes implementation-equivalent, contract-fulfillment, accepted-semantic-change, and
+missing-capability repairs to their owning artifacts and validates resumable PLAN state. This is
+workflow/static evidence, not a generated-Mod or runtime proof. Cross-platform installed-workflow
+reproduction and final clean acceptance remain unimplemented.
 
 The active plan contains a new-session start protocol and, for each selected Package, an
 execution contract: exact prerequisites, source scope, work order, and result record.
-M8.3-M8.6 carry plain-language intent only and receive a contract when selected.
-An instruction to continue M8 selects M8.3 semantic continuity and backtracking, whose
-contract is written and confirmed before implementation. M8.4 was removed;
+M8.3's confirmed contract closed by explicit human-lead decision on 2026-08-11. M8.5-M8.6 retain
+plain-language intent only until selected and are not started. M8.4 was removed;
 M8.5 and M8.6 keep their numbers. M8.5 may be selected independently only by explicit
 human-lead instruction.
 

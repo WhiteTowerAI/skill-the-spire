@@ -119,6 +119,12 @@ For revision, update only operations named by confirmed UPDATE/REVIEW queue outc
 PRESERVE entries never become SPEC operations. Reopen Author/Build/Verify only when the
 queue says their generated output or observed invariant changed.
 
+For repair, distinguish ownership before editing. If DESIGN already requires the exact result
+and SPEC omitted a required lowering field, classify `contract-fulfillment`, preserve the
+accepted `D/E` meaning, correct the affected operation, and rerun all four pre-scaffold
+validators. If the proposed result changes player-visible meaning, fallback, presentation, or
+deliverable shape, stop and return to DESIGN for accepted revision first.
+
 > **Work dir = the dedicated outer folder created by `design.md`, whose name is NOT
 > `<ModName>`** (e.g. `<modname>-mod`). Write SPEC, PLAN, and MEMORY beside DESIGN;
 > `scaffold.md`
@@ -630,6 +636,17 @@ Rules for this round:
 - [ ] verify (tier-2 effect, automated via the self-test harness)
 - [ ] settle the deliverable claim (one entry per required experience)
 
+## Active repair routing
+
+<!-- open-mod-repair-routing:v1:start -->
+```json
+{
+  "contract": "open-mod-repair-routing/v1",
+  "active_repair": null
+}
+```
+<!-- open-mod-repair-routing:v1:end -->
+
 ## Deliverable settlement
 
 <!-- open-mod-settlement:v1:start -->
@@ -647,6 +664,14 @@ required experiences were actually earned, so an entry written before its eviden
 the exact failure the ledger is here to prevent (`INV-1`). `verify.md` § Finalize fills it.
 
 Update the checkboxes as you finish each stage 鈥?this is what state check reads.
+
+Keep `active_repair` null until a visible difference or failure is classified. While it is
+active, record only the current routing decision; move completed repair history to `MEMORY.md`
+and clear the field after convergence. Validate active state with:
+
+```bash
+python ../modmaker/scripts/repair_trace.py --design DESIGN.md --spec SPEC.md --plan PLAN.md
+```
 
 ## Seed `MEMORY.md`
 

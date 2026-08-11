@@ -69,7 +69,7 @@ asked not to be asked again.
 Half-doing the request and reporting it as done is the specific failure here. An accepted
 difference is a decision; an unremarked one is a defect.
 
-Fires at: route, interview, design, spec, author.
+Fires at: route, interview, design, spec, author, verify, repair, finalize.
 
 ## INV-6 — Preserve what the user already settled
 

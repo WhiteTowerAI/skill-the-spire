@@ -64,8 +64,9 @@ numbers.
 - `M81_DELIVERABLE_CONTRACT_RESULTS.md` — literal deliverable contract, closed 2026-08-10.
 - `M82_CAPABILITY_CONFORMANCE_RESULTS.md` — exact semantic capability conformance and preflight,
   closed 2026-08-10.
+- `M83_SEMANTIC_CONTINUITY_RESULTS.md` — semantic continuity and backtracking, closed 2026-08-11.
 
-M8 is the active milestone; M8.0, M8.1, and M8.2 are closed. Unlike most
+M8 is the active milestone; M8.0-M8.3 are closed. Unlike most
 records here, the M8.0 result points at a file that is still active instruction rather than
 archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md` must be read before
 treating any surface page as validated, since nine of its ten surfaces have never been piloted.

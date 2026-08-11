@@ -13,8 +13,11 @@ Inspect the work directory before treating the request as new:
 3. Treat facts already written in those artifacts as settled unless the user explicitly
    changes them or two artifacts conflict.
 
-If an unfinished `PLAN.md` exists and the user requested no design change, resume the first
-unfinished stage immediately. Do not run another interview and do not call this a revision.
+If PLAN carries an active `open-mod-repair-routing/v1` decision, validate and resume it before
+the checklist: a recorded repair route outranks the old first unchecked box. A PLAN with no
+block predates this contract and resumes unchanged. Otherwise, if an unfinished `PLAN.md`
+exists and the user requested no design change, resume the first unfinished stage immediately.
+Do not run another interview and do not call this a revision.
 If that older project has `SPEC.md` but no `DESIGN.md`, first use `design.md` to backfill a
 compact artifact from settled facts, assign trace IDs, validate it, and then resume. Ask
 only if the existing artifacts contain a material contradiction; do not invent rationale,

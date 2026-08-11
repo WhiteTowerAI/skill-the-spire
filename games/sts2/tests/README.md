@@ -148,8 +148,8 @@ simulated personas.
 
 ## M8 whole-skill verification plan
 
-M8.0 skill structure restructuring, M8.1 literal deliverable contract, and M8.2 exact semantic
-capability conformance and preflight are closed.
+M8.0 skill structure restructuring, M8.1 literal deliverable contract, M8.2 exact semantic
+capability conformance and preflight, and M8.3 semantic continuity/backtracking are closed.
 Later Packages wait on the prerequisites in `documents/IMPLEMENTATION_PLAN.md`, and each
 receives its execution contract when selected rather than in advance. The
 Watcher evaluation is baseline failure evidence, not the final acceptance project. Package
@@ -245,7 +245,8 @@ to create; one test asserts unusual wording still passes.
 These are contract and prose checks. They establish that the workflow cannot report more than it
 earned without failing a check. They do not establish that a generated Mod loads, behaves
 correctly, or is any good, and no forward-model run, generated Mod, Tier 1, or Tier 2 is claimed
-by this Package. Backtracking when a required experience fails belongs to a later Package.
+by this Package. M8.3 now owns backtracking when a required experience fails; this paragraph
+remains M8.1's evidence boundary rather than an assertion that the gap is still open.
 
 Five files own M8.2. `tools/tests/test_model_hook_catalog.py` holds the generated hook catalog to
 the pinned assembly and to the shipped vanilla reference's independently written 26+28 lists;
@@ -273,6 +274,21 @@ than describing, a hook requested on a surface that cannot receive it, and an En
 multiplier routing to its mandatory replacement. **Both real-host proofs are deferred to M8.6 and
 unrun**, so no generated override has been observed firing in a game and every hook route is
 implemented-and-unproved.
+
+`tools/repair_trace.py`, `tools/tests/test_m83_semantic_continuity.py`, and
+`m83-semantic-continuity-scenarios.md` own M8.3. PLAN carries at most one active repair decision;
+the validator checks its four classification/owner/status combinations, current `D/E/OP` links,
+cleared affected settlements, and earliest reopened stage. Missing/broken shared capabilities
+block without reopening a consumer stage, while a semantic change must reopen DESIGN first.
+Mutation probes establish that owner, status, settlement, minimum-stage, DESIGN-first, and
+upstream-block rejections are load-bearing. The test also reviews all ten co-located surfaces for
+an envelope driver and proof matrix; no batch surface rewrite was needed.
+
+The fifteen-case matrix covers technical fixes, harness setup, Exhaust lifecycle/text, neutral
+hook guards, stale text/tip/localization/preview/presentation values, omitted SPEC fields,
+semantic fallbacks, absent/broken routes, user playtest feedback, and legacy resume. The full
+`384`-test regression and payload-shaped validator run are static/workflow evidence only. No Mod,
+game, Tier 1, Tier 2, headed review, or forward-model run is claimed by M8.3.
 
 `tools/tests/test_invariants.py` owns M8.0 change 5. `skills/modmaker/invariants.md` is the one
 home for the nine rules that fire across stages, and the test holds both halves of that

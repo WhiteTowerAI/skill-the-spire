@@ -16,14 +16,20 @@ the final report.
   current scope, future vision, and explicit boundaries.
 - `SPEC.md` owns the exact framework-neutral operations generated now and their supported
   semantic routes.
-- `PLAN.md` owns stage status and the deliverable settlement ledger — which required
-  experiences the run actually earned.
+- `PLAN.md` owns stage status, the one active repair route, and the deliverable settlement
+  ledger — which required experiences the run actually earned.
 - `MEMORY.md` owns resolved technical identities, adapter/API/resource facts, builds, and
   repairs. It must not silently revise creative intent.
 
 When artifacts disagree, stop before authoring. Treat the mismatch as design/SPEC drift,
 show the smallest revision delta, and update `DESIGN.md` first. Neither SPEC nor MEMORY may
 override a settled design choice merely because its implementation is easier.
+
+The same ownership applies to repair. A player-visible fix is an
+`accepted-semantic-change`: stop before applying it, route the smallest delta through revision,
+update the claim, affected `E-###`, scope, anchors, and `Q-###` queue as applicable, and obtain
+explicit acceptance before SPEC changes. A missing lowering field for an already accepted exact
+result is `contract-fulfillment`; preserve DESIGN and correct SPEC instead.
 
 ## Adaptive depth
 
@@ -155,6 +161,10 @@ ordered `Q-###` impact/re-evaluation queue. Use `UPDATE`, `REVIEW`, `REVERIFY`, 
 `PRESERVE` as defined by the reference. Update DESIGN first and reopen only affected PLAN
 stages. Stable runtime/localization identifiers are technical facts; a display-name change
 puts them under REVIEW rather than blindly renaming them.
+
+When revision came from active repair, preserve the PLAN repair decision until the accepted
+DESIGN and affected SPEC operations validate. Rejection preserves the old DESIGN; it does not
+turn the proposed substitute into a technical repair.
 
 ## Write `DESIGN.md`
 

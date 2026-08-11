@@ -524,10 +524,12 @@ class ShippedPromptContractTests(unittest.TestCase):
         self.assertIn("is observation, not a new question", self.route)
         self.assertIn("Never ask for the deliverable claim", self.interview)
 
-    def test_repair_clears_stale_settlements_without_owning_backtracking(self) -> None:
+    def test_repair_clears_stale_settlements_and_routes_backtracking(self) -> None:
         text = normalized(self.repair)
         self.assertIn("must not leave `plan.md`'s settlement", text)
-        self.assertIn("is not decided here", text)
+        self.assertIn("open-mod-repair-routing/v1", text)
+        self.assertIn("accepted-semantic-change", text)
+        self.assertIn("update design first", text)
 
     def test_resume_compatibility_is_stated_for_projects_without_a_claim(self) -> None:
         text = normalized(self.design)

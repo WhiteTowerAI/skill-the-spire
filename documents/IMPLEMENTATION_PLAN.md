@@ -50,21 +50,21 @@ hook route is implemented-and-unproved. Four defects were found while spending s
 three of them in this Package's own earlier steps. The durable result is
 `documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`.
 
-**M8.3 Semantic Continuity and Backtracking is next selectable** and needs its execution contract
-written against the settled layout and confirmed with the human lead before implementation.
-M8.3-M8.6 are recorded as intent only: the plain-language result in the Package Plan table is
-the whole of their current planning. No Package authorizes a new acceptance Mod, payload
-publication, or a GitHub release.
+**M8.3 Semantic Continuity and Backtracking is closed by explicit human-lead decision on
+2026-08-11.**
+M8.5-M8.6 remain intent only: the plain-language result in the Package Plan table is the whole
+of their current planning. No Package authorizes a new acceptance Mod, payload publication,
+or a GitHub release.
 
 ## New-Session Start Protocol
 
 A new coding session must not re-plan M8 from scratch. After reading `AGENTS.md` and the
 active documents, it must use this sequence:
 
-1. Read the Package Status table below and, for the first Package marked **Next selectable**
-   or **In progress**, its execution contract if it has one. M8.3 is next selectable and holds
-   intent only, so its contract must be written and confirmed first. The M8.0, M8.1, and M8.2
-   contracts below are retained as closed records and must not be re-executed.
+1. Read the Package Status table below and, for the first Package marked **Contract drafted;
+   awaiting confirmation**, **In progress**, or **Implemented; awaiting closure**, its execution
+   contract. M8.0-M8.3 are closed records; do not re-execute them or begin M8.5/M8.6 without
+   later human-lead selection and a confirmed execution contract.
 2. If the human lead says only "start M8" or "continue M8", select or resume that Package.
    Do not ask the human to choose among later Packages and do not begin the final acceptance.
    If the Package to resume is M8.3-M8.6, its execution contract must be written and
@@ -160,27 +160,278 @@ reorganized pack. There is no separate M8.0 evaluator Mod. The Watcher record re
 baseline evidence, and the smallest behavioral cases travel with the Package that changes a
 decision.
 
-M8.3-M8.6 rows below are intent only. Do not add technical detail to them here; each
-Package's execution contract is written when it is selected.
+M8.3's row is backed by the closed execution contract below. M8.5-M8.6 remain intent only;
+do not add technical detail to those rows until each Package is selected.
 
 | Package | Status | Prerequisite | Plain-language result |
 | --- | --- | --- | --- |
 | M8.0 - skill structure restructuring | **Closed 2026-08-10** | M7 closed | The shipped pack is organized so an author reads one file per element instead of three per stage, data lives in queryable catalogs instead of prose, and hardening rules are stated once; contradictions between what a SPEC can declare and what a proof demands become visible. Three found contradictions were deferred to and resolved in M8.2. |
 | M8.1 - literal deliverable contract | **Closed 2026-08-10** | M8.0 closed | Before making anything, state the exact completion claim and the player experiences required now; prototype/slice/run-capable labels are optional descriptions, not a closed taxonomy. |
 | M8.2 - exact semantic capability conformance and preflight | **Closed 2026-08-10** | M8.1 closed | Complex mechanics come from one maintained exact implementation; unsupported or broken routes block instead of becoming an approximation. Resolved M8.0's three deferred envelope mismatches on that same decision. Its two real-host proofs were deferred to M8.6. |
-| M8.3 - semantic continuity and backtracking | **Next selectable** | M8.2 closed | If implementation or repair changes what the player gets, return to the owning design/spec decision instead of patching forward. |
+| M8.3 - semantic continuity and backtracking | **Closed 2026-08-11** | M8.2 closed | If implementation or repair changes what the player gets, return to the owning design/spec decision instead of patching forward. |
 | M8.5 - cross-platform reproducible installed workflow | Waiting; may be selected independently after M8.1 | M8.1 closed | The committed installed skill works reproducibly on Windows and macOS and cleans up only the process tree it started. Default order remains M8.3 unless the human lead explicitly selects M8.5 earlier. |
 | M8.6 - clean installed whole-skill acceptance | Waiting | M8.1-M8.3 and M8.5 closed, plus human-selected request/host | Run one fresh broad request from an untouched installed payload and let the result prove the whole workflow. Also carries the two hook-participation proofs M8.2 deferred: one incoming-damage multiplier with its neutral case, and one collection edit preserving unrelated entries. |
 
 ## Package Execution Contracts
 
-M8.3-M8.6 hold intent in the Package Plan table and receive a contract when selected.
+M8.3's confirmed contract below is closed and retained as a record. M8.5-M8.6 still hold intent
+only in the Package Plan table.
 
-The three contracts below are **retained as closed records**, not work orders. Do not
-re-execute any of them. M8.0's value to a later session is its found-mismatch list and the reasoning
+The four closed contracts below are **retained records**, not work orders. Do not re-execute any
+of them. M8.0's value to a later session is its found-mismatch list and the reasoning
 behind the three it deferred; M8.1's is the deliverable-claim decisions M8.2 built on; M8.2's is the
 hook-reachability rule, the four defects it found in its own earlier steps, and the two proofs it
 handed to M8.6.
+
+### M8.3 - Semantic Continuity and Backtracking - closed 2026-08-11
+
+**Authorization boundary.** This contract was written against the current post-M8.2 layout and
+confirmed by the human lead on 2026-08-11. Implement only the work order below and preserve
+unrelated work. Do not install either payload, create an acceptance Mod, launch the game, commit,
+or push without later instruction.
+
+**Problem.** The workflow now knows what it promised (M8.1) and whether a selected semantic route
+exists and claims the exact capability (M8.2), but it still does not decide what to do when Author,
+Build, Verify, headed observation, or Finalize discovers a difference. `repair.md` clears stale
+experience settlements, then explicitly says that deciding whether the repair changed what the
+player gets is not its job. The existing revision route starts for a user-requested change or
+user-supplied playtest observation; it is not entered automatically when the pipeline itself finds
+semantic drift.
+
+That is the unresolved M7.6 finding: player-visible repairs moved forward locally instead of
+returning to DESIGN, scope, SPEC, and trace validation. It is also where two other M7.6 findings
+meet: behavior, lifecycle, rules text, keyword/Hover-Tip discoverability, localization, preview,
+and presentation were not treated as one player-facing operation, and an approximate consumer-
+local mechanic could replace the requested one. M8.1 deliberately left substantive backtracking
+here. M8.2 blocks an absent or claimed-but-broken shared route, but explicitly left semantic-impact
+backtracking and full surface continuity out of scope.
+
+**Artifact ownership.** Do not create a second design, capability, or semantic truth source.
+
+1. `DESIGN.md` remains the owner of player intent, accepted semantic decisions, the literal claim,
+   `E-###` experiences, current/future scope, identity anchors, and the `Q-###` revision queue. Any
+   accepted change to what the player gets returns here first.
+2. `SPEC.md` remains the owner of the exact supported `OP-###` operations generated now. A missing
+   lowering detail that is already required by accepted DESIGN is contract fulfillment, not a new
+   creative decision; correct SPEC and revalidate without silently changing DESIGN.
+3. `PLAN.md` remains the owner of current pipeline and backtracking status plus settlement state.
+   Add one `open-mod-repair-routing/v1` marked block whose `active_repair` is either `null` or one
+   current repair decision. It records only the trigger stage, observed difference, one of the four
+   classifications below, owning artifact, affected `D/E/OP` ids, invalidated stages, and current
+   routing status. It is resumable state, not a history log or semantic contract.
+4. Project `MEMORY.md` remains the owner of the exact signature, observed values, hypothesis,
+   attempted technical change, resolved adapter facts, and completed repair history. It may never
+   revise DESIGN or SPEC by implication. When the PLAN block clears after convergence, the concise
+   completed record moves here.
+5. A shipped recipe/reference and its route-local capability metadata remain the owner of a shared
+   implementation contract and its smallest known limitation. An absent or broken route is fixed
+   or narrowed there by a maintainer; the consumer project does not acquire a private substitute.
+
+`repair_trace.py` validates the PLAN routing block against the existing DESIGN deliverable/scope/
+coherence blocks and SPEC operation trace. It checks ids, classification/owner combinations,
+allowed classification/status combinations, settlement invalidation, and the earliest reopened
+stage. It does not judge whether observed behavior is correct and does not duplicate route
+capability metadata.
+
+**Four repair routes.** Classification happens before an attempted fix. A visible difference is
+`INV-5` even when it is discovered after Author; extend that invariant's firing stages through
+Verify, Repair, and Finalize rather than adding a tenth invariant.
+
+1. **`implementation-equivalent`.** The fix changes no player-facing behavior, lifecycle, rule,
+   value, localization meaning, preview, presentation, deliverable claim, or proof meaning. Typical
+   examples are a grounded namespace/import, manifest path, packaging path, or harness navigation
+   correction. `MEMORY.md` owns the technical fact. Keep DESIGN and SPEC unchanged,
+   apply one bounded fix, and rerun the minimum failed stage (rebuilding first whenever project
+   output changed). A harness/setup failure stays distinct from a Mod behavior failure.
+2. **`contract-fulfillment`.** Observed output or an incomplete lowering fails an already accepted
+   DESIGN/SPEC operation, while the exact shared route remains supported and conformant. Preserve
+   the accepted `D/E/OP` meaning. Correct the earliest wrong layer: SPEC when it omitted an already
+   accepted required field, otherwise generated source/resource/localization/proof. Clear affected
+   settlements, reopen the earliest affected stage, and reverify every applicable consumer named
+   by the owning surface envelope/proof matrix. No user re-decision is needed because the promised
+   result does not change; uncertainty about that fact forces `accepted-semantic-change` instead.
+3. **`accepted-semantic-change`.** The proposed fix would change anything a player can notice or
+   understand: trigger, target, ordering, movement, value, lifecycle, text meaning, tooltip,
+   fallback, preview, presentation, or deliverable shape. Stop before applying it. Route the
+   smallest delta through revision, update DESIGN first (claim, affected `E-###`, scope, anchors,
+   and `Q-###` queue as applicable), obtain explicit user acceptance, then update only affected
+   SPEC operations and run the existing validators. Reopen only invalidated PLAN stages and clear
+   affected settlements. Rejection preserves the original decision and leaves the project blocked
+   or returns it to contract fulfillment; it never licenses the convenient substitute.
+4. **`missing-capability`.** The required route is absent, is public but lacks maintained
+   authoring, cannot reach the selected surface, or exists but fails its claimed contract (`INV-3`
+   and `INV-9`). Stop the consumer repair loop; this does not consume one of its three attempts.
+   Record the exact project gap and upstream learning candidate, block the affected operation, and
+   repair/narrow the shared route before any project resumes. No consumer-local approximation,
+   generated Harmony/reflection/Publicizer/IL, or installed-pack edit is permitted. If the user
+   later selects a genuinely different supported result, that transition is
+   `accepted-semantic-change`, with normal DESIGN-first confirmation.
+
+**Semantic-continuity rule.** Classification compares the observed result with the complete
+selected operation, not only the assertion that happened to fail. For each affected `OP-###`, read
+its existing surface envelope, driver, proof matrix, and cited route together. Review every
+applicable consumer of the shared fact: behavior, lifecycle/state/reset, rules text and engine-
+composed text, keyword/DynamicVar/Hover Tips, shipped localization meaning, preview values,
+presentation, and proof. `not applicable` stays legitimate when the surface/route says why. Do not
+add a universal field to every surface or a second dependency catalog. Shared values stay in their
+current owning SPEC field and route; repair routing only makes downstream invalidation explicit.
+
+**Complete scenario matrix.** The repository-owned behavioral file is
+`games/sts2/tests/m83-semantic-continuity-scenarios.md`. It covers all of the following, with each
+case naming the classification, owning artifact, ids preserved or changed, stages reopened, user
+question rule, and exact stop/resume condition.
+
+*Implementation-equivalent cases*
+
+1. A grounded namespace, manifest, or package-path correction makes the same frozen operation
+   build/load; DESIGN/SPEC stay semantically unchanged and only the required downstream stage runs.
+2. `selftest FAILED` or timeout proves the harness did not reach its scenario; repair navigation or
+   timing without changing the Mod, or finalize the experience as an exception. Never rewrite the
+   element to satisfy a harness setup failure.
+3. A proposed "technical" fix also changes text meaning, a fallback, or proof expectation; it is
+   rejected from this class and routed to `accepted-semantic-change`.
+
+*Contract-fulfillment cases*
+
+4. A Card promised to Exhaust deals the correct damage but enters Discard, or its engine-composed
+   Exhaust meaning is absent from the player-facing result. Preserve the decision and operation;
+   repair lifecycle/text at the earliest wrong layer, then reverify damage, result pile, and text.
+5. A declared incoming-damage multiplier fires for its owner but returns a non-neutral value for
+   unrelated targets/damage. Preserve DESIGN/SPEC, repair the generated guard/neutral body, and
+   require both modified and neutral proofs. This is a source-contract scenario, not the deferred
+   M8.6 real-host proof.
+6. Runtime behavior is correct but a shared value is stale in rules text, DynamicVar/Hover Tip,
+   localization, preview, or real presentation. Update every applicable consumer from the same
+   owning SPEC field and reverify only those consumers; do not call this a cosmetic equivalent.
+7. DESIGN already requires an exact player result but SPEC omitted one required surface field.
+   Correct SPEC and its trace as fulfillment, preserve the accepted DESIGN ids, rerun all four
+   pre-scaffold validators, then reopen Author/Build/affected Verify without asking the user to
+   choose the same result again.
+
+*Accepted-semantic-change cases*
+
+8. A third-turn relic is easier to implement as "after three Attacks". Stop; the timing and player
+   decision changed. Continue only after a DESIGN-first revision and explicit acceptance.
+9. A requested complete description replacement can only compose before/after vanilla text, or a
+   requested multi-target behavior would become single-target. The exact visible difference is
+   confirmed, deferred, or removed; it is never patched forward.
+10. Custom art acquisition fails and placeholder art was not already an accepted fallback. After
+    acceptance, add a `PLACEHOLDER`, excluded experience, and affected `E-###` with
+    `settled_by: user-decision`; Finalize later settles it from that acceptance. An already accepted
+    checked fallback remains contract fulfillment/normal fallback, not a new question.
+11. Several individually proposed fallbacks change the literal deliverable shape or an identity
+    anchor. Re-read the combined claim/exclusions, update them together, and require one bounded
+    confirmation rather than accepting each local patch in isolation.
+
+*Missing-capability and boundary cases*
+
+12. No route exists, or the public Package exists but maintained authoring is missing. State which
+    fact applies, record a blocking gap, and stop without an invented API or a consumed repair
+    attempt.
+13. A cited shared route resolves and passes preflight but observed reality violates its documented
+    capability. Block and repair/narrow the shared route under `INV-9`; a consumer-local copy is not
+    contract fulfillment.
+14. The user supplies playtest feedback that changes balance or feel. Preserve it as user evidence
+    and use the existing revision route; do not automatically diagnose or tune it. Once the exact
+    semantic delta is accepted, its downstream path follows `accepted-semantic-change`.
+15. An unchanged pre-M7.5, pre-M8.1, or v1-SPEC project resumes under its existing compatibility
+    rule. Do not backfill repair state. If a new repair begins, create only the active PLAN routing
+    block; if it becomes a semantic revision, add/update the current contracts exactly as the
+    existing revision migration rules require, without inventing old evidence.
+
+**Source scope.** Implementation is limited to the workflow and its checks:
+
+- `games/sts2/skills/modmaker/SKILL.md`, `invariants.md`, `route.md`, `design.md`, `spec.md`,
+  `semantic-contract.md`, `author.md`, `build.md`, `verify.md`, and `repair.md` for classification,
+  state transitions, artifact return order, invalidation, and Finalize blocking;
+- `games/sts2/tools/repair_trace.py` as the one new PLAN-state validator, plus the existing
+  validators only where integration is required;
+- `games/sts2/tests/m83-semantic-continuity-scenarios.md` and
+  `games/sts2/tools/tests/test_m83_semantic_continuity.py`, with focused updates to invariant,
+  M7.5 revision, M8.1 settlement, payload-layout, and surface-cross-check tests when their owned
+  contract changes; and
+- current documents at closure only where their owned status/test facts change, plus the named
+  result record.
+
+Review all ten `surfaces/*.md` envelope/proof pairs, but do not rewrite them as a batch. Change a
+surface page only if a matrix case proves its current co-located envelope/proof cannot express the
+required continuity or invalidation. Do not edit `sts2-api/errors.md` without a new proven
+signature, and do not modify a runtime recipe/reference merely to manufacture an M8.3 example.
+
+**Work order.** Execute in this order after confirmation:
+
+1. **State and ownership.** Add the minimal current-repair block to the PLAN template and
+   `repair_trace.py`. Validate ids against existing DESIGN/SPEC blocks, enforce the four
+   classification-to-owner mappings, and keep completed technical history in MEMORY. Prove old
+   PLAN files with no block resume unchanged.
+2. **Classification at every discovery point.** Wire Author visible differences, Build failures,
+   Tier-1/Tier-2/headed differences, Repair, and Finalize into the classifier before a fix. Extend
+   `INV-5`'s firing list rather than adding a duplicate invariant. Only
+   `implementation-equivalent` and `contract-fulfillment` enter the bounded three-attempt loop.
+3. **Artifact-owned transitions.** Implement the four routes exactly: local minimum rerun;
+   fulfillment at the earliest wrong SPEC/output layer; DESIGN-first user-confirmed revision;
+   or shared-route block. Clear affected settlements and reopen only the earliest invalid stage.
+   State check must resume an active repair instead of skipping to the old first unchecked box.
+4. **Complete-operation impact.** Make Repair and revision impact inspection use the existing
+   surface envelope/driver/proof and cited route as one operation view. A changed shared value or
+   meaning invalidates all applicable behavior/lifecycle/text/tip/localization/preview/
+   presentation/proof consumers, while unaffected operations and `PRESERVE` decisions remain
+   untouched.
+5. **Scenarios, checks, and synchronization.** Implement all fifteen cases, include negative and
+   mutation checks that fail when classification/owner/invalidation enforcement is removed, run
+   the proportional checks below, regenerate both payloads from source, write the result record,
+   and synchronize only current documents whose facts changed.
+
+**Proportional checks.** This Package changes workflow instructions and project-state validation;
+it does not add or change a C# runtime route. Therefore it does not schedule a game launch, Tier 1,
+Tier 2, headed review, or fresh generated Mod.
+
+1. Focused Python tests for `repair_trace.py`, all fifteen scenarios, legacy PLAN resume,
+   classification/owner/status combinations, affected-id references, settlement
+   invalidation, minimum stage reopening, and rejection of a silent semantic substitute.
+2. Mutation/neutered-validator checks for each load-bearing rejection branch. A negative fixture
+   must fail for the intended reason after its enforcement is removed.
+3. Existing M7.4/M7.5/M8.1/M8.2, invariant, surface-cross-check, and payload-layout tests, followed
+   by the full `games/sts2/tools/tests` regression and Python compilation.
+4. Source plus both generated-payload skill validation; run the shipped `repair_trace.py` from a
+   payload-shaped scratch layout; regenerate each payload twice and require repeatability plus
+   plugin/portable effective parity. Do not install either payload.
+5. `git diff --check` and scoped status/diff review. No commit, push, merge, publication, or release
+   without later instruction.
+
+The scenarios and tests establish the shipped routing contract and deterministic artifact state.
+They do not prove that a generated Mod behaves correctly, that a human accepts a semantic change,
+or that every surface is good in-game. Those remain literal runtime/human evidence when a future
+consumer selects them.
+
+**Out of scope.** Do not absorb any of the following into M8.3:
+
+- a new engine capability, hook, helper, recipe, support row, or broad route-conformance repair;
+- a second semantic dependency catalog, new mechanic-name checklist, or duplicate DESIGN/SPEC
+  truth block;
+- repair of the historical Watcher project or replay of its evaluation;
+- the two M8.2 hook-participation real-host proofs, which remain deferred to M8.6;
+- cross-platform installed-workflow/process-tree ownership (M8.5);
+- a fresh natural-language acceptance Mod or final whole-skill judgment (M8.6);
+- automatic balance/tuning decisions, simulated human acceptance, or subjective quality claims;
+- changed Tier definitions, a replacement reporting subsystem, or revival of removed M8.4;
+- blanket migration/backfill of unchanged legacy projects, wider multiplayer support, BaseLib,
+  prompt-derived Harmony/reflection/Publicizer/IL, installed-pack edits, or payload installation;
+  and
+- commit, push, merge, publication, release, or starting M8.5/M8.6 without separate instruction.
+
+**Result record:** `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md`.
+
+**Closed by explicit human-lead decision on 2026-08-11.** All five work-order items are implemented in source
+and both generated payloads. The focused/related/full regressions, Python compilation, six skill-
+root validations, payload-shaped validator run, repeatability, effective parity, and diff hygiene
+pass. No Mod was generated or installed, and no game, Tier 1, Tier 2, headed, commit, or push run
+occurred. The named result record contains the exact evidence and exceptions. Closure does not
+select M8.5 or authorize M8.6.
+
+The closure record names every work-order item, each scenario/check actually run, exact exceptions,
+payload synchronization evidence, current documents changed, and current documents reviewed but
+left unchanged. The explicit closure decision does not select M8.5 or authorize M8.6.
 
 ### M8.2 — Exact Semantic Capability Conformance and Preflight — closed 2026-08-10
 

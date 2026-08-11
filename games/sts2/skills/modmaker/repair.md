@@ -3,15 +3,64 @@
 > A failing stage is the moment `INV-7` is most tempting to break. The pinned RitsuLib
 > profile is still the only active path here.
 
-Goal: a **bounded** sub-loop shared by `build.md` (5), `verify.md` tier-1 (6), and
-the tier-2 check (7). When a stage fails, come here, diagnose from the **real
-error** (`INV-2`), apply **one** fix, re-run **only the failed stage**, and
-either converge or stop with an honest report. Auto-repair is bounded, not magical
-(~70% converge in the literature) — cap it and hand back a clear failure.
+Goal: classify a discovered difference before changing anything, then either enter the
+bounded technical loop, return to the owning artifact, or block on a shared capability.
+Diagnose from the **real error** (`INV-2`) and keep the complete player-facing operation
+together.
 
 Do not generalize one failed generated route to the whole documented feature Package. If a
 pinned API or lifecycle defect is reproducible, record the smallest affected consumer as a
 known limitation and preserve the rest of the Package.
+
+## Classify before a fix
+
+Compare observed reality with the accepted `D/E/OP` operation, then write one current
+`open-mod-repair-routing/v1` decision in PLAN and run `repair_trace.py`. Use exactly one route:
+
+| Classification | Owner | Action |
+|---|---|---|
+| `implementation-equivalent` | `MEMORY.md` | No player-facing meaning changes. Apply one technical fix and rerun the earliest invalid stage. |
+| `contract-fulfillment` | `SPEC.md` | The accepted operation remains exact and supported. Correct its earliest wrong SPEC/output layer and reverify every affected consumer. |
+| `accepted-semantic-change` | `DESIGN.md` | Anything a player notices or understands changes. Stop, show the smallest revision, obtain explicit acceptance, update DESIGN first, then affected SPEC operations. |
+| `missing-capability` | `shared recipe/reference` | The exact route is absent, unreachable, unmaintained, or violates its claim. Record the exact project `blocking_gap`, block upstream, and do not create a consumer-local substitute. |
+
+Use the active object below; `affected_*` ids must already exist and trace to each other.
+List invalidated stages in pipeline order and make `reopened_stage` the first one. A blocked
+missing capability uses an empty stage list and `null` reopened stage.
+
+```json
+{
+  "trigger_stage": "verify-tier-2",
+  "observed_difference": "The Card deals 9 damage but enters Discard instead of Exhaust",
+  "classification": "contract-fulfillment",
+  "owning_artifact": "SPEC.md",
+  "affected_design_ids": ["D-001"],
+  "affected_experience_ids": ["E-001"],
+  "affected_operation_ids": ["OP-001"],
+  "invalidated_stages": ["author", "build", "verify-tier-1", "verify-tier-2", "finalize"],
+  "reopened_stage": "author",
+  "routing_status": "repairing"
+}
+```
+
+Allowed statuses are `repairing`/`blocked` for the two technical routes;
+`awaiting-user-acceptance`/`revision-accepted`/`blocked` for a semantic change; and
+`blocked-upstream` for a missing capability. An implementation-equivalent repair cannot name
+an affected experience. Clear every affected settlement before validation.
+
+Uncertainty is player-visible risk: classify it as `accepted-semantic-change`, not as a
+technical fix. A harness/setup failure may be implementation-equivalent, but it stays distinct
+from a Mod behavior failure. Only `implementation-equivalent` and `contract-fulfillment`
+consume the three-attempt budget below.
+
+## Inspect the complete operation
+
+For each affected `OP-###`, read its co-located surface envelope, driver, proof matrix, and
+cited route together. Follow a shared value or meaning through every applicable consumer:
+behavior, lifecycle/state/reset, rules text and engine-composed text, keyword/DynamicVar/Hover
+Tips, shipped localization, preview values, presentation, and proof. A surface may say a
+consumer is not applicable; silence is not a reason to skip it. Preserve unaffected operations
+and every `PRESERVE` queue entry.
 
 The loop's own rule, on top of the invariants: **if an approach fails twice, change the
 hypothesis — don't keep patching the same spot.**
@@ -20,6 +69,8 @@ hypothesis — don't keep patching the same spot.**
 
 - **Max 3 repair attempts per stage.** An attempt = one hypothesis → one change →
   one re-run of the failed stage.
+- **Only the two technical routes consume attempts.** A DESIGN-first decision or an upstream
+  capability block is routing, not a failed consumer fix.
 - **Same signature twice with no change → stop immediately.** If the identical
   error survives a fix (same compiler code + symbol, same log line, same wrong
   behavior), the hypothesis was wrong. Do NOT try a third near-identical tweak —
@@ -50,7 +101,7 @@ stage failed
  3. APPLY exactly one change; record it in MEMORY.md
    |    (attempt N: signature -> hypothesis -> change)
    |
- 4. RE-RUN only the failed stage
+  4. RE-RUN from the earliest invalidated stage
    |    pass -> return to the pipeline; if this was a NEW (miss) fix, note it
    |            in MEMORY.md as an errors.md candidate (see "Growing errors.md")
    |    fail -> attempts < 3 AND signature changed?  yes -> back to 1
@@ -106,7 +157,7 @@ Read the artifact, not your memory of what you wrote.
 
 ## Which stage to re-run
 
-Re-run the **failed** stage, not the whole pipeline:
+Re-run from PLAN's earliest invalidated stage, not the whole pipeline:
 
 - build fix → `build.md` (rebuild once).
 - load/tier-1 fix that touches code or the csproj → **rebuild first** (the fix only
@@ -145,15 +196,15 @@ is why a fix you just proved does not go straight into it:
 
 ## Return
 
-On convergence: mark the stage done in `PLAN.md`, note the fix in `MEMORY.md`, and
-continue the pipeline from where you were (build → verify → finalize). On stop:
-leave the report above and the failed-stage state; do not advance.
+On convergence: mark the stage done in `PLAN.md`, move the concise completed repair record to
+`MEMORY.md`, clear `active_repair`, and continue through only the invalidated downstream stages.
+On stop: leave the report above and active failed-stage state; do not advance.
 
 A fix that changes whether a required experience holds must not leave `PLAN.md`'s settlement
 ledger describing the run before the fix. Clear the affected `E-###` entries so Finalize
 settles them against the rebuilt Mod; a stale `observed` from an earlier attempt is evidence
 for a build that no longer exists (`INV-2`).
 
-That is the whole of this stage's obligation. Whether a repair *changed what the player gets*
-— and therefore whether the claim, a design decision, or the scope itself has to change — is
-not decided here.
+Before Finalize, `repair_trace.py --finalize` must see `active_repair: null`. A rejected
+semantic alternative preserves the original DESIGN and stays blocked or is reclassified as
+contract fulfillment; it never licenses the convenient substitute.

@@ -73,12 +73,17 @@ Read `${STS2_API_SKILL_DIR}/errors.md` § Build And Profile and match the exact 
 before changing anything. It carries the cause and fix for every profile, manifest, pack,
 Ancient-dialogue, and vanilla-override failure this stage can emit.
 
+Before applying a fix, classify the observed difference through `repair.md`, write the active
+PLAN route, and run `repair_trace.py`. A compiler or grounded package-path correction is usually
+implementation-equivalent, but a proposed fix that changes the accepted operation is not.
+
 Two rules that decide *where* the fix goes, and are not in the catalog:
 
 - A `RitsuLib profile FAILED` / `RitsuLib restore FAILED` contract error is fixed in the
   package, manifest, host, or runtime variant chosen at `scaffold.md`. Never enter a C#
   repair loop for one.
-- Ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
+- Ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol, after
+  classification.
 
 On success, mark `build` done in `PLAN.md`, record the resolved Mods path and profile in
 `MEMORY.md`, and continue to `verify.md`. If `--skip-runtime-check` was used, record that

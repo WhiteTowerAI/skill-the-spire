@@ -14,6 +14,7 @@ resolution logic is checked without depending on the committed payloads being fr
 """
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import sys
@@ -80,9 +81,16 @@ class PayloadLayoutTests(unittest.TestCase):
             SKILLS_DIR / "modmaker" / "surfaces", root / "skills" / "modmaker" / "surfaces"
         )
         shutil.copytree(SKILLS_DIR / "sts2-api", root / "skills" / "sts2-api")
-        for tool in ("spec_envelope_trace.py", "design_trace.py"):
+        for tool in (
+            "spec_envelope_trace.py",
+            "design_trace.py",
+            "deliverable_trace.py",
+            "repair_trace.py",
+        ):
             shutil.copy(TOOLS_DIR / tool, self.scripts / tool)
         self.spec_path = root / "SPEC.md"
+        self.design_path = root / "DESIGN.md"
+        self.plan_path = root / "PLAN.md"
 
     def tearDown(self) -> None:
         self._tmp.cleanup()
@@ -115,6 +123,130 @@ class PayloadLayoutTests(unittest.TestCase):
         result = self.run_envelope_trace(UNREACHABLE_SPEC)
         self.assertEqual(result.returncode, 2)
         self.assertIn("cannot receive it", result.stderr)
+
+    def test_repair_trace_runs_from_the_payload_layout(self) -> None:
+        scope = {
+            "contract": "open-mod-design/v1",
+            "route": "fast",
+            "current_slice": [
+                {
+                    "design_id": "D-001",
+                    "disposition": "MUST",
+                    "summary": "one exact probe operation",
+                    "support": "confirmed",
+                    "spec_operations": ["OP-001"],
+                    "reason": "payload layout probe",
+                }
+            ],
+            "future_vision": [],
+            "blocking_gaps": [],
+        }
+        deliverable = {
+            "contract": "open-mod-deliverable/v1",
+            "route": "fast",
+            "claim": "One probe operation.",
+            "shape": "one probe",
+            "required_experiences": [
+                {
+                    "experience_id": "E-001",
+                    "statement": "The probe operation is observable",
+                    "design_ids": ["D-001"],
+                    "settled_by": "tier-2-structured",
+                }
+            ],
+            "excluded_experiences": [],
+        }
+        trace = {
+            "contract": "open-mod-spec-trace/v1",
+            "design_contract": "open-mod-design/v1",
+            "operations": [
+                {
+                    "operation_id": "OP-001",
+                    "design_ids": ["D-001"],
+                    "semantic_target": "the probe operation",
+                    "supported_route": "recipes/card.md",
+                }
+            ],
+        }
+        repair = {
+            "contract": "open-mod-repair-routing/v1",
+            "active_repair": {
+                "trigger_stage": "build",
+                "observed_difference": "the package path is wrong",
+                "classification": "implementation-equivalent",
+                "owning_artifact": "MEMORY.md",
+                "affected_design_ids": ["D-001"],
+                "affected_experience_ids": [],
+                "affected_operation_ids": ["OP-001"],
+                "invalidated_stages": ["build", "verify-tier-1", "finalize"],
+                "reopened_stage": "build",
+                "routing_status": "repairing",
+            },
+        }
+        settlement = {"contract": "open-mod-settlement/v1", "settlements": []}
+        self.design_path.write_text(
+            "\n".join(
+                [
+                    "<!-- open-mod-deliverable:v1:start -->",
+                    "```json",
+                    json.dumps(deliverable),
+                    "```",
+                    "<!-- open-mod-deliverable:v1:end -->",
+                    "<!-- open-mod-scope:v1:start -->",
+                    "```json",
+                    json.dumps(scope),
+                    "```",
+                    "<!-- open-mod-scope:v1:end -->",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        self.spec_path.write_text(
+            "\n".join(
+                [
+                    "<!-- open-mod-trace:v1:start -->",
+                    "```json",
+                    json.dumps(trace),
+                    "```",
+                    "<!-- open-mod-trace:v1:end -->",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        self.plan_path.write_text(
+            "\n".join(
+                [
+                    "<!-- open-mod-repair-routing:v1:start -->",
+                    "```json",
+                    json.dumps(repair),
+                    "```",
+                    "<!-- open-mod-repair-routing:v1:end -->",
+                    "<!-- open-mod-settlement:v1:start -->",
+                    "```json",
+                    json.dumps(settlement),
+                    "```",
+                    "<!-- open-mod-settlement:v1:end -->",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.scripts / "repair_trace.py"),
+                "--design",
+                str(self.design_path),
+                "--spec",
+                str(self.spec_path),
+                "--plan",
+                str(self.plan_path),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("state=active classification=implementation-equivalent", result.stdout)
 
 
 if __name__ == "__main__":

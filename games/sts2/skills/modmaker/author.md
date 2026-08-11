@@ -17,6 +17,12 @@ content registration, behavior/data operation, selected presentation, and placeh
 belong to its stated `OP-###` and supported recipe/reference. Never emit `DEFER`,
 `OUT-OF-SCOPE`, or unresolved-gap intent, and never add an untraced convenience feature.
 
+If authoring reveals that the selected route cannot produce the accepted complete operation,
+stop before a workaround and classify it through `repair.md`. Record the active PLAN route and
+run `repair_trace.py` before changing source. A local lowering omission may be contract
+fulfillment; a different visible result is a semantic revision; an absent or broken shared route
+blocks upstream (`INV-3`, `INV-5`, `INV-9`).
+
 On revision, follow DESIGN's validated impact/re-evaluation queue before editing. Update
 only confirmed affected localization, Event text, visual prompts/resources, Character
 identity, or generated source. REVIEW stable runtime/localization identifiers instead of

@@ -71,11 +71,13 @@ implemented and unobserved in a running game. Four defects were found while spen
 catalog, three of them in its own earlier steps. The result is
 `documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`.
 
-M8.3 semantic continuity and backtracking is next selectable and needs its execution contract
-written against the settled layout and confirmed with the human lead first. The New-Session Start
-Protocol in `documents/IMPLEMENTATION_PLAN.md` is the handoff: a later session instructed to
-continue M8 selects M8.3 without rebuilding the roadmap or skipping prerequisites. M8.3-M8.6 are
-recorded as intent only. M8.4 was removed by the human lead; M8.5 and M8.6 retain their numbers.
+M8.3 Semantic Continuity and Backtracking closed by explicit human-lead decision on 2026-08-11.
+It adds one resumable active-repair decision to PLAN, validates four artifact-owned routes with
+`repair_trace.py`, and treats each affected operation's behavior/lifecycle/text/tips/localization/
+preview/presentation/proof as one impact view. Its `384`-test regression is static/workflow
+evidence; no generated Mod or game run occurred.
+The result is `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md`. M8.4 was removed by the human
+lead; M8.5 and M8.6 retain their numbers and are not started.
 
 ## User Experience
 
@@ -90,13 +92,12 @@ plain-language idea
   -> report passes, failures, and unrun checks literally
 ```
 
-M8 strengthens this flow. The literal deliverable contract and exact capability preflight are
-implemented and are part of the diagram above: DESIGN carries the completion claim, and SPEC is
-validated against both its surface envelope and the routes its operations cite before anything is
-scaffolded. Still planned: one behavior/text/tooltip/lifecycle/presentation contract,
-semantic-impact repair backtracking, and durable cross-platform reproduction with no
-launcher-owned process left behind. Existing literal reporting and verification ownership remain
-in force; M8 adds no separate evidence-reporting subsystem.
+M8 strengthens this flow. The literal deliverable contract, exact capability preflight, and
+semantic-impact backtracking are implemented: DESIGN carries the claim, SPEC is checked against
+its surface and cited routes, and active repair returns to MEMORY, SPEC, DESIGN, or a shared route
+according to what changed. Durable cross-platform reproduction with no launcher-owned process left
+behind remains planned. Existing literal reporting and verification ownership remain in force;
+M8 adds no separate evidence-reporting subsystem.
 
 A complete narrow request retains a zero-question path. Ambiguous work receives materially
 different player-facing options with trade-offs, not an exhaustive questionnaire. Revision
@@ -150,8 +151,9 @@ M8 work crosses these ownership boundaries rather than creating a separate runti
 framework, and the delivered Packages followed that split: `modmaker` owns the deliverable claim
 and the SPEC-side capability declaration, `sts2-api` owns the maintained exact route and the
 pinned hook catalog it projects, tools own the validators, and tests own the capability
-conformance cases. Remaining Packages keep the same division — `modmaker` the backtracking flow,
-tools reproducible platform and owned-process cleanup, tests final whole-skill coverage.
+conformance cases. M8.3 follows the same division: `modmaker` owns routing, `repair_trace.py` owns
+deterministic PLAN validation, and tests own the fifteen cases. Remaining Packages put reproducible
+platform/process cleanup in tools and final whole-skill coverage in tests.
 
 Edit source under `games/sts2/`; regenerate both payloads through `publish.sh`. Generated
 Mods use the pinned compile package and discover a validated game-local or official

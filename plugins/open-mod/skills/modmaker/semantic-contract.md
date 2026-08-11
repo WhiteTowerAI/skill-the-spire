@@ -110,6 +110,14 @@ start of combat, double current energy” is valid; a particular method name is 
 Likewise, “shared relic pool” is valid; a pool attribute or registration call is
 adapter detail.
 
+For repair and revision, one `OP-###` means the complete selected player-facing operation,
+not only the assertion that failed. Read its surface envelope, driver, proof matrix, and cited
+route together. A changed shared value or meaning invalidates every applicable behavior,
+lifecycle/reset, rules-text or engine-composed-text, keyword/DynamicVar/Hover-Tip,
+localization, preview, presentation, and proof consumer. Keep `not applicable` only where the
+surface or route states why; do not add a second dependency catalog or duplicate a value outside
+its existing SPEC field.
+
 Official RitsuLib tutorials are a product-semantics baseline. They may establish what a
 feature Package communicates to the player and which public consumers belong to it. Exact
 versioned symbols still come from the pinned adapter. Support and known limitations follow
