@@ -612,8 +612,8 @@ M8.6 retain their numbers:
 - M8.6 one clean installed whole-skill acceptance after the preceding Packages close, covering
   both runtime state and its complete player-facing semantics.
 
-M8.0 skill structure restructuring is closed and M8.1 is implemented in source; M8.2 is next
-selectable and is the first M8 Package whose work needs pinned API research.
+M8.0 skill structure restructuring, M8.1 literal deliverable contract, and M8.2 exact semantic
+capability conformance are closed; M8.3 is next selectable.
 Concrete implementation ownership,
 ordered steps, and fixed result-record names live in the active implementation plan so a
 later session does not need to reinterpret these research inputs. Intermediate Packages

@@ -5,81 +5,103 @@ must declare, the element class the author writes, and the proof its verificatio
 this page at the `spec.md`, `author.md`, and `verify.md` stages when `element: character`.
 
 One selectable character shell plus its starter ecosystem; scenarios are `RunStart` +
-`CombatPlayer`. Selected advanced capabilities keep their separate contracts in `spec.md`
-(capability module, character resource, ordered card buffer) — this page owns the Foundation.
+`CombatPlayer`. Selected advanced capabilities — capability module, character resource,
+ordered semantic buffer — keep their separate contracts in this same page, below the
+Foundation SPEC. The Foundation proof matrix owns the complete verification contract.
 
 ## SPEC envelope
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **element**: character
-- **logical id**: <stable character stem>
+- **contract**: sts2-content-semantic/v2
 - **mod id**: <stable mod identity>
 - **author**: <author>
-- **display**:
-  - title: <shown character name>
+- **content**:
+  - name: <shown character name>
+  - surface: character
+  - logical id: <stable character stem>
+  - starting HP: <int; native range 66–80, see `design/character-foundation.md`>
+  - energy per turn: 3 (current grounded Foundation value)
   - description: <short identity/theme>
   - pronouns: <subject/object/possessive adjective/possessive pronoun>
-- **starting HP**: <int>
-- **energy per turn**: 3 (current grounded Foundation value)
-- **availability**: character-scoped card/relic/potion pools
-- **native design basis**:
-  - grammar profile: `design/character-foundation.md @ STS2 0.107.1`
-  - pinned facts used: <exact native identities/values used in the proposal>
-  - observed convention: <native shape used as the recommendation>
-  - creative decision: <exact selected deck shape and teaching intent>
-- **starter deck**: <exact Basic-card multiset, base effects, upgrades, and total count>
-- **starter deck rationale**: <how its first-run decisions teach the core mechanic>
-- **deliberate native departure**: none | <departure plus onboarding, compatibility, and
-  balance consequences accepted by the user>
-- **starter relic**: <exact Starter relic>
-- **hosted mechanic**: <one starter card/relic grounded public mechanic with exact numbers>
-- **pool cards**: <every non-Basic pool card, each with its exact effect and numbers; each one
-  with a non-trivial mechanic also needs its own `surfaces/card.md` envelope>
-- **scenario**: RunStart + CombatPlayer
-- **observe**:
-  - the character is registered exactly once and appears in character selection
-  - real character-select button present and clicked
-  - runtime identity, HP, three pool types/members, exact deck/relic multisets
-  - combat `MaxEnergy=3` plus the hosted mechanic's independent state delta
-  - every pool card whose mechanic SPEC describes behaviorally is played and asserted
+- **registration**:
+  - availability: character-scoped card/relic/potion pools
+  - ownership: player
+  - placement: character select screen
+- **localization**:
+  - fields: character name, description, and pronouns (in `characters.json`); all pool Card
+    and Power titles/descriptions; all Ancient dialogue lines
+  - table intent: `characters.json` plus element-specific tables
+  - formatting: plain | dynamic value placeholders for Cards and Powers
+- **effects**:
+  - trigger: run start
+  - target: player
+  - starter deck: <exact Basic-card multiset, base effects, upgrades, and total count>
+  - starter deck rationale: <how its first-run decisions teach the core mechanic>
+  - starter relic: <exact Starter relic>
+  - hosted mechanic: <one starter card/relic grounded public mechanic with exact numbers>
+  - pool cards: <every non-Basic pool card, each with its exact effect and numbers; each one
+    with a non-trivial mechanic also needs its own `surfaces/card.md` envelope>
+  - scaling: <named values for each pool card or hosted mechanic, or none>
+- **state**:
+  - lifetime: run
+  - owner: player
+  - advance/check: pools and starter state initialized at RunStart
+  - reset: run end
+  - persistence: ordinary
+  - visible state: character select button/background, HP, energy display
+- **presentation**:
+  - assets: placeholder | generate (Character static profiles and optional combat cues;
+    list each consumer and acquisition count)
+  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - native presentation: character select screen + combat UI
+  - character art bundle: one `CharacterArtBundle` row per selected slot; record
+    required/optional, output path, dimensions, alpha policy, fallback, and real consumer
+  - character identity route: selection portrait is the sole identity bootstrap;
+    combat/rest/merchant and combat cue sheets use identity + type-matched style;
+    background/icon/Energy use palette/motif brief + type-matched style only
+  - palette/motif brief: concise colors, motif, material, and silhouette derived from
+    the user's description and reviewed selection portrait; never a second canonical image
+  - character theme contract:
+    - name color: `<RRGGBB>`
+    - energy-label outline: `<RRGGBB>`
+    - deck-entry color: `<RRGGBB>`
+    - energy outline: `<RRGGBB>`
+    - card-frame target RGB: `<0..1, 0..1, 0..1>`
+    - card-frame brightness: `<0..2>`
+    - energy-icon palette: `<primary/accent/outline colors plus motif/material>`
+  - character art profiles: none | selection | locked selection | top-panel icon |
+    map marker | select background | combat body | rest body | merchant body | energy |
+    large energy icon | text energy icon (do not infer one profile from another; mark
+    unsupported consumers as explicit gaps per `reference/character-presentation.md`)
+  - character combat cues: none | fixed bounded bundle
+    - actions: Idle `4 x 180ms, loop`; Attack `4 x 90ms, one-shot -> Idle`;
+      Hit `4 x 80ms, one-shot -> Idle`; Dead `6 x 140ms, terminal final frame`
+    - acquisition: four action sheets, normalized selection portrait as identity reference
+    - neutral combat anchor: <one concise pose sentence derived once and repeated verbatim>
+    - continuity lock: same identity, costume, proportions, equipment, facing, camera,
+      apparent scale, pivot, and baseline across all four sheets
+    - frame motion: adjacent cells are small, substantially overlapping in-between pose
+      steps, not distant key poses; Attack/Hit begin near and recover toward Idle; Dead falls
+      through six adjacent steps
+    - geometry: shared 512x512 content box/baseline/style and Bounds/Intent/Center/Orb/Talk anchors
+    - fallback: one missing or invalid frame disables all cues and uses static combat body
+    - explicit gaps: Cast, Spine, trails, audio, animated merchant/rest bodies
+- **fallback**:
+  - missing asset: Foundation-only template; selected profiles fill only their matched fields
+  - unavailable seam: preserve Foundation behavior or stop with an explicit unsupported boundary
+- **proof**:
+  - scenario: RunStart + CombatPlayer
+  - driver: locate the real custom character-select button, click it, then assert runtime state
+  - invariants:
+    - the character is registered exactly once and appears in character selection
+    - real character-select button present and clicked
+    - runtime identity, HP, three pool types/members, exact deck/relic multisets
+    - combat `MaxEnergy=3` plus the hosted mechanic's independent state delta
+    - every pool card whose mechanic SPEC describes behaviorally is played and asserted
+  - boundary cases: Shop-pool card slot fill; art consumer assertions when profiles are selected
 - **advanced mechanic**: none | <selected verified capability or explicit pack gap>
-- **art**: placeholder | generate (Character static profiles and optional combat cues;
-  list each consumer and acquisition count)
-- **art source**: runtime-imagegen | vofy | byo-http | local-image (generate only)
-- **character art bundle**: one `CharacterArtBundle` row per selected slot; record
-  required/optional, output path, dimensions, alpha policy, fallback, and real consumer
-- **character identity route**: selection portrait is the sole identity bootstrap;
-  combat/rest/merchant and combat cue sheets use identity + type-matched style;
-  background/icon/Energy use palette/motif brief + type-matched style only
-- **palette/motif brief**: concise colors, motif, material, and silhouette derived from
-  the user's description and reviewed selection portrait; never a second canonical image
-- **character theme contract**:
-  - name color: `<RRGGBB>`
-  - energy-label outline: `<RRGGBB>`
-  - deck-entry color: `<RRGGBB>`
-  - energy outline: `<RRGGBB>`
-  - card-frame target RGB: `<0..1, 0..1, 0..1>`
-  - card-frame brightness: `<0..2>`
-  - energy-icon palette: `<primary/accent/outline colors plus motif/material>`
-- **character art profiles**: none | selection | locked selection | top-panel icon |
-  map marker | select background | combat body | rest body | merchant body | energy |
-  large energy icon | text energy icon (do not infer one profile from another; mark
-  unsupported consumers as explicit gaps per `reference/character-presentation.md`)
-- **character combat cues**: none | fixed bounded bundle
-  - actions: Idle `4 x 180ms, loop`; Attack `4 x 90ms, one-shot -> Idle`;
-    Hit `4 x 80ms, one-shot -> Idle`; Dead `6 x 140ms, terminal final frame`
-  - acquisition: four action sheets, normalized selection portrait as identity reference
-  - neutral combat anchor: <one concise pose sentence derived once and repeated verbatim>
-  - continuity lock: same identity, costume, proportions, equipment, facing, camera,
-    apparent scale, pivot, and baseline across all four sheets
-  - frame motion: adjacent cells are small, substantially overlapping in-between pose
-    steps, not distant key poses; Attack/Hit begin near and recover toward Idle; Dead falls
-    through six adjacent steps
-  - geometry: shared 512x512 content box/baseline/style and Bounds/Intent/Center/Orb/Talk anchors
-  - fallback: one missing or invalid frame disables all cues and uses static combat body
-  - explicit gaps: Cast, Spine, trails, audio, animated merchant/rest bodies
 - **Ancient dialogue**: none | one block per cataloged vanilla target
   - target: <natural-language Ancient name; adapter resolves the pinned entry>
   - groups:
@@ -91,10 +113,16 @@ One selectable character shell plus its starter ecosystem; scenarios are `RunSta
   - native priority: preserve the global first-visit-ever introduction before Character
     exact-visit and repeating dialogue
   - explicit gaps: custom Ancient/model/background/layout/options/rewards/audio/multiplayer
-- **derived ids** (adapter resolves after the semantic SPEC is accepted):
-  - character logical id
-  - every starter content logical id and localization fields
-  - flat Ancient dialogue keys and zero-based visit metadata from the semantic groups
+- **native design basis**:
+  - grammar profile: `design/character-foundation.md @ STS2 0.107.1`
+  - pinned facts used: <exact native identities/values used in the proposal>
+  - observed convention: <native shape used as the recommendation>
+  - creative decision: <exact selected deck shape and teaching intent>
+- **deliberate native departure**: none | <departure plus onboarding, compatibility, and
+  balance consequences accepted by the user>
+- **adapter output** (written to MEMORY after acceptance): character logical id, every
+  starter content logical id and localization fields, flat Ancient dialogue keys and
+  zero-based visit metadata from the semantic groups, and framework diagnostic record
 ```
 
 Do not add a manual registration line or invent a nonstandard energy override. If
@@ -204,3 +232,62 @@ Trigger it:
    enter combat and observe the named starter mechanic's exact state delta. When combat
    cues are selected, watch one full Idle loop, play an Attack, take one Hit, and reach Dead;
    confirm the first two return to Idle, Dead holds its last pose, and no anchor jumps.
+
+## Advanced capability sub-envelopes
+
+When `advanced mechanic` is not `none`, also record the matching block from this section.
+Author it only when the named semantic capability has its own recipe in the shipped pack.
+The current implemented public framework routes are exactly `reference/character-resource.md`
+and `reference/ordered-card-buffer.md`. If neither can express the mechanic, mark it
+unsupported and name the gap (`INV-3`); this envelope never implies non-public access or a
+patch target.
+
+### Capability module
+
+```markdown
+- **capability module**: <family/name>
+- **semantic host**: <real owner/event>
+- **lifetime/reset/save**: <turn|combat|run; exact reset and persistence>
+- **public surface**: <semantic context/listener used by domain code>
+- **adapter route**: public-api | owned-adapter
+- **adapter constraints**: <exact supported version and implementation-only limits>
+- **multiplayer ordering**: <owner/local guard and deterministic order>
+- **UI host/fallback**: <host, visibility, refresh, generic fallback>
+- **conflict/failure**: <composition policy and fallback>
+- **scenario/invariant**: <real host plus exact expected/observed state>
+```
+
+### Character resource
+
+The adapter lowers this block to one framework-owned combat resource with all-or-nothing
+commands and a public UI attachment. Implementation records belong in `MEMORY.md`, not SPEC.
+
+```markdown
+- **resource**: <name>
+- **owner/lifetime**: local Player / combat; new PlayerCombatState resets to 0
+- **amount domain**: nonnegative integer, floor 0
+- **gain sources**: <source -> positive amount>
+- **spend/payoff**: <cost -> exact consequence>; all-or-nothing
+- **affordability boundary**: <one affordable and one unaffordable case>
+- **UI**: fixed 220x32 icon+text counter under combat energy UI; checked text-only fallback
+- **placement**: offset 160 from native Energy; the two global rects must not intersect
+- **adapter route**: public-api selected after SPEC; no private patch fallback
+- **observe**: gain/spend/rejection/floor/counter/non-overlap plus distinct zero state in combat 2
+```
+
+### Ordered semantic buffer
+
+The adapter lowers this block to combat-attached semantic state. Implementation records
+belong in `MEMORY.md`, not SPEC.
+
+```markdown
+- **buffer**: <name>; owner local PlayerCombatState; lifetime combat
+- **recorded value/order**: <semantic value from accepted cards>; append order <matters|not>
+- **capacity/overflow**: <positive N>; reject without mutating current contents
+- **source destination**: normal STS2 result pile, default Discard
+- **visibility**: <compact player-readable state through a grounded UI host>
+- **compile**: <trigger>; snapshot <ordered fields>; formula <deterministic expression>
+- **output**: <real card + configured scaling values + exact effect>
+- **observe**: exact source/compile-card destinations, order/capacity/overflow/UI,
+  one CardGeneratedEntry, output state/effect, and distinct empty state in combat 2
+```

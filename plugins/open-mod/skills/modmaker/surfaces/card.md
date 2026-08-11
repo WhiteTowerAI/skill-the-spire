@@ -13,7 +13,7 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v1
+- **contract**: sts2-content-semantic/v2
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -55,6 +55,13 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
       applied typed Power>; formula <one deterministic expression>; inputs <complete list>;
       domain <integer [min,max]>; upgrade <same | exact change>; evaluation <before play |
       after normal payment and move>
+- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+  - A Card reaches the widest set (66 of 68), but **which** it reaches depends on where it is:
+    a deck Card always receives run-scope hooks, and it receives combat-scope hooks only while
+    it sits in a combat pile. So a rule meant to hold all combat long must not live on a Card
+    that leaves the piles. `Owner` is a `Player`; guard against `Owner.Creature` and
+    `Owner.Osty` where an Osty can act. This is separate from `effects`: participation applies
+    while the Card is held or in the deck, not when it is played.
 - **state**: none | see the stateful-mechanic contract below
 - **presentation**:
   - assets: card portrait; placeholder | generate
@@ -133,6 +140,12 @@ separately proves text, icon reflow, and tooltip presentation.
 
 ## Proof matrix
 
+- **For hook participation — assert the neutral case outside the guard.** Play assertions
+  observe none of it, since participation is not the Card's play effect. Assert the modified
+  value through the real path, then drive one event the guard should ignore and assert it is
+  unchanged. When the declaration needs combat scope, assert it from a combat pile rather than
+  from the deck: a deck Card outside the piles receives no combat hook, so the same declaration
+  silently does nothing. For a collection edit, also assert an unrelated entry survives.
 - For a Scry Card, follow `reference/scry-helper.md`: require one visible native selector
   and a pending Card play task before
   confirmation, plus zero/empty/short/full cases, exact seen/discarded/unselected order,

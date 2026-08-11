@@ -59,26 +59,31 @@ FIELD_PROOF_PAIRS: dict[str, tuple[tuple[str, str], ...]] = {
         ("cadence:", "Assert the cadence."),
         ("keyword tips:", "Assert each declared keyword tip resolves."),
         ("displayed values:", "Assert each declared displayed value renders live."),
+        ("hook participation:", "assert the neutral case outside the guard"),
     ),
     "power": (
         ("lifetime:", "Assert the declared lifetime."),
         ("amount domain:", "Assert the declared amount domain at its bounds."),
+        ("hook participation:", "assert the neutral case outside the guard"),
     ),
     "potion": (
         ("usage:", "Assert the declared `usage`"),
         ("target:", "Assert the declared target, not the implemented one."),
         ("keyword tips:", "Assert each declared keyword tip resolves."),
         ("displayed values:", "Assert each declared displayed value renders live."),
+        ("hook participation:", "assert the neutral case outside the guard"),
     ),
     "orb": (
         ("passive:", "Prove all three behaviors, not one."),
         ("evoke:", "Fire the passive through the real per-turn path."),
         ("smartDescription:", "smartDescription"),
         ("eviction:", "evokes"),
+        ("hook participation:", "assert the neutral case outside the guard"),
     ),
     "enchantment": (
         ("host restriction:", "Assert the host restriction by attempting an illegal host."),
         ("stacking:", "already-enchanted"),
+        ("hook participation:", "assert the neutral case outside the guard"),
     ),
     "keyword": (
         ("behavior owner:", "Assert the named behavior in the host."),
@@ -88,6 +93,7 @@ FIELD_PROOF_PAIRS: dict[str, tuple[tuple[str, str], ...]] = {
         ("branches:", "Drive every branch through both outcomes"),
         ("loop:", "prove it loops rather than terminating"),
         ("group:", "Assert the spawned roster and HP."),
+        ("hook participation:", "assert the neutral case outside the guard"),
     ),
     "event": (
         ("availability:", "Drive each gated option both ways."),
@@ -98,6 +104,7 @@ FIELD_PROOF_PAIRS: dict[str, tuple[tuple[str, str], ...]] = {
     ),
     "card": (
         ("engine-composed text:", "result pile"),
+        ("hook participation:", "assert the neutral case outside the guard"),
     ),
 }
 

@@ -152,11 +152,12 @@ TOOLS_DIR_ABS="$TARGET/$TOOLS_DIR_REL"
 rm -rf "${TOOLS_DIR_ABS:?}"
 mkdir -p "$TOOLS_DIR_ABS"
 for t in "$REPO_ROOT"/games/sts2/tools/*.py; do
-    # Catalog collection is a repository-maintainer workflow with a C# project/template;
-    # generated Mods need only the checked catalog and vanilla_overrides.py validator.
-    if [ "$(basename "$t")" = "collect_vanilla_catalog.py" ]; then
-        continue
-    fi
+    # Catalog collection is a repository-maintainer workflow: one needs a C# project/template,
+    # the other reads the gitignored decompile under baselines/. Neither can run in a user's
+    # runtime, and generated Mods need only the checked catalogs plus their validators.
+    case "$(basename "$t")" in
+        collect_vanilla_catalog.py|collect_model_hooks.py) continue ;;
+    esac
     cp "$t" "$TOOLS_DIR_ABS/"
 done
 

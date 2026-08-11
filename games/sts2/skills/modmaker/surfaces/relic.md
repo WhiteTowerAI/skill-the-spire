@@ -12,7 +12,7 @@ the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v1
+- **contract**: sts2-content-semantic/v2
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -35,6 +35,10 @@ the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
   - target: owner
   - sequence: <ordered game-term effect with exact values>
   - scaling: <named values and bounds, or none>
+- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+  - A Relic reaches the widest set (66 of 68): both run-scope and combat-scope. `Owner` is a
+    `Player`, so a subject guard compares against `Owner.Creature` **and** `Owner.Osty` where
+    an Osty can act. Rest Site contribution is not declared here — see § SPEC envelope above.
 - **state**: none | see the stateful-mechanic contract below
 - **presentation**:
   - assets: relic icon; placeholder | generate
@@ -178,6 +182,13 @@ already asserts `N-1`, threshold, and reset/carry-over across combats.
   the rendered text contains the current value, not the placeholder token and not a stale
   literal — an unresolved `{Placeholder}` and a diverged hardcoded number both pass every
   state assertion.
+- **For hook participation — assert the neutral case outside the guard.** The modified value
+  alone passes for a Relic that modifies *every* event of that kind, which is a different relic
+  from the declared one and usually a run-breaking one. Drive one event the guard should ignore
+  and assert the host's value is unchanged. A `Player`-owned guard needs the Osty case too when
+  the design says the Osty counts. For a collection edit, also assert that an entry placed in
+  the list beforehand survives — vanilla `Midas` rebuilds the whole reward list, and an editor
+  that clears it still passes "my entry is present".
 - A stateful relic additionally owes the reset/carry-over and save round trip from
   `reference/stateful-mechanics.md`.
 - For a Relic-owned Rest Site option, follow `reference/rest-site-options.md`: require the

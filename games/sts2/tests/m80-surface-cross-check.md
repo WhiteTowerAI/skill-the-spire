@@ -23,8 +23,14 @@ co-located and cross-checked but not independently piloted.
 
 ## Result
 
-Ten surfaces checked. Thirteen mismatches found, in five classes. Ten fixed, three left open
-with a recorded reason.
+Ten surfaces checked. Thirteen mismatches found, in five classes. Ten were fixed inside M8.0; the
+three left open were deferred to M8.2 and closed there on 2026-08-10, because all three depended on
+one decision M8.0 could not make alone — which envelope form is canonical. Their per-mismatch
+sections below record what closed each one.
+
+**This file remains required reading, for a reason unaffected by those closures.** Nine of the ten
+surfaces have never been piloted. Co-located, cross-checked, and schema-valid is not the same as
+observed.
 
 Mismatches 9-11 were found by the automated check in `tools/tests/test_surface_cross_check.py`,
 not by the manual read that produced 1-8. That is the useful result of building it: the manual
@@ -40,14 +46,14 @@ the tier-honesty rule coexisted without any check noticing.
 
 | # | Surface(s) | Mismatch | Origin | Found by | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | potion, power, orb, monster, event, character | Flat `element:` envelope contradicts the canonical nested `content:/surface:` envelope that `semantic-contract.md` declares itself source-of-truth for | Inherited | manual | **Open** |
+| 1 | potion, power, orb, monster, event, character | Flat `element:` envelope contradicts the canonical nested `content:/surface:` envelope that `semantic-contract.md` declares itself source-of-truth for | Inherited | manual | Closed in M8.2 |
 | 2 | keyword, enchantment | `semantic-contract.md` lists both as `content.surface` enum values with their own Surface-inputs rows, while the surfaces declare no element block at all | Introduced | manual | Fixed |
 | 3 | card | Host-Card fields that `keyword.md` and `enchantment.md` instruct the author to write are absent from the Card envelope | Introduced | manual | Fixed |
 | 4 | card | No envelope field declares engine-composed keyword text, so the pilot's "do not re-author Exhaust" rule has nothing to check against | Inherited | manual | Fixed |
 | 5 | potion | `boundary cases: <upgrade/state/relationship cases>` offers an upgrade case; Potions have no upgrade concept | Inherited | manual | Fixed |
 | 6 | character | Proof matrix restates verify.md's character-resource and ordered-buffer bullets, so one proof has two homes that can drift | Introduced | manual | Fixed |
-| 7 | character | The resource and ordered-buffer *envelopes* stay in `spec.md` while their proof moved to `surfaces/character.md`, so that capability pair is still split across two files | Inherited | manual | **Open** |
-| 8 | all ten | Nothing mechanically compares an envelope against its own proof matrix, and `design_trace.py` validates only the DESIGN/SPEC-trace YAML, never envelope field names | Inherited | manual | Partly closed |
+| 7 | character | The resource and ordered-buffer *envelopes* stay in `spec.md` while their proof moved to `surfaces/character.md`, so that capability pair is still split across two files | Inherited | manual | Closed in M8.2 |
+| 8 | all ten | Nothing mechanically compares an envelope against its own proof matrix, and `design_trace.py` validates only the DESIGN/SPEC-trace YAML, never envelope field names | Inherited | manual | Closed in M8.2 |
 | 9 | relic, potion | Both declare `keyword tips:` and carry a section explaining that Relic/Potion tips are *not* automatic, but no proof case observes the registration | Inherited | automated | Fixed |
 | 10 | relic, potion | Both declare `localization.displayed values:` with a literal-versus-placeholder decision, but no proof case observes that the value renders live | Inherited | automated | Fixed |
 | 11 | power | `amount domain` is mandatory and the author page requires clamping to every finite bound, but no proof case asserts the bounds | Inherited | automated | Fixed |
@@ -56,7 +62,7 @@ the tier-honesty rule coexisted without any check noticing.
 
 ## The mismatches
 
-### 1. Two incompatible envelope forms — open
+### 1. Two incompatible envelope forms — closed in M8.2
 
 `semantic-contract.md` opens by declaring itself "the source-of-truth for the product-level
 `SPEC.md` envelope", specifies a nested canonical envelope keyed on
@@ -86,6 +92,15 @@ contract migration, not a file move, and it is larger than the co-location Packa
 overlaps M8.2's recorded ownership of "whether a native engine capability the SPEC grammar cannot
 yet declare is a grammar gap or a capability-promotion decision" — the same decision, so doing it
 twice was the alternative rejected.
+
+**Closed by M8.2 on 2026-08-10.** All six flat surfaces now use the canonical nested form, and
+`semantic-contract.md` is `sts2-content-semantic/v2` with a migration note stating what moved and
+how a v1 project is read: a v1 `SPEC.md` on an unfinished project resumes unchanged, and only a new
+or revised SPEC is written as v2. `element:` became `content.surface`, `observe:` became
+`proof.invariants` on the three surfaces that used it, `derived ids` became `adapter output`, and
+the loose top-level keys moved inside the shared sections. The version bump and migration note the
+contract demanded were honored rather than waived, which is why this was M8.2's step 2 rather than
+an M8.0 file move.
 
 Until M8.2 resolves it, this stays a live contradiction in the shipped pack: `semantic-contract.md`
 claims authority its six flat surfaces do not honor, and nothing mechanically enforces either
@@ -176,7 +191,7 @@ proof had two homes and could drift. Introduced by the draft.
 Fixed the way the pilot fixed Scry: the surface page owns the proof, and `verify.md` points to
 it. That is now the established direction for anything a single surface owns.
 
-### 7. Resource and buffer envelope/proof still split — open
+### 7. Resource and buffer envelope/proof still split — closed in M8.2
 
 The same two capabilities keep their *envelopes* in `spec.md` (capability module, character
 resource, ordered semantic buffer) while their proof now lives in `surfaces/character.md`.
@@ -190,7 +205,14 @@ Since these two envelopes live in `spec.md`'s shared section, where they land de
 envelope form M8.2 selects; moving them first and normalizing them second would touch the same
 text twice.
 
-### 8. No mechanical cross-check — partly closed
+**Closed by M8.2 on 2026-08-10.** All three sub-envelopes — capability module, character resource,
+and ordered semantic buffer — now live in `surfaces/character.md` under
+§ Advanced capability sub-envelopes, beside the proof matrix that observes them. `spec.md` keeps a
+pointer and the two implemented-route names. Deferring was the right call for the stated reason:
+the envelopes were rewritten into the v2 nested form in the same pass that moved them, so the text
+was touched once rather than twice.
+
+### 8. No mechanical cross-check — closed in M8.2
 
 The plan records two enforcement gaps: `design_trace.py` accepted invented SPEC fields
 silently, and no automated check compares an envelope against its own proof matrix.
@@ -209,9 +231,19 @@ Orb's three behaviors, Enchantment `host restriction` with its illegal-host case
 `moves`/`branches` with their traversal, Event option availability with its both-ways case,
 and Character `pool cards` with its play-every-behavioral-card case.
 
-Still open: whether a *generated* project's `SPEC.md` conforms to its surface envelope. That
-needs the envelope schema mismatch 1 leaves unresolved, so it cannot be closed before that
-contract decision.
+The second half — whether a *generated* project's `SPEC.md` conforms to its surface envelope —
+needed the schema mismatch 1 left unresolved, so it could not close before that contract decision.
+
+**Closed by M8.2 on 2026-08-10**, once v2 gave it one schema to check against. `spec_envelope_trace.py`
+validates a generated `SPEC.md` against the envelope its own `surface:` line claims: every shared
+section present, no top-level key outside the canonical set plus that surface's declared fields, and
+a v2 contract line or none at all (an absent or v1 line means a pre-v2 project, which passes
+through unchanged). It reads the allowed keys from `surfaces/<element>.md` rather than a hardcoded
+list, so the page and the check cannot disagree. `spec.md` runs it in the pre-confirmation
+validation sequence beside the other three validators.
+
+What it still does not do: judge whether a declared value is *right*. A SPEC can pass this and
+describe the wrong Mod. It checks that a SPEC is shaped like the surface it claims to be.
 
 ### 9-11. Declared fields no proof case observed — fixed
 
@@ -306,7 +338,9 @@ paid for these rules in several files at once, but it was not measured.
 - No surface here except Card has been piloted through a real authoring run.
 - A fixed mismatch means the shipped prose no longer contradicts itself. It does not mean the
   surface generates a working Mod.
-- Mismatches 1 and 7 are live contradictions in the shipped pack, recorded and unfixed.
+- All thirteen mismatches now read as fixed or closed, three of them by M8.2 rather than M8.0. That
+  is a statement about internal consistency and one new mechanical check, not about any surface
+  having been observed.
 - The static reading may have missed mismatches. Absence from this table is not proof of
   consistency.
 - Mismatch 13's fix is a prose and loading-order change. No run has yet been observed obeying

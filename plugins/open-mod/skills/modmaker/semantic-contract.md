@@ -12,12 +12,30 @@ implemented.
 Every generated SPEC uses:
 
 ```text
-contract: sts2-content-semantic/v1
+contract: sts2-content-semantic/v2
 host intent: Slay the Spire 2 stable 0.107.1
 ```
 
 The contract version is independent of the game version and framework version. A
 change to this envelope requires a contract-version bump and a migration note.
+
+**Migration from v1.** The six surfaces that used a flat `- **element**: <slug>` opening
+with ad-hoc top-level keys (potion, power, orb, monster, event, character) now use the same
+canonical nested form as card and relic. A project SPEC written under v1 is still readable
+and resumes unchanged under its own terms; only new or revised SPECs are written as v2. An
+absent `contract:` line or a `sts2-content-semantic/v1` declaration signals a pre-v2 project;
+resume it from its existing artifacts without rewriting the envelope.
+
+**What changed in v2.** The nine shared section names (`content`, `registration`,
+`localization`, `effects`, `state`, `presentation`, `fallback`, `proof`, and `adapter output`)
+are the same for all surfaces. Surface-specific fields live inside these sections rather than
+replacing them. The `element:` key is replaced by `content.surface`. `derived ids` is renamed
+`adapter output` and moves to the end of each envelope, consistent across all surfaces. The
+`observe:` key (used by monster, event, and character in v1) is replaced by `proof.invariants`,
+consistent with card, relic, potion, power, and orb. Starting HP and energy per turn moved
+from loose top-level keys into `content:` on the character surface. The capability-module,
+character resource, and ordered semantic buffer blocks moved from `spec.md` into
+`surfaces/character.md`, closing M8.0 mismatch 7.
 
 ## Canonical envelope
 
@@ -30,7 +48,7 @@ emitted semantic operation appears once with a stable `OP-###`, one or more curr
 generation allowlist: deferred/out-of-scope design items never appear in this envelope.
 
 ```markdown
-- **contract**: sts2-content-semantic/v1
+- **contract**: sts2-content-semantic/v2
 - **content**:
   - name: <player-facing name>
     surface: card | relic | potion | power | keyword | enchantment | orb |
@@ -253,8 +271,10 @@ retained so current verification tools remain compatible.
 
 ## Simple gate examples
 
-The following two semantic descriptions are complete and contain no
-framework vocabulary. The RitsuLib adapter reference maps them to implementation data.
+The following two semantic descriptions are compact v1-era examples retained for
+illustration: they show a complete, framework-free description. Real generated SPECs use the
+v2 nested envelope from the surface pages. The contract line here marks these as pre-v2
+sketches, not current output.
 
 ```markdown
 # SPEC - Ember Coin

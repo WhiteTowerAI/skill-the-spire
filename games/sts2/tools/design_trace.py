@@ -24,6 +24,9 @@ OPERATION_ID_RE = re.compile(r"^OP-[0-9]{3}$")
 SUPPORTED_ROUTE_RE = re.compile(
     r"^(?:recipes|reference)/[a-z0-9][a-z0-9_./-]*\.md(?:#[a-z0-9_-]+)?$"
 )
+# Hook semantic ids are snake_case (`modify_damage_multiplicative`); other capability ids use
+# the same shape so one pattern covers both.
+CAPABILITY_ID_RE = re.compile(r"^[a-z][a-z0-9_.-]*$")
 
 
 class DesignTraceError(ValueError):
@@ -190,8 +193,65 @@ def validate_spec(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
             raise DesignTraceError(
                 f"{operation_id} has invalid supported route: {supported_route}"
             )
+        # Optional and additive: an operation without it validates exactly as before, so a
+        # project written before M8.2 keeps passing. When present, `validate_files` pairs
+        # each id against what the route page declares.
+        if "capability_ids" in entry:
+            capability_ids = _require_string_list(
+                entry.get("capability_ids"), f"{operation_id}.capability_ids"
+            )
+            if not capability_ids:
+                raise DesignTraceError(
+                    f"{operation_id} declares an empty capability_ids list; omit the field "
+                    f"instead"
+                )
+            for capability_id in capability_ids:
+                if not CAPABILITY_ID_RE.fullmatch(capability_id):
+                    raise DesignTraceError(
+                        f"{operation_id} has invalid capability id: {capability_id}"
+                    )
         operations[operation_id] = entry
     return operations
+
+
+def heading_slugs(text: str) -> set[str]:
+    """GitHub-style anchor slugs for every heading in a route page.
+
+    A `supported_route` may carry a `#fragment`, and until M8.2 only the file half was
+    checked. The shipped example in `spec.md` pointed at `art-contract.md#placeholder`, an
+    anchor that has never existed, and every generated project copied it. A pointer that does
+    not resolve is worse than no pointer: it reads as grounding while landing nowhere.
+    """
+    slugs: set[str] = set()
+    for heading in re.findall(r"^#+\s+(.*?)\s*$", text, re.MULTILINE):
+        slug = re.sub(r"[^a-z0-9\s-]", "", heading.lower()).strip()
+        # One dash per whitespace character, not per run: GitHub strips a punctuation mark
+        # and keeps the spaces that surrounded it, so `A — B` becomes `a--b`.
+        slugs.add(re.sub(r"\s", "-", slug))
+    return slugs
+
+
+# `re.DOTALL` because a real route declares dozens of ids and wrapping them onto one line is
+# unreadable. Without it the first shipped declaration parsed as zero ids and the pairing check
+# silently passed everything.
+CAPABILITY_DECLARATION_RE = re.compile(
+    r"<!--\s*openmod-capabilities:\s*(.*?)\s*-->", re.DOTALL
+)
+
+
+def declared_capabilities(text: str) -> set[str]:
+    """Semantic capability ids a route page declares it provides.
+
+    Kept on the route page itself rather than in a separate catalog: `AGENTS.md` requires
+    M8.2 metadata to live with the authoritative recipe/reference route, so the page that
+    documents a capability is the page that claims it.
+    """
+    declared: set[str] = set()
+    for match in CAPABILITY_DECLARATION_RE.findall(text):
+        declared.update(
+            token.strip() for token in match.replace(",", " ").split() if token.strip()
+        )
+    return declared
 
 
 def validate_pair(design: dict[str, Any], spec: dict[str, Any]) -> tuple[int, int]:
@@ -253,11 +313,27 @@ def validate_files(design_path: Path, spec_path: Path) -> tuple[int, int]:
     if route_root is None:
         raise DesignTraceError("cannot locate the shipped sts2-api route root")
     for operation in spec["operations"]:
-        route_path = operation["supported_route"].split("#", 1)[0]
-        if not (route_root / route_path).is_file():
+        route_path, _, anchor = operation["supported_route"].partition("#")
+        route_file = route_root / route_path
+        if not route_file.is_file():
             raise DesignTraceError(
                 f"{operation['operation_id']} supported route does not exist: {route_path}"
             )
+        route_text = route_file.read_text(encoding="utf-8")
+        if anchor:
+            available = heading_slugs(route_text)
+            if anchor not in available:
+                raise DesignTraceError(
+                    f"{operation['operation_id']} supported route anchor does not exist: "
+                    f"{route_path}#{anchor}"
+                )
+        declared = declared_capabilities(route_text)
+        for capability_id in operation.get("capability_ids", ()):
+            if capability_id not in declared:
+                raise DesignTraceError(
+                    f"{operation['operation_id']} claims capability {capability_id!r}, "
+                    f"which {route_path} does not declare"
+                )
     return result
 
 

@@ -148,7 +148,8 @@ simulated personas.
 
 ## M8 whole-skill verification plan
 
-M8.0 skill structure restructuring is closed; M8.1 is implemented in source.
+M8.0 skill structure restructuring, M8.1 literal deliverable contract, and M8.2 exact semantic
+capability conformance and preflight are closed.
 Later Packages wait on the prerequisites in `documents/IMPLEMENTATION_PLAN.md`, and each
 receives its execution contract when selected rather than in advance. The
 Watcher evaluation is baseline failure evidence, not the final acceptance project. Package
@@ -172,7 +173,11 @@ cases must verify the decision each Package adds:
    exercises the complete contract without reusing or repairing Watcher.
 
 M8.6 is the only planned fresh natural-language full-pipeline gate and is not authorized to
-run yet. Human play owns any claim about decision quality, comprehension, enjoyment, or
+run yet. It also carries the two hook-participation proofs M8.2 deferred on 2026-08-10: one
+element declaring an incoming-damage multiplier, asserted for the modified value, the neutral case
+outside its guard, and the rules-text number matching the applied multiplier; and one collection
+edit, asserted for its own entry and the survival of unrelated entries. Human play owns any claim
+about decision quality, comprehension, enjoyment, or
 tuning; Tier 1/Tier 2 retain their existing literal meanings. M8.4 and its proposed separate
 evidence-reporting subsystem were removed; existing verification ownership remains active.
 
@@ -240,23 +245,50 @@ to create; one test asserts unusual wording still passes.
 These are contract and prose checks. They establish that the workflow cannot report more than it
 earned without failing a check. They do not establish that a generated Mod loads, behaves
 correctly, or is any good, and no forward-model run, generated Mod, Tier 1, or Tier 2 is claimed
-by this Package. Checking whether a required experience has an exact maintained route, and
-backtracking when one fails, belong to later Packages.
+by this Package. Backtracking when a required experience fails belongs to a later Package.
+
+Five files own M8.2. `tools/tests/test_model_hook_catalog.py` holds the generated hook catalog to
+the pinned assembly and to the shipped vanilla reference's independently written 26+28 lists;
+`tools/collect_model_hooks.py` is maintainer-only and excluded from both payloads, so the committed
+catalog is the artifact. `tools/tests/test_m82_hook_participation.py` holds the route page's 71
+declared capability ids equal to the catalog's authorable set, asserts that only the seven
+reachable surfaces declare the field, and owns the preflight rejection cases.
+`tools/tests/test_spec_envelope_trace.py` and `tools/tests/test_design_trace_routes.py` own the
+envelope and route/anchor/capability-pairing halves.
+
+The load-bearing case is reachability. Which surfaces a hook reaches is decided by the dispatching
+iterator's listener set, so a hook overridden on a surface outside that set compiles, ships, and
+never fires — the same shape as the failure this milestone exists to prevent, which is why
+offering every hook on every surface would have added instances of it. All six rejection tests were
+verified to fail against a neutered validator; a rejection test that still passes when the check is
+removed proves nothing.
+
+`tools/tests/test_payload_tool_layout.py` exists because `publish.sh` moves the tools into
+`skills/modmaker/scripts/`, changing every relative path they use to find the pack. It builds a
+throwaway payload-shaped tree and runs the shipped validators inside it. This was written after
+`spec_envelope_trace.py` shipped with a path candidate that resolved in the repo and nowhere else.
+
+The behavioral matrix is `m82-capability-conformance-scenarios.md`: the Wrath case declaring rather
+than describing, a hook requested on a surface that cannot receive it, and an Enchantment damage
+multiplier routing to its mandatory replacement. **Both real-host proofs are deferred to M8.6 and
+unrun**, so no generated override has been observed firing in a game and every hook route is
+implemented-and-unproved.
 
 `tools/tests/test_invariants.py` owns M8.0 change 5. `skills/modmaker/invariants.md` is the one
-home for the eight rules that fire at every stage, and the test holds both halves of that
+home for the nine rules that fire across stages, and the test holds both halves of that
 contract: every `INV-n` reference in a modmaker page resolves to a defined rule, every defined
-rule is named by at least one stage, eight canonical phrasings appear in exactly one file, the
+rule is named by at least one stage, nine canonical phrasings appear in exactly one file, the
 specific restatements change 5 removed stay removed, and `SKILL.md` still registers the page as
 read at pipeline start rather than lazily.
 
 That last check is the one the design rests on. Consolidating a rule into a page a run might not
 read would leave zero copies of it, which is worse than several drifting copies — so the pointer
 is only safe while the page is eagerly loaded. The test does not observe a run obeying an
-invariant it reached through a pointer, and its single-definition list covers eight phrasings
-rather than every sentence, so a ninth restatement elsewhere would not fail. Two hardening rules
-are deliberately not in `invariants.md` because each fires at one stage: the repair attempt cap
-and the art-route consent boundary.
+invariant it reached through a pointer, and its single-definition list covers nine phrasings
+rather than every sentence, so a tenth restatement elsewhere would not fail. Three hardening rules
+are deliberately not in `invariants.md` because each fires at one stage: the repair attempt cap,
+the art-route consent boundary, and the deliverable claim-versus-report rule that lives in
+`verify.md`.
 
 `test_m72_native_grammar.py` covers the same class for Character starting facts. There the
 JSON inventory is already the authority, so the added cases derive each prose starter row —

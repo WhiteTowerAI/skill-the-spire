@@ -11,35 +11,64 @@ merely without a self-contained trigger. Envelope added 2026-08-07 by human-lead
 
 ## SPEC envelope
 
+An Orb is real content with its own identity, so it carries a full `content:` block. Because
+every one of its behaviors runs through a host, that host is named in `registration.placement`
+and its three behaviors are separate `effects` entries rather than one sequence.
+
 ```markdown
-- **element**: orb
-- **logical id**: <stable local stem>
-- **mod id**: <stable mod identity>
-- **channel host**: <the Card/relic/Power that channels it, and when>
-- **passive**: <what it does per turn, with numbers>
-- **evoke**: <what it does when evoked, with numbers>
-- **passive value**: <declared scaling name and value>
-- **evoke value**: <declared scaling name and value>
-- **slots**: <how the design expects slot capacity to be obtained and its bounds>
-- **eviction**: engine default (oldest evoked first when channeling into full slots) |
-  <the declared design if it intentionally differs>
-- **display**:
-  - title: <shown name>
-  - description: <plain fallback text; read when no smartDescription resolves>
+- **content**:
+  - name: <shown name>
+  - surface: orb
+  - logical id: <stable local stem>
+  - relations: <the Card/relic/Power that channels it>
+- **registration**:
+  - availability: shared | character:<name>
+  - ownership: player
+  - placement: channelled by <the Card/relic/Power that channels it, and when>
+- **localization**:
+  - fields: title=<shown name>; description=<plain fallback text, read when no
+    smartDescription resolves>
   - smartDescription: <text using {Passive} and {Evoke}; required for live values>
+  - formatting: dynamic value placeholders; plain | bounded vanilla rich text
   - text spans: <phrase -> semantic color intent>
-- **art**: placeholder | generate (one 100x100 icon; the persistent combat body stays the
-  checked Frost Spine fallback)
-- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
+- **effects**:
+  - trigger: channel | per-turn passive | evoke (three independent behaviors)
+  - target: <per behavior>
+  - channel: <what happens when the host channels it>
+  - passive: <what it does per turn, with numbers>
+  - evoke: <what it does when evoked, with numbers>
+  - scaling: passive value <declared scaling name and value>; evoke value <declared
+    scaling name and value>
+- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+  - An Orb in the queue receives combat-scope hooks only (45 of 68); run-scope hooks never
+    reach it. `Owner` is a `Player`, so a subject guard compares against `Owner.Creature`.
+    Participation is separate from the three behaviors above: it applies while the Orb is
+    queued, not at channel, passive, or evoke.
+- **state**:
+  - lifetime: combat
+  - owner: the player's orb queue
+  - advance/check: slots <how the design expects capacity to be obtained, and its bounds>
+  - reset: combat end
+  - persistence: none
+  - eviction: engine default (oldest evoked first when channeling into full slots) |
+    <the declared design if it intentionally differs>
+  - visible state: native orb queue display
+- **presentation**:
+  - assets: orb icon; placeholder | generate (one 100x100 icon; the persistent combat body
+    stays the checked Frost Spine fallback)
+  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - native presentation: smart tooltip plus trigger flash
+- **fallback**:
+  - missing asset: checked Frost orb icon; the Frost Spine body and channel SFX remain
+  - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
 - **proof**:
   - scenario: CombatPlayer
   - driver: channel through the real host, advance a turn, then evoke
   - invariants: <exact expected/observed state for channel, passive, and evoke>
   - boundary cases: <full-slot eviction, empty-queue evoke, or none>
-- **derived ids** (adapter resolves after the semantic SPEC is accepted):
-  - logical id: `<stable local stem>`
-  - localization fields: `title`, `description`, `smartDescription`
-  - asset role: orb icon
+- **adapter output** (written to MEMORY after acceptance): resolved content id,
+  localization keys (`title`, `description`, `smartDescription`), orb icon asset role, and
+  framework diagnostic record
 ```
 
 ## `smartDescription` is what makes the numbers live
@@ -103,6 +132,12 @@ that calling `OrbCmd.Passive` directly is a *diagnostic*, not the passive proof 
 - Assert the declared slot bounds, and the full-slot case: channeling into full slots evokes
   the oldest orb first. If SPEC declares `engine default`, assert that observed order rather
   than assuming it.
+- **For hook participation — assert the neutral case outside the guard.** A queued Orb's
+  participation is independent of its three behaviors, so the channel/passive/evoke assertions
+  observe none of it. Drive one event the guard should ignore and assert the host's value is
+  unchanged, and assert the participation still holds after the Orb has been evoked out of the
+  queue only if the design says it should. For a collection edit, also assert an unrelated entry
+  survives.
 - Assert `{Passive}`/`{Evoke}` resolve in the real smart tooltip. A dumb-tip fallback shows
   plausible text, so a missing `smartDescription` is invisible to every state assertion.
   Visible icon support additionally needs the real smart tooltip and trigger flash in a headed

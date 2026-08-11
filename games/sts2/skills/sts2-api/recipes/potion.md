@@ -99,6 +99,17 @@ await PowerCmd.Apply<StrengthPower>(
 await PlayerCmd.GainEnergy(2m, Owner);
 ```
 
+## SPEC `hook participation`
+
+`OnUse` is the Potion being used. A SPEC `hook participation` block is different: the engine asks
+the Potion for a number or a decision while resolving someone else's event, **and it does so while
+the Potion is still sitting in the belt** — participation starts when the Potion is procured, not
+when it is drunk. Read `reference/model-hook-participation.md`.
+
+A Potion reaches both the run-scope and combat-scope sets. `Owner` is a `Player`, so a subject
+guard goes through `Owner.Creature`, and through `Owner.Osty` wherever the Osty can be the
+subject.
+
 ## Localization
 
 Ship `localization/eng/potions.json` with flat public-entry keys:

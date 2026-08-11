@@ -177,6 +177,37 @@ There is NO `ICombatHook` to implement; just override the method.
 The `participants.Contains(Owner.Creature)` check is mandatory in multiplayer —
 the hook fires for every side; act only when your owner's side is the one starting.
 
+## SPEC `hook participation`: modify a value rather than act on a trigger
+
+The hooks above are the relic *doing* something. A SPEC `hook participation` block is different:
+the engine asks the relic for a number or a decision while resolving someone else's event, and
+nothing fires. Read `reference/model-hook-participation.md` for the contract. A Relic reaches
+both the run-scope and combat-scope sets — the widest reach of any surface here.
+
+The one shape difference from a Power: **`Owner` is a `Player`, not a `Creature`.** So a subject
+guard goes through `Owner.Creature`, and through `Owner.Osty` wherever the Osty can be the
+subject. Vanilla `PenNib` checks both:
+
+```csharp
+public override decimal ModifyDamageMultiplicative(
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+{
+    if (!props.IsPoweredAttack()) return 1m;                        // SPEC `condition`
+    if (dealer != Owner.Creature && dealer != Owner.Osty) return 1m; // SPEC `subject`
+    return 2m;
+}
+```
+
+A guard that checks only `Owner.Creature` silently stops applying the moment the player's Osty
+is the one acting, which no single-value assertion catches.
+
+For a **collection** participation (`try_modify_rewards` and its relatives), the bool reports only
+that you touched the list — add or remove entries and return `true`, or return `false` untouched.
+Preserve every entry you did not come for: vanilla `Midas` doubles gold rewards by rebuilding the
+list with `Clear()` plus `AddRange()` of *everything*, transformed and untransformed alike. And do
+not contribute a Rest Site option through the raw hook; use § Optional owned Rest Site action
+above, which carries boundaries the bare hook does not.
+
 ## Effect building blocks (confirmed APIs)
 
 Namespaces: commands in `MegaCrit.Sts2.Core.Commands`, RNG in `...Core.Random`.

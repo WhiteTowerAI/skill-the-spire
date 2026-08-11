@@ -87,6 +87,16 @@ await OrbCmd.EvokeNext(choiceContext, player);
 slot changes nonnegative before `AddSlots`/`RemoveSlots`; negative values can reverse the
 intended direction.
 
+## SPEC `hook participation`
+
+Channel, passive, and evoke are the Orb acting. A SPEC `hook participation` block is the engine
+asking the queued Orb for a number or a decision while resolving something else — a fourth,
+independent behavior. Read `reference/model-hook-participation.md`.
+
+An Orb reaches the combat-scope set only, and `Owner` is a `Player`, so a subject guard goes
+through `Owner.Creature`. The participation holds while the Orb is in the queue, so it stops when
+the Orb is evoked out — state that in SPEC if the design depends on it.
+
 ## Localization
 
 Ship `localization/eng/orbs.json` using the exact public entry:

@@ -60,6 +60,8 @@ class SemanticContractTests(unittest.TestCase):
             "proof",
         ):
             self.assertIn(f"**{field}**", self.contract)
+        self.assertIn("sts2-content-semantic/v2", self.contract)
+        # v1 examples are retained in the migration note; the canonical declaration is v2
         self.assertIn("sts2-content-semantic/v1", self.contract)
 
     def test_simple_card_and_relic_spec_are_framework_neutral(self) -> None:

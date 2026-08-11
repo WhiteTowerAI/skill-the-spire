@@ -60,6 +60,46 @@ CardCmd.Enchant<<EnchantmentName>>(card, amount);
 After attachment, assert `card.Enchantment is <EnchantmentName>` and read `Amount` from
 that mutable instance. Preserve base restrictions when overriding `CanEnchant`.
 
+## SPEC `hook participation`: five hooks are replaced here
+
+An Enchantment reaches 61 of the 68 cataloged hooks at their ordinary `AbstractModel` signature.
+For damage, block, and card play count it must use `EnchantmentModel`'s own replacements instead.
+The pinned assembly documents each as "Enchantments MUST use this hook instead of" its
+counterpart, and each runs **before** every other modification hook for that value:
+
+```csharp
+// Correct on an Enchantment. Two parameters, no subject guard.
+public override decimal EnchantDamageMultiplicative(decimal originalDamage, ValueProp props)
+{
+    if (!props.IsPoweredAttack()) return 1m;   // SPEC `condition`; the only guard left
+    return 2m;
+}
+
+// WRONG on an Enchantment: compiles, and the framework's own docs forbid it.
+public override decimal ModifyDamageMultiplicative(
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) { ... }
+```
+
+The five, with their exact signatures and neutral returns:
+
+| Replacement | Signature | Return when not applying |
+|---|---|---|
+| `EnchantBlockAdditive` | `decimal(decimal originalBlock)` | `0m` |
+| `EnchantBlockMultiplicative` | `decimal(decimal originalBlock)` | `1m` |
+| `EnchantDamageAdditive` | `decimal(decimal originalDamage, ValueProp props)` | `0m` |
+| `EnchantDamageMultiplicative` | `decimal(decimal originalDamage, ValueProp props)` | `1m` |
+| `EnchantPlayCount` | `int(int originalPlayCount)` | `originalPlayCount` |
+
+There is no subject guard because the hook is already scoped to this enchantment's own card —
+which also means it cannot reach any other card, so do not try to write a cross-card rule here.
+Mind the neutral: additive returns `0m` and multiplicative returns `1m`, and a guard copied from
+the wrong row is a silent `x0` or a stray `+1`. `EnchantPlayCount` passes through its argument
+rather than a constant.
+
+For every other hook, read `reference/model-hook-participation.md` and use the ordinary shape. An
+Enchantment inherits its host Card's combat reachability, so a rule meant to hold for all of
+combat does not apply while the enchanted Card sits outside the combat piles.
+
 ## Localization
 
 Ship `localization/eng/enchantments.json`:

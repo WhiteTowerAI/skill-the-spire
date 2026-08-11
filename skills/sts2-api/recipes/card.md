@@ -162,6 +162,30 @@ like a relic — all the card's effect goes in `OnPlay`. (Rare extras exist:
 `OnTurnEndInHand` for "if this is in your hand at end of turn…", `IsPlayable` to gate
 playability — reach for them only if SPEC demands.)
 
+## SPEC `hook participation`: a rule that holds without being played
+
+`OnPlay` is the Card's effect. A SPEC `hook participation` block is a rule the Card contributes
+while it is merely *present* — the engine asks it for a number or a decision while resolving
+something else, and playing the Card is not involved. Read
+`reference/model-hook-participation.md`.
+
+One reachability rule matters more here than on any other surface. `CardModel` receives combat
+hooks only while the Card is in a combat pile:
+
+```csharp
+public override bool ShouldReceiveCombatHooks => Pile?.IsCombatPile ?? false;   // pinned engine
+```
+
+A deck Card always receives run-scope hooks, so a "while this is in your deck" rule works from the
+deck. But a combat-scope declaration on a Card that is not in a pile compiles, ships, and never
+fires. Check the hook's `authorable_surfaces` and scope in the catalog before writing it, and put
+the rule on a relic or a Power instead when it must hold for all of combat regardless of pile.
+
+`Owner` is a `Player`; guard against `Owner.Creature` and `Owner.Osty` where the Osty can be the
+subject. An **Enchantment** attached to this Card inherits the same pile-dependent reachability,
+and it must use its five `Enchant*` replacements for damage, block, and play count — see
+`recipes/enchantment.md`.
+
 ## Effect building blocks (confirmed APIs — pick the block(s) matching SPEC)
 
 All `Cmd`s are `static async Task` — `await` every one. Read static scaling numbers from

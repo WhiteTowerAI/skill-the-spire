@@ -195,10 +195,10 @@ fast path rather than receiving a full GDD process.
 M8 End-to-End Product Integrity is the active milestone. It addresses the whole
 skill: literal deliverable contracts, exact semantic capability preflight, semantic
 backtracking, cross-platform installed-workflow reproducibility, and one final clean
-whole-skill acceptance. M8.0 and M8.1 are implemented; **M8.2 exact semantic capability
-conformance and preflight is next selectable** and needs its execution contract written
+whole-skill acceptance. M8.0, M8.1, and M8.2 are closed; **M8.3 semantic continuity and
+backtracking is next selectable** and needs its execution contract written
 against the settled layout and confirmed with the human lead before implementation.
-M8.2-M8.6 hold plain-language intent only until selected. The human lead removed M8.4 on
+M8.3-M8.6 hold plain-language intent only until selected. The human lead removed M8.4 on
 2026-08-05; M8.5 and M8.6 retain their numbers. The Watcher evaluation is baseline evidence,
 not the M8 final acceptance Mod.
 
@@ -206,14 +206,14 @@ M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 
 reorganized the shipped pack so an author reads one file per element instead of three per
 stage. All ten elements are co-located under `games/sts2/skills/modmaker/surfaces/`; the Card
 pilot has a real `[PASS] Tier-2 verified` run behind it and the other nine are co-located and
-cross-checked but never piloted. Its cross-check record now holds thirteen mismatches, of which
-three remain open and are live contradictions in the shipped pack: the flat
-`element:` envelope form on six surfaces contradicts the canonical nested form
-`semantic-contract.md` declares itself source-of-truth for, the character resource/ordered
-buffer keep their envelopes in `spec.md` while their proof moved to the surface page, and no
-mechanical check compares a generated project's `SPEC.md` against its surface envelope. Read
-`games/sts2/tests/m80-surface-cross-check.md` before treating any surface page as validated;
-being co-located and checked is not the same as being correct.
+cross-checked but never piloted. Its cross-check record holds thirteen mismatches; the three it
+left open were deferred to M8.2 and are resolved there — the six flat envelopes are normalized to
+the canonical nested form under `sts2-content-semantic/v2`, the character resource and
+ordered-buffer envelopes moved to `surfaces/character.md` beside their proof, and
+`spec_envelope_trace.py` now compares a generated project's `SPEC.md` against its surface
+envelope. Read `games/sts2/tests/m80-surface-cross-check.md` before treating any surface page as
+validated; being co-located and checked is not the same as being correct, and nine surfaces are
+still unpiloted.
 
 Change 4 is closed in source. The shipped pack states what is supported, not which Package
 promoted it: a milestone id remains only where it is load-bearing — a manifest key like
@@ -252,9 +252,8 @@ restatement of a canonical phrasing, and a lost eager-load registration.
 
 Both committed payloads were regenerated from source on 2026-08-10 after change 5 and carry all
 five changes; rendering is repeatable and no payload was installed or run. The three open
-mismatches were deferred to M8.2 by the human lead on 2026-08-10: the envelope form is a
-contract-version migration overlapping M8.2's recorded ownership, and the other two depend on that
-decision. The durable result is `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`. Do not
+mismatches were deferred to M8.2 by the human lead on 2026-08-10 and closed there. The durable
+result is `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`. Do not
 re-execute the closed M8.0 contract in `documents/IMPLEMENTATION_PLAN.md`; it is retained as a
 record of what was found, not as a work order.
 Its concrete Exhaust-text, Scry, Hover Tip, Wrath, and leaked-process observations are not
@@ -262,8 +261,8 @@ a Watcher repair queue. They define three whole-skill controls: complete player-
 operation semantics, maintained semantic capabilities with conformance proof, and
 cross-platform ownership of every process the tools start.
 
-M8.1 Literal Deliverable Contract is implemented in source and synchronized into both payloads
-on 2026-08-10. Every `DESIGN.md` carries one `open-mod-deliverable:v1` claim: what the user has
+M8.1 Literal Deliverable Contract is closed by explicit human-lead decision on 2026-08-10 and is
+synchronized into both payloads. Every `DESIGN.md` carries one `open-mod-deliverable:v1` claim: what the user has
 when this is done, the `E-###` player experiences required for that claim to be honest, one
 `settled_by` method per experience from exactly `tier-2-structured`, `tier-1-load`,
 `headed-human`, or `user-decision`, and what the claim does not include. `shape` is free text on
@@ -274,13 +273,43 @@ evidence and generates the user-facing report from that ledger. `deliverable_tra
 claim before SPEC and the ledger at finalize, where neither existing validator runs, and it fails
 when an outcome outruns its evidence type — a `tier-2-structured` experience is not `observed`
 because tier-1 passed, and `user-decision` records acceptance rather than observation. There is
-no `INV-9`: the rule fires at finalize only, so it stays where it fires. A project without the
+no deliverable-claim invariant: that rule fires at finalize only, so it stays where it fires — the
+later `INV-9` is a different rule. A project without the
 block resumes unchanged. Keep the distinction the Package exists for: a requirement is not an
 experience, and a generated operation can pass while the thing the player was promised is false.
-Focused tests are `298/298`; no generated Mod, game launch, Tier 1, Tier 2, or forward-model run
+Focused tests were `298/298`; no generated Mod, game launch, Tier 1, Tier 2, or forward-model run
 is claimed. The durable result is `documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md`.
 
-M8.2 is selectable, but write and confirm its execution contract with the human lead before
+M8.2 Exact Semantic Capability Conformance and Preflight is closed by explicit human-lead decision
+on 2026-08-10 and is synchronized into both payloads. A mechanic that changes a value or decision
+the engine is computing is now a `hook participation` declaration rather than prose inside an
+effect: a capability id, the shape, the subject guard that decides direction, the condition, the
+value plus the `DynamicVar` name that puts it in rules text, and the neutral result outside the
+guard. `reference/model-hook-participation.md` is the one authoring route and declares 71
+capability ids; `reference/catalogs/model-hooks-sts2-0.107.1.json` is its generated projection of
+68 pinned hooks, owned by maintainer-only `collect_model_hooks.py` and never hand-edited.
+
+Reachability is the rule to get right: which surfaces a hook reaches is decided by the dispatching
+iterator's listener set, so a hook overridden on a surface outside that set compiles, ships, and
+never fires. Card/Relic/Potion reach 66, Enchantment 61 plus five mandatory `Enchant*`
+replacements, Power/Orb/Monster 45. Read `authorable_surfaces` from the catalog; never infer
+reachability from a hook name or a vanilla implementor found elsewhere. A Card additionally
+receives combat-scope hooks only while it sits in a combat pile. Two Rest Site hooks stay owned by
+`reference/rest-site-options.md` and are rejected as raw declarations.
+
+`design_trace.py` resolves route anchors against real headings and pairs consumed capability ids
+against what the route declares. `spec_envelope_trace.py` validates a generated `SPEC.md` against
+its surface's v2 envelope and rejects an unknown capability, a shape the catalog contradicts, a
+route-owned hook, and a hook the surface cannot receive. `INV-9` states where a claimed-but-broken
+route blocks: an approximation inside the consumer project is not a repair. The SPEC envelope is
+`sts2-content-semantic/v2`; a v1 project resumes unchanged and only a new or revised SPEC is
+written as v2. Focused tests are `364 passed`. **The two real-host proofs it owed — a custom Power
+declaring an incoming-damage multiplier, and one collection edit that preserves unrelated entries —
+were deferred to M8.6 by the human lead and did not run**, so every hook route is
+implemented-and-unproved rather than observed. The durable result is
+`documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`.
+
+M8.3 is selectable, but write and confirm its execution contract with the human lead before
 implementing it. Do not edit installed payloads in place, run a fresh acceptance, or publish a
 payload/release without later human-lead instruction. The active Package plan is
 `documents/IMPLEMENTATION_PLAN.md`. Its New-Session Start Protocol and Package Execution
@@ -352,14 +381,18 @@ vision may be recorded in `DESIGN.md`, but the current deliverable slice and `SP
 contain only promoted operations or explicit gaps. General game-design confidence never
 authorizes ungrounded Harmony, reflection, Publicizer, or IL.
 
-M8 planning does not change the current support graph. M8.2 may promote a reusable generic
-capability only through maintainer-owned pinned research, an exact public/fixed route,
-semantic-conformance cases, documentation, and synchronized payload validation. Until
-then, an identity-critical behavior with no maintained exact implementation is a blocking
+A reusable generic capability is promoted only through maintainer-owned pinned research, an exact
+public/fixed route, semantic-conformance cases, documentation, and synchronized payload
+validation. M8.2's hook participation followed exactly that path, and it promoted no new engine
+capability: the route was already public, and what was missing was the authoring for it —
+`INV-3`'s first clause. Until a capability clears that bar,
+an identity-critical behavior with no maintained exact implementation is a blocking
 generation gap, not permission for a consumer project to approximate or replace it. A
 currently claimed route that fails its maintained semantic contract must also block until
-the shared implementation is repaired or the limitation is narrowed. Machine-checkable M8.2
-metadata belongs with the existing authoritative recipe/reference route; do not create a
+the shared implementation is repaired or the limitation is narrowed (`INV-9`). Machine-checkable
+capability metadata belongs with the existing authoritative recipe/reference route: a route page
+declares the ids it provides in an `openmod-capabilities` comment, and a generated per-hook catalog
+is a projection of pinned research, not a second definition. Do not create a
 separately maintained capability catalog beside those routes and the current capability
 graph.
 
@@ -414,6 +447,11 @@ Surfaces open-mod currently generates include:
   numeric, decision, and typed Orb callbacks; sixteen intrinsic data routes; complete
   checked lifecycle/body replacements; Monster move graphs; paired Encounter rosters; and
   ordinary Event options/pages with full shipped-language `events.json`.
+- declared model hook participation on *custom* content, which is the mirror of the M6.7.5
+  vanilla-owner side: 66 public `AbstractModel` hooks on Card/Relic/Potion, 45 on
+  Power/Orb/Monster, and 61 plus five mandatory `Enchant*` replacements on Enchantment, in three
+  declaration shapes. Reachability per surface comes from the pinned catalog and is enforced at
+  preflight. Both real-host proofs are deferred to M8.6 and unrun.
 
 Generated readability APIs include conditional Card Hand Glow, up to three safe-corner
 Relic labels, and one top-left Power label from the RitsuLib Extra Badges family. Intent
@@ -482,12 +520,15 @@ not silently select a paid backend. Every acquisition path converges on determin
   with bounded repair. An unchanged unfinished project
   resumes directly at its first incomplete stage; a pre-M7.4 project backfills DESIGN from
   accepted SPEC without restarting its interview.
-- The literal completion claim before generation is implemented. Still planned for later M8
-  Packages: exact semantic preflight; treating behavior, lifecycle, rules text,
+- The literal completion claim and exact semantic capability preflight before generation are
+  both implemented: SPEC is validated against its surface envelope, each cited route and anchor
+  must resolve, and a declared capability must be one the route provides and the surface can
+  receive. Still planned for later M8
+  Packages: treating behavior, lifecycle, rules text,
   keyword/DynamicVar and Hover Tip discoverability, localization, preview, and real-consumer
   presentation as one operation; semantic-impact repair returning to the artifact that owns
   the changed fact; and an installed workflow that reproduces without in-place skill edits or
-  an owned child process left running. None of those four is implemented yet.
+  an owned child process left running. None of those three is implemented yet.
 - `games/sts2/skills/sts2-api/`: lazy recipes, references, and error catalog.
 - `games/sts2/tools/`: cross-platform Python build/launch/log/art wrappers.
 - `games/sts2/tests/`: current support graph and verification ownership.
@@ -552,7 +593,16 @@ keyword/Hover-Tip/localization/preview/presentation parity in real consumers; co
 mechanic selection, ordering, movement, hooks, degenerate states, and input modes; semantic
 repair backtracking; and immutable installed workflows that clean up only their owned
 process trees and leave no owned child running. M8.6 is the only planned fresh natural-
-language whole-skill gate; it is not authorized to run yet.
+language whole-skill gate; it is not authorized to run yet, and it now also carries the two
+hook-participation proofs M8.2 deferred on 2026-08-10 — one element declaring an incoming-damage
+multiplier asserted for both the modified value and the neutral case outside its guard, and one
+collection edit asserted for its own entry and the survival of unrelated entries.
+
+A tool that ships inside a payload must be tested in the payload layout, not only in the repo.
+`publish.sh` moves the tools into `skills/modmaker/scripts/`, which changes every relative path
+they use to find the pack, so a validator that resolves its data only from the repo passes every
+local test and then fails on the first installed project. `test_payload_tool_layout.py` builds a
+throwaway payload-shaped tree and runs the shipped tools inside it.
 
 Tier 1 requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof plus `selftest done`. Trigger logs and model-only state do not

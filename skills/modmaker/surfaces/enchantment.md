@@ -19,6 +19,39 @@ inside its host Card's envelope:
 the thing its proof must exercise — see § Proof matrix. Reviewed and accepted on 2026-08-07:
 enchantment and keyword stay host-scoped, while `orb` received its own envelope.
 
+Hook participation is declared the same way — nested under the host Card's `enchantment:` block,
+using the shared form in `spec.md` § Hook participation:
+
+```markdown
+    hook participation: none | one or more
+```
+
+## Five hooks an Enchantment must not use
+
+An Enchantment reaches 61 of the 68 cataloged hooks at their ordinary signature. The other five
+are **replaced**, and using the general hook there is wrong on the pinned host:
+
+| Instead of | An Enchantment declares | Neutral |
+|---|---|---|
+| block, additive | `enchant_block_additive` | `0m` |
+| block, multiplicative | `enchant_block_multiplicative` | `1m` |
+| damage, additive | `enchant_damage_additive` | `0m` |
+| damage, multiplicative | `enchant_damage_multiplicative` | `1m` |
+| card play count | `enchant_play_count` | the original count |
+
+The pinned assembly documents each as "Enchantments MUST use this hook instead of" its
+counterpart, and each runs **before** every other modification hook for that value — so an
+enchantment's contribution is the first thing applied, not one contributor among many.
+
+Two differences from the general form follow. There is **no subject guard**: the hook is already
+scoped to this enchantment's own card, so the only condition left is which kinds of damage or
+block count. And the additive neutral is `0m` while the multiplicative neutral is `1m` — a guard
+copied from the wrong one is a silent `x0` or a stray `+1`.
+
+Reachability has one more consequence worth stating: an Enchantment receives combat-scope hooks
+only while its host Card is in a combat pile, because it inherits that from the Card. A rule
+declared for all of combat does not hold on an enchanted Card sitting outside the piles.
+
 ## The engine writes `extraCardText` onto the host card
 
 When `HasExtraCardText` is true, the engine stamps the enchantment's localized
@@ -71,6 +104,12 @@ An enchantment has no scenario of its own. Use its host Card's `InCombat` driver
   assert the attachment is refused and the card is unchanged.
 - When `stacking` is `not stackable`, attempt a second enchantment on an already-enchanted
   card and assert the declared outcome — refusal or replacement — rather than assuming it.
+- **For hook participation — assert the neutral case outside the guard.** Attachment plus a
+  changed host outcome does not observe it: an `enchant_damage_multiplicative` that ignores its
+  damage-kind condition passes both while also scaling damage the design excluded. Assert the
+  modified value through the host Card, then drive one excluded case and assert it is unchanged.
+  For one of the five replacements, additionally assert the value on an **unenchanted** card of
+  the same kind is untouched, which is what proves the contribution is scoped to its own host.
 
 Custom icon support still requires a headed render in both the Card tab and hover tooltip; a
 path getter alone does not promote visual support.

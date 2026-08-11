@@ -192,7 +192,7 @@ constrain every stage rather than one.
 
 | File | Purpose | When to read |
 |------|---------|--------------|
-| `invariants.md` | The eight rules every stage obeys, stated once | Pipeline start; stays in context |
+| `invariants.md` | The nine rules every stage obeys, stated once | Pipeline start; stays in context |
 | `route.md` | Infer fast / co-design / revision and preserve settled decisions | Pipeline start (after state check) |
 | `interview.md` | Resolve only material open decisions → intake | After routing when a decision is still open |
 | `design.md` | Write adaptive `DESIGN.md`: deliverable claim, current/future scope, coherence contract, and stable IDs | After Interview, or to backfill a pre-M7.4 project |

@@ -48,6 +48,30 @@ RitsuLibFramework.CreateContentPack(MainFile.ModId)
   spawn list: `ModelDb.Monster<T>().ToMutable()` paired with a slot name (`null` slot is valid
   for a minimal single-monster encounter — no custom encounter scene required).
 
+## SPEC `hook participation`: a passive rule that is not a move
+
+A move is the monster acting on its turn. When SPEC declares `hook participation`, the engine is
+instead asking the monster for a number or a decision while resolving someone else's event — so
+"attacks against this creature deal 25% less damage" is participation, not a move and not a Power.
+Read `reference/model-hook-participation.md`.
+
+A Monster reaches the combat-scope set only. Its own body is `Creature`, **not** `Owner`: there is
+no owning Player, so a subject guard compares against `Creature` directly.
+
+```csharp
+public override decimal ModifyDamageMultiplicative(
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+{
+    if (target != Creature) return 1m;            // SPEC `subject`: damage I receive
+    if (!props.IsPoweredAttack()) return 1m;      // SPEC `condition`
+    return 0.75m;
+}
+```
+
+Keep it out of the move state machine. A participation rule has no intent, no move id, and no
+bestiary title, and adding a move to represent it makes the intent UI advertise something the
+monster never performs.
+
 ## Move state machine
 
 A monster's behavior is a `MonsterMoveStateMachine` of `MonsterState`s. The workhorse state

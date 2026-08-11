@@ -1,4 +1,4 @@
-# Invariants — the eight rules every stage obeys
+# Invariants — the nine rules every stage obeys
 
 Read this once at pipeline start and keep it in context. Unlike a stage page, it is **not**
 lazily loaded: these rules constrain what may be claimed or generated at *every* stage, so
@@ -9,7 +9,7 @@ specific to that stage — a concrete API family, an exact marker, one command. 
 that restates the general rule in its own words creates a second copy, and the two drift
 until the weaker wording is the one someone follows.
 
-What the eight have in common: each is a way the delivered Mod ends up **false while every
+What the nine have in common: each is a way the delivered Mod ends up **false while every
 local stage looks like it passed**. That is the failure this pack exists to prevent, and it
 is why these are invariants rather than advice.
 
@@ -103,3 +103,19 @@ An in-place edit makes the next run unreproducible and silently deletes itself a
 publish.
 
 Fires at: every stage, and especially repair.
+
+## INV-9 — A claimed route must keep its contract, or block
+
+A route that claims a semantic capability must maintain it. When observed reality shows the
+generated output does not match what the route documents, that route blocks generation until it
+is repaired upstream or its limitation is narrowed and recorded as the smallest exact boundary.
+
+An approximation inside the consumer project is not a repair. Rebuilding a missing behavior
+locally leaves the shared route still claiming something it does not deliver, so the next Mod
+that trusts it fails the same way — and this one now carries a hand-made copy nothing maintains.
+
+This is distinct from `INV-3`, where the route is absent. Here it exists and is wrong, which is
+harder to see: the citation resolves, the recipe reads as grounding, and only the player-facing
+result reveals the gap.
+
+Fires at: spec, author, verify, repair.

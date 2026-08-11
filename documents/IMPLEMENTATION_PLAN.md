@@ -26,27 +26,35 @@ from code into a catalog, splits diagnostic from preventive rules, states suppor
 which Package promoted it, and states each cross-stage invariant once. Its durable result is
 `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`.
 
-Closing it did not resolve everything it found. Three of thirteen recorded cross-check
-mismatches remain open and are live contradictions in the shipped pack: two envelope forms
-where `semantic-contract.md` claims authority six surfaces do not honor, the character
-resource/ordered-buffer envelope-proof split, and the absence of any check comparing a
-generated project's `SPEC.md` against its surface envelope. The lead deferred all three to
-M8.2 on 2026-08-10, because the envelope decision overlaps M8.2's recorded ownership and the
-other two depend on it. Nine of the ten co-located surfaces have never been piloted.
+Closing it found three of thirteen cross-check mismatches that needed a later contract: two
+envelope forms where `semantic-contract.md` claimed authority six surfaces did not honor, the
+character resource/ordered-buffer envelope-proof split, and the absence of a check comparing a
+generated project's `SPEC.md` against its surface envelope. The lead deferred all three to M8.2
+on 2026-08-10. M8.2 resolved them by normalizing the six flat envelopes to v2, moving the
+Character declarations beside their proof, and adding `spec_envelope_trace.py`. Nine of the ten
+co-located surfaces have never been piloted, which is why
+`games/sts2/tests/m80-surface-cross-check.md` remains required reading.
 
-**M8.1 Literal Deliverable Contract is implemented in source** and synchronized into both
-payloads on 2026-08-10. Its execution contract was written against the structure M8.0 left
-behind and confirmed with the human lead, including the three decisions it left open. Every
-`DESIGN.md` now carries one deliverable claim, and Finalize reports from a `PLAN.md` settlement
-ledger rather than free prose. Focused tests are `298/298`. Closing the Package remains a
-human-lead decision. The durable result is
-`documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md`.
+**M8.1 Literal Deliverable Contract is closed by explicit human-lead decision on
+2026-08-10.** Every `DESIGN.md` now carries one deliverable claim, and Finalize reports from
+a `PLAN.md` settlement ledger rather than free prose. Focused tests were `298/298`. Its
+durable result is `documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md`.
 
-M8.2-M8.6 are recorded as intent only: the plain-language result in the Package Plan table is
-the whole of their current planning.
+**M8.2 Exact Semantic Capability Conformance and Preflight is closed by explicit human-lead
+decision on 2026-08-10.** All five work-order steps are implemented in source with both payloads
+synchronized, and focused tests are `364 passed`. A mechanic that changes a value the engine is
+computing is now a declaration rather than prose, preflight resolves and pairs every cited route,
+and a hook the declaring surface cannot receive blocks instead of shipping as a method that never
+fires. **The two real-host proofs step 3 owed were deferred to M8.6 by the human lead**, so every
+hook route is implemented-and-unproved. Four defects were found while spending step 1's catalog,
+three of them in this Package's own earlier steps. The durable result is
+`documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`.
 
-Neither closed Package authorizes a new acceptance Mod, payload publication, or a GitHub
-release.
+**M8.3 Semantic Continuity and Backtracking is next selectable** and needs its execution contract
+written against the settled layout and confirmed with the human lead before implementation.
+M8.3-M8.6 are recorded as intent only: the plain-language result in the Package Plan table is
+the whole of their current planning. No Package authorizes a new acceptance Mod, payload
+publication, or a GitHub release.
 
 ## New-Session Start Protocol
 
@@ -54,15 +62,15 @@ A new coding session must not re-plan M8 from scratch. After reading `AGENTS.md`
 active documents, it must use this sequence:
 
 1. Read the Package Status table below and, for the first Package marked **Next selectable**
-   or **In progress**, its execution contract if it has one. M8.2-M8.6 currently hold intent
-   only; the M8.0 and M8.1 contracts are retained as records of completed work and must not
-   be re-executed.
+   or **In progress**, its execution contract if it has one. M8.3 is next selectable and holds
+   intent only, so its contract must be written and confirmed first. The M8.0, M8.1, and M8.2
+   contracts below are retained as closed records and must not be re-executed.
 2. If the human lead says only "start M8" or "continue M8", select or resume that Package.
    Do not ask the human to choose among later Packages and do not begin the final acceptance.
-   If the Package to resume is M8.2-M8.6, its execution contract must be written and
+   If the Package to resume is M8.3-M8.6, its execution contract must be written and
    confirmed with the human lead before implementation, against the current file layout.
 3. Read the listed authoritative source files before editing. Inspect current dirty changes
-   and preserve unrelated work, especially `usertest_M76/`.
+   and preserve unrelated work.
 4. Implement only that Package's work order. A later Package may be read for interface
    compatibility but may not be implemented early.
 5. Run only the Package's listed proportional checks unless the human lead narrows or
@@ -152,29 +160,258 @@ reorganized pack. There is no separate M8.0 evaluator Mod. The Watcher record re
 baseline evidence, and the smallest behavioral cases travel with the Package that changes a
 decision.
 
-M8.2-M8.6 rows below are intent only. Do not add technical detail to them here; each
+M8.3-M8.6 rows below are intent only. Do not add technical detail to them here; each
 Package's execution contract is written when it is selected.
 
 | Package | Status | Prerequisite | Plain-language result |
 | --- | --- | --- | --- |
-| M8.0 - skill structure restructuring | **Closed 2026-08-10** | M7 closed | The shipped pack is organized so an author reads one file per element instead of three per stage, data lives in queryable catalogs instead of prose, and hardening rules are stated once; contradictions between what a SPEC can declare and what a proof demands become visible. Three found contradictions remain open and moved to M8.2. |
-| M8.1 - literal deliverable contract | **Implemented in source 2026-08-10** | M8.0 closed | Before making anything, state the exact completion claim and the player experiences required now; prototype/slice/run-capable labels are optional descriptions, not a closed taxonomy. |
-| M8.2 - exact semantic capability conformance and preflight | **Next selectable** | M8.1 closed | Complex mechanics come from one maintained exact implementation; unsupported or broken routes block instead of becoming an approximation. Also owns whether a native engine capability the SPEC grammar cannot yet declare is a grammar gap or a capability-promotion decision, and inherits M8.0's three open envelope mismatches on that same decision. |
-| M8.3 - semantic continuity and backtracking | Waiting | M8.2 closed | If implementation or repair changes what the player gets, return to the owning design/spec decision instead of patching forward. |
-| M8.5 - cross-platform reproducible installed workflow | Waiting; may be selected independently after M8.1 | M8.1 closed | The committed installed skill works reproducibly on Windows and macOS and cleans up only the process tree it started. Default order remains M8.2 then M8.3 unless the human lead explicitly selects M8.5 earlier. |
-| M8.6 - clean installed whole-skill acceptance | Waiting | M8.1-M8.3 and M8.5 closed, plus human-selected request/host | Run one fresh broad request from an untouched installed payload and let the result prove the whole workflow. |
+| M8.0 - skill structure restructuring | **Closed 2026-08-10** | M7 closed | The shipped pack is organized so an author reads one file per element instead of three per stage, data lives in queryable catalogs instead of prose, and hardening rules are stated once; contradictions between what a SPEC can declare and what a proof demands become visible. Three found contradictions were deferred to and resolved in M8.2. |
+| M8.1 - literal deliverable contract | **Closed 2026-08-10** | M8.0 closed | Before making anything, state the exact completion claim and the player experiences required now; prototype/slice/run-capable labels are optional descriptions, not a closed taxonomy. |
+| M8.2 - exact semantic capability conformance and preflight | **Closed 2026-08-10** | M8.1 closed | Complex mechanics come from one maintained exact implementation; unsupported or broken routes block instead of becoming an approximation. Resolved M8.0's three deferred envelope mismatches on that same decision. Its two real-host proofs were deferred to M8.6. |
+| M8.3 - semantic continuity and backtracking | **Next selectable** | M8.2 closed | If implementation or repair changes what the player gets, return to the owning design/spec decision instead of patching forward. |
+| M8.5 - cross-platform reproducible installed workflow | Waiting; may be selected independently after M8.1 | M8.1 closed | The committed installed skill works reproducibly on Windows and macOS and cleans up only the process tree it started. Default order remains M8.3 unless the human lead explicitly selects M8.5 earlier. |
+| M8.6 - clean installed whole-skill acceptance | Waiting | M8.1-M8.3 and M8.5 closed, plus human-selected request/host | Run one fresh broad request from an untouched installed payload and let the result prove the whole workflow. Also carries the two hook-participation proofs M8.2 deferred: one incoming-damage multiplier with its neutral case, and one collection edit preserving unrelated entries. |
 
 ## Package Execution Contracts
 
-M8.2-M8.6 hold intent in the Package Plan table and receive a contract when selected.
-Contracts for those Packages were not written in advance, because M8.0 relocated the files
-they would name; that layout is now settled, so M8.1's contract is written against it.
+M8.3-M8.6 hold intent in the Package Plan table and receive a contract when selected.
 
-The M8.0 contract below is **retained as a closed record**, not as a work order. Do not
-re-execute it. Its value to a later session is the found-mismatch list and the reasoning behind
-the three left open.
+The three contracts below are **retained as closed records**, not work orders. Do not
+re-execute any of them. M8.0's value to a later session is its found-mismatch list and the reasoning
+behind the three it deferred; M8.1's is the deliverable-claim decisions M8.2 built on; M8.2's is the
+hook-reachability rule, the four defects it found in its own earlier steps, and the two proofs it
+handed to M8.6.
 
-### M8.1 - Literal Deliverable Contract — implemented in source 2026-08-10
+### M8.2 — Exact Semantic Capability Conformance and Preflight — closed 2026-08-10
+
+**Problem.** The workflow can pass every local stage while the identity-critical behavior the
+user asked for is absent. M7.6's Wrath is the reference case: the user asked for a stance that
+doubles incoming damage, `SPEC.md` recorded the requirement, an operation was generated, the
+harness passed, and the multiplier was never implemented. Nothing in the pipeline could catch
+it, for three separate reasons this Package owns:
+
+1. **The SPEC grammar cannot declare it.** `surfaces/power.md`'s envelope has fields for the
+   effect, its lifetime, its amount domain, and its display. There is no field in which "this
+   Power multiplies damage its owner receives" is a *declaration* rather than prose inside the
+   effect text. A value stated only in prose is not checkable by anything downstream.
+2. **The route pointer does not have to be real.** `design_trace.py`'s `supported_route` regex
+   accepts `#anchor`, but `validate_files` split the anchor off and checked only that the file
+   existed. Verified: `reference/art-contract.md#placeholder`, shipped as the canonical example
+   in `spec.md`, points at an anchor that has never existed in that file. Every generated
+   project has been copying it.
+3. **A route that exists need not cover the operation.** Even with a resolving pointer, nothing
+   checked that the cited route documents the semantics `OP-00N` needs. Watcher's Wrath cited a
+   real route; the route simply had no multiplier line, so the author improvised and the
+   improvisation was empty.
+
+M8.2 also inherits M8.0's three open mismatches, deferred here on 2026-08-10 because the
+envelope-form decision is a prerequisite for the other two.
+
+**Grounding research, completed before the contract was confirmed.** Done against
+`baselines/decomp/sts2_full` (pinned `0.107.1` decompile) and `baselines/STS2-RitsuLib/src`
+(`0.5.4`), per the maintainer research order in `sts2-api/grounding.md`. Recheck each promoted
+fact against the pinned assembly before it ships, since the decomp sidecar's provenance was not
+retained.
+
+The Wrath capability exists and is public: `AbstractModel.ModifyDamageMultiplicative` is
+`public virtual decimal`, default `1m`, with 25 vanilla implementors across Powers and Relics.
+`ModPowerTemplate : PowerModel : AbstractModel` seals nothing except `ExtraHoverTips`, and
+`PowerModel.ShouldReceiveCombatHooks => true`. `VulnerablePower` is the exact "damage received
+x 1.5" precedent, and it declares its multiplier as a `DynamicVar` so the number reaches the
+rules text through the same substitution the pack already documents. So this is `INV-3`'s first
+clause — a public route the pack has not written authoring for, which is **missing authoring
+work, not an unsupported API**. It needs no capability promotion.
+
+**Three decisions, confirmed by the human lead on 2026-08-10.**
+
+1. **Envelope: normalize the six flat surfaces to the canonical nested form and bump to
+   `sts2-content-semantic/v2`.** Potion, Power, Orb, Monster, Event, and Character move from a
+   flat `element:` opening plus ad-hoc top-level keys to `content:/surface:` with the nine shared
+   sections. Card and Relic already comply. Rationale: mismatch 8's remaining half — checking a
+   *generated* project's `SPEC.md` against its surface envelope — needs one schema to check
+   against, and two legal shapes means no schema. Cost: six pages plus a migration path, and the
+   `semantic-contract.md` requirement that an envelope change carry a version bump and migration
+   note is honored rather than waived.
+2. **Hook scope: open all reachable hooks, not a curated subset.** Symmetry with the
+   vanilla-override side, which already catalogs 26+28 for vanilla owners; a custom Power should
+   not be able to do less to itself than a vanilla override can do to someone else's Power.
+   Bounded by two hard constraints: a hook is authorable on a surface only where that surface is
+   in the dispatching iterator's listener set, and an Enchantment routes to its five `Enchant*`
+   replacements. The recorded cost is that Tier 2 will cover a small fraction of the matrix;
+   unproved routes are recorded as unrun, per `AGENTS.md`'s rule that missing verification is not
+   missing support.
+
+   **Extended on 2026-08-10, after step 1 reported them:** the 14 `TryModify*` callbacks are also
+   in scope, taking the total to 68. They were outside the original 26+28 because neither the
+   vanilla reference nor any custom surface listed them. Step 1 found they need **two**
+   declaration shapes rather than one, and that two of them are already owned by
+   `reference/rest-site-options.md`.
+3. **Preflight depth: route + anchor resolution, plus capability-id pairing.** Every `OP-###`
+   names the exact semantic capability it consumes; every route page declares the capability ids
+   it provides; the validator pairs them. Not the full behavior/lifecycle/rules-text/keyword/
+   Hover-Tip/localization/preview/presentation parity sweep — that is larger than one Package and
+   mostly resolves to proof-matrix obligations rather than static checks. Deferred explicitly,
+   not silently.
+
+**Work order.** Step 1 was a blocking prerequisite for steps 2-4.
+
+1. **The hook catalog. Done.** Extract per hook, from the pinned assembly: exact signature,
+   return type, neutral default, dispatching iterator, and the vanilla implementor families.
+   Derive reachability per custom surface from the iterator's listener set rather than from a
+   heuristic. Emit `sts2-api/reference/catalogs/model-hooks-sts2-0.107.1.json` from a committed
+   script in `games/sts2/tools/`, following the `art-contract` precedent exactly: code owns the
+   values, the catalog is a projection, prose states only rules, and a test fails when the
+   catalog is stale or a prose view disagrees. Never hand-edit it. A hook whose scope the
+   extraction cannot resolve is **recorded as unresolved and is not authorable** — a gap, not a
+   guess (`INV-3`). Cross-check the derived 26+28 against `vanilla-non-card-overrides.md`; any
+   disagreement is a finding about that shipped reference.
+2. **Envelope v2 and the migration path. Done.** Normalize the six flat surfaces.
+   `semantic-contract.md` becomes v2 with a migration note stating what moved and how a v1
+   project is read. Fold in M8.0 mismatch 7: the character resource and ordered-buffer envelopes
+   move from `spec.md` into `surfaces/character.md`, joining their proof, now that the target form
+   is settled. A v1 `SPEC.md` on an unfinished project resumes unchanged — the same precedent as a
+   pre-M7.5 coherence block and a pre-M8.1 deliverable block; only a new or revised SPEC is
+   written as v2.
+3. **Hook-participation declarations on the surfaces that can receive them. Implemented in
+   source; both real-host proofs unrun.** Two declaration shapes, because step 1 found the hook
+   surface needs two.
+
+   *Value shapes (60 hooks: 54 scalar-return, 6 out-replacement).* One envelope block carrying the
+   semantic capability id, the player-facing statement, the direction/subject guard, the value or
+   formula with its `DynamicVar` name when the number appears in rules text, and the neutral return
+   outside the guard. Recipes gain the matching authoring line including the guard shape vanilla
+   uses (`VulnerablePower` returns `1m` unless the subject is its owner and the damage is a powered
+   attack). An `out-replacement` adds only the taken/not-taken flag. Enchantment gets its five
+   `Enchant*` routes and an explicit statement that the general hooks are wrong there.
+
+   *Collection shape (8 hooks).* A separate block, because nothing is replaced: it declares the
+   entries added or removed, the condition, and the composition rule when several editors touch
+   the same list. The vocabulary is bounded — `Reward` has six concrete subclasses, and vanilla
+   usage is add-one-under-a-guard with one vanilla remover. `TryModifyRestSiteOptions` and
+   `ShouldDisableRemainingRestSiteOptions` are excluded here and route through
+   `reference/rest-site-options.md`, whose four boundaries the raw hook does not carry.
+
+   Each declaration owes a proof case, per the `FIELD_PROOF_PAIRS` pattern in
+   `test_surface_cross_check.py`. For a value shape: assert the modified value *and* the neutral
+   case outside the guard, because a hook that returns its modifier unconditionally passes a
+   single-value assertion while breaking every unrelated interaction — the same shape as the Relic
+   cadence case. For a collection shape: assert the resulting list contents *and* that unrelated
+   entries survive, since an editor that clears the list also passes "my entry is present".
+4. **Capability ids and the preflight validator. Done.** Route pages declare the capability ids
+   they provide; `OP-###` entries name the id they consume. `design_trace.py` resolves anchors
+   against real headings and pairs consumed ids against provided ones, and the shipped
+   `art-contract.md#placeholder` example is fixed. An unresolvable anchor, an unprovided id, or an
+   operation whose capability has no route entry blocks before SPEC with a message naming what is
+   missing. Add the generated-SPEC-versus-envelope check that mismatch 8 left open: a project's
+   `SPEC.md` is validated against its surface's v2 envelope — required sections present, no
+   invented top-level keys, declared fields belonging to that surface.
+5. **The conformance rule for a claimed-but-broken route. Done.** `AGENTS.md` already states that
+   a claimed route failing its maintained semantic contract must block until repaired or narrowed.
+   Write where that fires: preflight blocks, and the limitation is recorded with the route rather
+   than worked around per project.
+
+**Out of scope, stated so it is not absorbed.** Full surface parity across behavior/lifecycle/
+rules text/keyword/Hover Tip/localization/preview/presentation (deferred; partly M8.3's
+backtracking, partly a later Package). Semantic-impact backtracking (M8.3). Cross-platform
+process ownership (M8.5). Any fresh whole-skill acceptance Mod (M8.6, unauthorized). The 100
+async hooks on custom surfaces — the current per-surface trigger tables already cover the
+selected ones, and widening them is a separate decision. Multiplayer. No new BaseLib, Harmony,
+reflection, Publicizer, or IL.
+
+**Proportional checks.** Steps 1, 2, 4, and 5 are prompt, tooling, catalog, and documentation
+only — no generated runtime behavior changes, so no game launch, per `AGENTS.md` § Verification.
+
+**Step 3 does change generated runtime behavior and therefore needed a real host.** Two narrow
+proofs: a custom Power declaring an incoming-damage multiplier, asserted structurally for the
+modified value, the neutral case outside the guard, and the rules-text number matching the applied
+multiplier; and one collection edit asserting both its own entry and the survival of unrelated
+entries. The first is the smallest thing that proves the Wrath class of failure is closed.
+
+**Both were deferred to M8.6 by the human lead on 2026-08-10 and did not run.** They need Windows,
+STS2 `0.107.1`, and RitsuLib `0.5.4`, and M8.6 is the next scheduled run on that host, so they
+travel with it rather than triggering a separate launch. This is a recorded exception, not a pass:
+until they run, no generated override has been observed firing in a game.
+
+Focused Python tests: the catalog freshness/prose-agreement pair, anchor and capability-id
+resolution (positive and negative), the generated-SPEC envelope check, v1-resume compatibility,
+and per-surface hook reachability rejection. Behavioral scenarios in
+`games/sts2/tests/m82-capability-conformance-scenarios.md`: the Wrath case now blocking or
+generating correctly rather than passing empty; a hook requested on a surface that cannot receive
+it; and an Enchantment damage multiplier routing to `EnchantDamageMultiplicative`.
+
+Both payloads regenerated and validated at closure. No commit, merge, publish, or release without
+instruction.
+
+**Closure status as of 2026-08-10.** All five steps are implemented in source, both payloads were
+synchronized, and the human lead closed the Package with the two real-host proofs deferred to M8.6
+as a recorded exception. Closure synchronization in item 6 of the New-Session Start Protocol was
+completed.
+
+Step 3 delivered one new authoring route, `reference/model-hook-participation.md`, declaring 71
+capability ids: the two declaration shapes, the guard-value-neutral body copied from
+`VulnerablePower`, the direction rule (`target` versus `dealer`), the damage-kind rule
+(`IsPoweredAttack()` excludes Poison-style loss and relic/potion/power damage), engine-fixed
+composition order, and the per-surface owner property — `Owner` is a `Creature` on a Power, a
+`Player` on Relic/Potion/Orb/Card (so guards need `Owner.Osty` too), and a Monster uses `Creature`
+with no owner at all. The seven authorable surfaces each declare the envelope field with their own
+reachability note and owe the paired neutral-case proof; the three that no listener set contains
+must not declare it, and a test asserts both halves. `spec_envelope_trace.py` now rejects an
+unknown capability, a shape the catalog contradicts, a route-owned hook, and — the load-bearing
+one — a hook the declaring surface cannot receive. All six rejection tests were verified to fail
+against a neutered validator.
+
+Four defects were found and fixed while spending step 1's catalog, three of them in earlier steps
+of this same Package:
+
+- **`design_trace.py`'s capability parser could not span lines** (step 4). Without `re.DOTALL` the
+  first real declaration parsed as zero ids, so the pairing check silently passed everything. This
+  is also why step 4's end-to-end test was skipped rather than failing: no shipped route declared
+  a capability, so nothing exercised the parser.
+- **`COMBAT_LISTENERS` was missing `modifier` and `badge`** (step 1). Step 1's own second fix
+  over-corrected: it concluded the combat-state form reached neither family, but
+  `CombatState.IterateHookListeners()` walks `combatState.Modifiers` and `combatState.BadgeModels`
+  — what the run-only branch adds is the run-scope *instances*, not the family. Re-extraction left
+  authorable surfaces unchanged at 40/23/5 with zero contradictions, and it is recorded as a third
+  finding in `games/sts2/tests/m82-hook-catalog-findings.md`. The vanilla cross-check could not
+  have caught it: all six vanilla Modifier hook overrides happen to be run-scope, so no vanilla
+  evidence contradicted the narrowed set. Silence from a cross-check is not confirmation.
+- **`spec_envelope_trace.py` could not find the pack in a payload** (step 4). Its payload path
+  candidate was `skills/surfaces`, missing the `modmaker` segment, so the validator `spec.md` tells
+  every project to run resolved in the repo and in nothing else. New
+  `tools/tests/test_payload_tool_layout.py` builds a throwaway payload-shaped tree and runs the
+  shipped tools inside it, so a repo-only path resolution fails a test instead of an install.
+- **A pre-existing test asserted no `INV-9` could exist** (M8.1). Narrowed to the
+  deliverable-claim rule it was actually about.
+
+**What is not established.** Preflight is static: a green run means the declaration is well-formed,
+reachable, correctly shaped, and paired with a route that claims the capability — not that the
+generated override fires, returns the right number, or leaves unrelated interactions alone. No
+generated Mod, game launch, Tier 1, Tier 2, or forward-model run is claimed for any step. Every
+hook route in the catalog is implemented-and-unproved until the two proofs run, which per
+`AGENTS.md` is missing verification rather than missing support.
+
+Step 1 produced 68 hooks (26 numeric, 28 decision, 14 `TryModify*`), zero unresolved.
+`collect_model_hooks.py` is maintainer-only and excluded from both payloads, following
+`collect_vanilla_catalog.py`. The shipped `vanilla-non-card-overrides.md` lists match the assembly
+exactly (26 and 28), so that reference needs no correction, and a test now holds the two statements
+together. Its five findings are in `games/sts2/tests/m82-hook-catalog-findings.md`:
+iterator-decided reachability splitting the list into three authorable groups (40 / 23 / 5), the
+five Enchantment redirects, a first derivation that was wrong and was caught by the vanilla
+cross-check plus a second data bug in the `run+combat` listener set, the two-shape split in the
+`TryModify*` family, and the two hooks already owned by the Rest Site route.
+
+Two consequences carry into step 3. The capability-id mechanism from step 4 is implemented but
+idle: no shipped route declares a capability yet, so its end-to-end test skips. Step 3's route
+pages are the first real providers and turn that skip into a live test. And the three M8.0
+mismatches recorded as open in `games/sts2/tests/m80-surface-cross-check.md` are resolved in source
+by steps 2 and 4 but not yet re-recorded there — that synchronization belongs to closure, together
+with this file's § Status, both payloads, and the result record.
+
+**Result record:** `documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`.
+
+
+
+### M8.1 - Literal Deliverable Contract — closed 2026-08-10
 
 **Problem.** The workflow records requirements but never states what the finished thing is.
 `DESIGN.md`'s scope ledger is a `D-###` requirement table and `SPEC.md`'s trace is an `OP-###`

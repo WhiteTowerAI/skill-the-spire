@@ -15,49 +15,77 @@ custom/Ancient scenes are not.
 ```markdown
 # SPEC — <Mod Name>
 
-- **element**: event
-- **logical id**: <stable local stem, e.g. gilded_signpost>
+- **contract**: sts2-content-semantic/v2
 - **mod id**: <stable mod identity>
 - **author**: <author>
-- **acts**: all | <Glory | Hive | Overgrowth | Underdocks>
-- **opening**: <initial page description>
-- **displayed values**: none | <value name -> the option/page text that shows it; declare one
-  name per number the player reads, and reference it as a placeholder>
-- **options**:
-  - id: <stable option stem, e.g. follow_the_sign>
-    title: <button title>
-    description: <button consequence text>
-    effect: <ordered game-term consequence with numbers, including any blocking overlay>
-    availability: always | gated by <exact run-state condition>
-    hover tips: none | enabled-only <content name + upgrade/amount state>
-    relic presentation: none | <relic name; normal title/description/metadata; image gap>
-    lethal warning: none | HP cost <exact decimal> | Max HP cost <exact decimal>
-    acquisition presentation: none | native Card <name> to Deck | native relic <name>
-    screen shake: none | `weak_short`
-    next: finish <RESULT_KEY> | page <PAGE_KEY> | special combat <ENCOUNTER>
-- **special combat**: none | <encounter logical id + monster/group HP and grounded move cycle>
-- **combat completion**: resume page <PAGE_KEY> | map (exactly one when combat exists)
-- **extra combat rewards**: none | <owned reward types and amounts>
-- **scenario**: MapNode
-- **observe**: custom event room entered; formatted text and real option UI; every declared
-  option present with its declared enabled/locked state; exact outcome/selection/reward
-  post-state; encounter identity; expected Resume page or direct map
-- **art**: placeholder | generate (normal/default layout only; every selected slot is an
-  opaque 3440x1613 portrait)
-- **portrait slots**:
-  - initial: `<event-slug>`
-  - `<PAGE_KEY>`: `<event-slug>_<page-key-lower>` (only when explicitly requested)
-- **art source**: runtime-imagegen | vofy | byo-http | local-image (generate only)
-- **art subject/style**: <opening situation; focal subject left, darker UI space right>
-- **art fallback**: initial uses the verified vanilla portrait; absent page art retains
-  the current portrait
-- **event VFX**: none | `portrait_halo` | `trial_noble`
-- **VFX pages**: <PAGE_KEY -> unique node name, color/mood; normal layout only>
-- **VFX cleanup**: free owned named nodes before page/portrait/combat/finish transitions;
-  Instant Fast Mode is static for `portrait_halo`; `trial_noble` inherits host process mode
-- **event text effects**: none | vanilla
-- **text spans**: <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis, aqua/blue/
-  gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
+- **content**:
+  - name: <shown Event name>
+  - surface: event
+  - logical id: <stable local stem, e.g. gilded_signpost>
+  - relations: none | <the Quest Card that forces entry into this Event>
+- **registration**:
+  - availability: shared | act:<name>
+  - ownership: room
+  - placement: all acts | <Glory | Hive | Overgrowth | Underdocks>
+- **localization**:
+  - fields: title, initial page description, every option title/description and result page;
+    all in `events.json` under Mod-local keys
+  - table intent: flat `events.json` entries
+  - formatting: plain | bounded vanilla rich text (descriptions only; titles plain)
+  - displayed values: none | <value name -> the option/page text that shows it; declare one
+    name per number the player reads, and reference it as a placeholder>
+  - text spans: <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis, aqua/blue/
+    gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
+- **effects**:
+  - trigger: option selection
+  - target: player
+  - options:
+    - id: <stable option stem, e.g. follow_the_sign>
+      title: <button title>
+      description: <button consequence text>
+      effect: <ordered game-term consequence with numbers, including any blocking overlay>
+      availability: always | gated by <exact run-state condition>
+      hover tips: none | enabled-only <content name + upgrade/amount state>
+      relic presentation: none | <relic name; normal title/description/metadata; image gap>
+      lethal warning: none | HP cost <exact decimal> | Max HP cost <exact decimal>
+      acquisition presentation: none | native Card <name> to Deck | native relic <name>
+      screen shake: none | `weak_short`
+      next: finish <RESULT_KEY> | page <PAGE_KEY> | special combat <ENCOUNTER>
+  - special combat: none | <encounter logical id + monster/group HP and grounded move cycle>
+  - combat completion: resume page <PAGE_KEY> | map (exactly one when combat exists)
+  - extra combat rewards: none | <owned reward types and amounts>
+  - scaling: <declared values referenced in options/pages, or none>
+- **state**:
+  - lifetime: run (mutable Event instance persists for run-progress tracking)
+  - owner: the Event room
+  - reset: none (state is consumed and replaced by `SetEventFinished`/`SetEventState`)
+  - persistence: ordinary (mutable state survives save/resume)
+  - visible state: option enabled/locked states plus any dynamic text substitution
+- **presentation**:
+  - assets: portrait slots; placeholder | generate (normal/default layout only; every
+    selected slot is an opaque 3440x1613 PNG)
+  - portrait slots:
+    - initial: `<event-slug>`
+    - `<PAGE_KEY>`: `<event-slug>_<page-key-lower>` (only when explicitly requested)
+  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art subject/style: <opening situation; focal subject left, darker UI space right>
+  - native presentation: standard Event room layout
+  - event VFX: none | `portrait_halo` | `trial_noble`
+  - VFX pages: <PAGE_KEY -> unique node name, color/mood; normal layout only>
+- **fallback**:
+  - missing asset: initial uses the verified vanilla portrait; absent page art retains
+    the current portrait
+  - unavailable seam: VFX cleanup frees owned named nodes before page/portrait/combat/
+    finish transitions; Instant Fast Mode is static for `portrait_halo`
+  - failure policy: preserve fallback or stop authoring
+- **proof**:
+  - scenario: MapNode
+  - driver: enter the canonical custom event, then drive real option UI
+  - invariants: custom event room entered; formatted text and real option UI; every declared
+    option present with its declared enabled/locked state; exact outcome/selection/reward
+    post-state; encounter identity; expected Resume page or direct map
+  - boundary cases: each gated option driven both ways; special combat resume or map;
+    forced follow-up entry through a real Unknown MapPoint (not the `event` shortcut)
 - **forced follow-up**: none | Quest token <logical id> -> target Event <logical id>
 - **forced act**: none | <exact zero-based act index plus player-facing act name>
 - **forced trigger**: carrying one token; next entered Unknown MapPoint in the forced act
@@ -69,8 +97,8 @@ custom/Ancient scenes are not.
   vanilla edits, duplicate-token rewards, multiplayer, or new save-roundtrip claim
 - **option presentation gaps**: <locked-option tips, normal-layout relic image, or none>
 - **unsupported transitions**: merchant, rest site, and treasure room
-- **derived ids** (adapter resolves after the semantic SPEC is accepted):
-  - Event logical id plus title/page/option localization fields
+- **adapter output** (written to MEMORY after acceptance): resolved Event logical id,
+  flat localization key list, and framework diagnostic record
 ```
 
 Each option id is stable semantic input; the adapter derives any method and localization

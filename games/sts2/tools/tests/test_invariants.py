@@ -30,7 +30,7 @@ import skill_prose
 
 
 INVARIANTS_PAGE = "invariants.md"
-EXPECTED_IDS = tuple(f"INV-{n}" for n in range(1, 9))
+EXPECTED_IDS = tuple(f"INV-{n}" for n in range(1, 10))
 
 # Canonical wording that must live in exactly one file. Each phrase is the
 # general statement of a rule that used to be restated per stage; a stage page
@@ -44,6 +44,10 @@ SINGLE_DEFINITION_PHRASES = (
     "Re-asking a settled question is not a safe default",
     "never emit prompt-derived Harmony",
     "An in-place edit makes the next run unreproducible",
+    # INV-9, added by M8.2. The canonical statement of why a local reimplementation of a
+    # broken shared route is not a repair; `repair.md` names the rule and adds only its own
+    # stage detail.
+    "An approximation inside the consumer project is not a repair",
 )
 
 # Exact restatements removed by change 5, keyed by the file that held them.

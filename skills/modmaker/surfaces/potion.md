@@ -15,37 +15,54 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
 ```markdown
 # SPEC — <Mod Name>
 
-- **element**: potion
-- **logical id**: <stable local stem, e.g. swift_brew>
+- **contract**: sts2-content-semantic/v2
 - **mod id**: <stable mod identity>
 - **author**: <author>
-- **rarity**: Common | Uncommon | Rare | Event | Token
-- **availability**: shared | character:<name>
-- **usage**: CombatOnly | AnyTime | Automatic
-- **target**: self | one enemy | all enemies
-- **advanced target**: none | use the shared declaration below
-- **effect**: <precise game-terms description, with numbers>
-- **display**:
-  - title: <shown name>
-  - description: <hover text the player reads>
-  - selectionScreenPrompt: <only if the effect prompts a choice; else omit>
-  - text effects: none | vanilla
+- **content**:
+  - name: <shown name>
+  - surface: potion
+  - logical id: <stable local stem, e.g. swift_brew>
+  - rarity: Common | Uncommon | Rare | Event | Token
+- **registration**:
+  - availability: shared | character:<name>
+  - ownership: player
+  - placement: <plain-language potion-pool rule>
+- **localization**:
+  - fields: title=<shown name>; description=<hover text>; optional selectionScreenPrompt
+    (only if the effect prompts a choice)
+  - formatting: dynamic value placeholders; plain | bounded vanilla rich text
   - text spans: <description phrase -> blue/gold/green; selection prompt stays plain>
   - displayed values: none | <value name -> declared scaling name; literal or placeholder>
+- **effects**:
+  - trigger: use
+  - usage: CombatOnly | AnyTime | Automatic
+  - target: self | one enemy | all enemies
+  - advanced target: none | use the shared declaration in `spec.md`
+  - sequence: <precise game-terms effect with exact numbers>
+  - scaling: <named values and bounds, or none>
+- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+  - A Potion in the belt reaches the same wide set as a Relic (66 of 68), run-scope and
+    combat-scope, and it participates while held — not only when used. `Owner` is a `Player`, so
+    a subject guard compares against `Owner.Creature` and `Owner.Osty` where an Osty can act.
+- **state**: none (a Potion is single-use and the engine owns its removal)
+- **presentation**:
+  - assets: potion icon; placeholder | generate (a loose 256×256 PNG, generate-wired and
+    live-verified — same as relic/power; see `reference/art-contract.md`)
+  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - native presentation: standard potion belt/tooltip display
   - keyword tips: none | <native or mod keyword named in the description>
-- **art**: placeholder | generate (a `potion` icon is a loose 256×256 PNG, generate-wired
-  and live-verified — same as relic/power; see `reference/art-contract.md`)
-- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
+- **fallback**:
+  - missing asset: checked template potion icon
+  - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
 - **proof**:
   - scenario: CombatPlayer
   - driver: procure the real Potion, then use it against its declared target
   - invariants: <exact expected/observed state, belt consumption, and dependent effects>
   - boundary cases: <resolved-target, usage-window, and dependent-element cases, or none;
     a Potion has no upgrade>
-- **derived ids** (adapter resolves after the semantic SPEC is accepted):
-  - logical id: `<stable local stem>`
-  - localization fields: `title`, `description`
-  - asset role: potion icon
+- **adapter output** (written to MEMORY after acceptance): resolved content id,
+  localization keys (`title`, `description`), potion icon asset role, and framework
+  diagnostic record
 ```
 
 ## Displayed values the engine keeps current
@@ -58,7 +75,7 @@ on it: `FirePotion` declares `new DamageVar(20m, ValueProp.Unpowered)` against a
 The default recipe shape puts the number in *two* places — the Cmd call and the localized
 string — where they can silently diverge. Prefer one declared scaling name referenced as a
 placeholder. A literal is acceptable only when the value can never change and appears in
-exactly one place; record the choice in `display.displayed values`.
+exactly one place; record the choice in `localization.displayed values`.
 
 ## Keyword tips are not automatic here
 
@@ -104,7 +121,7 @@ The focused body is in `reference/selftest-harness.md` § potion.
 - **Assert the declared target, not the implemented one.** The reference driver derives its
   target from `potion.TargetType`, so a `TargetType` contradicting SPEC is unfalsifiable:
   the driver retargets and the effect assertion still passes. Assert that the resolved
-  target matches the SPEC `target` line — for `one enemy`, that an enemy took the effect and
+  target matches the SPEC `effects.target` line — for `one enemy`, that an enemy took the effect and
   the player did not.
 - Assert the declared `usage` when it restricts availability. `EnqueueManualUse` is driven
   directly from `InCombat`, so `CombatOnly` versus `AnyTime` is otherwise never observed.
@@ -114,6 +131,11 @@ The focused body is in `reference/selftest-harness.md` § potion.
 - **Assert each declared displayed value renders live.** The default recipe shape puts the
   number in both the Cmd and the localized string. Assert the rendered description contains the
   current value, so neither an unresolved placeholder nor a diverged literal ships.
+- **For hook participation — assert the neutral case outside the guard.** A held Potion
+  participates before it is ever used, so an unguarded modifier changes the run from the moment
+  it enters the belt. Drive one event the guard should ignore and assert the host's value is
+  unchanged. For a collection edit, also assert that an entry placed in the list beforehand
+  survives.
 - For advanced targeting, follow `reference/advanced-targeting.md`: the single Potion is one
   of its three required distinct real consumers. `potion + many` remains a known lifecycle
   limitation.

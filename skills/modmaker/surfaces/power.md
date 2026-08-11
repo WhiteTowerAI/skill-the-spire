@@ -9,22 +9,46 @@ Power, whether it stands alone or is a dependency of a Card, relic, or potion.
 
 Include one block for every authored custom Power.
 
+A Power is usually a dependency of a Card, relic, or potion rather than a standalone Mod, so
+this block sits alongside its host's `content:` section in the same SPEC. It uses the same
+shared sections as every other surface; `contract`, `mod id`, and `author` are declared once
+for the whole SPEC by the host.
+
 ```markdown
-- **element**: power
-- **logical id**: <stable local stem>
-- **mod id**: <stable mod identity>
-- **type**: Buff | Debuff
-- **stack type**: Counter | Single
-- **amount domain**: `[0, unbounded]` (default for Counter) | `[<min>, <max>]`
-- **signed amounts**: no (default) | yes - <what negative stacks mean>
-- **effect**: <precise hook/passive behavior, with numbers>
-- **lifetime**: permanent | decays <amount> at <boundary> | removed when <condition>
-- **display**:
-  - title: <shown name>
-  - description: <hover text using {Amount}>
+- **content**:
+  - name: <shown name>
+  - surface: power
+  - logical id: <stable local stem>
+  - type: Buff | Debuff
+  - stack type: Counter | Single
+  - amount domain: `[0, unbounded]` (default for Counter) | `[<min>, <max>]`
+  - signed amounts: no (default) | yes - <what negative stacks mean>
+- **registration**:
+  - availability: shared
+  - ownership: <the creature that carries it: player | enemy>
+  - placement: applied by <the host element that applies it>
+- **localization**:
+  - fields: title=<shown name>; description=<hover text using {Amount}>
   - smartDescription: <usually the same text; required>
-  - text effects: none | vanilla
+  - formatting: dynamic value placeholders; plain | bounded vanilla rich text
   - text spans: <description phrase -> blue/gold; apply to smartDescription too>
+- **effects**:
+  - trigger: <the exact hook or passive boundary the behavior runs on>
+  - target: owner | the creature the owner affects
+  - sequence: <precise hook/passive behavior with exact numbers>
+  - scaling: <named values and bounds, or none>
+- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+  - Power receives combat-scope hooks only (45 of 68). Run-scope hooks never reach a Power:
+    the override compiles and never fires. `Owner` is a `Creature` directly.
+- **state**:
+  - lifetime: permanent | decays <amount> at <boundary> | removed when <condition>
+  - owner: the creature holding the Power
+  - reset: <exact boundary, or none for permanent>
+  - visible state: native Amount display
+- **presentation**:
+  - assets: power icon; placeholder | generate
+  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - native presentation: standard Power icon plus composed title/description Hover Tip
   - extra badges: none | one
     - meaning: <player-facing auxiliary value distinct from Amount>
       value: <state value or bounded display rule>
@@ -32,16 +56,18 @@ Include one block for every authored custom Power.
       format: plain | bounded color rich text; at most 6 visible characters
       refresh: <state change that updates it>
       remove: <condition that hides/removes it>
-- **art**: placeholder | generate
-- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
+- **fallback**:
+  - missing asset: checked template power icon
+  - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
 - **proof**:
+  - scenario: driven through its real host (see § Self-test driver body)
+  - driver: <the host interaction that applies it>
   - invariants: <exact expected/observed amount and the dependent effect it causes>
   - lifetime case: <the observation that proves the declared lifetime; required whenever
     lifetime is not "permanent">
-- **derived ids** (adapter resolves after the semantic SPEC is accepted):
-  - logical id: `<stable local stem>`
-  - localization fields: `title`, `description`, `smartDescription`
-  - asset role: power icon
+- **adapter output** (written to MEMORY after acceptance): resolved content id,
+  localization keys (`title`, `description`, `smartDescription`), power icon asset role,
+  and framework diagnostic record
 ```
 
 `amount domain` is mandatory for every custom `Counter`. Keep the nonnegative default
@@ -112,3 +138,8 @@ assertions below to that run.
   the amount stopped there; for the nonnegative default, consume more than the current amount
   and assert no instance with a negative amount appears.
 - For a signed domain, assert the negative-stack meaning declared in SPEC.
+- **For hook participation — assert the neutral case outside the guard.** Modified-value and
+  neutral-case assertions are both required: a hook that returns its modifier unconditionally
+  passes a single-value test while changing every unrelated interaction in the run. Drive one
+  event the guard is supposed to ignore and assert the value received by the host is unchanged.
+  For a collection edit, also assert that an entry placed in the list before the edit survives.

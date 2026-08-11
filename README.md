@@ -11,8 +11,9 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 > with RitsuLib `0.5.4`. The BaseLib migration and M6.5-M6.7 implementation tracks are
 > closed. M7 Design Intelligence is closed: M7.1-M7.5 are implemented, and M7.6 closed
 > through a human-led external whole-skill evaluation with explicit limitations. M8
-> End-to-End Product Integrity is active: M8.0 skill structure restructuring is closed,
-> M8.1 literal deliverable contract is implemented in source, and M8.2 is the next
+> End-to-End Product Integrity is active: M8.0 skill structure restructuring, M8.1 literal
+> deliverable contract, and M8.2 exact semantic capability conformance and preflight are
+> closed. The two real-host proofs M8.2 owed are deferred to M8.6. M8.3 is the next
 > selectable Package. A GitHub release is not currently authorized.
 
 ## Requirements
@@ -88,9 +89,12 @@ The RitsuLib-only generator currently covers:
   and Character-local native Ancient/Architect dialogue;
 - Relic-owned singleplayer Rest Site options;
 - complete documented Custom Card Piles authoring, including ExtraHand;
-- conditional Card hand glow and bounded Relic/Power corner labels; and
+- conditional Card hand glow and bounded Relic/Power corner labels;
 - the promoted M6.7 vanilla Card, visual, existing-Ancient, availability, and non-Card
-  data/behavior override operation families.
+  data/behavior override operation families; and
+- declared model hook participation on custom content — a Card, Relic, Potion, Power, Orb,
+  Monster, or Enchantment that changes a value or decision the engine is computing, bounded
+  by which hooks that element can actually receive. Not yet observed in a running game.
 
 Support follows one Package-level rule: when the official tutorials document a RitsuLib
 feature's player-facing use and Package, and the needed public API exists in the pinned
@@ -139,20 +143,33 @@ mechanics will resolve to maintained exact capabilities with conformance evidenc
 of per-Mod approximations; a failing claimed route will block until repaired or narrowed.
 Launch tooling will own and clean up only the process tree it starts on Windows and macOS.
 
-The literal completion claim is the part now implemented. Every `DESIGN.md` states what the
+The literal completion claim is implemented. Every `DESIGN.md` states what the
 user has when the Mod is done, the player experiences required for that claim to be honest,
 how each one will be settled, and what the claim does not include. Prototype, slice, and
 run-capable stay optional descriptions rather than a closed taxonomy — nothing branches on the
 wording. The final report is generated from a `PLAN.md` ledger that settles each required
 experience against evidence its method actually accepts, so a summary cannot claim more than
-the run earned. The remaining M8 flow — capability preflight, one-operation surface parity,
-semantic backtracking, and platform reproduction — is not implemented yet.
+the run earned.
+
+Exact capability preflight is also implemented. A mechanic that changes a number the engine is
+computing — "damage I take is doubled" — is now a declaration with a capability id, a subject
+guard, a value, and the neutral result outside that guard, rather than a sentence inside an
+effect description. Before generation, the workflow resolves the cited route and its anchor,
+pairs the declared capability against what that route says it provides, and rejects a hook the
+declaring element cannot actually receive. That last check matters most: on this engine, which
+elements a given hook reaches is decided by the dispatcher, so an override written on the wrong
+element compiles, ships, and never fires. The two real-host proofs that capability owed are
+deferred to the final acceptance gate, so every hook route is implemented and not yet observed
+in a running game.
+
+The remaining M8 flow — one-operation surface parity, semantic backtracking, and platform
+reproduction — is not implemented yet.
 
 The active plan contains a new-session start protocol and, for each selected Package, an
 execution contract: exact prerequisites, source scope, work order, and result record.
-M8.2-M8.6 carry plain-language intent only and receive a contract when selected.
-An instruction to continue M8 selects M8.2 exact semantic capability conformance and
-preflight, whose contract is written and confirmed before implementation. M8.4 was removed;
+M8.3-M8.6 carry plain-language intent only and receive a contract when selected.
+An instruction to continue M8 selects M8.3 semantic continuity and backtracking, whose
+contract is written and confirmed before implementation. M8.4 was removed;
 M8.5 and M8.6 keep their numbers. M8.5 may be selected independently only by explicit
 human-lead instruction.
 
@@ -163,9 +180,11 @@ a structured post-state marker and `selftest done`. A successful build, trace va
 trigger log, model response, or screenshot does not substitute for runtime behavior or
 presentation evidence.
 
-M8.2 conformance and M8.6 acceptance use the existing verification model to bind behavior
-to matching real rules text, keyword/Hover Tip, lifecycle, preview, and presentation
-consumers. M8.5 binds a platform completion claim to verified cleanup of the launcher-owned
+M8.6 acceptance uses the existing verification model to bind behavior to matching real rules
+text, keyword/Hover Tip, lifecycle, preview, and presentation consumers, and it now also
+carries the two hook-participation proofs M8.2 deferred: one element declaring an
+incoming-damage multiplier, and one collection edit that leaves unrelated entries intact.
+M8.5 binds a platform completion claim to verified cleanup of the launcher-owned
 process tree. There is no separate M8 evidence-reporting Package.
 
 Fresh natural-language acceptance Mods are used only for an explicitly scheduled

@@ -39,8 +39,7 @@ process cleanup. One final clean installed whole-skill acceptance is scheduled o
 the preceding M8 Packages close. No acceptance run, payload publication, or GitHub release is
 currently authorized.
 
-M8.0 reorganized the shipped pack so an author reads one file per element; three of its found
-contradictions remain open and were deferred to M8.2. M8.1 is implemented in source: every
+M8.1 Literal Deliverable Contract is closed by explicit human-lead decision on 2026-08-10. Every
 `DESIGN.md` now carries one literal deliverable claim — what the user has when this is done,
 the `E-###` player experiences required for that claim to be honest, how each will be settled,
 and what the claim does not include — and Finalize generates its report from a `PLAN.md`
@@ -53,15 +52,29 @@ M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 
 shipped pack now reads one file per element instead of three per stage, projects its art contract
 from code into a catalog, separates diagnostic signatures from preventive constraints, states what
 is supported rather than which Package promoted it, and states each cross-stage invariant once.
-Both committed payloads are synchronized. Three of the thirteen contradictions it found remain
-open and were deferred to M8.2, and nine of the ten co-located surfaces have never been piloted;
-the durable result is `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`.
+Both committed payloads are synchronized. Nine of the ten co-located surfaces have never been
+piloted; the durable result is `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`. Three of the
+thirteen contradictions it found were deferred to M8.2 and are resolved there.
 
-M8.2 exact semantic capability conformance and preflight is next selectable and needs its
-execution contract written against the settled layout and confirmed with the human lead first. It
-also inherits M8.0's three open envelope mismatches. The New-Session Start Protocol
-in `documents/IMPLEMENTATION_PLAN.md` is the handoff: a later session instructed to continue M8
-selects M8.2 without rebuilding the roadmap or skipping prerequisites. M8.2-M8.6 are
+M8.2 Exact Semantic Capability Conformance and Preflight is closed by explicit human-lead
+decision on 2026-08-10. A mechanic that changes a value or decision the engine is computing is now
+a declaration rather than prose: a capability id, the subject guard that decides direction, the
+condition, the value with the name that puts it in rules text, and the neutral result outside the
+guard. Preflight resolves each cited route and its anchor, pairs the declared capability against
+what that route provides, and rejects a hook the declaring surface cannot receive — which on this
+engine is decided by the dispatching iterator, so an override on the wrong surface compiles and
+never fires. The SPEC envelope is normalized to `sts2-content-semantic/v2` with a migration path,
+which is what made a generated project's SPEC checkable against its surface at all, and closed the
+three inherited M8.0 mismatches. `INV-9` states where a claimed-but-broken route blocks. **The two
+real-host proofs it owed were deferred to M8.6 and did not run**, so every hook route is
+implemented and unobserved in a running game. Four defects were found while spending its own
+catalog, three of them in its own earlier steps. The result is
+`documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`.
+
+M8.3 semantic continuity and backtracking is next selectable and needs its execution contract
+written against the settled layout and confirmed with the human lead first. The New-Session Start
+Protocol in `documents/IMPLEMENTATION_PLAN.md` is the handoff: a later session instructed to
+continue M8 selects M8.3 without rebuilding the roadmap or skipping prerequisites. M8.3-M8.6 are
 recorded as intent only. M8.4 was removed by the human lead; M8.5 and M8.6 retain their numbers.
 
 ## User Experience
@@ -77,12 +90,13 @@ plain-language idea
   -> report passes, failures, and unrun checks literally
 ```
 
-M8 plans to strengthen this flow with a literal deliverable contract, exact operation
-preflight, one behavior/text/tooltip/lifecycle/presentation contract, semantic-impact repair
-backtracking, and durable cross-platform reproduction with no launcher-owned process left
-behind. Existing literal reporting and verification ownership remain in force; M8 adds no
-separate evidence-reporting subsystem. The diagram above remains the currently implemented
-flow until those Packages are selected and delivered.
+M8 strengthens this flow. The literal deliverable contract and exact capability preflight are
+implemented and are part of the diagram above: DESIGN carries the completion claim, and SPEC is
+validated against both its surface envelope and the routes its operations cite before anything is
+scaffolded. Still planned: one behavior/text/tooltip/lifecycle/presentation contract,
+semantic-impact repair backtracking, and durable cross-platform reproduction with no
+launcher-owned process left behind. Existing literal reporting and verification ownership remain
+in force; M8 adds no separate evidence-reporting subsystem.
 
 A complete narrow request retains a zero-question path. Ambiguous work receives materially
 different player-facing options with trade-offs, not an exhaustive questionnaire. Revision
@@ -112,10 +126,13 @@ current DESIGN decisions only
 ```
 
 `design_trace.py` rejects missing/extra operations, one-way links, future leakage,
-unresolved gaps, invalid dispositions, invented route forms, and absent route files.
-`coherence_trace.py` rejects invalid references, unresolved pre-SPEC conflicts, and
-unbounded revision queues. Neither validator can prove subjective quality, balance,
-enjoyment, or runtime behavior.
+unresolved gaps, invalid dispositions, invented route forms, absent route files, unresolvable
+route anchors, and a capability id no route declares. `coherence_trace.py` rejects invalid
+references, unresolved pre-SPEC conflicts, and unbounded revision queues. `deliverable_trace.py`
+rejects a malformed claim before SPEC and an outcome that outruns its evidence at finalize.
+`spec_envelope_trace.py` rejects a SPEC that drops a shared section, invents a top-level key, or
+declares a hook its own surface cannot receive. No validator can prove subjective quality,
+balance, enjoyment, or runtime behavior.
 
 ## Architecture
 
@@ -129,12 +146,12 @@ enjoyment, or runtime behavior.
    scenarios, and deterministic regressions.
 5. `plugins/open-mod/` and `skills/` are generated Codex-plugin and portable payloads.
 
-Planned M8 work crosses these ownership boundaries rather than creating a separate runtime
-framework. `modmaker` will own deliverable, complete player-facing semantics, and
-backtracking flow; `sts2-api` maintained exact semantic routes and capability promotion;
-tools reproducible platform and owned-process cleanup; tests capability conformance,
-Package behavioral cases, and final whole-skill coverage. This planning does not authorize
-source edits yet.
+M8 work crosses these ownership boundaries rather than creating a separate runtime
+framework, and the delivered Packages followed that split: `modmaker` owns the deliverable claim
+and the SPEC-side capability declaration, `sts2-api` owns the maintained exact route and the
+pinned hook catalog it projects, tools own the validators, and tests own the capability
+conformance cases. Remaining Packages keep the same division — `modmaker` the backtracking flow,
+tools reproducible platform and owned-process cleanup, tests final whole-skill coverage.
 
 Edit source under `games/sts2/`; regenerate both payloads through `publish.sh`. Generated
 Mods use the pinned compile package and discover a validated game-local or official

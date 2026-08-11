@@ -6,7 +6,7 @@ work dir. This is the generation contract every later stage reads. Also seed `PL
 design IDs and semantic operations carry over under `INV-6`.
 
 Read `DESIGN.md` first, then `semantic-contract.md`. Every SPEC must include
-the `sts2-content-semantic/v1` envelope from that file. The blocks below collect
+the `sts2-content-semantic/v2` envelope from that file. The blocks below collect
 surface-specific inputs; they are semantic data, not implementation recipes. Do not
 write framework class names, namespaces, hook signatures, pool attributes, project
 references, manifest fields, or resource paths in the user-facing SPEC. The selected
@@ -80,7 +80,7 @@ Place exactly one marked JSON block near the top of SPEC:
       "operation_id": "OP-002",
       "design_ids": ["D-002"],
       "semantic_target": "Card portrait uses the checked placeholder fallback",
-      "supported_route": "reference/art-contract.md#placeholder"
+      "supported_route": "reference/art-contract.md#path-root"
     }
   ]
 }
@@ -96,7 +96,14 @@ unresolved design conflict):
 python ../modmaker/scripts/coherence_trace.py --design DESIGN.md
 python ../modmaker/scripts/deliverable_trace.py --design DESIGN.md
 python ../modmaker/scripts/design_trace.py --design DESIGN.md --spec SPEC.md
+python ../modmaker/scripts/spec_envelope_trace.py --spec SPEC.md
 ```
+
+`spec_envelope_trace.py` checks the SPEC you just wrote against the envelope its own
+`surface:` line claims: every shared section present, no invented top-level key, and the
+`sts2-content-semantic/v2` contract line. It reads the allowed keys from
+`surfaces/<element>.md`, so the page and the check cannot disagree. A pre-v2 project passes
+through unchanged.
 
 Stop before confirmation or scaffold on any validation error. Fix the artifact that owns
 the mismatch; never delete a future requirement or invent a supported route to make the
@@ -126,7 +133,7 @@ Use the block for the element type. **Existing vanilla model override:**
 ```markdown
 # SPEC - <Mod Name>
 
-- **contract**: sts2-content-semantic/v1
+- **contract**: sts2-content-semantic/v2
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -392,6 +399,68 @@ save/resume. Use the combat's native turn number for Stone Calendar-style "on tu
 reset for turn-local and once-per-combat state.
 Query `reference/stateful-mechanics.md` before authoring or verifying this block.
 
+### Hook participation (all surfaces that can receive hooks)
+
+Add this block when an element changes a number or a decision the host is computing for
+something else, rather than acting at a trigger of its own. "At the start of my turn, gain 3
+Block" is a trigger and belongs in `effects`. "While I am attached, damage my owner receives is
+doubled" is hook participation: nothing fires, and the engine consults the element while
+resolving someone else's attack.
+
+Keep the distinction, because the second kind is what the pipeline used to lose. Stated as prose
+inside an effect sequence, a multiplier has no field to be declared in, nothing downstream can
+check it, and a generated method with an empty body passes every local stage. Each field below
+exists because its absence is a way that happens.
+
+```markdown
+- **hook participation**: none | one or more
+  - capability: <semantic hook id from `reference/model-hook-participation.md`>
+    shape: value | out-replacement | collection
+    player-facing: <the rule exactly as the player would read it>
+    subject: <whose value or decision this changes, in game terms>
+    condition: <the exact cases it applies to, including which kinds of damage, block,
+      or event count as "mine">
+    value: <the number or one deterministic formula, with bounds>       # value shapes
+    dynamic value name: none | <the name substituted into the rules text>
+    outside the condition: <the unchanged result the host receives>
+    replaces: yes when <condition>; declines otherwise                  # out-replacement only
+    edit: add <entry and its values> | remove <which entries>            # collection only
+    other entries: preserved unchanged                                  # collection only
+    ordering: base | late - <why this one>                              # collection only
+```
+
+Four fields carry most of the weight, and none of them is optional:
+
+- **`subject`** decides direction. The same host question serves "damage I receive" and "damage I
+  deal", separated only by whose value the element is guarding. A declaration missing it produces
+  an element whose rules text is right and whose behavior is inverted.
+- **`condition`** must say which *kinds* count. In STS2, attack damage from a Card or a Monster
+  move is a different thing from Poison-style HP loss and from damage dealt by relics, potions,
+  and powers. Vanilla Vulnerable multiplies only the first. "Doubles incoming damage" is not yet a
+  decision; the design has to choose, and this is the field that records the choice.
+- **`outside the condition`** is the value the host gets in every case the element is not for. It
+  is not boilerplate: an element that returns its modifier unconditionally changes every unrelated
+  interaction in the run while passing an assertion that its own case works.
+- **`dynamic value name`** is how the number in the rules text stays the same number as the
+  behavior. Declare it once and let substitution place it; two literals will disagree after the
+  first balance change.
+
+`capability` and `shape` are the pairing keys, so they are the one place a semantic id belongs in
+SPEC. Copy the id verbatim from the route page — the validator rejects an id no route declares, a
+shape the catalog contradicts, and a hook the declaring surface cannot receive. Everything else in
+the block stays in game terms; no method signature, parameter name, or type belongs here.
+
+Repeat the `OP-###` in the generation trace with `capability_ids` naming the same ids, and cite
+`reference/model-hook-participation.md` as its supported route.
+
+**Two participations are not free-standing.** Rest Site option contribution and its stay/leave
+behavior route through `reference/rest-site-options.md` instead, which owns four boundaries the
+raw participation does not carry. An **enchantment** uses its own five replacements rather than
+the general hooks for damage, block, and play count; `surfaces/enchantment.md` states which.
+Composition order across contributors is the engine's, not the element's: every additive
+contribution resolves before every multiplicative one. Never declare a combined adjustment that
+assumes the element runs alone.
+
 **Enemy encounter** (a monster + the encounter that spawns it 鈥?always authored as one
 slice; scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
 generated art is one static body shared by combat and bestiary; animation is later): its
@@ -425,66 +494,17 @@ acquisition presentation; bounded `weak_short` screen shake; and the curated bui
 Event speech/thought bubbles remain explicit gaps.
 
 **Character Foundation** (one selectable character shell plus its starter ecosystem;
-scenarios are `RunStart` + `CombatPlayer`; selected advanced capabilities use the
-separate contracts below): its envelope, element class, and proof matrix live together in
-`surfaces/character.md`.
+scenarios are `RunStart` + `CombatPlayer`): its envelope, element class, proof matrix, and
+all advanced capability sub-envelopes (capability module, character resource, ordered
+semantic buffer) live together in `surfaces/character.md`. Read that page for everything
+Character; the sub-envelopes have moved there from this file (M8.0 mismatch 7, closed in v2).
 
 `author.md` dispatches `element: character` to `recipes/character.md`. Do not add a
 manual registration line or invent a nonstandard energy override. If `advanced mechanic`
-is not `none`, also record the envelope below. Author it only when the named semantic
-capability has its own recipe in the shipped pack. Package support alone does not provide
-missing runtime instructions. The current implemented public framework
-routes are exactly `reference/character-resource.md` and
-`reference/ordered-card-buffer.md`.
-
-```markdown
-- **capability module**: <family/name>
-- **semantic host**: <real owner/event>
-- **lifetime/reset/save**: <turn|combat|run; exact reset and persistence>
-- **public surface**: <semantic context/listener used by domain code>
-- **adapter route**: public-api | owned-adapter
-- **adapter constraints**: <exact supported version and implementation-only limits>
-- **multiplayer ordering**: <owner/local guard and deterministic order>
-- **UI host/fallback**: <host, visibility, refresh, generic fallback>
-- **conflict/failure**: <composition policy and fallback>
-- **scenario/invariant**: <real host plus exact expected/observed state>
-```
-
-If neither documented route can express the mechanic, that is `INV-3`: mark it unsupported and
-name the gap. This envelope never implies non-public access or a patch target.
-
-For a selected **character resource**, also record:
-
-```markdown
-- **resource**: <name>
-- **owner/lifetime**: local Player / combat; new PlayerCombatState resets to 0
-- **amount domain**: nonnegative integer, floor 0
-- **gain sources**: <source -> positive amount>
-- **spend/payoff**: <cost -> exact consequence>; all-or-nothing
-- **affordability boundary**: <one affordable and one unaffordable case>
-- **UI**: fixed 220x32 icon+text counter under combat energy UI; checked text-only fallback
-- **placement**: offset 160 from native Energy; the two global rects must not intersect
-- **adapter route**: public-api selected after SPEC; no private patch fallback
-- **observe**: gain/spend/rejection/floor/counter/non-overlap plus distinct zero state in combat 2
-```
-
-For a selected **ordered semantic buffer**, also record:
-
-```markdown
-- **buffer**: <name>; owner local PlayerCombatState; lifetime combat
-- **recorded value/order**: <semantic value from accepted cards>; append order <matters|not>
-- **capacity/overflow**: <positive N>; reject without mutating current contents
-- **source destination**: normal STS2 result pile, default Discard
-- **visibility**: <compact player-readable state through a grounded UI host>
-- **compile**: <trigger>; snapshot <ordered fields>; formula <deterministic expression>
-- **output**: <real card + configured scaling values + exact effect>
-- **observe**: exact source/compile-card destinations, order/capacity/overflow/UI,
-  one CardGeneratedEntry, output state/effect, and distinct empty state in combat 2
-```
-
-The adapter lowers the resource block to one framework-owned combat resource with
-all-or-nothing commands and a public UI attachment. It lowers the buffer block to combat-
-attached semantic state. These implementation records belong in `MEMORY.md`, not SPEC.
+is not `none`, also record the capability-module sub-envelope in `surfaces/character.md`.
+Author it only when the named semantic capability has its own recipe in the shipped pack;
+the current implemented public framework routes are exactly
+`reference/character-resource.md` and `reference/ordered-card-buffer.md`.
 
 Retained-card zone UI is unsupported. If the user requires real played-card instances to
 remain in a custom zone, preserve that idea as a gap (`INV-3`). A no-UI `CustomPile` is the
@@ -636,7 +656,7 @@ details are derived once and remain resumable:
 ```markdown
 # MEMORY 鈥?<Mod Name>
 - design contract: open-mod-design/v1 (creative intent and scope remain in DESIGN.md)
-- semantic contract: sts2-content-semantic/v1
+- semantic contract: sts2-content-semantic/v2
 - logical ids: <...>
 - framework profile: <selected adapter profile>
 - adapter: <surface/contract-version>

@@ -536,15 +536,32 @@ class ShippedPromptContractTests(unittest.TestCase):
         )
         self.assertIn("never as `observed`".lower(), text)
 
-    def test_no_ninth_invariant_was_added(self) -> None:
+    def test_deliverable_claim_rule_fires_at_finalize_not_globally(self) -> None:
         """The claim-versus-report rule fires at one stage, so it stays in verify.md.
 
-        `invariants.md` holds only rules that fire at every stage; the repair attempt cap
-        and the art-consent boundary already set the precedent for leaving a single-stage
-        rule where it fires.
+        `invariants.md` holds rules that fire across multiple stages. The repair attempt cap
+        and the art-consent boundary set the precedent for leaving a single-stage rule where
+        it fires, and M8.1 decided the deliverable claim rule is the same: it fires only at
+        finalize. M8.2 added INV-9 for a different rule (a claimed-but-broken route must block
+        rather than being worked around locally) that genuinely fires at spec, author, verify,
+        and repair — so the absence of INV-9 from M8.1 is specific to the deliverable-claim
+        decision, not a blanket prohibition on a ninth invariant.
         """
+        verify = skill_prose.read(skill_prose.MODMAKER_DIR / "verify.md")
+        self.assertIn("Settle the deliverable claim", verify)
+        self.assertIn("deliverable_trace.py", verify)
+        # The claim rule lives in verify.md, not as a standalone invariant.
         invariants = skill_prose.read(skill_prose.INVARIANTS_PAGE)
-        self.assertNotIn("INV-9", invariants)
+        for phrase in (
+            "settlement ledger",
+            "deliverable claim",
+            "required experience",
+        ):
+            self.assertNotIn(
+                phrase,
+                invariants,
+                f"the deliverable-claim rule crept back into invariants.md: {phrase!r}",
+            )
         self.assertIn("## INV-8", invariants)
 
     def test_scenarios_cover_the_three_documented_cases(self) -> None:

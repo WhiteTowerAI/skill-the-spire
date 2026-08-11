@@ -29,6 +29,12 @@ hypothesis — don't keep patching the same spot.**
 - **A repaired stage passes on its own re-verify, or not at all** (`INV-1`). What each
   stage's own re-verify is: build `0/0`; tier-1 marker greppable with no mod-named errors;
   tier-2 effect observed.
+- **A workaround for a broken route is not a repair** (`INV-9`). If the fix you are reaching
+  for rebuilds a behavior the cited recipe/reference was supposed to provide, stop: that route
+  is failing its own contract, and reimplementing it here hides the failure from every later
+  Mod while leaving this one carrying an unmaintained copy. It is a scope change that belongs
+  in `DESIGN.md` and `SPEC.md`, plus a maintainer note in the project's `MEMORY.md`
+  (`INV-8`) — not an attempt.
 
 ## The loop
 

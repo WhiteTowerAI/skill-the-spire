@@ -61,16 +61,23 @@ numbers.
 ## M8 Results
 
 - `M80_SKILL_STRUCTURE_RESULTS.md` — skill structure restructuring, closed 2026-08-10.
-- `M81_DELIVERABLE_CONTRACT_RESULTS.md` — literal deliverable contract, implemented in source
-  2026-08-10.
+- `M81_DELIVERABLE_CONTRACT_RESULTS.md` — literal deliverable contract, closed 2026-08-10.
+- `M82_CAPABILITY_CONFORMANCE_RESULTS.md` — exact semantic capability conformance and preflight,
+  closed 2026-08-10.
 
-M8 is the active milestone. M8.0 is closed and M8.1 is implemented in source. Unlike most
+M8 is the active milestone; M8.0, M8.1, and M8.2 are closed. Unlike most
 records here, the M8.0 result points at a file that is still active instruction rather than
-archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md` holds three unresolved
-mismatches deferred to M8.2, so it must be read before treating any surface page as validated.
+archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md` must be read before
+treating any surface page as validated, since nine of its ten surfaces have never been piloted.
+Its three deferred mismatches were resolved by M8.2.
 
 The M8.1 record is the one to read before assuming a claim block is optional: it states what the
 contract checks, and equally what a green validator does not establish.
+
+The M8.2 record is the one to read before trusting a hook route. It carries two things a later
+session will need: the reachability rule that decides which surfaces a hook can reach at all, and
+an explicit exception — both of its real-host proofs were deferred to M8.6, so every route it added
+is implemented and has never been observed firing in a game.
 
 ## Research And Retired Evidence
 

@@ -14,43 +14,80 @@ card→power. One indivisible slice, one recipe (`recipes/monster.md`), one `Com
 Scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
 generated art is one static body shared by combat and bestiary; animation is later.
 
+The slice declares two content nodes in one `content:` block, because the monster and its
+encounter are inseparable: neither is usable without the other, and one recipe emits both.
+
 ```markdown
 # SPEC — <Mod Name>
 
-- **element**: enemy encounter
-- **monster logical id**: <stable local stem, e.g. canary_mite>
-- **encounter logical id**: <stable local stem, e.g. canary_mite_encounter>
+- **contract**: sts2-content-semantic/v2
 - **mod id**: <stable mod identity>
 - **author**: <author>
-- **hp**: <int>   (Min == Max for deterministic HP)
-- **moves**:
-  - id: <UPPER_SNAKE>
-    display name: <shown in the bestiary move list>
-    intents: <attack N | multi N x R | buff | debuff | defend | heal; list every visible intent>
-    effect: <ordered game-term effects with exact numbers and targets>
-    next: <move id | branch id>
-- **branches**: none | <branch id>: if <exhaustive condition> -> <move id>; else -> <move id>
-- **loop**: <deterministic move/branch cycle; every move and branch has a reachable successor>
-- **group**: single | <the monsters the encounter spawns>
-- **valid acts**: all | <Glory | Hive | Overgrowth | Underdocks>
-- **scenario**: CombatEnemy
-- **observe**:
-  - the spawned roster matches `group` exactly, and each monster's HP equals the declared value
-  - every advertised move id executes in the declared order
-  - self buff/custom Power: exact monster Power amount plus a later changed attack/result
-  - player debuff: exact player Power amount immediately after application
-  - block/heal: exact monster Block and HP deltas from a wounded pre-state
-  - multi-attack: observed hit-result count equals the repeat count
-  - composite action: every effect from the same move is observed
-  - branch: each advertised outcome is forced by its real condition and observed
-- **art**: placeholder | generate: <one full creature in a neutral combat-ready pose>
-- **art source**: runtime-imagegen | vofy | byo-http | local-image  (generate only)
-- **art boundary**: one checked 360x360 static body shared by combat and bestiary; an
-  explicit built-in scene remains the fallback; no Spine/attack/hurt/death animation or
-  separate phobia body
-- **derived ids** (adapter resolves after the semantic SPEC is accepted):
-  - monster logical id and localization fields: `name`, one `moves.<MOVE_ID>.title` per move
-  - encounter logical id and localization fields: `title`, `loss`
+- **content**:
+  - name: <shown monster name>
+    surface: enemy encounter
+    logical id: <stable monster stem, e.g. canary_mite>
+    encounter logical id: <stable encounter stem, e.g. canary_mite_encounter>
+    group: single | <the monsters the encounter spawns>
+    hp: <int>   (Min == Max for deterministic HP)
+- **registration**:
+  - availability: standalone
+  - ownership: enemy
+  - placement: <plain-language encounter placement rule>
+  - valid acts: all | <Glory | Hive | Overgrowth | Underdocks>
+- **localization**:
+  - fields: monster `name`, one `moves.<MOVE_ID>.title` per declared move; encounter
+    `title` and `loss`
+  - table intent: monsters + encounters
+  - formatting: plain
+- **effects**:
+  - trigger: encounter move
+  - target: <per move>
+  - moves:
+    - id: <UPPER_SNAKE>
+      display name: <shown in the bestiary move list>
+      intents: <attack N | multi N x R | buff | debuff | defend | heal; list every visible intent>
+      effect: <ordered game-term effects with exact numbers and targets>
+      next: <move id | branch id>
+  - branches: none | <branch id>: if <exhaustive condition> -> <move id>; else -> <move id>
+  - loop: <deterministic move/branch cycle; every move and branch has a reachable successor>
+  - scaling: <named values and bounds, or none>
+- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+  - A Monster receives combat-scope hooks only (45 of 68); run-scope hooks never reach it. Its
+    own Creature is `Creature`, not `Owner` — there is no owning Player. This is how a monster
+    gets a passive rule that is not a move and not a Power: "attacks against this creature deal
+    less damage" is participation, while the move list stays the move list.
+- **state**:
+  - lifetime: combat
+  - owner: the spawned monster
+  - advance/check: the declared move/branch cycle
+  - reset: combat end
+  - persistence: none
+  - visible state: native intent display (a plan, not a result — `INV-1`)
+- **presentation**:
+  - assets: static monster body; placeholder | generate: <one full creature in a neutral
+    combat-ready pose>
+  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - native presentation: combat body plus default bestiary entry
+  - art boundary: one checked 360x360 static body shared by combat and bestiary; no
+    Spine/attack/hurt/death animation or separate phobia body
+- **fallback**:
+  - missing asset: explicit built-in creature-visuals scene
+  - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
+- **proof**:
+  - scenario: CombatEnemy
+  - driver: enter the custom encounter and end the turns needed to traverse the cycle
+  - invariants:
+    - the spawned roster matches `group` exactly, and each monster's HP equals the declared value
+    - every advertised move id executes in the declared order
+    - self buff/custom Power: exact monster Power amount plus a later changed attack/result
+    - player debuff: exact player Power amount immediately after application
+    - block/heal: exact monster Block and HP deltas from a wounded pre-state
+    - multi-attack: observed hit-result count equals the repeat count
+    - composite action: every effect from the same move is observed
+  - boundary cases: each advertised branch outcome is forced by its real condition and observed
+- **adapter output** (written to MEMORY after acceptance): resolved monster and encounter
+  content ids, localization keys, monster body asset role, and framework diagnostic record
 ```
 
 A one-move enemy may keep one self-looping move. A multi-move enemy must fill the compact
@@ -119,6 +156,10 @@ after, driving the full declared cycle and both outcomes of every branch.
 - Assert each move's concrete consequence: monster Power amount plus a later changed attack for
   a self buff; player Power amount for a debuff; Block/HP deltas from a wounded pre-state;
   observed hit-result count for a multi-attack; every effect of a composite move.
+- **For hook participation — assert the neutral case outside the guard.** A monster's passive
+  rule is invisible to every move assertion, because no move performs it. Assert the modified
+  value through a real attack, then drive one event the guard should ignore — an attack on a
+  different creature, or a damage kind the condition excludes — and assert it is unchanged.
 - One HP delta is not sufficient for a multi-move enemy. Before the terminal proof, the harness
   must execute every SPEC move/branch outcome and assert its move history, concrete
   creature/Power state, downstream buff consequence, and multi-hit result count.

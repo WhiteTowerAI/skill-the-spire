@@ -32,11 +32,11 @@ but not very good, overclaim findings, and unrun paths are recorded in
 `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`. No copied-project observation
 changes a support row without current pinned maintainer grounding.
 
-M8 End-to-End Product Integrity is active: M8.0 skill structure restructuring is closed,
-M8.1 literal deliverable contract is implemented in source, and M8.2 is next selectable.
-M8.0 reorganized shipped-pack structure and added no runtime row; M8.1 added an artifact
-claim, a settlement ledger, and a validator. Neither changed a support row, and no surface
-gained or lost support through either.
+M8 End-to-End Product Integrity is active: M8.0 skill structure restructuring, M8.1 literal
+deliverable contract, and M8.2 exact semantic capability conformance are closed; M8.3 is next
+selectable. M8.0 reorganized shipped-pack structure, M8.1 added an artifact claim plus settlement
+ledger, and M8.2 added maintained hook-participation authoring and static preflight. None changed a
+runtime support row, and no surface gained or lost support through them.
 M8.4 was removed; M8.5 and M8.6 retain their numbers. Deliverable, capability-preflight,
 backtracking, and platform work add no runtime row by themselves. The Watcher observations
 make Card behavior metadata, deck inspection/selection/movement, mechanic Hover Tips,
@@ -55,6 +55,7 @@ Mod.
 |---|---|---|
 | card / relic / potion / power | `CombatPlayer` | RitsuLib `Mod*Template`, exactly-once content-pack registration, explicit pools, checked art fallback |
 | computed Card values | `CombatPlayer` | one bounded formula for preview/execution; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltip |
+| custom-content model hook participation | `CombatPlayer`, `CombatEnemy`, `RunStart` | supported: 66 public `AbstractModel` hooks on Card/Relic/Potion, 45 on Power/Orb/Monster, 61 plus five mandatory `Enchant*` replacements on Enchantment, in three declaration shapes (54 scalar-return, 6 out-replacement, 8 collection-edit); reachability is decided per surface by the dispatching iterator's listener set and enforced at preflight, so a hook the surface cannot receive blocks instead of shipping as a method that never fires; declared guard/value/neutral-return plus `DynamicVar` rules-text binding; two Rest Site hooks route through `reference/rest-site-options.md` instead. **Both real-host proofs are unrun** — no generated override has been observed firing in a game, so every route here is implemented-and-unproved |
 | advanced creature targeting | `CombatPlayer` | deterministic Mod-local live-creature filters; native mouse/controller selection for Card one/many and Potion one; execution-time resolution checks; no multi Potion |
 | custom Card Piles | matching combat/run and UI hosts | complete documented public Package: combat/run scopes; Headless/TopBarDeck/BottomLeft/BottomRight/ExtraHand; preset/custom anchors; icon/hover/open/view/visibility/hotkeys; awaited native movement; localization; ExtraHand layout/manual play/callbacks |
 | RitsuLib Card Hand Glow | Card hand | generated ordered fixed-color gold/red/custom rules, priority/tie order, and unplayable visibility; normal combat-state refresh boundary; human-led focused host review and Tier 1 passed; strict Tier 2 unrun |

@@ -83,6 +83,13 @@ second framework branch into this file.
   explicit `EventOption` keys, public-Cmd consequences, and explicit page/finish flow;
   register it once with `.SharedEvent<T>()` or `.ActEvent<TAct,T>()` and add no `[Pool]` or
   manual `AddEvent`.
+  If SPEC declares **`hook participation`** on any surface, also read
+  `reference/model-hook-participation.md` before writing the override. It owns the three
+  declaration shapes, the per-surface owner property, and the guard-value-neutral body. Write the
+  neutral return on every path outside the guard and read a rules-text number back from
+  `DynamicVars` rather than repeating a literal. An Enchantment uses its five `Enchant*`
+  replacements for damage, block, and play count; the general hooks are wrong there. Never
+  contribute a Rest Site option through the raw hook — use `reference/rest-site-options.md`.
   Also read `reference/event-outcomes.md` when SPEC includes selections, rewards,
   conditional pages, or special combat; read `reference/event-vfx.md` when it selects
   `portrait_halo`; read `reference/event-text-effects.md` when descriptions select bounded
