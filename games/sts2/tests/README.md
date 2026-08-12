@@ -111,8 +111,8 @@ payload result is recorded in `documents/history/M75_COHERENCE_RESULTS.md`.
 M7.6 closed through a human-led external whole-skill evaluation rather than a shipped
 source Package. The copied Watcher project records a macOS build, Tier 1, a bounded
 SelfTest, and the human observation that the Mod was playable but not very good. The
-harness did not drive Scry, composed Draw, Rushdown, Devotion, or draw-pile exhaustion;
-one unconditional aggregate assertion and the final narrative overclaimed Scry coverage.
+harness did not drive several claimed mechanics or draw-pile exhaustion;
+one unconditional aggregate assertion and the final narrative overclaimed coverage.
 No post-observation DESIGN/SPEC delta and same-hypothesis replay occurred. The exact result
 and exceptions are in
 `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`. By explicit human-lead decision,
@@ -183,7 +183,7 @@ about decision quality, comprehension, enjoyment, or
 tuning; Tier 1/Tier 2 retain their existing literal meanings. M8.4 and its proposed separate
 evidence-reporting subsystem were removed; existing verification ownership remains active.
 
-The Watcher Exhaust-text, Scry, Hover Tip, Wrath, and leaked-process observations are audit
+The Watcher rules-text, Hover Tip, stance, and leaked-process observations are audit
 inputs for those generic contracts. They do not become five special-case assertions and do
 not change a support row without current pinned maintainer grounding.
 
@@ -323,11 +323,11 @@ Host ownership:
 
 | Host | Owns |
 |---|---|
-| `CombatPlayer` | content core, computed Card values, custom Card Piles/ExtraHand, hand emphasis, Relic/Power extra labels, advanced targeting, stateful relics, Scry, Character combat cues, and M6.7.1 existing-Card property/text/play/owner-hook behavior |
-| `CombatEnemy` | Monster + Encounter, move vocabulary, combat/bestiary body |
-| `MapNode` / Character | Event outcomes/presentation, bounded forced follow-up, native Ancient/Architect dialogue |
-| real Rest Site / `MapNode` | Relic-owned option absence/gray/payment/stay/repeat/icon matrix |
-| `RunStart` / Character | Foundation, static art/theme, combat cues, resource/UI, ordered buffer |
+| `CombatPlayer` | content core, selected computed Card values/native costs, custom Card Piles/ExtraHand, hand emphasis, Relic/Power extra labels, advanced targeting, bounded state consumers, Character combat cues, and M6.7.1 existing-Card property/text/play/owner-hook behavior |
+| `CombatEnemy` | selected Monster/Encounter rosters, HP ranges, move transitions, combat/bestiary bodies |
+| `MapNode` / Character | Event outcomes/presentation, selected finite forced follow-ups, native Ancient/Architect dialogue |
+| real Rest Site / `MapNode` | Card/Relic-owned option absence/gray/payment/stay/repeat/icon matrix |
+| `RunStart` / Character | current-SPEC Foundation starts/pools, static art/theme, combat cues, selected resources/UI, ordered buffer |
 | `ModelDb`/localization after preload + offline PE metadata | M6.7 version catalog identity, stable title keys and 14-language display aliases, runtime semantic snapshot, adapter signatures/fingerprints, and no-op manifest grounding |
 | nearest native visual consumers | M6.7.2 Card/CardPool, Relic/Power/Potion/Orb, Act, Event/Ancient, Encounter, Affliction/Enchantment/Modifier public visual providers; selected Card and Darv providers were included in the representative Mod accepted as a whole, while other providers remain unrun |
 | native Ancient room | M6.7.3 initial-option append/replacement, visible/locked/cost/tip/relic presentation, ordered outcomes, selectors/rewards, page graph, native finish/choice history, and M6.7.2 visual composition; selected Darv replacement/page/portrait was included in the representative Mod accepted as a whole, while other routes remain unrun |

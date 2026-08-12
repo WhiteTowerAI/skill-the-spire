@@ -597,8 +597,8 @@ request -> literal deliverable -> exact route -> design/spec -> generated behavi
         -> literal report -> reproducible installed result
 ```
 
-The active plan retains five bounded Packages. M8.4 was removed by the human lead; M8.5 and
-M8.6 retain their numbers:
+The active plan retains six bounded Packages. M8.4 was removed by the human lead; Package
+numbers do not imply execution order:
 
 - M8.1 literal completion claims and required player experiences carried by the existing
   DESIGN/SPEC trace; prototype, slice, and run-capable are examples rather than a closed
@@ -610,6 +610,9 @@ M8.6 retain their numbers:
   any required explanatory/presentation surface;
 - M8.5 repository-owned Windows/macOS installed-workflow reproducibility with scoped graceful/
   forced cleanup and proof that no launcher-owned game child remains; and
+- M8.7 product-boundary generalization for the human-selected audit findings, with parseable
+  surface-specific semantic contracts, one shared lightweight structural validator, and exact
+  evidence labels rather than prose-only widening or nine family proof campaigns; and
 - M8.6 one clean installed whole-skill acceptance after the preceding Packages close, covering
   both runtime state and its complete player-facing semantics.
 
@@ -619,8 +622,9 @@ workflow are closed. M8.5 closed by explicit human-lead decision on 2026-08-12 w
 receiving an execution contract and with unresolved exceptions: its manifest and
 executable-adjacent path repairs have static/Windows compile evidence, but macOS installed
 reproduction and launcher-owned process-tree cleanup are unimplemented and unproved. This closure
-changes no runtime capability row and does not authorize M8.6. Its bounded record is
-`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`.
+changes no runtime capability row and does not authorize M8.7 or M8.6. Its bounded record is
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 is planned but not started; the
+current narrow authoring routes remain authoritative until it closes, and M8.6 waits for it.
 Concrete implementation ownership,
 ordered steps, and fixed result-record names live in the active implementation plan so a
 later session does not need to reinterpret these research inputs. Intermediate Packages
@@ -628,8 +632,10 @@ record their work and results; M8.6 owns the final clean whole-skill judgment.
 
 No generic Watcher discovery is promoted from the copied project alone. Exact API,
 lifecycle, platform, and payload conclusions still require the repository's pinned source
-and proportionate maintained evidence. M8.2 may promote a selected reusable capability
-family only through that normal grounded process; until then the literal request blocks
+and proportionate maintained evidence. M8.7 may promote a selected reusable capability
+family only through its version-pinned contract, lowering, and shared structural validation;
+newly generalized shapes remain game-unobserved until a later selected Mod exercises them. Until
+then the literal request blocks
 instead of receiving an approximation. This does not authorize prompt-derived Harmony,
 reflection, Publicizer, or IL or broaden multiplayer support.
 

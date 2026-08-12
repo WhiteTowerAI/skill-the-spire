@@ -5,8 +5,11 @@ work dir. This is the generation contract every later stage reads. Also seed `PL
 (stage checklist) and `MEMORY.md`. For revision, change only the confirmed delta; unrelated
 design IDs and semantic operations carry over under `INV-6`.
 
-Read `DESIGN.md` first, then `semantic-contract.md`. Every SPEC must include
-the `sts2-content-semantic/v2` envelope from that file. The blocks below collect
+Read `DESIGN.md` first, then `semantic-contract.md`. Every new or deliberately revised SPEC
+must include the `sts2-content-semantic/v3` envelope and exactly one
+`open-mod-surface-data/v1` block from that file. Existing v1/v2 SPECs resume unchanged until
+the user accepts a revision; migrate only the affected generalized family data and preserve
+stable design/operation IDs. The blocks below collect
 surface-specific inputs; they are semantic data, not implementation recipes. Do not
 write framework class names, namespaces, hook signatures, pool attributes, project
 references, manifest fields, or resource paths in the user-facing SPEC. The selected
@@ -106,9 +109,11 @@ python ${GAME_TOOLS_DIR}/spec_envelope_trace.py --spec SPEC.md
 
 `spec_envelope_trace.py` checks the SPEC you just wrote against the envelope its own
 `surface:` line claims: every shared section present, no invented top-level key, and the
-`sts2-content-semantic/v2` contract line. It reads the allowed keys from
-`surfaces/<element>.md`, so the page and the check cannot disagree. A pre-v2 project passes
-through unchanged.
+`sts2-content-semantic/v3` contract line. It reads the allowed envelope keys from
+`surfaces/<element>.md`; for v3 it also dispatches the one structured data block to
+`surface_contract_trace.py`, which reads the selected families and route vocabulary from their
+owner pages. v1/v2 projects pass through under their existing contracts without silent
+migration. This is structural validation, not compile, runtime, presentation, or game proof.
 
 Stop before confirmation or scaffold on any validation error. Fix the artifact that owns
 the mismatch; never delete a future requirement or invent a supported route to make the
@@ -144,7 +149,7 @@ Use the block for the element type. **Existing vanilla model override:**
 ```markdown
 # SPEC - <Mod Name>
 
-- **contract**: sts2-content-semantic/v2
+- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -273,9 +278,9 @@ decision. A Card additionally declares the composed tokens it expects in
 rather than conventional.
 
 **Relic:** its envelope, element class, and proof matrix live together in
-`surfaces/relic.md`. Read that page for `surface: relic`. The Rest Site option block a Relic
-owner adds to its own SPEC lives there too; the current slice does not accept a Card or
-Modifier owner.
+`surfaces/relic.md`. Read that page for `surface: relic`. A Relic-owned Rest Site option is
+declared there; a Card-owned option is declared on `surfaces/card.md`. Both route through
+`reference/rest-site-options.md`; Modifier ownership remains unsupported.
 
 **Potion** (usage/target replace trigger; loc table is `potions`, no flavor, plus an
 optional `selectionScreenPrompt`; art is a loose 256脳256 PNG icon, like relic/power): its
@@ -387,7 +392,10 @@ their envelope fields, element classes, and proof matrices live together in
 `surfaces/keyword.md` and `surfaces/enchantment.md`.
 
 **Stateful-mechanic contract** (add when any element remembers progress; omit for a
-stateless effect). This is state owned by the real relic/card/power, not a new element:
+stateless effect). This is bounded state owned by the exact eligible model/combat owner,
+not a new element. For v3, put the complete schema, transition listener, lifetime/reset/
+persistence, visibility, consumer, and output data in the `bounded_state` family and keep
+this human-readable block consistent with it:
 
 ```markdown
 - **state**:
@@ -473,17 +481,21 @@ Composition order across contributors is the engine's, not the element's: every 
 contribution resolves before every multiplicative one. Never declare a combined adjustment that
 assumes the element runs alone.
 
-**Enemy encounter** (a monster + the encounter that spawns it 鈥?always authored as one
-slice; scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
-generated art is one static body shared by combat and bestiary; animation is later): its
-envelope, element classes, and proof matrix live together in `surfaces/monster.md`.
+**Enemy encounter graph** (separately declared Monster and Encounter nodes linked by
+explicit roster edges; scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are
+`monsters` + `encounters`; generated art is one static body per Monster shared by combat
+and bestiary; animation is later): its envelope, element classes, and proof guidance live
+together in `surfaces/monster.md`.
 
 The monster and encounter are **not** modeled as two `elements` + an interaction edge (that
-form is for source鈫抎ependent links like card鈫抪ower). They are one indivisible slice with a
-single recipe (`recipes/monster.md`) and a single `CombatEnemy` proof. `author.md` dispatches
-to that recipe when `element: enemy encounter`. A one-move enemy may keep one self-looping
-move. A multi-move enemy must fill the compact move/branch contract in that surface before
-authoring. An intent label is not behavior proof (`INV-1`).
+form is for source鈫抎ependent links like card鈫抪ower). They use one recipe
+(`recipes/monster.md`), but are not forced into a one-to-one pair. `author.md` dispatches to
+that recipe when `element: enemy encounter`. Every authored Monster must have a declared
+reachable Encounter edge; a Monster may be reused and an Encounter may contain multiple or
+repeated Monster ids. A one-move enemy may keep one self-looping move. A multi-move enemy
+must fill its deterministic, conditional, or explicitly weighted-random transition contract
+before authoring. Future Verify derives only the reachable variants selected by SPEC. An
+intent label is not behavior proof (`INV-1`).
 
 **Event / World Node** (one semantic Event with nested pages/options; scenario is
 `MapNode`; supported outcomes include blocking selections/rewards and one resumable or
@@ -501,7 +513,7 @@ the relic.
 All six native-presentation families are implemented: cross-content Card/standard-
 Hover-Tip rich text; enabled Event option Hover Tips plus normal relic-backed text/metadata
 with an explicit image blocker; native exact-lethal HP/Max HP warnings; native Card/relic
-acquisition presentation; bounded `weak_short` screen shake; and the curated built-in
+acquisition presentation; allowlisted `weak_short`/`strong_normal` one-shot screen shake; and the curated built-in
 `trial_noble` Event VFX. Locked-option tips, normal-layout relic images, and positioned
 Event speech/thought bubbles remain explicit gaps.
 
@@ -512,7 +524,9 @@ semantic buffer) live together in `surfaces/character.md`. Read that page for ev
 Character; the sub-envelopes have moved there from this file (M8.0 mismatch 7, closed in v2).
 
 `author.md` dispatches `element: character` to `recipes/character.md`. Do not add a
-manual registration line or invent a nonstandard energy override. If `advanced mechanic`
+manual registration line or invent a nonstandard energy override. Starting HP, Gold,
+MaxEnergy, Orb slots, starter multisets, and typed pools come from current SPEC; native values
+are analogies/defaults, not fixed outputs. If `advanced mechanic`
 is not `none`, also record the capability-module sub-envelope in `surfaces/character.md`.
 Author it only when the named semantic capability has its own recipe in the shipped pack;
 the current implemented public framework routes are exactly
@@ -687,7 +701,7 @@ details are derived once and remain resumable:
 ```markdown
 # MEMORY 鈥?<Mod Name>
 - design contract: open-mod-design/v1 (creative intent and scope remain in DESIGN.md)
-- semantic contract: sts2-content-semantic/v2
+- semantic contract: sts2-content-semantic/v3
 - logical ids: <...>
 - framework profile: <selected adapter profile>
 - adapter: <surface/contract-version>

@@ -56,7 +56,7 @@ Mod.
 | Capability | Host / consumers | Active boundary and implementation |
 |---|---|---|
 | card / relic / potion / power | `CombatPlayer` | RitsuLib `Mod*Template`, exactly-once content-pack registration, explicit pools, checked art fallback |
-| computed Card values | `CombatPlayer` | one bounded formula for preview/execution; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltip |
+| computed Card values | `CombatPlayer` | zero or more independently named bounded formulas with per-value preview/execution parity; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltips; generalized combinations game-unobserved |
 | custom-content model hook participation | `CombatPlayer`, `CombatEnemy`, `RunStart` | supported: 66 public `AbstractModel` hooks on Card/Relic/Potion, 45 on Power/Orb/Monster, 61 plus five mandatory `Enchant*` replacements on Enchantment, in three declaration shapes (54 scalar-return, 6 out-replacement, 8 collection-edit); reachability is decided per surface by the dispatching iterator's listener set and enforced at preflight, so a hook the surface cannot receive blocks instead of shipping as a method that never fires; declared guard/value/neutral-return plus `DynamicVar` rules-text binding; two Rest Site hooks route through `reference/rest-site-options.md` instead. **Both real-host proofs are unrun** — no generated override has been observed firing in a game, so every route here is implemented-and-unproved |
 | advanced creature targeting | `CombatPlayer` | deterministic Mod-local live-creature filters; native mouse/controller selection for Card one/many and Potion one; execution-time resolution checks; no multi Potion |
 | custom Card Piles | matching combat/run and UI hosts | complete documented public Package: combat/run scopes; Headless/TopBarDeck/BottomLeft/BottomRight/ExtraHand; preset/custom anchors; icon/hover/open/view/visibility/hotkeys; awaited native movement; localization; ExtraHand layout/manual play/callbacks |
@@ -65,20 +65,21 @@ Mod.
 | keyword | `CombatPlayer` | RitsuLib-owned native keyword, real Card text and no-icon tooltip, named behavior |
 | enchantment | `CombatPlayer` | template/registration, persistent Card attachment, checked 64x64 icon |
 | orb | `CombatPlayer` | template/registration, passive/evoke, checked 100x100 icon; Frost body/SFX fallback |
-| stateful relic cadence | multi-combat `CombatPlayer` | saved attached run state plus native combat turn state |
-| singleplayer Scry | `CombatPlayer` | generated-Mod-local top-X selector, stable retain/discard order, normal history/hooks; no global service |
-| Monster + Encounter | `CombatEnemy` | templates, deterministic/conditional move vocabulary, checked 360x360 combat+bestiary body |
+| bounded state-driven mechanics | selected owner/listener hosts | bounded scalar schema, exact owner and transition listener, declared lifetime/reset/persistence/visibility/consumers/outputs; run-save limited to Card/Relic/Enchantment `bool`/`int`/`string`; historical Relic cadence observed, generalized combinations game-unobserved |
+| Monster/Encounter graph | selected `CombatEnemy` variants | separate registrations, explicit actual/all-possible rosters, reused/multiple/repeated Monsters, positive HP ranges, deterministic/conditional/fixed-weight-random move vocabulary, checked 360x360 combat+bestiary body; generalized variants game-unobserved |
 | bounded content rich text | content host | per-surface vanilla allowlists with SmartFormat/keyword composition |
 | Event / World Node | `MapNode` | pages/options, public Cmds, selections/rewards, one special combat per instance, bounded rich text/VFX/native presentation |
-| bounded forced Event | `MapNode` | solo Quest Card, one Unknown MapPoint, one target Event and act, token consumption/restored hooks |
-| Character Foundation | `RunStart` + `CombatPlayer` | typed Character and pools, exact starters/HP/Energy, Foundation fallback |
+| bounded forced Event | `MapNode` | finite prioritized Quest Card act-set/custom-Event mappings or sequences, saved index, exact terminal consumption, target pool exclusion, neutral hook returns, fail-closed conflicts; generalized variants game-unobserved |
+| Character Foundation | `RunStart` + `CombatPlayer` | typed Character and pools, exact current-SPEC HP/Gold/MaxEnergy/Orb slots and starter Card/Relic/Potion multisets, Foundation fallback; generalized starts game-unobserved |
 | Character static art | Character hosts | selection portrait/background, top icon, combat/rest/merchant bodies, five-layer energy, distinct large/text Energy icons; reviewed selection/combat visible footprint |
 | Character card/UI theme | Character select + `CombatPlayer` | four named colors, cached deterministic pool-frame material, distinct 256x256 card and 24x24 rich-text Energy consumers |
 | Character/Relic outlines | `CombatPlayer` | deterministic 3% opaque-white alpha expansion, inset-safe main normalization, exact main/outline wiring in real top-panel and Relic hosts |
 | Character combat cues | `CombatPlayer` | private non-Spine Idle4/Attack4/Hit4/Dead6 sequences, shared geometry, one-shot/terminal routing, cleanup, all-or-nothing static fallback |
 | Character dialogue in native Ancient scenes | `MapNode` / Character | nine pinned vanilla targets, Character-scoped first/visit/repeat groups, RitsuLib localization population, native scene/options/outcomes, complete Architect routing and attackers |
-| Relic-owned Rest Site option | real Rest Site / `MapNode` | singleplayer; absent versus native-disabled; free/fixed Gold; deterministic preflightable outcome; once per site/run; native stay/leave; checked custom/Heal-fallback icon |
-| Character resource/payment/UI | two-combat Character | RitsuLib Secondary Resource, bool payment, public 220x32 fixed UI at offset 160, text fallback |
+| Card/Relic-owned Rest Site option | real Rest Site / `MapNode` | singleplayer; exact owner/state handle; absent versus native-disabled; free/fixed Gold; deterministic preflightable outcome; once per site/run; native stay/leave; checked custom/Heal-fallback icon; Relic route observed, Card route game-unobserved |
+| Secondary resources/payment/UI | selected Character/combat lifecycle | one or more bounded RitsuLib resources; combat/run and turn-start policies; fixed/X required/optional/extra payment ledger; selected built-in counter row/Card line or checked UI; generalized variants game-unobserved |
+| Native custom-Card costs | `CombatPlayer` and Card UI | independent native Energy/fixed-or-X Star cost declarations and upgrades; no parallel Star store; combined/X variants game-unobserved |
+| Event acquisition/shake profiles | `MapNode` | ordered unique known Card/relic acquisition with matching native consumer; one optional `weak_short`/`strong_normal` setting-respecting shake; generalized list/strong profile game-unobserved |
 | ordered semantic buffer | two-combat Character | combat-attached semantic values, overflow/order/output/reset, normal source Play -> Discard |
 | vanilla override grounding kernel | offline metadata + `ModelDb`/localization host | supported: pinned `0.107.1` catalog with 1624 vanilla models, 1580 stable title sources, checked display titles across 14 languages, and exact assembly identity; exact internal/localized-title alias resolution with explicit ambiguity; semantic manifest; baseline/fingerprint/conflict validation; final regression/payload/installed-plugin build passed, while the separate current-catalog headed no-op remains unrun |
 | existing vanilla Card public overrides | `CombatPlayer` plus Card library/reward views | supported: public type/rarity/target, appended tags, evaluated Energy/Star cost, playability/result pile, title/description/type text, hover tips, native gold/red glow, capability variables, `OnPlay` before/after/replacement, and owner draw/discard/exhaust composition; representative Strike routes were included in the built Mod accepted as a whole, while unselected operations remain unrun |
@@ -233,11 +234,10 @@ returning to the current skill source or payloads.
 
 ## Unsupported
 
-- Card/Modifier-owned Rest Site options, variable/non-Gold costs, post-payment choices,
+- Modifier-owned Rest Site options, variable/non-Gold costs, post-payment choices,
   arbitrary transactions, same-site repeat, and multiplayer Rest Site extensions;
 - alternative Energy hooks;
-- run-persistent or remote-player Character resources/UI;
-- multiplayer/replay Scry or global Scry modifiers/completion hooks;
+- remote-player Character resources/UI;
 - arbitrary object/Card/map targets or global custom-target interoperability registration;
 - ungrounded patch targets or arbitrary generated Harmony/reflection/IL;
 - every M6.7 vanilla override operation outside the promoted M6.7.1 public Card, M6.7.2

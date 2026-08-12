@@ -243,7 +243,6 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Character combat resource | name, gain/spend/payoff, nonnegative domain, combat reset, fixed UI/fallback | two-combat Character / `CombatPlayer` |
 | Ordered semantic buffer | value/order, capacity/overflow, normal source destination, formula/output | two-combat Character / `CombatPlayer` |
 | Character Ancient dialogue | cataloged natural target, first/explicit/repeat visit, ordered speaker/text/prompts, Architect attackers | native Ancient + production Architect |
-| Card Scry helper | top-X amount, discard-any choice, upgrade delta, singleplayer boundary | `CombatPlayer` with visible native selector |
 | Advanced creature targeting | consumer, one/many mode, stable Mod-local target id, declarative live-Creature predicate, zero-target lifecycle | `CombatPlayer` plus headed mouse/controller targeting |
 | Existing vanilla model override | exact resolved identity, ordered operation intent, preserved surfaces; visual role/source/requirement/fallback when selected | nearest real consumer for each promoted operation; deferred during source development |
 | Existing Ancient initial options | append or complete replacement; rule condition/priority/dedup; ordered options/pages; visibility/lock/cost/tips/relic/effects; stay/page/finish graph | native Ancient room and choice-history lifecycle; deferred during source development |

@@ -136,7 +136,7 @@ hook signature carries or can deterministically resolve its subject. Missing con
 authoring error, not `false` by accident.
 
 Effects are the fixed command vocabulary: attack, block, heal, lose HP, apply a known
-Power, draw, gain Energy/Gold/Stars, Scry, or generate a known Card into Draw/Hand/Discard/
+Power, draw, gain Energy/Gold/Stars, or generate a known Card into Draw/Hand/Discard/
 Exhaust. Targets are `owner`, `all_enemies`, `random_enemy`, or a real creature carried by
 the hook as `event_target`, as permitted by that command. Amounts are nonnegative literals
 or a cataloged owner DynamicVar. Undeclared capability variables are not promoted.

@@ -197,9 +197,11 @@ skill: literal deliverable contracts, exact semantic capability preflight, seman
 backtracking, cross-platform installed-workflow reproducibility, and one final clean
 whole-skill acceptance. M8.0-M8.3 and M8.5 are closed. **M8.5 Cross-Platform Reproducible
 Installed Workflow closed by explicit human-lead decision on 2026-08-12 with unresolved
-exceptions.** M8.6 holds plain-language intent only until selected. The human lead removed M8.4 on
-2026-08-05; M8.5 and M8.6 retain their numbers. The Watcher evaluation is baseline evidence,
-not the M8 final acceptance Mod.
+exceptions.** M8.7 Product Boundary Generalization is planned but not started; it owns the
+human-selected boundary-audit findings and must close before M8.6. M8.6 remains the final clean
+installed acceptance and holds plain-language intent only until selected. The human lead removed
+M8.4 on 2026-08-05; numbering is intentionally non-execution order. The Watcher evaluation is
+baseline evidence, not the M8 final acceptance Mod.
 
 M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 2026-08-10. It
 reorganized the shipped pack so an author reads one file per element instead of three per
@@ -356,7 +358,18 @@ graceful/forced process-tree cleanup, and proof that no owned child remains are 
 No restore/offline, Tier 1, Tier 2, or game run occurred. The maintenance code had already been
 regenerated into both payloads before closure; closure did not generate another payload. The
 durable result is `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. Closure does not
-authorize M8.6.
+authorize M8.7 or M8.6.
+
+M8.7 Product Boundary Generalization was planned by the human lead on 2026-08-12 and is not
+started. It covers the selected read-only audit findings for secondary resources; Monster move
+graphs, Monster/Encounter composition, and HP ranges; Character starting fields; Card-owned Rest
+Site options; multiple computed Card values; reusable bounded state; bounded forced Event
+mappings; new-Card Star costs; and bounded Event acquisition/shake profiles. Its contract requires
+`sts2-content-semantic/v3`, parseable surface-specific contracts, one shared lightweight
+structural validator, and exact evidence labels rather than prose-only widening. It does not add
+unittest coverage or require one proof matrix, C# fixture, or real-game proof per family. Current
+narrow routes remain the authorable boundary until M8.7 is explicitly selected, implemented,
+verified, and closed. M8.7 must close before M8.6.
 
 Do not edit installed payloads in place, run a fresh acceptance, or publish a payload/release
 without later human-lead instruction. The active Package plan is
@@ -457,7 +470,6 @@ Surfaces open-mod currently generates include:
   values, and localized DynamicVar tooltips under one preview/execution formula;
 - deterministic Mod-local live-creature filters for single-target Cards/Potions and
   multi-target Cards, with native mouse/controller selection and resolution-time checks;
-- generated-Mod-local singleplayer top-X Scry with normal selection/discard history/hooks;
 - monster + encounter and the complete grounded move vocabulary;
 - Event / World Node outcomes, bounded rich text/VFX/native presentation, and one bounded
   solo Quest Card -> forced Event composition;
@@ -511,11 +523,12 @@ Generated readability APIs include conditional Card Hand Glow, up to three safe-
 Relic labels, and one top-left Power label from the RitsuLib Extra Badges family. Intent
 remains a supported public Extra Badges consumer, but Intent authoring is not scheduled.
 
-Preserve these important boundaries:
+Preserve these important boundaries. The M8.7 plan does not widen them by itself; they remain
+the current authorable contract until the corresponding M8.7 family is implemented, verified,
+and explicitly closed:
 
 - Route stores semantic direction values, never retained played Card instances.
 - A source Card follows STS2's normal result pile lifecycle.
-- Scry is singleplayer and Mod-local; it is not a global interoperability service.
 - Rest Site options are Relic-owned and singleplayer-only; Card/Modifier owners, variable
   or non-Gold costs, post-payment choices, arbitrary transactions, same-site repeat, and
   multiplayer remain unsupported.
@@ -580,7 +593,8 @@ not silently select a paid backend. Every acquisition path converges on determin
   receive. Complete-operation impact and semantic repair ownership are implemented by M8.3.
   M8.5 is closed with unresolved exceptions: executable-adjacent platform paths are repaired,
   but cross-platform installed reproduction and launcher-owned process-tree cleanup remain
-  unimplemented and unproved. M8.6 final whole-skill acceptance is not selected.
+  unimplemented and unproved. M8.7 boundary generalization is planned but not started; M8.6
+  final whole-skill acceptance is waiting for M8.7 closure and is not selected.
 - `games/sts2/skills/sts2-api/`: lazy recipes, references, and error catalog.
 - `games/sts2/tools/`: cross-platform Python build/launch/log/art wrappers.
 - `games/sts2/tests/`: current support graph and verification ownership.
@@ -638,14 +652,14 @@ and refusal to fabricate playtest evidence. A
 documentation- or prompt-only M7 change does not require a real-game run unless it changes
 generated runtime behavior or presentation.
 
-M8 tests must preserve end-to-end product meaning rather than merely add another document
-schema. Cases travel with the Package that changes the behavior and must cover literal
-completion claims; exact maintained operation routes; behavior/lifecycle/rules-text/
-keyword/Hover-Tip/localization/preview/presentation parity in real consumers; complex
-mechanic selection, ordering, movement, hooks, degenerate states, and input modes; semantic
-repair backtracking; and immutable installed workflows that clean up only their owned
-process trees and leave no owned child running. M8.6 is the only planned fresh natural-
-language whole-skill gate; it is not authorized to run yet, and it now also carries the two
+M8 verification must preserve end-to-end product meaning rather than merely add another document
+schema. When runtime acceptance is selected, its cases cover only the current request's literal
+completion claims, maintained routes, behavior/lifecycle/player-facing semantics, degenerate
+states and inputs, repair effects, and owned-process cleanup. M8.7 instead makes each selected
+generalized surface machine-readable and labels new routes game-unobserved; it does not run nine
+family proof cycles. M8.6 is the only planned fresh natural-language whole-skill gate and verifies
+only the generalized variants its final request actually selects. It is not authorized to run yet,
+and it also carries the two
 hook-participation proofs M8.2 deferred on 2026-08-10 — one element declaring an incoming-damage
 multiplier asserted for both the modified value and the neutral case outside its guard, and one
 collection edit asserted for its own entry and the survival of unrelated entries.

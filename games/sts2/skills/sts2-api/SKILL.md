@@ -84,7 +84,8 @@ explicitly accepted composition instead.
 
 1. Check `${STS2_API_SKILL_DIR}/recipes/` for the element or mechanic type (relic, potion,
    card, power, keyword, enchantment, orb, monster+encounter, event, character). For a **fought enemy** read
-   `recipes/monster.md` — it covers the monster AND its encounter as one vertical slice.
+   `recipes/monster.md`; it owns separate Monster/Encounter registrations, explicit roster
+   edges, HP ranges, and deterministic/conditional/fixed-weight-random move graphs.
    For a **World Node/event** read `recipes/event.md` — it covers RitsuLib registration,
    flat nested `events.json`, explicit option keys, the fast-path consequence, checked
    portraits, and the `MapNode` proof. Also
@@ -99,8 +100,8 @@ explicitly accepted composition instead.
    Read `${STS2_API_SKILL_DIR}/reference/event-native-presentation.md` when an Event
    option acquires a Card/relic with native presentation, selects the bounded one-shot
    screen shake, or uses the curated `trial_noble` built-in VFX profile.
-   Read `${STS2_API_SKILL_DIR}/reference/forced-followup-event.md` when a custom Quest
-   Card should force one custom Event in a specified act.
+   Read `${STS2_API_SKILL_DIR}/reference/forced-followup-event.md` when custom Quest Cards
+   declare a finite prioritized act-set to custom-Event mapping or sequence.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
    RitsuLib typed template, one content-pack registration, three pools, starters, two-table
    localization, static profile/fallback, and `RunStart` + `CombatPlayer` proof.
@@ -113,7 +114,7 @@ explicitly accepted composition instead.
    For the bounded non-Spine `Idle`/`Attack`/`Hit`/`Dead` frame sequences, additionally
    read `${STS2_API_SKILL_DIR}/reference/character-combat-cues.md`; keep its cue set private
    to the combat state machine and preserve its all-or-nothing static fallback.
-   For a combat-lifetime **character resource with explicit payment and a live counter**,
+   For one or more bounded **secondary resources with explicit payment and selected UI**,
    read `${STS2_API_SKILL_DIR}/reference/character-resource.md`. For a **bounded ordered
    semantic card-play buffer with deterministic dynamic output**, read
    `${STS2_API_SKILL_DIR}/reference/ordered-card-buffer.md`. Both use the public RitsuLib
@@ -150,9 +151,6 @@ explicitly accepted composition instead.
    hotkey behavior, native movement, localization, and ExtraHand layout/manual play/
    callbacks. Do not reduce routing to only the consumers already exercised by a focused
    proof.
-   When a Card looks at the top X Draw cards and discards any number, also read
-   `${STS2_API_SKILL_DIR}/reference/scry-helper.md`. It owns the singleplayer-only
-   open-mod helper, native selector/discard lifecycle, structured result, and proof.
    For any effect that remembers progress (every N events, once per combat, previous
    turn, limited run uses), read `${STS2_API_SKILL_DIR}/reference/stateful-mechanics.md`.
 2. For error signatures → fix, read `${STS2_API_SKILL_DIR}/errors.md`.
@@ -191,7 +189,7 @@ explicitly accepted composition instead.
 | `recipes/keyword.md` | Keyword behavior-vs-display boundary, host attachment, text-only fallback, and proof | Authoring shared card-mechanic vocabulary after adapter selection |
 | `recipes/enchantment.md` | Enchantment host restrictions, persistent change, 64x64 icon consumers/fallback, and proof | Authoring a persistent Card modification after adapter selection |
 | `recipes/orb.md` | Orb channel/passive/evoke behavior, 100x100 icon consumers, explicit body/SFX fallbacks, and proof | Authoring an orb plus its host after adapter selection |
-| `recipes/monster.md` | Monster + Encounter as one vertical slice: grounded moves, cycles/branches, static combat+bestiary body, fallback, and `CombatEnemy` proof | Authoring a fought enemy or its move cycle after adapter selection |
+| `recipes/monster.md` | Separate Monster/Encounter nodes, explicit rosters, HP ranges, deterministic/conditional/weighted-random moves, static combat+bestiary body, fallback, and selected `CombatEnemy` checks | Authoring a fought enemy graph after adapter selection |
 | `recipes/event.md` | Event / World Node pages/options, outcomes, checked portraits, and `MapNode` proof | Authoring a map event after adapter selection |
 | `recipes/character.md` | Character Foundation pools, starters, localization, selection/run behavior, fallbacks, and proof | Authoring a playable character shell after adapter selection |
 | `reference/ancient-dialogue.md` | Pinned vanilla Ancient catalog, semantic visit groups, flat RitsuLib localization, structural validator, native priority, Architect attackers, and focused proof | Authoring or verifying custom-Character dialogue in native Ancient scenes |
@@ -202,19 +200,18 @@ explicitly accepted composition instead.
 | `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation inventory, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
 | `reference/content-text-effects.md` | Per-surface vanilla rich-text allowlists for Card bodies/Card previews and standard relic/potion/power Hover Tips; SmartFormat and auto-keyword composition; headed proof contract | Authoring styled Card/relic/potion/power descriptions |
 | `reference/event-option-presentation.md` | Enabled Event option typed Hover Tips, normal `CreateModRelicOption<T>` text/metadata plus its Ancient-only image blocker, and native exact-lethal HP/Max HP warning glow | Authoring those normal-layout Event option presentation contracts |
-| `reference/event-native-presentation.md` | Native Card/relic acquisition presentation, the preference-respecting `weak_short` screen shake, and the curated built-in `trial_noble` Event VFX path/host/placement/pause/cleanup contract | Authoring native presentation items 4-6 for a normal Event |
-| `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
-| `reference/character-resource.md` | RitsuLib combat resource: `SecondaryResourceDefinition`/`SecondaryResourceCmd`, combat reset, all-or-nothing spend, public `RegisterCombatUi`, fixed 220x32 counter at offset 160, text fallback, and two-combat proof | Authoring a character resource and explicit-payoff loop |
+| `reference/event-native-presentation.md` | Ordered native Card/relic acquisitions, allowlisted preference-respecting `weak_short`/`strong_normal` shake, and curated `trial_noble` Event VFX | Authoring native presentation items 4-6 for a normal Event |
+| `reference/forced-followup-event.md` | Finite prioritized Quest Card -> act-set -> custom Event mappings/sequences, pool exclusion, saved progress, terminal consumption, and fail-closed conflicts | Authoring a bounded delayed/conditional Event follow-up |
+| `reference/character-resource.md` | Multiple bounded RitsuLib secondary resources, combat/run policies, fixed/X and required/optional/extra payment ledger, selected counter/Card UI, and exact lifecycle boundaries | Authoring resource and explicit-payoff loops |
 | `reference/ordered-card-buffer.md` | Ordered buffer: `AttachedState<PlayerCombatState,TState>`, native source-card Discard, visible order, non-destructive overflow, deterministic output/`CardGeneratedEntry`, and combat reset; retained-card `CustomPile` remains unsupported | Authoring an ordered card-play record and dynamic output |
-| `reference/scry-helper.md` | open-mod Scry helper: top-X native selector, structured result, normal Discard history/hooks, zero/empty/short/full boundaries, await proof, and explicit singleplayer restriction | Authoring a Card that looks at the top X Draw cards and discards any number |
 | `reference/card-computed-values.md` | Computed Card value roles, one-formula preview/execution parity, upgrade/timing/domain rules, Energy/Star formatters, typed Power amount-given behavior, variable tooltips, and focused proof | Authoring a Card with calculated text/effects or DynamicVar tooltips |
 | `reference/card-hand-emphasis.md` | Conditional Card hand emphasis: ordered fixed-color rules, priority/ties, native gold/red versus typed outline lowering, unplayable visibility, refresh boundary, and headed proof | Authoring a Card with hand emphasis |
 | `reference/extra-corner-labels.md` | Bounded extra badges: Relic up to three safe corners, Power one top-left label, text/rich-text limits, specs providers, invalidation/removal, cleanup, and headed proof | Authoring supplemental values on a Relic or Power |
 | `reference/advanced-targeting.md` | RitsuLib custom live-Creature targets: stable Mod-local registration, single Card/Potion and multi Card resolution, revalidation/payment lifecycle, multi-Potion limitation, and headed selection proof | Authoring a filtered Card/Potion target |
-| `reference/rest-site-options.md` | Relic-owned native Rest Site option: singleplayer contribution, free/fixed Gold, final recheck, run/site repeatability, stay/leave, checked icon fallback, and real-host proof | Authoring an owned Rest Site action on a Relic |
+| `reference/rest-site-options.md` | Card- or Relic-owned native Rest Site option: exact owner/state handle, singleplayer contribution, free/fixed Gold, final recheck, run/site repeatability, stay/leave, and checked icon fallback | Authoring an owned Rest Site action on a Card or Relic |
 | `reference/card-piles.md` | Complete Custom Card Piles Package: combat/run lifetime; headless/top-bar/bottom-corner/ExtraHand UI; preset/custom anchors; open/view/visibility/hotkeys; native movement; localization; ExtraHand layout, play, and callbacks | Authoring one or more Mod-owned Card piles |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
-| `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
+| `reference/stateful-mechanics.md` | Bounded state schemas with exact owner/listener transitions, lifetime/reset/persistence, visibility, consumers/outputs, and selected proof derivation | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
 | `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and nine promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
@@ -243,13 +240,10 @@ do not author an operation outside a listed catalog package.
 - **Custom Card Piles:** route the complete documented Package through
   `reference/card-piles.md`; preserve exact Card identity and awaited movement, and let the
   generated SPEC select any public scope/style/anchor/view/ExtraHand consumer.
-- **Scry helper:** use `OpenModScry.Execute` only for the bounded top-X/discard-any Card
-  effect. Await the native selector and every pile/hook command, preserve seen order, and
-  keep the result and hooks local to the generated Mod. Multiplayer/replay remains
-  unsupported; do not silently fall back to local selection.
-- **Monster + encounter are one slice.** Declare every visible move, ordered successor,
-  exhaustive branch, hit count, and downstream state consequence. Keep one checked
-  360x360 body for combat and bestiary with the explicit built-in fallback; animation and
+- **Monster/Encounter graph:** declare separate registered nodes and explicit roster edges,
+  every visible move, ordered successor, exhaustive conditional or requested weighted-random
+  branch, hit count, and downstream state consequence. Keep one checked 360x360 body per
+  Monster for combat and bestiary with the explicit built-in fallback; animation and
   phobia variants remain later work.
 - **Event/World Node:** preserve real page/option UI, blocking overlay completion,
   resume-vs-map choice, one special combat per mutable Event, and the bounded portrait,
@@ -258,9 +252,10 @@ do not author an operation outside a listed catalog package.
   normal Events. Exact existing Ancient visuals/options route through the separate
   `reference/vanilla-visual-overrides.md` and `reference/vanilla-ancient-overrides.md`; do not
   treat those override routes as new Ancient authoring.
-- **Forced Event follow-up:** one token, one target Event, one act, one Unknown MapPoint
-  route, and one named completion option. Do not generalize it to arbitrary chains,
-  vanilla edits, multiplayer, or save-roundtrip claims.
+- **Forced Event follow-up:** use only a finite prioritized list of token/act-set/custom-
+  Event sequences with exact saved progress, terminal consumption, pool exclusion, neutral
+  returns, and fail-closed conflicts. Do not generalize it to arbitrary graphs, vanilla
+  edits, multiplayer, or save-roundtrip claims.
 - **Character Foundation:** the adapter owns exactly-once registration, character-scoped
   pools, exact starters, localization, and the real selection/run proof. Static consumers
   remain separate profiles: selection `132x195`, background `1920x1200`, top icon main and

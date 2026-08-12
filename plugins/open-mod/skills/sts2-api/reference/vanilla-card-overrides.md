@@ -87,7 +87,7 @@ catalog, and preserve operation order. A rarity change is:
 - a localization table/key plus a checked title/description/type-text placement;
 - keyword, typed model-preview, or localized hover tips;
 - capability variables with `dynamic`, `damage`, `block`, or typed `power` roles;
-- ordered effects: attack, block, heal, apply Power, draw, gain Energy, gain Stars, Scry,
+- ordered effects: attack, block, heal, apply Power, draw, gain Energy, gain Stars,
   and generate a Card into a combat pile; and
 - owner lifecycle triggers `after_owner_drawn`, `after_owner_discarded`, and
   `after_owner_exhausted`.
@@ -219,8 +219,8 @@ the same target.
 
 ## Play composition and replacement
 
-Lower normal effects through the same checked commands and helpers used by `recipes/card.md`,
-`card-computed-values.md`, and `scry-helper.md`. Effects execute exactly once in manifest
+Lower normal effects through the same checked commands and helpers used by `recipes/card.md`
+and `card-computed-values.md`. Effects execute exactly once in manifest
 order. Preserve typed Damage/Block/Power semantics and null-check a selected play target.
 
 - compose-before: execute in `BeforeOwnerCardOnPlay`, then return `false`;

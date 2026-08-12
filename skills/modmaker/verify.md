@@ -88,7 +88,6 @@ expected/observed vocabulary:
 `"character foundation/static-presentation.*observed=all"`,
 `"resource UI complete.*observed=all"`, or
 `"ordered buffer complete.*observed=all"`, or
-`"R6 scry helper complete.*observed=all"`, or
 `"custom card piles complete.*observed=all"`. A custom-pile run follows
 `reference/card-piles.md` and proves the consumers selected by SPEC; Package support does
 not require a separate run for every documented public consumer. The verifier ignores all
@@ -122,7 +121,6 @@ requires the exact load marker and `selftest done`.
 - For a character resource or an ordered semantic buffer/dynamic output, see
   `surfaces/character.md` § Proof matrix. Character is the only surface that selects either
   capability, so that page owns both proofs.
-- For a Scry Card, see `surfaces/card.md` § Proof matrix.
 - For advanced Card/Potion targeting, follow `reference/advanced-targeting.md`: require
   the source-aware single Card, single Potion, and player-aware multi Card as distinct real
   consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,

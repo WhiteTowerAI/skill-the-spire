@@ -10,12 +10,59 @@ Event instance; normal portraits and the bounded `portrait_halo` profile plus bo
 description rich text are supported, while custom phobia art, arbitrary VFX, and
 custom/Ancient scenes are not.
 
+<!-- open-mod-surface-contract/v1
+{
+  "family": "event_option_profiles",
+  "owner": "surfaces/event.md",
+  "spec_key": "event_option_profiles",
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "fields": {
+    "profiles": {"type": "list<object>", "cardinality": "0..*", "default": []},
+    "profiles[].event_id/option_id": {"type": "text", "cardinality": "1 each", "unique": "pair"},
+    "profiles[].acquisitions": {"type": "ordered list<object>", "cardinality": "0..*", "default": []},
+    "profiles[].acquisitions[].kind/model_id": {"type": "enum/text", "cardinality": "1 each"},
+    "profiles[].acquisitions[].presentation": {"type": "native_card_preview or native_relic_obtain", "cardinality": "1"},
+    "profiles[].acquisitions[].grant_once": {"type": "boolean", "cardinality": "1", "fixed": true},
+    "profiles[].shake.profile": {"type": "enum", "cardinality": "0..1"},
+    "profiles[].shake.respect_setting/once": {"type": "boolean", "cardinality": "1 when shake exists", "fixed": true},
+    "profiles[].route": {"type": "declared route", "cardinality": "1"}
+  },
+  "enums": {
+    "acquisition_kind": ["card", "relic"],
+    "shake_profile": ["weak_short", "strong_normal"]
+  },
+  "conditions": [
+    "acquisitions are ordered and unique per option",
+    "Card and relic acquisitions use their matching native presentation",
+    "shake is one-shot and respects the player setting"
+  ],
+  "mutually_exclusive": ["duplicate acquisition of the same kind and model in one option"],
+  "routes": [
+    "reference/event-native-presentation.md#card-acquisition-preview",
+    "reference/event-native-presentation.md#relic-acquisition-preview",
+    "reference/event-native-presentation.md#one-shot-screen-shake"
+  ],
+  "hard_boundaries": [
+    "no duplicate grant or custom preview holder",
+    "no rumble hit stop custom shake target or unbounded duration",
+    "no ungrounded VFX"
+  ],
+  "generated_obligations": [
+    "await each semantic acquisition once in declared order",
+    "reuse the successful Card add result for preview",
+    "apply at most one allowlisted shake after the named successful consequence"
+  ],
+  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
+  "legacy": "v1/v2 single acquisition and weak_short profiles resume unchanged; revised profiles write v3"
+}
+-->
+
 ## SPEC envelope
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v2
+- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -49,8 +96,8 @@ custom/Ancient scenes are not.
       hover tips: none | enabled-only <content name + upgrade/amount state>
       relic presentation: none | <relic name; normal title/description/metadata; image gap>
       lethal warning: none | HP cost <exact decimal> | Max HP cost <exact decimal>
-      acquisition presentation: none | native Card <name> to Deck | native relic <name>
-      screen shake: none | `weak_short`
+      acquisitions: none | ordered known Card/relic grants, each with matching native presentation
+      screen shake: none | `weak_short` | `strong_normal`
       next: finish <RESULT_KEY> | page <PAGE_KEY> | special combat <ENCOUNTER>
   - special combat: none | <encounter logical id + monster/group HP and grounded move cycle>
   - combat completion: resume page <PAGE_KEY> | map (exactly one when combat exists)
@@ -87,15 +134,22 @@ custom/Ancient scenes are not.
     post-state; encounter identity; expected Resume page or direct map
   - boundary cases: each gated option driven both ways; special combat resume or map;
     forced follow-up entry through a real Unknown MapPoint (not the `event` shortcut)
-- **forced follow-up**: none | Quest token <logical id> -> target Event <logical id>
-- **forced act**: none | <exact zero-based act index plus player-facing act name>
-- **forced trigger**: carrying one token; next entered Unknown MapPoint in the forced act
-- **target pool rule**: target is excluded from ordinary Event placement; the token route
-  is its only supported entry
-- **token completion**: <named target option> completes the quest, removes all matching
-  tokens from the deck, and restores ordinary room/Event behavior
-- **forced-follow-up boundary**: solo; one token class/target/act; no arbitrary chains,
-  vanilla edits, duplicate-token rewards, multiplayer, or new save-roundtrip claim
+- **forced follow-up mappings**: none | one or more
+  - id: <stable mapping id>
+    token: <custom Quest Card logical id; exactly one in owner deck>
+    condition: token_in_owner_deck
+    acts: [<one or more exact zero-based act indices>]
+    priority: <globally unique integer>
+    conflict: fail_closed
+    sequence: [<finite ordered unique custom Event ids; first is target>]
+    consumption: on_target_success | on_sequence_complete
+    consume at: <target for one-step | final sequence Event>
+    progress: saved_card_index
+    target pool rule: every sequence Event excluded from ordinary placement
+    save claim: game-unobserved
+- **forced-follow-up boundary**: solo; finite acyclic custom sequence; unchanged neutral
+  return; no vanilla edits, duplicate-token rewards, fixed map node, cross-Mod composition,
+  multiplayer, or observed save-roundtrip claim
 - **option presentation gaps**: <locked-option tips, normal-layout relic image, or none>
 - **unsupported transitions**: merchant, rest site, and treasure room
 - **adapter output** (written to MEMORY after acceptance): resolved Event logical id,
@@ -134,11 +188,12 @@ Record each one in `displayed values`.
   pack. Use `.SharedEvent<T>()` for all-act placement or `.ActEvent<TAct,T>()` when scoped.
 - Declare each SPEC `displayed value` in `CanonicalVars` (or compute it in `CalculateVars()`)
   and reference it as a placeholder in `events.json`, so text and effect share one source.
-- For a forced follow-up, also author the one unplayable Quest Card exactly from
-  `reference/forced-followup-event.md`: Quest type/rarity, cost `-1`, no upgrades, and the
-  two public hook overrides guarded by the exact act. The target Event returns false from
-  `IsAllowed`; do not place it in the ordinary Event pool. The source grant rejects a
-  duplicate, and the named target option completes/removes all matching tokens.
+- For forced follow-ups, author the bounded mapping list exactly from
+  `reference/forced-followup-event.md`: one unplayable Quest Card per mapping, Quest
+  type/rarity, cost `-1`, no upgrades, bounded saved index, globally ordered priority, and
+  the two public hooks guarded by the declared act set. Every sequence Event returns false
+  from `IsAllowed`; do not place it in the ordinary Event pool. Source grants reject
+  duplicates, and only the declared successful option advances or terminally removes the token.
 - Ship flat `events.json` keys for the normalized Event entry, `INITIAL`, every explicit
   option key, and every result page. Use `InitialOptionKey`/`ModOptionKey`; callback method
   names do not mint localization keys.
@@ -177,12 +232,12 @@ Record each one in `displayed values`.
   generated option using the exact decimal cost used by its Cmd. The helper is warning-only,
   and its exact-cost boundary is inclusive; never substitute differently rounded values or
   warning-colored text.
-- When a choice acquires a Card, await one `CardPileCmd.Add` and pass that exact successful
-  result to `CardCmd.PreviewCardPileAdd`; when it acquires a relic, emit exactly one awaited
-  `RelicCmd.Obtain<T>`. Do not create duplicate models or custom preview holders.
-- When SPEC selects `weak_short`, call `NGame.Instance?.ScreenShake(ShakeStrength.Weak,
-  ShakeDuration.Short)` once after the named successful consequence and before its page
-  transition. Never read or replace the player's multiplier.
+- When a choice declares ordered acquisitions, await them in SPEC order. Pass each successful
+  `CardPileCmd.Add` result to `CardCmd.PreviewCardPileAdd`; for each relic, emit exactly one
+  awaited `RelicCmd.Obtain<T>`. Do not create duplicate models or custom preview holders.
+- When SPEC selects `weak_short` or `strong_normal`, call only the matching allowlisted native
+  strength/duration once after the named successful consequence and before its page transition.
+  Never read or replace the player's multiplier.
 - When SPEC selects `trial_noble`, emit the exact preloaded scene/portrait-host helper from
   `reference/event-native-presentation.md`, keep its vanilla `(292,68)` placement and
   inherited process mode, and `QueueFreeSafely` the owned named root before transitions.
@@ -193,7 +248,7 @@ description styling to `reference/event-text-effects.md`. Enabled typed option t
 relic-backed text/metadata, and exact HP/Max HP warnings route to
 `reference/event-option-presentation.md`. A selected forced follow-up routes to
 `reference/forced-followup-event.md`. Native Card/relic acquisition presentation,
-`weak_short` screen shake, and `trial_noble` route to
+allowlisted `weak_short`/`strong_normal` screen shake, and `trial_noble` route to
 `reference/event-native-presentation.md`.
 
 ## Self-test driver body
@@ -235,6 +290,6 @@ Trigger it:
    the prior page's text is gone after the transition.
    For native acquisition presentation, confirm the real Card preview and relic top-bar
    animation, and for `trial_noble` confirm its exact initial-page placement and absence on
-   the result page. A `weak_short` shake must terminate and must honor a disabled setting.
+   the result page. An allowlisted shake must terminate and must honor a disabled setting.
    A forced follow-up cannot be proved by the `event` console shortcut; if its automated
    real-Unknown driver cannot run, report Tier 1 rather than claiming the hook behavior.

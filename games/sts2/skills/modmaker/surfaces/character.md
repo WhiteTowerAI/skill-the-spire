@@ -9,20 +9,69 @@ One selectable character shell plus its starter ecosystem; scenarios are `RunSta
 ordered semantic buffer — keep their separate contracts in this same page, below the
 Foundation SPEC. The Foundation proof matrix owns the complete verification contract.
 
+<!-- open-mod-surface-contract/v1
+{
+  "family": "character_starting",
+  "owner": "surfaces/character.md",
+  "spec_key": "character_starting",
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "fields": {
+    "starting_hp": {"type": "integer", "cardinality": "1"},
+    "starting_gold": {"type": "integer", "cardinality": "1"},
+    "max_energy": {"type": "integer", "cardinality": "1"},
+    "base_orb_slots": {"type": "integer", "cardinality": "1"},
+    "cards": {"type": "multiset", "cardinality": "0..*"},
+    "relics": {"type": "multiset", "cardinality": "0..*"},
+    "potions": {"type": "multiset", "cardinality": "0..*"},
+    "cards/relics/potions[].id": {"type": "text", "cardinality": "1"},
+    "cards/relics/potions[].count": {"type": "integer", "cardinality": "1", "minimum": 1},
+    "registered_content": {"type": "list<object>", "cardinality": "0..*"},
+    "registered_content[].kind/id/pool": {"type": "enum/text/text", "cardinality": "1 each"},
+    "pools": {"type": "typed object", "cardinality": "1"},
+    "pools.card/relic/potion": {"type": "text", "cardinality": "1 each"},
+    "route": {"type": "declared route", "cardinality": "1"}
+  },
+  "enums": {"starter_kind": ["card", "relic", "potion"]},
+  "conditions": [
+    "starting_hp and max_energy are positive",
+    "starting_gold and base_orb_slots are nonnegative",
+    "every starter exists in the registered typed content graph"
+  ],
+  "mutually_exclusive": [],
+  "routes": [
+    "recipes/character.md#registration-and-model-shell",
+    "recipes/character.md#typed-pools-and-starter-ecosystem"
+  ],
+  "hard_boundaries": [
+    "native values are defaults or analogies rather than inferred requirements",
+    "current SPEC owns every starting value and multiset"
+  ],
+  "generated_obligations": [
+    "use the public CharacterModel fields and typed RitsuLib template",
+    "register every starter and pool member exactly once",
+    "derive verification values from current SPEC"
+  ],
+  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
+  "legacy": "v1/v2 Character starts resume unchanged; a revised starting ecosystem writes v3"
+}
+-->
+
 ## SPEC envelope
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v2
+- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
   - name: <shown character name>
   - surface: character
   - logical id: <stable character stem>
-  - starting HP: <int; native range 66–80, see `design/character-foundation.md`>
-  - energy per turn: 3 (current grounded Foundation value)
+  - starting HP: <positive int; native 66–80 is an analogy, see `design/character-foundation.md`>
+  - starting Gold: <nonnegative int; native 99 is the default analogy>
+  - max energy: <positive int; native 3 is the default analogy>
+  - base Orb slots: <nonnegative int; native values are analogies>
   - description: <short identity/theme>
   - pronouns: <subject/object/possessive adjective/possessive pronoun>
 - **registration**:
@@ -41,6 +90,7 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   - starter deck: <exact Basic-card multiset, base effects, upgrades, and total count>
   - starter deck rationale: <how its first-run decisions teach the core mechanic>
   - starter relic: <exact Starter relic>
+  - starter potions: <exact potion multiset, including empty>
   - hosted mechanic: <one starter card/relic grounded public mechanic with exact numbers>
   - pool cards: <every non-Basic pool card, each with its exact effect and numbers; each one
     with a non-trivial mechanic also needs its own `surfaces/card.md` envelope>
@@ -104,7 +154,8 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
     - the character is registered exactly once and appears in character selection
     - real character-select button present and clicked
     - runtime identity, HP, three pool types/members, exact deck/relic multisets
-    - combat `MaxEnergy=3` plus the hosted mechanic's independent state delta
+    - combat `MaxEnergy` and base Orb slots equal current SPEC plus the hosted mechanic's
+      independent state delta
     - every pool card whose mechanic SPEC describes behaviorally is played and asserted
   - boundary cases: Shop-pool card slot fill; art consumer assertions when profiles are selected
 - **advanced mechanic**: none | <selected verified capability or explicit pack gap>
@@ -157,7 +208,7 @@ not been verified until that card has been played.
 
 - Fill `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>` with every required public
   abstract member. Extend the three public `TypeList*PoolModel` bases.
-- Register the Character, exact Basic starters, Starter relic, every concrete pool member,
+- Register the Character, exact Card/Relic/Potion starter multisets, every concrete pool member,
   and every supporting Power once through one content pack. Do not instantiate the
   character, add pool attributes, or add a second registration path.
 - If Shop/static merchant is selected, author enough unlocked non-Basic cards to provide
@@ -204,7 +255,8 @@ character.
 The final proof is valid only after the harness has asserted exactly one content-pack-
 registered model, the real selected/unlocked button, runtime identity and exact SPEC HP/Max HP,
 exact typed Card/Relic/Potion pools and member models, every independently registered
-supporting Power, exact starter deck/relic multisets, and designed MaxEnergy. The unlocked Card
+supporting Power, exact starter deck/relic/potion multisets, and SPEC StartingGold, MaxEnergy,
+and BaseOrbSlotCount. The unlocked Card
 pool must also fill Shop's native colored Attack, Skill, and Power slots without falling back
 to another character's pool.
 
@@ -215,10 +267,11 @@ to another character's pool.
   Foundation whose pool cards are entirely broken passes as long as the right models appear in
   the right multisets. For each pool card with its own `surfaces/card.md` envelope, drive it
   and assert its concrete state delta in the same run.
-- For a character resource, require gain, affordable and unaffordable checks, one exact
-  successful payoff, one rejected spend with no mutation/negative state, live counter
-  values, public `RegisterCombatUi` attachment, the fixed 220x32 control at offset 160,
-  a disjoint native-Energy global rect, and a distinct zero state/counter in combat 2.
+- For secondary resources, derive only the definitions, uses, policies, and UI consumers
+  selected by current SPEC. Require bounded gain/payment, authoritative committed payoff,
+  rejected nondestructive cases, live values, public UI attachment, and non-overlapping stable
+  geometry for every selected visible consumer. Exercise a second combat or run-save boundary
+  only when the selected persistence/turn-start policy requires it.
 - For an ordered semantic buffer/dynamic output, require exact source/compile-card result
   piles, visible order, capacity and overflow behavior, one generated-history entry, exact
   configured output/effect, `AttachedState` ownership, and a distinct empty state/UI in
@@ -236,7 +289,7 @@ Grant it:
 
 Trigger it:
 
-   **character** → confirm HP, starter deck/relic, and standard 3 energy after run start;
+   **character** → confirm SPEC HP, Gold, Energy, Orb slots, and starter deck/relic/potions after run start;
    enter combat and observe the named starter mechanic's exact state delta. When combat
    cues are selected, watch one full Idle loop, play an Attack, take one Hit, and reach Dead;
    confirm the first two return to Idle, Dead holds its last pose, and no anchor jumps.
@@ -265,22 +318,21 @@ patch target.
 - **scenario/invariant**: <real host plus exact expected/observed state>
 ```
 
-### Character resource
+### Secondary resources
 
-The adapter lowers this block to one framework-owned combat resource with all-or-nothing
-commands and a public UI attachment. Implementation records belong in `MEMORY.md`, not SPEC.
+The adapter lowers the v3 `secondary_resources` family to one or more framework-owned
+bounded resources, exact combat/run and turn-start policies, declared payment planner/commit
+uses, and selected built-in or explicit UI consumers. Implementation records belong in
+`MEMORY.md`, not SPEC.
 
 ```markdown
-- **resource**: <name>
-- **owner/lifetime**: local Player / combat; new PlayerCombatState resets to 0
-- **amount domain**: nonnegative integer, floor 0
-- **gain sources**: <source -> positive amount>
-- **spend/payoff**: <cost -> exact consequence>; all-or-nothing
-- **affordability boundary**: <one affordable and one unaffordable case>
-- **UI**: fixed 220x32 icon+text counter under combat energy UI; checked text-only fallback
-- **placement**: offset 160 from native Energy; the two global rects must not intersect
-- **adapter route**: public-api selected after SPEC; no private patch fallback
-- **observe**: gain/spend/rejection/floor/counter/non-overlap plus distinct zero state in combat 2
+- **resources**: <stable id, min/default/max, combat|run persistence, turn-start policy>
+- **uses**: <stable use id, Card, resource, required|optional|repeatable-extra,
+  fixed|X amount, shortfall, replacement resource when selected, post-commit payoff>
+- **UI consumers**: <resource, combat counter row|Card payment line, route, stable geometry>
+- **owner**: local Player; native Energy remains separate
+- **adapter route**: public registry/commands/payment planner selected after SPEC
+- **observe**: only selected definitions, uses, rejection/commit, bounds, lifecycle, and UI
 ```
 
 ### Ordered semantic buffer

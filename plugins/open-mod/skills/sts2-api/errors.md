@@ -183,20 +183,6 @@ switching to an old template.
   Card views mean source Cards were retained or skipped their native lifecycle — restore
   normal Play -> Discard instead of hiding visuals.
 
-### Scry overlay is missing, unawaited, or has wrong order/history
-
-- **Cause:** an empty/no-op boundary was reached; selector command was not awaited; code
-  iterated the selected set instead of the stable seen list; or discard history/hooks were
-  omitted.
-- **Fix:** follow `reference/scry-helper.md` exactly. Await selection and pile commands,
-  filter the stable seen list, record normal history/hooks once, and reject multiplayer.
-- **Localize by symptom:** a missing overlay usually means Draw was empty, the amount was
-  nonpositive, combat was ending, or a test selector was still installed; a Card play
-  completing while the overlay is open means `CardSelectCmd.FromSimpleGrid` was not awaited;
-  wrong retained order means the selected set was iterated instead of filtering the stable seen
-  list; missing discard reactions mean history or `Hook.AfterCardDiscarded` was omitted — do
-  not replace either with a custom Scry completion hook.
-
 ### Resumed Event starts a second special combat
 
 - **Cause:** one mutable Event instance attempted another special combat.

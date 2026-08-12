@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a generated project's `SPEC.md` against its surface's v2 envelope.
+"""Validate a generated project's `SPEC.md` against its semantic envelope.
 
 This closes the half of M8.0 mismatch 8 that the envelope-form decision was blocking. The
 other half is covered by `tests/test_surface_cross_check.py`, which pairs each mandatory
@@ -17,8 +17,8 @@ Five checks, deliberately structural:
 1. every shared section the canonical envelope names is present;
 2. no top-level key outside the canonical set plus that surface's own declared fields; and
 3. every localization section declares the required English and Simplified Chinese languages;
-4. the contract line is v2, while v1/absent projects resume under their existing terms; and
-   unchanged rather than failing; and
+4. the top-level contract line is v2 or v3, while v1/absent projects resume under their
+   existing terms unchanged; v3 additionally dispatches its structured surface data; and
 5. every declared `hook participation` names a capability the pinned catalog knows, with the
    shape the catalog records, on a surface that can actually receive it.
 
@@ -38,6 +38,7 @@ import sys
 from pathlib import Path
 
 
+CONTRACT_V3 = "sts2-content-semantic/v3"
 CONTRACT_V2 = "sts2-content-semantic/v2"
 CONTRACT_V1 = "sts2-content-semantic/v1"
 
@@ -62,6 +63,10 @@ REQUIRED_LOCALIZATION_LANGUAGES = ("eng", "zhs")
 SURFACE_PAGE_DIR = Path("skills") / "modmaker" / "surfaces"
 
 TOP_LEVEL_RE = re.compile(r"^-\s+\*\*(?P<key>[^*]+)\*\*\s*:", re.MULTILINE)
+CONTRACT_LINE_RE = re.compile(
+    r"^\s*-\s+(?:\*\*)?contract(?:\*\*)?\s*:\s*(?P<contract>\S+)\s*$",
+    re.MULTILINE,
+)
 SURFACE_RE = re.compile(r"^\s*(?:-\s+)?surface:\s*(?P<surface>[a-z][a-z ]*)", re.MULTILINE)
 LOCALIZATION_BLOCK_RE = re.compile(
     r"^-\s+\*\*localization\*\*\s*:\s*$\n(?P<body>.*?)"
@@ -362,15 +367,24 @@ def validate_localization_languages(text: str) -> int:
 
 def validate_spec_text(text: str) -> tuple[str, int]:
     """Return the contract version validated and how many top-level keys were checked."""
-    if CONTRACT_V2 not in text:
-        if CONTRACT_V1 in text:
-            # A pre-v2 project resumes unchanged, the same precedent an absent coherence or
-            # deliverable block sets. Only new or revised SPECs are written as v2.
-            return CONTRACT_V1, 0
-        if "contract" not in text:
-            return "absent", 0
+    contract_lines = CONTRACT_LINE_RE.findall(text)
+    if not contract_lines:
+        return "absent", 0
+    if len(contract_lines) != 1:
+        raise SpecEnvelopeError("SPEC must declare exactly one top-level contract line")
+    current_contract = contract_lines[0]
+    if current_contract == CONTRACT_V1:
+        # A pre-v2 project resumes unchanged, the same precedent an absent coherence or
+        # deliverable block sets. Only new or revised SPECs are written as v3.
+        return CONTRACT_V1, 0
+    if current_contract not in (CONTRACT_V2, CONTRACT_V3):
         raise SpecEnvelopeError(
-            f"SPEC declares a contract line that is neither {CONTRACT_V2} nor {CONTRACT_V1}"
+            f"SPEC declares a contract line that is not {CONTRACT_V3}, {CONTRACT_V2}, "
+            f"or {CONTRACT_V1}"
+        )
+    if current_contract == CONTRACT_V2 and "open-mod-surface-data/v1" in text:
+        raise SpecEnvelopeError(
+            "v2 SPEC cannot contain v3 surface data; resume v2 unchanged or revise the SPEC as v3"
         )
 
     surfaces = declared_surfaces(text)
@@ -398,7 +412,17 @@ def validate_spec_text(text: str) -> tuple[str, int]:
             + ", ".join(invented)
         )
     validate_hook_participation(text)
-    return CONTRACT_V2, len(present)
+    if current_contract == CONTRACT_V3:
+        try:
+            from surface_contract_trace import (
+                SurfaceContractError,
+                validate_spec_text as validate_surface_contract,
+            )
+
+            validate_surface_contract(text)
+        except (ImportError, SurfaceContractError) as exc:
+            raise SpecEnvelopeError(f"v3 surface contract failed: {exc}") from exc
+    return current_contract, len(present)
 
 
 def validate_spec_file(path: Path) -> tuple[str, int]:
@@ -407,7 +431,7 @@ def validate_spec_file(path: Path) -> tuple[str, int]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Validate a generated SPEC.md against its surface's v2 envelope."
+        description="Validate a generated SPEC.md against its semantic envelope."
     )
     parser.add_argument("--spec", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -416,7 +440,7 @@ def main(argv: list[str] | None = None) -> int:
     except (SpecEnvelopeError, OSError) as exc:
         print(f"[spec-envelope] failed: {exc}", file=sys.stderr)
         return 2
-    if contract == CONTRACT_V2:
+    if contract in (CONTRACT_V2, CONTRACT_V3):
         print(f"[spec-envelope] ok contract={contract} top_level_keys={keys}")
     else:
         print(f"[spec-envelope] ok contract={contract} (pre-v2; resumes unchanged)")

@@ -48,7 +48,6 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   - advanced target: none | use the shared declaration below
   - cost: <energy integer, default 1>
   - sequence: <ordered game-term effect with exact values>
-  - helper: none | Scry top <X>, discard any number, singleplayer only
   - scaling: <named base values, e.g. damage 6; block 5; strength 2>
   - upgrade: <named value deltas, e.g. damage +3>
   - calculated values: none | one or more
@@ -84,9 +83,7 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   - invariants: <exact expected/observed state, result pile, and dependent effects>
   - boundary cases: <upgrade/state/relationship cases; for calculated values include
     zero/positive/changing input, domain bounds, base/upgrade, normal modifiers, final
-    preview vs effect result, icon reflow, and variable tooltip; for Scry include
-    zero/empty/short/full, order, discard hooks/history, awaited selector, and
-    singleplayer restriction; or none>
+    preview vs effect result, icon reflow, and variable tooltip; or none>
 - **adapter output** (written to MEMORY after acceptance): resolved content id,
   localization keys, asset profile, and framework diagnostic record
 ```
@@ -114,10 +111,6 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
   targeted card. `await` every Cmd. If a custom power is needed, author it first
   (`recipes/power.md`) and register it once through `.Power<T>()`.
-- If SPEC selects Scry, read `reference/scry-helper.md`, emit its attributed
-  `<ModName>Code/Helpers/OpenModScry.cs`, and await `OpenModScry.Execute` from `OnPlay`
-  using the real `PlayerChoiceContext`, `Owner`, and a scaling `DynamicVar("Scry", X)`.
-  Do not add BaseLib, a global hook/service, or a multiplayer fallback.
 - For hand emphasis, keep one native gold/red rule on the Card or append one typed ordered
   ruleset to the existing content-pack builder. Generate fixed colors with
   `RefreshEveryFrame: false`; stop if the condition can change without a normal combat-state
@@ -127,12 +120,6 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
 
 **card** → `InCombat` (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`);
 
-A **Scry card** selects the focused `CombatPlayer` variant in
-`reference/scry-helper.md`: cover zero/empty/short with an automated selector, then
-play the real Card and prove the visible `NSimpleCardSelectScreen`, pending play task,
-selected/unselected order, normal source result pile, discard history, and one known
-`AfterCardDiscarded` effect. Keep the whole matrix in one headed run and retain the
-singleplayer assertion.
 A **calculated-value Card** uses the focused matrix in
 `reference/card-computed-values.md`: cover Damage/Block modifiers, zero and changing
 Energy/Star icon counts, raw versus amount-given typed Power, base/upgrade display, and
@@ -141,18 +128,15 @@ separately proves text, icon reflow, and tooltip presentation.
 
 ## Proof matrix
 
+- **For the Card play effect — assert the expected result pile.** Drive the real Card through
+  its normal play lifecycle and verify that it reaches the SPEC-selected result pile after
+  its awaited effects complete.
 - **For hook participation — assert the neutral case outside the guard.** Play assertions
   observe none of it, since participation is not the Card's play effect. Assert the modified
   value through the real path, then drive one event the guard should ignore and assert it is
   unchanged. When the declaration needs combat scope, assert it from a combat pile rather than
   from the deck: a deck Card outside the piles receives no combat hook, so the same declaration
   silently does nothing. For a collection edit, also assert an unrelated entry survives.
-- For a Scry Card, follow `reference/scry-helper.md`: require one visible native selector
-  and a pending Card play task before
-  confirmation, plus zero/empty/short/full cases, exact seen/discarded/unselected order,
-  source result pile, one history/hook dispatch per discarded Card, and an explicit
-  singleplayer restriction. Do not require another headed run after this combined proof.
-
 ### Gameplay-readability headed acceptance
 
 For Card hand emphasis, read `reference/card-hand-emphasis.md`. Put the real Card in hand

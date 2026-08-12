@@ -150,9 +150,6 @@ explicitly accepted composition instead.
    hotkey behavior, native movement, localization, and ExtraHand layout/manual play/
    callbacks. Do not reduce routing to only the consumers already exercised by a focused
    proof.
-   When a Card looks at the top X Draw cards and discards any number, also read
-   `../sts2-api/reference/scry-helper.md`. It owns the singleplayer-only
-   open-mod helper, native selector/discard lifecycle, structured result, and proof.
    For any effect that remembers progress (every N events, once per combat, previous
    turn, limited run uses), read `../sts2-api/reference/stateful-mechanics.md`.
 2. For error signatures → fix, read `../sts2-api/errors.md`.
@@ -206,7 +203,6 @@ explicitly accepted composition instead.
 | `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
 | `reference/character-resource.md` | RitsuLib combat resource: `SecondaryResourceDefinition`/`SecondaryResourceCmd`, combat reset, all-or-nothing spend, public `RegisterCombatUi`, fixed 220x32 counter at offset 160, text fallback, and two-combat proof | Authoring a character resource and explicit-payoff loop |
 | `reference/ordered-card-buffer.md` | Ordered buffer: `AttachedState<PlayerCombatState,TState>`, native source-card Discard, visible order, non-destructive overflow, deterministic output/`CardGeneratedEntry`, and combat reset; retained-card `CustomPile` remains unsupported | Authoring an ordered card-play record and dynamic output |
-| `reference/scry-helper.md` | open-mod Scry helper: top-X native selector, structured result, normal Discard history/hooks, zero/empty/short/full boundaries, await proof, and explicit singleplayer restriction | Authoring a Card that looks at the top X Draw cards and discards any number |
 | `reference/card-computed-values.md` | Computed Card value roles, one-formula preview/execution parity, upgrade/timing/domain rules, Energy/Star formatters, typed Power amount-given behavior, variable tooltips, and focused proof | Authoring a Card with calculated text/effects or DynamicVar tooltips |
 | `reference/card-hand-emphasis.md` | Conditional Card hand emphasis: ordered fixed-color rules, priority/ties, native gold/red versus typed outline lowering, unplayable visibility, refresh boundary, and headed proof | Authoring a Card with hand emphasis |
 | `reference/extra-corner-labels.md` | Bounded extra badges: Relic up to three safe corners, Power one top-left label, text/rich-text limits, specs providers, invalidation/removal, cleanup, and headed proof | Authoring supplemental values on a Relic or Power |
@@ -243,10 +239,6 @@ do not author an operation outside a listed catalog package.
 - **Custom Card Piles:** route the complete documented Package through
   `reference/card-piles.md`; preserve exact Card identity and awaited movement, and let the
   generated SPEC select any public scope/style/anchor/view/ExtraHand consumer.
-- **Scry helper:** use `OpenModScry.Execute` only for the bounded top-X/discard-any Card
-  effect. Await the native selector and every pile/hook command, preserve seen order, and
-  keep the result and hooks local to the generated Mod. Multiplayer/replay remains
-  unsupported; do not silently fall back to local selection.
 - **Monster + encounter are one slice.** Declare every visible move, ordered successor,
   exhaustive branch, hit count, and downstream state consequence. Keep one checked
   360x360 body for combat and bestiary with the explicit built-in fallback; animation and

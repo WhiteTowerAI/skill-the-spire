@@ -248,22 +248,6 @@ Counter ("lose/consume up to N stacks"), do not pass a negative amount to `Apply
 Use `recipes/power.md`'s amount-domain pattern: `GetPower<T>()`, clamp the spend to the
 existing amount, then `PowerCmd.ModifyAmount` that instance.
 
-### Scry - inspect top X, discard any number (`CardType.Skill`, `TargetType.Self`)
-
-Read `reference/scry-helper.md` and emit its generated-Mod-local `OpenModScry` helper.
-Declare `new DynamicVar("Scry", X)` and await it from `OnPlay`:
-
-```csharp
-Result = await OpenModScry.Execute(
-    choiceContext, Owner, DynamicVars["Scry"].IntValue);
-```
-
-Do not inline a second selector/pile implementation, add BaseLib, or dispatch a global
-Scry hook. The current contract is singleplayer-only and returns requested/seen/discarded
-Cards for local composition. Its focused proof covers zero/empty/short/full Draw, visible
-UI and await behavior, stable order, normal source result pile, and exact discard
-history/hooks.
-
 ### Combine — attack THEN debuff (Bash pattern)
 
 Declare both vars, run the attack, then apply the power on the same target:
@@ -403,8 +387,6 @@ content-pack Card registration. Do not create a second id rule.
 - [ ] `cards.json` has `<MOD>_CARD_<TYPE>.{title,description}` — flat public-entry keys,
       table `cards`; description uses `{Damage:diff()}` etc. so upgrades render.
 - [ ] All `Cmd`s `await`ed.
-- [ ] Scry, when selected, uses the one attributed `OpenModScry` helper; preserves Draw
-      order/history/hooks; and keeps its explicit singleplayer boundary.
 - [ ] `[T2MOD-SELFTEST]` diagnostic marker logged in `OnPlay`; load marker in MainFile;
       `SelfTest` independently asserts post-state.
 - [ ] A Quest Card is emitted only for the bounded forced-follow-up contract: cost `-1`,
@@ -490,8 +472,6 @@ public sealed class Bulk : ModCardTemplate
    asserts its concrete state delta, and greps the structured `state proof:` line.
    A calculated-value Card uses the focused behavior/presentation matrix in
    `reference/card-computed-values.md`.
-   A Scry Card instead uses the single focused visible-selector matrix in
-   `reference/scry-helper.md` and its `R6 scry helper complete ... observed=all` marker.
 3. Manual fallback only: dev console (backtick) → **`card <MOD>_CARD_<TYPE>`** → play it in
    combat and directly confirm the expected state change. The `played:` marker is diagnostic,
    not sufficient proof.

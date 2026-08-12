@@ -189,10 +189,6 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
      infer bounded vanilla rich text and capture only the exact phrase plus plain-language
      color intent. Never ask for or preserve raw BBCode. Use the per-surface allowlist;
      SmartFormat owns Card upgrade highlighting, and titles remain plain.
-     If a Card looks at the top X cards of the draw pile and discards any number, record
-     the amount and upgrade delta as **Scry** semantics. The supported helper is
-     singleplayer-only; preserve multiplayer/replay requests as an explicit gap rather
-     than asking the user about APIs or inventing a fallback.
      If a displayed Card number is calculated from live state, capture one named formula,
      every input it reads, an integer minimum/maximum, its base and upgraded behavior, and
      whether it is plain, damage, Block, Energy icons, Star icons, a raw typed buff/debuff
@@ -357,9 +353,6 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
 - **Target** (card): damage → one enemy (`AnyEnemy`); block/self-buff → `Self`. Only
   ask if genuinely unclear.
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
-- **Scry** (only when requested): inspect the top X Draw cards, choose zero through X to
-  discard, preserve the order of all unselected cards, and await the choice. Singleplayer
-  only; no global modifier/completion hooks.
 - **Owned Rest Site option** (only when requested on a Relic): singleplayer only; distinguish
   when it is absent from when it is visible but gray; default to once per Rest Site,
   normal leave behavior, checked native Heal-icon fallback, and free cost unless the idea

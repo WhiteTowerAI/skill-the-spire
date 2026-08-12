@@ -370,21 +370,6 @@ history, output fields/effect, payment, and combat-2 reset from the current `SPE
 Retained Card instances, `CustomPile`, `Vector2.Zero` layout, and `skipVisuals: true`
 lifecycle are not adapter routes. See `ordered-card-buffer.md`.
 
-### Open-mod Scry helper
-
-When the semantic Card effect is top-X Scry, emit the generated-Mod-local
-`OpenModScry.Execute` implementation from `scry-helper.md`. RitsuLib `0.5.4` has no public
-equivalent. The helper uses STS2's public `CardSelectCmd.FromSimpleGrid`, `CardPileCmd.Add`,
-discard history, and `Hook.AfterCardDiscarded`; it returns requested/seen/discarded Cards
-and preserves unselected Draw order. Nonpositive, missing/ending-combat, and empty-Draw
-inputs return an empty result without opening UI.
-
-This adapter is singleplayer-only and throws clearly in multiplayer/replay. It does not
-register a global Scry modifier/completion hook or cross-Mod service. `RitsuHelpersProof`
-passed visible overlay, await, zero/empty/short/full, order, history, and discard-hook
-invariants in one `CombatPlayer` run, ending at
-`R6 scry helper complete expected=all observed=all`, strict Tier 2, and no fresh error.
-
 ## Cross-cutting routes
 
 | Semantic concern | Adapter input | RitsuLib route | Boundary |
@@ -394,7 +379,6 @@ invariants in one `CombatPlayer` run, ending at
 | Lifecycle | semantic trigger and reset boundary | typed `SubscribeLifecycle<TEvent>` or the model's public hook | no guessed event type |
 | Combat resource | nonnegative amount, payment, reset, UI fallback | secondary-resource registry/commands + public `RegisterCombatUi` | combat-only; does not replace native Energy |
 | Ordered buffer | semantic value, capacity, compile/output | `AttachedState<PlayerCombatState,TState>` + native result piles | no retained Card instances or custom zone |
-| Scry | top-X amount and discard-any selection | generated-Mod-local `OpenModScry` + native selector/pile/history/hooks | singleplayer only; no global modifier/completion hooks |
 | Advanced target | consumer/mode/id and pure creature predicate | custom target registration + `GetTargets` at resolution | Card one/many, Potion one; multi Potion has a known limitation |
 | Card hand emphasis | ordered meanings/conditions/colors/priorities and unplayable visibility | vanilla glow override for one gold/red rule or one typed `CardHandOutline<TCard>` ruleset | fixed colors only; normal combat-state refresh; headed result remains literal |
 | Relic/Power extra badge | Relic up to three safe-corner values or Power one top-left value, format, refresh/removal | typed extra-label specs provider plus host display or independent change source | Power preset bands overlap in crowded rows; no bottom-right/arbitrary rectangle; native main amount remains |
@@ -417,9 +401,7 @@ and direct merchant/rest/treasure transitions. Existing-Card operations, public
 visual operations, existing-Ancient option/branch operations, and pinned
 epoch/pool availability operations are generated. Global weighting, unpromoted permanent
 disable surfaces, and every other vanilla operation remain gated by a later grounded
-Package. The promoted Scry helper remains singleplayer-only and generated-Mod
-local; it does not broaden those multiplayer or interoperability boundaries. Custom
-multi-target Potions retain a known limitation until the pinned host/framework can cancel
+Package. Custom multi-target Potions retain a known limitation until the pinned host/framework can cancel
 an empty queued group before consumption.
 
 ## Adapter record

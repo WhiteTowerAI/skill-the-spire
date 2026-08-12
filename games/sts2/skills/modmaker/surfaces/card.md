@@ -8,12 +8,56 @@ Shared declarations that several surfaces use — advanced targeting, stateful m
 interaction contracts, the art plan — stay in `spec.md`. Shared proof machinery stays in
 `verify.md`.
 
+<!-- open-mod-surface-contract/v1
+{
+  "family": "card_costs",
+  "owner": "surfaces/card.md",
+  "spec_key": "card_costs",
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "fields": {
+    "costs": {"type": "list<object>", "cardinality": "0..*", "default": []},
+    "costs[].card_id": {"type": "text", "cardinality": "1", "unique": true},
+    "costs[].energy.kind/amount/upgrade": {"type": "enum/integer/text", "cardinality": "1 each"},
+    "costs[].stars.kind/amount/upgrade": {"type": "enum/integer/text", "cardinality": "1 each"},
+    "costs[].native_payment/native_ui": {"type": "boolean", "cardinality": "1 each", "fixed": true},
+    "costs[].combined_x_replay": {"type": "text", "cardinality": "1", "fixed": "game-unobserved"},
+    "costs[].route": {"type": "declared route", "cardinality": "1"}
+  },
+  "enums": {
+    "energy_kind": ["fixed", "x"],
+    "star_kind": ["none", "fixed", "x"]
+  },
+  "conditions": [
+    "fixed costs are nonnegative",
+    "X costs use amount -1",
+    "native_payment and native_ui are true"
+  ],
+  "mutually_exclusive": ["simultaneous Energy-X and Star-X"],
+  "routes": [
+    "recipes/card.md#the-constructor-arguments-all-required--passed-to-base",
+    "recipes/card.md#dynamicvars-upgrade--description-see-referencemechanicsmd-12"
+  ],
+  "hard_boundaries": [
+    "use the native CardModel Energy and Star lifecycle",
+    "no parallel Star store",
+    "combined and X replay semantics remain game-unobserved"
+  ],
+  "generated_obligations": [
+    "declare independent Energy and Star costs from current SPEC",
+    "lower upgrades through native cost members",
+    "keep payment rejection nondestructive"
+  ],
+  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
+  "legacy": "v1/v2 Energy-only Cards resume unchanged; a revised cost declaration writes v3"
+}
+-->
+
 ## SPEC envelope
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v2
+- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -46,9 +90,14 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   - trigger: play
   - target: one enemy | all enemies | self
   - advanced target: none | use the shared declaration below
-  - cost: <energy integer, default 1>
+  - native costs:
+    - energy: fixed <nonnegative integer> | X
+      upgrade: same | fixed delta <integer>
+    - stars: none | fixed <nonnegative integer> | X
+      upgrade: same | fixed delta <integer>
+    - payment/UI: native
+    - combined X replay: game-unobserved
   - sequence: <ordered game-term effect with exact values>
-  - helper: none | Scry top <X>, discard any number, singleplayer only
   - scaling: <named base values, e.g. damage 6; block 5; strength 2>
   - upgrade: <named value deltas, e.g. damage +3>
   - calculated values: none | one or more
@@ -64,6 +113,20 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
     `Owner.Osty` where an Osty can act. This is separate from `effects`: participation applies
     while the Card is held or in the deck, not when it is played.
 - **state**: none | see the stateful-mechanic contract below
+- **owned Rest Site option**: none | one
+  - owner: card
+  - owner multiplicity: exactly one in the owner's deck
+  - title: <localized button title>
+  - description: <localized hover description>
+  - eligibility: <when this exact Card contributes the option>
+  - repeatability: once per Rest Site | once per run
+  - state handle: host visit removal | saved owner bool
+  - enabled rule: always | can pay fixed Gold cost
+  - cost: free | <nonnegative integer> Gold
+  - outcome: <ordered deterministic preflightable operations>
+  - after success: leave | keep remaining options available
+  - icon: checked native fallback | generate
+  - multiplayer: singleplayer only
 - **presentation**:
   - assets: card portrait; placeholder | generate
   - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
@@ -84,9 +147,7 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   - invariants: <exact expected/observed state, result pile, and dependent effects>
   - boundary cases: <upgrade/state/relationship cases; for calculated values include
     zero/positive/changing input, domain bounds, base/upgrade, normal modifiers, final
-    preview vs effect result, icon reflow, and variable tooltip; for Scry include
-    zero/empty/short/full, order, discard hooks/history, awaited selector, and
-    singleplayer restriction; or none>
+    preview vs effect result, icon reflow, and variable tooltip; or none>
 - **adapter output** (written to MEMORY after acceptance): resolved content id,
   localization keys, asset profile, and framework diagnostic record
 ```
@@ -97,6 +158,10 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
 
 - Pass `cost, CardType, CardRarity, TargetType` to `base(...)`. A card that targets the
   player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions).
+- Lower Energy and Star declarations through `recipes/card.md` § Native Energy and Star
+  costs. Fixed Stars override `CanonicalStarCost`; Star-X overrides `HasStarCostX`; fixed
+  upgrades use `UpgradeStarCostBy`. Reject simultaneous Energy-X and Star-X, and never add
+  a parallel Star store or manual `OnPlay` payment.
 - For an advanced target, pass the registered value from
   `reference/advanced-targeting.md`. A single Card uses `cardPlay.Target`; a multi Card
   gates zero candidates through `IsPlayable`, executes once with `null`, and resolves the
@@ -114,25 +179,20 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
   targeted card. `await` every Cmd. If a custom power is needed, author it first
   (`recipes/power.md`) and register it once through `.Power<T>()`.
-- If SPEC selects Scry, read `reference/scry-helper.md`, emit its attributed
-  `<ModName>Code/Helpers/OpenModScry.cs`, and await `OpenModScry.Execute` from `OnPlay`
-  using the real `PlayerChoiceContext`, `Owner`, and a scaling `DynamicVar("Scry", X)`.
-  Do not add BaseLib, a global hook/service, or a multiplayer fallback.
 - For hand emphasis, keep one native gold/red rule on the Card or append one typed ordered
   ruleset to the existing content-pack builder. Generate fixed colors with
   `RefreshEveryFrame: false`; stop if the condition can change without a normal combat-state
   refresh.
+- For a Card-owned Rest Site action, follow `reference/rest-site-options.md`. Require exactly
+  one matching concrete Card in the owner's deck, keep that instance as option/state owner,
+  contribute through `TryModifyRestSiteOptions`, and use `SavedAttachedState<SpecificCard,bool>`
+  only for once-per-run state. Do not use canonical Cards, duplicate ids, or raw hook
+  participation to bypass the transaction and host lifecycle.
 
 ## Self-test driver body
 
 **card** → `InCombat` (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`);
 
-A **Scry card** selects the focused `CombatPlayer` variant in
-`reference/scry-helper.md`: cover zero/empty/short with an automated selector, then
-play the real Card and prove the visible `NSimpleCardSelectScreen`, pending play task,
-selected/unselected order, normal source result pile, discard history, and one known
-`AfterCardDiscarded` effect. Keep the whole matrix in one headed run and retain the
-singleplayer assertion.
 A **calculated-value Card** uses the focused matrix in
 `reference/card-computed-values.md`: cover Damage/Block modifiers, zero and changing
 Energy/Star icon counts, raw versus amount-given typed Power, base/upgrade display, and
@@ -141,18 +201,24 @@ separately proves text, icon reflow, and tooltip presentation.
 
 ## Proof matrix
 
+- **For the Card play effect — assert the expected result pile.** Drive the real Card through
+  its normal play lifecycle and verify that it reaches the SPEC-selected result pile after
+  its awaited effects complete.
+- **For a selected native Star cost — use the native play lifecycle.** Assert the rendered
+  Energy/Star costs, a successful payment and effect exactly once, and an unaffordable
+  rejection with Energy, Stars, Card state, and payoff unchanged. For X, include the
+  selected captured-X/replay boundary; do not infer other combinations from this case.
+- **For a Card-owned Rest Site option — assert exact owner identity and multiplicity.** The
+  option is absent with zero or duplicate matching Cards, present for exactly one, and then
+  follows the shared native-room matrix for disabled/enabled, stale click rejection,
+  deterministic success, repeatability, stay/leave, and icon fallback. This route is
+  authorable but game-unobserved until that concrete generated Mod runs it.
 - **For hook participation — assert the neutral case outside the guard.** Play assertions
   observe none of it, since participation is not the Card's play effect. Assert the modified
   value through the real path, then drive one event the guard should ignore and assert it is
   unchanged. When the declaration needs combat scope, assert it from a combat pile rather than
   from the deck: a deck Card outside the piles receives no combat hook, so the same declaration
   silently does nothing. For a collection edit, also assert an unrelated entry survives.
-- For a Scry Card, follow `reference/scry-helper.md`: require one visible native selector
-  and a pending Card play task before
-  confirmation, plus zero/empty/short/full cases, exact seen/discarded/unselected order,
-  source result pile, one history/hook dispatch per discarded Card, and an explicit
-  singleplayer restriction. Do not require another headed run after this combined proof.
-
 ### Gameplay-readability headed acceptance
 
 For Card hand emphasis, read `reference/card-hand-emphasis.md`. Put the real Card in hand

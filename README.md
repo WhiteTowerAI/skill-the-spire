@@ -85,7 +85,7 @@ The RitsuLib-only generator currently covers:
 - Cards, Relics, Potions, Powers, Keywords, Enchantments, Orbs, Monsters, and Encounters;
 - computed Card Damage/Block, Energy/Star icons, typed Power values, and DynamicVar tips;
 - native single/multi creature targeting within the recorded Card/Potion boundary;
-- singleplayer top-X Scry, stateful cadence/resources, and ordered semantic card buffers;
+- stateful cadence/resources and ordered semantic card buffers;
 - Events/World Nodes, bounded native presentation, and one Quest Card to forced Event route;
 - playable Character Foundation, checked static art profiles, bounded private combat cues,
   and Character-local native Ancient/Architect dialogue;
@@ -112,7 +112,7 @@ Important boundaries include:
 
 - custom multi-target Potions retain a confirmed lifecycle limitation;
 - Rest Site options are Relic-owned and singleplayer-only;
-- Scry and several generated state/UI systems are Mod-local and singleplayer-only;
+- several generated state/UI systems are Mod-local and singleplayer-only;
 - alternative Energy, arbitrary target systems, global acquisition weighting, and
   multiplayer vanilla overrides are unsupported;
 - new Ancient models, arbitrary native room/dialogue replacement, unsupported transitions,

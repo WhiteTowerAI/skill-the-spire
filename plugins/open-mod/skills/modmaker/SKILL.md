@@ -113,11 +113,6 @@ offset from native Energy. Route only to `reference/character-resource.md` and
 `reference/ordered-card-buffer.md`. Retaining played Cards in a `CustomPile` is unsupported.
 Do not invent alternative-energy patches, zone UI, persistence, C/D access, or
 `OpenMod.Runtime`.
-The **Scry helper** is also implemented for a Card that inspects the top X Draw
-cards and discards any number. It is generated-Mod-local, uses the native visible selector
-and discard lifecycle, returns a structured result, and is explicitly singleplayer-only.
-Route it only to `reference/scry-helper.md`; do not add BaseLib, global Scry hooks, or a
-multiplayer fallback.
 The bounded **advanced targeting** route supports deterministic filtered live-creature
 targets for single-target Cards, single-target Potions, and multi-target Cards. It keeps
 native mouse/controller selection, execution-time validation, payment/Potion retention,
@@ -245,7 +240,7 @@ User: one sentence ("a relic that ...")
     |
  6. AUTHOR (author.md) — query the sts2-api pack, pick the recipe (relic/potion/card,
     monster+encounter/event/character, plus the selected Event outcome/VFX/rich-text/
-    native-presentation/forced-follow-up/Scry references or power.md
+    native-presentation/forced-follow-up references or power.md
     when selected by SPEC),
     translate the same semantic SPEC through the selected adapter, add localization,
     inject the shared framework/version and [T2MOD-SELFTEST] diagnostics, and emit the

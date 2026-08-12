@@ -69,7 +69,7 @@ For a Character Foundation `RunStart` driver, keep one further ordering constrai
 after character-select Confirm and `RunManager.Instance.IsInProgress`, wait for
 `NRun.Instance?.GlobalUi != null`, then continue polling until
 `LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())` is non-null. A single read
-after the UI gate is still racy: the R6 Scry proof's first setup attempt reached a ready
+after the UI gate is still racy: an earlier focused proof reached a ready
 `GlobalUi` before the local Player was injected. The earlier Character canary likewise
 proved that the run-state flag can become true while the local player is unavailable. Also
 normalize `\\` to `/` on both the template's character-select
@@ -621,21 +621,6 @@ Call `ExerciseConsumeBoundaries(player)` from the source's `InCombat` body inste
 playing the consumer only once. If N is 1, zero is also the only fewer-than-N integer case;
 keep the zero case plus an at-least-N remainder case. The successful terminal marker still
 comes only after all boundary assertions pass.
-
-### Scry card - one focused visible-selector run
-
-When the Card selects the R6 Scry helper, use the exact driver contract in
-`scry-helper.md` instead of proving only its final pile. In one `CombatPlayer` run, assert
-zero and empty Draw no-ops; use `CardSelectCmd.UseSelector` for the short-Draw case; then
-play the real Card without immediately awaiting its task. Wait for a visible
-`NSimpleCardSelectScreen`, assert the play task is incomplete, select known
-`NGridCardHolder`s, capture one screenshot, confirm, and await completion. The terminal
-assertion covers seen/discarded/unselected order, source result pile, exact
-`CardDiscardedEntry` count, and a known `AfterCardDiscarded` consequence.
-
-Assert `NetGameType.Singleplayer` before the scenario. Do not simulate remote ownership,
-add a local multiplayer fallback, or promote global Scry hooks. The accepted marker is
-`R6 scry helper complete expected=all observed=all` followed by `selftest done`.
 
 ## Custom Card Piles Package
 

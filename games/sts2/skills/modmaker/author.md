@@ -75,15 +75,16 @@ second framework branch into this file.
   `.Orb<T>()`, and make the real host channel it via
   `OrbCmd.Channel<T>`; preserve separate passive and evoke observations, and keep the
   recipe's checked icon plus explicit Spine-scene/channel-SFX fallbacks. For an **enemy
-  encounter** (`element: enemy encounter`), read `recipes/monster.md` and author BOTH the
-  RitsuLib `ModMonsterTemplate` and `ModEncounterTemplate` it spawns as one slice. Register
-  both exactly once through the scaffold's content pack, with an explicit encounter
-  `RoomType`. Implement SPEC's compact move contract with `MoveState`, explicit `FollowUpState`,
-  and `ConditionalBranchState` only where declared. Use the recipe's grounded intent/effect
+  encounter graph** (`element: enemy encounter`), read `recipes/monster.md`. Author every
+  selected `ModMonsterTemplate` and `ModEncounterTemplate` as a separate registered node,
+  then lower the exact roster edges; register each identity once with an explicit encounter
+  `RoomType`. Implement SPEC's move contract with `MoveState`, explicit `FollowUpState`,
+  `ConditionalBranchState`, and the supplied move-machine RNG for selected positive-weight
+  random branches only. Use the recipe's grounded intent/effect
   patterns for buff/Power, debuff, block/heal, multi-hit, and composite actions. Monster
   attacks use `.FromMonster(this).Execute(null)` (**never** `.Targeting()`), and the
-  diagnostic trigger marker goes on the enemy's move; do not model the pair as two
-  `elements` + an interaction. Keep the recipe's checked static-body factory plus explicit
+  diagnostic trigger marker goes on the enemy's move. Keep the recipe's checked static-body
+  factory plus explicit
   fallback scene; animation is outside this pass. For an **event / World Node** (`element: event`),
   read `recipes/event.md`: author one `ModEventTemplate`, flat nested `events.json`,
   explicit `EventOption` keys, public-Cmd consequences, and explicit page/finish flow;
@@ -101,19 +102,20 @@ second framework branch into this file.
   `portrait_halo`; read `reference/event-text-effects.md` when descriptions select bounded
   vanilla text effects; read `reference/event-option-presentation.md` when enabled options
   select typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings; read
-  `reference/event-native-presentation.md` when options select native Card/relic
-  acquisition presentation, `weak_short` screen shake, or built-in `trial_noble` VFX; read
-  `reference/forced-followup-event.md` when SPEC selects its Quest Card -> target Event
-  composition. For a
+  `reference/event-native-presentation.md` when options select ordered native Card/relic
+  acquisitions, `weak_short`/`strong_normal` screen shake, or built-in `trial_noble` VFX;
+  read `reference/forced-followup-event.md` when SPEC selects any finite prioritized Quest
+  Card mapping or sequence. For a
   **Character Foundation** (`element: character`), read
   `recipes/character.md`: use `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>` and
-  the three `TypeList*PoolModel` bases, fill exact starters/HP/Gold/loc, and register the
-  Character plus starters/members once through the content pack.
+  the three `TypeList*PoolModel` bases, fill exact HP/Gold/MaxEnergy/Orb slots, starters,
+  typed pools, and localization, and register the Character plus starters/members once
+  through the content pack.
   If SPEC selects any Character art profile or richer resource/buffer presentation, also
   read `reference/character-presentation.md` and obey its per-consumer promotion/fallback
   boundary. If SPEC selects native Ancient/Architect dialogue, read
   `reference/ancient-dialogue.md` and use only its localization route.
-  If SPEC selects a character resource, read `reference/character-resource.md`; if it
+  If SPEC selects one or more secondary resources, read `reference/character-resource.md`; if it
   selects a bounded ordered semantic buffer/dynamic output, read
   `reference/ordered-card-buffer.md`.
   For every **custom card pile**, read `reference/card-piles.md`. Register all piles in
@@ -144,13 +146,13 @@ second framework branch into this file.
   Mod-local target registration, use only its implemented consumer/mode matrix, and stop
   authoring for the limited `potion + many`; do not generate a lifecycle patch or
   restore a consumed Potion.
-- If SPEC has a non-`none` **state** block, also read
-  `reference/stateful-mechanics.md` before writing the hook. Implement its event,
-  threshold/phase, lifetime, reset, persistence, UI meaning, and proof as one contract;
-  never infer lifetime from the C# field that happens to be easiest.
-- If a Relic SPEC has an **owned Rest Site option**, read
-  `reference/rest-site-options.md` before writing either class. Keep its current
-  Relic/singleplayer/free-or-fixed-Gold boundary and stop for a Card/Modifier owner,
+- If v3 surface data selects **bounded state**, also read `reference/stateful-mechanics.md`.
+  Emit only the selected bounded schemas, exact owners/listeners, transitions, reset,
+  persistence, visibility, consumers, and outputs; never infer lifetime or a transition from
+  the C# field or hook that happens to be easiest.
+- If a Card or Relic SPEC has an **owned Rest Site option**, read
+  `reference/rest-site-options.md` before writing either class. Keep its
+  singleplayer/free-or-fixed-Gold boundary and stop for a Modifier owner,
   post-payment choice, arbitrary transaction, same-site repeat, or multiplayer request.
 - Make every generated `.cs` file namespace-complete on its own. Copy the `using` required
   by every symbol into the file that uses it; never rely on a different snippet, file, or
@@ -295,8 +297,8 @@ and follow `reference/vanilla-availability-overrides.md` exactly:
 
 **Custom orb** — see `surfaces/orb.md` § Author the element class.
 
-**Enemy encounter** — see `surfaces/monster.md` § Author the element classes. It is two
-classes authored as one slice, with no `[Pool]` on either.
+**Enemy encounter graph** — see `surfaces/monster.md` § Author the element classes. Emit
+the selected Monster and Encounter nodes plus exact roster edges, with no `[Pool]` on either.
 
 **Event / World Node** — see `surfaces/event.md` § Author the element class.
 
@@ -368,12 +370,12 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    Potion retention on cancellation, normal Card result pile, zero/one/multiple legal
    candidates, and queued target invalidation. Headed mouse/controller/reticle checks stay
    separate from the structured state proof.
-   **character resource** → use `reference/character-resource.md`: in combat 1 drive real
-   assert the public `RegisterCombatUi` attachment and `SecondaryResourceCmd` amount, then
-   drive real gain and spender cards, affordable/unaffordable cases, successful/rejected
-   payoff, floor, and live counter refresh. Assert the 220x32 control at offset 160 is
-   disjoint from native Energy, then enter combat 2 and assert distinct zero state plus
-   reset counter. Finish with `resource UI complete ... observed=all`.
+   **secondary resources** → use `reference/character-resource.md`: derive checks only for
+   the definitions, persistence/turn-start policies, Card uses, shortfall behavior, committed
+   payoffs, and UI consumers selected by SPEC. Drive affordable/unaffordable and rejected
+   cases for each selected payment role, assert authoritative ledger results and resource
+   bounds, and inspect non-overlap for each selected visible consumer. Add a second combat or
+   run-save boundary only when that selected lifecycle requires it.
    **ordered semantic buffer/dynamic output** → use `reference/ordered-card-buffer.md`: drive
    real source cards through their native result piles, assert attached-state order/capacity/
    non-destructive overflow and visible state, compile/clear the ordered snapshot, assert
@@ -393,14 +395,15 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    run-lifetime `SavedAttachedState` additionally round-trips through
    `SavedProperties.From`/`Fill`; a run cadence must enter a second combat rather than
    mutating the attached value directly to simulate carry-over.
-   A **Scry card** and a **calculated-value Card** each select their focused matrix in
+   A **calculated-value Card** selects its focused matrix in
    `surfaces/card.md` § Self-test driver body.
-   A **Relic-owned Rest Site option** uses the focused real-host matrix in
+   A **Card- or Relic-owned Rest Site option** uses the focused real-host matrix in
    `reference/rest-site-options.md`: absent owner, insufficient-Gold gray state,
    render-then-remove-Gold failed selection with zero deltas, exact successful
    Gold/Max-HP/history deltas, rebuilt list without duplication, declared stay/leave,
    second-visit repeatability, controller focus, custom icon, and missing-icon native
-   fallback. Keep the run explicitly singleplayer.
+   fallback. Keep the run explicitly singleplayer; for a Card owner also assert exactly one
+   matching deck instance and the same concrete owner/state handle.
    A **custom card pile** selects the matching host matrix in
    `reference/card-piles.md`. Prove the generated Mod's selected scopes, UI styles,
    anchors, open/view/hotkey behavior, explicit Card movements, localization, and

@@ -60,8 +60,8 @@ class SemanticContractTests(unittest.TestCase):
             "proof",
         ):
             self.assertIn(f"**{field}**", self.contract)
-        self.assertIn("sts2-content-semantic/v2", self.contract)
-        # v1 is retained in the migration note; the canonical declaration is v2
+        self.assertIn("sts2-content-semantic/v3", self.contract)
+        # v1 is retained in the migration note; the canonical declaration is v3.
         self.assertIn("sts2-content-semantic/v1", self.contract)
 
     def test_localization_contract_requires_english_and_chinese(self) -> None:
@@ -313,14 +313,15 @@ class SemanticContractTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         for field in (
-            "event",
-            "threshold/phase",
+            "owner",
+            "schema",
+            "transition",
+            "consumer/output",
+            "event phase",
             "lifetime",
             "reset",
             "persistence",
-            "owner",
-            "UI meaning",
-            "proof",
+            "visibility",
         ):
             self.assertIn(f"**{field}**", stateful)
         for rule in (
@@ -329,7 +330,7 @@ class SemanticContractTests(unittest.TestCase):
             "On turn N / every N turns this combat",
             "native combat state starts at turn 1",
             '"Every 3 turns" and "on turn 3" are not synonyms.',
-            "Always scope side/card events to the owner.",
+            "side/Card events to the declared listener and state owner.",
         ):
             self.assertIn(rule, stateful)
 
@@ -339,13 +340,13 @@ class SemanticContractTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         for rule in (
-            "`combat`; a new combat starts at the registered default",
-            "integer, minimum `0`; no implicit debt",
-            "all-or-nothing; rejection leaves amount and payoff unchanged",
-            "not a replacement for native Energy",
-            "fixed 220x32 icon+text control at offset `(160,0)`; checked text-only fallback",
-            "resource and native energy global rects do not intersect",
-            "combat 2 has a distinct `PlayerCombatState`, amount `0`, and reset UI",
+            "`combat` snapshot or `run` save persistence, selected per resource",
+            "bounded nonnegative integer; no implicit debt",
+            "rejection is nondestructive",
+            "not a replacement for native Energy or Stars",
+            "CustomMinimumSize = new Vector2(220, 32)",
+            "does not overlap the 128x128 native Character",
+            "distinct combat-2 reset",
         ):
             self.assertIn(rule, resource)
 
@@ -364,24 +365,6 @@ class SemanticContractTests(unittest.TestCase):
             "combat 2 has a distinct attached state, empty route, reset resource, and reset UI",
         ):
             self.assertIn(rule, buffer)
-
-    def test_scry_preserves_local_singleplayer_selection_semantics(self) -> None:
-        helper = (
-            STS2_API_DIR / "reference" / "scry-helper.md"
-        ).read_text(encoding="utf-8")
-        normalized = " ".join(helper.split())
-
-        for rule in (
-            "singleplayer only; multiplayer and replay callers fail clearly",
-            "returns an empty structured result without opening a selector or mutating piles/history",
-            "inspect at most the top `amount` cards in current Draw order",
-            "move selected cards to Discard in their original seen order",
-            "exactly once for each selected card",
-            "leave unselected cards in Draw in their original relative order",
-            "There is no global Scry modifier or completion hook.",
-            "zero/empty/short/full matrix",
-        ):
-            self.assertIn(rule, normalized)
 
     def test_computed_card_values_preserve_one_formula_and_native_hooks(self) -> None:
         card = surface_block(self.spec, "Card", "Custom power")
@@ -536,7 +519,7 @@ class SemanticContractTests(unittest.TestCase):
         )
         self.assertIn("stops at Card one/many and Potion one", normalized_graph)
 
-    def test_relic_owned_rest_site_option_preserves_native_payment_lifecycle(self) -> None:
+    def test_card_or_relic_owned_rest_site_option_preserves_native_payment_lifecycle(self) -> None:
         reference = (
             STS2_API_DIR / "reference" / "rest-site-options.md"
         ).read_text(encoding="utf-8")
@@ -560,8 +543,9 @@ class SemanticContractTests(unittest.TestCase):
         normalized_spec = " ".join(self.spec.split())
         normalized_interview = " ".join(self.interview.split())
 
-        self.assertIn("Relic-owned Rest Site option", self.contract)
+        self.assertIn("Card- or Relic-owned Rest Site option", self.contract)
         for field in (
+            "owner: card",
             "owner: relic",
             "eligibility:",
             "repeatability: once per Rest Site | once per run",
@@ -584,7 +568,7 @@ class SemanticContractTests(unittest.TestCase):
             "ModRestSiteOptionTemplate",
             "TryModifyRestSiteOptions",
             "RestSiteOptionAssetProfile",
-            "SavedAttachedState<<RelicName>, bool>",
+            "SavedAttachedState<<OwnerName>, bool>",
             "ShouldDisableRemainingRestSiteOptions",
             "NetGameType.Singleplayer",
             "GoldLossType.Spent",
@@ -600,7 +584,7 @@ class SemanticContractTests(unittest.TestCase):
             "`CanPay(player)`",
             "returns `false` only immediately after this option's success",
             "res://images/ui/rest_site/option_heal.png",
-            "Card or Modifier owners",
+            "Modifier owners",
             "arbitrary transactional outcomes",
             "dev-console `gold` command ignores negative values",
             "Tier 2 requires a structured post-state proof plus `selftest done`",
@@ -618,7 +602,7 @@ class SemanticContractTests(unittest.TestCase):
         ):
             self.assertIn("rest-site-options.md", routed)
 
-        self.assertIn("Relic-owned Rest Site option", graph)
+        self.assertIn("Card/Relic-owned Rest Site option", graph)
         self.assertIn("checked custom/Heal-fallback icon", graph)
         self.assertIn("M66_REST_SITE_OPTIONS_RESULTS.md", graph)
 

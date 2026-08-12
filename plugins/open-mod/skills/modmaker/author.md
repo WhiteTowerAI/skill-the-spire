@@ -393,7 +393,7 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    run-lifetime `SavedAttachedState` additionally round-trips through
    `SavedProperties.From`/`Fill`; a run cadence must enter a second combat rather than
    mutating the attached value directly to simulate carry-over.
-   A **Scry card** and a **calculated-value Card** each select their focused matrix in
+   A **calculated-value Card** selects its focused matrix in
    `surfaces/card.md` § Self-test driver body.
    A **Relic-owned Rest Site option** uses the focused real-host matrix in
    `reference/rest-site-options.md`: absent owner, insufficient-Gold gray state,

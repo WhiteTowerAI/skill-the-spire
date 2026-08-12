@@ -15,7 +15,7 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v2
+- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:

@@ -188,7 +188,7 @@ actually have.
 ordered-semantic-buffer bullets. Both copies listed the same requirements, so the resource
 proof had two homes and could drift. Introduced by the draft.
 
-Fixed the way the pilot fixed Scry: the surface page owns the proof, and `verify.md` points to
+Fixed this using the pilot's established direction: the surface page owns the proof, and `verify.md` points to
 it. That is now the established direction for anything a single surface owns.
 
 ### 7. Resource and buffer envelope/proof still split — closed in M8.2

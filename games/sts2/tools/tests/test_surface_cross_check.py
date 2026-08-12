@@ -92,7 +92,7 @@ FIELD_PROOF_PAIRS: dict[str, tuple[tuple[str, str], ...]] = {
         ("moves:", "every advertised move id executes in the declared order"),
         ("branches:", "Drive every branch through both outcomes"),
         ("loop:", "prove it loops rather than terminating"),
-        ("group:", "Assert the spawned roster and HP."),
+        ("actual_roster", "Assert the spawned roster and HP."),
         ("hook participation:", "assert the neutral case outside the guard"),
     ),
     "event": (
@@ -232,7 +232,7 @@ class SurfaceReferenceTests(unittest.TestCase):
 
         Two patterns are forbidden rather than every milestone id, because some ids stay
         load-bearing: `m6.7.1-public-card-overrides` is a manifest key checked against the
-        catalog, `R6 scry helper complete` is a Tier 2 marker, `pre-M7.4` is a resume-
+        catalog, `pre-M7.4` is a resume-
         compatibility boundary, and an evidence attribution names the run that grounded a fact.
 
         What must not return is a milestone standing in for a route, and — worse — an

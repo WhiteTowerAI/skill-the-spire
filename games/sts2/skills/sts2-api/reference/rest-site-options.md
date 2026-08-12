@@ -1,13 +1,68 @@
-# Relic-owned Rest Site options
+# Card- or Relic-owned Rest Site options
 
-This page owns the first bounded Package 3 route for a generated Mod to add one action to
-the native Rest Site. It is grounded against STS2 `0.107.1` and RitsuLib `0.5.4`.
+This page owns the bounded route for a generated Card or Relic to add an action to the
+native Rest Site. The historical headed proof observed the Relic-owned profile only;
+Card ownership is framework-expressible and authorable here but remains game-unobserved.
+The route is grounded against STS2 `0.107.1` and RitsuLib `0.5.4`.
+
+<!-- open-mod-surface-contract/v1
+{
+  "family": "rest_site_options",
+  "owner": "reference/rest-site-options.md",
+  "spec_key": "rest_site_options",
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "fields": {
+    "options": {"type": "list<object>", "cardinality": "0..*", "default": []},
+    "options[].id": {"type": "text", "cardinality": "1", "unique": true},
+    "options[].owner.surface/id": {"type": "enum/text", "cardinality": "1 each"},
+    "options[].owner_multiplicity": {"type": "text", "cardinality": "1", "fixed": "exactly_one"},
+    "options[].state_handle.surface/id/kind": {"type": "matching enum/text/enum", "cardinality": "1 each"},
+    "options[].eligibility/affordability": {"type": "text", "cardinality": "1 each"},
+    "options[].transaction.preflightable": {"type": "boolean", "cardinality": "1", "fixed": true},
+    "options[].transaction.steps": {"type": "list<semantic operation>", "cardinality": "1..*"},
+    "options[].repeatability/after_success": {"type": "enum", "cardinality": "1 each"},
+    "options[].successful_same_visit_repeat": {"type": "boolean", "cardinality": "1", "fixed": false},
+    "options[].multiplayer": {"type": "text", "cardinality": "1", "fixed": "singleplayer"},
+    "options[].route": {"type": "declared route", "cardinality": "1"}
+  },
+  "enums": {
+    "owner_surface": ["relic", "card"],
+    "state_kind": ["host_visit_removal", "saved_owner_bool"],
+    "repeatability": ["once_per_site", "once_per_run"],
+    "after_success": ["leave", "stay"]
+  },
+  "conditions": [
+    "owner and state_handle identities agree and owner multiplicity is exactly one",
+    "once_per_site uses host_visit_removal; once_per_run uses saved_owner_bool",
+    "transaction is deterministic and preflightable",
+    "successful_same_visit_repeat is false"
+  ],
+  "mutually_exclusive": ["leave and stay"],
+  "routes": [
+    "reference/rest-site-options.md#public-host-lifecycle",
+    "reference/rest-site-options.md#ritsulib-route"
+  ],
+  "hard_boundaries": [
+    "singleplayer only",
+    "Modifier ownership is not authorable",
+    "post-payment choices and rollback-dependent transactions are rejected"
+  ],
+  "generated_obligations": [
+    "contribute through the exact owner hook",
+    "separate eligibility from affordability",
+    "commit repeatability only after successful outcome"
+  ],
+  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
+  "legacy": "v1/v2 Relic-owned declarations resume unchanged; revised owner data writes v3"
+}
+-->
 
 ## Supported contract
 
-The first slice is deliberately narrow:
+The authorable slice is deliberately bounded:
 
-- the owner is one concrete generated-Mod-local Relic;
+- the owner is exactly one concrete generated-Mod-local Card in the deck or one concrete
+  generated-Mod-local Relic in the run;
 - the run is singleplayer; multiplayer and replay hide the option and fail closed;
 - the cost is free or one fixed nonnegative Gold amount;
 - the outcome is deterministic and preflightable, using public commands with no player
@@ -17,10 +72,16 @@ The first slice is deliberately narrow:
   for one subsequent choice;
 - a custom icon is optional and falls back to the checked native Heal icon.
 
-Card or Modifier owners, variable or non-Gold costs, arbitrary transactional outcomes,
+Modifier owners, variable or non-Gold costs, arbitrary transactional outcomes,
 remote-player ownership, multiplayer synchronization, and repeated successful use in one
 Rest Site are unsupported. Do not generate Harmony, reflection, or UI patches to extend
 this boundary.
+
+Card reachability is pinned rather than inferred: both Rest Site hooks dispatch through
+`runState.IterateHookListeners(null)`, whose fixed listener set includes deck Cards; the
+`0.107.1` catalog marks Card authorable, and vanilla `ByrdonisEgg` implements
+`TryModifyRestSiteOptions`. This does not authorize Modifier ownership: open-mod has no
+selected custom Modifier owner surface for this Package.
 
 ## Semantic declaration
 
@@ -28,7 +89,8 @@ Record these fields before selecting the adapter:
 
 ```markdown
 - **owned Rest Site option**:
-  - owner: relic
+  - owner: card | relic
+  - owner multiplicity: exactly one
   - title: <localized button title>
   - description: <localized hover description>
   - eligibility: <when the owned relic should contribute the option>
@@ -69,7 +131,7 @@ other run state. Do not retain an `NRestSiteButton` or mutate its private clicka
 
 ## RitsuLib route
 
-Extend `ModRestSiteOptionTemplate`, and contribute it from the owning Relic's
+Extend `ModRestSiteOptionTemplate`, and contribute it from the owning Card's or Relic's
 `TryModifyRestSiteOptions`. Use a stable Mod-namespaced `OptionId`; the host serializes the
 selected ID into run history, so it is a compatibility value rather than display text.
 
@@ -80,9 +142,16 @@ The generated owner separates three questions:
 - `CanPay(player)`: `ShouldOffer` plus the fixed Gold predicate;
 - `TryModifyRestSiteOptions`: `ShouldOffer`, duplicate-ID rejection, then one insertion.
 
-Use `SavedAttachedState<SpecificRelic,bool>` only for once-per-run repeatability. Once per
+Use `SavedAttachedState<SpecificCard,bool>` or `SavedAttachedState<SpecificRelic,bool>` only
+for once-per-run repeatability. Once per
 Rest Site needs no extra state: the host removes a successful option from that visit's
 logical list. A failed selection returns `false` and must not mark either form as used.
+
+A Card-owned option also guards `player == Owner`, verifies the exact owner Card remains in
+`player.Deck.Cards`, and requires exactly one matching instance before contribution. This
+fail-closed multiplicity rule prevents duplicate deck copies from contributing duplicate
+stable option ids or disagreeing over once-per-run state. The option keeps the concrete
+owner instance it was created from; never re-resolve a canonical Card through `ModelDb`.
 
 ```csharp
 using Godot;
@@ -97,14 +166,14 @@ using MegaCrit.Sts2.Core.Runs;
 using STS2RitsuLib.Scaffolding.Content;
 using STS2RitsuLib.Utils;
 
-namespace <ModName>.Relics;
+namespace <ModName>.<CardsOrRelics>;
 
-public sealed class <RelicName> : ModRelicTemplate
+public sealed class <OwnerName> : <ModCardOrRelicTemplate>
 {
     internal const int GoldCost = <cost>;
     internal const decimal MaxHpGain = <max-hp-gain>m;
 
-    private static readonly SavedAttachedState<<RelicName>, bool> UsedState =
+    private static readonly SavedAttachedState<<OwnerName>, bool> UsedState =
         new($"{MainFile.ModId}_rest_site_used", () => false);
 
     private bool _keepRemainingOnce;
@@ -114,6 +183,7 @@ public sealed class <RelicName> : ModRelicTemplate
     internal bool ShouldOffer(Player player) =>
         player == Owner &&
         RunManager.Instance.NetService.Type == NetGameType.Singleplayer &&
+        <exact-owner-presence-and-multiplicity-guard> &&
         !UsedState[this];
 
     internal bool CanPay(Player player) =>
@@ -148,7 +218,7 @@ public sealed class <RelicName> : ModRelicTemplate
     }
 }
 
-public sealed class <RestSiteOptionName>(Player owner, <RelicName> source)
+public sealed class <RestSiteOptionName>(Player owner, <OwnerName> source)
     : ModRestSiteOptionTemplate(owner)
 {
     public const string StableOptionId = "<MOD>_REST_SITE_<OPTION>";
@@ -171,8 +241,8 @@ public sealed class <RestSiteOptionName>(Player owner, <RelicName> source)
         {
             var description = new LocString(
                 "relics", "<MOD>_REST_SITE_<OPTION>.description");
-            description.Add("Gold", <RelicName>.GoldCost);
-            description.Add("MaxHp", <RelicName>.MaxHpGain);
+            description.Add("Gold", <OwnerName>.GoldCost);
+            description.Add("MaxHp", <OwnerName>.MaxHpGain);
             return description;
         }
     }
@@ -186,9 +256,9 @@ public sealed class <RestSiteOptionName>(Player owner, <RelicName> source)
             return false;
 
         await PlayerCmd.LoseGold(
-            <RelicName>.GoldCost, Owner, GoldLossType.Spent);
+            <OwnerName>.GoldCost, Owner, GoldLossType.Spent);
         await CreatureCmd.GainMaxHp(
-            Owner.Creature, <RelicName>.MaxHpGain);
+            Owner.Creature, <OwnerName>.MaxHpGain);
 
         source.MarkSuccessfulUse(keepRemaining: <true-or-false>);
         return true;
@@ -207,7 +277,8 @@ and is consumed by that query. Never return `false` unconditionally from the own
 
 ## Localization and icon
 
-Keep the option's custom title and description in the owner's existing `relics.json`:
+Keep the option's custom title and description in the owner's existing `cards.json` or
+`relics.json`, matching its owner surface:
 
 ```json
 {

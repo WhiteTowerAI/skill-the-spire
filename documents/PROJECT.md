@@ -34,10 +34,10 @@ result is `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`.
 
 M8 End-to-End Product Integrity is the active milestone. It addresses literal
 deliverable scope, complete player-facing operation semantics, maintained exact capability
-preflight, semantic backtracking, and cross-platform installed reproducibility with owned-
-process cleanup. One final clean installed whole-skill acceptance is scheduled only after
-the preceding M8 Packages close. No acceptance run, payload publication, or GitHub release is
-currently authorized.
+preflight, semantic backtracking, cross-platform installed reproducibility with owned-process
+cleanup, and correction of fixture-shaped product boundaries. One final clean installed
+whole-skill acceptance is scheduled only after the preceding M8 Packages close. No acceptance
+run, payload publication, or GitHub release is currently authorized.
 
 M8.1 Literal Deliverable Contract is closed by explicit human-lead decision on 2026-08-10. Every
 `DESIGN.md` now carries one literal deliverable claim — what the user has when this is done,
@@ -109,8 +109,18 @@ M8.5 Cross-Platform Reproducible Installed Workflow closed by explicit human-lea
 installed workflow was not run, and the current `open -a` launch path plus held-`Popen` cleanup
 does not own or clean the launched game process tree. Restore/offline behavior, Tier 1, Tier 2,
 and game behavior remain unrun. The bounded result is
-`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`; closing it does not authorize or
-start M8.6.
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. Its closure does not authorize or
+start M8.7 or M8.6.
+
+M8.7 Product Boundary Generalization is planned but not started. It owns the human-selected
+read-only audit findings for broader secondary resources; Monster graph/composition/HP shapes;
+Character starting fields; Card-owned Rest Site options; multiple computed Card values; reusable
+bounded state; bounded forced Event mappings; new-Card Star costs; and bounded Event acquisition/
+shake profiles. It requires parseable `sts2-content-semantic/v3` surface contracts, one shared
+lightweight structural validator, and exact framework/authorable/observed evidence labels. It does
+not add unittest coverage or require one proof matrix, C# fixture, or real-game proof per family.
+The current narrow routes remain authoritative until M8.7 is implemented and closed. M8.6 waits
+for that closure even though its number is lower.
 
 ## User Experience
 

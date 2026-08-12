@@ -143,7 +143,7 @@ Read the artifact, not your memory of what you wrote.
   **interaction**, a missing dependent state proof after `selftest done` localizes the
   break to that directed relationship.
   Once you know which signature you have, `errors.md` § Behavior localizes it per mechanic —
-  stateful cadence, character resource, ordered buffer, and Scry each list which boundary
+  stateful cadence, character resource, and ordered buffer each list which boundary
   their symptom points at. Fix that boundary, not the effect's numeric Cmd.
 
 ## Forming a hypothesis on a miss (no errors.md entry yet)
