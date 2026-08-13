@@ -14,7 +14,7 @@ and not a replacement for native Energy or Stars.
   "family": "secondary_resources",
   "owner": "reference/character-resource.md",
   "spec_key": "secondary_resources",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "resources": {"type": "list<object>", "cardinality": "1..*"},
     "resources[].id": {"type": "text", "cardinality": "1", "unique": true},

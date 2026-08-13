@@ -19,7 +19,7 @@ class RitsuProfileError(ValueError):
 
 @dataclass(frozen=True)
 class RitsuProfile:
-    framework_version: str = "0.5.4"
+    framework_version: str = "0.5.11"
     host_version: str = "0.107.1"
     godot_sdk_version: str = "4.5.1"
     package_id: str = "STS2.RitsuLib.Compat.0.107.1"

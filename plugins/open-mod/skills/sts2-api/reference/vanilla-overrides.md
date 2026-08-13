@@ -27,8 +27,8 @@ The checked catalog is
 
 ```text
 host: 0.107.1
-framework: RitsuLib 0.5.4
-profile: ritsulib-0.5.4-sts2-0.107.1
+framework: RitsuLib 0.5.11
+profile: ritsulib-0.5.11-sts2-0.107.1
 sts2.dll SHA-256: a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52
 assembly MVID: 97f10687-c306-4798-ab75-8b9f23f34dfb
 runtime vanilla models: 1624
@@ -98,7 +98,7 @@ Every new scaffold contains `openmod/vanilla-overrides.json`:
 {
   "schema": "openmod.sts2.vanilla-overrides/v1",
   "mod_id": "ExampleMod",
-  "profile": "ritsulib-0.5.4-sts2-0.107.1",
+  "profile": "ritsulib-0.5.11-sts2-0.107.1",
   "host_version": "0.107.1",
   "catalog_sha256": "0279fd5e95e7fc9a076f2319bc5ec74952389045f26837c0d72c89d6f416dd73",
   "operations": []

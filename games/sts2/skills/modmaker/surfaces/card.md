@@ -13,7 +13,7 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   "family": "card_costs",
   "owner": "surfaces/card.md",
   "spec_key": "card_costs",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "costs": {"type": "list<object>", "cardinality": "0..*", "default": []},
     "costs[].card_id": {"type": "text", "cardinality": "1", "unique": true},

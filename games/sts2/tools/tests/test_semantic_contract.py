@@ -109,7 +109,7 @@ class SemanticContractTests(unittest.TestCase):
     def test_diagnostic_envelope_records_pinned_compatibility(self) -> None:
         for token in (
             "framework=RitsuLib",
-            "ritsulib-0.5.4-sts2-0.107.1",
+            "ritsulib-0.5.11-sts2-0.107.1",
             "frameworkVersion=<actual-loaded-version>",
             "host=0.107.1",
             "compat=0.107.1",

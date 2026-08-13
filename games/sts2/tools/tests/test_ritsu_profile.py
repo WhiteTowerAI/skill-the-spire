@@ -37,7 +37,7 @@ class RitsuProfileTests(unittest.TestCase):
             project = Path(tmp) / "empty-outer"
             compile_hash = hashlib.sha256(b"local-compat").hexdigest()
             compile_profile = RuntimeCompileProfile(
-                "0.5.9",
+                "0.5.12",
                 Path(tmp) / "runtime" / PROFILE.runtime_dll,
                 compile_hash,
             )
@@ -49,7 +49,7 @@ class RitsuProfileTests(unittest.TestCase):
             )
             summary = validate_project_contract(project, "EmptyRitsu")
             self.assertIn(PROFILE.profile_id, summary)
-            self.assertIn("local compile runtime 0.5.9", summary)
+            self.assertIn("local compile runtime 0.5.12", summary)
             manifest = json.loads(
                 (project / "mod_manifest.json").read_text(encoding="utf-8")
             )
@@ -73,7 +73,7 @@ class RitsuProfileTests(unittest.TestCase):
                 "$(Sts2Dir)/SlayTheSpire2.app/Contents/MacOS/mods/</ModsPath>",
                 path_props,
             )
-            self.assertIn("<RitsuLibCompileVersion>0.5.9</RitsuLibCompileVersion>", csproj)
+            self.assertIn("<RitsuLibCompileVersion>0.5.12</RitsuLibCompileVersion>", csproj)
             self.assertIn(
                 f"<RitsuLibCompileAssemblySha256>{compile_hash}</RitsuLibCompileAssemblySha256>",
                 csproj,
@@ -105,7 +105,7 @@ class RitsuProfileTests(unittest.TestCase):
             self.assertIn("public static partial class MainFile", main)
             self.assertIn("static partial void RegisterContent();", main)
             self.assertIn("RitsuLibFramework.CreateLogger(ModId)", main)
-            self.assertIn('CompileFrameworkVersion = "0.5.9"', main)
+            self.assertIn('CompileFrameworkVersion = "0.5.12"', main)
 
     def test_manifest_name_is_canonical_and_legacy_is_unambiguous(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -222,15 +222,15 @@ class RitsuProfileTests(unittest.TestCase):
 
             manifest = {
                 "id": PROFILE.runtime_mod_id,
-                "version": "0.5.9",
+                "version": "0.5.12",
                 "min_game_version": PROFILE.host_version,
                 "dependencies": [],
             }
             manifest_path = root / "mod_manifest.json"
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-            self.assertIn("RitsuLib 0.5.9", validate_runtime_asset(root))
+            self.assertIn("RitsuLib 0.5.12", validate_runtime_asset(root))
 
-            manifest["version"] = "0.5.3"
+            manifest["version"] = "0.5.10"
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
             with self.assertRaisesRegex(RitsuProfileError, "older than the required minimum"):
                 validate_runtime_asset(root)

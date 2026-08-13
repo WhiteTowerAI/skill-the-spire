@@ -1,7 +1,7 @@
 {
   "schema": "openmod.sts2.model-hooks/v1",
   "host_version": "0.107.1",
-  "framework_profile": "ritsulib-0.5.4-sts2-0.107.1",
+  "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
   "source": {
     "definition": "pinned STS2 0.107.1 decompile: Core/Models/AbstractModel.cs declarations, Core/Hooks/Hook.cs dispatchers, Core/Models/** vanilla overrides",
     "projection": "python collect_model_hooks.py extract",
@@ -2920,5 +2920,5 @@
       "out_parameter": "out decimal modifiedCost"
     }
   ],
-  "catalog_sha256": "2a909f985ffd404fef61eb4dafc61bf9c96783bcd91582855c50a9b3bffed29b"
+  "catalog_sha256": "7278d05b65be791ae4359e69c43311b52458022d38e2e57b5d786397d60eea1e"
 }

@@ -14,7 +14,7 @@ detail.
   "family": "bounded_state",
   "owner": "reference/stateful-mechanics.md",
   "spec_key": "bounded_state",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "states": {"type": "list<object>", "cardinality": "0..*", "default": []},
     "states[].id": {"type": "text", "cardinality": "1", "unique": true},

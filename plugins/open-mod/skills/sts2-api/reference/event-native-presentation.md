@@ -8,13 +8,14 @@ replacement acquisition UI, a screen-shake node, or a custom VFX scene.
 
 | Contract | Supported shape | Native consumer |
 |---|---|---|
-| Card acquisition | one known Card added to `PileType.Deck`, previewed from its successful `CardPileCmd.Add` result | `NRun.GlobalUi.CardPreviewContainer` plus the native card-fly VFX |
-| Relic acquisition | one known Relic obtained through exactly one awaited `RelicCmd.Obtain` | `NRelicInventory` newly-acquired animation, sound, seen-state, and `AfterObtained` |
-| screen shake | `weak_short`: exactly one `ShakeStrength.Weak` + `ShakeDuration.Short` call after a successful named option consequence and before its page transition | the game's current `NScreenShake` target and player-configured multiplier |
+| Card acquisition | each declared known Card added to `PileType.Deck` once, previewed from that successful `CardPileCmd.Add` result | `NRun.GlobalUi.CardPreviewContainer` plus the native card-fly VFX |
+| Relic acquisition | each declared known Relic obtained through exactly one awaited `RelicCmd.Obtain` | `NRelicInventory` newly-acquired animation, sound, seen-state, and `AfterObtained` |
+| screen shake | one optional allowlisted profile: `weak_short` or `strong_normal`, after the named successful consequence and before its page transition | the game's current `NScreenShake` target and player-configured multiplier |
 | built-in Event VFX | `trial_noble`: the pinned Trial scene at its vanilla portrait-local position | normal `NEventLayout` portrait host; scene-owned animation and inherited pause mode |
 
-These profiles may be composed in one option. Each semantic acquisition still happens
-exactly once.
+These profiles may be composed in one option. Acquisitions are an ordered bounded list, each
+semantic acquisition happens exactly once, and each presentation consumes the result of that
+same successful grant. Do not create a second grant or a custom holder.
 
 ## Card acquisition preview
 
@@ -55,16 +56,19 @@ still Ancient-only and remain unsupported.
 
 ## One-shot screen shake
 
-The only generated profile is:
+The generated allowlist is:
 
 ```csharp
 NGame.Instance?.ScreenShake(ShakeStrength.Weak, ShakeDuration.Short);
+// or, when SPEC selects strong_normal:
+NGame.Instance?.ScreenShake(ShakeStrength.Strong, ShakeDuration.Normal);
 ```
 
-Call it at most once from one named successful normal-Event option, after any blocking
+Call the selected profile at most once from one named successful normal-Event option, after any blocking
 selection/reward operation finishes and before `SetEventState` or `SetEventFinished`.
-Do not generate `Strong`, `TooMuch`, `Forever`, rumble, hit stop, repeated calls, or a
-custom target.
+`strong_normal` is pinned to The Architect's final-hit native call; it is not permission to
+mix arbitrary strengths/durations. Do not generate `Medium`, `TooMuch`, `Long`, `Forever`,
+rumble, hit stop, repeated calls, or a custom target.
 
 The game initializes `NScreenShake` from `PrefsSave.ScreenShakeOptionIndex` through
 `NScreenshakePaginator.GetShakeMultiplier`: none/some/normal/lots map to the native

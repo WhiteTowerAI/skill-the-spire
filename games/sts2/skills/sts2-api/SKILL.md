@@ -42,7 +42,7 @@ not dump entire files into the response.
 For generated content, the semantic contract is the product-level source of truth:
 read `${MODMAKER_SKILL_DIR}/semantic-contract.md` before selecting an implementation.
 Lazily read `reference/ritsulib-adapter.md` next. It
-pins RitsuLib `0.5.4` against STS2 `0.107.1`, maps each semantic surface to one public
+pins RitsuLib `0.5.11` against STS2 `0.107.1`, maps each semantic surface to one public
 registration/template and asset profile, and owns the framework/version diagnostic
 record. Only then load the surface recipe or reference needed for the request.
 
@@ -76,7 +76,7 @@ Other operations remain grounding-only. Never derive a patch body from the promp
 silently convert the request into new content.
 
 A request to replace, remove, or hide a vanilla Card's original description is a blocking
-base-description replacement gap under RitsuLib `0.5.4`. Report that only before/after
+base-description replacement gap under RitsuLib `0.5.11`. Report that only before/after
 fragments exist and stop. Do not return an appended-text implementation unless the user has
 explicitly accepted composition instead.
 

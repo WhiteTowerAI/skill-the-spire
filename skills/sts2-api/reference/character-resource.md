@@ -1,29 +1,103 @@
 # Character resource - RitsuLib combat state, payment, and live counter
 
-Status: **implemented with RitsuLib on STS2 0.107.1**. Focused two-combat proofs established
-the isolated resource and final generated-Character composition with RitsuLib as the sole
-framework dependency.
+Status: **authorable with RitsuLib on STS2 0.107.1**. The historical focused proof observed
+one combat-persistent, zero-default resource with a custom combat counter. M8.7 generalizes
+the source contract below; multiple resources, run persistence, other turn-start policies,
+named play uses, and built-in row/Card consumers remain game-unobserved.
 
-Use this capability when cards or other character-owned effects gain and spend a named
-nonnegative resource during combat. It is a selected Character capability, not a new
-content type and not a replacement for native Energy.
+Use this capability when Cards or other character-owned effects gain and spend one or more
+named nonnegative resources. It is a selected Character capability, not a new content type
+and not a replacement for native Energy or Stars.
+
+<!-- open-mod-surface-contract/v1
+{
+  "family": "secondary_resources",
+  "owner": "reference/character-resource.md",
+  "spec_key": "secondary_resources",
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
+  "fields": {
+    "resources": {"type": "list<object>", "cardinality": "1..*"},
+    "resources[].id": {"type": "text", "cardinality": "1", "unique": true},
+    "resources[].min/default/max": {"type": "nonnegative integer", "cardinality": "1 each"},
+    "resources[].persistence": {"type": "enum", "cardinality": "1"},
+    "resources[].turn_start": {"type": "enum", "cardinality": "1"},
+    "resources[].native_energy": {"type": "boolean", "cardinality": "1", "fixed": false},
+    "resources[].route": {"type": "declared route", "cardinality": "1"},
+    "uses": {"type": "list<object>", "cardinality": "0..*", "default": []},
+    "uses[].id/resource/card": {"type": "text", "cardinality": "1 each"},
+    "uses[].role/cost/shortfall": {"type": "enum", "cardinality": "1 each"},
+    "uses[].amount": {"type": "integer", "cardinality": "1", "fixed": "-1 for X; nonnegative for fixed"},
+    "uses[].replacement_resource": {"type": "declared resource id", "cardinality": "1 for replacement shortfall; otherwise 0"},
+    "uses[].planner_side_effect_free": {"type": "boolean", "cardinality": "1 for replacement shortfall", "fixed": true},
+    "uses[].max_stacks": {"type": "positive integer or null", "cardinality": "1 for repeatable_extra; otherwise 0"},
+    "uses[].payoff_after_commit": {"type": "boolean", "cardinality": "1", "fixed": true},
+    "ui_consumers": {"type": "list<object>", "cardinality": "0..*", "default": []},
+    "ui_consumers[].resource": {"type": "declared resource id", "cardinality": "1"},
+    "ui_consumers[].host": {"type": "enum", "cardinality": "1"},
+    "ui_consumers[].route": {"type": "declared route", "cardinality": "1"}
+  },
+  "enums": {
+    "persistence": ["combat", "run"],
+    "turn_start": ["none", "reset_to_max", "add_max_to_current", "clear"],
+    "role": ["required", "optional", "repeatable_extra"],
+    "cost": ["fixed", "x"],
+    "shortfall": [
+      "not_applicable",
+      "block",
+      "allow_remaining_spend_available",
+      "allow_remaining_keep_available",
+      "replacement_then_allow_remaining_spend_available",
+      "replacement_then_allow_remaining_keep_available"
+    ],
+    "ui_host": ["combat_counter_row", "card_payment_line"]
+  },
+  "conditions": [
+    "0 <= min <= default <= max",
+    "every use and UI consumer names a declared resource",
+    "only required uses declare shortfall behavior",
+    "replacement planning names a different declared resource and is side-effect-free",
+    "payoff_after_commit is true"
+  ],
+  "mutually_exclusive": ["repeatable_extra with x cost"],
+  "routes": [
+    "reference/character-resource.md#registration-and-commands",
+    "reference/character-resource.md#card-payment-uses",
+    "reference/character-resource.md#public-combat-ui-attachment"
+  ],
+  "hard_boundaries": [
+    "native_energy is false",
+    "no prompt-authored payment delegate",
+    "multiplayer is unclaimed"
+  ],
+  "generated_obligations": [
+    "register each stable resource id once",
+    "use SecondaryResourceCmd and payment planning/commit as the authoritative store",
+    "refresh every declared visible consumer"
+  ],
+  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
+  "legacy": "v1/v2 resume unchanged; a deliberate revision writes only the affected v3 family"
+}
+-->
 
 ## Semantic contract
 
-SPEC must record:
+For each resource, SPEC records a stable local id, `min/default/max`, persistence, turn-start
+policy, localization/icons, and every Card or combat UI consumer. For each Card payment use,
+record a globally unique use id, Card id, resource id, required/optional/repeatable-extra role,
+fixed or X cost, shortfall policy, and the exact post-commit payoff.
 
 | Field | Required value |
 |---|---|
-| owner | the local `Player` and its current `PlayerCombatState` |
-| lifetime | `combat`; a new combat starts at the registered default |
-| amount domain | integer, minimum `0`; no implicit debt |
+| owner | the local `Player`; RitsuLib stores live amounts on its current `PlayerCombatState` |
+| lifetime | `combat` snapshot or `run` save persistence, selected per resource |
+| amount domain | bounded nonnegative integer; no implicit debt |
 | gain | positive amount and exact source event |
 | affordability | `amount >= cost`, checked explicitly |
-| spend | all-or-nothing; rejection leaves amount and payoff unchanged |
-| reset/save | `SecondaryResourcePersistencePolicy.Combat`; no run-save claim |
-| UI | public `RegisterCombatUi` attachment under `NCombatUi.EnergyCounterContainer` |
-| layout | fixed 220x32 icon+text control at offset `(160,0)`; checked text-only fallback |
-| scenario | gain, affordability, successful/rejected spend, UI refresh, and combat-2 reset |
+| spend | the RitsuLib play plan/commit ledger is authoritative; rejection is nondestructive |
+| reset/save | exact `Combat` or `Run` persistence and exact built-in turn-start policy |
+| UI | selected built-in counter row, Card payment line, or a checked explicit attachment |
+| layout | every selected consumer has stable dimensions and a non-overlap rule |
+| proof | derive only the selected resources, payments, lifecycle, and consumers from SPEC |
 
 Do not reinterpret this contract as alternative Energy payment. Patching card resource
 cost hooks is unsupported. The proven payoff pattern spends inside generated domain/card
@@ -31,8 +105,11 @@ behavior and applies the consequence only when RitsuLib reports successful payme
 
 ## Registration and commands
 
-Register the resource and its UI once from Mod initialization, before the content pack is
-used in combat:
+Register every resource once from Mod initialization, before the content pack is used in
+combat. Translate the v3 policy names exactly: `none`, `reset_to_max`,
+`add_max_to_current`, and `clear` map to the four `SecondaryResourceTurnStartPolicy`
+members; `combat` and `run` map to the matching `SecondaryResourcePersistencePolicy`
+members. Do not infer either policy from the resource's name.
 
 ```csharp
 using STS2RitsuLib;
@@ -101,9 +178,9 @@ public static Task<bool> TrySpend(
 ```
 
 Do not add a duplicate `int`, `ScopedState`, save property, or combat-start reset hook.
-RitsuLib owns the amount and creates the combat-lifetime value from the registered
-definition. Keep `CanAfford` for intent/UI decisions; `Spend` remains the authoritative
-all-or-nothing payment.
+RitsuLib owns the amount, combat snapshots, and run-save persistence. Direct
+`SecondaryResourceCmd.Spend` remains the route for an effect that explicitly pays inside
+its own behavior; a Card cost or named Card use must use the play-use planner below.
 
 The spender applies its payoff only after payment:
 
@@ -113,10 +190,35 @@ if (paid)
     await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
 ```
 
+## Card payment uses
+
+Use `SecondaryCosts()` or `SecondaryResourceUses()` so `CanPlay`, `SpendResources`,
+auto-play bookkeeping, Card UI, and the post-commit ledger agree. Required entries reserve
+their amounts before repeatable-extra and optional entries. Use ids are unique across all
+three contribution routes on that Card.
+
+- required fixed/X: `.Require(...)`; default shortfall blocks play;
+- optional fixed/X: `.SpendIfAvailable(...)`; it never blocks play and its payoff checks
+  `cardPlay.SecondaryResources().Activated(useId)`;
+- repeatable extra: `.SpendExtra(...)` with a positive per-stack amount and optional positive
+  max stacks; it cannot use X, and payoff reads `ExtraStacksByUse(useId)`;
+- allowed shortfall: `.RequireAllowingShortfall(...)`, with `spendAvailable` matching the
+  declaration; any remaining-shortfall effect runs only during commit;
+- replacement: a side-effect-free resolver reads one different declared resource during
+  planning and returns a bounded `Cover(...)` callback that spends it only at commit.
+
+No planner mutates state. No Card payoff guesses affordability or reruns payment. It reads
+the committed `SecondaryResourcePlayLedger`; this preserves preview, rejection, auto-play,
+and execution as one transaction.
+
 ## Public combat UI attachment
 
-`RegisterCombatUi` is the promoted host seam. Do not emit the historical Harmony
-`NCombatUi.Activate` postfix or separate patch module for this resource.
+Prefer RitsuLib's built-in `NSecondaryResourceCounterRow` for one or more visible combat
+counters and `NSecondaryResourceCardCostUi.Create(...)` / `CreateForUse(...)` for each
+declared Card payment line. Register them through `RegisterCombatUi` / `RegisterCardUi` and
+bind only the declared definitions or use ids. Use a custom combat attachment only when the
+SPEC selects additional bounded mechanic text that the built-in row cannot render. Do not
+emit the historical Harmony `NCombatUi.Activate` postfix or a separate patch module.
 
 The update callback must use the context's local player and `VisibleDefinitions`, keep the
 control hidden when this resource is not visible, and render the current resource plus any
@@ -161,17 +263,19 @@ RitsuLib owns attachment and combat-UI lifecycle. Call `Refresh(player)` after a
 change that does not itself mutate the secondary resource, such as clearing a composed
 ordered buffer. Resource gain/spend already travels through `SecondaryResourceCmd`.
 
-## Required Tier 2 proof
+## Verification owed by a generated Mod
 
-Use two real `CombatPlayer` combats and assert:
+Verify only the resources and variants selected by the current SPEC. At minimum, drive the
+real Card play/payment lifecycle and the declared persistence boundary; add a second combat
+or save round trip only when that selected policy needs it. Assert:
 
-1. the first mounted control starts at amount `0` and the fallback retains live text;
+1. every selected resource starts at its declared default and remains inside its bounds;
 2. gain changes amount, affordability, and visible text;
 3. one successful spend changes amount and payoff exactly once;
 4. one rejected spend leaves amount/payoff unchanged and never goes negative;
-5. the icon is 24x24, root/label are 220x32 and 188x32, offset is `(160,0)`, and the
-   resource and native energy global rects do not intersect;
-6. combat 2 has a distinct `PlayerCombatState`, amount `0`, and reset UI.
+5. each selected counter/payment line is bound to the right definition/use and does not
+   overlap native Energy/Stars or another declared consumer;
+6. turn-start and combat/run persistence match SPEC, including save/resume only when claimed.
 
 The maintained harness derives the resource name, gain/spend amounts, payoff, and expected
 counter states from the current `SPEC.md`. It reaches `selftest done` only after the exact
@@ -180,9 +284,10 @@ state pass; no historical proof constants or markers are reusable defaults.
 
 ## Unsupported extensions
 
-- run-persistent Character resources and save round trips;
 - partial, hybrid, or alternative-Energy engine payment;
-- arbitrary top-bar hosting, animated UI, or custom-zone presentation;
+- prompt-authored arbitrary payment delegates or replacement sources outside the declared
+  bounded secondary-resource plan;
+- arbitrary UI hosting, animated UI, or custom-zone presentation;
 - remote-player or multiplayer resource UI;
 - a private patch fallback when the public attachment is unavailable.
 

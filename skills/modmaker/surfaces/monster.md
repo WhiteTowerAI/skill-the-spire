@@ -1,35 +1,88 @@
 # Surface: monster (enemy encounter)
 
-Everything the pipeline needs for one enemy encounter, in one place: the SPEC envelope it
-must declare, the two element classes the author writes, and the proof its verification owes.
+Everything the pipeline needs for selected Monster and Encounter nodes, in one place: the SPEC
+envelope they declare, the element classes the author writes, and the proof their selected
+reachable Encounter variants owe.
 Read this page at the `spec.md`, `author.md`, and `verify.md` stages when
 `element: enemy encounter`.
 
-A monster and the encounter that spawns it are **always authored as one slice**. They are not
-two `elements` plus an interaction edge — that form is for source→dependent links like
-card→power. One indivisible slice, one recipe (`recipes/monster.md`), one `CombatEnemy` proof.
+Monsters and Encounters are separate registered nodes linked by explicit roster edges. Author
+the current reachable graph as one slice: a Monster without an Encounter edge is not a player-
+reachable result, while one Monster may serve several Encounters and one Encounter may spawn
+multiple or repeated Monster models. Use one recipe (`recipes/monster.md`) and derive future
+`CombatEnemy` checks only for the concrete variants selected by SPEC.
+
+<!-- open-mod-surface-contract/v1
+{
+  "family": "monster_encounter",
+  "owner": "surfaces/monster.md",
+  "spec_key": "monster_encounter",
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
+  "fields": {
+    "monsters": {"type": "list<object>", "cardinality": "1..*"},
+    "monsters[].id": {"type": "text", "cardinality": "1", "unique": true},
+    "monsters[].min_hp/max_hp": {"type": "integer", "cardinality": "1 each", "minimum": 1},
+    "monsters[].reachability_route": {"type": "declared route", "cardinality": "1"},
+    "monsters[].initial_state": {"type": "declared move or branch id", "cardinality": "1"},
+    "encounters": {"type": "list<object>", "cardinality": "1..*"},
+    "encounters[].id": {"type": "text", "cardinality": "1", "unique": true},
+    "encounters[].actual_roster": {"type": "list<declared monster id>", "cardinality": "1..*"},
+    "encounters[].all_possible": {"type": "list<declared monster id>", "cardinality": "1..*"},
+    "encounters[].placement_route": {"type": "declared route", "cardinality": "1"},
+    "moves": {"type": "list<object>", "cardinality": "1..* per monster"},
+    "moves[].id/intents/effects/next": {"type": "text/list/list/state id", "cardinality": "1 each"},
+    "branches": {"type": "list<object>", "cardinality": "0..* per monster", "default": []},
+    "branches[].id/kind": {"type": "text/enum", "cardinality": "1 each"},
+    "branches[].targets": {"type": "list<object>", "cardinality": "1..*"},
+    "branches[].targets[].successor": {"type": "declared state id", "cardinality": "1"},
+    "branches[].targets[].condition": {"type": "text", "cardinality": "1 for conditional"},
+    "branches[].targets[].weight": {"type": "positive number", "cardinality": "1 for random"}
+  },
+  "enums": {"branch_kind": ["conditional", "random"]},
+  "conditions": [
+    "1 <= min_hp <= max_hp",
+    "every move and branch successor is registered and reachable",
+    "actual roster is nonempty and included in all_possible"
+  ],
+  "mutually_exclusive": ["a branch is conditional or random"],
+  "routes": [
+    "recipes/monster.md#registration-one-explicit-ritsulib-content-pack",
+    "recipes/monster.md#move-state-machine"
+  ],
+  "hard_boundaries": [
+    "random branches use the supplied move-state-machine Rng",
+    "intent and effect declarations must agree",
+    "Ascension-dependent HP formulas require another grounded declaration"
+  ],
+  "generated_obligations": [
+    "register Monster and Encounter identities once",
+    "keep GenerateMonsters and AllPossibleMonsters consistent",
+    "emit every state and successor from current SPEC"
+  ],
+  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
+  "legacy": "v1/v2 one-slice projects resume unchanged; revised topology migrates this family to v3"
+}
+-->
 
 ## SPEC envelope
 
 Scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
 generated art is one static body shared by combat and bestiary; animation is later.
 
-The slice declares two content nodes in one `content:` block, because the monster and its
-encounter are inseparable: neither is usable without the other, and one recipe emits both.
+The graph declares both node kinds in one `content:` block so reachability edges remain
+explicit and one recipe can emit the selected graph. This does not force a one-to-one pair.
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v2
+- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
-  - name: <shown monster name>
-    surface: enemy encounter
-    logical id: <stable monster stem, e.g. canary_mite>
-    encounter logical id: <stable encounter stem, e.g. canary_mite_encounter>
-    group: single | <the monsters the encounter spawns>
-    hp: <int>   (Min == Max for deterministic HP)
+  - surface: enemy encounter
+  - monsters: <one or more logical ids, names, positive min/max HP, moves, and branches>
+  - encounters: <one or more logical ids with nonempty actual and all-possible rosters>
+  - relations: <encounter -> ordered roster entries; repeated Monster ids are explicit>
 - **registration**:
   - availability: standalone
   - ownership: enemy
@@ -50,7 +103,8 @@ encounter are inseparable: neither is usable without the other, and one recipe e
       intents: <attack N | multi N x R | buff | debuff | defend | heal; list every visible intent>
       effect: <ordered game-term effects with exact numbers and targets>
       next: <move id | branch id>
-  - branches: none | <branch id>: if <exhaustive condition> -> <move id>; else -> <move id>
+  - branches: none | <conditional branch with exhaustive conditions> |
+    <random branch with positive fixed weight and successor per target>
   - loop: <deterministic move/branch cycle; every move and branch has a reachable successor>
   - scaling: <named values and bounds, or none>
 - **hook participation**: none | one or more; see § Hook participation in `spec.md`
@@ -79,7 +133,8 @@ encounter are inseparable: neither is usable without the other, and one recipe e
   - scenario: CombatEnemy
   - driver: enter the custom encounter and end the turns needed to traverse the cycle
   - invariants:
-    - the spawned roster matches `group` exactly, and each monster's HP equals the declared value
+    - the spawned roster matches the selected encounter's actual roster exactly, including
+      repetitions, and each monster's HP lies inside its declared range
     - every advertised move id executes in the declared order
     - self buff/custom Power: exact monster Power amount plus a later changed attack/result
     - player debuff: exact player Power amount immediately after application
@@ -140,15 +195,17 @@ intent constructor and never hand-write intent text — it would desync from the
 ## Self-test driver body
 
 **enemy encounter** → the **`CombatEnemy`** variant in `reference/selftest-harness.md`: enter
-the custom encounter, then assert `NextMove.Id` before each turn and the performed-move entry
-after, driving the full declared cycle and both outcomes of every branch.
+each current-SPEC reachable Encounter variant, then assert `NextMove.Id` before each driven turn
+and the performed-move entry after. Exercise selected deterministic/conditional states and
+selected random outcomes; do not create one retained proof project per authorable family shape.
 
 ## Proof matrix
 
 - **Assert the spawned roster and HP.** The reference driver locates its monster with
-  `Enemies.FirstOrDefault(...)` and logs HP as an info line, which proves neither the declared
-  `group` composition nor the HP value. Assert the enemy count and composition match `group`,
-  and assert each monster's current HP equals the declared value as its own state proof.
+  `Enemies.FirstOrDefault(...)` and logs HP as an info line, which proves neither the selected
+  Encounter's `actual_roster` nor its Monsters' HP ranges. Assert the enemy count, ordered
+  identities, and repetitions match `actual_roster`, and assert each Monster's current HP is
+  inside its declared `min_hp`/`max_hp` range as its own state proof.
 - Assert every advertised move id executes in the declared order, via `NextMove.Id` before and
   the performed-move history after.
 - Drive every branch through both outcomes by changing the real condition — mutating HP through
@@ -175,5 +232,6 @@ Grant it:
 
 Trigger it:
 
-   **enemy encounter** → end enough turns to traverse the declared cycle; confirm every
-   move's visible intent and exact HP/Block/Power change, and drive each conditional outcome.
+   **enemy encounter** → end enough turns to traverse the declared selected graph; confirm every
+   selected move's visible intent and exact HP/Block/Power change, and drive each selected
+   conditional/random outcome without treating one sample as distribution proof.

@@ -17,7 +17,7 @@ multiple or repeated Monster models. Use one recipe (`recipes/monster.md`) and d
   "family": "monster_encounter",
   "owner": "surfaces/monster.md",
   "spec_key": "monster_encounter",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "monsters": {"type": "list<object>", "cardinality": "1..*"},
     "monsters[].id": {"type": "text", "cardinality": "1", "unique": true},

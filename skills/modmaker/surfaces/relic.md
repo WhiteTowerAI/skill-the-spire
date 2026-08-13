@@ -12,7 +12,7 @@ the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v2
+- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -72,11 +72,13 @@ because the trigger hook a Relic overrides usually fires more often than the des
 so the guard is the Relic's identity — see § Proof matrix.
 
 When a Relic contributes a Rest Site action, add this block to the same Relic SPEC. The
-current slice does not accept a Card or Modifier owner:
+shared route also accepts an exactly-one Card owner; Modifier remains unsupported:
 
 ```markdown
 - **owned Rest Site option**:
   - owner: relic
+  - owner multiplicity: exactly one
+  - state handle: host visit removal | saved owner bool
   - title: <localized button title>
   - description: <localized hover description>
   - eligibility: <when the owned relic contributes the option>
@@ -139,12 +141,11 @@ hover.
 - Declare every keyword named in the description through `RegisteredKeywordIds`.
 - Fill **only** the effect block with the confirmed Cmds/RNG from the recipe. `await`
   every Cmd. Use `Rng`, never `System.Random`. Call `Flash()` when it visibly triggers.
-- For stateful relics, follow `reference/stateful-mechanics.md`: run-lifetime progress is
-  a `SavedAttachedState<SpecificRelic, int/bool>` whose name includes the Mod id and is
-  never cleared at combat end; combat-local fixed/periodic turns read
-  `PlayerCombatState.TurnNumber`. Any visible mutation calls
-  `InvokeDisplayAmountChanged()` after updating the attached value.
-- For a Relic-owned Rest Site action, author one separate `ModRestSiteOptionTemplate` and
+- For selected bounded state, follow `reference/stateful-mechanics.md` and the v3 family.
+  A Relic run-save profile may use `SavedAttachedState<SpecificRelic, bool/int/string>`;
+  combat-local native-turn timing may read `PlayerCombatState.TurnNumber`. Emit only declared
+  transitions/consumers, and route every visible mutation through one refresh path.
+- For a Rest Site action on this Relic, author one separate `ModRestSiteOptionTemplate` and
   contribute it through the owner's `TryModifyRestSiteOptions`. Separate `ShouldOffer`
   from `CanPay`, reject duplicate `OptionId`, share `CanPay` between `IsEnabled` and the
   first line of `OnSelect`, and mutate repeatability only after the awaited deterministic
@@ -161,8 +162,8 @@ hover.
 The focused body is in `reference/selftest-harness.md` § relic: grant the relic in
 `BeforeCombat` before `EnterRoomDebug`, then assert SPEC state in `InCombat`.
 
-A **stateful relic** uses that reference's multi-combat cadence variant instead, which
-already asserts `N-1`, threshold, and reset/carry-over across combats.
+A Relic selecting the historical cadence profile uses that reference's multi-combat variant.
+Other bounded-state profiles derive only their selected transition/reset/persistence checks.
 
 ## Proof matrix
 
@@ -190,9 +191,9 @@ already asserts `N-1`, threshold, and reset/carry-over across combats.
   the design says the Osty counts. For a collection edit, also assert that an entry placed in
   the list beforehand survives — vanilla `Midas` rebuilds the whole reward list, and an editor
   that clears it still passes "my entry is present".
-- A stateful relic additionally owes the reset/carry-over and save round trip from
-  `reference/stateful-mechanics.md`.
-- For a Relic-owned Rest Site option, follow `reference/rest-site-options.md`: require the
+- A Relic with bounded state owes only the selected transition/reset/persistence boundary;
+  a run-save profile additionally owes its real save/fill round trip.
+- For a Rest Site option on this Relic, follow `reference/rest-site-options.md`: require the
   real native room, absent/disabled/enabled states, final click-time payment rejection with
   no deltas, exact successful Gold/outcome/history deltas, no duplicate after rebuild,
   declared stay/leave and second-visit repeatability, explicit singleplayer mode, custom

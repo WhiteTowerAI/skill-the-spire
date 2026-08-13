@@ -13,8 +13,8 @@ against pinned public/fixed routes, builds the Mod, and reports verification lit
 
 ## Release State
 
-`0.6.0` is an unreleased RitsuLib-only development baseline for STS2 stable `0.107.1` and
-RitsuLib `0.5.4`. BaseLib has been removed from generated projects. M6.5, M6.6, M6.7, and
+`0.7.0` is an unreleased RitsuLib-only development baseline for STS2 stable `0.107.1` and
+RitsuLib `0.5.11`. BaseLib has been removed from generated projects. M6.5, M6.6, M6.7, and
 M7 are closed; their detailed results and exceptions live under `documents/history/`.
 
 M7.0 was canceled as a standalone evaluation Package. M7.1 through M7.5 are implemented
@@ -88,12 +88,20 @@ restoring the original language. Translation quality remains a human judgment. T
 payload implementation was not tested, built, launched, or otherwise verified by human-lead
 instruction, so it carries no runtime or game proof.
 
-A pre-M8.5 maintenance debug removes generated-project framework `PackageReference` entries.
-Scaffold keeps the RitsuLib `0.5.4` authoring baseline, pins the selected local Compat DLL version
-and hash, resolves game/framework assemblies locally, and copies the bundled Godot.NET SDK import
-set. Its player manifest remains `STS2-RitsuLib >= 0.5.4` even when the local compiler uses a
-newer compatible runtime. Its one focused scaffold contract test passed. No Mod compile,
+A pre-M8.5 maintenance debug removed generated-project framework `PackageReference` entries.
+At the time, scaffold kept the RitsuLib `0.5.4` authoring baseline, pinned the selected local Compat
+DLL version and hash, resolved game/framework assemblies locally, and copied the bundled Godot.NET
+SDK import set. Its player manifest remained `STS2-RitsuLib >= 0.5.4` even when the local compiler
+used a newer compatible runtime. Its one focused scaffold contract test passed. No Mod compile,
 restore/offline, cross-platform, Tier 1, Tier 2, or game run was performed by that maintenance.
+
+On 2026-08-13 the human lead selected a forward-only dependency profile migration for newly
+generated Mods. The current authoring/API baseline, compile-runtime minimum, manifest dependency,
+and Tier 1 runtime floor are RitsuLib `0.5.11` with the `0.107.1` Compat variant. Existing Mods
+created under earlier skill payloads are outside this migration and were not rebuilt or migrated.
+Historical `0.5.4` proof records retain their literal version and do not become `0.5.11` runtime
+proof. M8.8 was paused; its existing research draft must be refreshed against the current
+`0.5.11` guide/source/API profile before future use.
 
 A subsequent pre-M8.5 maintenance repair makes generated macOS paths executable-adjacent:
 deployment and local RitsuLib discovery use the app bundle's `Contents/MacOS/mods/`, host
@@ -109,18 +117,26 @@ M8.5 Cross-Platform Reproducible Installed Workflow closed by explicit human-lea
 installed workflow was not run, and the current `open -a` launch path plus held-`Popen` cleanup
 does not own or clean the launched game process tree. Restore/offline behavior, Tier 1, Tier 2,
 and game behavior remain unrun. The bounded result is
-`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. Its closure does not authorize or
-start M8.7 or M8.6.
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. That closure did not itself authorize
+or prove any later M8.7/M8.8/M8.6 work.
 
-M8.7 Product Boundary Generalization is planned but not started. It owns the human-selected
-read-only audit findings for broader secondary resources; Monster graph/composition/HP shapes;
-Character starting fields; Card-owned Rest Site options; multiple computed Card values; reusable
-bounded state; bounded forced Event mappings; new-Card Star costs; and bounded Event acquisition/
-shake profiles. It requires parseable `sts2-content-semantic/v3` surface contracts, one shared
-lightweight structural validator, and exact framework/authorable/observed evidence labels. It does
-not add unittest coverage or require one proof matrix, C# fixture, or real-game proof per family.
-The current narrow routes remain authoritative until M8.7 is implemented and closed. M8.6 waits
-for that closure even though its number is lower.
+M8.7 Product Boundary Generalization source development is implemented and committed. The
+authoritative `games/sts2/` source now uses `sts2-content-semantic/v3`, parseable owner contracts,
+one shared `surface_contract_trace.py` validator, lowering guidance, and independent
+framework/authorable/observed labels for nine families: broader secondary resources; Monster
+graph/composition/HP shapes; Character starting fields; Card- or Relic-owned Rest Site options;
+multiple computed Card values; reusable bounded state; bounded forced Event mappings; new-Card
+Star costs; and bounded Event acquisition/shake profiles. The generalized shapes are
+open-mod-authorable in source and remain game-unobserved. By explicit human-lead authorization on
+2026-08-13, both committed payload trees now include M8.7. The durable
+`documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` record and explicit closure
+remain outstanding; M8.7 is delivered but still open.
+
+M8.8 Surface Effect Composability Generalization is paused. Its previous research and four-part
+draft predate the current dependency profile and are not a valid execution contract as-is. Future
+resumption must first refresh the full guide/source/API audit and its contract against the current
+`0.5.11` profile. No M8.8 source implementation, payload delivery, runtime proof, or
+closure has occurred. M8.6 waits for both M8.7 and M8.8 to close.
 
 ## User Experience
 
@@ -191,16 +207,16 @@ balance, enjoyment, or runtime behavior.
    scenarios, and deterministic regressions.
 5. `plugins/open-mod/` and `skills/` are generated Codex-plugin and portable payloads.
 
-M8 work crosses these ownership boundaries rather than creating a separate runtime
-framework, and the delivered Packages followed that split: `modmaker` owns the deliverable claim
-and the SPEC-side capability declaration, `sts2-api` owns the maintained exact route and the
-pinned hook catalog it projects, tools own the validators, and tests own the capability
-conformance cases. M8.3 follows the same division: `modmaker` owns routing, `repair_trace.py` owns
-deterministic PLAN validation, and tests own the fifteen cases. Remaining Packages put reproducible
-platform/process cleanup in tools and final whole-skill coverage in tests.
+M8 work crosses these ownership boundaries rather than creating a separate runtime framework, and
+the delivered/source-implemented Packages follow that split: `modmaker` owns the deliverable claim,
+SPEC capability declarations, and v3 surface data; `sts2-api` owns maintained routes, owner
+contracts, and pinned research; tools own shared validators; and tests own capability conformance
+and audit ledgers. M8.3 follows the same division through `repair_trace.py`; M8.7 follows it through
+`surface_contract_trace.py`. M8.8 is planned to extend the same ownership chain for complete
+RitsuLib effect grounding. Final whole-skill coverage remains with M8.6.
 
 Edit source under `games/sts2/`; regenerate both payloads through `publish.sh`. Generated
-Mods use the `0.5.4` RitsuLib API baseline, then compile against the exact validated local
+Mods use the `0.5.11` RitsuLib API baseline, then compile against the exact validated local
 RitsuLib Compat DLL selected at scaffold time. The project carries no framework
 `PackageReference`: the skill supplies the Godot.NET SDK import files and resolves STS2,
 Harmony, GodotSharp, System.IO.Hashing, and RitsuLib from the game/runtime installation.

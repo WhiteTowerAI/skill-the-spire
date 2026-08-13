@@ -124,7 +124,7 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
      unpromoted package and stop. Offer a closest **new** element only as a separate user
      choice, never as an automatic substitution.
    - **Fail closed on vanilla Card base-description replacement.** If the user asks to
-     replace, remove, or hide the original description body, explain that RitsuLib `0.5.4`
+     replace, remove, or hide the original description body, explain that RitsuLib `0.5.11`
      exposes only before/after description fragments and pause before writing SPEC or
      scaffolding. Never reinterpret the request as appended text. Continue only after the
      user explicitly accepts a before/after composition; confirmed numbers or a request not
@@ -211,14 +211,13 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
     most one top-left badge with at most 6 visible characters. This is supplemental UI, not
     a replacement for the main counter. Never collect raw BBCode, arbitrary strings,
     custom rectangles, or a bottom-right label.
-   - **Enemy encounter**: an enemy is fought inside its encounter, so treat them as one
-     unit. Resolve only what genuinely shapes the fight: the monster's **HP**, whether it
-     is alone or in a group, and each move's visible warning, exact effect, and what comes
-     next. If there are several moves, record the fixed order or the plain-language
-     condition (for example, "below half health, heal instead"). Ask one sequence question
-     only when the order/condition is genuinely unclear; default to the stated order in a
-     repeating cycle. Don't ask about scenes, animations, intent class names, or APIs —
-     those are the recipe's job.
+   - **Enemy encounter**: resolve Monsters and Encounters as separate content nodes joined
+     by explicit roster edges. A Monster may be reused, and an Encounter may contain
+     multiple or repeated Monster models. Capture each Monster's positive HP value/range,
+     visible warning/effect per move, and deterministic, conditional, or explicitly
+     requested fixed-weight random successor. Default to the stated repeating order; never
+     invent randomness. Ask one sequence/roster question only when it changes the fight.
+     Don't ask about scenes, intent class names, RNG objects, or APIs — those are the recipe's job.
      If the user asks for auxiliary information on one monster intent, recognize the
      supported Extra Badges Package but report that Intent authoring is not implemented in
      the current pack. Do not rewrite a separate debuff as an attack badge, and keep an
@@ -233,11 +232,11 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
      complete encounter spec by itself.
      One mutable Event instance supports at most one special combat. A one-option event is
      valid for the fast path. Ask which acts only if the user cares; default is all acts.
-     If the request says an earlier choice/card should guarantee a later special Event,
-     capture one custom Quest Card token, one custom target Event, the exact target act,
-     and the target option that completes the token. Offer the supported default: carrying
-     the token forces the next entered Unknown MapPoint in that act. Do not broaden this
-     into an arbitrary chain or promise multiplayer/save behavior.
+     If the request says an earlier choice/Card should guarantee later special Events,
+     capture a bounded mapping: custom Quest token, nonempty act set, globally ordered
+     priority, finite unique custom-Event sequence, fail-closed conflict, and exact terminal
+     consumption option. Offer the supported one-step default. Do not invent a loop,
+     vanilla target, fixed map node, multiplayer behavior, or observed save claim.
      If the user explicitly asks for Event VFX, offer either the bounded generated
      `portrait_halo` or the curated built-in `trial_noble` profile and capture which normal
      pages use it; default is no VFX. Do not ask about localization key builders, room nodes, anchors, or
@@ -253,8 +252,9 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
       value used by the consequence. When an option actually grants a known Card or relic,
       infer its matching native acquisition presentation; this is separate from the typed
       pre-choice Hover Tip. If the user asks for an impact/jolt on a successful option,
-      offer the single `weak_short` screen-shake profile. Do not ask for strengths,
-      durations, scene paths, or player preference values. Speech/thought bubbles are
+       offer `weak_short` or the heavier `strong_normal` profile and explain the visible
+       intensity difference. Do not collect arbitrary strengths, durations, scene paths,
+       or player preference values. Speech/thought bubbles are
       future outlook only.
    - **Character**: resolve the character's identity/theme, starting HP, starter relic, and
      one starter card/relic mechanic that a grounded public game/framework API can prove in
@@ -262,11 +262,14 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
      counts, base effects, upgrades, and total before asking the user for deck details. If
      the core mechanic is materially unclear, ask about that one decision first, then make
      the complete deck proposal; never ask the user to name ten Cards from a blank form.
-     Default to standard 3 energy and placeholder visuals. Preserve an explicit
+     Starting HP, Gold, MaxEnergy, base Orb slots, typed pools, and starter Card/Relic/Potion
+     multisets are explicit current decisions. Use the native inventory as recommendations,
+     not forced defaults, and preserve an explicit
      implementable departure after explaining its onboarding, Strike/Defend-tag
-     compatibility, and early-balance consequences. If it names a custom resource, capture
-     its gain sources, spenders/payoff,
-     floor, combat reset, and counter text. If it describes an ordered card-play record,
+     compatibility, and early-balance consequences. If it names secondary resources,
+     capture every stable id, min/default/max, combat/run persistence, turn-start policy,
+     gain sources, Card payment uses, shortfall/replacement policy, post-commit payoff, and
+     selected counter/Card UI consumers. If it describes an ordered card-play record,
      capture semantic values, normal source destination, order, capacity/overflow, compile
      trigger, deterministic formula, and output. If physical played Cards must remain in a
      custom zone, preserve that as an explicit unsupported gap.
@@ -353,28 +356,28 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
 - **Target** (card): damage → one enemy (`AnyEnemy`); block/self-buff → `Self`. Only
   ask if genuinely unclear.
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
-- **Owned Rest Site option** (only when requested on a Relic): singleplayer only; distinguish
+- **Owned Rest Site option** (only when requested on a Card or Relic): singleplayer only; distinguish
   when it is absent from when it is visible but gray; default to once per Rest Site,
   normal leave behavior, checked native Heal-icon fallback, and free cost unless the idea
   names a fixed Gold price. Ask only for an unresolved repeatability or stay/leave choice.
-  Card/Modifier owners, arbitrary costs, post-payment choices, and same-site repeat are
-  unsupported in this slice.
+  A Card owner requires exactly one matching deck instance. Modifier owners, arbitrary
+  costs, post-payment choices, and same-site repeat remain unsupported.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
 - **Event VFX**: none unless explicitly requested; then use only `portrait_halo` or
   `trial_noble` on named normal-layout pages.
 - **Event acquisition presentation**: native whenever a successful option adds a known
   Card to the Deck or obtains a known relic; never a second grant.
-- **Event screen shake**: none unless explicitly requested; then one `weak_short` call on
-  the named successful option, inheriting the player's preference.
+- **Event screen shake**: none unless explicitly requested; then one `weak_short` or
+  `strong_normal` call on the named successful option, inheriting the player's preference.
 - **Event text effects**: none unless explicitly requested or clearly described; then use
   only the bounded vanilla rich-text vocabulary on named page/option description phrases.
-- **Forced Event follow-up**: none unless explicitly described; then one custom Quest Card
-  forces one custom target Event from an Unknown MapPoint in one specified act, and one
-  named target option consumes the token.
-- **Character Foundation**: 70 HP as an explicit creative starting point, standard 3
-  energy as the current grounded Foundation value, one Starter relic, valid
-  character-scoped card/relic/potion pools, and template/built-in placeholder visuals.
+- **Forced Event follow-up**: none unless explicitly described; default to one custom Quest
+  Card forcing one custom Event from the next Unknown MapPoint in one act. When the request
+  needs more, use only a finite prioritized mapping/sequence with exact terminal consumption.
+- **Character Foundation**: 70 HP, 99 Gold, 3 MaxEnergy, zero base Orb slots, one Starter
+  relic, no starter Potions, and valid character-scoped pools are native-shaped creative
+  starting points, not mandatory output values. Record the exact current selections.
   Unless the idea supports another native analogy, propose an exact 10-Card Basic deck of
   4 Character-specific Strike, 4 Character-specific Defend, and 2 low-complexity identity
   Cards that teach setup/payoff. Preserve the pinned Strike/Defend names, values, upgrades,
@@ -386,15 +389,15 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
   repeat group from visit 2; preserve the native global first-visit-ever introduction. A
   complete Architect group remains mandatory for every Character; default its start
   attackers to None and end attackers to Architect when the user does not specify them.
-- **Character resource** (only when requested): combat lifetime, starts at 0, nonnegative
-  integer, all-or-nothing spend, fixed 220x32 icon+text counter with text-only fallback,
-  offset from native Energy, and no alternative-energy payment.
+- **Secondary resources** (only when requested): one or more bounded nonnegative resources;
+  default to combat persistence, zero start, no turn-start change, required fixed payment,
+  and a built-in combat counter/Card line only when visible. Never reinterpret native Energy.
 - **Ordered semantic buffer** (only when requested): combat lifetime, normal Play ->
   Discard source lifecycle, finite capacity, reject overflow without mutation, preserve
   semantic insertion order, show compact state, and create one deterministic real output
   Card. Retained-card zone UI is unsupported.
-- **Monster move order**: moves repeat in the order stated. Do not invent random choice;
-  add a conditional branch only when the concept names a condition or the user confirms it.
+- **Monster move order**: moves repeat in the order stated. Add a conditional or fixed-weight
+  random branch only when the concept names it or the user confirms it; never invent random choice.
 - **State lifetime**: "every N turns" on a relic continues across combats in the current
   run; "on turn N of each combat" uses that combat's turn number. Turn-local/once-per-
   combat wording resets at the boundary it names. Ask one carry-over question only when
@@ -456,6 +459,7 @@ effect: <plain-language, with numbers>
 state: none | event=<what advances>; threshold=<N>; lifetime=turn|combat|run;
   reset=<exact boundary>; persistence=field|AttachedState|SavedAttachedState
 owned Rest Site option: none | title=<title>; description=<description>;
+  owner=relic; owner multiplicity=exactly one;
   eligibility=<absence rule>; repeatability=once per Rest Site|once per run;
   enabled=<rule>; cost=free|<N> Gold; outcome=<deterministic exact operations>;
   after success=leave|keep remaining options; icon=fallback|generate;
@@ -483,7 +487,9 @@ For a **card** (cost/type/target + upgrade instead of trigger):
 element: card
 name: <proposed>
 rarity: Common
-cost: 1
+energy cost: fixed 1 | X
+Star cost: none | fixed <N> | X
+cost upgrade: same | Energy <delta> | Stars <delta>
 type: Attack | Skill | Power
 target: one enemy | all enemies | self
 effect: <plain-language, with numbers>
@@ -491,6 +497,13 @@ upgrade: <what improves, e.g. "damage 6 -> 9">
 calculated values: none | <name; role; one formula; inputs; integer min/max; base/upgrade;
   before-play or after-payment-and-move evaluation>
 variable tooltips: none | <value name -> title; description; optional custom icon>
+owned Rest Site option: none | title=<title>; description=<description>;
+  owner=card; owner multiplicity=exactly one in the owner's deck;
+  state handle=host visit removal|saved owner bool;
+  eligibility=<absence rule>; repeatability=once per Rest Site|once per run;
+  enabled=<rule>; cost=free|<N> Gold; outcome=<deterministic preflightable operations>;
+  after success=leave|keep remaining options; icon=fallback|generate;
+  multiplayer=singleplayer only
 art: placeholder | generate: <subject/style, if the user asked for custom art>
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
@@ -512,19 +525,17 @@ advanced target:
 If this produces `consumer: potion` plus `mode: many`, stop and offer the two supported
 alternatives above. Do not silently weaken the zero-target behavior.
 
-For an **enemy encounter** (monster + the encounter that spawns it, one unit):
+For an **enemy encounter graph**:
 
 ```
-element: enemy encounter
-monster name: <proposed>
-encounter name: <proposed, or "<Monster> Encounter">
-hp: <int>
-moves:
-  - id: <plain name>; warning: <attack|buff|debuff|defend|heal or combination>;
-    effect: <exact effects and numbers>; next: <next move id>
-condition: none | <plain condition> -> <move id>; otherwise -> <move id>
-loop: <move id> -> <move id> -> ...
-group: single | <describe the group>
+element: enemy encounter graph
+monsters:
+  - id/name: <stable id / proposed name>; hp: <positive min..max>
+    moves: <visible intent/effect states>
+    branches: deterministic | conditional <guards> | random <positive fixed weights>
+encounters:
+  - id/name: <stable id / proposed name>; roster: [<Monster ids, repetitions allowed>]
+    all possible: [<registered Monster ids>]; placement: <grounded act/global route>
 art: placeholder | generate: <one full creature in a neutral combat-ready pose>
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 art boundary: one static 360x360 body shared by combat+bestiary; no animation/phobia variant
@@ -545,11 +556,12 @@ page portraits: none | <PAGE_KEY>: <replacement scene>  (only when explicitly re
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 event VFX: none | portrait_halo on <page keys>; <color/mood> |
   trial_noble on <page keys>
-acquisition presentation: none | native Card <name> to Deck | native relic <name>
-screen shake: none | weak_short on option <name>
+acquisition presentation: none | ordered [native Card <name> to Deck | native relic <name>]
+screen shake: none | weak_short | strong_normal on option <name>
 event text effects: none | vanilla; <PAGE/OPTION_KEY>: "<exact phrase>" -> <emphasis/color/jitter/sine>
-forced follow-up: none | quest token <name>; target Event <name>; target act <exact act>;
-  completion option <name>; trigger next entered Unknown MapPoint in that act
+forced follow-up mappings: none | [id=<id>; token=<name>; acts=[...]; priority=<int>;
+  sequence=[<unique custom Events>]; consumption=target success|sequence complete;
+  completion option=<name>; conflict=fail closed; save claim=game-unobserved]
 art boundary: normal initial plus explicit page portraits; no custom phobia/custom-layout assets;
   VFX boundary: code-native portrait_halo or curated built-in trial_noble, no arbitrary VFX;
   text boundary: descriptions only, bounded vanilla tags, plain titles
@@ -589,15 +601,18 @@ For a **character**:
 ```
 element: character
 name: <display name>
-starting HP: <int, default 70>
-energy per turn: 3 (current grounded Foundation value)
+starting HP: <positive int; native-shaped starting point 70>
+starting Gold: <nonnegative int; native-shaped starting point 99>
+MaxEnergy: <positive int; native-shaped starting point 3>
+base Orb slots: <nonnegative int; native-shaped starting point 0>
 native grammar: design/character-foundation.md @ STS2 0.107.1
 pinned facts used: <exact native identities/values used in the proposal>
 observed convention: <native shape used as the recommendation>
 starter deck: <exact creative Card names, counts, base effects, upgrades, and total>
 starter deck rationale: <how the teaching Cards and Starter relic introduce the mechanic>
 deliberate departure: none | <departure; onboarding; compatibility; balance consequences>
-starter relic: <name + one grounded public effect>
+starter relics: [<name x count + grounded public effect>]
+starter Potions: [<name x count>] | none
 pools: character-scoped card/relic/potion pools with at least one concrete member each;
   if Shop/merchant is selected, at least 2 non-Basic Attacks, 2 Skills, and 1 Power
 scenario: RunStart + CombatPlayer

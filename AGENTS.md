@@ -13,8 +13,8 @@ under `documents/history/` and is not current instruction.
 
 ## Current Status
 
-`0.6.0` is the unreleased RitsuLib-only development baseline for STS2 stable `0.107.1`
-and RitsuLib `0.5.4`. The BaseLib-to-RitsuLib migration and external clean-workspace
+`0.7.0` is the unreleased RitsuLib-only development baseline for STS2 stable `0.107.1`
+and RitsuLib `0.5.11`. The BaseLib-to-RitsuLib migration and external clean-workspace
 Codex acceptance are closed; details live in
 `documents/history/RITSULIB_MIGRATION_RESULTS.md`. R7 was canceled by the human lead and
 did not pass.
@@ -197,11 +197,15 @@ skill: literal deliverable contracts, exact semantic capability preflight, seman
 backtracking, cross-platform installed-workflow reproducibility, and one final clean
 whole-skill acceptance. M8.0-M8.3 and M8.5 are closed. **M8.5 Cross-Platform Reproducible
 Installed Workflow closed by explicit human-lead decision on 2026-08-12 with unresolved
-exceptions.** M8.7 Product Boundary Generalization is planned but not started; it owns the
-human-selected boundary-audit findings and must close before M8.6. M8.6 remains the final clean
-installed acceptance and holds plain-language intent only until selected. The human lead removed
-M8.4 on 2026-08-05; numbering is intentionally non-execution order. The Watcher evaluation is
-baseline evidence, not the M8 final acceptance Mod.
+exceptions.** M8.7 Product Boundary Generalization is implemented in authoritative source and was
+regenerated into both committed payload trees by explicit human-lead authorization on 2026-08-13,
+but remains open: its result record and explicit human closure are still deferred. M8.8 Surface
+Effect Composability Generalization is paused by explicit human-lead direction; its existing
+research and execution-contract draft must be refreshed against the current `0.5.11`
+guide/source/API profile before any future confirmation or implementation. M8.6
+remains the final clean installed acceptance and is ineligible until M8.7 and M8.8 close. The human
+lead removed M8.4 on 2026-08-05; numbering is intentionally non-execution order. The Watcher
+evaluation is baseline evidence, not the M8 final acceptance Mod.
 
 M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 2026-08-10. It
 reorganized the shipped pack so an author reads one file per element instead of three per
@@ -358,18 +362,32 @@ graceful/forced process-tree cleanup, and proof that no owned child remains are 
 No restore/offline, Tier 1, Tier 2, or game run occurred. The maintenance code had already been
 regenerated into both payloads before closure; closure did not generate another payload. The
 durable result is `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. Closure does not
-authorize M8.7 or M8.6.
+itself authorize or prove any later M8.7/M8.8/M8.6 work.
 
-M8.7 Product Boundary Generalization was planned by the human lead on 2026-08-12 and is not
-started. It covers the selected read-only audit findings for secondary resources; Monster move
-graphs, Monster/Encounter composition, and HP ranges; Character starting fields; Card-owned Rest
-Site options; multiple computed Card values; reusable bounded state; bounded forced Event
-mappings; new-Card Star costs; and bounded Event acquisition/shake profiles. Its contract requires
-`sts2-content-semantic/v3`, parseable surface-specific contracts, one shared lightweight
-structural validator, and exact evidence labels rather than prose-only widening. It does not add
-unittest coverage or require one proof matrix, C# fixture, or real-game proof per family. Current
-narrow routes remain the authorable boundary until M8.7 is explicitly selected, implemented,
-verified, and closed. M8.7 must close before M8.6.
+M8.7 Product Boundary Generalization source development is implemented and committed. It adds
+`sts2-content-semantic/v3`, parseable surface-specific contracts, shared
+`surface_contract_trace.py` validation, lowering guidance, and independent
+framework-expressible/open-mod-authorable/game-observed labels for nine selected families:
+secondary resources; Monster move graphs, Monster/Encounter composition, and HP ranges; Character
+starting fields; Card- or Relic-owned Rest Site options; multiple computed Card values; reusable
+bounded state; bounded forced Event mappings; new-Card Star costs; and bounded Event
+acquisition/shake profiles. Newly generalized variants remain `game-unobserved`. No M8.7-specific
+compile, Tier 1, Tier 2, headed, install, game, or save/load proof is inferred. Both committed
+payload trees now contain M8.7 after explicit human-lead authorization on 2026-08-13;
+`documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` and explicit human closure
+remain outstanding. Do not reimplement M8.7 meanwhile.
+
+M8.8 Surface Effect Composability Generalization is paused and not implemented. Its previous
+research and four-part contract predate the current dependency profile and are not executable as-is.
+Do not start it from that snapshot. Future resumption must first refresh the exhaustive guide and
+public source/API audit against the current `v0.5.11` profile, then obtain explicit human
+confirmation. M8.7 and M8.8 must both close before M8.6.
+
+The 2026-08-13 RitsuLib dependency migration is forward-only for newly generated Mods. The
+authoring/API baseline, compile-runtime minimum, runtime manifest floor, and Tier 1 framework
+minimum are now `0.5.11`. Existing Mods created by earlier skill payloads are outside scope and
+were not migrated, rebuilt, installed, or tested. Historical `0.5.4` results keep their literal
+version and do not become `0.5.11` runtime evidence.
 
 Do not edit installed payloads in place, run a fresh acceptance, or publish a payload/release
 without later human-lead instruction. The active Package plan is
@@ -391,11 +409,11 @@ present in the current source or payloads.
 ## Dependency Contract
 
 - Generated Mods target STS2 `0.107.1`; the authoring/API baseline is
-  `STS2.RitsuLib.Compat.0.107.1` `0.5.4`, while each scaffold pins the checked local
+  `STS2.RitsuLib.Compat.0.107.1` `0.5.11`, while each scaffold pins the checked local
   RitsuLib Compat DLL it compiles against.
-- Runtime manifests depend only on `STS2-RitsuLib >= 0.5.4`. A newer scaffold-pinned local
+- Runtime manifests depend only on `STS2-RitsuLib >= 0.5.11`. A newer scaffold-pinned local
   compile version does not raise the player minimum because generated code remains inside the
-  `0.5.4` authoring/API baseline.
+  `0.5.11` authoring/API baseline.
 - Runtime discovery reuses a validated game-local install or official Steam Workshop item
   `3747602295`; newer RitsuLib versions are accepted only with the exact `0.107.1` compat
   variant, marker, and manifest hash. Generated projects have no framework `PackageReference`:
@@ -414,7 +432,7 @@ present in the current source or payloads.
   ship decompiled code; private/internal implementation does not establish a supported route.
 - `baselines/SlayTheSpire2ModdingTutorials` is the official-tutorial product-semantics
   checkout pinned at `5a9110b`. It establishes intended use and documented feature-Package
-  membership, not stable-version signatures; exact APIs still come from RitsuLib `0.5.4`.
+  membership, not stable-version signatures; exact APIs still come from RitsuLib `0.5.11`.
 - `baselines/Sts2-YuWanCard` is a same-game-version Character/content-depth research
   checkout pinned at `07d7daa`. Its gameplay and Character framework is self-built with
   Harmony/Publicizer; RitsuLib is optional settings UI only. Use it to inventory consumers
@@ -523,23 +541,24 @@ Generated readability APIs include conditional Card Hand Glow, up to three safe-
 Relic labels, and one top-left Power label from the RitsuLib Extra Badges family. Intent
 remains a supported public Extra Badges consumer, but Intent authoring is not scheduled.
 
-Preserve these important boundaries. The M8.7 plan does not widen them by itself; they remain
-the current authorable contract until the corresponding M8.7 family is implemented, verified,
-and explicitly closed:
+The authoritative source now carries M8.7's nine generalized v3 families, with every new shape
+explicitly `game-unobserved`; installed/generated payload delivery remains deferred. Preserve the
+following hard and non-selected boundaries:
 
 - Route stores semantic direction values, never retained played Card instances.
 - A source Card follows STS2's normal result pile lifecycle.
-- Rest Site options are Relic-owned and singleplayer-only; Card/Modifier owners, variable
-  or non-Gold costs, post-payment choices, arbitrary transactions, same-site repeat, and
-  multiplayer remain unsupported.
+- Rest Site options are Card- or Relic-owned and singleplayer-only; Modifier owners, variable or
+  non-Gold costs, post-payment choices, arbitrary transactions, repeated successful same-site use,
+  and multiplayer remain unsupported.
 - Custom Card Piles use official public RitsuLib APIs only. Generated Mods must not recreate
   the framework's native-Hand bridge, patch pile internals, or narrow the documented Package
   merely because a selected consumer lacks a focused proof.
 - Pinned Affliction `AfterApplied()` and `BeforeRemoved()` are synchronous `void` methods.
   A complete M6.7.5 lifecycle replacement may suppress them only with empty generated
   effect lists; async `OnPlay` and public owner-hook composition remain available.
-- The fixed Character resource control is 220x32 at offset 160 with a text fallback and
-  must remain disjoint from native Energy.
+- Character secondary resources are a bounded named list with declared combat/run persistence,
+  turn-start policy, uses, and checked UI consumers; they remain disjoint from native Energy and
+  Stars. Repeatable-extra X payment and multiplayer support remain outside the contract.
 - Custom locked-selection/map-marker presentation, new Ancient models, global native
   dialogue/room replacement, Ancient behavior outside the fixed M6.7.3 option/page/effect
   vocabulary, randomized outcome/RNG rewrites, special combat and direct merchant/rest/
@@ -593,8 +612,9 @@ not silently select a paid backend. Every acquisition path converges on determin
   receive. Complete-operation impact and semantic repair ownership are implemented by M8.3.
   M8.5 is closed with unresolved exceptions: executable-adjacent platform paths are repaired,
   but cross-platform installed reproduction and launcher-owned process-tree cleanup remain
-  unimplemented and unproved. M8.7 boundary generalization is planned but not started; M8.6
-  final whole-skill acceptance is waiting for M8.7 closure and is not selected.
+  unimplemented and unproved. M8.7 boundary generalization is implemented in source but still open;
+  M8.8 is researched/planned and awaits confirmation before implementation. M8.6 final whole-skill
+  acceptance waits for both closures and is not selected.
 - `games/sts2/skills/sts2-api/`: lazy recipes, references, and error catalog.
 - `games/sts2/tools/`: cross-platform Python build/launch/log/art wrappers.
 - `games/sts2/tests/`: current support graph and verification ownership.
@@ -655,11 +675,12 @@ generated runtime behavior or presentation.
 M8 verification must preserve end-to-end product meaning rather than merely add another document
 schema. When runtime acceptance is selected, its cases cover only the current request's literal
 completion claims, maintained routes, behavior/lifecycle/player-facing semantics, degenerate
-states and inputs, repair effects, and owned-process cleanup. M8.7 instead makes each selected
+states and inputs, repair effects, and owned-process cleanup. M8.7 source makes each selected
 generalized surface machine-readable and labels new routes game-unobserved; it does not run nine
-family proof cycles. M8.6 is the only planned fresh natural-language whole-skill gate and verifies
-only the generalized variants its final request actually selects. It is not authorized to run yet,
-and it also carries the two
+family proof cycles. M8.8 is likewise planned as contract/source validation backed by existing
+point-to-family acceptance rather than a per-effect runtime campaign. M8.6 is the only planned
+fresh natural-language whole-skill gate and verifies only the generalized variants its final
+request actually selects. It is not authorized to run yet, and it also carries the two
 hook-participation proofs M8.2 deferred on 2026-08-10 — one element declaring an incoming-damage
 multiplier asserted for both the modified value and the neutral case outside its guard, and one
 collection edit asserted for its own entry and the survival of unrelated entries.
@@ -701,7 +722,7 @@ The outer project directory name must differ from the Mod name.
 ## Windows
 
 The verified environment uses PowerShell, STS2 `0.107.1`, .NET SDK `9.0.300`, Python 3,
-and RitsuLib `0.5.4`. Use PowerShell syntax for normal commands. Invoke `publish.sh`
+and RitsuLib `0.5.11`. Use PowerShell syntax for normal commands. Invoke `publish.sh`
 through an explicit Git Bash executable when needed; do not mix Bash path syntax into
 PowerShell commands.
 

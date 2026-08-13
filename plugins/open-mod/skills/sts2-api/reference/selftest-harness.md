@@ -633,7 +633,7 @@ custom-anchor, pile-screen, hotkey, and ExtraHand mouse/controller presentation.
 
 For manual ExtraHand play, the structured post-state records payment, source restoration on
 cancel, successful normal result pile, callback counts, and the next remaining Card's
-ability to enter the same native play flow. Official `0.5.4` owns the temporary Hand bridge;
+ability to enter the same native play flow. Official `0.5.11` owns the temporary Hand bridge;
 the generated proof must not inspect private native fields or patch the lifecycle. End with
 the ordinary structured `state proof` and `selftest done` markers when strict Tier 2 is run.
 

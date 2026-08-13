@@ -6,12 +6,12 @@ diagnostic fails. The active toolchain is the local-runtime open-mod RitsuLib pr
 ## Pinned Profile
 
 - host: STS2 stable `0.107.1`;
-- authoring baseline: RitsuLib `0.5.4` public API and capability catalog;
-- compile runtime: the pinned local RitsuLib version, at least `0.5.4`;
+- authoring baseline: RitsuLib `0.5.11` public API and capability catalog;
+- compile runtime: the pinned local RitsuLib version, at least `0.5.11`;
 - bundled build SDK: `Godot.NET.Sdk` `4.5.1`;
 - `Sts2ApiCompat`: `0.107.1`;
-- runtime dependency: `STS2-RitsuLib >= 0.5.4`; a newer local compile runtime does not raise
-  this player floor because generated code stays inside the `0.5.4` authoring/API baseline;
+- runtime dependency: `STS2-RitsuLib >= 0.5.11`; a newer local compile runtime does not raise
+  this player floor because generated code stays inside the `0.5.11` authoring/API baseline;
 - `RitsuLibAutoCopy`: `false`;
 - no framework DLL inside the generated Mod directory.
 
@@ -20,7 +20,7 @@ flow. The validators reject a missing or drifting local runtime profile, a wrong
 variant, a wrong host, PackageReference framework dependencies, a malformed manifest, and
 a framework DLL copied into the generated Mod.
 
-Keep the authoring/API baseline at `0.5.4`. At compile time use the scaffold-pinned local
+Keep the authoring/API baseline at `0.5.11`. At compile time use the scaffold-pinned local
 RitsuLib version only when its exact `0.107.1` direct/variant asset, marker, and manifest
 hash validate. Discover the game-local runtime first, then official Steam Workshop item
 `3747602295`; do not copy the framework DLL into the deployed Mod.
@@ -78,7 +78,7 @@ raw key, so Tier 1/Tier 2 must resolve the real consumer.
 ## Runtime Variant
 
 The installed RitsuLib runtime, whether game-local or from official Workshop item
-`3747602295`, must be version `>= 0.5.4` and expose the `0.107.1` compat DLL and marker/hash
+`3747602295`, must be version `>= 0.5.11` and expose the `0.107.1` compat DLL and marker/hash
 through its variant manifest, or be a direct `0.107.1` compat asset. A missing or
 mismatched variant is a hard actionable failure. Never skip runtime/host validation for
 Tier 1.

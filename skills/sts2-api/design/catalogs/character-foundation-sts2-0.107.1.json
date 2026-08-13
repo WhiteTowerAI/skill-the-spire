@@ -1,7 +1,7 @@
 {
   "schema": "openmod.sts2.character-foundation/v1",
   "host_version": "0.107.1",
-  "framework_profile": "ritsulib-0.5.4-sts2-0.107.1",
+  "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
   "source": {
     "assembly_name": "sts2",
     "assembly_sha256": "a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52",

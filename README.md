@@ -7,8 +7,8 @@ uses proportional real-game verification when runtime behavior or presentation c
 
 The first supported game is **Slay the Spire 2 (STS2)**.
 
-> **Unreleased development version: 0.6.0.** Generated Mods target STS2 stable `0.107.1`
-> with RitsuLib `0.5.4`. The BaseLib migration and M6.5-M6.7 implementation tracks are
+> **Unreleased development version: 0.7.0.** Generated Mods target STS2 stable `0.107.1`
+> with RitsuLib `0.5.11`. The BaseLib migration and M6.5-M6.7 implementation tracks are
 > closed. M7 Design Intelligence is closed: M7.1-M7.5 are implemented, and M7.6 closed
 > through a human-led external whole-skill evaluation with explicit limitations. M8
 > End-to-End Product Integrity is active: M8.0 skill structure restructuring, M8.1 literal
@@ -22,7 +22,7 @@ The first supported game is **Slay the Spire 2 (STS2)**.
 2. .NET SDK `9.0` or newer (`dotnet --version`).
 3. Python 3. On Windows, use a real python.org/Anaconda installation rather than the
    non-working Windows Store `python3` shim.
-4. RitsuLib `>=0.5.4` with the `0.107.1` compat variant, installed locally or through the
+4. RitsuLib `>=0.5.11` with the `0.107.1` compat variant, installed locally or through the
    official Steam Workshop item `3747602295`. The Mod authoring project compiles directly
    against the checked local runtime version and has no framework `PackageReference`.
 5. Codex with plugin support.
@@ -33,7 +33,7 @@ build/packaging tools.
 
 ## Install In Codex
 
-Until `0.6.0` is published, install the current checkout as a repo marketplace:
+Until `0.7.0` is published, install the current checkout as a repo marketplace:
 
 ```powershell
 codex plugin marketplace add D:\path\to\open-mod

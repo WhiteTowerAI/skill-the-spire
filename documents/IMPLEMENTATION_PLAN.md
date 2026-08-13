@@ -6,18 +6,18 @@ M8 is the active milestone. M8.0-M8.3 and M8.5 are closed. M8.4 was removed by
 the human lead. Their implementation detail belongs in the named result records under
 `documents/history/`, not in this active work plan.
 
-M8.7 Product Boundary Generalization source development is implemented in the current working
-tree. Its payload regeneration, active-document synchronization, result record, and explicit
-closure are intentionally deferred until M8.8 settles; M8.7 is therefore implemented but still
-open. The former detailed M8.7 execution contract has been removed from this active plan because
-it is no longer a work order.
+M8.7 Product Boundary Generalization source development is implemented and committed. By explicit
+human-lead authorization on 2026-08-13, both committed payload trees now include it. Its result
+record and explicit closure remain outstanding; M8.7 is therefore implemented and delivered but
+still open. The former detailed
+M8.7 execution contract has been removed from this active plan because it is no longer a work order.
 
-M8.8 Surface Effect Composability Generalization is the next Package. Its research and four-part
-execution contract were revised by human-lead direction and await confirmation. It owns the cross-surface
-finding that early acceptance examples were treated as complete effect boundaries even when the
-legal surface lifecycle can compose broader grounded game/framework operations. This drafted
-contract is not implementation permission and does not authorize payload generation, document
-delivery, install, launch, acceptance, commit, push, publish, or release.
+M8.8 Surface Effect Composability Generalization is paused by explicit human-lead direction on
+2026-08-13. Its existing research and four-part draft predate the current dependency profile and
+are not executable as-is; if M8.8 resumes, refresh the research and contract against the current
+RitsuLib `0.5.11` guide/source/API profile before asking for implementation confirmation.
+Pausing M8.8 does not authorize payload generation, document delivery, install, launch,
+acceptance, commit, push, publish, or release.
 
 M8.6 remains the final clean installed whole-skill acceptance. It intentionally executes after
 M8.7 and M8.8 even though its number is lower: M8.6 must judge the generalized product boundary,
@@ -26,8 +26,8 @@ contract until the human lead selects it after both Packages close.
 
 Current Package order:
 
-1. M8.8 - research complete; detailed execution contract awaits human confirmation.
-2. M8.7 - source implemented; combined payload/document delivery and closure wait for M8.8.
+1. M8.8 - paused; its research/contract requires refresh against the current `0.5.11` profile before use.
+2. M8.7 - source and payloads implemented; result record and explicit closure remain outstanding.
 3. M8.6 - waiting for M8.7/M8.8 closure and a human-selected request/host.
 
 ## New-Session Start Protocol
@@ -35,11 +35,11 @@ Current Package order:
 1. Read root `AGENTS.md`, `documents/PROJECT.md`, `documents/BASELINE_RESEARCH.md`, and this
    file. Treat `documents/history/` as evidence, never as current instruction.
 2. Check `git status` before any edit. Preserve unrelated dirty and untracked work.
-3. A plan entry is not execution authorization. The first eligible Package is M8.8, but its source
-   work must not start until the human lead explicitly confirms the execution contract below. After
-   confirmation, `start M8` or `continue M8` resumes that contract at its first incomplete part;
-   do not repeat the completed research. If the lead names a Package, verify its prerequisites and
-   execute only that Package.
+3. A plan entry is not execution authorization. M8.8 is paused and its existing contract is not
+   executable as-is under the current `0.5.11` profile. Do not start it from `start M8` or
+   `continue M8`; resume only after the human lead explicitly selects M8.8 and confirms the
+   refreshed current-profile contract. If the lead names another Package, verify its prerequisites
+   and execute only that Package.
 4. Do not start M8.6 while M8.7 or M8.8 is open. Do not reopen M8.0-M8.5 unless the lead
    explicitly requests a repair owned by one of their current contracts.
 5. Work in `games/sts2/`. `plugins/open-mod/` and top-level `skills/` are generated payloads;
@@ -68,10 +68,12 @@ plain-language request
   -> evidence-bounded final report
 ```
 
-Generated Mods target STS2 `0.107.1` and the RitsuLib Compat `0.5.4` authoring baseline.
-Every promoted fact must be checked against that exact profile. Current website documentation
-may describe a newer RitsuLib and is not sufficient. `baselines/decomp` can show that a game
-mechanism exists, but it cannot by itself establish a stable authoring route.
+Generated Mods target STS2 `0.107.1` and the RitsuLib Compat `0.5.11` authoring baseline.
+Every promoted fact must be checked against that exact profile. Current RitsuLib website
+documentation is part of the current profile; exact symbols and lifecycle behavior still
+require cross-checking against the pinned `v0.5.11` source/API and Compat metadata.
+`baselines/decomp` can show that a game mechanism exists, but it cannot by itself establish a
+stable authoring route.
 
 Every capability statement must keep three statuses separate:
 
@@ -97,29 +99,28 @@ requiring ad hoc promotion or previous proof for each requested effect.
 | M8.3 - semantic continuity and backtracking | Closed 2026-08-11 | `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md` | A semantic change returns to DESIGN/SPEC and clears affected settlements. |
 | M8.4 | Removed 2026-08-05 | none | Do not reuse this number or recreate the removed Package. |
 | M8.5 - cross-platform installed workflow | Closed 2026-08-12 with exceptions | `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md` | Manifest and executable-adjacent paths were repaired; macOS installed reproduction and owned process-tree cleanup remain unimplemented/unproved. |
-| M8.7 - product boundary generalization | **Source implemented; delivery/closure deferred** | `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` still required at combined close | The v3 structural generalization is present in source; do not re-execute its retired detailed contract. |
-| M8.8 - surface effect composability generalization | **Research revised; execution contract awaiting confirmation** | `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md` required at combined close | Exhaustively contract every effect capability supported by the pinned RitsuLib profile across eight surfaces. |
+| M8.7 - product boundary generalization | **Source and payloads implemented; still open** | `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` and explicit closure remain required | The v3 structural generalization is present in source and both payloads; do not re-execute its retired detailed contract. |
+| M8.8 - surface effect composability generalization | **Paused; contract refresh required** | `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md` required at combined close | Refresh the research and contract against the current `0.5.11` guide/source/API profile before any future confirmation or implementation. |
 | M8.6 - clean installed whole-skill acceptance | Waiting | contract and result path are defined only when selected | Final installed judgment after M8.7 and M8.8; also owns M8.2's two deferred hook proofs. |
 
 ## M8.7 - Product Boundary Generalization
 
-M8.7 source development is complete in the current working tree. Do not re-run or reconstruct its
-former detailed execution contract. Its generated payloads, remaining active-document updates,
-durable result record, and explicit human closure are deferred so M8.7 and M8.8 can be reconciled
-and delivered once rather than publishing an intermediate product boundary.
+M8.7 source development is complete and committed. Do not re-run or reconstruct its former detailed
+execution contract. The human lead explicitly authorized regenerating both committed payloads with
+M8.7 on 2026-08-13 while M8.8 remains paused. The durable result record and explicit human closure
+remain outstanding.
 
 No M8.7 runtime, Tier 1, Tier 2, headed, install, or game observation is inferred from its source
-implementation. Preserve the current dirty work and its literal evidence labels until combined
-delivery is explicitly authorized.
+implementation. Preserve the committed source, generated payloads, and literal evidence labels.
 
 ## M8.8 - Surface Effect Composability Generalization
 
 ### State And Goal
 
-M8.8 research has been revised by explicit human-lead direction. This four-part contract is
-executable only after confirmation. Once confirmed, execute the parts in order, preserve the
-current M8.7 dirty source, and stop after the source/static gate in Part 4 for human review. Source
-implementation does not itself authorize the later combined M8.7/M8.8 delivery gate.
+M8.8 is paused by explicit human-lead direction. The four-part text below predates the current
+dependency profile and is retained for scope history, not as an executable contract. Before any
+future M8.8 confirmation, refresh it against the current RitsuLib `0.5.11` guide/source/API
+profile. Do not implement any Part below from this snapshot.
 
 M8.8 is an up-front capability expansion for Card, Potion, Relic, Power, Orb, Enchantment, Monster,
 and Event. It must not wait for a user to name an unfamiliar effect. It first finds every effect
@@ -128,16 +129,14 @@ profile an open-mod authoring contract. A missing old recipe, proof Mod, accepta
 validator branch is evidence of an open-mod gap to remove, never a reason to exclude the effect.
 
 The official guide at `https://sts2-ritsulib.ritsukage.com/guide/` is the exhaustive discovery
-index. Exact current support is decided by the local RitsuLib `v0.5.4` source at commit
-`8b971a79e6b0a62daddd948790cd3661bb13a930`, its versioned documentation, and the pinned public
-STS2 `0.107.1`/Compat assembly metadata. Because the live website may describe a later release,
-every website-only capability must be recorded as a version delta. Do not silently omit it or claim
-that it exists in `0.5.4`; raising the profile remains a separate human decision.
+index. Exact current support is established by the current RitsuLib `0.5.11` guide and versioned
+documentation, the local `v0.5.11` public source/API, and the pinned public STS2 `0.107.1`/Compat
+assembly metadata.
 
 After M8.8, support does not depend on previous open-mod proof. An effect found in RitsuLib
 documentation/source but absent from all old open-mod recipes and proof Mods is equally authorable.
 New combinations of supported effects may use ordinary C# and BCL, public STS2 `0.107.1` and
-RitsuLib Compat `0.5.4` APIs, Mod-owned helper methods/types/state, and an already maintained checked
+RitsuLib Compat `0.5.11` APIs, Mod-owned helper methods/types/state, and an already maintained checked
 Adapter where that is the supported route. Conditions, loops, queries, local variables, helper
 classes, ordered asynchronous calls, intermediate results, and combinations not seen in any
 previous artifact are all in scope.
@@ -165,7 +164,7 @@ discard the semantic facts and evidence boundaries those contracts protect.
 
 Create `games/sts2/tests/m88-ritsulib-effect-audit.md` as a maintainer-only source-development
 ledger. Audit the complete official guide navigation, every linked guide page, and the corresponding
-public `v0.5.4` source/API rather than searching only for effects already named by open-mod. Include
+public `v0.5.11` source/API rather than searching only for effects already named by open-mod. Include
 all public commands, model callbacks, lifecycle listeners, Event outcome paths, state/query helpers,
 and public data or return types needed to invoke an effect from Card, Potion, Relic, Power, Orb,
 Enchantment, Monster, or Event. Use the pinned assembly metadata to cross-check the exact public
@@ -187,10 +186,9 @@ For every guide page and every relevant public source/API capability, record its
 documentation/source anchor, first confirmed version when known, player-visible behavior, exact
 public symbols, input/result/async shape, applicable lifecycle facts, and one audit disposition:
 
-- `current-profile effect`: RitsuLib `0.5.4` supports it and M8.8 owes an authoring-contract owner;
+- `current-profile effect`: RitsuLib `0.5.11` supports it and M8.8 owes an authoring-contract owner;
 - `effect-supporting context`: it supplies lifecycle, query, target, state, or result data needed by
   an effect contract but is not itself a player-visible effect;
-- `later-version delta`: the live guide/source advertises it but the pinned profile does not;
 - `not an effect`: the page/symbol concerns registration, assets, diagnostics, tooling, or another
   product surface outside the eight effect bodies; or
 - `retained product boundary`: the route requires a forbidden mechanism or a separately unsupported
@@ -202,7 +200,7 @@ every current effect declaration, recipe-only rule, and exact-route preflight, t
 the maintained contract and validation structures must change to cover the complete pinned profile.
 
 The ledger is complete only when every discovery source is accounted for, every current-profile
-effect row has an open-mod contract owner selected for Part 2, all website/profile deltas are
+effect row has an open-mod contract owner selected for Part 2, current-profile provenance is
 literal, and at least one capability found only in RitsuLib docs/source and absent from old open-mod
 recipes/proofs is selected as a representative coverage regression. The ledger proves coverage of
 the research and supplies the provenance needed by the shipped contract.
@@ -358,8 +356,8 @@ After implementation authorization, source verification is limited to the contra
 
 1. Run/check the maintainer audit coverage projection: every official guide page and relevant
    pinned public symbol has a disposition; every current-profile effect has a shipped contract
-   owner; every later-version delta remains explicit. Recheck changed public signatures against
-   RitsuLib `v0.5.4` source and pinned assembly metadata.
+   owner. Recheck changed public signatures against the RitsuLib `v0.5.11` guide/source/API and
+   pinned assembly metadata.
 2. Run existing pinned catalog `--check` commands, including
    `python games/sts2/tools/collect_model_hooks.py extract --check` if the callback projection
    changes. Verify every lifecycle context and effect parameter contract against its cited source.
@@ -398,8 +396,8 @@ complete, every current-profile effect has a shipped authoring-contract owner, a
 publish their legal lifecycle contexts, the input-closure rule supports arbitrary valid
 combinations, and SPEC grounding closes through the existing trace chain. At least one
 docs/source-only effect absent from old recipes/proofs must pass the representative coverage case.
-Focused and full static regressions must pass, website/profile deltas must remain explicit, and
-unobserved effects must retain literal `game-unobserved` status. M8.8 is not closed until the later
+Focused and full static regressions must pass, and unobserved effects must retain literal
+`game-unobserved` status. M8.8 is not closed until the later
 delivery artifacts exist and the human lead explicitly closes it.
 
 ## M8.6 - Clean Installed Whole-Skill Acceptance

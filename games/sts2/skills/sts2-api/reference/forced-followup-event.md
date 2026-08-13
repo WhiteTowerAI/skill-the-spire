@@ -11,7 +11,7 @@ one token, one act, and one target; generalized mappings and sequences remain ga
   "family": "forced_event_mappings",
   "owner": "reference/forced-followup-event.md",
   "spec_key": "forced_event_mappings",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "mappings": {"type": "list<object>", "cardinality": "0..*", "default": []},
     "mappings[].id/token_id/target_event": {"type": "text", "cardinality": "1 each"},

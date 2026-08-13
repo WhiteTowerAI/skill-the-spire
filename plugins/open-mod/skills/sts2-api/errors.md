@@ -19,7 +19,7 @@ switching to an old template.
 
 - **Cause:** RitsuLib is missing, another host variant was installed, or its variant
   manifest/hash does not match.
-- **Fix:** install RitsuLib `>=0.5.4` with `lib/0.107.1/STS2-RitsuLib.dll`, then scaffold or
+- **Fix:** install RitsuLib `>=0.5.11` with `lib/0.107.1/STS2-RitsuLib.dll`, then scaffold or
   explicitly migrate the project runtime profile. A release zip must be installed before it
   can compile a Mod.
 

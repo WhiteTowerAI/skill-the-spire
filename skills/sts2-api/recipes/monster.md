@@ -1,16 +1,18 @@
-# Recipe: Custom Monster + Encounter (one vertical slice)
+# Recipe: Custom Monsters and Encounters
 
-> A grounded pattern for a fought enemy in STS2. **Monster and encounter are one unit** —
-> a monster is meaningless until an encounter spawns it, so author both together and prove
-> the whole slice through `CombatEnemy`. A monster that only registers proves too little.
+> A grounded pattern for fought enemies in STS2. Monsters and Encounters are separate
+> registered nodes joined by explicit roster edges. Author the selected reachable graph
+> together and prove only the concrete Encounter variants selected by the current SPEC through
+> `CombatEnemy`. A Monster that only registers proves too little.
 
-## Why they are inseparable
+## Reachability graph
 
-The player never touches a `MonsterModel` directly. The reachable host is the **encounter**:
-the map/room enters an encounter, the encounter generates its monsters, the monsters take
-turns. So the recipe pairs exactly one `ModEncounterTemplate` with the
-`ModMonsterTemplate`(s) it spawns, registers both through one RitsuLib content pack, and
-proves them in a real combat where the monster acts.
+The player never touches a `MonsterModel` directly. The reachable host is an **Encounter**:
+the map/room enters an Encounter, the Encounter generates its roster, and those Monsters take
+turns. One Monster may be reused by several Encounters, and one Encounter may spawn multiple
+or repeated Monster models. Register every selected node exactly once, list every canonical
+model that can appear in `AllPossibleMonsters`, and keep the current actual roster a nonempty
+subset. Registration without at least one grounded placement/roster edge is not reachability.
 
 ## Registration (one explicit RitsuLib content pack)
 
@@ -25,8 +27,10 @@ proves them in a real combat where the monster acts.
 ```csharp
 RitsuLibFramework.CreateContentPack(MainFile.ModId)
     .Power<<CustomBuff>>()              // only when the monster owns this dependency
-    .Monster<<Name>>()
-    .ActEncounter<Glory, <Name>Encounter>()
+    .Monster<<MonsterA>>()
+    .Monster<<MonsterB>>()
+    .ActEncounter<Glory, <EncounterA>>()
+    .GlobalEncounter<<EncounterB>>()
     .Apply();
 ```
 
@@ -117,7 +121,7 @@ monster block convention. A custom Power follows `recipes/power.md` (including a
 `powers.json` keys and no `[Pool]`). Attachment alone does not prove a buff: Tier 2 must
 observe its downstream effect, such as a later powered attack changing by its `Amount`.
 
-### Explicit cycles and conditional branches
+### Explicit cycles, conditional branches, and fixed-weight random branches
 
 This complete state-machine shape covers a deterministic cycle with both sides of a
 half-health branch. Replace names/numbers from SPEC; do not add a branch the design did not
@@ -155,8 +159,24 @@ protected override MonsterMoveStateMachine GenerateMoveStateMachine()
 `ConditionalBranchState` evaluates its `AddState` predicates in order and selects the first
 true state. Make the cases exhaustive; overlapping predicates silently make later cases
 unreachable, while a gap throws `No valid next state found.` A `FollowUpState` cycle is the
-deterministic order contract. Random branches are a different design and must not be
-substituted for a declared cycle.
+deterministic order contract.
+
+When SPEC explicitly selects a random branch, use `RandomBranchState` with positive fixed
+weights and declared successors. The state machine supplies its run `Rng`; do not call
+`System.Random`, capture mutable weight delegates, or derive weights from prompt-authored code:
+
+```csharp
+var random = new RandomBranchState("RANDOM_BRANCH");
+random.AddBranch(guard, MoveRepeatType.CanRepeatForever, 2f);
+random.AddBranch(pressure, MoveRepeatType.CanRepeatForever, 1f);
+guard.FollowUpState = random;
+pressure.FollowUpState = random;
+return new MonsterMoveStateMachine(
+    new MonsterState[] { random, guard, pressure }, random);
+```
+
+This admits only declared fixed weights. It does not claim that any probability distribution
+was observed in-game; a future Verify stage exercises only the selected branch outcomes.
 
 Copyable move bodies for that machine:
 
@@ -248,8 +268,8 @@ public sealed class <Name> : ModMonsterTemplate
     public static string ModVisualPath =>
         $"{MainFile.ResPath}/images/monsters/<slug>.png";
 
-    public override int MinInitialHp => <hp>;
-    public override int MaxInitialHp => <hp>;
+    public override int MinInitialHp => <min-hp>;
+    public override int MaxInitialHp => <max-hp>;
     public override MonsterAssetProfile AssetProfile => new(FallbackVisualPath);
     public override bool HasDeathSfx => false;
 
@@ -387,7 +407,8 @@ See `reference/selftest-harness.md` § CombatEnemy for the driver shape.
 - [ ] Monster: `ModMonsterTemplate`; `MinInitialHp`/`MaxInitialHp`/`GenerateMoveStateMachine`
 - [ ] Encounter: `ModEncounterTemplate`; explicit `RoomType.Monster`; `IsValidForAct`/
       `AllPossibleMonsters`/`GenerateMonsters`
-- [ ] One `.Monster<T>()` plus one `.ActEncounter<TAct,T>()` or `.GlobalEncounter<T>()`
+- [ ] Every selected Monster and Encounter registered once; actual rosters are nonempty subsets
+      of `AllPossibleMonsters`, including intentional repeated Monster entries
 - [ ] Static visual checks `images/monsters/<slug>.png` in `TryCreateCreatureVisuals()` and uses
       `RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>` only when it exists
 - [ ] `MonsterAssetProfile` always names `creature_visuals/fallback`; missing PNG produces no

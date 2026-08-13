@@ -1,6 +1,6 @@
 # Reference: model hook participation for custom content
 
-> Checked against the pinned STS2 `0.107.1` assembly and RitsuLib `0.5.4`. Every hook here is
+> Checked against the pinned STS2 `0.107.1` assembly and RitsuLib `0.5.11`. Every hook here is
 > `public virtual` on `AbstractModel`, so a custom element overrides it directly — no Harmony,
 > reflection, Publicizer, or IL. The authoritative per-hook data is
 > `reference/catalogs/model-hooks-sts2-0.107.1.json`; this page states the rules, the catalog
@@ -188,7 +188,7 @@ signature; only these five are redirected.
 ## Two hooks that belong to another route
 
 `TryModifyRestSiteOptions` and `ShouldDisableRemainingRestSiteOptions` are exactly how the shipped
-Relic-owned Rest Site option is contributed and how its stay/leave behavior works. Use
+Card- or Relic-owned Rest Site option is contributed and how its stay/leave behavior works. Use
 `reference/rest-site-options.md`. It carries four boundaries the bare hook does not — singleplayer
 only, absent versus natively disabled, free or fixed Gold, and a fully preflightable outcome before
 the first mutation.

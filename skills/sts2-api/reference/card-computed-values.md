@@ -1,13 +1,63 @@
 # Reference: computed Card values and variable tooltips
 
-> Pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. Use this page only when a
+> Pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. Use this page only when a
 > Card description contains a value calculated from live state. Static upgrade
 > values continue to use the ordinary `DamageVar`, `BlockVar`, or `PowerVar<T>`
 > patterns in `recipes/card.md`.
 
+<!-- open-mod-surface-contract/v1
+{
+  "family": "computed_card_values",
+  "owner": "reference/card-computed-values.md",
+  "spec_key": "computed_card_values",
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
+  "fields": {
+    "values": {"type": "list<object>", "cardinality": "0..*", "default": []},
+    "values[].card_id/name": {"type": "text", "cardinality": "1 each", "unique": "name per card_id"},
+    "values[].role/evaluation_point/text_binding": {"type": "enum", "cardinality": "1 each"},
+    "values[].formula/upgrade_rule": {"type": "text", "cardinality": "1 each"},
+    "values[].inputs/declared_inputs": {"type": "list<text>", "cardinality": "0..*"},
+    "values[].domain.min/max": {"type": "integer", "cardinality": "1 each"},
+    "values[].preview_point/execution_point": {"type": "evaluation enum", "cardinality": "1 each"},
+    "values[].native_modifiers": {"type": "none or exactly_once", "cardinality": "1"},
+    "values[].route": {"type": "declared route", "cardinality": "1"}
+  },
+  "enums": {
+    "role": ["plain", "damage", "block", "energy_icons", "star_icons", "raw_power", "applied_power"],
+    "evaluation_point": ["before_payment", "after_payment", "after_source_moves_to_play"],
+    "text_binding": ["dynamic_var", "icon_formatter"]
+  },
+  "conditions": [
+    "names are unique per Card",
+    "formula inputs exactly match declared_inputs",
+    "preview_point and execution_point equal evaluation_point"
+  ],
+  "mutually_exclusive": [
+    "icon_formatter with non-icon role",
+    "hook-modified preview value reused as execution input"
+  ],
+  "routes": [
+    "reference/card-computed-values.md#semantic-gate",
+    "reference/card-computed-values.md#one-formula-for-base-upgrade-preview-and-execution"
+  ],
+  "hard_boundaries": [
+    "formula is pure and has no RNG Cmd or mutation",
+    "native modifiers apply exactly once for damage block and applied Power",
+    "zero rendering remains role-specific"
+  ],
+  "generated_obligations": [
+    "emit one DynamicVar factory per declared value",
+    "reuse one formula across preview and execution",
+    "bind every declared player-facing value to text or icons"
+  ],
+  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
+  "legacy": "v1/v2 single-value projects resume unchanged; revised calculated values write the v3 list"
+}
+-->
+
 ## Semantic gate
 
-Before writing C#, every calculated value in SPEC must declare:
+Before writing C#, every calculated value in SPEC must declare independently:
 
 - a stable value name and one role: plain, damage, block, Energy icons, Star icons,
   raw typed Power, or applied typed Power;
@@ -52,7 +102,9 @@ preview through `ModifyPowerAmountGiven`; use it when the Card will apply that P
 
 ## One formula for base, upgrade, preview, and execution
 
-Put the calculation in one helper. `CardPreviewMode.Upgrade` must select the upgraded
+Put each declared calculation in one helper and emit one matching DynamicVar factory. A Card
+may compose zero or more uniquely named values; names need only be unique on that Card.
+`CardPreviewMode.Upgrade` must select the upgraded
 branch even when the preview host has not yet exposed a normally upgraded Card instance.
 Live execution calls the same helper indirectly through the matching `Compute*Value`
 extension:

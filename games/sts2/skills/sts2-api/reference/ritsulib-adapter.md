@@ -8,10 +8,10 @@ mapping into every recipe and do not reintroduce a second historical-framework b
 
 ```text
 framework: RitsuLib
-framework version: 0.5.4
+framework version: 0.5.11
 host: STS2 stable 0.107.1
 compat target: 0.107.1
-profile id: ritsulib-0.5.4-sts2-0.107.1
+profile id: ritsulib-0.5.11-sts2-0.107.1
 ```
 
 The compat package or variant must resolve `lib/0.107.1/STS2-RitsuLib.dll` and the
@@ -93,7 +93,7 @@ When SPEC declares any custom pile, read `reference/card-piles.md` and lower the
 selected Package surface through `.CardPileOwned(...)`. That reference owns combat/run
 lifetime, every public style and anchor, icon/hover/open/view/visibility/hotkey behavior,
 native movement, localization, and ExtraHand presentation/manual play/callbacks. Official
-RitsuLib `0.5.4` owns its internal native-Hand bridge; generated Mods emit no lifecycle
+RitsuLib `0.5.11` owns its internal native-Hand bridge; generated Mods emit no lifecycle
 patch. Package support is not limited by which consumers appeared in the focused proof.
 
 ### Card
@@ -415,7 +415,7 @@ an empty queued group before consumption.
 For each generated mod, record this small implementation-only block in `MEMORY.md`:
 
 ```markdown
-- framework profile: ritsulib-0.5.4-sts2-0.107.1
+- framework profile: ritsulib-0.5.11-sts2-0.107.1
 - adapter: <surface>/<contract-version>
 - registration route: <shared/act/standalone/host-owned>
 - asset profile: <profile or fallback>

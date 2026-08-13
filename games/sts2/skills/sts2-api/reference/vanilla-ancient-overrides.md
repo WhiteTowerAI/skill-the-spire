@@ -1,7 +1,7 @@
 # Existing vanilla Ancient overrides
 
 Use this reference after `vanilla-overrides.md` resolves an exact `EVENT.*` target with
-`content_kind: ancient`. These routes are pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. They
+`content_kind: ancient`. These routes are pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. They
 supports both public initial-option append and one reviewed, fingerprinted initial-option
 replacement Adapter while preserving the vanilla model, room, dialogue, save identity,
 and Ancient choice-history lifecycle.

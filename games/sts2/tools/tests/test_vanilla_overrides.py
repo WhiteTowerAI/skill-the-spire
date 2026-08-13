@@ -828,7 +828,7 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         catalog = overrides.load_catalog()
 
         self.assertEqual("0.107.1", catalog["host_version"])
-        self.assertEqual("0.5.4", catalog["framework_version"])
+        self.assertEqual("0.5.11", catalog["framework_version"])
         self.assertEqual(
             "a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52",
             catalog["assembly"]["sha256"],
@@ -837,7 +837,7 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         self.assertEqual(3883, catalog["assembly"]["model_namespace_type_count"])
         self.assertEqual(LOCALIZATION_LANGUAGES, catalog["localization_languages"])
         self.assertEqual(
-            "705ac47e9dc3ca111033c8734aff342da41fecfdf8590cea59601f57e865e546",
+            "78c3f607d8ff618c7361bdbc3cfc87956bceb72f2f003f645d87d2bdd4d690cf",
             catalog["catalog_sha256"],
         )
         adapter_hashes = {

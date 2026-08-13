@@ -1,6 +1,6 @@
 # Reference: computed Card values and variable tooltips
 
-> Pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. Use this page only when a
+> Pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. Use this page only when a
 > Card description contains a value calculated from live state. Static upgrade
 > values continue to use the ordinary `DamageVar`, `BlockVar`, or `PowerVar<T>`
 > patterns in `recipes/card.md`.
@@ -10,7 +10,7 @@
   "family": "computed_card_values",
   "owner": "reference/card-computed-values.md",
   "spec_key": "computed_card_values",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "values": {"type": "list<object>", "cardinality": "0..*", "default": []},
     "values[].card_id/name": {"type": "text", "cardinality": "1 each", "unique": "name per card_id"},

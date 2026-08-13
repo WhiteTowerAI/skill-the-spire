@@ -203,7 +203,7 @@ outside these five Packages remains an explicit gap rather than a partial edit.
 The adapter must preserve the user's operation mode; it cannot turn `replace` into
 `compose` to fit an available route. In particular, replacing, removing, or hiding a
 vanilla Card's original description is a base-description replacement and is unsupported
-by the pinned RitsuLib `0.5.4` Package. Stop and obtain explicit acceptance of a
+by the pinned RitsuLib `0.5.11` Package. Stop and obtain explicit acceptance of a
 before/after fragment alternative before changing the semantic intent. Finalized values or
 an instruction not to repeat questions never authorizes a different player-facing result.
 
@@ -293,7 +293,7 @@ returns four implementation records:
 3. **diagnostics** - framework/compat/host identity and adapter status;
 4. **proof route** - the closest hosted suite and the structured invariant it must emit.
 
-The authoring/API baseline is `ritsulib-0.5.4-sts2-0.107.1`. A generated project compiles
+The authoring/API baseline is `ritsulib-0.5.11-sts2-0.107.1`. A generated project compiles
 against the exact local RitsuLib runtime selected at scaffold time, including its checked
 `0.107.1` compat DLL and SHA-256. A newer release is usable only when that exact compat
 variant, marker, and manifest hash validate; a later runtime upgrade requires an explicit

@@ -134,7 +134,7 @@ def load_surface_contracts() -> dict[str, dict[str, Any]]:
                 raise SurfaceContractError(
                     f"surface contract {family!r} spec_key must match its family"
                 )
-            expected_profile = {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"}
+            expected_profile = {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"}
             if contract["profile"] != expected_profile:
                 raise SurfaceContractError(
                     f"surface contract {family!r} must use pinned profile {expected_profile}"

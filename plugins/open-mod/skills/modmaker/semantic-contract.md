@@ -9,10 +9,10 @@ implemented.
 
 ## Contract identity
 
-Every generated SPEC uses:
+Every new or deliberately revised SPEC uses:
 
 ```text
-contract: sts2-content-semantic/v2
+contract: sts2-content-semantic/v3
 host intent: Slay the Spire 2 stable 0.107.1
 ```
 
@@ -22,7 +22,7 @@ change to this envelope requires a contract-version bump and a migration note.
 **Migration from v1.** The six surfaces that used a flat `- **element**: <slug>` opening
 with ad-hoc top-level keys (potion, power, orb, monster, event, character) now use the same
 canonical nested form as card and relic. A project SPEC written under v1 is still readable
-and resumes unchanged under its own terms; only new or revised SPECs are written as v2. An
+and resumes unchanged under its own terms. An
 absent `contract:` line or a `sts2-content-semantic/v1` declaration signals a pre-v2 project;
 resume it from its existing artifacts without rewriting the envelope.
 
@@ -42,6 +42,37 @@ and Simplified Chinese text for each player-facing field. The two language trees
 tables, keys, and SmartFormat token multisets. This is a fixed product contract under `INV-10`,
 not an optional user preference.
 
+**Migration from v2.** The nine shared envelope sections and their existing surface fields do
+not change. A v2 project resumes unchanged until the user accepts a SPEC revision. A revised
+SPEC is written as v3, preserves stable `D-###` and `OP-###` identities, and migrates only the
+selected generalized families into the structured data block below; unrelated v2 surface data
+is not rewritten. v3 adds no generated semantic ledger and does not turn framework APIs into
+authorable behavior by inference.
+
+**What changed in v3.** Every v3 SPEC contains exactly one parseable
+`open-mod-surface-data/v1` JSON block. Its `families` keys are the `spec_key` values declared by
+the selected owner pages' `open-mod-surface-contract/v1` blocks. Those owner blocks define the
+version-pinned field vocabulary, cardinalities, enums, routes, retained boundaries, lowering
+obligations, and independent evidence labels. `surface_contract_trace.py`, dispatched by
+`spec_envelope_trace.py`, rejects unknown families, undeclared routes, invalid shapes, and the
+documented cross-field contradictions. It is structural evidence only: it does not prove C#,
+lifecycle behavior, presentation, compilation, or game observation.
+
+Place this block once after the operation trace and before the human-readable envelope. Use an
+empty `families` object when a v3 revision selects none of the generalized families; never add
+an empty family placeholder.
+
+```markdown
+<!-- open-mod-surface-data/v1
+{
+  "contract": "sts2-content-semantic/v3",
+  "families": {
+    "<owner spec_key>": <exact JSON data shape from that owner page>
+  }
+}
+-->
+```
+
 ## Canonical envelope
 
 Include these sections once per SPEC. Surface-specific blocks may add fields, but must
@@ -53,7 +84,7 @@ emitted semantic operation appears once with a stable `OP-###`, one or more curr
 generation allowlist: deferred/out-of-scope design items never appear in this envelope.
 
 ```markdown
-- **contract**: sts2-content-semantic/v2
+- **contract**: sts2-content-semantic/v3
 - **content**:
   - name: <player-facing name>
     surface: card | relic | potion | power | keyword | enchantment | orb |
@@ -172,7 +203,7 @@ outside these five Packages remains an explicit gap rather than a partial edit.
 The adapter must preserve the user's operation mode; it cannot turn `replace` into
 `compose` to fit an available route. In particular, replacing, removing, or hiding a
 vanilla Card's original description is a base-description replacement and is unsupported
-by the pinned RitsuLib `0.5.4` Package. Stop and obtain explicit acceptance of a
+by the pinned RitsuLib `0.5.11` Package. Stop and obtain explicit acceptance of a
 before/after fragment alternative before changing the semantic intent. Finalized values or
 an instruction not to repeat questions never authorizes a different player-facing result.
 
@@ -183,13 +214,13 @@ single-source conditions, zero-target behavior, and exact resolution semantics. 
 adapter owns the dynamic enum and predicate APIs. Under the pinned profile, `potion + many`
 is a known lifecycle limitation rather than a semantic fallback.
 
-A Relic-owned Rest Site option is an optional Relic surface extension. Record the
-localized title/description, owner, eligibility, repeatability, enabled rule, fixed Gold
+A Card- or Relic-owned Rest Site option is an optional owner surface extension. Record the
+localized title/description, exact owner/state handle, eligibility, repeatability, enabled rule, fixed Gold
 cost, deterministic outcome, after-success behavior, optional icon, and singleplayer
 boundary. Eligibility controls absence; affordability controls visible-but-disabled state.
 The adapter owns the option class, contribution hook, stable option ID, saved run-use state,
-and native UI lifecycle. Card/Modifier owners and arbitrary transactional outcomes are
-unsupported adapter results in the first slice.
+and native UI lifecycle. A Card owner requires exactly one matching deck instance. Modifier
+owners and arbitrary transactional outcomes remain unsupported adapter results.
 
 The Custom Card Piles Package is a Mod-level surface. Record every pile's local identity,
 combat/run scope, headless/top-bar/bottom-left/bottom-right/ExtraHand style, default/preset/
@@ -225,10 +256,10 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 
 | Surface | Semantic inputs | Current proof route |
 |---|---|---|
-| Card | cost, kind, rarity, target, scaling values, optional calculated value contract, upgrade deltas, effect sequence | `CombatPlayer` |
+| Card | independent native Energy/Star costs, kind, rarity, target, scaling values, zero or more calculated value contracts, upgrade deltas, effect sequence | `CombatPlayer` |
 | Card hand emphasis | ordered actionable rules, conditions, semantic colors, priority/tie order, unplayable visibility | `CombatPlayer` plus headed hand review |
 | Relic | rarity, availability, trigger, owner guard, effect sequence, state contract | `CombatPlayer` |
-| Relic-owned Rest Site option | title/description, eligibility, repeatability, enabled rule, free/fixed Gold cost, deterministic outcome, stay/leave, optional icon, singleplayer boundary | real Rest Site / `MapNode` |
+| Card/Relic-owned Rest Site option | exact owner/state handle, title/description, eligibility, repeatability, enabled rule, free/fixed Gold cost, deterministic outcome, stay/leave, optional icon, singleplayer boundary | real Rest Site / `MapNode` |
 | Potion | rarity, usage window, target, effect sequence | `CombatPlayer` |
 | Power | buff/debuff, stack domain, trigger, amount mutation, display fields | `CombatPlayer` |
 | Relic/Power extra badge | host, Relic up to three distinct safe-corner values or Power one top-left value, format intent, refresh/removal | matching real Relic/Power consumer plus headed review |
@@ -236,11 +267,11 @@ These are the only surface-specific inputs the adapter needs from a normal SPEC:
 | Enchantment | compatible host, persistent change, display/icon fallback | `CombatPlayer` |
 | Orb | channel host, passive, evoke, icon and combat fallback | `CombatPlayer` |
 | Custom card pile | identity, combat/run scope, UI style/anchor, open/view/visibility/hotkeys, movement/order, localization, optional ExtraHand behavior | matching combat/run/card-pile UI host |
-| Enemy encounter | HP, group, ordered moves, conditions, encounter placement | `CombatEnemy` |
-| Event | acts, pages/options, public outcomes, bounded presentation, combat completion | `MapNode` |
-| Character | identity, HP, starter content, pools, hosted mechanic, selected static profiles | `RunStart` + `CombatPlayer` |
+| Enemy encounter graph | separate Monster/Encounter ids, HP ranges, explicit rosters, deterministic/conditional/weighted-random transitions, placement | selected reachable `CombatEnemy` variants |
+| Event | acts, pages/options, public outcomes, ordered acquisitions, allowlisted shake, finite forced mappings/sequences, combat completion | `MapNode` |
+| Character | identity, HP/Gold/MaxEnergy/Orb slots, starter multisets, typed pools, hosted mechanic, selected static profiles | `RunStart` + `CombatPlayer` |
 | Character combat cues | enabled/disabled fixed Idle/Attack/Hit/Dead contract, shared footprint/anchors, static fallback | `RunStart` + `CombatPlayer` |
-| Character combat resource | name, gain/spend/payoff, nonnegative domain, combat reset, fixed UI/fallback | two-combat Character / `CombatPlayer` |
+| Secondary resources | one or more bounded definitions, combat/run and turn-start policies, fixed/X required/optional/extra uses, authoritative commit payoff, selected UI | selected Character / `CombatPlayer` lifecycle |
 | Ordered semantic buffer | value/order, capacity/overflow, normal source destination, formula/output | two-combat Character / `CombatPlayer` |
 | Character Ancient dialogue | cataloged natural target, first/explicit/repeat visit, ordered speaker/text/prompts, Architect attackers | native Ancient + production Architect |
 | Advanced creature targeting | consumer, one/many mode, stable Mod-local target id, declarative live-Creature predicate, zero-target lifecycle | `CombatPlayer` plus headed mouse/controller targeting |
@@ -262,7 +293,7 @@ returns four implementation records:
 3. **diagnostics** - framework/compat/host identity and adapter status;
 4. **proof route** - the closest hosted suite and the structured invariant it must emit.
 
-The authoring/API baseline is `ritsulib-0.5.4-sts2-0.107.1`. A generated project compiles
+The authoring/API baseline is `ritsulib-0.5.11-sts2-0.107.1`. A generated project compiles
 against the exact local RitsuLib runtime selected at scaffold time, including its checked
 `0.107.1` compat DLL and SHA-256. A newer release is usable only when that exact compat
 variant, marker, and manifest hash validate; a later runtime upgrade requires an explicit

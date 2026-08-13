@@ -37,7 +37,7 @@ python ../modmaker/scripts/grep_log.py --mod-name <ModName>
   waits ~25s, and closes it.
 - `grep_log.py` reads the **current** `godot.log` in full. The verifier passes
   only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
-  `framework=RitsuLib`, an actual `frameworkVersion>=0.5.4`, and exact
+  `framework=RitsuLib`, an actual `frameworkVersion>=0.5.11`, and exact
   `host=0.107.1 compat=0.107.1`, with no
   error/exception block after that
   boundary. It includes multiline stack context and global errors whose header does not
@@ -91,8 +91,13 @@ expected/observed vocabulary:
 `"custom card piles complete.*observed=all"`. A custom-pile run follows
 `reference/card-piles.md` and proves the consumers selected by SPEC; Package support does
 not require a separate run for every documented public consumer. The verifier ignores all
-ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
-requires the exact load marker and `selftest done`.
+  ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
+  requires the exact load marker and `selftest done`.
+
+For a v3 SPEC, derive the ordinary verification checklist only from the families and concrete
+variants present in its `open-mod-surface-data/v1` block. Do not prebuild a nine-family matrix,
+claim omitted variants, or turn M8.7 structural validation into runtime proof. Each selected
+variant keeps its own evidence status until the current run actually observes it.
 
 > **Isolation before any `--self-test` run:** `--t2selftest` arms **every** loaded harness
 > mod, so park all non-target harness mods first (move them out of `mods/`), leaving only the
@@ -118,16 +123,16 @@ requires the exact load marker and `selftest done`.
   § Proof matrix.
 - For a Character Foundation, see `surfaces/character.md` § Proof matrix. Its opening
   paragraph is the gate the final proof must clear before it is valid.
-- For a character resource or an ordered semantic buffer/dynamic output, see
-  `surfaces/character.md` § Proof matrix. Character is the only surface that selects either
-  capability, so that page owns both proofs.
+- For selected secondary resources, see `reference/character-resource.md` and derive only the
+  declared resource/use/UI/lifecycle cases. For an ordered semantic buffer/dynamic output,
+  see `surfaces/character.md` § Proof matrix.
 - For advanced Card/Potion targeting, follow `reference/advanced-targeting.md`: require
   the source-aware single Card, single Potion, and player-aware multi Card as distinct real
   consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
   queued invalidation, unchanged rejected payment/Potion state, and normal Card result
   pile. `potion + many` remains a known lifecycle limitation.
-- For a Relic-owned Rest Site option, see `surfaces/relic.md` § Proof matrix, which follows
-  `reference/rest-site-options.md`.
+- For a Card- or Relic-owned Rest Site option, follow `reference/rest-site-options.md` and
+  the matching owner surface. Card ownership remains game-unobserved until that exact route runs.
 - For an Event, see `surfaces/event.md` § Proof matrix.
 
 ### Advanced-target headed acceptance

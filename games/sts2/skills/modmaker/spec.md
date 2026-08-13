@@ -223,7 +223,7 @@ Packages. One Mod may target multiple existing models; repeat the `content` and 
 
 Record each requested `mode` literally. Never rewrite a vanilla Card base-description
 replacement (replace, remove, or hide the original body) as `compose` or as
-`before_base`/`after_base` text. RitsuLib `0.5.4` has no promoted route for that request, so
+`before_base`/`after_base` text. RitsuLib `0.5.11` has no promoted route for that request, so
 stop before accepting the SPEC. A composition may enter the SPEC only after the user
 explicitly accepts that visibly different result, even when every numeric value is already
 final or the user asked not to repeat questions.

@@ -175,7 +175,7 @@ Other operations stop at their exact unpromoted boundary (INV-3, INV-7).
 
 Vanilla Card base-description replacement is the case to recognize by name, because the
 substitution looks harmless: when a user asks to replace, remove, or hide the original
-description body, the pinned RitsuLib `0.5.4` route can only compose text **before or after**
+description body, the pinned RitsuLib `0.5.11` route can only compose text **before or after**
 it. That is a visible difference, so it is `INV-5` — explain it, stop before SPEC or scaffold,
 and never downgrade `replace` to `compose` on your own.
 

@@ -1,7 +1,7 @@
 # Reference: custom Card Piles Package
 
 This page owns custom Card Piles authoring for STS2 `0.107.1` with official RitsuLib
-`0.5.4`. The official Custom Card Piles tutorial establishes the Package. Every documented
+`0.5.11`. The official Custom Card Piles tutorial establishes the Package. Every documented
 public consumer present in the pinned profile is supported; a missing focused proof is a
 verification fact, not a reason to shrink the Package.
 
@@ -71,7 +71,7 @@ existing shared global ID. Normal generated content uses Mod-owned IDs.
 `AllPiles`/combat-pile behavior, and discards it with that combat.
 
 `ModCardPileScope.RunPersistent` attaches the pile to `Player`, includes it in
-`Player.Piles`, persists across combats, and is serialized by RitsuLib `0.5.4` run-save
+`Player.Piles`, persists across combats, and is serialized by RitsuLib `0.5.11` run-save
 data. Save/load, existing-save behavior, and run-end cleanup are verification obligations
 for a generated Mod that actually uses this scope; they are not separate support gates.
 
@@ -172,7 +172,7 @@ native holders. `ModCardPileExtraHandSpec` supports all documented public settin
 - a deterministic `LayoutResolver` returning `ModExtraHandCardTransform`;
 - `OnCardVisualCreated` and `OnCardArrived` callbacks using the public Card/holder context.
 
-With manual play enabled, official RitsuLib `0.5.4` temporarily moves the exact Card into
+With manual play enabled, official RitsuLib `0.5.11` temporarily moves the exact Card into
 the backend native Hand, reparents its holder, and enters `NPlayerHand.StartCardPlay`.
 Cancellation restores the source pile/index; success uses normal payment, hooks, targeting,
 and result-pile processing. Generated Mods do not reproduce or patch this coordinator.

@@ -9,7 +9,7 @@ decisions and the evidence needed to apply them correctly.
 open-mod targets:
 
 - Slay the Spire 2 stable `0.107.1`;
-- RitsuLib `0.5.4` and `STS2.RitsuLib.Compat.0.107.1`;
+- RitsuLib `0.5.11` and `STS2.RitsuLib.Compat.0.107.1`;
 - .NET SDK 9;
 - Codex plugin distribution plus a portable Agent Skills payload;
 - cross-platform Python tools, with the complete loop currently verified on Windows.
@@ -23,6 +23,13 @@ and do not depend on a user-level framework NuGet cache.
 `baselines/STS2-RitsuLib` is the maintainer checkout for API and compat research. Runtime
 projects use the validated installed runtime variant rather than copying that
 checkout.
+
+The dependency profile moved forward on 2026-08-13. Upstream tag `v0.5.11` resolves to commit
+`8a2eb7c756d926287078f953f2fac1d47ec014b4`; the official Workshop manifest reports `0.5.11`
+and its `0.107.1` Compat DLL has SHA-256
+`6c2f65d2245207226aba80d3ea83b928871bd6e9fb7584d28b2669e10d335413`. New generated Mods
+require `STS2-RitsuLib >= 0.5.11`. Existing Mods and historical `0.5.4` proof records are not
+migrated or relabeled by this baseline change.
 
 ## STS2 0.107.1 Decompiled Research Baseline
 
@@ -49,7 +56,7 @@ baseline for player-facing purpose, intended usage, examples, and documented Rit
 feature-Package membership.
 
 The tutorial repository currently labels itself `public-beta`. It therefore does not
-replace the stable `0.107.1` / RitsuLib `0.5.4` source and compat profile for exact symbols
+replace the stable `0.107.1` / RitsuLib `0.5.11` source and compat profile for exact symbols
 or lifecycle behavior. Use the tutorial to answer "what product problem does this Package
 solve?" and the pinned RitsuLib checkout to answer "does this exact public API exist on our
 target?" Distill accepted findings into the shipped pack; generated Mods never read the
@@ -160,7 +167,7 @@ research Mod.
 ### M6.6 closure
 
 The human lead closed M6.6 after evaluating its provisional capability packages. Official
-tutorial semantics plus pinned RitsuLib `0.5.4` public source determine Package support.
+tutorial semantics plus pinned RitsuLib `0.5.11` public source determine Package support.
 Recipes, builds, and real hosted proofs show what open-mod has implemented and observed.
 Packages 2A computed Card values, 5
 custom-Character dialogue in native Ancient scenes, 1 bounded advanced targeting, and 3
@@ -597,7 +604,7 @@ request -> literal deliverable -> exact route -> design/spec -> generated behavi
         -> literal report -> reproducible installed result
 ```
 
-The active plan retains six bounded Packages. M8.4 was removed by the human lead; Package
+The active plan retains seven bounded Packages. M8.4 was removed by the human lead; Package
 numbers do not imply execution order:
 
 - M8.1 literal completion claims and required player experiences carried by the existing
@@ -612,7 +619,10 @@ numbers do not imply execution order:
   forced cleanup and proof that no launcher-owned game child remains; and
 - M8.7 product-boundary generalization for the human-selected audit findings, with parseable
   surface-specific semantic contracts, one shared lightweight structural validator, and exact
-  evidence labels rather than prose-only widening or nine family proof campaigns; and
+  evidence labels rather than prose-only widening or nine family proof campaigns;
+- M8.8 surface-effect composability generalization, currently paused; its existing research and
+  contract must be refreshed against the current `v0.5.11` guide/source/API profile before future
+  execution; and
 - M8.6 one clean installed whole-skill acceptance after the preceding Packages close, covering
   both runtime state and its complete player-facing semantics.
 
@@ -622,22 +632,27 @@ workflow are closed. M8.5 closed by explicit human-lead decision on 2026-08-12 w
 receiving an execution contract and with unresolved exceptions: its manifest and
 executable-adjacent path repairs have static/Windows compile evidence, but macOS installed
 reproduction and launcher-owned process-tree cleanup are unimplemented and unproved. This closure
-changes no runtime capability row and does not authorize M8.7 or M8.6. Its bounded record is
-`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 is planned but not started; the
-current narrow authoring routes remain authoritative until it closes, and M8.6 waits for it.
-Concrete implementation ownership,
-ordered steps, and fixed result-record names live in the active implementation plan so a
-later session does not need to reinterpret these research inputs. Intermediate Packages
-record their work and results; M8.6 owns the final clean whole-skill judgment.
+changes no runtime capability row and did not itself authorize or prove later M8.7/M8.8/M8.6 work.
+Its bounded record is
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 source development is now
+implemented and committed: the nine selected families have v3 owner contracts, lowering guidance,
+shared structural validation, and literal game-unobserved labels. Both committed payload trees
+include M8.7 after explicit human-lead authorization on 2026-08-13; its result record and explicit
+closure remain outstanding. M8.8 is paused, and its existing research/contract is not executable
+as-is under the current `0.5.11` dependency profile. M8.6 waits for both Packages to
+close. Concrete implementation ownership, ordered steps, and fixed
+result-record names live in the active implementation plan so a later session does not need to
+reinterpret these research inputs. Intermediate Packages record their work and results; M8.6 owns
+the final clean whole-skill judgment.
 
-No generic Watcher discovery is promoted from the copied project alone. Exact API,
-lifecycle, platform, and payload conclusions still require the repository's pinned source
-and proportionate maintained evidence. M8.7 may promote a selected reusable capability
-family only through its version-pinned contract, lowering, and shared structural validation;
-newly generalized shapes remain game-unobserved until a later selected Mod exercises them. Until
-then the literal request blocks
-instead of receiving an approximation. This does not authorize prompt-derived Harmony,
-reflection, Publicizer, or IL or broaden multiplayer support.
+No generic Watcher discovery is promoted from the copied project alone. Exact API, lifecycle,
+platform, and payload conclusions still require the repository's pinned source and proportionate
+maintained evidence. M8.7's selected reusable families are promoted in authoritative source through
+version-pinned contracts, lowering, and shared structural validation; newly generalized shapes
+remain game-unobserved until a later selected Mod exercises them. M8.8 must apply the same evidence
+discipline to the complete current-profile RitsuLib effect surface while treating previous
+recipes/proofs as representative rather than exhaustive. This does not authorize prompt-derived Harmony, reflection,
+Publicizer, or IL or broaden multiplayer support.
 
 ## Reused Design Ideas
 
@@ -671,7 +686,7 @@ tutorial checkout is an active semantics baseline, but remains maintainer-only. 
 these checkouts may be used to scaffold, author, build, repair, or run a generated Mod.
 
 CCGS remains retained M7 workflow research but is maintainer-only and is not required to
-build or install `0.6.0`. Other Claude-specific baselines may remain for historical
+build or install `0.7.0`. Other Claude-specific baselines may remain for historical
 comparison; the product and publish flow target Codex.
 
 ## Decision Rules

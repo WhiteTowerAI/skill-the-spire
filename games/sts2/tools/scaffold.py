@@ -215,7 +215,7 @@ public static partial class MainFile
         "min_game_version": PROFILE.host_version,
         "has_pck": False,
         "has_dll": True,
-        # The authoring contract targets the 0.5.4 public API floor. The local compile
+        # The authoring contract targets the 0.5.11 public API floor. The local compile
         # version is recorded in the project for reproducibility but must not raise the
         # player runtime minimum when the Mod uses only that baseline API.
         "dependencies": [{"id": PROFILE.runtime_mod_id, "min_version": PROFILE.framework_version}],

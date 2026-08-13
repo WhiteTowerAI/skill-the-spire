@@ -1,7 +1,7 @@
 {
   "schema": "openmod.sts2.art-contract/v1",
   "host_version": "0.107.1",
-  "framework_profile": "ritsulib-0.5.4-sts2-0.107.1",
+  "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
   "source": {
     "definition": "gen_sprite.py SPECS and character_art.py CHARACTER_ART_BUNDLE",
     "projection": "python gen_sprite.py export-contract",
@@ -580,5 +580,5 @@
     "total_frames": 18,
     "generation_calls": 4
   },
-  "catalog_sha256": "953a1cf586c57d60246a49a09a45874cd4925e000147a027188f8afdef2dab77"
+  "catalog_sha256": "8d36c8968a11581e8ed08bf94b4ae332fe278a5b74d30b4ee56d34fbf823c6c7"
 }

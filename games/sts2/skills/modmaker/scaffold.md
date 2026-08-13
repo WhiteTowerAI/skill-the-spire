@@ -6,8 +6,8 @@ adapter-owned path (`INV-7`).
 ## Authoring profile
 
 ```text
-authoring profile: ritsulib-0.5.4-sts2-0.107.1
-compile runtime: the checked local RitsuLib version (>= 0.5.4)
+authoring profile: ritsulib-0.5.11-sts2-0.107.1
+compile runtime: the checked local RitsuLib version (>= 0.5.11)
 runtime Mod id: STS2-RitsuLib
 host: STS2 stable 0.107.1
 ```
@@ -44,7 +44,7 @@ The project contains:
   input;
 - `RitsuLibAutoCopy=false` and an empty `RitsuLibDeployDir`, so the consumer never bundles
   the framework DLL;
-- `mod_manifest.json` with only `STS2-RitsuLib >= 0.5.4` and
+- `mod_manifest.json` with only `STS2-RitsuLib >= 0.5.11` and
   `min_game_version=0.107.1`,
   `has_dll=true`, and `has_pck=false` for the empty scaffold;
 - `Sts2PathDiscovery.props` plus optional `local.props` support; local Mods resolve beside
@@ -65,7 +65,7 @@ compat zip or verified variant pack when neither source exists. Never copy
 
 The local runtime Compat DLL is the reproducible compile input for this project. The project
 records its framework version and SHA-256 but never writes a machine-specific absolute path.
-The manifest keeps the `0.5.4` player floor because authoring remains inside the `0.5.4` API
+The manifest keeps the `0.5.11` player floor because authoring remains inside the `0.5.11` API
 baseline even when the local compile runtime is newer. If the installed runtime changes after
 scaffold, `build.py` stops and requires an explicit runtime-profile migration; it never silently
 changes either recorded identity or the player's minimum dependency.

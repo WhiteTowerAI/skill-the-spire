@@ -37,7 +37,7 @@ python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName>
   waits ~25s, and closes it.
 - `grep_log.py` reads the **current** `godot.log` in full. The verifier passes
   only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
-  `framework=RitsuLib`, an actual `frameworkVersion>=0.5.4`, and exact
+  `framework=RitsuLib`, an actual `frameworkVersion>=0.5.11`, and exact
   `host=0.107.1 compat=0.107.1`, with no
   error/exception block after that
   boundary. It includes multiline stack context and global errors whose header does not

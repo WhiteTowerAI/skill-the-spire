@@ -15,7 +15,7 @@ custom/Ancient scenes are not.
   "family": "event_option_profiles",
   "owner": "surfaces/event.md",
   "spec_key": "event_option_profiles",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "profiles": {"type": "list<object>", "cardinality": "0..*", "default": []},
     "profiles[].event_id/option_id": {"type": "text", "cardinality": "1 each", "unique": "pair"},

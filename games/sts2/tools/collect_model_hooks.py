@@ -517,7 +517,7 @@ def build_catalog() -> dict:
     catalog = {
         "schema": SCHEMA,
         "host_version": HOST_VERSION,
-        "framework_profile": "ritsulib-0.5.4-sts2-0.107.1",
+        "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
         "source": {
             "definition": (
                 "pinned STS2 0.107.1 decompile: Core/Models/AbstractModel.cs declarations, "

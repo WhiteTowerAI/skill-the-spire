@@ -14,7 +14,7 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   "family": "character_starting",
   "owner": "surfaces/character.md",
   "spec_key": "character_starting",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "starting_hp": {"type": "integer", "cardinality": "1"},
     "starting_gold": {"type": "integer", "cardinality": "1"},

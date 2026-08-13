@@ -14,7 +14,7 @@ Before MSBuild, the tool verifies:
 - the generated project has no framework `PackageReference`, uses the bundled
   `Godot.NET.Sdk 4.5.1`, and references local STS2/RitsuLib assemblies;
 - no BaseLib/Alchyr dependency appears in the project or manifest;
-- the manifest keeps the authoring API floor `STS2-RitsuLib >= 0.5.4` and targets host
+- the manifest keeps the authoring API floor `STS2-RitsuLib >= 0.5.11` and targets host
   `0.107.1` even when the scaffold-pinned local compile runtime is newer;
 - `has_pck` is `true` exactly when the authored Mod resource tree is non-empty;
 - when localization tables exist, `INV-10` requires both `eng` and `zhs` directories with

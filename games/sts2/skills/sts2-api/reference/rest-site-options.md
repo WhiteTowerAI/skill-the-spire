@@ -3,14 +3,14 @@
 This page owns the bounded route for a generated Card or Relic to add an action to the
 native Rest Site. The historical headed proof observed the Relic-owned profile only;
 Card ownership is framework-expressible and authorable here but remains game-unobserved.
-The route is grounded against STS2 `0.107.1` and RitsuLib `0.5.4`.
+The route is grounded against STS2 `0.107.1` and RitsuLib `0.5.11`.
 
 <!-- open-mod-surface-contract/v1
 {
   "family": "rest_site_options",
   "owner": "reference/rest-site-options.md",
   "spec_key": "rest_site_options",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.4"},
+  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
   "fields": {
     "options": {"type": "list<object>", "cardinality": "0..*", "default": []},
     "options[].id": {"type": "text", "cardinality": "1", "unique": true},

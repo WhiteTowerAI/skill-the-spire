@@ -74,6 +74,8 @@ public sealed class <CharacterName>
     public override CharacterGender Gender => CharacterGender.Neutral;
     public override int StartingHp => InitialHp;
     public override int StartingGold => <gold>;
+    public override int MaxEnergy => <max-energy>;
+    public override int BaseOrbSlotCount => <base-orb-slots>;
     public override string? PlaceholderCharacterId => "ironclad";
     public override Color NameColor => <CharacterName>Theme.NameColor;
     public override Color EnergyLabelOutlineColor => <CharacterName>Theme.EnergyLabelOutlineColor;
@@ -92,9 +94,10 @@ public sealed class <CharacterName>
 }
 ```
 
-The inherited combat energy is the normal `3`. Foundation may prove a separate
-starter mechanic such as one turn-1 Energy gain, but must not replace native
-Energy or invent an alternative-energy hook.
+`StartingHp`, `StartingGold`, `MaxEnergy`, and `BaseOrbSlotCount` come from current SPEC.
+Native values such as 99 Gold, 3 Energy, and 0 base Orb slots are design analogies/defaults,
+not hard requirements. Foundation may prove a separate starter mechanic such as one turn-1
+Energy gain, but must not replace native Energy or invent an alternative-energy hook.
 
 ## Typed pools and starter ecosystem
 
@@ -129,11 +132,18 @@ color: never lower a palette name such as `red` into `EnergyColorName`, because 
 custom art would make the engine request an ungrounded `energy_red` resource.
 
 Register every concrete member with its pool generic. Starter cards are
-`CardRarity.Basic`; the starter relic is `RelicRarity.Starter`. Before entering a
+`CardRarity.Basic`; starter relics are `RelicRarity.Starter`. Use the same Character
+registration entry for all current-SPEC starter multisets: `.AddStartingCard<T>(count, order)`,
+`.AddStartingRelic<T>(count, order)`, and `.AddStartingPotion<T>(count, order)`. Zero entries
+means an empty starter multiset; never register a placeholder model merely to fill one. Every
+starter must also be registered in its typed content graph.
+
+Before entering a
 native Shop, the unlocked non-Basic pool must contain at least two eligible
 Attacks, two eligible Skills, and one eligible Power. The merchant excludes the
 first same-type result while filling the second slot, so a `1/1/1` pool throws
-before the Shop UI exists. Author real effect cards for all five slots.
+before the Shop UI exists. Author real effect cards for all five slots. Verification derives
+HP, Gold, Energy, Orb slots, and all three exact starter multisets from current SPEC.
 
 ## Character-wide theme
 

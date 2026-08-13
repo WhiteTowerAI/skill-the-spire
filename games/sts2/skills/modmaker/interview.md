@@ -124,7 +124,7 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
      unpromoted package and stop. Offer a closest **new** element only as a separate user
      choice, never as an automatic substitution.
    - **Fail closed on vanilla Card base-description replacement.** If the user asks to
-     replace, remove, or hide the original description body, explain that RitsuLib `0.5.4`
+     replace, remove, or hide the original description body, explain that RitsuLib `0.5.11`
      exposes only before/after description fragments and pause before writing SPEC or
      scaffolding. Never reinterpret the request as appended text. Continue only after the
      user explicitly accepts a before/after composition; confirmed numbers or a request not

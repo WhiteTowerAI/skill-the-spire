@@ -947,7 +947,7 @@ def build_art_contract_catalog() -> dict:
     catalog: dict = {
         "schema": ART_CONTRACT_SCHEMA,
         "host_version": "0.107.1",
-        "framework_profile": "ritsulib-0.5.4-sts2-0.107.1",
+        "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
         "source": {
             # Name the modules, not a repo path: this catalog ships inside both payloads,
             # where the tools live beside the skills rather than at the maintainer layout.

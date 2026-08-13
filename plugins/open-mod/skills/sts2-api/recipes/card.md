@@ -7,7 +7,8 @@
 > upgrades, SmartFormat descriptions) — **read that first.** The skill fills only the
 > **effect logic**; `ModCardTemplate`, content-pack registration, localization, and
 > `CardAssetProfile` are adapter-owned.
-> When SPEC declares calculated values, Energy/Star icon counts, typed computed Power
+> When SPEC declares a native Star cost or upgrade, use the exact cost lifecycle in
+> `Native Energy and Star costs` below. When SPEC declares calculated values, Energy/Star icon counts, typed computed Power
 > amounts, or variable tooltips, also read `reference/card-computed-values.md`.
 > When SPEC declares a filtered live-creature target, also read
 > `reference/advanced-targeting.md`; it owns registration, one/many execution,
@@ -32,6 +33,8 @@ consumable (potion). Phrasings: "a card that…", "an attack that…", "a skill 
 gives…", "a power that…", "costs 1 energy and…". Cards fire their effect in `OnPlay`
 when the player plays them, and their numbers can **scale** (Strength, upgrades) — so
 they use `DynamicVar`s + SmartFormat, not the literal amounts relics/potions get away with.
+Energy and Stars are independent native Card payments. A Card may have fixed or X Energy
+and no/fixed/X Stars, except that simultaneous Energy-X and Star-X remains blocked.
 
 The bounded forced-follow-up Quest token is the one exception to this normal play-from-
 hand classification. It is an unplayable dependency of an Event composition; route it to
@@ -102,6 +105,10 @@ namespace <ModName>.Cards;
 
 public sealed class <CardName> : ModCardTemplate
 {
+    // Optional native Star payment selected by SPEC:
+    // public override int CanonicalStarCost => 2;
+    // public override bool HasStarCostX => true; // use instead of CanonicalStarCost for Star-X
+
     // Numbers that scale (upgrades/Strength). Pick the vars the effect needs:
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[]
     {
@@ -142,6 +149,37 @@ public sealed class <CardName> : ModCardTemplate
 | `type` | `CardType` = `Attack, Skill, Power, …` | deals damage → `Attack`; block/utility → `Skill`; permanent buff → `Power`. |
 | `rarity` | `CardRarity` = `Basic, Common, Uncommon, Rare, …` | droppable default `Common`; `Basic` is for starter cards. |
 | `target` | `TargetType` (shared with potions) | one enemy → **`AnyEnemy`**; all enemies → `AllEnemies`; a self/no-selection effect (block, gain Strength) → **`Self`**. |
+
+## Native Energy and Star costs
+
+The constructor's first argument is the native Energy cost: a nonnegative integer for a
+fixed cost or `-1` for Energy-X. For Energy-X, also emit
+`protected override bool HasEnergyCostX => true`. Do not encode an X cost as a large integer
+or a DynamicVar.
+
+Star cost is independent:
+
+```csharp
+public override int CanonicalStarCost => 2;       // fixed Stars; omit for none
+// OR:
+public override bool HasStarCostX => true;        // Star-X; do not also set a fixed Star cost
+
+protected override void OnUpgrade()
+{
+    UpgradeStarCostBy(-1);                        // fixed Star cost only
+}
+```
+
+Use `UpgradeStarCostBy` only for a fixed Star cost; the host throws when it is called on
+Star-X. Energy upgrades continue through `EnergyCost.UpgradeBy(...)`. Keep both on the
+native `CardModel` lifecycle so playability, native cost UI, payment, auto-play, cloning,
+and replay see the same declarations. Never create a parallel Star amount/store or spend
+Stars manually inside `OnPlay` to imitate a Card cost.
+
+Reject simultaneous Energy-X and Star-X. Other new Energy/Star combinations are
+framework-expressible and authorable but game-unobserved; a future generated Mod verifies
+only the combination its SPEC selects. Payment rejection must leave both resources, Card
+state, and effect state unchanged.
 
 An advanced target does not lower to a vanilla enum. Use the stable registered value from
 `reference/advanced-targeting.md`. A single-target Card keeps `cardPlay.Target`; a
@@ -269,7 +307,8 @@ await PowerCmd.Apply<VulnerablePower>(choiceContext, cardPlay.Target,
 
 Read `reference/card-computed-values.md` and preserve its complete contract. In short:
 
-- generate one pure bounded calculation shared by base/upgrade preview and execution;
+- for each declared value, generate one pure bounded calculation shared by base/upgrade
+  preview and execution, with a unique name on that Card;
 - select `ComputedDamage`/`ComputedBlock` when normal combat modifiers apply, plain
   `Computed` only when they intentionally do not, and the typed Energy/Stars/Power helper
   for those roles;
@@ -298,6 +337,8 @@ Cards declare their static numbers in `CanonicalVars` and read them via typed ac
 protected override void OnUpgrade()
 {
     base.DynamicVars.Damage.UpgradeValueBy(3m);
+    // base.EnergyCost.UpgradeBy(-1);  // when SPEC lowers a fixed Energy-cost upgrade
+    // UpgradeStarCostBy(-1);         // when SPEC lowers a fixed Star-cost upgrade
     // base.DynamicVars["VulnerablePower"].UpgradeValueBy(1m);   // bump each var the upgrade changes
 }
 ```
@@ -369,6 +410,10 @@ content-pack Card registration. Do not create a second id rule.
 - [ ] Class is `public sealed` and extends `ModCardTemplate`.
 - [ ] Exactly one `.Card<TPool,TCard>()` registration exists in `MainFile.Content.cs`.
 - [ ] Constructor passes `cost, CardType, CardRarity, TargetType` to `base(...)`.
+- [ ] Energy and Star cost kinds/amounts match SPEC; fixed Star uses
+      `CanonicalStarCost`, Star-X uses `HasStarCostX`, and both X kinds are never combined.
+- [ ] Cost upgrades use `EnergyCost.UpgradeBy` / `UpgradeStarCostBy`; no manual Star store
+      or `OnPlay` payment substitutes for native payment.
 - [ ] `TargetType` matches the effect: `AnyEnemy` (targeted attack), `Self` (block /
       self-buff — NOT `AnyPlayer`, that's potions), `AllEnemies` (room).
 - [ ] An advanced target follows `reference/advanced-targeting.md`: one stable
@@ -390,8 +435,8 @@ content-pack Card registration. Do not create a second id rule.
 - [ ] `[T2MOD-SELFTEST]` diagnostic marker logged in `OnPlay`; load marker in MainFile;
       `SelfTest` independently asserts post-state.
 - [ ] A Quest Card is emitted only for the bounded forced-follow-up contract: cost `-1`,
-      Quest rarity/type, unplayable, no upgrades, one act/target, and unchanged hook inputs
-      outside that act.
+      Quest rarity/type, unplayable, no upgrades, one finite prioritized act-set/sequence
+      mapping, exact terminal consumption, and unchanged hook inputs outside that mapping.
 
 ## Full worked examples (verified vanilla, copy-adapt)
 

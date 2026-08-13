@@ -18,8 +18,9 @@ conditional pages, and resumable/terminal special combat), also read
 `portrait_halo` profile, read `reference/event-vfx.md`. When page or option descriptions
 use styled/animated vanilla text, read `reference/event-text-effects.md`. When enabled
 options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings, read
-`reference/event-option-presentation.md`. When a custom Quest Card should force this Event
-in one specified act, read `reference/forced-followup-event.md`. When an option selects
+  `reference/event-option-presentation.md`. When custom Quest Cards declare a finite
+  prioritized mapping or sequence that can force this Event in selected acts, read
+  `reference/forced-followup-event.md`. When an option selects
 native Card/relic acquisition presentation, the bounded one-shot screen shake, or the
 curated built-in `trial_noble` VFX, read `reference/event-native-presentation.md`.
 
@@ -183,8 +184,8 @@ red localization text as a substitute.
 When a known Card is added to the deck, pass the exact awaited `CardPileCmd.Add` result to
 `CardCmd.PreviewCardPileAdd`; do not grant or preview a second Card. A relic acquisition
 uses exactly one awaited `RelicCmd.Obtain<T>` call, which already owns the inventory
-animation. A named option may additionally select the one preference-respecting
-`weak_short` screen shake. See `reference/event-native-presentation.md` for exact ordering,
+animation. A named option may additionally select one preference-respecting allowlisted
+`weak_short` or `strong_normal` screen shake. See `reference/event-native-presentation.md` for exact ordering,
 allowed values, and the combined headed proof.
 
 `Owner` is null on the canonical model and non-null only after the mutable event enters a

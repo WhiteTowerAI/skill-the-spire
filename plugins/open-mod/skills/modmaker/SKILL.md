@@ -53,14 +53,17 @@ AND that its **effect actually fires** (tier-2, now
 automated by an in-process self-test harness — no dev-console typing), and when a stage
 fails runs the **bounded automated repair loop** (`repair.md`) to diagnose → fix →
 re-verify within a hard retry cap. A **custom power** (buff/debuff) is supported too,
-usually as the dependency of a card/relic that applies it. An **enemy encounter** is a
-custom monster + the encounter that spawns it, authored as one vertical slice and proven
-through the **`CombatEnemy`** scenario (enter the encounter, confirm the monster, end the
-turns needed to traverse its declared cycle/branches, and assert move history plus exact
+usually as the dependency of a card/relic that applies it. An **enemy encounter graph**
+declares Monster and Encounter nodes separately and links them with explicit rosters; a
+Monster may be reused and an Encounter may spawn multiple or repeated models. Selected
+reachable variants are proven through the **`CombatEnemy`** scenario (enter the encounter,
+confirm its roster, end the turns needed to traverse declared transitions, and assert move
+history plus exact
 player/monster HP, Block, Power, debuff, and multi-hit state). Grounded move vocabulary
 includes self buff/custom Power with a downstream consequence, player debuff, block/heal,
-multi-attack, composite actions, deterministic cycles, and conditional branches. One
-checked 360×360 static monster body is supported in combat and bestiary, with an explicit
+multi-attack, composite actions, deterministic cycles, conditional branches, and explicitly
+requested positive-weight random branches through the supplied RNG. One checked 360×360
+static body per Monster is supported in combat and bestiary, with an explicit
 built-in fallback when absent. Spine and move animation are later extensions.
 An **event** is a normal map event with nested pages/options, authored as one semantic
 Event and proven through the **`MapNode`** scenario (enter the event room,
@@ -78,18 +81,21 @@ page, portrait, combat, and finish transitions. Page and option descriptions may
 the live-verified bounded vanilla Event rich-text vocabulary (emphasis, semantic colors,
 `jitter`, and `sine`) through the native label, with no generated VFX node. Custom phobia
 art, arbitrary VFX, and custom/Ancient scenes remain out. Normal Events also support native
-Card/relic acquisition presentation, one preference-respecting `weak_short` screen shake,
+ordered Card/relic acquisition presentation, one preference-respecting allowlisted
+`weak_short` or `strong_normal` screen shake,
 and the curated built-in `trial_noble` VFX at its vanilla host/placement with explicit
 cleanup.
-One additional bounded Event composition is implemented: a solo custom Quest Card
-may force one custom Event from an Unknown MapPoint in one specified act. The target stays
-out of ordinary Event pools and one named option completes/removes the token. This public-
-hook path does not authorize arbitrary chains, vanilla edits, multiplayer semantics, or a
-new save-roundtrip claim.
+One additional bounded Event composition is implemented: custom Quest Cards may declare a
+finite prioritized mapping list from act sets to custom Event sequences. Every sequence
+Event stays out of ordinary pools, progress is a saved Card index, terminal consumption is
+exact, and conflicts fail closed. This public-hook path does not authorize arbitrary graphs,
+vanilla edits, multiplayer semantics, or a new save-roundtrip claim.
 A **Character Foundation** uses the selected framework adapter's character template. It
 appears in the real character-select UI, starts a run
-with valid card/relic/potion pools and exact starter deck/relic, and proves HP, standard
-3 energy, and one grounded public starter mechanic through `RunStart` + `CombatPlayer`.
+with valid typed card/relic/potion pools and exact starter Card/Relic/Potion multisets.
+Starting HP, Gold, MaxEnergy, and base Orb slots are current-SPEC values; native values are
+analogies/defaults rather than fixed output. Verification derives them through `RunStart` +
+`CombatPlayer`.
 The adapter owns exactly-once registration. Static presentation is a separate opt-in layer
 with nine promoted profiles: selection portrait/background, top-panel icon, non-Spine
 combat/rest/merchant bodies, five-layer energy, and distinct 256x256 large/24x24 rich-text
@@ -104,14 +110,13 @@ native scenes/options/rewards/progression and uses RitsuLib's registered populat
 Read `reference/ancient-dialogue.md`; do not generate Harmony/reflection injection.
 Read `reference/character-presentation.md` and `reference/character-combat-cues.md` for
 their respective visual layers.
-Two **advanced capability contracts are implemented with RitsuLib**:
-a combat-owned nonnegative resource using `SecondaryResourceCmd` with explicit
-gain/affordability/all-or-nothing spend/reset plus public `RegisterCombatUi`, and a bounded
+Two **advanced capability contracts are implemented with RitsuLib**: one or more bounded
+secondary resources using the public registry, payment planner/commit ledger, combat/run
+persistence, declared turn-start policy, and selected counter/Card UI; and a bounded
 ordered semantic buffer using combat-attached semantic values while source Cards use native
-Play -> Discard. The fixed 220x32 icon+text control keeps a text-only fallback and a 160px
-offset from native Energy. Route only to `reference/character-resource.md` and
+Play -> Discard. Route only to `reference/character-resource.md` and
 `reference/ordered-card-buffer.md`. Retaining played Cards in a `CustomPile` is unsupported.
-Do not invent alternative-energy patches, zone UI, persistence, C/D access, or
+Do not invent alternative-energy patches, zone UI, C/D access, or
 `OpenMod.Runtime`.
 The bounded **advanced targeting** route supports deterministic filtered live-creature
 targets for single-target Cards, single-target Potions, and multi-target Cards. It keeps
@@ -119,30 +124,29 @@ native mouse/controller selection, execution-time validation, payment/Potion ret
 and normal Card result piles. Route it only to `reference/advanced-targeting.md`.
 Multi-target Potions have a pinned lifecycle limitation because queued empty-target
 execution cannot cancel before consumption; do not generate a patch or restore the Potion.
-The implemented **Relic-owned Rest Site option** route is singleplayer-only and bounded to
+The implemented **Card- or Relic-owned Rest Site option** route is singleplayer-only and bounded to
 free or fixed Gold cost plus one deterministic preflightable outcome. It distinguishes
 absence from native disabled state, rechecks payment at selection time, supports once per
 Rest Site or once per run, and may preserve the other native options once. Route it only
-to `reference/rest-site-options.md`. Card/Modifier owners, arbitrary transactions,
+to `reference/rest-site-options.md`. A Card owner requires exactly one matching deck
+instance and preserves its concrete state handle. Modifier owners, arbitrary transactions,
 same-site repeat, and multiplayer remain unsupported until separate proof.
 Multi-element mods record real content nodes plus directed **interactions**; tier-2 drives
 the source by its actual type and checks the dependent observation, so a card→power link
 cannot pass merely because both models loaded. “Combo” is not a content type.
-Two core **stateful relic** families are implemented: Happy Flower-style counters
-cross combats and save/resume through `SavedAttachedState<SpecificRelic,int/bool>`, while
-Stone Calendar-style timing
-reads the current combat's `TurnNumber`. Tier-2 proves `N-1`, threshold, reset/carry-over,
-and the save round trip where applicable. Turn-local event counts, once-per-combat flags,
-previous-turn memory, and limited run uses have grounded patterns but remain provisional
-until their scenario canaries. A counter is state on its real element, not a new element
-  type. **Custom static art** is now wired and live-verified for the established **eight specs — card
-  portraits, relic icons, power icons, potion icons, enchantment icons, orb icons, static monster bodies, and normal-event
-  initial/page portrait slots** (each a loose PNG the game loads directly; no `.tres` atlas authoring)
-  plus nine Character static profiles: selection portrait/background, top-panel icon, static
-  non-Spine combat/rest/merchant bodies, five-layer full energy, and distinct large/text
-  Energy icons, and the optional bounded four-action Character combat-cue bundle.
-  Orb support is icon-only and retains its explicit vanilla Spine scene/channel-SFX
-  fallbacks. Locked Character selection and map-marker normalizers are grounded but not
+**Bounded state-driven mechanisms** declare exact eligible state owners separately from
+transition listeners, bounded scalar schemas, allowlisted transitions, lifetime/reset/
+persistence, visibility, consumers, and outputs. Run-save is limited to Card/Relic/
+Enchantment `bool`/`int`/`string` owners; newly generalized combinations remain
+game-unobserved. A counter is state on its real element, not a new element type.
+**Custom static art** is now wired and live-verified for the established **eight specs — card
+portraits, relic icons, power icons, potion icons, enchantment icons, orb icons, static monster
+bodies, and normal-event initial/page portrait slots** (each a loose PNG the game loads
+directly; no `.tres` atlas authoring) plus nine Character static profiles: selection
+portrait/background, top-panel icon, static non-Spine combat/rest/merchant bodies, five-layer
+full energy, and distinct large/text Energy icons, and the optional bounded four-action
+Character combat-cue bundle. Orb support is icon-only and retains its explicit vanilla Spine
+scene/channel-SFX fallbacks. Locked Character selection and map-marker normalizers are grounded but not
   promoted; see `reference/character-presentation.md`. The
 user picks placeholder (default, fast) or custom art. When the current agent runtime
 actually exposes a host-native raster image tool, prefer that route (Codex calls it
@@ -171,7 +175,7 @@ Other operations stop at their exact unpromoted boundary (INV-3, INV-7).
 
 Vanilla Card base-description replacement is the case to recognize by name, because the
 substitution looks harmless: when a user asks to replace, remove, or hide the original
-description body, the pinned RitsuLib `0.5.4` route can only compose text **before or after**
+description body, the pinned RitsuLib `0.5.11` route can only compose text **before or after**
 it. That is a visible difference, so it is `INV-5` — explain it, stop before SPEC or scaffold,
 and never downgrade `replace` to `compose` on your own.
 
