@@ -20,15 +20,19 @@ payload forms, but its result record and explicit human closure remain outstandi
 nine generalized product families and their independent `framework-expressible`,
 `open-mod-authorable`, and `game-observed` facts. Do not reimplement or narrow them.
 
-M8.8 Surface Effect Composability Generalization is paused and unimplemented. Its former
-trace/schema-oriented draft is retired; `documents/IMPLEMENTATION_PLAN.md` now records a
-simplified future plan centered on refreshed RitsuLib `0.5.11` research, concise
-recipe/reference ownership, the existing thin preflight admission rule, behavior-level developer
-tests, Build, and real-host SelfTest. The plan is not execution authorization. Future work must
-first refresh the guide/source/API/Compat audit and obtain explicit human confirmation.
+M8.8 Surface Effect Composability Generalization closed by explicit human-lead acceptance on
+2026-08-13 after its inventory, WP1-WP5 implementation, WP8 source/static closeout, and authorized
+plugin/portable payload delivery completed. Its result and literal verification boundaries are in
+`documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`. Progression, post-run Badge,
+Settings, Telemetry, Multiplayer, Update Check, WP6 asset/scene/animation/audio/shared-presentation
+expansion, WP7 named typed interoperability, and new interactions with those deferred groups remain
+Future Outlook. Preserve all asset, presentation, audio, and interoperability routes that already
+existed before or were implemented in WP1-WP5; do not retract or reimplement them. This does not
+narrow M8.7's existing availability routes or the unrelated Power/Relic/Intent Extra Badges
+feature. `documents/IMPLEMENTATION_PLAN.md` owns the exact closed scope and boundaries.
 
-M8.6 is the final clean installed whole-skill acceptance. It remains ineligible until M8.7 and
-M8.8 close and the human lead explicitly selects its request, host, and execution contract. Do not
+M8.6 is the final clean installed whole-skill acceptance. It remains ineligible because M8.7 is
+open and because the human lead has not selected its request, host, and execution contract. Do not
 start it automatically. Do not install a payload, launch the game, create an acceptance Mod,
 commit, push, or publish without explicit instruction.
 

@@ -143,6 +143,19 @@ public framework routes are exactly `reference/character-resource.md` and
 `reference/ordered-card-buffer.md`. If neither can express the mechanic, mark it unsupported
 and report a pack gap.
 
+## Character capability and state routes
+
+Read `reference/model-capabilities.md` only when the Character owns a separable state/display
+bundle. A `CharacterCapability` can own typed state, DynamicVars, tips, and supported display
+contributions, but Character is not a normal run/combat hook listener; do not claim owner-hook
+dispatch. Read `reference/lifecycle-state-rng.md` when Character-owned player/run/profile state
+crosses lifecycle, save, or deterministic RNG boundaries.
+
+Append only the selected reference's game-term SPEC block. Keep Card/Relic/Power effects on those
+models, preserve exact player/run identity, cleanup and persistence rules, and prove the real
+Character consumer plus save/profile host where selected. Do not use these routes to create a
+Settings, Progression, Multiplayer, or process-wide effect surface.
+
 ## Pool cards are content, not filler
 
 A Foundation needs enough unlocked non-Basic cards to fill the merchant's colored slots, so

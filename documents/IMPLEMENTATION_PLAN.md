@@ -9,21 +9,26 @@ M8.7 Product Boundary Generalization is implemented in authoritative source and 
 forms. Its result record and explicit human closure remain outstanding, so it is implemented but
 open. Do not re-execute, reimplement, or narrow it.
 
-M8.8 Surface Effect Composability Generalization is paused by explicit human-lead direction. Its
-former trace/schema-oriented draft predates both RitsuLib `0.5.11` and the simplified workflow and
-is retired. The refactored future plan below replaces that draft, but is not execution
-authorization. Future resumption must first refresh the official guide and current public
-source/API/Compat audit, then obtain explicit human confirmation before implementation.
+M8.8 Surface Effect Composability Generalization completed its full capability inventory and
+ownership-confirmation gate on 2026-08-13 and implemented WP1-WP5. The human lead deferred
+Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/scene/
+animation/audio and shared-presentation expansion, and WP7 named typed interoperability. New
+interactions whose purpose is to connect included capabilities to any deferred group are deferred
+with it. WP8 source/static closeout and authorized plugin/portable payload delivery are complete;
+real-host verification retains its separate authorization gate. The human lead accepted the final
+result and closed M8.8 on 2026-08-13. The durable record is
+`documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`. Existing asset, presentation,
+audio, and interoperability routes must be preserved at their current literal boundaries.
 
 M8.6 is the final clean installed whole-skill acceptance. It intentionally follows M8.7 and M8.8
-despite its number. It is ineligible while either Package remains open and has no executable
-contract until the human lead selects the exact request and host.
+despite its number. M8.8 is closed, but M8.6 remains ineligible while M8.7 is open and has no
+executable contract until the human lead selects the exact request and host.
 
 Current order and gate:
 
-1. M8.7: implemented and open; result record and explicit closure remain.
-2. M8.8: paused; current-profile research/contract refresh and confirmation required.
-3. M8.6: waiting for both closures and explicit selection.
+1. M8.8: closed by explicit human-lead acceptance on 2026-08-13.
+2. M8.7: implemented and open; result record and explicit closure remain.
+3. M8.6: waiting for M8.7 closure and explicit selection.
 
 ## New-Session Start Protocol
 
@@ -31,8 +36,8 @@ Current order and gate:
    `games/sts2/tests/README.md`, and `games/sts2/tests/content-capability-graph.md`.
 2. Treat `documents/history/` as immutable evidence, never as current instruction.
 3. Check `git status` before editing and preserve unrelated dirty/untracked work.
-4. A plan entry is not execution authorization. Do not start M8.8 from its retired draft. Do not
-   start M8.6 while M8.7 or M8.8 remains open.
+4. A plan entry is not execution authorization. Do not restart closed M8.8 or start M8.6 while
+   M8.7 remains open or before its execution contract is explicitly selected.
 5. Work in authoritative source under `games/sts2/`. Never hand-edit `plugins/open-mod/` or
    top-level `skills/`; regenerate them through `publish.sh` only when explicitly authorized.
 6. Do not install a payload, launch the game, run Tier 1/Tier 2, create a fresh acceptance Mod,
@@ -93,8 +98,8 @@ Static source, tests, Build, or payload synchronization do not imply game observ
 | M8.4 | Removed 2026-08-05 | Do not reuse the number or recreate the Package |
 | M8.5 - cross-platform installed workflow | Closed 2026-08-12 with exceptions | `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`; macOS installed reproduction and launcher-owned process-tree cleanup remain unresolved |
 | M8.7 - product boundary generalization | Implemented; open | `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` and explicit closure remain required |
-| M8.8 - surface effect composability | Paused; refactored future plan recorded | Refresh current `0.5.11` evidence, confirm the plan, then implement recipe/reference authoring and proportional proof without new trace/schema machinery |
-| M8.6 - clean installed whole-skill acceptance | Waiting | Eligible only after M8.7/M8.8 close and the human lead selects its contract |
+| M8.8 - surface effect composability | Closed 2026-08-13 | `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`; newly generalized shapes remain game-unobserved |
+| M8.6 - clean installed whole-skill acceptance | Waiting | Eligible only after M8.7 closes and the human lead selects its contract |
 
 ## M8.7 Preservation Gate
 
@@ -112,37 +117,66 @@ source implementation or payload presence.
 
 ## M8.8 - Surface Effect Composability Generalization
 
-### State And Authorization Gate
+### Closed Scope And Authorization Boundary
 
-M8.8 remains paused and unimplemented. This section is its architecture-adjusted future plan, not
-an executable contract. Do not begin its audit, source edits, generated proof project, payload
-regeneration, install, game launch, or result record until the human lead explicitly selects M8.8.
+M8.8's complete capability inventory and ownership proposal were reported to the human lead on
+2026-08-13. The human lead confirmed the revised scope, authorized implementation and payload
+delivery in separate steps, then accepted the final result and closed M8.8 the same day. Closure did
+not authorize a generated proof project, installation, game launch, Tier 1/Tier 2, headed review,
+commit, push, publication, release, or M8.6.
 
-When selected, the first turn is research and plan confirmation only:
+The required first phase was research and plan confirmation:
 
 1. refresh the official RitsuLib guide navigation, public `v0.5.11` source/API, and
    `STS2.RitsuLib.Compat.0.107.1` metadata;
-2. compare the refreshed facts with this plan and the current capability graph;
-3. report any changed assumptions, newly found surfaces, or boundaries; and
-4. obtain explicit human-lead confirmation of the updated implementation scope before editing
-   authoritative source.
+2. inventory the complete documented and public capability surface using the default-inclusion rule
+   in Part 1, not only APIs already represented by open-mod;
+3. compare the refreshed facts with this plan, every current open-mod surface, and the current
+   capability graph;
+4. report changed assumptions, proposed new surfaces, exclusions, and concrete retained boundaries;
+   and
+5. obtain explicit human-lead confirmation of the resulting implementation scope before editing
+   authoritative capability source.
+
+All five steps are complete. The confirmed implementation excludes Progression, post-run Badge,
+Settings, Telemetry, Multiplayer, and Update Check as product families. A later explicit human-lead
+decision also defers WP6 asset/scene/animation/audio and shared-presentation expansion and WP7 named
+typed interoperability in full. M8.8 excludes new recipes, implementation, tests, or compositions
+whose purpose is to connect an included family to any deferred group. Preserve independently useful
+behavior and all M8.7 capabilities: in particular, this decision does not remove existing asset,
+presentation, audio, or interoperability routes, M8.7's availability/epoch routes, or RitsuLib Extra
+Badges on Power, Relic, and Intent. All deferred groups remain future interests, not M8.8 closure
+work.
 
 M8.7 remains a preservation baseline. M8.8 may reuse and compose its nine generalized families but
 must not reimplement, narrow, or relabel them. M8.8 does not start M8.6.
 
 ### Goal
 
-Make every player-visible effect capability exposed by the pinned RitsuLib `0.5.11` profile for
-Card, Potion, Relic, Power, Orb, Enchantment, Monster, and Event usable through open-mod's normal
-human-readable SPEC and Author workflow, including new combinations not represented by an older
-recipe or proof Mod.
+Make every documented or public capability exposed by the pinned RitsuLib `0.5.11` profile that can
+reasonably serve a generated Mod and remains inside the final confirmed M8.8 product scope usable
+through open-mod's normal human-readable SPEC and Author workflow. The final scope is WP1-WP5:
+gameplay behavior and composition, lifecycle/state/RNG, the accepted content-model and world
+surfaces, Reward/Card Pile, and Runtime UI. It preserves but does not generalize the pre-existing
+asset, presentation, audio, and interoperability boundary.
+
+Inclusion is the default. A capability is not excluded merely because it is difficult, lacks an old
+recipe or proof Mod, needs a new surface, or requires headed verification. Exclude it only when the
+audit establishes that it is framework-internal/maintainer infrastructure with no reasonable
+generated-Mod use, requires a forbidden mechanism or unavailable lifecycle value, or falls outside
+an explicit product decision accepted by the human lead. Record the smallest concrete reason.
+
+The six initially deferred families plus WP6 and WP7 are the explicit product-decision exceptions
+to default inclusion. Their public APIs remain accounted for in the inventory, but M8.8 does not
+newly make them open-mod-authorable and does not add integration points for them to otherwise
+included surfaces. Existing open-mod authoring routes in those domains remain unchanged.
 
 The resulting workflow remains:
 
 ```text
 human intent
   -> implementable SPEC behavior and Autotest scenarios
-  -> existing recipe/reference route
+  -> shipped recipe/reference route
   -> thin capability preflight only where silent unsupported code is otherwise possible
   -> Author + SelfTest
   -> Build
@@ -165,52 +199,97 @@ M8.8 must not:
   ordinary fields, recipe prose, stage state, or proof accounting;
 - turn `capability_preflight.py` into a general SPEC validator;
 - require one proof Mod or one test for every individual API symbol;
-- create new content surfaces, registration paths, arbitrary UI/VFX hosts, multiplayer claims,
-  cross-Mod coordination, or external runtime dependencies;
+- author Progression, post-run Badge, Settings, Telemetry, Multiplayer, or Update Check, or add new
+  interactions between included families and any of those deferred families;
+- generalize assets, scenes, animation, audio, shared presentation, or named typed interoperability,
+  or add new interactions whose purpose is to use either deferred WP6/WP7 capability group;
+- remove, narrow, or relabel any asset, presentation, audio, or interoperability route that already
+  existed before this scope decision or was implemented by WP1-WP5;
+- invent registration paths, arbitrary UI/VFX hosts, multiplayer claims, cross-Mod coordination,
+  or external runtime dependencies that are not grounded in the pinned public profile;
 - generate prompt-derived Harmony, reflection, Publicizer, IL, or private/internal access; or
 - treat Build, source tests, a hook-fired log, or previous-version evidence as current gameplay
   proof.
 
+New open-mod surfaces are allowed when a public capability represents a distinct user-requestable
+product family or has ownership, lifecycle, routing, or verification needs that would be misleading
+inside an existing surface. A new surface must use a grounded public/fixed registration route and
+ship its own concise routing, SPEC, recipe/reference, and verification ownership; permission to add
+a surface is not permission to invent a runtime API.
+
 Ordinary C#/BCL, public STS2 `0.107.1` and RitsuLib Compat `0.5.11` APIs, Mod-owned helpers and
-state, and existing maintained fixed Adapters remain valid implementation tools. A composition
-blocks only when it requires a capability absent from the pinned profile, a value unavailable in a
-legal lifecycle, a forbidden mechanism, or a separately unsupported product surface. Record the
-smallest concrete boundary.
+state, and existing maintained fixed Adapters remain valid implementation tools. A capability or
+composition blocks only when it requires a capability absent from the pinned profile, a value
+unavailable in a legal lifecycle, a forbidden mechanism, or an explicitly retained product
+boundary. Record the smallest concrete boundary.
 
-### Part 1 - Refresh The Current Effect Surface
+### Part 1 - Inventory The Complete Mod-Authoring Capability Surface
 
-Use the official guide as the discovery index, then verify exact symbols and lifecycle behavior
-against public `v0.5.11` source/API and pinned Compat metadata. Cover all eight selected owner
-surfaces rather than searching only for effect names already present in open-mod.
+Use the complete official RitsuLib documentation navigation as the discovery index, then verify
+exact symbols and lifecycle behavior against public `v0.5.11` source/API and the pinned
+`STS2.RitsuLib.Compat.0.107.1` metadata. Inventory documented features and public APIs even when
+open-mod has no current recipe, proof Mod, surface, or historical request for them.
 
-Review the existing owners that can already express or constrain an effect:
+The inventory must cover at least:
 
-- the eight relevant `skills/modmaker/surfaces/*.md` pages;
-- their `sts2-api/recipes/*.md` and referenced capability pages;
-- model-hook participation, targeting, computed values, state, resources, Rest Site, Event,
-  Monster, vanilla composition, localization, and SelfTest guidance;
-- the pinned model-hook and vanilla catalogs; and
-- the current capability graph and known limitations.
+- every official RitsuLib tutorial and current guide area;
+- public `RitsuLibFramework` entry points, content-pack/registry methods, templates, attributes,
+  interfaces, commands, callbacks, lifecycle events, helpers, and compatibility-specific members;
+- content behavior, combat hooks and commands, targeting, state, resources, card movement/costs,
+  rewards, interactions, UI/presentation, localization, audio, persistence/run data/RNG,
+  scenes/assets, and supported interoperability;
+- the deferred Progression, post-run Badge, Settings, Telemetry, Multiplayer, and Update Check API
+  families, solely to account for their public boundary and prevent accidental partial inclusion;
+- public APIs called out by the official docs as present but not yet explained in a dedicated
+  article; and
+- the current open-mod capability graph, known limitations, fixed Adapters, and M8.7 preservation
+  baseline.
 
-Keep the audit as a concise maintainer research record organized by official guide/source area and
-its eventual recipe/reference owner. It may list coverage and unresolved questions, but it is not
-a generated-project contract, schema, or permanent per-effect proof ledger. For every discovered
-area, decide one of four plain-language outcomes:
+Keep this as a concise maintainer research record organized by official documentation/source area.
+It may list coverage, proposed owners, and unresolved questions, but it is not a generated-project
+contract, permanent API ledger, surface schema, or one-row-per-symbol proof matrix.
 
-- current-profile player-visible effect needing an authoring owner;
-- lifecycle/query/target/state context needed by an effect owner;
-- non-effect registration, asset, diagnostic, or tooling API; or
-- retained product boundary with the concrete reason.
+Apply a default-inclusion rule. For every documented feature and relevant public API family, record
+one plain-language outcome:
 
-The refresh is complete only when every guide area and relevant public API area is accounted for,
-every player-visible effect has an existing or proposed concise owner, and at least one capability
-absent from older open-mod recipes/proofs is included so the work is not circular.
+- author through an existing open-mod surface;
+- author through a shared cross-surface recipe/reference;
+- create a new open-mod surface with a grounded public/fixed route;
+- retain a concrete temporary or permanent product boundary; or
+- exclude framework-internal, maintainer, diagnostic-service, or other infrastructure that has no
+  reasonable generated-Mod use, with the exact reason.
 
-### Part 2 - Put Durable Knowledge In Recipes And References
+The inventory is complete only when every official documentation area and relevant public API area
+is accounted for, every exclusion has a concrete reason, proposed new surfaces are visible for
+human review, and capabilities absent from older open-mod recipes/proofs are included so the work
+is not circular.
 
-Implement the refreshed result in the smallest existing owner set. Prefer one shared reference for
+### Part 2 - Resolve Ownership Across Existing And New Surfaces
+
+Map the inventory against every current `skills/modmaker/surfaces/*.md` owner: Card, Character,
+Enchantment, Event, Keyword, Monster/Encounter, Orb, Potion, Power, and Relic. Review their recipes
+and all shared references that already express or constrain behavior, including model-hook
+participation, targeting, computed values, state, resources, Rest Site, Event outcomes, vanilla
+composition, localization, presentation, and SelfTest guidance.
+
+Prefer an existing surface when it truthfully owns the user's request. Prefer one shared reference
+when several surfaces use the same lifecycle or API. Propose a new surface when the capability is
+independently requestable and an existing surface would hide or misstate its registration,
+lifecycle, presentation, or verification contract. Each proposal must name its user-facing purpose,
+public/fixed route, SPEC vocabulary, related owners, hard boundaries, and nearest proof host.
+
+This ownership pass is complete only when every included capability has an existing shared owner or
+an explicitly accepted new-surface proposal. The accepted new surfaces are Act, Affliction,
+Modifier, Ancient, Reward, Card Pile, Runtime UI, Global Effect, and Rest Site. Do not use a generic
+utility page to hide unresolved ownership or route a deferred-family interaction through another
+owner.
+
+### Part 3 - Put Durable Knowledge In Recipes And References
+
+Implement the confirmed result in the smallest coherent owner set. Prefer one shared reference for
 knowledge used by several surfaces and keep owner-specific lifecycle, parameters, ordering, and
-examples in the corresponding recipe/surface page. Do not duplicate eight effect catalogs.
+examples in the corresponding recipe/surface page. Do not duplicate the same capability catalog
+across surfaces.
 
 For each materially distinct capability family, the authoring guidance must let Author determine:
 
@@ -231,7 +310,7 @@ matches the combination. Author must preserve each component's lifecycle, orderi
 semantics, and independent SelfTest assertions instead of lowering the combination to the nearest
 old sample.
 
-### Part 3 - Keep Preflight Thin
+### Part 4 - Keep Preflight Thin
 
 Review each newly identified hard boundary against all three preflight admission criteria:
 
@@ -252,7 +331,7 @@ Every added preflight rule requires positive, negative, payload-layout, and neut
 showing the rejection would disappear if the rule were removed. If no new rule clears the three
 criteria, do not change the checker.
 
-### Part 4 - Prove Requirement-To-Code And Autotest Readiness
+### Part 5 - Prove Requirement-To-Code And Autotest Readiness
 
 Developer tests must emphasize behavior and artifacts rather than document formatting:
 
@@ -277,11 +356,12 @@ unselected capabilities or infer a family-wide gameplay result. Without that sep
 authorization, label every new shape game-unobserved and leave M8.6's final installed acceptance
 untouched.
 
-### Part 5 - Source And Payload Delivery
+### Part 6 - Source And Payload Delivery
 
 Before delivery, run the full surviving source suite, focused new behavior/compile cases, both skill
 validators, Python `compileall`, retired-workflow residual scans, and `git diff --check`. Confirm
-that M8.7 owner knowledge and capability graph rows remain present.
+that M8.7 owner knowledge, capability graph rows, and existing asset/presentation/audio/interop
+routes remain present.
 
 After explicit payload authorization, regenerate plugin and portable payloads only through
 `publish.sh`, then verify:
@@ -295,12 +375,17 @@ After explicit payload authorization, regenerate plugin and portable payloads on
 
 ### Close Criteria
 
-M8.8 may be proposed for human closure only when:
+M8.8 was eligible for human closure only when:
 
-- the refreshed `0.5.11` guide/source/API/Compat audit accounts for the complete selected effect
-  surface;
-- every current-profile player-visible effect has concise shipped recipe/reference ownership or a
-  concrete retained product boundary;
+- the refreshed `0.5.11` guide/source/API/Compat inventory accounts for every documented feature
+  and relevant public Mod-authoring API area;
+- every included capability has concise shipped ownership through an existing or explicitly added
+  surface/shared route, while every exclusion or retained boundary states its concrete reason;
+- no Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, or new interaction
+  with one of those families has entered M8.8 source, tests, generated payloads, or proof claims;
+- no WP6 asset/scene/animation/audio/shared-presentation expansion, WP7 named typed interoperability
+  expansion, or new interaction with either group has entered M8.8 source, tests, payloads, or proof
+  claims, while all existing routes in those domains remain intact;
 - representative requirement-to-authoring, API compatibility, capability reachability, and
   SelfTest-verifier tests pass;
 - the sole preflight remains within its three admission criteria;
@@ -311,7 +396,8 @@ M8.8 may be proposed for human closure only when:
 - the human lead explicitly accepts `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`
   and closes the Package.
 
-M8.8 closure does not itself start M8.6.
+All criteria were satisfied within their literal evidence boundaries, and the human lead accepted
+the result record and closed M8.8 on 2026-08-13. Closure did not itself start M8.6.
 
 ## M8.6 Waiting Gate
 
@@ -364,6 +450,9 @@ Closed Package details stay in `documents/history/` and must not return as per-M
 ceremony. The active plan carries only current status, prerequisites, and the next authorized work
 boundary.
 
-Future interests such as multiplayer vanilla overrides, unsupported presentation hosts, broader
-effect composability, and process-tree cleanup remain separate work until explicitly selected and
-grounded. They do not silently widen the current product or acceptance scope.
+Future interests such as Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update
+Check, full asset/scene/animation/audio/shared-presentation generalization, named typed
+interoperability generalization, multiplayer vanilla overrides, unsupported presentation hosts, and
+process-tree cleanup remain separate work until explicitly selected and grounded. Their new
+cross-family integrations are future work as well. Existing capabilities are preserved, but these
+interests do not silently widen the current product or acceptance scope.

@@ -605,16 +605,21 @@ development is implemented and committed: its nine selected families retain comp
 guidance, lowering, hard boundaries, proof matrices, and literal game-unobserved labels. Both
 committed payload trees include M8.7 after explicit human-lead authorization on 2026-08-13; its
 result record and explicit closure remain outstanding. The workflow simplification removes only
-machine-management wrappers around those capabilities, not the capabilities themselves. M8.8 is
-paused and its prior research/contract is not executable under the current `0.5.11` profile. M8.6
-waits for both Packages to close. Current status and gates live in the active implementation plan.
+machine-management wrappers around those capabilities, not the capabilities themselves. M8.8
+completed its full `0.5.11` inventory, confirmed WP1-WP5 implementation, WP8 source/static closeout,
+and authorized plugin/portable payload delivery. The human lead accepted its result and closed it
+on 2026-08-13; newly generalized shapes remain game-unobserved. Its retired prior contract is not
+executable under the current profile. M8.6 still waits for M8.7 closure and an explicitly selected
+execution contract. Current status and gates live in the active implementation plan.
 
 No generic Watcher discovery is promoted from the copied project alone. Exact API, lifecycle,
 platform, and payload conclusions still require pinned source and proportionate maintained
 evidence. M8.7's selected reusable families remain promoted in authoritative source; newly
-generalized shapes remain game-unobserved until a later selected Mod exercises them. M8.8 must
-apply the same evidence discipline to the complete current-profile RitsuLib effect surface while
-treating previous recipes/proofs as representative rather than exhaustive. This does not authorize
+generalized shapes remain game-unobserved until a later selected Mod exercises them. M8.8 used a
+complete inventory of documented and relevant public current-profile RitsuLib Mod-authoring
+capabilities, not only effects already represented by the existing surfaces, and applied default
+inclusion across every existing surface while adding grounded new surfaces. Previous recipes and
+proofs remain representative rather than exhaustive. M8.8 closure does not authorize
 prompt-derived Harmony, reflection, Publicizer, or IL or broaden multiplayer support.
 
 ## Reused Design Ideas

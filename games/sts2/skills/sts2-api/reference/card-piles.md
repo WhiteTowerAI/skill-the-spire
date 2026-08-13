@@ -222,7 +222,7 @@ the human lead; that exception does not narrow this Package-level support declar
 
 The Package creates new Mod-owned piles. It does not by itself replace vanilla piles,
 change unrelated Cards' result locations, or authorize ungrounded Harmony, reflection,
-Publicizer, or IL generation. Multiplayer behavior is supported only where the selected
-public Card Piles API and normal game command already provide it; never add a local-only
-fallback that would desynchronize peers. Record any newly confirmed API/lifecycle defect
-as the smallest affected consumer limitation rather than retracting the whole Package.
+Publicizer, or IL generation. Use only the selected public Card Piles API and normal game
+commands; M8.8 does not design, add, or claim verification for Multiplayer behavior or a Card
+Pile-to-Multiplayer integration. Record any newly confirmed API/lifecycle defect as the smallest
+affected consumer limitation rather than retracting the whole Package.

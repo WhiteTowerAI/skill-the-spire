@@ -72,6 +72,18 @@ and its three behaviors are separate `effects` entries rather than one sequence.
   framework diagnostic record
 ```
 
+## Shared capability routes
+
+Read `reference/model-capabilities.md` for separable behavior/state attached to this Orb,
+`reference/lifecycle-state-rng.md` when it crosses callbacks or selected persistence boundaries,
+and `reference/shared-effect-hooks.md` for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum-hand-size behavior. The Orb or typed capability remains the owner and is
+reachable only while the Orb is in the combat queue.
+
+Keep channel/passive/evoke behavior in their native fields. Append a shared-route SPEC block only
+for an independent rule, preserving exact phase/order, unchanged neutral behavior, combat cleanup,
+display refresh, and real queue-host assertions. Do not use a process-wide listener.
+
 ## `smartDescription` is what makes the numbers live
 
 `OrbModel` substitutes `{Passive}`, `{Evoke}`, and `{energyPrefix}` only when a

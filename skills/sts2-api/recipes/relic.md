@@ -154,6 +154,15 @@ icon is one verified `rest_site_option` 256x169 image at
 `images/rest_site_options/<slug>.png`. Resolve absence to the native Heal icon before
 building `RestSiteOptionAssetProfile`; do not return a missing custom path.
 
+## Optional shared capability routes
+
+Keep ordinary Relic triggers in their matching override below. For a separable Relic-owned
+behavior/state bundle, read `reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Relic or
+typed capability and preserve cadence, owner guard, phase/order, neutral behavior, reset/save, and
+removal cleanup. Do not register a Relic-owned rule process-wide.
+
 ## Trigger hooks (override the one matching the request)
 
 All are `public virtual async Task` on `AbstractModel` (relics receive them because

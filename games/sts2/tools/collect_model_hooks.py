@@ -102,6 +102,7 @@ ITERATORS: dict[str, tuple[str, tuple[str, ...]]] = {
 # Surfaces this pack can generate, mapped to the listener family they register as. A
 # surface absent here is not authorable regardless of hook reachability.
 GENERATED_SURFACES: dict[str, str] = {
+    "affliction": "affliction",
     "card": "card",
     "relic": "relic",
     "potion": "potion",
@@ -109,6 +110,27 @@ GENERATED_SURFACES: dict[str, str] = {
     "orb": "orb",
     "monster": "monster",
     "enchantment": "enchantment",
+    "modifier": "modifier",
+}
+
+# HookedSingletonModel does not enter one of the built-in listener families above. It
+# subscribes through ModHelper, and its selected HookType fixes which concrete iterator
+# can yield it. Keep the two scopes as distinct SPEC surfaces: choosing the wrong one
+# compiles cleanly and then silently never receives the hook.
+GLOBAL_EFFECT_SURFACE_ITERATORS: dict[str, set[str]] = {
+    "global-effect-run": {
+        "runState.IterateHookListeners(null)",
+        "runState.IterateHookListeners(combatState)",
+    },
+    "global-effect-combat": {
+        "IterateCombatHookListeners(combatState)",
+        # This composite iterator yields Run subscribers first, then delegates to the child
+        # CombatState, which yields Combat subscribers. The same dispatched hook can therefore
+        # truthfully reach either singleton stream.
+        "runState.IterateHookListeners(combatState)",
+        "combatState.IterateHookListeners()",
+        "CombatState.IterateHookListeners()",
+    },
 }
 
 # `EnchantmentModel` documents its own replacements for five `AbstractModel` hooks, each
@@ -469,6 +491,12 @@ def build_catalog() -> dict:
             for surface, listener in GENERATED_SURFACES.items()
             if listener in listeners
         )
+        surfaces.extend(
+            surface
+            for surface, iterator_forms in GLOBAL_EFFECT_SURFACE_ITERATORS.items()
+            if iterator_forms.intersection(hook.iterators)
+        )
+        surfaces.sort()
         redirect = ENCHANTMENT_REDIRECTS.get(name)
         if redirect is not None and "enchantment" in surfaces:
             # The general hook is documented as wrong for an Enchantment, so it is not an

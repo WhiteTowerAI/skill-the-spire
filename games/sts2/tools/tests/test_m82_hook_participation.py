@@ -24,7 +24,19 @@ CATALOG_PATH = (
 ROUTE_PAGE = SKILLS_DIR / "sts2-api" / "reference" / "model-hook-participation.md"
 SURFACES_DIR = SKILLS_DIR / "modmaker" / "surfaces"
 RECIPES_DIR = SKILLS_DIR / "sts2-api" / "recipes"
-AUTHORABLE_SURFACES = ("card", "enchantment", "monster", "orb", "potion", "power", "relic")
+AUTHORABLE_SURFACE_PAGES = {
+    "affliction": "affliction",
+    "card": "card",
+    "enchantment": "enchantment",
+    "global-effect-run": "global-effect",
+    "global-effect-combat": "global-effect",
+    "modifier": "modifier",
+    "monster": "monster",
+    "orb": "orb",
+    "potion": "potion",
+    "power": "power",
+    "relic": "relic",
+}
 NON_AUTHORABLE_SURFACES = ("character", "event", "keyword")
 
 
@@ -77,8 +89,8 @@ class HookCatalogProjectionTests(unittest.TestCase):
             self.assertIn("rest-site-options.md", hook["owned_by_route"])
 
     def test_authorable_surfaces_document_hook_participation(self) -> None:
-        for slug in AUTHORABLE_SURFACES:
-            with self.subTest(surface=slug):
+        for surface, slug in AUTHORABLE_SURFACE_PAGES.items():
+            with self.subTest(surface=surface):
                 text = (SURFACES_DIR / f"{slug}.md").read_text(encoding="utf-8")
                 self.assertIn("hook participation", text.lower())
                 recipe = (RECIPES_DIR / f"{slug}.md").read_text(encoding="utf-8")
@@ -102,9 +114,39 @@ class HookCatalogProjectionTests(unittest.TestCase):
             seen.add(shape)
         self.assertEqual({"value", "out-replacement", "collection"}, seen)
 
+    def test_new_model_and_global_effect_surfaces_have_exact_reachability(self) -> None:
+        hooks = {hook["semantic_id"]: hook for hook in catalog()["hooks"]}
+
+        combat_only = hooks["should_draw"]
+        self.assertIn("affliction", combat_only["authorable_surfaces"])
+        self.assertIn("modifier", combat_only["authorable_surfaces"])
+        self.assertIn("global-effect-combat", combat_only["authorable_surfaces"])
+        self.assertNotIn("global-effect-run", combat_only["authorable_surfaces"])
+
+        run_only = hooks["modify_merchant_price"]
+        self.assertIn("modifier", run_only["authorable_surfaces"])
+        self.assertIn("global-effect-run", run_only["authorable_surfaces"])
+        self.assertNotIn("affliction", run_only["authorable_surfaces"])
+        self.assertNotIn("global-effect-combat", run_only["authorable_surfaces"])
+
+        run_with_combat = hooks["modify_damage_multiplicative"]
+        self.assertIn("affliction", run_with_combat["authorable_surfaces"])
+        self.assertIn("global-effect-run", run_with_combat["authorable_surfaces"])
+        self.assertIn("global-effect-combat", run_with_combat["authorable_surfaces"])
+
+    def test_preflight_rejects_wrong_global_effect_stream(self) -> None:
+        with self.assertRaises(preflight.CapabilityPreflightError):
+            preflight.validate_spec_text(
+                hook_spec("should_draw", "global-effect-run", "value")
+            )
+        with self.assertRaises(preflight.CapabilityPreflightError):
+            preflight.validate_spec_text(
+                hook_spec("modify_merchant_price", "global-effect-combat", "value")
+            )
+
     def test_each_surface_rejects_one_cataloged_unreachable_hook(self) -> None:
         hooks = [hook for hook in catalog()["hooks"] if not hook.get("owned_by_route")]
-        for surface in AUTHORABLE_SURFACES:
+        for surface in AUTHORABLE_SURFACE_PAGES:
             unreachable = next(
                 (hook for hook in hooks if surface not in hook["authorable_surfaces"]),
                 None,

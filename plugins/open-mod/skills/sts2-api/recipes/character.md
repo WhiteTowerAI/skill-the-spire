@@ -99,6 +99,15 @@ Native values such as 99 Gold, 3 Energy, and 0 base Orb slots are design analogi
 not hard requirements. Foundation may prove a separate starter mechanic such as one turn-1
 Energy gain, but must not replace native Energy or invent an alternative-energy hook.
 
+## Optional Character capability and state routes
+
+For a separable Character-owned state/display bundle, read `reference/model-capabilities.md` and
+use `CharacterCapability`; do not claim normal owner-hook dispatch. For Character-owned
+player/run/profile state, lifecycle, persistence, or deterministic RNG, read
+`reference/lifecycle-state-rng.md`. Keep gameplay effects on the actual Card/Relic/Power owner,
+and prove Character identity plus the selected save/profile lifecycle. These routes do not create
+Settings, Progression, Multiplayer, or process-wide effects.
+
 ## Typed pools and starter ecosystem
 
 Use RitsuLib's public pool models:

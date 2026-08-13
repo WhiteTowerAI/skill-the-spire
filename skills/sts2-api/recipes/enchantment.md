@@ -60,6 +60,15 @@ CardCmd.Enchant<<EnchantmentName>>(card, amount);
 After attachment, assert `card.Enchantment is <EnchantmentName>` and read `Amount` from
 that mutable instance. Preserve base restrictions when overriding `CanEnchant`.
 
+## Optional shared capability routes
+
+For a separable Enchantment-owned behavior/state bundle, read `reference/model-capabilities.md`.
+For lifecycle/persistence/RNG, read `reference/lifecycle-state-rng.md`; for reachable per-hit
+attack, healing, Energy/Stars-gain response, or maximum hand size, read
+`reference/shared-effect-hooks.md`. Implement on the Enchantment or its typed capability, preserve
+the host Card's combat-pile reachability, and prove neutral plus cleanup cases. Process-wide
+registration is not an Enchantment route.
+
 ## SPEC `hook participation`: five hooks are replaced here
 
 An Enchantment reaches 61 of the 68 cataloged hooks at their ordinary `AbstractModel` signature.

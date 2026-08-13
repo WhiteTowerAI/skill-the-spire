@@ -1,8 +1,9 @@
-# Card- or Relic-owned Rest Site options
+# Native Rest Site options
 
-This page owns the bounded route for a generated Card or Relic to add an action to the
-native Rest Site. The historical headed proof observed the Relic-owned profile only;
-Card ownership is framework-expressible and authorable here but remains game-unobserved.
+This page owns the bounded route for a standalone Rest Site action or for a generated Card,
+Relic, or selected Modifier to add an action to the native Rest Site. The historical headed
+proof observed the Relic-owned profile only; standalone, Card, and Modifier ownership are
+framework-expressible and authorable here but remain game-unobserved.
 The route is grounded against STS2 `0.107.1` and RitsuLib `0.5.11`.
 
 
@@ -10,8 +11,9 @@ The route is grounded against STS2 `0.107.1` and RitsuLib `0.5.11`.
 
 The authorable slice is deliberately bounded:
 
-- the owner is exactly one concrete generated-Mod-local Card in the deck or one concrete
-  generated-Mod-local Relic in the run;
+- the owner is one standalone Run singleton, exactly one concrete generated-Mod-local Card in
+  the deck, one concrete generated-Mod-local Relic in the run, or one selected mutable Modifier
+  in `RunState.Modifiers`;
 - the run is singleplayer; multiplayer and replay hide the option and fail closed;
 - the cost is free or one fixed nonnegative Gold amount;
 - the outcome is deterministic and preflightable, using public commands with no player
@@ -21,16 +23,15 @@ The authorable slice is deliberately bounded:
   for one subsequent choice;
 - a custom icon is optional and falls back to the checked native Heal icon.
 
-Modifier owners, variable or non-Gold costs, arbitrary transactional outcomes,
-remote-player ownership, multiplayer synchronization, and repeated successful use in one
-Rest Site are unsupported. Do not generate Harmony, reflection, or UI patches to extend
-this boundary.
+Variable or non-Gold costs, arbitrary transactional outcomes, remote-player ownership,
+multiplayer synchronization, and repeated successful use in one Rest Site are unsupported.
+Do not generate Harmony, reflection, or UI patches to extend this boundary.
 
 Card reachability is pinned rather than inferred: both Rest Site hooks dispatch through
 `runState.IterateHookListeners(null)`, whose fixed listener set includes deck Cards; the
 `0.107.1` catalog marks Card authorable, and vanilla `ByrdonisEgg` implements
-`TryModifyRestSiteOptions`. This does not authorize Modifier ownership: open-mod has no
-selected custom Modifier owner surface for this Package.
+`TryModifyRestSiteOptions`. Modifier reachability is equally pinned by the run listener set;
+standalone ownership is supplied by RitsuLib's Run `HookedSingletonModel` subscription.
 
 ## Semantic declaration
 
@@ -38,11 +39,11 @@ Record these fields before selecting the adapter:
 
 ```markdown
 - **owned Rest Site option**:
-  - owner: card | relic
+  - owner: standalone | card | relic | modifier
   - owner multiplicity: exactly one
   - title: <localized button title>
   - description: <localized hover description>
-  - eligibility: <when the owned relic should contribute the option>
+  - eligibility: <when the selected owner should contribute the option>
   - repeatability: once per Rest Site | once per run
   - enabled rule: always | can pay fixed Gold cost
   - cost: free | <nonnegative integer> Gold
@@ -80,9 +81,11 @@ other run state. Do not retain an `NRestSiteButton` or mutate its private clicka
 
 ## RitsuLib route
 
-Extend `ModRestSiteOptionTemplate`, and contribute it from the owning Card's or Relic's
-`TryModifyRestSiteOptions`. Use a stable Mod-namespaced `OptionId`; the host serializes the
-selected ID into run history, so it is a compatibility value rather than display text.
+Extend `ModRestSiteOptionTemplate`, and contribute it from the selected owner's
+`TryModifyRestSiteOptions`. Standalone ownership uses a Run `HookedSingletonModel`; Card,
+Relic, and Modifier ownership use their exact mutable model instances. Use a stable
+Mod-namespaced `OptionId`; the host serializes the selected ID into run history, so it is a
+compatibility value rather than display text.
 
 The generated owner separates three questions:
 
@@ -92,9 +95,11 @@ The generated owner separates three questions:
 - `TryModifyRestSiteOptions`: `ShouldOffer`, duplicate-ID rejection, then one insertion.
 
 Use `SavedAttachedState<SpecificCard,bool>` or `SavedAttachedState<SpecificRelic,bool>` only
-for once-per-run repeatability. Once per
-Rest Site needs no extra state: the host removes a successful option from that visit's
-logical list. A failed selection returns `false` and must not mark either form as used.
+for those owners' once-per-run repeatability. A Modifier may use its normal saved model state;
+a standalone owner uses a declared run/player saved slot only when once-per-run state must
+survive save/load. Once per Rest Site needs no persistent state: the host removes a successful
+option from that visit's logical list. A failed selection returns `false` and must not mark any
+form as used.
 
 A Card-owned option also guards `player == Owner`, verifies the exact owner Card remains in
 `player.Deck.Cards`, and requires exactly one matching instance before contribution. This
@@ -215,6 +220,18 @@ public sealed class <RestSiteOptionName>(Player owner, <OwnerName> source)
 }
 ```
 
+For standalone ownership, register one `HookedSingletonModel(HookType.Run)` through
+`.Singleton<T>()`. The singleton is a canonical callback owner: do not mutate its fields as
+current-run state or call `AssertMutable()` on it. Attach the transient keep-remaining signal to
+the exact `Player` and consume it in `ShouldDisableRemainingRestSiteOptions`; attach persistent
+state to the concrete run/player through `RunSavedData` only when SPEC selects once-per-run
+save/load behavior.
+
+For Modifier ownership, put the same two owner overrides on the concrete
+`ModModifierTemplate`. The host walks the selected mutable Modifier in
+`RunState.Modifiers`, so no singleton or process subscription is needed. Guard the exact player
+and selected run, and let the Modifier's normal serialized properties own persistent state.
+
 For a free option, keep `GoldCost = 0`, let `CanPay` use the same predicate, and skip the
 zero-value `LoseGold` command. All final checks happen before the first mutation. The
 supported outcome must have no cancellation or expected failure after payment; arbitrary
@@ -226,8 +243,10 @@ and is consumed by that query. Never return `false` unconditionally from the own
 
 ## Localization and icon
 
-Keep the option's custom title and description in the owner's existing `cards.json` or
-`relics.json`, matching its owner surface:
+Keep the option's custom title and description in the owner's existing `cards.json`,
+`relics.json`, or `modifiers.json` when one of those models owns it. A standalone option uses a
+Mod-local `rest_site_ui.json`. In every case, point `CustomTitle` and `Description` at that exact
+table and key:
 
 ```json
 {
@@ -266,6 +285,9 @@ or load marker for the native host.
 6. Enter a second Rest Site and verify the declared once-per-site or once-per-run rule.
 7. Run one custom-icon build and one missing-icon build; the latter must visibly use the
    native Heal image without missing-resource or UI errors.
+8. Assert the selected owner boundary: standalone state does not leak to a new run; Card
+   zero/duplicate instances do not contribute; a removed Relic does not contribute; or an absent
+   Modifier does not contribute and a selected saved Modifier restores without replaying success.
 
 The pinned dev-console `gold` command ignores negative values; `gold -N` cannot construct
 the low-Gold or stale-button state. For manual review, spend Gold normally at a Shop before

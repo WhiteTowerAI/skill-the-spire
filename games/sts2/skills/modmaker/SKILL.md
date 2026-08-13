@@ -33,13 +33,20 @@ The exact inventory and limitations live in the shipped surfaces and `sts2-api` 
 Current authoring includes:
 
 - Card, Relic, Potion, Power, Keyword, Enchantment, and Orb content;
+- complete singleplayer Acts with explicit entry policies, and new Shared/Act-scoped Ancients;
+- combat Card Afflictions, selectable good/bad run Modifiers, explicit Run/Combat Global
+  Effects, and independently owned Rest Site actions;
+- custom native-screen Rewards with deterministic save reconstruction, and independently owned
+  Custom Card Piles across the complete documented Package;
+- local Mod-owned Runtime UI workflows using selected top-bar, Toast, runtime-hotkey, local
+  Capstone, Catalog, floating-window, search-expansion, fixed node-attachment, and shell-token APIs;
 - computed Card Damage/Block/Energy/Star/Power values under one preview/execution formula;
 - deterministic advanced Card/Potion targeting with its pinned multi-target Potion limitation;
 - Monster move graphs and Encounter rosters;
 - ordinary Events, bounded native presentation, and Quest Card forced follow-up Events;
 - playable Character Foundation, static presentation, bounded combat cues, native-scene
   dialogue, secondary resources, and ordered semantic buffers;
-- Card- or Relic-owned Rest Site options, Custom Card Piles, bounded state, readability aids,
+- standalone/Card/Relic/Modifier Rest Site options, bounded state, readability aids,
   and supported static art;
 - grounded vanilla Card, visual, Ancient, availability, and non-Card overrides; and
 - cataloged model-hook participation on only the custom surfaces the host dispatches to.
@@ -51,10 +58,14 @@ Event acquisition/shake profiles. Their newly generalized variants remain game-u
 a real current run proves them. Do not narrow a documented Package merely because one consumer
 lacks focused proof.
 
+Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, and new integrations
+whose purpose is to connect another element to those families are deferred. Do not route one
+through Runtime UI, persistence, lifecycle, or another included owner.
+
 Outside maintained routes, stop at the exact boundary. Known unsupported areas include arbitrary
-custom scenes/material behavior/audio, new Ancient models, global room replacement, arbitrary
+behavior-bearing scenes/materials without a public host, global room replacement, arbitrary
 transactions/transitions/RNG rewrites, alternative Energy, retained played-Card zones, ungrounded
-disable/weighting surfaces, multiplayer vanilla overrides, and one-click Workshop publishing.
+disable/weighting surfaces, multiplayer integrations, and one-click Workshop publishing.
 
 ## Read stages lazily
 

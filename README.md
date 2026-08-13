@@ -123,13 +123,15 @@ The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, and M8.5 are closed; completed 
 literal exceptions are indexed under `documents/history/`.
 
 M8.7 Product Boundary Generalization is implemented in source and both payload forms, but remains
-open pending its result record and explicit human closure. M8.8 Surface Effect Composability is
-paused and unimplemented; its refactored future plan uses refreshed RitsuLib `0.5.11` research,
-concise recipe/reference guidance, the sole thin preflight, behavior-level developer tests, and
-Build/real-host SelfTest rather than new trace/schema machinery. It still needs explicit human
-confirmation before implementation. M8.6 final installed acceptance waits for both Packages to
-close and explicit human selection. None of these states authorizes a game run, install, commit,
-push, or release.
+open pending its result record and explicit human closure. M8.8 Surface Effect Composability closed
+by explicit human-lead acceptance on 2026-08-13 after inventory, WP1-WP5 implementation, WP8
+source/static closeout, authorized plugin/portable payload delivery, and its final result record.
+Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/scene/
+animation/audio and shared-presentation expansion, WP7 named typed interoperability, and new
+integrations with those deferred groups are future work. Existing asset, presentation, audio,
+interoperability, M8.7, and WP1-WP5 capabilities remain preserved. M8.6 final installed acceptance
+still waits for M8.7 closure and explicit human selection. None of these states authorizes a game
+run, install, commit, push, or release.
 
 ## For Contributors
 

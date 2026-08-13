@@ -113,6 +113,19 @@ Each option id is stable semantic input; the adapter derives any method and loca
 keys from it. If special combat exists, the spec also owns the custom monster + encounter
 dependency from `surfaces/monster.md`; do not leave `<ENCOUNTER>` abstract.
 
+## Shared lifecycle, state, and RNG route
+
+Read `reference/lifecycle-state-rng.md` when an Event observes lifecycle outside its normal option
+callback, owns state beyond the mutable Event model, persists included feature data, or makes a
+gameplay-random choice. Prefer RNG supplied by the Event/Ancient/reward host; otherwise use one
+stable Mod run/player stream at the authoritative resolution point.
+
+Append the reference's game-term state/randomness block only when selected. Keep option behavior
+and normal Event page state in this surface, validate all failure-prone choices before mutation,
+await queued effects, and prove exact transition/order, neutral disabled/preview behavior,
+deterministic replay, persistence/reset, and cleanup in `MapNode`. Do not use lifecycle observation
+as cancellation or route deferred Progression, Telemetry, Settings, or Multiplayer behavior.
+
 ## Numbers the player reads should be declared values
 
 The engine substitutes the Event's `DynamicVars` into every option title, option description,

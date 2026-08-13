@@ -52,6 +52,14 @@ RitsuLibFramework.CreateContentPack(MainFile.ModId)
   spawn list: `ModelDb.Monster<T>().ToMutable()` paired with a slot name (`null` slot is valid
   for a minimal single-monster encounter — no custom encounter scene required).
 
+## Optional shared capability routes
+
+Keep attacks and other move behavior in the move graph. For a separable passive/state bundle on
+the Monster, read `reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Monster
+or typed capability and keep combat-scope owner/source guards, neutral behavior, and cleanup.
+
 ## SPEC `hook participation`: a passive rule that is not a move
 
 A move is the monster acting on its turn. When SPEC declares `hook participation`, the engine is

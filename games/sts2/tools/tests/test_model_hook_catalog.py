@@ -167,6 +167,14 @@ class ModelHookCatalogTests(unittest.TestCase):
                 for surface, listener in surfaces.items()
                 if listener in listeners
             }
+            iterators = set(entry["dispatch_iterators"])
+            expected.update(
+                surface
+                for surface, iterator_forms in (
+                    collect_model_hooks.GLOBAL_EFFECT_SURFACE_ITERATORS.items()
+                )
+                if iterator_forms.intersection(iterators)
+            )
             if entry.get("enchantment_redirect"):
                 expected.discard("enchantment")
             with self.subTest(hook=name):

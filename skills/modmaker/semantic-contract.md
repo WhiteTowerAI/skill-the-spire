@@ -55,15 +55,22 @@ Read the selected page under `surfaces/` for its exact SPEC fields, authoring ro
 matrix, known limitations, and manual fallback. Use targeted `sts2-api` references for the
 selected operation. In particular:
 
-- Card, Relic, Potion, Power, Orb, Enchantment, Monster/Encounter, Event, Character, and
-  Keyword inputs live in their matching surface page.
+- Card, Relic, Potion, Power, Orb, Enchantment, Monster/Encounter, Event, Character, Keyword,
+  Affliction, Modifier, Global Effect, Rest Site, Act, Ancient, Reward, Card Pile, and Runtime UI
+  inputs live in their matching surface page.
 - Secondary resources use `reference/character-resource.md`.
 - Computed Card values use `reference/card-computed-values.md`.
 - Bounded state uses `reference/stateful-mechanics.md`.
-- Card- or Relic-owned Rest Site options use `reference/rest-site-options.md`.
+- Standalone/Card/Relic/Modifier Rest Site options use `recipes/rest-site.md` and
+  `reference/rest-site-options.md`.
 - Quest Card forced Event mappings use `reference/forced-followup-event.md`.
-- Custom Card Piles, advanced targeting, readability, Character presentation/dialogue/cues,
-  vanilla overrides, and native Event presentation use their existing dedicated references.
+- Custom Card Piles and Runtime UI use their matching recipes plus selected lifecycle references;
+  advanced targeting, readability, Character presentation/dialogue/cues, vanilla overrides, and
+  native Event presentation use their existing dedicated references.
+
+For a multi-surface request, preserve each truthful owner and list every selected route once. Order
+the implementation and SelfTest assertions by the real dependency flow; do not invent a combo
+surface, collapse one owner's lifecycle into another, or use a deferred family as coordination.
 
 The M8.7 generalized variants remain supported. Write their full human-readable fields from the
 owner page, including routes and hard boundaries; do not recreate `open-mod-surface-data` or

@@ -20,9 +20,15 @@ changes a support row without current pinned maintainer grounding.
 
 M8 End-to-End Product Integrity is active. M8.0-M8.3 and M8.5 are closed; M8.5 retains unresolved
 macOS installed-workflow and launcher-owned process cleanup exceptions. M8.7 is implemented in
-source and payloads but remains open; its nine generalized families are preserved below. M8.8 is
-paused pending a fresh RitsuLib `0.5.11` audit and confirmed execution contract. M8.6 remains
-ineligible until both close.
+source and payloads but remains open; its nine generalized families are preserved below. M8.8
+closed by explicit human-lead acceptance on 2026-08-13 after its full RitsuLib `0.5.11` inventory,
+WP1-WP5 implementation, WP8 source/static closeout, authorized plugin/portable payload delivery,
+and final result record completed. Its newly generalized shapes remain game-unobserved.
+Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/
+scene/animation/audio/shared-presentation expansion, WP7 named typed interoperability, and new
+interactions with those deferred groups are future work. Existing routes in those domains remain
+preserved. M8.6 remains ineligible until M8.7 closes and its execution contract is explicitly
+selected.
 
 The current workflow uses one thin pre-Author check for shipped-route existence and raw model-hook
 reachability. Build and real-host SelfTest prove implementation. Removing old workflow-management
@@ -35,9 +41,17 @@ blocks generation until repaired or narrowed instead of receiving a per-Mod appr
 |---|---|---|
 | card / relic / potion / power | `CombatPlayer` | RitsuLib `Mod*Template`, exactly-once content-pack registration, explicit pools, checked art fallback |
 | computed Card values | `CombatPlayer` | zero or more independently named bounded formulas with per-value preview/execution parity; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltips; generalized combinations game-unobserved |
-| custom-content model hook participation | `CombatPlayer`, `CombatEnemy`, `RunStart` | supported: 66 public `AbstractModel` hooks on Card/Relic/Potion, 45 on Power/Orb/Monster, 61 plus five mandatory `Enchant*` replacements on Enchantment, in three declaration shapes (54 scalar-return, 6 out-replacement, 8 collection-edit); reachability is decided per surface by the dispatching iterator's listener set and enforced at preflight, so a hook the surface cannot receive blocks instead of shipping as a method that never fires; declared guard/value/neutral-return plus `DynamicVar` rules-text binding; two Rest Site hooks route through `reference/rest-site-options.md` instead. **Both real-host proofs are unrun** — no generated override has been observed firing in a game, so every route here is implemented-and-unproved |
+| custom-content model hook participation | `CombatPlayer`, `CombatEnemy`, `RunStart` | authorable: 66 public hooks on Card/Relic/Potion/Modifier, 45 on Power/Orb/Monster/Affliction, 66 on Enchantment including five mandatory `Enchant*` replacements, 32 on Run Global Effect, and 45 on Combat Global Effect. Three declaration shapes are cataloged (54 scalar-return, 6 out-replacement, 8 collection-edit); dispatcher-derived reachability is enforced at thin preflight, including exact Global Effect scope. Two Rest Site hooks remain route-owned. All generated hook shapes remain game-unobserved |
+| Affliction | attached Card in `CombatPlayer` | authorable: `.Affliction<T>()`, `ModAfflictionTemplate`, Card validity, integer amount/stacking, `AfterApplied`/`BeforeRemoved`, attached `OnPlay`, combat hooks/capabilities, `CardCmd.Afflict`/preview/clear, bilingual text/tips, and optional overlay. Compile probe passed with 0 warnings/errors; combat-only attachment and visuals remain game-unobserved |
+| Modifier | custom/daily selection, `RunStart`, combat | authorable: good/bad registration, deterministic before/after-list placement, merged mutual-exclusion groups, `ModModifierTemplate`, new-run versus load lifecycle, saved model properties, Neow option, run/combat hooks, text/tips/icon, and Rest Site ownership. Compile probe passed; setup, save/load, behavior, and headed UI remain game-unobserved |
+| Global Effect | nearest Run or Combat host | authorable: `.Singleton<T>()` plus one explicit `HookedSingletonModel` Run/Combat stream, dispatcher-checked hook participation, scoped attached/saved state, exact reset/neutral behavior, and no process-listener ownership shortcut. Compile probe passed; all real dispatcher/reset behavior remains game-unobserved |
+| model capabilities and shared effect services | Card/Relic/Potion/Power/Orb/Enchantment/Affliction/Monster owners; Character state/display; nearest combat/run hosts | authorable: stable capability registration; typed/default/runtime attachment; state/clone/save/display; ordered owner hooks; merge/subtract/replace; bounded play/combat/turn lifetime and Card-transform carry-over. Owner-bound per-hit attack, healing passes, Energy/Stars-gain response, and maximum hand size use their dedicated public services rather than the raw model-hook catalog. Process-wide registration is Global Effect-only. Pinned compile probe passed with 0 warnings/errors; all generated host combinations remain game-unobserved |
+| Card play lifecycle composition | real Card play/transform/UI consumers | authorable: before/after owner `OnPlay` with suppression result, next-play/this-turn/rest-of-turn/current-combat/current-play free resolution, completed-transform listeners and capability carry-over, ordered localized type-text replacement/wrapping, exact phase/neutral/cleanup contracts. Pinned compile probe passed; real play, transform, cost UI, bilingual rendering, and headed layout remain unrun |
+| lifecycle, state, persistence, and deterministic RNG | selected model/combat/run/player/profile owners | authorable for included features: typed lifecycle subscriptions with replay/disposal, `AttachedState`, model/capability save, run/per-player save, profile/global/InMemory `ModDataStore`, migrations/cache invalidation, supplied-host or stable Mod run/player RNG streams. Lobby sync and all Progression/Settings/Telemetry/Multiplayer/Update Check uses are excluded. Compile probe passed; real save/load, profile switch, event delivery, and RNG host behavior remain game-unobserved |
+| Reward | native rewards screen / combat-room end | authorable: Mod-owned dynamic type, `ModCustomReward` description/icon/order, deterministic claim/refusal, source-generated typed payload and pending combat-room reconstruction, blocking `RewardsCmd.OfferCustom`, combat extra-reward insertion, successful-claim/continue lifecycle, and bounded choose-one/take-all linked sets. Pinned compile probe passed; real claim/cancel/reload/UI remain game-unobserved; Multiplayer integration is deferred |
 | advanced creature targeting | `CombatPlayer` | deterministic Mod-local live-creature filters; native mouse/controller selection for Card one/many and Potion one; execution-time resolution checks; no multi Potion |
-| custom Card Piles | matching combat/run and UI hosts | complete documented public Package: combat/run scopes; Headless/TopBarDeck/BottomLeft/BottomRight/ExtraHand; preset/custom anchors; icon/hover/open/view/visibility/hotkeys; awaited native movement; localization; ExtraHand layout/manual play/callbacks |
+| custom Card Piles | matching combat/run and UI hosts | authorable as an independent surface through the complete documented public Package: combat/run scopes; Headless/TopBarDeck/BottomLeft/BottomRight/ExtraHand; preset/custom anchors; icon/hover/open/view/visibility/hotkeys; awaited native movement; localization; ExtraHand layout/manual play/callbacks. `0.5.11` compile probe passed; newly selected hosts remain game-unobserved |
+| Runtime UI | real top bar/input/Toast/Capstone/window/Catalog and exact stable public attachment hosts | authorable as one local Mod-owned workflow: top-bar definition and pure null-player-safe providers; transient/tracked Toast lifecycle; retained runtime hotkeys; `NetScreenType.None` Capstone; bounded Catalog/filter/detail/action behavior; floating-window geometry/content ownership; deterministic bounded local search expansion; fixed node attachment; Mod-scoped shell tokens and explicit cleanup. Pinned `0.5.11` compile probe passed with 0 warnings/errors; real UI, input, focus, controller, layout, animation, drag/resize, theme, and cleanup remain game-unobserved. No deferred-family UI or integration is included |
 | RitsuLib Card Hand Glow | Card hand | generated ordered fixed-color gold/red/custom rules, priority/tie order, and unplayable visibility; normal combat-state refresh boundary; human-led focused host review and Tier 1 passed; strict Tier 2 unrun |
 | RitsuLib Extra Badges | Power, Relic, and Intent | generated Relics: up to three distinct safe corners; generated Powers: one top-left label because preset bands overlap in crowded rows; bounded plain/color text and explicit refresh/removal; Intent authoring outside active plan; human-led crowded-row review and Tier 1 passed; strict Tier 2 unrun |
 | keyword | `CombatPlayer` | RitsuLib-owned native keyword, real Card text and no-icon tooltip, named behavior |
@@ -47,6 +61,8 @@ blocks generation until repaired or narrowed instead of receiving a per-Mod appr
 | Monster/Encounter graph | selected `CombatEnemy` variants | separate registrations, explicit actual/all-possible rosters, reused/multiple/repeated Monsters, positive HP ranges, deterministic/conditional/fixed-weight-random move vocabulary, checked 360x360 combat+bestiary body; generalized variants game-unobserved |
 | bounded content rich text | content host | per-surface vanilla allowlists with SmartFormat/keyword composition |
 | Event / World Node | `MapNode` | pages/options, public Cmds, selections/rewards, one special combat per instance, bounded rich text/VFX/native presentation |
+| Act | real singleplayer act transition, map, and room consumers | authorable: `.Act<T>()` plus exactly one explicit force/uniform/weighted entry policy; every candidate rejects multiplayer; weighted selection declares the existing-chapter baseline; complete `ModActTemplate` gameplay members, deterministic map RNG, nonempty weak/regular/elite/Boss pools, ordinary Event/Ancient relations, localization, and checked scene/map/chest/audio assets. Compile probe passed; entry, rooms, save/load, UI, and presentation remain game-unobserved |
+| Ancient | native Ancient room / `MapNode` | authorable: new `ModAncientEventTemplate` registered exactly once as Shared or Act-scoped; `IsValidForAct`; all/initial option sets, event-supplied RNG, public outcome/page/`Done()` flow, localization-driven first-visit/exact-Character/`ANY` dialogue, bilingual text, and checked Event/map/history/stage/audio presentation. Compile probe passed; native room, dialogue, choices, history, save/load, and headed presentation remain game-unobserved |
 | bounded forced Event | `MapNode` | finite prioritized Quest Card act-set/custom-Event mappings or sequences, saved index, exact terminal consumption, target pool exclusion, neutral hook returns, fail-closed conflicts; generalized variants game-unobserved |
 | Character Foundation | `RunStart` + `CombatPlayer` | typed Character and pools, exact current-SPEC HP/Gold/MaxEnergy/Orb slots and starter Card/Relic/Potion multisets, Foundation fallback; generalized starts game-unobserved |
 | Character static art | Character hosts | selection portrait/background, top icon, combat/rest/merchant bodies, five-layer energy, distinct large/text Energy icons; reviewed selection/combat visible footprint |
@@ -54,7 +70,7 @@ blocks generation until repaired or narrowed instead of receiving a per-Mod appr
 | Character/Relic outlines | `CombatPlayer` | deterministic 3% opaque-white alpha expansion, inset-safe main normalization, exact main/outline wiring in real top-panel and Relic hosts |
 | Character combat cues | `CombatPlayer` | private non-Spine Idle4/Attack4/Hit4/Dead6 sequences, shared geometry, one-shot/terminal routing, cleanup, all-or-nothing static fallback |
 | Character dialogue in native Ancient scenes | `MapNode` / Character | nine pinned vanilla targets, Character-scoped first/visit/repeat groups, RitsuLib localization population, native scene/options/outcomes, complete Architect routing and attackers |
-| Card/Relic-owned Rest Site option | real Rest Site / `MapNode` | singleplayer; exact owner/state handle; absent versus native-disabled; free/fixed Gold; deterministic preflightable outcome; once per site/run; native stay/leave; checked custom/Heal-fallback icon; Relic route observed, Card route game-unobserved |
+| Standalone/Card/Relic/Modifier Rest Site option | real Rest Site / `MapNode` | singleplayer; truthful exact owner/state handle; absent versus native-disabled; free/fixed Gold; deterministic preflightable outcome; once per site/run; native stay/leave; checked custom/Heal fallback. Standalone lowers to Run singleton with Player/run state; Modifier uses its selected run instance. Relic route observed; standalone/Card/Modifier game-unobserved |
 | Secondary resources/payment/UI | selected Character/combat lifecycle | one or more bounded RitsuLib resources; combat/run and turn-start policies; fixed/X required/optional/extra payment ledger; selected built-in counter row/Card line or checked UI; generalized variants game-unobserved |
 | Native custom-Card costs | `CombatPlayer` and Card UI | independent native Energy/fixed-or-X Star cost declarations and upgrades; no parallel Star store; combined/X variants game-unobserved |
 | Event acquisition/shake profiles | `MapNode` | ordered unique known Card/relic acquisition with matching native consumer; one optional `weak_short`/`strong_normal` setting-respecting shake; generalized list/strong profile game-unobserved |
@@ -212,8 +228,8 @@ returning to the current skill source or payloads.
 
 ## Unsupported
 
-- Modifier-owned Rest Site options, variable/non-Gold costs, post-payment choices,
-  arbitrary transactions, same-site repeat, and multiplayer Rest Site extensions;
+- variable/non-Gold Rest Site costs, post-payment choices, arbitrary transactions, same-site
+  repeat, and multiplayer Rest Site extensions;
 - alternative Energy hooks;
 - remote-player Character resources/UI;
 - arbitrary object/Card/map targets or global custom-target interoperability registration;
@@ -227,10 +243,9 @@ returning to the current skill source or payloads.
   epoch gating, multiplayer availability edits, and any reward/source weighting without an
   individually grounded route;
 - custom locked-selection/map-marker presentation;
-- new Ancient models, native opening-dialogue/room replacement, line audio, randomized
-  outcome/RNG rewrites, special combat, direct merchant/rest/treasure transitions, Ancient
-  behavior beyond the fixed M6.7.3 option/page/effect vocabulary, arbitrary behavior VFX,
-  and multiplayer presentation;
+- global native Ancient dialogue/room replacement, new-Ancient behavior outside the public
+  option/page/dialogue/presentation vocabulary, direct merchant/rest/treasure transitions,
+  arbitrary behavior-bearing VFX, and multiplayer presentation;
 - production animation beyond the bounded Idle/Attack/Hit/Dead cues, Cast, Spine, trails,
   generated or behavior-bearing materials/scenes outside exact promoted public resources,
   multiplayer presentation, and audio;

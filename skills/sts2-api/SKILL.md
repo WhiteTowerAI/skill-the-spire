@@ -80,10 +80,15 @@ explicitly accepted composition instead.
 ## How to answer
 
 1. Check `../sts2-api/recipes/` for the element or mechanic type (relic, potion,
-   card, power, keyword, enchantment, orb, monster+encounter, event, character). For a **fought enemy** read
+   card, power, keyword, enchantment, orb, monster+encounter, event, character, act, ancient,
+   reward, card pile, runtime UI, affliction, modifier, global effect, rest site). For a **fought enemy** read
    `recipes/monster.md`; it owns separate Monster/Encounter registrations, explicit roster
    edges, HP ranges, and deterministic/conditional/fixed-weight-random move graphs.
-   For a **World Node/event** read `recipes/event.md` — it covers RitsuLib registration,
+   For a complete playable chapter read `recipes/act.md`; it owns `ModActTemplate`, required
+   content pools/assets, and the separate singleplayer entry policy. For a new Ancient read
+   `recipes/ancient.md`; it owns Shared/Act-scoped registration, options, localization-driven
+   dialogue, presentation, and real-room proof. For a **World Node/event** read
+   `recipes/event.md` — it covers RitsuLib registration,
    flat nested `events.json`, explicit option keys, the fast-path consequence, checked
    portraits, and the `MapNode` proof. Also
    read `../sts2-api/reference/event-outcomes.md` when options use selections,
@@ -138,18 +143,45 @@ explicitly accepted composition instead.
    read `../sts2-api/reference/advanced-targeting.md`. It owns the custom target
    registration, selection/resolution lifecycle, supported consumer matrix, and headed
    mouse/controller proof.
-   When a Relic contributes an owned action to the native Rest Site, read
+   When a standalone action, Card, Relic, or Modifier contributes an action to the native Rest Site, read
    `../sts2-api/reference/rest-site-options.md`. It owns the singleplayer-only
    free/fixed-Gold contract, absence versus disabled state, final payment recheck,
    repeatability, stay/leave lifecycle, icon fallback, and focused real-host proof.
-   When the Mod declares one or more custom Card piles, read
-   `../sts2-api/reference/card-piles.md`. It owns the complete documented Card
+   For a custom native-screen Reward read `recipes/reward.md`; it owns dynamic type registration,
+   claim/refusal, typed payload reconstruction, normal offer/combat insertion, linked sets, and
+   real-screen proof. When the Mod declares one or more custom Card piles, read
+   `recipes/card-pile.md`, then `../sts2-api/reference/card-piles.md`. The reference owns the complete documented Card
    Piles Package: combat/run scope, every public UI style and anchor, open/view/visibility/
    hotkey behavior, native movement, localization, and ExtraHand layout/manual play/
    callbacks. Do not reduce routing to only the consumers already exercised by a focused
-   proof.
+    proof.
+    For a Mod-owned top-bar, Toast, runtime-hotkey, local Capstone, Catalog, floating-window,
+    search-expansion, fixed node-attachment, or shell-token workflow, read
+    `recipes/runtime-ui.md`. It owns one coordinator, registration/handle/node lifetimes,
+    null-player-safe per-frame providers, main-thread UI mutation, deterministic bounded local
+    search, focus/close/content ownership, Mod-scoped theme consumption, and real-host/headed proof.
+    It does not authorize a deferred Settings, Progression, post-run Badge, Telemetry, Multiplayer,
+    or Update Check route or integration.
    For any effect that remembers progress (every N events, once per combat, previous
    turn, limited run uses), read `../sts2-api/reference/stateful-mechanics.md`.
+   When a separable behavior or state bundle is attached to a Card, Relic, Potion, Power,
+   Orb, Enchantment, Affliction, Monster, or Character, also read
+   `../sts2-api/reference/model-capabilities.md`. Keep inseparable behavior on the
+   model; a rule without an obtainable model owner belongs to the Global Effect surface.
+   When selected behavior crosses a callback, combat, room, run, save, or profile boundary,
+   or makes a gameplay-random choice, read
+   `../sts2-api/reference/lifecycle-state-rng.md`. Select the truthful owner,
+   cleanup/persistence boundary, and deterministic host or Mod RNG stream. Do not use its
+   storage routes to author deferred Progression, Settings, or Multiplayer behavior.
+   When a Card, Relic, Potion, Power, Orb, Enchantment, Affliction, or Monster changes an
+   attack hit, healing amount, Energy/Stars gain response, or maximum hand size, read
+   `../sts2-api/reference/shared-effect-hooks.md`. Use the model or its capability
+   as owner; process-wide registration is reserved for an explicitly selected Global Effect.
+   For behavior immediately before/after Card `OnPlay`, bounded free-play duration, Card
+   transform reaction/carry-over, or composed Card type text, read
+   `../sts2-api/reference/card-play-lifecycle.md`. Preserve its exact phase,
+   suppression, duration, cleanup, and neutral-Card semantics rather than folding it into an
+   ordinary `OnPlay` body.
 2. For error signatures → fix, read `../sts2-api/errors.md`.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a
    symbol the recipe lacks, read `../sts2-api/grounding.md` and, for
@@ -188,6 +220,14 @@ explicitly accepted composition instead.
 | `recipes/monster.md` | Separate Monster/Encounter nodes, explicit rosters, HP ranges, deterministic/conditional/weighted-random moves, static combat+bestiary body, fallback, and selected `CombatEnemy` checks | Authoring a fought enemy graph after adapter selection |
 | `recipes/event.md` | Event / World Node pages/options, outcomes, checked portraits, and `MapNode` proof | Authoring a map event after adapter selection |
 | `recipes/character.md` | Character Foundation pools, starters, localization, selection/run behavior, fallbacks, and proof | Authoring a playable character shell after adapter selection |
+| `recipes/act.md` | Complete Act model, required content pools/assets, explicit singleplayer force/uniform/weighted entry, and transition proof | Authoring a playable chapter |
+| `recipes/ancient.md` | New Shared/Act-scoped Ancient identity, options, localization dialogue, presentation, and native-room proof | Authoring a new Ancient rather than editing a vanilla one |
+| `recipes/reward.md` | Mod-owned Reward type, native claim/refusal, typed save reconstruction, offer/combat insertion, linked sets, and proof | Authoring a custom pending reward-screen option |
+| `recipes/card-pile.md` | Independent Card Pile owner and route into the complete documented Package | Authoring one or more Mod-owned Card piles |
+| `recipes/affliction.md` | Combat Card Affliction validity, stack/application/play/removal lifecycle, text/tips/overlay, and proof | Authoring a new Affliction and its application source |
+| `recipes/modifier.md` | Good/bad run Modifier registration, ordering/exclusivity, new/load lifecycle, text/icon, and proof | Authoring a daily/custom-run Modifier |
+| `recipes/global-effect.md` | Truthful Run/Combat singleton ownership, hook scope, scoped state, reset, and proof | Authoring a rule with no obtainable/selectable model owner |
+| `recipes/rest-site.md` | Standalone/Card/Relic/Modifier owner selection for native Rest Site options | Authoring an independently requested Rest Site action |
 | `reference/ancient-dialogue.md` | Pinned vanilla Ancient catalog, semantic visit groups, flat RitsuLib localization, structural validator, native priority, Architect attackers, and focused proof | Authoring or verifying custom-Character dialogue in native Ancient scenes |
 | `reference/character-presentation.md` | RitsuLib Character profile/consumer matrix; nine live static profiles; no-editor raw-scene packing; five-layer energy scene; split card/text Energy icons; bounded theme; native Ancient/Architect proof boundary | Authoring or verifying Character static/native presentation |
 | `reference/character-combat-cues.md` | Bounded non-Spine Idle/Attack/Hit/Dead sheets, deterministic frame normalization, private combat cue wiring, shared geometry, all-or-nothing static fallback, and hosted proof | Authoring or verifying Character combat cues |
@@ -204,8 +244,12 @@ explicitly accepted composition instead.
 | `reference/card-hand-emphasis.md` | Conditional Card hand emphasis: ordered fixed-color rules, priority/ties, native gold/red versus typed outline lowering, unplayable visibility, refresh boundary, and headed proof | Authoring a Card with hand emphasis |
 | `reference/extra-corner-labels.md` | Bounded extra badges: Relic up to three safe corners, Power one top-left label, text/rich-text limits, specs providers, invalidation/removal, cleanup, and headed proof | Authoring supplemental values on a Relic or Power |
 | `reference/advanced-targeting.md` | RitsuLib custom live-Creature targets: stable Mod-local registration, single Card/Potion and multi Card resolution, revalidation/payment lifecycle, multi-Potion limitation, and headed selection proof | Authoring a filtered Card/Potion target |
-| `reference/rest-site-options.md` | Card- or Relic-owned native Rest Site option: exact owner/state handle, singleplayer contribution, free/fixed Gold, final recheck, run/site repeatability, stay/leave, and checked icon fallback | Authoring an owned Rest Site action on a Card or Relic |
+| `reference/rest-site-options.md` | Standalone/Card/Relic/Modifier native Rest Site option: exact owner/state handle, singleplayer contribution, free/fixed Gold, final recheck, run/site repeatability, stay/leave, and checked icon fallback | Authoring any included Rest Site action |
 | `reference/card-piles.md` | Complete Custom Card Piles Package: combat/run lifetime; headless/top-bar/bottom-corner/ExtraHand UI; preset/custom anchors; open/view/visibility/hotkeys; native movement; localization; ExtraHand layout, play, and callbacks | Authoring one or more Mod-owned Card piles |
+| `reference/model-capabilities.md` | Registered model-owned behavior/state bundles: typed owners, default/runtime attachment, merge/order, clone/save/display, bounded lifetime, and Card transform carry-over | Authoring separable behavior or state on a Card, Relic, Potion, Power, Orb, Enchantment, Affliction, Monster, or Character |
+| `reference/lifecycle-state-rng.md` | Truthful lifecycle subscriptions, attached/model/run/player/profile state, persistence and migrations, deterministic host/Mod RNG, cleanup, and deferred-family boundaries | Authoring included behavior that crosses callback, combat, room, run, save, or profile boundaries or makes gameplay-random choices |
+| `reference/shared-effect-hooks.md` | Owner-bound per-hit attack, healing, Energy/Stars gain, and maximum-hand-size effects with exact passes, guards, neutral results, and Global Effect boundary | Authoring those shared effects on a reachable model/capability or explicit Global Effect |
+| `reference/card-play-lifecycle.md` | Before/after Card OnPlay, suppression, free-play durations, transform listeners/carry-over, type-text composition, phase order, cleanup, and real-host proof | Authoring behavior around Card play rather than only the Card's ordinary OnPlay body |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Bounded state schemas with exact owner/listener transitions, lifetime/reset/persistence, visibility, consumers/outputs, and selected proof derivation | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
@@ -234,7 +278,7 @@ do not author an operation outside a listed catalog package.
   supported. A missing recipe or unrun check does not make it unsupported; report the exact
   authoring or verification gap.
 - **Custom Card Piles:** route the complete documented Package through
-  `reference/card-piles.md`; preserve exact Card identity and awaited movement, and let the
+  `recipes/card-pile.md` and `reference/card-piles.md`; preserve exact Card identity and awaited movement, and let the
   generated SPEC select any public scope/style/anchor/view/ExtraHand consumer.
 - **Monster/Encounter graph:** declare separate registered nodes and explicit roster edges,
   every visible move, ordered successor, exhaustive conditional or requested weighted-random

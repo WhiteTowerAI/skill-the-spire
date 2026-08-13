@@ -67,6 +67,23 @@ second framework branch into this file.
   declares a card enchantment, read `recipes/enchantment.md`, author
   `ModEnchantmentTemplate`, register it through `.Enchantment<T>()`, and attach it through
   `CardCmd.Enchant<T>`; never substitute an unrelated run-level Modifier. If SPEC declares
+  a combat Card Affliction, read `recipes/affliction.md`, register one
+  `ModAfflictionTemplate` through `.Affliction<T>()`, and apply/clear it only through
+  `CardCmd.Afflict<T>` / `AfflictAndPreview<T>` / `ClearAffliction`. If SPEC declares a selected
+  run Modifier, read `recipes/modifier.md`, register exactly one good/bad polarity and its selected
+  sort/exclusivity contract, and keep new-run and load behavior distinct. If SPEC declares a
+  Global Effect, read `recipes/global-effect.md`, register `HookedSingletonModel` through
+  `.Singleton<T>()`, select exactly Run or Combat, and attach mutable state to the concrete scope.
+  If SPEC declares an independent Rest Site action, read `recipes/rest-site.md` plus
+  `reference/rest-site-options.md` and select its standalone/Card/Relic/Modifier owner. If SPEC declares
+  a complete Act, read `recipes/act.md`, implement every required `ModActTemplate` gameplay
+  member, register it through `.Act<T>()`, and select exactly one force/uniform/weighted
+  singleplayer entry policy. Registration alone is not reachability. If SPEC declares a new
+  Ancient, read `recipes/ancient.md`, implement `ModAncientEventTemplate`, and register it
+  exactly once through `.SharedAncient<T>()` or `.ActAncient<TAct,T>()`; do not lower it as an
+  ordinary Event or as an existing-Ancient override. If SPEC declares a custom Reward, read
+  `recipes/reward.md`, register its Mod-owned dynamic type once, implement `ModCustomReward`, and
+  keep payload reconstruction separate from awaited `OnSelect()` effects. If SPEC declares
   a custom orb, read `recipes/orb.md`, author `ModOrbTemplate`, register it through
   `.Orb<T>()`, and make the real host channel it via
   `OrbCmd.Channel<T>`; preserve separate passive and evoke observations, and keep the
@@ -114,11 +131,19 @@ second framework branch into this file.
   If SPEC selects one or more secondary resources, read `reference/character-resource.md`; if it
   selects a bounded ordered semantic buffer/dynamic output, read
   `reference/ordered-card-buffer.md`.
-  For every **custom card pile**, read `reference/card-piles.md`. Register all piles in
+  For every **card pile**, read `recipes/card-pile.md` and `reference/card-piles.md`. Register all piles in
   the same deferred content pack, lower every documented scope/style/anchor/open/view/
   visibility/hotkey/ExtraHand consumer selected by SPEC, and use awaited native pile Cmds
   for every movement. The Package route is not limited to ExtraHand or to previously
   exercised UI presets.
+  For a **runtime UI** workflow, read `recipes/runtime-ui.md` and
+  `reference/lifecycle-state-rng.md`. Keep selected top-bar, Toast, runtime-hotkey, local Capstone,
+  Catalog/floating-window, search-expansion, fixed public node-attachment, and Mod-scoped shell-token
+  pieces under one coordinator. Register at the recipe's required host phase, use only
+  `NetScreenType.None`, keep per-frame/search callbacks within their purity and bounded-work
+  contracts, and dispose every retained handle and owned node/content at the declared lifetime.
+  Do not emit Settings, Progression, post-run Badge, Telemetry, Multiplayer, Update Check, or a
+  connection to one of those deferred families.
   A selected resource UI uses RitsuLib's public `RegisterCombatUi` route from
   `reference/character-resource.md`. A capability with no documented public game/framework
   route is a pack authoring gap; the specific substitutes to refuse here are alternative-energy patches,
@@ -146,10 +171,10 @@ second framework branch into this file.
   Emit only the selected bounded schemas, exact owners/listeners, transitions, reset,
   persistence, visibility, consumers, and outputs; never infer lifetime or a transition from
   the C# field or hook that happens to be easiest.
-- If a Card or Relic SPEC has an **owned Rest Site option**, read
-  `reference/rest-site-options.md` before writing either class. Keep its
-  singleplayer/free-or-fixed-Gold boundary and stop for a Modifier owner,
-  post-payment choice, arbitrary transaction, same-site repeat, or multiplayer request.
+- For every standalone/Card/Relic/Modifier **Rest Site option**, read `recipes/rest-site.md` and
+  `reference/rest-site-options.md` before writing owner/option classes. Keep its
+  singleplayer/free-or-fixed-Gold boundary and stop for a post-payment choice, arbitrary
+  transaction, same-site repeat, or multiplayer request.
 - Make every generated `.cs` file namespace-complete on its own. Copy the `using` required
   by every symbol into the file that uses it; never rely on a different snippet, file, or
   non-global import. In particular, `RegisterPatch<T>()` requires
@@ -227,9 +252,11 @@ second framework branch into this file.
   one same-target replacement conflicts with every append/replacement in this Mod. Selected
   Ancient/Event visual overrides remain separate manifest operations and contain no scripts.
 - Preserve the vanilla Ancient class, ModelId, room, opening dialogue, save identity,
-  allowance gate, ambient audio, and native finish lifecycle. Stop for a new Ancient,
-  global dialogue replacement, random/RNG rewrite, special combat, direct room transition,
-  multiplayer, or any prompt-derived private/patch route.
+  allowance gate, ambient audio, and native finish lifecycle. A request for a new Ancient
+  routes separately through `recipes/ancient.md`; it is never implemented by changing this
+  override package. Stop this override route for global dialogue replacement, random/RNG
+  rewrite, special combat, direct room transition, multiplayer, or any prompt-derived
+  private/patch route.
 
 **Existing vanilla availability** — add `<ModName>Code/VanillaOverrides/AvailabilityOverrides.cs`
 and follow `reference/vanilla-availability-overrides.md` exactly:
@@ -393,18 +420,28 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    mutating the attached value directly to simulate carry-over.
    A **calculated-value Card** selects its focused matrix in
    `surfaces/card.md` § Self-test driver body.
-   A **Card- or Relic-owned Rest Site option** uses the focused real-host matrix in
+   A **standalone/Card/Relic/Modifier Rest Site option** uses the focused real-host matrix in
    `reference/rest-site-options.md`: absent owner, insufficient-Gold gray state,
    render-then-remove-Gold failed selection with zero deltas, exact successful
    Gold/Max-HP/history deltas, rebuilt list without duplication, declared stay/leave,
    second-visit repeatability, controller focus, custom icon, and missing-icon native
    fallback. Keep the run explicitly singleplayer; for a Card owner also assert exactly one
    matching deck instance and the same concrete owner/state handle.
-   A **custom card pile** selects the matching host matrix in
+   A **Reward** selects the real native-screen matrix in `surfaces/reward.md`: failed claim with
+   no mutation, successful awaited effect, correct offer/insertion, pending save/load
+   reconstruction, linked-set semantics when selected, localization, and headed input/UI. Do not
+   call reconstruction or serialization behavior proof.
+    A **card pile** selects the matching host matrix in
    `reference/card-piles.md`. Prove the generated Mod's selected scopes, UI styles,
    anchors, open/view/hotkey behavior, explicit Card movements, localization, and
    ExtraHand interactions. Do not require one proof per documented public consumer merely
-   to preserve Package support; verify every behavior the generated SPEC actually uses.
+    to preserve Package support; verify every behavior the generated SPEC actually uses.
+    A **runtime UI** workflow follows `surfaces/runtime-ui.md`: drive the real top bar and input
+    router, the selected Toast/Capstone/window/Catalog hosts, search invalidation/disposal, and the
+    exact stable node attachment. Assert open/selected/count/visibility, input suppression, item/
+    filter/action state, content ownership, replacement/close, and cleanup for only the selected
+    variants. Keep mouse/controller focus, layout, animation, drag/resize, and theme appearance in
+    the separate headed review; constructed nodes and direct callback calls are not host proof.
 3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
    post-state, then call the shared `StateProof(...)`. Its structured
    `[T2MOD-SELFTEST] <ModName> state proof:` line must include the selected framework,

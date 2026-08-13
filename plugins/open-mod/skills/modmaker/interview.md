@@ -90,6 +90,14 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      that spawns it — always one unit; you never build a lone monster).
    - **A story/choice room on the map** where the player picks an option and gets a
      consequence → **event / World Node**.
+   - **A complete playable chapter** with its own map, encounter/event pools, backgrounds,
+     Rest Site, chest, and music → **act**. Registration and run entry are separate decisions.
+   - **A new Ancient encounter** with its own identity, dialogue, choices, and map/history
+     presentation → **ancient**. Editing a vanilla Ancient's choices is the separate existing-
+     Ancient override route.
+   - **A claimable option on the native rewards screen** with its own icon/text, refusal or
+     cancellation, effect, and pending-save reconstruction → **reward**. An immediate public Cmd
+     outcome that never becomes a pending choice remains part of its source owner instead.
    - **A new selectable hero** with their own starting deck/relic and card identity →
      **character**. Supported composition includes a named nonnegative combat resource with
      an explicit payoff/live counter and a bounded ordered semantic record of card plays
@@ -98,12 +106,17 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact
      resource icon. Locked selection and map marker remain grounded gaps with explicit
      fallbacks.
-   - **A named place where Cards are stored, moved, inspected, or shown separately** is a
-     **custom card pile**. The Custom Card Piles Package supports combat/run lifetime,
-     headless/top-bar/bottom-left/bottom-right/ExtraHand presentation, public pile screens,
-     and explicit Card movement.
-   - **Current authoring recipes: relic, potion, card, custom card piles, enemy encounter,
-     event, bounded character composition, and promoted existing-model overrides.** If the
+    - **A named place where Cards are stored, moved, inspected, or shown separately** is a
+      **card pile**. The Custom Card Piles Package supports combat/run lifetime,
+      headless/top-bar/bottom-left/bottom-right/ExtraHand presentation, public pile screens,
+      and explicit Card movement.
+    - **A Mod-owned top-bar workflow, notification, runtime hotkey, local screen/window, searchable
+      catalog, or fixed public UI attachment** is **runtime UI**. Keep its local interaction,
+      focus, close, refresh, and registration lifetime together under one coordinator. Do not
+      reinterpret it as Settings, Progression, post-run Badge, Telemetry, Multiplayer, or Update
+      Check UI.
+   - **Current authoring recipes include all named surfaces above, including reward and card
+     pile, plus promoted existing-model overrides.** If the
      request edits an existing vanilla model, resolve it through
      `reference/vanilla-overrides.md`. A requested visual surface in the 44-provider matrix
      continues through `reference/vanilla-visual-overrides.md`. Non-asset operations for an
@@ -123,13 +136,33 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      user explicitly accepts a before/after composition; confirmed numbers or a request not
      to repeat questions does not authorize that downgrade.
 2. **Trigger / usage / how it's played:**
-   - **Custom Card Piles Package**: infer every stated pile and ask only for player-visible
+   - **Reward**: capture what creates/offers it, native blocking offer versus combat-end insertion,
+     exact claim effect, final refusal/cancel condition, description/icon/order, content-seen
+     behavior, and all payload facts needed to reconstruct the same pending choice. For linked
+     rewards capture choose-one/take-all, child order, and failure behavior. Do not ask for JSON or
+     dynamic-enum APIs and do not add deferred Multiplayer synchronization.
+   - **Act**: capture its chapter slot and exactly one singleplayer entry policy: force,
+     uniform pool with the existing chapter, or weighted pool with an explicit existing-
+     chapter weight. Every eligibility predicate excludes multiplayer. Capture map length,
+     point counts, nonempty weak/regular/elite/Boss sets, Events, Ancients, and presentation.
+   - **New Ancient**: capture Shared versus exact Act scope, `IsValidForAct` meaning in game
+     terms, every possible and initially visible option, page/finish flow, supplied-event-RNG
+     choices, first-visit/exact-Character/ANY dialogue, and presentation. Do not route it as
+     a normal Event or an existing-Ancient override.
+    - **Card Pile / Custom Card Piles Package**: infer every stated pile and ask only for player-visible
      ambiguity: does it reset each fight or persist for the run; is it hidden, a top-bar/
      bottom-corner button, or visible as extra Cards; what exact action moves Cards in and
      out; and may visible Cards be played normally? When placement, pile-screen tools,
      sorting, hotkeys, hover behavior, or visual callbacks are requested, record the
      requested behavior in game terms. Do not ask for enum names, delegates, or framework
-     APIs; ask for exact coordinates only when the user requested an exact custom layout.
+      APIs; ask for exact coordinates only when the user requested an exact custom layout.
+    - **Runtime UI**: capture the workflow entry points and local outcome first. For selected
+      top-bar, Toast, hotkey, Capstone, floating-window, Catalog, search-expansion, node-attachment,
+      and shell-token pieces, record only player-visible content/actions plus their creation,
+      replacement, refresh, focus/back/close, and cleanup behavior. Ask for fixed window geometry
+      or attachment insertion only when the request depends on it. Keep the Capstone local-only,
+      every per-frame provider null-player safe, every disposable handle owned, and shell styling
+      confined to this Mod's controls. Do not add a deferred-family integration.
    - **Existing vanilla Ancient**: resolve the exact Ancient first, then determine whether
      the Mod appends choices or replaces the complete initial choice list. For every choice,
      capture when it is visible, when it is locked, its one fixed Gold/HP/Max HP/no cost,
@@ -349,12 +382,18 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
 - **Target** (card): damage → one enemy (`AnyEnemy`); block/self-buff → `Self`. Only
   ask if genuinely unclear.
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
-- **Owned Rest Site option** (only when requested on a Card or Relic): singleplayer only; distinguish
+- **Rest Site option** (standalone or requested on a Card, Relic, or Modifier): singleplayer only; distinguish
   when it is absent from when it is visible but gray; default to once per Rest Site,
   normal leave behavior, checked native Heal-icon fallback, and free cost unless the idea
   names a fixed Gold price. Ask only for an unresolved repeatability or stay/leave choice.
-  A Card owner requires exactly one matching deck instance. Modifier owners, arbitrary
-  costs, post-payment choices, and same-site repeat remain unsupported.
+  A Card owner requires exactly one matching deck instance. A Modifier owner requires that exact
+  selected run Modifier. Arbitrary costs, post-payment choices, and same-site repeat remain
+  unsupported.
+- **Runtime UI**: local-only; one owning coordinator; pure null-player-safe top-bar providers;
+  text-input/dev-console hotkey suppression; controller focus/back behavior; deterministic local
+  search; explicit close/disposal; and Mod-scoped shell tokens. Do not silently add a custom icon,
+  saved geometry, search provider, node attachment, or any deferred-family UI when the request does
+  not need it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
 - **Event VFX**: none unless explicitly requested; then use only `portrait_halo` or
@@ -573,7 +612,7 @@ pages:
 visual composition: none | <exact Ancient/Event visual surfaces>
 preserve: original Ancient model, room, opening dialogue, save identity, allowance gate,
   and native finish/choice-history lifecycle
-boundary: singleplayer; no new Ancient, global dialogue replacement, line audio,
+boundary: singleplayer; no new Ancient through this override route, global dialogue replacement, line audio,
   randomized outcome rewrite, special combat, or direct merchant/rest/treasure transition
 ```
 
@@ -582,6 +621,91 @@ no hover/relic image/shake, and `finish` only when those choices are not stated 
 default cannot alter the user's concept. A replacement must describe the complete initial
 choice list and at least one reachable finish path; never silently preserve unspecified
 vanilla choices inside a replacement.
+
+For an **act**:
+
+```
+element: act
+name: <English and Simplified Chinese title>
+slot: 0 | 1 | 2
+entry: force priority <int> | uniform with existing chapter | weighted
+eligibility: singleplayer and <plain condition>
+weights: none | existing chapter <positive number>; <candidate> <positive number>
+map: rooms <positive int>; Unknown/Rest counts <exact values or supplied-map-RNG formulas>
+encounters: weak [nonempty]; regular [nonempty]; elite [nonempty]; Boss [nonempty]
+Boss discovery order: [exact registered identities]
+events: [exact ordinary Events]
+ancients: [exact Shared/Act-scoped relations]
+unlock: available under the selected entry rule; no new Progression integration
+presentation: colors; music/banks/ambience; background/layers; map textures;
+  Rest Site scene; exact chest resource/skins/SFX
+scenario: real singleplayer act transition, every room family, save/load, headed map/UI/audio
+boundary: `AllowInRandomActList=false`; no Multiplayer entry integration
+```
+
+For a **new Ancient**:
+
+```
+element: ancient
+name/epithet: <English and Simplified Chinese text>
+placement: shared | acts [exact identities]
+valid acts: <accepted rule and one rejected act>
+options: [all stable ids, visibility/enabled/cost/typed tips, ordered outcomes, next page|finish]
+initial options: <exact subset/order or supplied-event-RNG rule>
+dialogue: first-visit-ever; exact Character groups; ANY fallback; visit/repeat;
+  speaker/text/non-terminal prompt/optional line SFX; optional ANY blacklist
+presentation: dialogue color; portrait/background/VFX; map/history icon pairs;
+  optional procedural stage; ambient BGM; exact fallbacks
+scenario: real Ancient MapNode, every branch/history state, save/load, headed dialogue/UI/audio
+boundary: no deferred-family integration; do not lower as ordinary Event or vanilla override
+```
+
+For a **reward**:
+
+```
+element: reward
+identity: <stable Mod-local stem>
+grant context: <owner/trigger> -> blocking custom offer | current combat end
+text/icon/order: <English and Simplified Chinese description>; <checked icon or fallback>; <order>
+claim: when <final condition>; effects <ordered deterministic public outcomes>; false keeps pending
+persistence: none | payload <version and complete reconstruction facts/default/migration>
+linked set: none | choose one | take all; children <ordered rewards>; failure behavior <exact>
+scenario: real reward screen claim/refusal/continue, pending combat-room save/load, headed UI/input
+boundary: singleplayer; no deferred-family integration; reconstruction never grants the outcome
+```
+
+For a **card pile**:
+
+```
+element: card pile
+identity/scope: <stable local stem>; combat only | run persistent
+lifecycle: capacity/duplicates; empty/full; combat/run/save/restore/end behavior
+presentation: headless | top bar | bottom left | bottom right | ExtraHand;
+  preset+offset | custom position+pivot; icon; title/description/empty text; visibility/hover/hotkeys
+open/view: default | capstone; vanilla | deck-like | explicit inspect/upgrade/sort/style
+movement: <trigger/source/exact live Card/destination/top|bottom/precheck/result pile>
+ExtraHand: none | visibility/layout/scale/glow/manual play/callbacks
+scenario: matching real combat/run host, movement/persistence, headed/controller UI matrix
+boundary: no shadow state, direct pile mutation, native-Hand patch, or deferred-family integration
+```
+
+For **runtime UI**:
+
+```
+element: runtime UI
+workflow/owner: <stable local identity>; <owning coordinator>; <create/cleanup host and timing>
+entry points: none | top bar <icon/fallback, hover, click, visibility/open/count>;
+  hotkeys <bindings, suppression, handled input, disposal>
+feedback: none | Toast <level, bilingual body/title, duration/persistent, progress/update/close>
+surface: none | local Capstone <content/focus/back/replace/close> | floating window
+  <title/content, fixed|movable|resizable, geometry bounds, viewport constraint, content ownership>
+catalog/search: none | <list|grid, inline|drawer, stable items, fixed filters, localized states,
+  selection/actions/refresh>; expansions <locale, bounded deterministic forms, invalidation/disposal>
+attachment/theme: none | <stable public parent, child factory/scene, duplicate/setup/order/cleanup>;
+  <Mod-scoped token branch and local consumers>
+scenario: real top bar/input/Toast/screen/window/Catalog/attachment plus headed mouse/controller/layout
+boundary: local `NetScreenType.None`; no deferred-family UI or integration; no private/internal host
+```
 
 For a **character**:
 

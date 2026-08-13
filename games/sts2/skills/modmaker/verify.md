@@ -88,7 +88,10 @@ expected/observed vocabulary:
 `"character foundation/static-presentation.*observed=all"`,
 `"resource UI complete.*observed=all"`, or
 `"ordered buffer complete.*observed=all"`, or
-`"custom card piles complete.*observed=all"`. A custom-pile run follows
+`"reward complete.*observed=all"`, or
+`"custom card piles complete.*observed=all"`, or
+`"runtime UI complete.*observed=all"`. A Reward run follows `surfaces/reward.md` and proves
+claim/refusal, the selected presentation route, and pending-save reconstruction. A custom-pile run follows
 `reference/card-piles.md` and proves the consumers selected by SPEC; Package support does
 not require a separate run for every documented public consumer. The verifier ignores all
   ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
@@ -131,8 +134,23 @@ run actually proves it.
   consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
   queued invalidation, unchanged rejected payment/Potion state, and normal Card result
   pile. `potion + many` remains a known lifecycle limitation.
-- For a Card- or Relic-owned Rest Site option, follow `reference/rest-site-options.md` and
-  the matching owner surface. Card ownership remains game-unobserved until that exact route runs.
+- For a standalone/Card/Relic/Modifier Rest Site option, follow
+  `reference/rest-site-options.md` and the matching owner surface. Only the historical Relic route
+  is observed; every other ownership shape remains game-unobserved until that exact route runs.
+- For Affliction, Modifier, or Global Effect, follow its surface proof matrix. Registration,
+  direct method calls, or a model lookup do not prove attachment, selection, or dispatcher delivery.
+- For an Act, follow `surfaces/act.md`: only a real singleplayer transition through the selected
+  force/pool policy proves entry, and the run must reach every required room/content family.
+- For a new Ancient, follow `surfaces/ancient.md`: only the real Ancient room proves option,
+  dialogue, choice-history, and cleanup behavior. Existing-Ancient override proof is separate.
+- For a Reward, follow `surfaces/reward.md`: registration, direct serialization, or a direct method
+  surrogate does not prove the native screen, claim/refusal, insertion, linked set, or reload.
+- For a Card Pile, follow `surfaces/card-pile.md` and the complete Package reference; static type
+  lookup does not prove movement, persistence, UI, manual play, or cleanup.
+- For Runtime UI, follow `surfaces/runtime-ui.md`: compilation, registry lookup, direct callbacks,
+  or constructed Godot nodes do not prove the real top bar, input router, Toast host, Capstone,
+  window, Catalog, attachment, focus, controller, layout, or cleanup behavior. Keep structured
+  host state separate from headed visual/input judgment.
 - For an Event, see `surfaces/event.md` § Proof matrix.
 
 ### Advanced-target headed acceptance
@@ -264,7 +282,9 @@ Ask the user to drive it by hand via the dev console:
    close with `Esc`. Debug commands are auto-enabled because the game is running modded.
 3. Grant the element and 4. trigger it: each surface page owns both steps in its
    § Manual fallback — `surfaces/card.md`, `surfaces/relic.md`, `surfaces/potion.md`,
-   `surfaces/monster.md`, `surfaces/event.md`, `surfaces/character.md`. A Power, keyword, or
+   `surfaces/monster.md`, `surfaces/event.md`, `surfaces/character.md`, `surfaces/act.md`,
+    `surfaces/ancient.md`, `surfaces/reward.md`, `surfaces/card-pile.md`, and
+    `surfaces/runtime-ui.md`. A Power, keyword, or
    enchantment has no route of its own and is driven through its host Card; an orb is driven
    through its declared channel host.
 

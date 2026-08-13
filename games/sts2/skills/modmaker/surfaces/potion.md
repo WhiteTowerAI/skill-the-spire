@@ -65,6 +65,18 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
   diagnostic record
 ```
 
+## Shared capability routes
+
+Read `reference/model-capabilities.md` for separable behavior/state attached to a held Potion,
+`reference/lifecycle-state-rng.md` when it crosses callbacks or a selected persistence boundary,
+and `reference/shared-effect-hooks.md` for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum-hand-size behavior. The Potion or its typed capability remains the owner;
+state reachability ends when the native Potion lifecycle removes it unless SPEC says otherwise.
+
+Keep the drinking action in `effects.sequence`. Append a shared-route SPEC block only for behavior
+while the Potion is held, and specify exact phase/order, subject guard, neutral case, removal
+cleanup, and pre/post belt plus behavior assertions. Do not register a process-wide listener.
+
 ## Displayed values the engine keeps current
 
 `PotionModel` runs the same SmartFormat/DynamicVar substitution as `RelicModel`, so a value

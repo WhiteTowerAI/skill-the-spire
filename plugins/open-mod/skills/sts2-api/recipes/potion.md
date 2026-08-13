@@ -99,6 +99,15 @@ await PowerCmd.Apply<StrengthPower>(
 await PlayerCmd.GainEnergy(2m, Owner);
 ```
 
+## Optional shared capability routes
+
+Keep the drinking action in `OnUse`. For separable behavior/state while this Potion is held, read
+`reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Potion
+or typed capability and prove owner guards, the unchanged neutral case, and cleanup after native
+removal. Do not register a Potion-owned rule process-wide.
+
 ## SPEC `hook participation`
 
 `OnUse` is the Potion being used. A SPEC `hook participation` block is different: the engine asks

@@ -28,11 +28,18 @@ Each selected surface page owns its exact domain vocabulary and proof matrix. Pr
 current product capabilities, including:
 
 - new Card/Relic/Potion/Power/Keyword/Enchantment/Orb content;
+- complete singleplayer Acts with explicit entry policies, and new Shared/Act-scoped Ancients;
+- combat Card Afflictions, selectable run Modifiers, scoped Global Effects, and independent Rest
+  Site actions;
+- custom Rewards with native claim/refusal and pending-save reconstruction, and independent Card
+  Piles across the complete documented public Package;
+- local Mod-owned Runtime UI workflows using selected top-bar, Toast, runtime-hotkey, Capstone,
+  Catalog, floating-window, search-expansion, fixed node-attachment, and shell-token routes;
 - Monster move graphs and Encounter rosters;
 - ordinary Events, supported native presentation, and bounded forced follow-up Events;
 - playable Character Foundation, presentation, dialogue, combat cues, secondary resources,
   and ordered semantic buffers;
-- computed Card values, advanced targeting, Custom Card Piles, bounded state, Rest Site options,
+- computed Card values, advanced targeting, bounded state, Rest Site options,
   readability, and custom static art;
 - grounded vanilla Card, visual, Ancient, availability, and non-Card overrides; and
 - cataloged model-hook participation only on surfaces in its dispatch listener set.
@@ -52,7 +59,9 @@ List every selected maintained route exactly once. Example:
 - Support: `reference/card-computed-values.md`
 ```
 
-For raw model-hook participation, add one line per capability:
+For raw model-hook participation, add one line per capability. Global Effect uses the exact
+`global-effect-run` or `global-effect-combat` dispatcher surface from its selected singleton
+scope:
 
 ```markdown
 - Hook: modify_damage_multiplicative | surface: power | shape: value | route: reference/model-hook-participation.md

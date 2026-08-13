@@ -56,6 +56,18 @@ Reachability has one more consequence worth stating: an Enchantment receives com
 only while its host Card is in a combat pile, because it inherits that from the Card. A rule
 declared for all of combat does not hold on an enchanted Card sitting outside the piles.
 
+## Shared capability routes
+
+Read `reference/model-capabilities.md` when the Enchantment carries a separable behavior/state
+bundle, `reference/lifecycle-state-rng.md` when that state crosses a callback/save boundary or uses
+gameplay RNG, and `reference/shared-effect-hooks.md` for a reachable per-hit attack, healing,
+Energy/Stars-gain, or maximum-hand-size effect. The Enchantment or its typed capability remains
+the owner and inherits the host Card's combat-pile reachability.
+
+Append only the selected reference's nested game-term SPEC block. Preserve the five replacement
+hooks above, each service's own phase/order, an unchanged neutral case, and removal/cleanup proof.
+Do not register a process-wide listener for an Enchantment-owned rule.
+
 ## The engine writes `extraCardText` onto the host card
 
 When `HasExtraCardText` is true, the engine stamps the enchantment's localized

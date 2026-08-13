@@ -190,6 +190,20 @@ inside `OnPlay`. Never cache the target list from selection time.
 > `TargetType.Self` (no target selection) — `DefendIronclad`/`Inflame` do. Potions use
 > `AnyPlayer` instead. Don't copy a potion's target type onto a card.
 
+## Optional shared capability and Card-lifecycle routes
+
+Keep the normal play body below for a Card whose effect happens simply because it is played.
+When SPEC instead selects a separable attached behavior/state bundle, read
+`reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; for per-hit attack, healing, Energy/Stars-gain response, or
+maximum hand size, read `reference/shared-effect-hooks.md`; and for before/after `OnPlay`,
+suppression, free-play duration, transforms, carry-over, or type text, read
+`reference/card-play-lifecycle.md`.
+
+Those references own registration, callbacks, order, neutral returns, cleanup, and SelfTest. Do
+not copy them into `OnPlay`, refund a free play manually, or use process registration for a
+Card-owned rule.
+
 ## Trigger
 
 Override **`protected override async Task OnPlay(PlayerChoiceContext choiceContext,

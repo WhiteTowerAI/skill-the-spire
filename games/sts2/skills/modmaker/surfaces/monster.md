@@ -98,6 +98,18 @@ A one-move enemy may keep one self-looping move. A multi-move enemy must fill th
 move/branch contract above before authoring. An intent label is not behavior proof:
 the intent UI shows what the Monster *plans*, which is not evidence the move resolved.
 
+## Shared capability routes
+
+Read `reference/model-capabilities.md` for separable behavior/state attached to the spawned
+Monster, `reference/lifecycle-state-rng.md` for state crossing callbacks or deterministic random
+choices beyond the declared move graph, and `reference/shared-effect-hooks.md` for reachable
+per-hit attack, healing, Energy/Stars-gain response, or maximum-hand-size behavior. The Monster or
+its typed capability owns the rule; it remains combat-scoped and guards the exact creature/source.
+
+Keep moves in the move graph. Append a shared-route SPEC block only for independent passive
+behavior, with exact phase/order, neutral case, lifetime/reset, and a real `CombatEnemy` assertion.
+Never widen a Monster rule into a process-wide listener.
+
 ## Every move needs a bestiary title
 
 The bestiary move list looks up `<monster entry>.moves.<MOVE_ID>.title` in the `monsters`

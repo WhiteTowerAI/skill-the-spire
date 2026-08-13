@@ -108,6 +108,20 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
   localization keys, asset profile, and framework diagnostic record
 ```
 
+## Shared capability routes
+
+Read `reference/model-capabilities.md` when behavior/state is a separable bundle attached to this
+Card, and `reference/lifecycle-state-rng.md` when it crosses a turn/combat/run/save boundary or
+makes a gameplay-random choice. Read `reference/shared-effect-hooks.md` for per-hit attack,
+healing, Energy/Stars-gain response, or maximum-hand-size behavior. Read
+`reference/card-play-lifecycle.md` for before/after `OnPlay`, suppression, free-play duration,
+transform reaction/carry-over, or type-text composition.
+
+Append only the selected reference's game-term SPEC block. Keep an ordinary play effect in
+`effects.sequence`; do not turn it into a capability or process listener. For every selected
+route, name the owner, phase/order, guard and neutral case, state lifetime, cleanup, and exact
+SelfTest post-state. A process-wide registration belongs only to an explicit Global Effect.
+
 ## Author the element class
 
 **Card** — add `<ModName>Code/Cards/<CardName>.cs` and extend `ModCardTemplate`:

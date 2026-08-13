@@ -26,7 +26,8 @@ writing anything.
 
 `Hook` dispatches through two families of iterator, and each walks a different **listener set**.
 The run-scope listener set is deck Cards, Enchantments, Relics, Potions, Modifiers, and Badges.
-The combat listener set adds Powers, Orbs, Monsters, Afflictions, and pile Cards. So a hook
+The combat listener set includes Powers, Orbs, Monsters, Afflictions, Modifiers, Badges, and pile
+Cards. So a hook
 dispatched only at run scope **can never reach a Power**: the override compiles, ships, and never
 fires. Offering it there would manufacture exactly the silent failure this route exists to
 prevent.
@@ -36,9 +37,11 @@ reachability from the hook's name or from a vanilla implementor you found elsewh
 
 | Surface | Hooks it can receive | Shapes available |
 |---|---|---|
-| card, relic, potion | 66 | scalar 53, out-replacement 6, collection 7 |
-| enchantment | 61 | scalar 48, out-replacement 6, collection 7 |
-| power, orb, monster | 45 | scalar 40, out-replacement 4, collection 1 |
+| card, relic, potion, modifier | 66 | scalar 53, out-replacement 6, collection 7 |
+| enchantment | 66 | scalar 53, out-replacement 6, collection 7 |
+| power, orb, monster, affliction | 45 | scalar 40, out-replacement 4, collection 1 |
+| global-effect-run | 32 | scalar 24, out-replacement 2, collection 6 |
+| global-effect-combat | 45 | scalar 40, out-replacement 4, collection 1 |
 
 Two hooks are excluded from all counts above because a shipped route already owns them; see
 § Two hooks that belong to another route.
@@ -52,6 +55,9 @@ Every guard needs the element's own Creature, and the property that yields it is
 | power | `Owner` is a `Creature` | `Owner` |
 | relic, potion, orb, card | `Owner` is a `Player` | `Owner.Creature`, and `Owner.Osty` where an Osty can act |
 | monster | `Creature` | `Creature` |
+| affliction | `Card` is the attached Card | `Card.Owner.Creature`, guarded to that exact Card where relevant |
+| modifier | `RunState` is set on the selected mutable instance | choose the exact Player/Creature subject from that run |
+| global-effect-run/combat | no obtainable owner | use the selected hook subject plus `CurrentRunState`/`CurrentCombatState` guard |
 
 Vanilla `PenNib` compares against both `Owner.Creature` and `Owner.Osty`, because either may be
 the dealer. A relic guard that checks only the main Creature silently stops working when the
@@ -188,7 +194,8 @@ signature; only these five are redirected.
 ## Two hooks that belong to another route
 
 `TryModifyRestSiteOptions` and `ShouldDisableRemainingRestSiteOptions` are exactly how the shipped
-Card- or Relic-owned Rest Site option is contributed and how its stay/leave behavior works. Use
+standalone, Card-, Relic-, or Modifier-owned Rest Site option is contributed and how its
+stay/leave behavior works. Use
 `reference/rest-site-options.md`. It carries four boundaries the bare hook does not — singleplayer
 only, absent versus natively disabled, free or fixed Gold, and a fully preflightable outcome before
 the first mutation.

@@ -22,6 +22,11 @@ That the keyword carries no behavior is the reason for this shape, and also the 
 proof must not assume — see § Proof matrix. This was reviewed and accepted on 2026-08-07:
 keyword and enchantment stay host-scoped, while `orb` received its own envelope.
 
+The Keyword must not select `reference/model-capabilities.md`,
+`reference/shared-effect-hooks.md`, or lifecycle state as its own implementation. If its named
+behavior needs one of those routes, the Card, Power, or other real host selects and owns it; the
+Keyword still owns only vocabulary and tooltip presentation.
+
 ## The engine writes the keyword into the card text
 
 Registering a keyword and attaching it to a card makes RitsuLib insert the keyword's

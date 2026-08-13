@@ -70,8 +70,9 @@ the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
 because the trigger hook a Relic overrides usually fires more often than the design wants,
 so the guard is the Relic's identity — see § Proof matrix.
 
-When a Relic contributes a Rest Site action, add this block to the same Relic SPEC. The
-shared route also accepts an exactly-one Card owner; Modifier remains unsupported:
+When a Relic contributes a Rest Site action, add this block to the same Relic SPEC. The shared
+route also supports standalone, exactly-one Card, and selected Modifier owners through their own
+surface pages:
 
 ```markdown
 - **owned Rest Site option**:
@@ -97,6 +98,19 @@ Absence and disabled are separate. `eligibility` controls contribution; `enabled
 controls the native gray/clickable state. A fixed-Gold outcome must be completely
 preflightable before its first mutation. Stop authoring for a post-payment selection,
 random branch, or other result that would require rollback.
+
+## Shared capability routes
+
+Read `reference/model-capabilities.md` for separable behavior/state attached to this Relic,
+`reference/lifecycle-state-rng.md` when it crosses callbacks, run/save/profile boundaries, or uses
+gameplay RNG, and `reference/shared-effect-hooks.md` for reachable per-hit attack, healing,
+Energy/Stars-gain response, or maximum-hand-size behavior. The Relic or its typed capability
+remains the owner across its declared run/combat reachability.
+
+Keep native trigger effects in `effects.sequence`. Append a shared-route SPEC block only for the
+independent capability/service behavior, preserving cadence, phase/order, subject guard, neutral
+case, persistence/reset, display refresh, and exact real-host assertions. Do not register a
+process-wide listener for a Relic-owned rule.
 
 ## Displayed values the engine keeps current
 

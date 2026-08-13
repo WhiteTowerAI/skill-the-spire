@@ -138,6 +138,15 @@ This path needs no C# helper or cleanup code; page changes replace the host labe
 
 Ship `events.json` in the resource PCK; a DLL-only rebuild does not update it.
 
+## Optional lifecycle, state, and RNG route
+
+For lifecycle observation beyond the normal option callback, state owned outside the mutable Event
+model, included persistence, or gameplay-random choice, read `reference/lifecycle-state-rng.md`.
+Use the host-supplied RNG when available and otherwise one stable Mod stream at the authoritative
+resolution point. The reference owns subscription disposal, state/save/profile rules, migrations,
+neutral rejected/preview behavior, and hosted proof. It does not authorize Progression, Settings,
+Telemetry, or Multiplayer behavior.
+
 ## Options and state transitions
 
 - `GenerateInitialOptions()` returns the options shown on the initial page.

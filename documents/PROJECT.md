@@ -21,17 +21,22 @@ M8.7 Product Boundary Generalization is implemented in authoritative source and 
 forms, but remains open pending its result record and explicit human closure. Its nine generalized
 families remain part of the product boundary and must not be narrowed or reimplemented.
 
-M8.8 Surface Effect Composability Generalization is paused and unimplemented. Its previous
-trace/schema-oriented draft has been replaced in the active plan with a simplified future plan:
-refresh the RitsuLib `0.5.11` effect surface, place durable knowledge in concise
-recipes/references, extend the sole thin preflight only when all three admission criteria hold,
-and prove requirement-to-code plus autotest readiness with behavior-level tests. It still requires
-a refreshed guide/source/API audit and explicit human confirmation before implementation.
+M8.8 Surface Effect Composability Generalization completed its full RitsuLib `0.5.11` inventory,
+ownership-confirmation gate, WP1-WP5 implementation, WP8 source/static closeout, and authorized
+plugin/portable payload delivery on 2026-08-13. The human lead accepted its final result and closed
+M8.8 the same day; the durable record is
+`documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`.
+Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/scene/
+animation/audio and shared-presentation expansion, WP7 named typed interoperability, and new
+interactions with those deferred groups are excluded from M8.8 by explicit product decision.
+Existing asset, presentation, audio, and interoperability routes remain supported at their current
+literal boundaries. This does not narrow M8.7's existing availability routes or the unrelated
+Power/Relic/Intent Extra Badges feature.
 
-M8.6 remains the final clean installed whole-skill acceptance. It is ineligible until M8.7 and
-M8.8 close and the human lead selects the exact request, host, and execution contract. No new
+M8.6 remains the final clean installed whole-skill acceptance. It is ineligible while M8.7 remains
+open and until the human lead selects the exact request, host, and execution contract. No new
 acceptance run, payload installation, commit, push, GitHub release, or game launch is implied by
-the current source state.
+M8.8 closure or the current source state.
 
 ## User Experience
 
@@ -199,6 +204,22 @@ results do not become `0.5.11` runtime proof.
 Verification is proportional. Reuse the nearest maintained host for a changed behavior. A fresh
 natural-language acceptance Mod is reserved for an explicitly scheduled full-pipeline gate or a
 direct human request. M8.6 is that future final gate, but is not currently eligible or started.
+
+## Future Outlook
+
+Progression, post-run/run-history Badge, player Settings, consented Telemetry, Multiplayer, and
+Update Check are grounded RitsuLib product families but are not part of M8.8. Future work may add
+them only through a newly selected scope that covers their own lifecycle, privacy, service,
+persistence, UI, and real-environment verification needs. Integrations from other elements into
+these families are deferred with them; they must not enter the product piecemeal under another
+surface. RitsuLib Extra Badges on Power, Relic, and Intent are a separate existing presentation
+feature, and M8.7's existing availability/epoch routes remain preserved.
+
+Full RitsuLib asset/scene/animation/audio and shared-presentation generalization (former M8.8 WP6)
+and named typed interoperability generalization (former WP7) are also future work. Their public
+families remain accounted for by the M8.8 inventory, but M8.8 does not add new routes, capability
+claims, tests, or cross-surface integrations for them. This deferral does not remove or weaken any
+asset, presentation, audio, or interoperability route already supported by open-mod.
 
 ## Distribution
 

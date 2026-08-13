@@ -88,6 +88,15 @@ if (power is { Amount: > 0 })
 Never use a negative `PowerCmd.Apply<T>` to consume. With no existing instance it can
 create invalid negative state.
 
+## Optional shared capability routes
+
+For a separable Power-owned behavior/state bundle, read `reference/model-capabilities.md`; for
+lifecycle/persistence/RNG, read `reference/lifecycle-state-rng.md`; and for reachable per-hit
+attack, healing, Energy/Stars-gain response, or maximum hand size, read
+`reference/shared-effect-hooks.md`. Implement on the Power or typed capability and preserve amount,
+duration, owner guard, phase/order, neutral behavior, display refresh, and removal cleanup.
+Process-wide registration is not a Power route.
+
 ## Hooks
 
 Override only the hook selected by SPEC. Examples:

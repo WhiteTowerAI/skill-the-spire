@@ -97,6 +97,19 @@ the native Power main amount instead of replacing it. Intent belongs to the publ
 Badges Package and remains supported there, but it has no generated SPEC block because no
 authoring recipe exists for it yet.
 
+## Shared capability routes
+
+Read `reference/model-capabilities.md` for separable behavior/state attached to this Power,
+`reference/lifecycle-state-rng.md` when it crosses callbacks or persistence boundaries, and
+`reference/shared-effect-hooks.md` for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum-hand-size behavior. The Power or its typed capability remains the owner and
+inherits the Power's combat-scope lifetime.
+
+Append only the selected reference's game-term SPEC block. Preserve amount/duration semantics,
+exact phase/order, owner/subject guard, unchanged neutral behavior, and cleanup when the Power or
+capability is removed. SelfTest must assert both the dependent effect and no second firing after
+removal; do not use a process-wide listener.
+
 ## Author the element class
 
 **Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend `ModPowerTemplate`:
