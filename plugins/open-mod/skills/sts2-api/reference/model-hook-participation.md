@@ -215,10 +215,10 @@ model-only read proves registration, not participation: the hook must be driven 
 
 ## Capability ids this route provides
 
-An `OP-###` that consumes one of these names it in `capability_ids` and cites this page as
-its `supported_route`; `design_trace.py` rejects an id no route declares. Each id is the
-hook's `semantic_id` in the catalog, and a test asserts this list equals the catalog's
-authorable set, so a hook cannot be documented here without being reachable.
+A SPEC Hook line names one of these capabilities, its selected surface and shape, and cites
+this page as its route. `capability_preflight.py` rejects an id this page does not declare.
+Each id is the hook's `semantic_id` in the catalog, and a test asserts this list equals the
+catalog's authorable set, so a hook cannot be documented here without being reachable.
 
 **Numeric modifiers** (26). The value the host is computing, adjusted. Neutral return per hook in the catalog.
 

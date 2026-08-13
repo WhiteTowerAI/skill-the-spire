@@ -510,71 +510,55 @@ supported, exact rules, values, content nodes, and directed relationships into `
 It does not create M7.4's `DESIGN.md` schema, current/future split, or traceability contract,
 and general design confidence never promotes an unsupported runtime operation.
 
-### M7.4 artifact and traceability decision
+### M7.4 artifact decision
 
-M7.4 adopts one adaptive durable `DESIGN.md`, not a wiki or full GDD hierarchy. Fast exact
-content records only intent, accepted/defaulted decisions, and a compact scope ledger;
-co-design and revision add only relevant M7.2/M7.3 rationale, relationships, tuning
-hypotheses, and preserved alternatives. The artifact uses stable `D-###` requirements:
+M7.4 established one adaptive durable `DESIGN.md`, not a wiki or full GDD hierarchy. The later
+workflow simplification keeps the useful part of that result and removes its management layer.
+Fast exact content records only intent, accepted/defaulted decisions, current scope, and explicit
+`Not Now` items. Co-design and revision add only relevant rationale, relationships, tuning
+hypotheses, and preserved alternatives.
 
-- current `MUST` has confirmed support and exact SPEC operations;
-- current `PLACEHOLDER` is a selected visible fallback, not silent omission;
-- future `DEFER` preserves larger intent without claiming future support; and
-- `OUT-OF-SCOPE` preserves an explicit exclusion or rejection.
+`SPEC.md` owns the concrete current implementation work: content, timing, targets, conditions,
+values, ordering, state, text/presentation, selected shipped routes, and autotest scenarios.
+Unsupported current intent must still be resolved with the user before authoring, but it is not
+represented as a machine contract. A broader future vision stays in DESIGN and cannot silently
+enter SPEC.
 
-Unsupported intent stays in `blocking_gaps` until the user explicitly accepts a supported
-current version, defers the literal idea, or removes it. DESIGN owns that creative/scope
-decision; SPEC owns only current generated operations and their semantic routes; PLAN owns
-stage progress; MEMORY owns technical identities and build history.
-
-`design_trace.py` validates the machine-readable scope and SPEC trace in both directions.
-Every current item maps to one or more stable `OP-###` entries; every operation maps back
-only to current design IDs and an existing `recipes/*.md` or `reference/*.md` route.
-Deferred/out-of-scope items map to nothing. The validator rejects blocking gaps,
-missing/extra operations, one-way links, future leakage, invalid disposition/fallback
-states, invented route forms, and absent route files. Author treats the validated trace as
-an allowlist rather than generating convenient extras.
-
-For pre-M7.4 unfinished projects, backfill only settled intent and accepted SPEC operations;
-do not invent historical rationale, alternatives, or future vision, and do not restart the
-Interview. This preserves M7.1 resume behavior while giving later revisions durable scope.
+For unfinished projects, resume from the accepted human-readable meaning. Preserve settled intent
+and current operations without inventing historical rationale or restarting Interview. Old
+metadata may remain ignored; migration is not required.
 
 ### M7.5 coherence and propagation decision
 
-M7.5 distills the useful coherence/change-propagation ideas into one lazy reference rather
-than a separate art, narrative, localization, and systems-agent hierarchy. Accepted
-`D-###` decisions produce one to three observable identity anchors. Only selected current
-mechanics, naming, localization, visuals, Event text, and Character identity surfaces are
-checked; placeholder art remains a fallback rather than an invented theme.
+M7.5's durable design lesson is proportional review, not a machine-readable coherence system.
+Review only selected current mechanics, naming, localization, visuals, Event text, and Character
+identity. Name concrete contradictions, terminology drift, identity breaks, scope leakage, and
+evidence inversion. Preserve a user-selected irony or contrast as deliberate tension instead of
+normalizing it automatically. Localization review compares semantic rules, costs, numbers,
+targets, and terminology rather than demanding word-for-word parity or claiming translation
+quality.
 
-The review names exact contradictions, terminology drift, identity breaks, scope leakage,
-and evidence inversion. A user-selected irony or contrast is recorded as deliberate
-tension instead of being normalized away. Localization is checked for semantic rules,
-costs, numbers, targets, and terminology, not word-for-word sentence parity or unreviewed
-translation quality.
-
-Revisions trace changed design IDs into an ordered `Q-###` queue over DESIGN, SPEC,
-localization, visuals, Event text, Character identity, generated source, and verification.
-UPDATE/REVIEW/REVERIFY identify affected work; PRESERVE protects settled or rejected
-decisions at real risk of accidental change. This adapts the local CCGS downstream-impact
-idea without its per-file approval ceremony. `coherence_trace.py` validates structure and
-references but cannot determine subjective quality. An unchanged pre-M7.5 project resumes
-without backfill; its next design revision adds the contract from explicit existing facts.
+On revision, update the accepted DESIGN decision, the exact SPEC work, and its direct consumers:
+localization, visuals, Event text, Character identity, generated source, and SelfTest. Preserve
+unrelated settled/rejected decisions. Rerun only invalidated stages and the nearest proportional
+host. A validator cannot determine subjective coherence or quality.
 
 ### M7 research decision
 
 Adopt a compact, progressive pipeline:
 
 ```text
-route -> relevant native grammar/planning/coherence -> adaptive interview -> DESIGN.md
-      -> current slice/future vision/coherence -> SPEC.md -> build/verify -> human playtest delta
+route -> relevant native grammar/planning -> adaptive interview -> concise DESIGN.md
+      -> implementable SPEC.md -> thin capability preflight -> author/build
+      -> real-host verification -> human playtest delta
 ```
 
-`DESIGN.md` owns intent, trade-offs, tuning, rejected alternatives, open questions, and
-future/current scope. `SPEC.md` remains the exact generation contract. Behavioral tests
-travel with the Package that changes the behavior and evaluate semantics and decision
-quality rather than exact prose. Real-player observations remain human evidence; no design
-framework or simulated persona may fabricate them.
+`DESIGN.md` owns intent, accepted decisions, trade-offs, rejected alternatives, open questions,
+and current/Not Now scope. `SPEC.md` is the exact implementation work order. The preflight checks
+only shipped-route existence and the hook facts that prevent silent non-dispatch. Build and real
+host behavior prove implementation. Behavioral tests travel with the capability they protect and
+evaluate real authorability or verification mechanisms rather than prose. Real-player observations
+remain human evidence; no design framework or simulated persona may fabricate them.
 
 The external Watcher evaluation then tested the installed workflow as a whole. It showed
 that local design, trace, build, and state-proof success can coexist with a player-facing
@@ -596,35 +580,18 @@ implemented without a maintained exact capability and conformance contract.
 
 ## M8 End-to-End Product-Integrity Research Inputs
 
-M8 treats end-to-end semantic fidelity as a product contract across the whole skill:
+M8 research identifies two durable end-to-end guarantees:
 
 ```text
-request -> literal deliverable -> exact route -> design/spec -> generated behavior
-        -> semantic repair/backtrack -> proportional verification/human observation
-        -> literal report -> reproducible installed result
+request -> concise design -> implementable spec -> supported/reachable route -> generated code
+generated code -> build -> real-host structured state -> optional human observation -> direct report
 ```
 
-The active plan retains seven bounded Packages. M8.4 was removed by the human lead; Package
-numbers do not imply execution order:
-
-- M8.1 literal completion claims and required player experiences carried by the existing
-  DESIGN/SPEC trace; prototype, slice, and run-capable are examples rather than a closed
-  taxonomy;
-- M8.2 exact semantic capability preflight backed by maintained reusable implementations and
-  route-local machine-checkable metadata, with selected generic gaps promoted through pinned
-  maintainer research rather than consumer-session approximation or a second catalog;
-- M8.3 artifact-owned semantic continuity and backtracking when repair changes behavior or
-  any required explanatory/presentation surface;
-- M8.5 repository-owned Windows/macOS installed-workflow reproducibility with scoped graceful/
-  forced cleanup and proof that no launcher-owned game child remains; and
-- M8.7 product-boundary generalization for the human-selected audit findings, with parseable
-  surface-specific semantic contracts, one shared lightweight structural validator, and exact
-  evidence labels rather than prose-only widening or nine family proof campaigns;
-- M8.8 surface-effect composability generalization, currently paused; its existing research and
-  contract must be refreshed against the current `v0.5.11` guide/source/API profile before future
-  execution; and
-- M8.6 one clean installed whole-skill acceptance after the preceding Packages close, covering
-  both runtime state and its complete player-facing semantics.
+The workflow-simplification audit found that many earlier safeguards validated whether the model
+filled management documents correctly rather than whether it could make a working Mod. Their
+useful technical residue is small: keep exact recipe/reference knowledge, one thin route and hook
+reachability preflight, strong Scaffold/Build checks, real-host SelfTest, and literal direct
+reporting. Delete duplicate schemas, ledgers, IDs, and status synchronization.
 
 M8.0 skill structure restructuring, M8.1 literal deliverable contract, M8.2 exact semantic
 capability conformance, M8.3 semantic continuity/backtracking, and M8.5 cross-platform installed
@@ -633,26 +600,22 @@ receiving an execution contract and with unresolved exceptions: its manifest and
 executable-adjacent path repairs have static/Windows compile evidence, but macOS installed
 reproduction and launcher-owned process-tree cleanup are unimplemented and unproved. This closure
 changes no runtime capability row and did not itself authorize or prove later M8.7/M8.8/M8.6 work.
-Its bounded record is
-`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 source development is now
-implemented and committed: the nine selected families have v3 owner contracts, lowering guidance,
-shared structural validation, and literal game-unobserved labels. Both committed payload trees
-include M8.7 after explicit human-lead authorization on 2026-08-13; its result record and explicit
-closure remain outstanding. M8.8 is paused, and its existing research/contract is not executable
-as-is under the current `0.5.11` dependency profile. M8.6 waits for both Packages to
-close. Concrete implementation ownership, ordered steps, and fixed
-result-record names live in the active implementation plan so a later session does not need to
-reinterpret these research inputs. Intermediate Packages record their work and results; M8.6 owns
-the final clean whole-skill judgment.
+Its bounded record is `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 source
+development is implemented and committed: its nine selected families retain complete owner
+guidance, lowering, hard boundaries, proof matrices, and literal game-unobserved labels. Both
+committed payload trees include M8.7 after explicit human-lead authorization on 2026-08-13; its
+result record and explicit closure remain outstanding. The workflow simplification removes only
+machine-management wrappers around those capabilities, not the capabilities themselves. M8.8 is
+paused and its prior research/contract is not executable under the current `0.5.11` profile. M8.6
+waits for both Packages to close. Current status and gates live in the active implementation plan.
 
 No generic Watcher discovery is promoted from the copied project alone. Exact API, lifecycle,
-platform, and payload conclusions still require the repository's pinned source and proportionate
-maintained evidence. M8.7's selected reusable families are promoted in authoritative source through
-version-pinned contracts, lowering, and shared structural validation; newly generalized shapes
-remain game-unobserved until a later selected Mod exercises them. M8.8 must apply the same evidence
-discipline to the complete current-profile RitsuLib effect surface while treating previous
-recipes/proofs as representative rather than exhaustive. This does not authorize prompt-derived Harmony, reflection,
-Publicizer, or IL or broaden multiplayer support.
+platform, and payload conclusions still require pinned source and proportionate maintained
+evidence. M8.7's selected reusable families remain promoted in authoritative source; newly
+generalized shapes remain game-unobserved until a later selected Mod exercises them. M8.8 must
+apply the same evidence discipline to the complete current-profile RitsuLib effect surface while
+treating previous recipes/proofs as representative rather than exhaustive. This does not authorize
+prompt-derived Harmony, reflection, Publicizer, or IL or broaden multiplayer support.
 
 ## Reused Design Ideas
 

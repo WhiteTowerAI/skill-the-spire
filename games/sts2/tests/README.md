@@ -1,410 +1,177 @@
 # STS2 verification ownership
 
-Completed migration evidence is archived in
-`documents/history/RITSULIB_MIGRATION_RESULTS.md`. Current claims are defined by
-`AGENTS.md`, `content-capability-graph.md`, and focused tests under
-`games/sts2/tools/tests/`.
-The focused M6.6 computed-Card result is archived in
-`documents/history/M66_COMPUTED_VALUES_RESULTS.md`.
-The failed initial native Ancient-dialogue proof, repair, and successful recheck are recorded in
-`documents/history/M66_ANCIENT_DIALOGUE_RESULTS.md`.
-The bounded advanced-targeting proof and its manual-verification exception are recorded in
-`documents/history/M66_ADVANCED_TARGETING_RESULTS.md`.
-The historical private-repair Package 4 result is retained in
-`documents/history/M66_CARD_PILE_EXTRA_HAND_RESULTS.md`. The official RitsuLib `0.5.4`
-promotion proof and current literal exceptions are recorded under
-`games/sts2/experimental/card-pile-extra-hand/official-v054-proof/`; the formal route is
-`sts2-api/reference/card-piles.md`.
-The M6.7.0 catalog, localized-title aliases, no-op manifest, fail-closed checks, and
-repeatable real-host collector development result are recorded in
-`documents/history/M67_GROUNDING_KERNEL_RESULTS.md`. The complete M6.7 delivery and
-representative acceptance are recorded in
-`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md`; the separate current-catalog headed
-no-op remains intentionally unrun. The later fail-closed Card-description and generated-file
-namespace repair is recorded separately in
-`documents/history/M67_POST_ACCEPTANCE_GENERATION_QUALITY_REPAIR.md`; it does not alter or
-rerun the milestone acceptance.
+This directory owns the current support graph and the evidence rules for generated Mods.
+Completed milestone evidence remains under `documents/history/`; it is not a live workflow or a
+substitute for current verification.
 
 ## Model
 
-Support is not a test result. Official product semantics plus the pinned public RitsuLib
-profile establish support for a documented Package and its public consumers. Tests and
-real-host runs report what actually worked; missing proof stays visible but does not make a
-public Package unsupported.
+Support, implementation, and proof are distinct:
 
-1. Use local assertions for deterministic calculations, state transitions, payment floors,
-   capacity, ordering, and reset rules.
-2. Reuse the closest real host for lifecycle behavior and presentation.
-3. For an ordinary feature or bug fix, stop after the changed behavior is proved in that
-   real host; do not add a complete demo-Mod run to every change.
-4. Use a fresh natural-language acceptance Mod only when the active implementation plan
-   schedules a full user-pipeline gate or the human lead requests one, then retire it after
-   recording the outcome.
+- the pinned RitsuLib/public-fixed route establishes what the product can express;
+- recipes/references and generation code establish what open-mod can author;
+- Build proves compilation and static artifact contracts; and
+- the real STS2 host proves runtime behavior and presentation.
 
-M6.7 used batched verification by human-lead decision and closed on 2026-08-04. The final
-source regression, payload parity/repeatability, local-plugin refresh, independent build,
-and representative human-led in-game acceptance completed. M6.7.6 was canceled and moved
-to Future Outlook. Tier 1, Tier 2/SelfTest, the current-catalog headed no-op, and every
-unselected check remain unrun, not passed; do not rerun the closed milestone gate.
+Missing proof remains visible but does not automatically narrow a documented public capability.
+Conversely, source, unit tests, or successful Build do not establish game observation.
 
-## M7 authoring-quality verification and closure
+The maintained workflow is:
 
-The human lead canceled M7.0 as a standalone evaluation Package on 2026-08-04. Behavioral
-cases travel with M7.1 routing, M7.2 native grammar, M7.3 design planning, M7.4 scope/
-traceability, and M7.5 coherence. M7.1 is implemented with
-`m71-routing-scenarios.md` and
-`tools/tests/test_m71_routing.py`: fast, co-design, revision, direct resume,
-material-question filtering, contradictions, unsupported requests, and decision-preserving
-deltas are deterministic shipped-instruction contracts. Independent forward-model runs are
-unrun. These tests are separate from runtime support and Tier 1/Tier 2; they cannot prove
-that a generated Mod loads, behaves correctly, looks correct, or is enjoyable.
-The complete source/payload result and explicit exceptions are recorded in
-`documents/history/M71_ADAPTIVE_ROUTING_RESULTS.md`.
+```text
+request -> DESIGN -> SPEC -> thin capability preflight -> Author + SelfTest
+        -> Build -> Tier 1 -> Tier 2 -> optional headed review -> direct report
+```
 
-M7.2 is implemented with `m72-native-grammar-scenarios.md` and
-`tools/tests/test_m72_native_grammar.py`. Its structured inventory is tied to the exact
-`0.107.1` assembly identity and records all five native starter decks. Exact catalog tests
-cover every Character-specific Strike/Defend type, English/Simplified-Chinese title,
-Basic rarity, Energy cost, tag, base value, and upgrade value. Contract tests cover lazy
-Character-only loading, exact native-shaped proposals before deck questions, explicit
-fact/convention/creative labels, deliberate-departure consequences, and Character SPEC
-preservation. Independent forward-model runs, generated Mods, runtime loading, Tier 1,
-Tier 2, headed review, and balance/playtest evidence are unrun. The complete source/payload
-result is recorded in `documents/history/M72_NATIVE_DESIGN_GRAMMAR_RESULTS.md`.
+There are no current coherence, deliverable, settlement, repair-routing, surface-envelope, or
+cross-file ID ledgers. Do not recreate unit tests that merely validate those retired management
+structures or exact prose.
 
-M7.3 is implemented with `m73-design-planning-scenarios.md` and
-`tools/tests/test_m73_design_planning.py`. Its three lazy references cover mechanic loops
-and dominance, content roles and directed interactions, and formula/economy sensitivity.
-Contract tests cover selective loading, the exact-Card fast path, the compact planning
-capsule, accepted supported SPEC lowering, explicit hypotheses, and the human lead's
-Mod-forward power bias with a choice-preserving ceiling. Independent forward-model runs,
-generated Mods, runtime loading, Tier 1, Tier 2, headed review, and human balance/playtest
-evidence are unrun. The complete source/payload result is recorded in
-`documents/history/M73_MECHANIC_CONTENT_BALANCE_RESULTS.md`.
+## Source Test Ownership
 
-M7.4 is implemented with `m74-scope-traceability-scenarios.md`,
-`tools/tests/test_m74_scope_traceability.py`, and `tools/design_trace.py`. Every route writes
-adaptive DESIGN before SPEC. The validator checks stable scope/operation IDs,
-MUST/PLACEHOLDER versus DEFER/OUT-OF-SCOPE placement, empty blocking gaps, bidirectional
-current-design/SPEC links, supported route syntax, and actual shipped route files. Its
-behavioral matrix covers supported-plus-unsupported intent, a larger future vision, and an
-exact-Card compactness review. Independent forward-model runs, generated Mods, runtime
-loading, Tier 1, Tier 2, headed review, and human artifact review are unrun. The complete
-source/payload result is recorded in
-`documents/history/M74_SCOPE_TRACEABILITY_RESULTS.md`.
+The source suite under `games/sts2/tools/tests/` keeps coverage that protects real product
+behavior and artifacts:
 
-M7.5 is implemented with `m75-coherence-scenarios.md`,
-`tools/tests/test_m75_coherence.py`, and `tools/coherence_trace.py`. New/revised DESIGN
-records accepted identity anchors, selected mechanics/name/localization/visual/Event/
-Character surface checks, resolved conflicts, deliberate tensions, and a revision-only
-impact queue. The validator checks stable references, current-surface ownership, allowed
-targets/actions, empty pre-SPEC conflicts, and a nonempty affected queue for revisions. Its
-behavioral matrix covers an Event localization/visual contradiction, a Character identity
-conflict, and a terminology/palette revision that preserves accepted and rejected scope.
-Two focused read-only independent forward-model prompts covered the Character conflict and
-bounded revision. The initial conflict run exposed the missing temporary `conflict` state;
-after repair, its rerun correctly blocked SPEC pending a user decision. The Event prompt
-and complete matrix, generated Mods, runtime loading, Tier 1, Tier 2, headed review,
-translation/visual review, and human artifact review remain unrun. The complete source/
-payload result is recorded in `documents/history/M75_COHERENCE_RESULTS.md`.
+- scaffold, local runtime resolution, Compat/profile identity, manifests, and build inputs;
+- localization table/key/token parity and nonempty bilingual values;
+- PCK/resource packaging and deterministic art normalization/catalog projection;
+- model-hook catalog extraction, capability existence, declaration shape, route ownership, and
+  dispatch reachability;
+- the thin capability preflight in repository and published payload layouts;
+- vanilla target catalogs, exact public/fixed route manifests, generated sources, and focused
+  reference-only compilation where maintained;
+- launch/log parsing, Tier 1 markers, structured Tier 2 proof filtering, and terminal outcomes;
+- current payload contents/layout and source-to-payload parity; and
+- modest behavior-level request/SPEC-to-authoring scenarios.
 
-M7.6 closed through a human-led external whole-skill evaluation rather than a shipped
-source Package. The copied Watcher project records a macOS build, Tier 1, a bounded
-SelfTest, and the human observation that the Mod was playable but not very good. The
-harness did not drive several claimed mechanics or draw-pile exhaustion;
-one unconditional aggregate assertion and the final narrative overclaimed coverage.
-No post-observation DESIGN/SPEC delta and same-hypothesis replay occurred. The exact result
-and exceptions are in
-`documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`. By explicit human-lead decision,
-that evaluation closes M7 without claiming a M7.6 source implementation, successful tuning
-loop, polished Character, or complete runtime matrix.
+`test_requirement_to_authoring.py` uses a concrete simple Card request. It verifies that its
+implementable SPEC selects a real route, passes the actual preflight, and that the selected route
+contains the RitsuLib template, registration, damage, upgrade, localization, and SelfTest
+ingredients needed to author it. It is intentionally not a Markdown-schema snapshot and does not
+pretend the model-driven Author stage is a deterministic compiler.
 
-Evaluate three layers:
+`test_capability_preflight.py` owns the only pre-Author machine gate. It proves:
 
-1. **Deterministic contract:** required artifact sections, stable semantic fields, exact
-   pinned facts, supported-route resolution, explicit gaps, and payload parity.
-2. **Behavioral rubric:** question economy, materially distinct alternatives, concrete
-   trade-offs, preservation of user decisions, STS2-native recommendations, coherent
-   content roles and expressions, bounded change propagation, and honest unknowns.
-3. **Human review:** whether the design proposal expresses the intended player experience
-   and whether a real playtest observation warrants a design change. An LLM judge may assist
-   comparison but is never the sole pass/fail authority.
+- real recipe/reference paths resolve;
+- nonexistent paths fail;
+- Markdown anchors are not treated as capability identities;
+- known reachable hooks pass;
+- unknown or unreachable hooks fail;
+- declared hook shape matches the pinned catalog;
+- route-owned hooks are rejected as raw participation; and
+- the cited route actually declares the hook.
 
-Do not assert exact prose merely because one response was preferred. Assert exact names or
-values only when they are pinned game facts or product contracts, such as the native
-Character-specific Basic Strike/Defend identities, localized display names, tags, and
-values used by the shipped Character grammar.
+`test_payload_tool_layout.py` runs the same checker from the shipped payload directory shape,
+where tools move under `modmaker/scripts/`. This guards a real deployment difference rather than
+documentation organization.
 
-Pre-M7 maintenance replaced the retired proof identity, exact values, and log markers in
-generic Character verification/reference text with current-`SPEC.md` assertions. A static
-regression scans source plus both generated payloads so retired proof identities remain only
-in history or repository-only evidence. This is a shipped-guidance regression check, not a
-rewrite of historical proof.
+`test_model_hook_catalog.py` and `test_m82_hook_participation.py` keep the generated pinned catalog
+and authorable declaration set aligned. The load-bearing rule is reachability: an override on a
+surface outside the dispatcher's listener set can compile and never fire.
 
-When an M7 Package changes generated runtime behavior or presentation, use the same nearest
-real-host rule as any other implementation change. Prompt-only work needs no game launch.
-Real-player observations remain human-owned and may not be fabricated or replaced by
-simulated personas.
+`test_m72_native_grammar.py` protects pinned Character starter facts and grounding limits. It does
+not claim a generated Character, balance, or gameplay result.
 
-## M8 whole-skill verification plan
+The art, vanilla override, scaffold/build, profile, localization, and verification-tool suites
+retain their existing technical ownership. Historical Package-specific proof detail is indexed in
+`documents/history/README.md` and must not be copied back into the live unit-test contract.
 
-M8.0 skill structure restructuring, M8.1 literal deliverable contract, M8.2 exact semantic
-capability conformance and preflight, M8.3 semantic continuity/backtracking, and M8.5
-cross-platform installed workflow are closed. M8.5 closed by explicit human-lead decision with
-unresolved exceptions and without an execution contract; its intended installed/process proof
-did not run. M8.6 waits on explicit human-lead selection and a confirmed execution contract. The
-Watcher evaluation is baseline failure evidence, not the final acceptance project. Package
-cases must verify the decision each Package adds:
+## Generated-Mod Verification
 
-1. a literal completion claim cannot silently grow beyond the accepted current slice;
-   complete single-element Mods keep their real product shape, while identity-critical or
-   non-default player experiences map through existing DESIGN/SPEC operations;
-2. identity-critical operations resolve to exact current routes before generation, while
-   supported-but-unimplemented and unsupported remain distinct literal facts; reusable
-   complex mechanics use maintained implementations with conformance cases for selection,
-   ordering, movement, hooks, degenerate states, and input modes instead of local
-   approximations; a claimed route that fails conformance blocks until its maintained
-   implementation is repaired or its limitation is narrowed;
-3. repair routing distinguishes implementation-equivalent, contract-fulfillment, accepted
-   semantic-change, and missing-capability outcomes, returning only to the artifact that
-   owns the changed fact;
-4. a claimed Windows/macOS installed workflow would need to reproduce without mutating installed
-   skills, track the process tree it creates, and finish with no owned game child running; M8.5
-   closed with this criterion unresolved and unproved; and
-5. after M8.1-M8.3 and M8.5 close, one human-lead-selected M8.6 clean installed acceptance
-   exercises the complete contract without reusing or repairing Watcher.
+Use deterministic local assertions for pure calculations, state transitions, payment floors,
+capacity, ordering, and reset behavior. Runtime claims require the nearest real host.
 
-M8.6 is the only planned fresh natural-language full-pipeline gate and is not authorized to
-run yet. It also carries the two hook-participation proofs M8.2 deferred on 2026-08-10: one
-element declaring an incoming-damage multiplier, asserted for the modified value, the neutral case
-outside its guard, and the rules-text number matching the applied multiplier; and one collection
-edit, asserted for its own entry and the survival of unrelated entries. Human play owns any claim
-about decision quality, comprehension, enjoyment, or
-tuning; Tier 1/Tier 2 retain their existing literal meanings. M8.4 and its proposed separate
-evidence-reporting subsystem were removed; existing verification ownership remains active.
-
-The Watcher rules-text, Hover Tip, stance, and leaked-process observations are audit
-inputs for those generic contracts. They do not become five special-case assertions and do
-not change a support row without current pinned maintainer grounding.
-
-`tools/tests/test_surface_cross_check.py` owns the structural half of M8.0 change 1: every
-`skills/modmaker/surfaces/<element>.md` page is complete or explicitly states it owns no
-envelope, every `surfaces/<x>.md § Heading` pointer resolves to a real page and heading, and
-each mandatory envelope field is paired with the proof case that observes it. It is a prose
-contract check, not a behavior proof — it cannot tell whether a surface generates a working
-Mod. The mismatches it and the manual pass found, including the three left unfixed, are in
-`m80-surface-cross-check.md`; that file is the record of which surfaces have been checked,
-which is a different question from which surfaces are correct.
-
-`tools/tests/test_art_contract_catalog.py` owns M8.0 change 2's art half. The exact values
-stay in `gen_sprite.SPECS` and `character_art.CHARACTER_ART_BUNDLE`, because `fit`, `chroma`,
-and the visible footprints are normalization behavior rather than documentation;
-`gen_sprite.py export-contract` projects them into
-`sts2-api/reference/catalogs/art-contract-sts2-0.107.1.json`. The test asserts the committed
-catalog still equals the code, that its digest is self-consistent, that every size in the
-three prose views equals the catalog's, that every catalog spec has a prose row, and that the
-cue grid's column order is labeled wherever it appears.
-
-It establishes that the four copies cannot drift apart. It does not establish that any size
-is right in-game — that remains owned by the headed runs recorded in `art-contract.md`. It
-also deliberately does not compare the `consumer` column in
-`reference/character-presentation.md` to the bundle's `consumer` strings: that column is
-prose paraphrase of the same consumer, so an exact comparison would report normal rewording
-as drift. Only sizes and spec coverage are mechanically decidable there.
-
-It also owns M8.0 change 4's history-in-runtime guard: no milestone id in a shipped-pack heading,
-and no instruction scoped to a closed process window (`batch window`, `consolidated M6.7`,
-`At closure,`). It deliberately does not forbid every milestone id, because manifest keys, Tier 2
-markers, resume-compatibility boundaries, and evidence attributions all need theirs. The second
-half is the load-bearing one: it catches an instruction that has silently expired, which is worse
-than stale bookkeeping because a reader can still follow it.
-
-The same file owns M8.0 change 3's two structural checks: every `errors.md § Section` pointer in
-a modmaker page resolves to a real section, and a delegating stage keeps no rival cause-and-fix
-list (`build.md` has no `## Failure classes`; `quirks.md` states rules without the error codes
-`errors.md` owns). The first exists because change 3 trades inline detail for pointers, and one
-pointer in `verify.md` had never resolved. Neither check judges whether a cataloged fix works.
-
-`tools/tests/test_m81_deliverable_contract.py` and `tools/deliverable_trace.py` own M8.1. The
-validator has two modes because the contract is checked at two points: before SPEC it checks the
-claim's structure and that every `E-###` traces to a current design item, and at finalize it
-checks `PLAN.md`'s settlement ledger against that claim. The second mode is the reason a third
-validator exists at all — `coherence_trace.py` and `design_trace.py` both run before SPEC, so
-until now nothing compared what was promised against what the run earned.
-
-The load-bearing cases are the evidence-sufficiency ones: a `tier-2-structured` experience
-cannot be `observed` because tier-1 passed, a `headed-human` experience cannot be settled by a
-harness, and `user-decision` records acceptance rather than observation. That last distinction is
-what stops "the user agreed to template art" from later reading as "the art was checked". The
-behavioral matrix is `m81-deliverable-contract-scenarios.md`: an exact Card whose claim stays one
-line, a Character content set that names its slice shape and combined exclusions, and a claim
-whose harness never drove it.
-
-`shape` is deliberately presence-only. prototype/slice/run-capable are optional descriptions, so
-a validator that accepted only known words would create the closed taxonomy this Package refuses
-to create; one test asserts unusual wording still passes.
-
-These are contract and prose checks. They establish that the workflow cannot report more than it
-earned without failing a check. They do not establish that a generated Mod loads, behaves
-correctly, or is any good, and no forward-model run, generated Mod, Tier 1, or Tier 2 is claimed
-by this Package. M8.3 now owns backtracking when a required experience fails; this paragraph
-remains M8.1's evidence boundary rather than an assertion that the gap is still open.
-
-Five files own M8.2. `tools/tests/test_model_hook_catalog.py` holds the generated hook catalog to
-the pinned assembly and to the shipped vanilla reference's independently written 26+28 lists;
-`tools/collect_model_hooks.py` is maintainer-only and excluded from both payloads, so the committed
-catalog is the artifact. `tools/tests/test_m82_hook_participation.py` holds the route page's 71
-declared capability ids equal to the catalog's authorable set, asserts that only the seven
-reachable surfaces declare the field, and owns the preflight rejection cases.
-`tools/tests/test_spec_envelope_trace.py` and `tools/tests/test_design_trace_routes.py` own the
-envelope and route/anchor/capability-pairing halves.
-
-The load-bearing case is reachability. Which surfaces a hook reaches is decided by the dispatching
-iterator's listener set, so a hook overridden on a surface outside that set compiles, ships, and
-never fires — the same shape as the failure this milestone exists to prevent, which is why
-offering every hook on every surface would have added instances of it. All six rejection tests were
-verified to fail against a neutered validator; a rejection test that still passes when the check is
-removed proves nothing.
-
-`tools/tests/test_payload_tool_layout.py` exists because `publish.sh` moves the tools into
-`skills/modmaker/scripts/`, changing every relative path they use to find the pack. It builds a
-throwaway payload-shaped tree and runs the shipped validators inside it. This was written after
-`spec_envelope_trace.py` shipped with a path candidate that resolved in the repo and nowhere else.
-
-The behavioral matrix is `m82-capability-conformance-scenarios.md`: the Wrath case declaring rather
-than describing, a hook requested on a surface that cannot receive it, and an Enchantment damage
-multiplier routing to its mandatory replacement. **Both real-host proofs are deferred to M8.6 and
-unrun**, so no generated override has been observed firing in a game and every hook route is
-implemented-and-unproved.
-
-`tools/repair_trace.py`, `tools/tests/test_m83_semantic_continuity.py`, and
-`m83-semantic-continuity-scenarios.md` own M8.3. PLAN carries at most one active repair decision;
-the validator checks its four classification/owner/status combinations, current `D/E/OP` links,
-cleared affected settlements, and earliest reopened stage. Missing/broken shared capabilities
-block without reopening a consumer stage, while a semantic change must reopen DESIGN first.
-Mutation probes establish that owner, status, settlement, minimum-stage, DESIGN-first, and
-upstream-block rejections are load-bearing. The test also reviews all ten co-located surfaces for
-an envelope driver and proof matrix; no batch surface rewrite was needed.
-
-The fifteen-case matrix covers technical fixes, harness setup, Exhaust lifecycle/text, neutral
-hook guards, stale text/tip/localization/preview/presentation values, omitted SPEC fields,
-semantic fallbacks, absent/broken routes, user playtest feedback, and legacy resume. The full
-`384`-test regression and payload-shaped validator run are static/workflow evidence only. No Mod,
-game, Tier 1, Tier 2, headed review, or forward-model run is claimed by M8.3.
-
-`tools/tests/test_invariants.py` owns M8.0 change 5. `skills/modmaker/invariants.md` is the one
-home for the nine rules that fire across stages, and the test holds both halves of that
-contract: every `INV-n` reference in a modmaker page resolves to a defined rule, every defined
-rule is named by at least one stage, nine canonical phrasings appear in exactly one file, the
-specific restatements change 5 removed stay removed, and `SKILL.md` still registers the page as
-read at pipeline start rather than lazily.
-
-That last check is the one the design rests on. Consolidating a rule into a page a run might not
-read would leave zero copies of it, which is worse than several drifting copies — so the pointer
-is only safe while the page is eagerly loaded. The test does not observe a run obeying an
-invariant it reached through a pointer, and its single-definition list covers nine phrasings
-rather than every sentence, so a tenth restatement elsewhere would not fail. Three hardening rules
-are deliberately not in `invariants.md` because each fires at one stage: the repair attempt cap,
-the art-route consent boundary, and the deliverable claim-versus-report rule that lives in
-`verify.md`.
-
-`test_m72_native_grammar.py` covers the same class for Character starting facts. There the
-JSON inventory is already the authority, so the added cases derive each prose starter row —
-deck entries, total, HP, and Starter relic id — from that inventory instead of restating them
-a third time, and assert the native HP range and Gold constant the grammar now states.
-
-One of those cases guards a grounding limit rather than a value. The pinned catalog carries
-relic id, localized title, and rarity but no effect text, so `character-foundation.md` may
-name a native Starter relic as an analogy and must not describe what it does; the test asserts
-that caveat is present. Deleting the caveat fails. Adding relic effects later requires a
-checked source, not recall.
-
-Host ownership:
-
-| Host | Owns |
-|---|---|
-| `CombatPlayer` | content core, selected computed Card values/native costs, custom Card Piles/ExtraHand, hand emphasis, Relic/Power extra labels, advanced targeting, bounded state consumers, Character combat cues, and M6.7.1 existing-Card property/text/play/owner-hook behavior |
-| `CombatEnemy` | selected Monster/Encounter rosters, HP ranges, move transitions, combat/bestiary bodies |
-| `MapNode` / Character | Event outcomes/presentation, selected finite forced follow-ups, native Ancient/Architect dialogue |
-| real Rest Site / `MapNode` | Card/Relic-owned option absence/gray/payment/stay/repeat/icon matrix |
-| `RunStart` / Character | current-SPEC Foundation starts/pools, static art/theme, combat cues, selected resources/UI, ordered buffer |
-| `ModelDb`/localization after preload + offline PE metadata | M6.7 version catalog identity, stable title keys and 14-language display aliases, runtime semantic snapshot, adapter signatures/fingerprints, and no-op manifest grounding |
-| nearest native visual consumers | M6.7.2 Card/CardPool, Relic/Power/Potion/Orb, Act, Event/Ancient, Encounter, Affliction/Enchantment/Modifier public visual providers; selected Card and Darv providers were included in the representative Mod accepted as a whole, while other providers remain unrun |
-| native Ancient room | M6.7.3 initial-option append/replacement, visible/locked/cost/tip/relic presentation, ordered outcomes, selectors/rewards, page graph, native finish/choice history, and M6.7.2 visual composition; selected Darv replacement/page/portrait was included in the representative Mod accepted as a whole, while other routes remain unrun |
-| `ModelDb` pools / unlock consumers | M6.7.4 public epoch gates plus Card/Relic/Potion pool add and fixed membership/epoch Adapters; one Card pool move was included in the representative Mod accepted as a whole, while cache timing, fresh-acquisition order/RNG, duplicates, and save variants remain unrun |
-| combat/run owner streams, concrete non-Card lifecycle hosts, `CombatEnemy`, and ordinary Event room | M6.7.5 all public Relic/Potion/Power/Orb/Enchantment/Affliction/Monster owner hooks, intrinsic data, complete lifecycle/body replacements, Monster move graphs, paired Encounter rosters, and Event options/pages; selected Relic/Monster/Encounter routes were included in the representative Mod accepted as a whole, while unselected families remain unrun |
-
-Tier 1 requires the exact load marker and no fresh error block. Tier 2 requires a
-structured post-state proof and `selftest done`. Trigger logs, terminal markers, and
-model-only state are diagnostics, not behavior proof.
-
-The M6.7.0 collector's strict Tier 2 proves that its checked snapshot was written with the
-expected model count and assembly/file hashes. It is not gameplay-behavior or presentation
-proof for a vanilla edit. M6.7.1 through M6.7.5 are the five promoted operation Packages.
-M6.7.1 focused tests and compile-only check pass. M6.7.2 focused manifest/resource tests
-pass, while its earlier Package-specific C# compile was not run. M6.7.3 focused manifest/
-localization/catalog/documentation-route tests, M6.7.4 focused manifest/catalog/
-documentation-route tests, and M6.7.5 focused 40-test checks/Python syntax pass. The final
-regression passed `165/165`; payloads synchronized repeatably; and the independent
-installed-plugin Mod built with zero warnings/errors. The human lead reported that the
-representative Mod's effect test passed; no individual Card, Relic, Darv, Monster, or
-Encounter observation is inferred. This does not prove the unselected providers, hooks,
-availability modes, ordinary Event paths, or save variants.
-
-Use one representative real host for a shared Package lifecycle. Add separate cases only
-for materially different behavior or presentation risks; do not create one support gate per
-consumer merely to justify the Package name. State Tier 1, Tier 2, headed checks, waivers,
-and skipped checks literally.
-
-The M6.6 Package 2A proof is an explicit exception: the human lead accepted its complete
-manual behavior/presentation matrix after Tier 1, while the structured Tier 2 harness was
-not run. Preserve that wording; do not report the omitted harness as passed.
-
-Package 5 has the same explicit boundary. Its first headed Darv/Architect run failed, then
-the repaired proof passed the human lead's visible native-flow recheck and the current log
-showed the mounted PCK, both routes, clean progression, and no fresh error block. The log
-did not contain the structured state proof or `selftest done`; strict Tier 2 remains an
-exception rather than a pass.
-
-Package 1 also uses that explicit boundary. The human lead accepted its complete zero-,
-single-, and multi-candidate mouse/controller matrix, while current-run logs corroborated
-the exact successful consumers and no fresh error block. No automated `selftest done`
-harness ran, and queued-target invalidation was not exercised; strict Tier 2 remains an
-exception rather than a pass.
-
-The bounded Package 3 Relic-owned Rest Site option slice is implemented after the
-human lead accepted its focused native absence/gray/enabled/payment/outcome/stay/repeat/
-controller/custom-icon/fallback matrix. Per lead instruction, no log read followed the
-headed run, and no structured `selftest done` harness ran; the exact Tier 1 log gate and
-strict Tier 2 remain explicit exceptions. The pinned dev-console `gold` command ignores
-negative values, so future manual routes must use normal Shop spending for a low-Gold state
-or a narrow proof driver for a render-time stale-payment check.
-
-Package 2B/2C authoring is implemented. Its human-led hand/Relic/Power matrix and strict
-Tier 1 passed after narrowing Power authoring to one top-left label; strict Tier 2 was not
-run and remains an explicit exception.
-
-Package 4 Custom Card Piles is formally supported on official RitsuLib `0.5.4`. The human
-lead accepted the unmodified-runtime focused ExtraHand cancellation, shortcut-isolation,
-and consecutive-play result and promoted the complete documented Package. The current run
-had a host save-backup cleanup error and no structured `selftest done`, so strict Tier 1 did
-not pass and strict Tier 2 was waived rather than relabeled as passed. Future generated Mods
-verify the scopes, styles, screens, movement, persistence, callbacks, and interactions they
-actually select; unrun consumers do not narrow Package support.
-
-Run one armed harness at a time. Preserve and restore unrelated user Mods. Do not reopen a
-completed host proof unless a later source change exposes a real regression.
-
-## Commands
+### Build
 
 ```powershell
 python games/sts2/tools/build.py --project-dir <project> --mod-name <ModName>
+```
+
+Build owns C# compilation, pinned local references, manifests, resource paths, bilingual static
+localization, PCK/package output, and deployment artifacts. Build success is not a load or behavior
+result.
+
+### Tier 1
+
+```powershell
 python games/sts2/tools/launch.py
 python games/sts2/tools/grep_log.py --mod-name <ModName>
+```
+
+Tier 1 requires the exact `[T2MOD-SELFTEST] <ModName> loaded ok` marker with
+`framework=RitsuLib`, actual framework version `>=0.5.11`, exact `host=0.107.1`, exact
+`compat=0.107.1`, and no fresh error/exception block. It proves install/load/registration only.
+
+### Tier 2 / SelfTest
+
+```powershell
 python games/sts2/tools/launch.py --self-test --mod-name <ModName>
 python games/sts2/tools/grep_log.py --mod-name <ModName> --tier2-pattern "<structured state proof>"
 ```
 
-Completed acceptance evidence is historical. Future bug fixes still require verification
-proportional to the changed behavior; an earlier acceptance result is not a blanket
-substitute for regression testing.
+Tier 2 requires the generated arg-gated `SelfTest.cs` to drive the real source interaction in the
+closest maintained host, wait for the command queue, assert exact post-state/object identities,
+emit a matching structured `state proof:`, and finish with `selftest done`. The verifier applies
+the requested pattern only to structured proof lines.
+
+A `played`, `fired`, or `used` line can locate a failure but can never establish a pass. A model
+mutation outside the host, preview-only value, resource path, Build success, screenshot, or
+terminal marker without state proof is also insufficient.
+
+Stateful effects include their declared boundary/reset/persistence cases before the terminal
+marker. Collection edits prove unrelated entries survive. Bilingual Mods switch through `eng` and
+`zhs`, resolve real consumers, compare exact text/tokens, and restore the original language.
+
+Run only one armed harness Mod at a time because `--t2selftest` arms every loaded harness. Preserve
+and restore unrelated user Mods.
+
+### Headed Review
+
+Use headed review only for things structured state cannot prove: real images and layout, mouse and
+controller interaction, animation, audio, readability, and subjective experience. Report only
+what a human actually observed. A screenshot does not replace behavior assertions, and Tier 2 does
+not replace presentation review.
+
+## Host Ownership
+
+| Host | Typical ownership |
+|---|---|
+| `CombatPlayer` | Cards, Relics, Potions, Powers, Orbs, Enchantments, targeting, computed values, piles, state, resources, and combat cues |
+| `CombatEnemy` | Monster/Encounter rosters, HP ranges, moves, intent truth, and combat body behavior |
+| `MapNode` / Event | Event pages/options/outcomes, presentation, forced follow-ups, and Ancient dialogue |
+| real Rest Site | Card/Relic option absence, gray/payment/outcome/stay/repeat/icon behavior |
+| `RunStart` / Character | Foundation fields, starters/pools, static Character consumers, resources, and run/combat reset behavior |
+| `ModelDb` and localization host | pinned vanilla identity/catalog, aliases, availability, and exact model composition |
+| nearest native visual consumer | actual Card/Relic/Power/Potion/Orb/Event/Encounter/etc. asset provider behavior |
+
+Use one representative real host for a shared lifecycle. Add separate scenarios only for materially
+different lifecycle, state, input, or presentation risk.
+
+## Reporting
+
+Finalize reports directly from actual results:
+
+- **Built:** artifact path only when Build passed.
+- **Tier 1:** exact marker/profile and fresh-error outcome, or failed/unrun.
+- **Tier 2:** real host and concrete post-state assertion, or failed/unreachable/unrun.
+- **Headed review:** only concrete observations actually reported by a person.
+- **Not included:** explicit DESIGN `Not Now` items or accepted placeholders relevant to the ask.
+
+Historical waivers and skipped checks remain literal exceptions. Do not reinterpret a closed
+Package's manual review, Build, or older framework result as a current Tier 1/Tier 2 pass.
+
+## Developer Commands
+
+```powershell
+$env:PYTHONUTF8='1'
+python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
+python -m compileall -q games/sts2/tools scripts/publish plugins/open-mod/skills skills
+git diff --check
+```
+
+When payload regeneration is explicitly authorized, run both `publish.sh --plugin` and
+`publish.sh --portable`, repeat them to establish determinism, and run source/payload parity plus
+payload-layout tests. These checks do not install the plugin or run the game.
+
+Completed acceptance evidence is immutable. Future behavior changes still require proportional
+current verification; an earlier result is not a blanket regression pass.

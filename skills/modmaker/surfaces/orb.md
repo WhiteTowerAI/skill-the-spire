@@ -1,15 +1,15 @@
 # Surface: orb
 
-Everything the pipeline needs for one custom Orb, in one place: the SPEC envelope it must
+Everything the pipeline needs for one custom Orb, in one place: the SPEC fields it must
 declare, the element class the author writes, and the proof its verification owes. Read this
 page at the `spec.md`, `author.md`, and `verify.md` stages when SPEC declares an orb.
 
 An orb has three separate behaviors and no trigger of its own — every one of them runs
-through a host Card, relic, or Power. That is why it gets a full envelope while keyword and
+through a host Card, relic, or Power. That is why it gets a full SPEC field set while keyword and
 enchantment do not: an orb is real content with its own identity and its own slot lifecycle,
 merely without a self-contained trigger. Envelope added 2026-08-07 by human-lead decision.
 
-## SPEC envelope
+## SPEC fields
 
 An Orb is real content with its own identity, so it carries a full `content:` block. Because
 every one of its behaviors runs through a host, that host is named in `registration.placement`

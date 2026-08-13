@@ -82,4 +82,4 @@ open hypotheses: none | <claim and evidence needed>
 
 This capsule guides confirmation and semantic lowering into `SPEC.md`. Lower only accepted,
 supported, exact current rules and values. This reference does not create the durable `DESIGN.md`
-schema; the `design.md` stage owns that artifact and design-to-SPEC traceability.
+schema; the `design.md` stage owns the durable intent and scope.

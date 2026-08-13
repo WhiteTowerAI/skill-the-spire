@@ -3,10 +3,10 @@
 Everything the pipeline needs for one card enchantment, in one place. Read this page at the
 `spec.md`, `author.md`, and `verify.md` stages when SPEC declares an enchantment.
 
-## No SPEC envelope of its own
+## No SPEC fields of its own
 
 An enchantment is always attached to a host Card, so it has **no element block**. Declare it
-inside its host Card's envelope:
+inside its host Card's SPEC fields:
 
 ```markdown
   - enchantment: <name> — <what it adds to the host card>

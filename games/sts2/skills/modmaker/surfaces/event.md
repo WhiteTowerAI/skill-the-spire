@@ -1,6 +1,6 @@
 # Surface: event (World Node)
 
-Everything the pipeline needs for one Event, in one place: the SPEC envelope it must declare,
+Everything the pipeline needs for one Event, in one place: the SPEC fields it must declare,
 the element class the author writes, and the proof its verification owes. Read this page at
 the `spec.md`, `author.md`, and `verify.md` stages when `element: event`.
 
@@ -10,59 +10,12 @@ Event instance; normal portraits and the bounded `portrait_halo` profile plus bo
 description rich text are supported, while custom phobia art, arbitrary VFX, and
 custom/Ancient scenes are not.
 
-<!-- open-mod-surface-contract/v1
-{
-  "family": "event_option_profiles",
-  "owner": "surfaces/event.md",
-  "spec_key": "event_option_profiles",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
-  "fields": {
-    "profiles": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "profiles[].event_id/option_id": {"type": "text", "cardinality": "1 each", "unique": "pair"},
-    "profiles[].acquisitions": {"type": "ordered list<object>", "cardinality": "0..*", "default": []},
-    "profiles[].acquisitions[].kind/model_id": {"type": "enum/text", "cardinality": "1 each"},
-    "profiles[].acquisitions[].presentation": {"type": "native_card_preview or native_relic_obtain", "cardinality": "1"},
-    "profiles[].acquisitions[].grant_once": {"type": "boolean", "cardinality": "1", "fixed": true},
-    "profiles[].shake.profile": {"type": "enum", "cardinality": "0..1"},
-    "profiles[].shake.respect_setting/once": {"type": "boolean", "cardinality": "1 when shake exists", "fixed": true},
-    "profiles[].route": {"type": "declared route", "cardinality": "1"}
-  },
-  "enums": {
-    "acquisition_kind": ["card", "relic"],
-    "shake_profile": ["weak_short", "strong_normal"]
-  },
-  "conditions": [
-    "acquisitions are ordered and unique per option",
-    "Card and relic acquisitions use their matching native presentation",
-    "shake is one-shot and respects the player setting"
-  ],
-  "mutually_exclusive": ["duplicate acquisition of the same kind and model in one option"],
-  "routes": [
-    "reference/event-native-presentation.md#card-acquisition-preview",
-    "reference/event-native-presentation.md#relic-acquisition-preview",
-    "reference/event-native-presentation.md#one-shot-screen-shake"
-  ],
-  "hard_boundaries": [
-    "no duplicate grant or custom preview holder",
-    "no rumble hit stop custom shake target or unbounded duration",
-    "no ungrounded VFX"
-  ],
-  "generated_obligations": [
-    "await each semantic acquisition once in declared order",
-    "reuse the successful Card add result for preview",
-    "apply at most one allowlisted shake after the named successful consequence"
-  ],
-  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
-  "legacy": "v1/v2 single acquisition and weak_short profiles resume unchanged; revised profiles write v3"
-}
--->
 
-## SPEC envelope
+## SPEC fields
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:

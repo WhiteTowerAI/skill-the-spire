@@ -126,7 +126,7 @@ class ModelHookCatalogTests(unittest.TestCase):
                 self.assertIn(entry["family"], {"numeric", "decision", "trymodify"})
 
     def test_every_hook_resolves_to_a_known_dispatch_iterator(self) -> None:
-        """An unresolved scope is a gap, never a permissive default (INV-3)."""
+        """An unresolved scope is a gap, never a permissive default."""
         known = set(collect_model_hooks.ITERATORS)
         for name, entry in self.hooks.items():
             with self.subTest(hook=name):

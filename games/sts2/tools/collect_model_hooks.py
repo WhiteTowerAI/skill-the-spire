@@ -397,7 +397,7 @@ def resolve_reachability(hook: Hook) -> tuple[list[str], list[str]]:
     """Listener families this hook reaches, and any unresolved finding.
 
     A hook whose dispatch iterator is not one of the five pinned forms is recorded
-    unresolved and stays unauthorable. That is INV-3 applied to research: an unknown route
+    unresolved and stays unauthorable. An unknown route
     is a gap to report, not a default to assume.
     """
     findings: list[str] = []

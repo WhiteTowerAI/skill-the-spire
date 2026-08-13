@@ -101,4 +101,4 @@ observation-driven tuning loop and must not fabricate those observations.
 Carry the formula contract, economy audit, chosen working values, independent tuning knobs,
 low/working/high sensitivity, dominance risks, and open evidence needs into the design
 capsule. Lower only the exact accepted current values and supported operations into
-`SPEC.md`; `DESIGN.md` owns durable design rationale and traceability.
+`SPEC.md`; `DESIGN.md` owns durable design rationale and scope.

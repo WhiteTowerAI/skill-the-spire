@@ -1,7 +1,7 @@
 # Scaffold - create the local-runtime RitsuLib project
 
-Goal: generate the smallest open-mod-owned STS2 project from the semantic SPEC. One
-adapter-owned path (`INV-7`).
+Goal: generate the smallest open-mod-owned STS2 project from the semantic SPEC through the
+single pinned RitsuLib adapter path.
 
 ## Authoring profile
 
@@ -13,7 +13,8 @@ host: STS2 stable 0.107.1
 ```
 
 The default `STS2.RitsuLib` package follows the newest beta-facing game API and is a hard
-failure here. Its fallbacks are the ones `INV-7` names, plus the PckPacker target.
+failure here. Never restore BaseLib, a historical template, prompt-derived patches, or an
+unvalidated packer fallback.
 
 ## 1. Toolchain and location
 

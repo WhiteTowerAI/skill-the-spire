@@ -91,4 +91,4 @@ or a static card list as balanced, complete, or fun.
 Carry the selected set architecture, role rows, interaction graph, coverage gaps, dominance
 concerns, and open hypotheses into the compact design capsule. Lower only accepted,
 supported, exact content rules and relationships into `SPEC.md`. `DESIGN.md` owns durable
-`DESIGN.md`, current/future slicing, and traceability; do not fabricate those artifacts here.
+`DESIGN.md` and current/not-now scope; do not fabricate those artifacts here.

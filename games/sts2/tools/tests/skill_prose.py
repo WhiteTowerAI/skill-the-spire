@@ -1,17 +1,8 @@
-"""Stage prose corpora for shipped-skill contract tests.
+"""Stage corpora used by product authoring tests.
 
-These tests pin exact shipped wording so documentation cannot silently drift.
-That is the point and it stays. What they must NOT pin is which *file* a
-sentence lives in — otherwise the layout is frozen and per-surface content
-cannot be co-located with its own proof matrix and driver body.
-
-So a stage owns a corpus, not a file: its main stage page plus the per-surface
-pages it dispatches to. `assertIn(...)` against the corpus still fails on real
-drift (the words changed or vanished) but passes when content is relocated
-within the stage's own file set.
-
-Exact strings are preserved verbatim; pages are joined with a blank line so no
-assertion can accidentally match across a page boundary.
+The implementation work order delegates surface-specific technical knowledge to
+the co-located surface pages, so tests that protect an authorable capability read
+the stage page plus those owners. This helper does not add a process-policy page.
 """
 from __future__ import annotations
 
@@ -22,21 +13,12 @@ MODMAKER_DIR = SKILLS_DIR / "modmaker"
 STS2_API_DIR = SKILLS_DIR / "sts2-api"
 SURFACES_DIR = MODMAKER_DIR / "surfaces"
 
-# A stage's corpus = its own page + every page it delegates to. `surfaces/`
-# holds one page per element type, each carrying that element's SPEC envelope,
-# author driver body, and proof matrix together.
+# A stage's corpus = its own page + every surface page it delegates to.
 _STAGE_PAGES: dict[str, tuple[Path, ...]] = {
     "spec": (MODMAKER_DIR / "spec.md",),
     "author": (MODMAKER_DIR / "author.md",),
     "verify": (MODMAKER_DIR / "verify.md",),
 }
-
-# `invariants.md` is in every corpus because it is in context at every stage:
-# the orchestrator reads it at pipeline start and keeps it, so a stage page may
-# name `INV-3` instead of restating it. A test asserting the *rule* should read
-# the corpus; one asserting a stage's own stage-specific detail can read the file.
-INVARIANTS_PAGE = MODMAKER_DIR / "invariants.md"
-
 
 def surface_pages() -> tuple[Path, ...]:
     """Every per-element surface page, in stable order."""
@@ -54,22 +36,18 @@ def join(paths: tuple[Path, ...]) -> str:
 
 
 def stage(name: str) -> str:
-    """Full corpus for one pipeline stage: its page, invariants, and surfaces."""
+    """Full corpus for one pipeline stage: its page and surface owners."""
     return join(stage_paths(name))
 
 
 def stage_paths(name: str) -> tuple[Path, ...]:
     """The exact files making up a stage corpus (for per-file assertions)."""
-    return _STAGE_PAGES[name] + (INVARIANTS_PAGE,) + surface_pages()
+    return _STAGE_PAGES[name] + surface_pages()
 
 
 def with_invariants(*pages: Path) -> str:
-    """One or more stage pages plus the always-loaded invariants.
-
-    For a stage that has no surface dispatch (route, interview, design, repair):
-    the rule may live in `invariants.md` while the stage adds only its own detail.
-    """
-    return join(tuple(pages) + (INVARIANTS_PAGE,))
+    """Backward-compatible helper for tests that only need the named pages."""
+    return join(tuple(pages))
 
 
 def surface(element: str) -> str:

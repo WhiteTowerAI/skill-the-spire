@@ -12,17 +12,14 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
   different choices and trade-offs. Revision asks only about the requested delta.
 - **Ask only material questions.** Everything else gets a sensible default that is stated
   later, not presented as another decision.
-- **Preserve settled decisions** (`INV-6`). Anything already fixed by the prompt or project
-  artifacts is not a question.
+- **Preserve settled decisions.** Anything already fixed by the prompt or project artifacts is
+  not a question.
 - **No jargon.** Say "when does it happen?" not "which combat hook?". Never ask
   about classes, namespaces, or APIs.
 - **Keep the interaction proportional.** Batch up to three independent short questions;
   keep dependent co-design decisions incremental.
-- **Never ask for the deliverable claim.** Carry `deliverable signals` forward from
-  `route.md` and let `design.md` write the claim from the settled intake. "What kind of
-  deliverable do you want?" is exactly the workflow-mode question routing already refuses to
-  ask. Ask only when the user's own words point at two materially different finished things
-  and the answer changes which operations get generated.
+- **Do not ask workflow questions.** Ask about the intended player result only when the user's
+  words permit two materially different implementations.
 - **Expose real conflicts.** Contradictory or unsupported requirements pause before SPEC;
   use `route.md`'s constrained resolution and explicit-acceptance rules.
 - **Ground Character proposals first.** For a Character or Character/content-set request,
@@ -32,10 +29,10 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
 - **Plan only when routed.** Load only the mechanic, content-set, and balance references
   named by `route.md`. An exact narrow Card keeps the fast path and does not receive a
   general design review merely because it has numbers.
-- **Review coherence only when routed.** Load `design/coherence-review.md` for multiple
-  intentional expressive surfaces, explicit theme/narrative/presentation work, or an
-  identity-changing revision. Derive anchors from settled decisions, not new lore. Name
-  any exact cross-artifact conflict and ask only when the repair is a creative choice.
+- **Check cross-surface consistency only when needed.** For multiple intentional expressive
+  surfaces, explicit theme/narrative/presentation work, or an identity-changing revision,
+  compare the selected mechanics, names, text, and visuals against the accepted decisions.
+  Name an exact conflict and ask only when resolving it is a creative choice.
 
 ## Compact planning pass
 
@@ -63,18 +60,16 @@ to complete only the relevant parts of the capsule below.
 Ask only about an unresolved choice whose answers change player behavior or the current
 supported implementation. Offer two or three structures rather than number-only variants
 when the mechanic itself is unclear. A missing measurement, trigger rate, formula input, or
-human play result stays an open hypothesis (`INV-4`).
+human play result stays an open hypothesis.
 
 This pass produces a compact planning capsule, not a durable artifact. The following
-`design.md` stage records the capsule, current/future scope, and traceability without
-re-asking its settled decisions.
+`design.md` stage records the accepted intent and scope without re-asking settled decisions.
 
-## Compact coherence pass
+## Compact consistency pass
 
-Run this pass only when `route.md` selected coherence review. Use one to three observable
-identity anchors from accepted decisions, then inspect only selected mechanics, naming,
-localization, visuals, Event text, and Character identity. State how each applicable
-surface communicates an anchor; do not force the same word, palette, or imagery everywhere.
+Run this pass only when multiple intentional surfaces or a related revision make it useful.
+Inspect selected mechanics, naming, localization, visuals, Event text, and Character identity
+against accepted decisions. Do not force the same word, palette, or imagery everywhere.
 
 If two surfaces contradict behavior, drift one gameplay term, break the accepted identity,
 leak deferred/unsupported scope, or present flavor/build evidence as gameplay proof, name
@@ -82,10 +77,8 @@ both sides and the player-facing consequence. Offer the smallest resolution and 
 before DESIGN/SPEC until the user decides. Preserve an accepted contrast as deliberate
 tension rather than repeatedly "fixing" it.
 
-For revision, inspect only existing artifacts that can depend on the changed `D-###` item.
-Prepare an ordered impact/re-evaluation queue with UPDATE, REVIEW, REVERIFY, and high-risk
-PRESERVE entries. This is not permission to edit every downstream file or rerun a full
-acceptance; `design.md` records the queue and reopens only invalidated stages.
+For revision, inspect only artifacts that can depend on the changed decision. Carry a plain
+keep/change/reverify summary forward; do not create a queue or edit every downstream file.
 
 ## What to resolve (only if unclear from the sentence)
 
@@ -418,22 +411,16 @@ acceptance; `design.md` records the queue and reopens only invalidated stages.
 A compact intake you carry into `spec.md`. Prefix every intake with:
 
 ```text
-route: fast | co-design | revision
+path: fast | co-design | revision | resume
 intent: <one player-facing sentence>
-settled decisions: <choices preserved from the request and project artifacts>
+settled: <choices preserved from the request and project artifacts>
 defaults: <inferred values to state in the confirmation>
 native grammar: none | <loaded native grammar and pinned profile>
 planning references: none | <loaded mechanic/content-set/balance references>
-coherence reference: none | design/coherence-review.md
-revision delta: none | <keep/change/check/re-verify summary>
-gaps: none | <unsupported intent awaiting explicit acceptance>
-scope signals: <requested now; explicitly later; accepted placeholder; explicitly excluded>
-deliverable signals: <expected finished thing in the user's words; the player experiences
-  they would check first; what their wording implies that this will not contain>
-identity anchors: none | <one to three accepted observable promises>
-coherence surfaces: none | <selected surface -> anchor expression or deliberate tension>
-coherence conflicts: none | <exact conflicting artifacts/decisions awaiting resolution>
-impact queue: none | <ordered revision-only UPDATE/REVIEW/REVERIFY/PRESERVE targets>
+revision delta: none | <keep/change/reverify summary>
+current scope: <requested now>
+not now: none | <placeholder, deferred, unsupported, or explicitly excluded work>
+consistency conflicts: none | <exact conflicting decisions or surfaces awaiting resolution>
 player fantasy: none | <repeated action -> intended feeling>
 core decision: none | <line A versus line B; state that favors each>
 loop: none | <input -> visible state -> choice -> feedback/payoff -> reset>
@@ -647,7 +634,7 @@ resource: <name>; gain <sources/amounts>; spend <cost/payoff>; floor 0; reset co
 buffer: <name>; values <semantic values>; source destination Discard; order <rule>; capacity <N>; overflow reject; compile <trigger/formula/output>
 ```
 
-Do not write files here — `design.md` writes the durable claim, intent, and scope, and
+Do not write files here - `design.md` writes the durable intent, decisions, and scope, and
 `spec.md` lowers the current slice. If fast routing found nothing material to ask, skip straight to `design.md`
 with the inferred intake. If this is a revision, preserve every unrelated design decision,
-stable ID, and existing SPEC operation outside the confirmed delta.
+runtime/localization identifier, and existing SPEC operation outside the confirmed delta.

@@ -6,25 +6,11 @@ its public API exists in the pinned profile. Confirmed problems are written as n
 limitations. Missing public routes are unsupported. Implementation and verification facts
 are stated directly, without readiness levels or evidence badges.
 
-M7 Design Intelligence and User Experience is closed authoring work, not a runtime
-capability. The human lead canceled standalone M7.0 and distributed behavioral cases to
-the Packages that changed those behaviors. M7.1 adaptive Interview and routing is
-implemented with fast,
-co-design, revision, direct resume, and its six semantic routing scenarios. M7.2 native
-design grammar is implemented with lazy Character-only grounding, a checked five-Character
-starter inventory, exact native-shaped proposals, explicit fact/convention/decision
-separation, and deliberate-departure handling. M7.3 mechanic, content-set, and balance
-planning is implemented with independently lazy references, a compact planning capsule,
-directed content relationships, formula/economy sensitivity, explicit open hypotheses, and
-a Mod-forward working-value bias bounded by meaningful choices and real costs. These three
-Packages change no row in this runtime graph. M7.4 adaptive DESIGN and design-to-SPEC
-traceability are implemented with current/future scope dispositions, blocking gaps, and a
-deterministic generation allowlist; M7.4 also changes no runtime row. A future vision
-recorded in `DESIGN.md` does not promote an unsupported operation into the current
-deliverable or `SPEC.md`. M7.5 proportional coherence review is implemented with accepted
-identity anchors, six selected expression surfaces, fail-closed conflicts, deliberate
-tension, and bounded revision impact queues. It also changes no runtime row and cannot
-promote a new art, localization, Event, Character, or other operation.
+M7 Design Intelligence and User Experience is closed authoring work, not a runtime capability.
+The current workflow retains adaptive fast/co-design/revision routing, direct resume, pinned
+Character-native grammar, mechanic/content/balance planning, concise DESIGN intent/scope, and
+proportional human coherence review. These authoring behaviors do not add runtime support rows. A
+future idea in DESIGN does not promote an unsupported operation into the current SPEC.
 
 M7.6 closed through an external human-led Watcher whole-skill evaluation rather than a new
 source Package. Its bounded build/Tier record, human observation that the Mod was playable
@@ -32,24 +18,16 @@ but not very good, overclaim findings, and unrun paths are recorded in
 `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`. No copied-project observation
 changes a support row without current pinned maintainer grounding.
 
-M8 End-to-End Product Integrity is active: M8.0 skill structure restructuring, M8.1 literal
-deliverable contract, M8.2 exact semantic capability conformance, M8.3 semantic continuity and
-backtracking, and M8.5 cross-platform installed workflow are closed. M8.5 closed by explicit
-human-lead decision with unresolved exceptions: its manifest and executable-adjacent path repair
-changed no runtime support row, while macOS installed reproduction and launcher-owned process-tree
-cleanup remain unimplemented and unproved. No surface gained or lost support through these
-Packages. M8.4 was removed; M8.5 and M8.6 retain their numbers. Deliverable,
-capability-preflight, backtracking, and platform work add no runtime row by themselves. The
-Watcher observations
-make Card behavior metadata, deck inspection/selection/movement, mechanic Hover Tips,
-incoming/outgoing scalar modifiers, and launcher-owned process cleanup explicit M8 audit
-inputs. A copied-project approximation or missing player-facing surface is not promotion
-evidence. Runtime support remains the table below until pinned maintainer research, an exact
-public/fixed route, semantic-conformance coverage, documentation, and payload validation
-ground a selected reusable capability Package. M8 may also find that an existing row's
-generated route fails its maintained contract; that route must then block generation until
-repaired or recorded as the smallest exact limitation rather than being approximated per
-Mod.
+M8 End-to-End Product Integrity is active. M8.0-M8.3 and M8.5 are closed; M8.5 retains unresolved
+macOS installed-workflow and launcher-owned process cleanup exceptions. M8.7 is implemented in
+source and payloads but remains open; its nine generalized families are preserved below. M8.8 is
+paused pending a fresh RitsuLib `0.5.11` audit and confirmed execution contract. M8.6 remains
+ineligible until both close.
+
+The current workflow uses one thin pre-Author check for shipped-route existence and raw model-hook
+reachability. Build and real-host SelfTest prove implementation. Removing old workflow-management
+schemas and validators changes no runtime row. A missing or broken maintained public/fixed route
+blocks generation until repaired or narrowed instead of receiving a per-Mod approximation.
 
 ## Supported
 

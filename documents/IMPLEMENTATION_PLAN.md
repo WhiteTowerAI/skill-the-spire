@@ -2,440 +2,368 @@
 
 ## Status
 
-M8 is the active milestone. M8.0-M8.3 and M8.5 are closed. M8.4 was removed by
-the human lead. Their implementation detail belongs in the named result records under
-`documents/history/`, not in this active work plan.
+M8 is the active milestone. M8.0-M8.3 and M8.5 are closed; their implementation detail and
+exceptions belong in `documents/history/`. M8.4 was removed by the human lead.
 
-M8.7 Product Boundary Generalization source development is implemented and committed. By explicit
-human-lead authorization on 2026-08-13, both committed payload trees now include it. Its result
-record and explicit closure remain outstanding; M8.7 is therefore implemented and delivered but
-still open. The former detailed
-M8.7 execution contract has been removed from this active plan because it is no longer a work order.
+M8.7 Product Boundary Generalization is implemented in authoritative source and both payload
+forms. Its result record and explicit human closure remain outstanding, so it is implemented but
+open. Do not re-execute, reimplement, or narrow it.
 
-M8.8 Surface Effect Composability Generalization is paused by explicit human-lead direction on
-2026-08-13. Its existing research and four-part draft predate the current dependency profile and
-are not executable as-is; if M8.8 resumes, refresh the research and contract against the current
-RitsuLib `0.5.11` guide/source/API profile before asking for implementation confirmation.
-Pausing M8.8 does not authorize payload generation, document delivery, install, launch,
-acceptance, commit, push, publish, or release.
+M8.8 Surface Effect Composability Generalization is paused by explicit human-lead direction. Its
+former trace/schema-oriented draft predates both RitsuLib `0.5.11` and the simplified workflow and
+is retired. The refactored future plan below replaces that draft, but is not execution
+authorization. Future resumption must first refresh the official guide and current public
+source/API/Compat audit, then obtain explicit human confirmation before implementation.
 
-M8.6 remains the final clean installed whole-skill acceptance. It intentionally executes after
-M8.7 and M8.8 even though its number is lower: M8.6 must judge the generalized product boundary,
-not the fixture-shaped boundary found by the audits. M8.6 remains waiting and has no execution
-contract until the human lead selects it after both Packages close.
+M8.6 is the final clean installed whole-skill acceptance. It intentionally follows M8.7 and M8.8
+despite its number. It is ineligible while either Package remains open and has no executable
+contract until the human lead selects the exact request and host.
 
-Current Package order:
+Current order and gate:
 
-1. M8.8 - paused; its research/contract requires refresh against the current `0.5.11` profile before use.
-2. M8.7 - source and payloads implemented; result record and explicit closure remain outstanding.
-3. M8.6 - waiting for M8.7/M8.8 closure and a human-selected request/host.
+1. M8.7: implemented and open; result record and explicit closure remain.
+2. M8.8: paused; current-profile research/contract refresh and confirmation required.
+3. M8.6: waiting for both closures and explicit selection.
 
 ## New-Session Start Protocol
 
-1. Read root `AGENTS.md`, `documents/PROJECT.md`, `documents/BASELINE_RESEARCH.md`, and this
-   file. Treat `documents/history/` as evidence, never as current instruction.
-2. Check `git status` before any edit. Preserve unrelated dirty and untracked work.
-3. A plan entry is not execution authorization. M8.8 is paused and its existing contract is not
-   executable as-is under the current `0.5.11` profile. Do not start it from `start M8` or
-   `continue M8`; resume only after the human lead explicitly selects M8.8 and confirms the
-   refreshed current-profile contract. If the lead names another Package, verify its prerequisites
-   and execute only that Package.
-4. Do not start M8.6 while M8.7 or M8.8 is open. Do not reopen M8.0-M8.5 unless the lead
-   explicitly requests a repair owned by one of their current contracts.
-5. Work in `games/sts2/`. `plugins/open-mod/` and top-level `skills/` are generated payloads;
-   never hand-edit them. Generate them only when the selected Package reaches its delivery step.
-6. Do not install a payload or run the game merely because a Package contains a proof plan.
-   Tier 1, Tier 2, headed review, and fresh acceptance require their own human authorization.
-7. Close a Package only after its named result record exists and all active documents that own
-   changed facts are synchronized. The result must list active documents reviewed but unchanged.
-
-If a prerequisite is not closed, stop and report that dependency. Do not silently substitute a
-later Package, a smaller semantic result, or an ungrounded consumer-local implementation.
+1. Read root `AGENTS.md`, `documents/PROJECT.md`, `documents/BASELINE_RESEARCH.md`, this file,
+   `games/sts2/tests/README.md`, and `games/sts2/tests/content-capability-graph.md`.
+2. Treat `documents/history/` as immutable evidence, never as current instruction.
+3. Check `git status` before editing and preserve unrelated dirty/untracked work.
+4. A plan entry is not execution authorization. Do not start M8.8 from its retired draft. Do not
+   start M8.6 while M8.7 or M8.8 remains open.
+5. Work in authoritative source under `games/sts2/`. Never hand-edit `plugins/open-mod/` or
+   top-level `skills/`; regenerate them through `publish.sh` only when explicitly authorized.
+6. Do not install a payload, launch the game, run Tier 1/Tier 2, create a fresh acceptance Mod,
+   commit, push, publish, or release merely because a plan mentions those actions.
+7. Close a Package only after its named result exists, active documents that own changed facts are
+   synchronized, and the human lead explicitly accepts closure.
 
 ## Current Product Contract
 
-The supported workflow remains:
+The active Mod-generation workflow is:
 
 ```text
 plain-language request
-  -> adaptive interview
-  -> claim-bearing DESIGN.md
-  -> validated current-slice SPEC.md
+  -> adaptive interview when needed
+  -> concise DESIGN.md
+  -> implementable SPEC.md
+  -> capability_preflight.py
   -> scaffold
-  -> author
+  -> author + SelfTest
   -> build
-  -> verify
-  -> evidence-bounded final report
+  -> Tier 1
+  -> Tier 2 / SelfTest
+  -> headed human review when needed
+  -> direct report from actual results
 ```
 
-Generated Mods target STS2 `0.107.1` and the RitsuLib Compat `0.5.11` authoring baseline.
-Every promoted fact must be checked against that exact profile. Current RitsuLib website
-documentation is part of the current profile; exact symbols and lifecycle behavior still
-require cross-checking against the pinned `v0.5.11` source/API and Compat metadata.
-`baselines/decomp` can show that a game mechanism exists, but it cannot by itself establish a
-stable authoring route.
+`DESIGN.md` records intent, accepted decisions, current scope, and explicit `Not Now` items.
+`SPEC.md` is the sole implementation work order and includes concrete content/behavior/text,
+selected support routes, and exact autotest scenarios. Existing projects may retain old metadata;
+the current workflow ignores it and does not force migration.
 
-Every capability statement must keep three statuses separate:
+Author runs a single thin capability check. It validates route existence and the pinned facts
+needed to prevent unsupported or silently unreachable raw model-hook implementations. It does not
+validate Markdown, ordinary fields, C# signatures, manifests, resources, localization, runtime
+behavior, presentation, evidence, or project status.
 
-- **framework-expressible**: the pinned public API can express the behavior;
-- **open-mod-authorable**: the pinned capability has a complete shipped lifecycle/parameter
-  authoring contract and the current request closes DESIGN/SPEC, project-local C# grounding,
-  generation, fallback, and proof through it; prior inclusion in a recipe or proof is not required;
-  and
-- **game-observed**: the declared shape was exercised in its real host with recorded evidence.
+Generated Mods target STS2 `0.107.1` and the RitsuLib Compat `0.5.11` authoring/API baseline.
+Scaffold pins the exact validated local Compat DLL it compiles against, while runtime manifests
+require `STS2-RitsuLib >= 0.5.11`. Generated projects have no framework `PackageReference` and no
+BaseLib dependency.
 
-A Tier 2 exception does not make an implemented route unsupported. Conversely, a generated Mod must
-still map its exact semantics and implementation through the shipped lifecycle/parameter contracts;
-M8.8 establishes those contracts exhaustively for the pinned RitsuLib effect surface rather than
-requiring ad hoc promotion or previous proof for each requested effect.
+Capability statements keep three facts distinct:
+
+- `framework-expressible`: the pinned public/fixed API can express the operation;
+- `open-mod-authorable`: shipped recipe/reference guidance covers its implementation and proof;
+- `game-observed`: the exact shape ran successfully in its real host.
+
+Static source, tests, Build, or payload synchronization do not imply game observation.
 
 ## Package Summary
 
-| Package | State | Durable record or next result | Current relevance |
-|---|---|---|---|
-| M8.0 - skill structure restructuring | Closed 2026-08-10 | `documents/history/M80_SKILL_STRUCTURE_RESULTS.md` | Surface pages own element envelopes; do not restore stage-duplicated rules. |
-| M8.1 - literal deliverable contract | Closed 2026-08-10 | `documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md` | Every new/revised design keeps one literal claim and evidence-settled player experiences. |
-| M8.2 - exact semantic capability conformance | Closed 2026-08-10 | `documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md` | Hook reachability remains machine-checked; its two real-host proofs remain assigned to M8.6. |
-| M8.3 - semantic continuity and backtracking | Closed 2026-08-11 | `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md` | A semantic change returns to DESIGN/SPEC and clears affected settlements. |
-| M8.4 | Removed 2026-08-05 | none | Do not reuse this number or recreate the removed Package. |
-| M8.5 - cross-platform installed workflow | Closed 2026-08-12 with exceptions | `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md` | Manifest and executable-adjacent paths were repaired; macOS installed reproduction and owned process-tree cleanup remain unimplemented/unproved. |
-| M8.7 - product boundary generalization | **Source and payloads implemented; still open** | `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` and explicit closure remain required | The v3 structural generalization is present in source and both payloads; do not re-execute its retired detailed contract. |
-| M8.8 - surface effect composability generalization | **Paused; contract refresh required** | `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md` required at combined close | Refresh the research and contract against the current `0.5.11` guide/source/API profile before any future confirmation or implementation. |
-| M8.6 - clean installed whole-skill acceptance | Waiting | contract and result path are defined only when selected | Final installed judgment after M8.7 and M8.8; also owns M8.2's two deferred hook proofs. |
+| Package | State | Durable record or next requirement |
+|---|---|---|
+| M8.0 - skill structure restructuring | Closed 2026-08-10 | `documents/history/M80_SKILL_STRUCTURE_RESULTS.md` |
+| M8.1 - literal deliverable contract | Closed 2026-08-10 | `documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md` |
+| M8.2 - exact semantic capability conformance | Closed 2026-08-10 | `documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`; its two real-host hook proofs remain assigned to M8.6 |
+| M8.3 - semantic continuity and backtracking | Closed 2026-08-11 | `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md` |
+| M8.4 | Removed 2026-08-05 | Do not reuse the number or recreate the Package |
+| M8.5 - cross-platform installed workflow | Closed 2026-08-12 with exceptions | `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`; macOS installed reproduction and launcher-owned process-tree cleanup remain unresolved |
+| M8.7 - product boundary generalization | Implemented; open | `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` and explicit closure remain required |
+| M8.8 - surface effect composability | Paused; refactored future plan recorded | Refresh current `0.5.11` evidence, confirm the plan, then implement recipe/reference authoring and proportional proof without new trace/schema machinery |
+| M8.6 - clean installed whole-skill acceptance | Waiting | Eligible only after M8.7/M8.8 close and the human lead selects its contract |
 
-## M8.7 - Product Boundary Generalization
+## M8.7 Preservation Gate
 
-M8.7 source development is complete and committed. Do not re-run or reconstruct its former detailed
-execution contract. The human lead explicitly authorized regenerating both committed payloads with
-M8.7 on 2026-08-13 while M8.8 remains paused. The durable result record and explicit human closure
-remain outstanding.
+M8.7 generalized nine product families: secondary resources; Monster move graphs, Encounter
+composition, and HP ranges; Character starting fields; Card- or Relic-owned Rest Site options;
+multiple computed Card values; reusable bounded state; bounded forced Event mappings; new-Card
+Star costs; and bounded Event acquisition/shake profiles.
 
-No M8.7 runtime, Tier 1, Tier 2, headed, install, or game observation is inferred from its source
-implementation. Preserve the committed source, generated payloads, and literal evidence labels.
+Preserve their authoring guidance, lowering routes, hard boundaries, and proof matrices. Removing
+the old surface JSON contracts and management validators does not remove these capabilities. Newly
+generalized variants remain game-unobserved unless their exact real-host scenario has run.
+
+No M8.7-specific compile, Tier 1, Tier 2, headed, install, game, or save/load proof is inferred from
+source implementation or payload presence.
 
 ## M8.8 - Surface Effect Composability Generalization
 
-### State And Goal
+### State And Authorization Gate
 
-M8.8 is paused by explicit human-lead direction. The four-part text below predates the current
-dependency profile and is retained for scope history, not as an executable contract. Before any
-future M8.8 confirmation, refresh it against the current RitsuLib `0.5.11` guide/source/API
-profile. Do not implement any Part below from this snapshot.
+M8.8 remains paused and unimplemented. This section is its architecture-adjusted future plan, not
+an executable contract. Do not begin its audit, source edits, generated proof project, payload
+regeneration, install, game launch, or result record until the human lead explicitly selects M8.8.
 
-M8.8 is an up-front capability expansion for Card, Potion, Relic, Power, Orb, Enchantment, Monster,
-and Event. It must not wait for a user to name an unfamiliar effect. It first finds every effect
-capability RitsuLib supports for those eight surfaces, then makes every capability in the pinned
-profile an open-mod authoring contract. A missing old recipe, proof Mod, acceptance example, or
-validator branch is evidence of an open-mod gap to remove, never a reason to exclude the effect.
+When selected, the first turn is research and plan confirmation only:
 
-The official guide at `https://sts2-ritsulib.ritsukage.com/guide/` is the exhaustive discovery
-index. Exact current support is established by the current RitsuLib `0.5.11` guide and versioned
-documentation, the local `v0.5.11` public source/API, and the pinned public STS2 `0.107.1`/Compat
-assembly metadata.
+1. refresh the official RitsuLib guide navigation, public `v0.5.11` source/API, and
+   `STS2.RitsuLib.Compat.0.107.1` metadata;
+2. compare the refreshed facts with this plan and the current capability graph;
+3. report any changed assumptions, newly found surfaces, or boundaries; and
+4. obtain explicit human-lead confirmation of the updated implementation scope before editing
+   authoritative source.
 
-After M8.8, support does not depend on previous open-mod proof. An effect found in RitsuLib
-documentation/source but absent from all old open-mod recipes and proof Mods is equally authorable.
-New combinations of supported effects may use ordinary C# and BCL, public STS2 `0.107.1` and
-RitsuLib Compat `0.5.11` APIs, Mod-owned helper methods/types/state, and an already maintained checked
-Adapter where that is the supported route. Conditions, loops, queries, local variables, helper
-classes, ordered asynchronous calls, intermediate results, and combinations not seen in any
-previous artifact are all in scope.
+M8.7 remains a preservation baseline. M8.8 may reuse and compose its nine generalized families but
+must not reimplement, narrow, or relabel them. M8.8 does not start M8.6.
 
-Existing `OP-###` values remain stable DESIGN-to-SPEC identities for the player's requested
-behavior. The Part 1 audit determines the exact maintained representation needed to carry complete
-capability provenance, lifecycle, parameter, composition, and trace facts through the shipped
-contract; that representation must cover the complete pinned RitsuLib effect surface.
+### Goal
 
-The real boundaries are the host lifecycle and product safety contract, not absence from a list.
-M8.8 does not create a new content surface, registration path, external dependency, arbitrary UI/VFX
-host, multiplayer claim, or cross-Mod coordination system. It does not generate new prompt-derived
-Harmony, reflection, Publicizer, IL, private/internal access, or unrelated filesystem/network/process
-behavior. Existing reviewed fixed Adapters retain their exact scopes. A composition blocks only when
-it needs one of those excluded mechanisms, a value no legal lifecycle can supply, a capability not
-present in the pinned profile, or a separately unsupported product surface. Report that concrete
-reason rather than "no recipe" or "not previously proved".
+Make every player-visible effect capability exposed by the pinned RitsuLib `0.5.11` profile for
+Card, Potion, Relic, Power, Orb, Enchantment, Monster, and Event usable through open-mod's normal
+human-readable SPEC and Author workflow, including new combinations not represented by an older
+recipe or proof Mod.
 
-M8.7's v3 structural families, M8.2 hook reachability, registration/ownership rules, targeting
-lifecycle, Event presentation, Monster intent truthfulness, bilingual localization, deliverable
-claims, and M8.3 repair continuity remain in force. M8.8 generalizes effect authoring; it does not
-discard the semantic facts and evidence boundaries those contracts protect.
+The resulting workflow remains:
 
-### 1. Exhaustively Audit The RitsuLib Effect Surface
+```text
+human intent
+  -> implementable SPEC behavior and Autotest scenarios
+  -> existing recipe/reference route
+  -> thin capability preflight only where silent unsupported code is otherwise possible
+  -> Author + SelfTest
+  -> Build
+  -> real-host Tier 1/Tier 2 when selected
+  -> direct report
+```
 
-Create `games/sts2/tests/m88-ritsulib-effect-audit.md` as a maintainer-only source-development
-ledger. Audit the complete official guide navigation, every linked guide page, and the corresponding
-public `v0.5.11` source/API rather than searching only for effects already named by open-mod. Include
-all public commands, model callbacks, lifecycle listeners, Event outcome paths, state/query helpers,
-and public data or return types needed to invoke an effect from Card, Potion, Relic, Power, Orb,
-Enchantment, Monster, or Event. Use the pinned assembly metadata to cross-check the exact public
-surface; use the maintainer decompile only to locate candidates or understand native dispatch, never
-as sole authority for generated access.
+Support does not depend on a capability having appeared in an earlier open-mod artifact. The
+current pinned public API and lifecycle decide whether it is framework-expressible; complete
+shipped authoring knowledge decides whether it is open-mod-authorable; only an actual real-host run
+makes a particular shape game-observed.
 
-The audit also covers the current open-mod consumers that could narrow what was found:
+### Non-Goals And Hard Boundaries
 
-- all eight owner pages under `skills/modmaker/surfaces/` and their
-  `skills/sts2-api/recipes/`/reference routes;
-- `modmaker/semantic-contract.md`, `modmaker/spec.md`, `modmaker/author.md`, Interview, Repair,
-  Verify, invariants, and `content-capability-graph.md`;
-- M8.2 hook participation, M8.7 surface contracts/state, targeting, computed values, Rest Site,
-  Event outcome/presentation, and vanilla-owner composition references; and
-- `spec_envelope_trace.py`, `surface_contract_trace.py`, `design_trace.py`, the pinned model-hook
-  collector/catalog, `vanilla_overrides.py`, and every validator that interprets effect support.
+M8.8 must not:
 
-For every guide page and every relevant public source/API capability, record its official
-documentation/source anchor, first confirmed version when known, player-visible behavior, exact
-public symbols, input/result/async shape, applicable lifecycle facts, and one audit disposition:
+- create a new large schema, capability ledger, trace graph, ID family, surface JSON envelope, or
+  per-Mod evidence table;
+- restore any deleted workflow validator or add a new validator for Markdown wording, headings,
+  ordinary fields, recipe prose, stage state, or proof accounting;
+- turn `capability_preflight.py` into a general SPEC validator;
+- require one proof Mod or one test for every individual API symbol;
+- create new content surfaces, registration paths, arbitrary UI/VFX hosts, multiplayer claims,
+  cross-Mod coordination, or external runtime dependencies;
+- generate prompt-derived Harmony, reflection, Publicizer, IL, or private/internal access; or
+- treat Build, source tests, a hook-fired log, or previous-version evidence as current gameplay
+  proof.
 
-- `current-profile effect`: RitsuLib `0.5.11` supports it and M8.8 owes an authoring-contract owner;
-- `effect-supporting context`: it supplies lifecycle, query, target, state, or result data needed by
-  an effect contract but is not itself a player-visible effect;
-- `not an effect`: the page/symbol concerns registration, assets, diagnostics, tooling, or another
-  product surface outside the eight effect bodies; or
-- `retained product boundary`: the route requires a forbidden mechanism or a separately unsupported
-  product surface, with the concrete reason.
+Ordinary C#/BCL, public STS2 `0.107.1` and RitsuLib Compat `0.5.11` APIs, Mod-owned helpers and
+state, and existing maintained fixed Adapters remain valid implementation tools. A composition
+blocks only when it requires a capability absent from the pinned profile, a value unavailable in a
+legal lifecycle, a forbidden mechanism, or a separately unsupported product surface. Record the
+smallest concrete boundary.
 
-No guide page or relevant public symbol may be silently skipped. "No recipe", "not previously
-proved", and "not in the capability graph" are invalid dispositions. The ledger must also identify
-every current effect declaration, recipe-only rule, and exact-route preflight, then determine how
-the maintained contract and validation structures must change to cover the complete pinned profile.
+### Part 1 - Refresh The Current Effect Surface
 
-The ledger is complete only when every discovery source is accounted for, every current-profile
-effect row has an open-mod contract owner selected for Part 2, current-profile provenance is
-literal, and at least one capability found only in RitsuLib docs/source and absent from old open-mod
-recipes/proofs is selected as a representative coverage regression. The ledger proves coverage of
-the research and supplies the provenance needed by the shipped contract.
+Use the official guide as the discovery index, then verify exact symbols and lifecycle behavior
+against public `v0.5.11` source/API and pinned Compat metadata. Cover all eight selected owner
+surfaces rather than searching only for effect names already present in open-mod.
 
-### 2. Make Every Current-Profile Effect Authorable And Composable
+Review the existing owners that can already express or constrain an effect:
 
-Add shared effect-authoring guidance under `games/sts2/skills/sts2-api/reference/` and revise the
-eight surface/recipe owners. The exact file split is chosen from the Part 1 audit, but it must avoid
-eight copied effect lists. The shipped contract must cover every `current-profile effect` row and
-must make old recipes illustrative examples rather than the boundary of support.
+- the eight relevant `skills/modmaker/surfaces/*.md` pages;
+- their `sts2-api/recipes/*.md` and referenced capability pages;
+- model-hook participation, targeting, computed values, state, resources, Rest Site, Event,
+  Monster, vanilla composition, localization, and SelfTest guidance;
+- the pinned model-hook and vanilla catalogs; and
+- the current capability graph and known limitations.
 
-Each surface owner describes all of its legal effect triggers as lifecycle-context contracts. For
-each trigger, record the public callback/signature and pinned source, owner/source types, scope and
-reachability, and every value the host supplies: owner/player/creature, selected target or target
-set, Card play, choice context, combat/run state, Event/page state, RNG, and callback-specific
-results. Record origin, type, cardinality, nullability, ownership, validity window, and await/order
-phase. These contracts answer "what is available at this trigger"; they do not enumerate which
-effects are permitted there.
+Keep the audit as a concise maintainer research record organized by official guide/source area and
+its eventual recipe/reference owner. It may list coverage and unresolved questions, but it is not
+a generated-project contract, schema, or permanent per-effect proof ledger. For every discovered
+area, decide one of four plain-language outcomes:
 
-The shared effect guidance records every RitsuLib-supported effect capability with a stable
-maintained identity, its official documentation/source anchor, and public C# symbol. For each one
-it states:
+- current-profile player-visible effect needing an authoring owner;
+- lifecycle/query/target/state context needed by an effect owner;
+- non-effect registration, asset, diagnostic, or tooling API; or
+- retained product boundary with the concrete reason.
 
-- exact player-visible semantics and current-profile provenance;
-- required parameters, accepted targets/cardinality/nullability, required scope/state, and legal
-  ways those inputs may be obtained;
-- return/intermediate result, side effects, cancellation/failure behavior, async requirement, and
-  ordering constraints;
-- text, DynamicVar, Hover Tip, localization, preview, presentation, and verification obligations;
+The refresh is complete only when every guide area and relevant public API area is accounted for,
+every player-visible effect has an existing or proposed concise owner, and at least one capability
+absent from older open-mod recipes/proofs is included so the work is not circular.
+
+### Part 2 - Put Durable Knowledge In Recipes And References
+
+Implement the refreshed result in the smallest existing owner set. Prefer one shared reference for
+knowledge used by several surfaces and keep owner-specific lifecycle, parameters, ordering, and
+examples in the corresponding recipe/surface page. Do not duplicate eight effect catalogs.
+
+For each materially distinct capability family, the authoring guidance must let Author determine:
+
+- the real public command/callback/data route and valid owner surfaces;
+- trigger timing, target/source identity, async ordering, returned result, and neutral behavior;
+- required values, conditions, Mod-owned state/helpers, and composition order;
+- rules text, DynamicVars/Hover Tips, bilingual localization, preview, and presentation consumers
+  when player-visible;
+- failure/cleanup/reset behavior and retained hard boundaries; and
+- the concrete SelfTest host, driver, expected post-state, neutral/edge cases, and structured proof
+  pattern.
+
+SPEC continues to name behavior in game terms and cite the selected support route. Do not make a
+user or generated project copy API inventories, C# signatures, or audit tables into SPEC.
+
+New combinations of supported effects may use ordinary code composition even when no old example
+matches the combination. Author must preserve each component's lifecycle, ordering, player-facing
+semantics, and independent SelfTest assertions instead of lowering the combination to the nearest
+old sample.
+
+### Part 3 - Keep Preflight Thin
+
+Review each newly identified hard boundary against all three preflight admission criteria:
+
+1. the fact is mechanically exact;
+2. C# compilation and existing Build checks cannot detect it; and
+3. violating it would produce unsupported, unreachable, or silently ineffective code.
+
+Only a rule satisfying all three may extend `capability_preflight.py`. Expected candidates are
+route existence, hook/callback capability existence, owner/surface dispatch reachability,
+route-owned callback rejection, and exact declaration shape where the wrong shape can silently
+miss dispatch.
+
+Keep ordinary fields, API parameter/type errors, manifests, resources, localization files,
+runtime state/lifecycle, visuals, input behavior, and evidence status out of preflight. Recipes
+guide those facts; compiler/Build, Tier 2, and headed review prove them.
+
+Every added preflight rule requires positive, negative, payload-layout, and neutered-check evidence
+showing the rejection would disappear if the rule were removed. If no new rule clears the three
+criteria, do not change the checker.
+
+### Part 4 - Prove Requirement-To-Code And Autotest Readiness
+
+Developer tests must emphasize behavior and artifacts rather than document formatting:
+
+- add a small set of representative natural-language requirement/SPEC scenarios spanning
+  materially different effect lifecycles and compositions;
+- prove each SPEC selects real shipped routes and exposes sufficient Author ingredients for code,
+  localization/player-facing semantics, and SelfTest;
+- use focused reference-only C# compile fixtures where exact public API compatibility is the risk;
+- retain hook/callback reachability and catalog/profile checks;
+- test SelfTest and log-verifier behavior for exact structured post-state, neutral/edge cases,
+  command-queue completion, terminal outcomes, and rejection of fired/used-only evidence; and
+- preserve all existing scaffold, Build, localization, art, packaging, vanilla, and payload tests.
+
+Do not add one prose snapshot per capability. Group tests by materially different lifecycle,
+dispatch, ordering, state, or presentation risk. A recipe paragraph existing is not proof; a test
+must protect authorability, compilation, generated artifacts, or runtime-verification machinery.
+
+If the human lead separately authorizes real-host proof during M8.8, use the smallest
+representative generated Mod(s) needed to exercise genuinely new lifecycle classes. Run Build,
+Tier 1, and structured Tier 2 in real STS2 and record only the exact shapes observed. Do not claim
+unselected capabilities or infer a family-wide gameplay result. Without that separate
+authorization, label every new shape game-unobserved and leave M8.6's final installed acceptance
+untouched.
+
+### Part 5 - Source And Payload Delivery
+
+Before delivery, run the full surviving source suite, focused new behavior/compile cases, both skill
+validators, Python `compileall`, retired-workflow residual scans, and `git diff --check`. Confirm
+that M8.7 owner knowledge and capability graph rows remain present.
+
+After explicit payload authorization, regenerate plugin and portable payloads only through
+`publish.sh`, then verify:
+
+- a second publish is byte-repeatable;
+- shared plugin/portable trees have exact path/hash parity;
+- payload tool layout works from the shipped directory shape;
+- the payload contains only the thin preflight, not retired or replacement management validators;
   and
-- the exact public call shape or maintained checked Adapter, with examples labeled as non-exhaustive.
+- no installed plugin or user Mod was modified in place.
 
-The universal composition rule is input closure:
+### Close Criteria
 
-1. Select the real surface trigger and take its lifecycle-context values.
-2. For each desired effect call, map every required parameter from a supplied value, a legal
-   owner/target relationship, an in-scope public query, a prior compatible result, a SPEC-declared
-   constant/calculation, or M8.7 Mod-owned bounded state.
-3. Check type, target cardinality, nullability, ownership, validity window, choice context, and
-   combat/run/Event scope. A value cannot be invented or retained after its lifecycle expires.
-4. Order and await calls exactly as their public contracts require. A returned value may feed a
-   later call when its type and lifetime remain valid. Conditions, loops, helpers, queries, and
-   repeated or branched calls are ordinary C#, not new capability kinds.
-5. If all inputs close, the composition is authorable regardless of whether that combination or
-   effect appeared in an old recipe/proof. If they do not close, try another legal trigger; otherwise
-   block on the exact missing context or retained product boundary.
+M8.8 may be proposed for human closure only when:
 
-Hook-driven triggers reuse M8.2's checked reachability and public signatures. M8.7 bounded state
-supplies only state explicitly owned and transitioned by the current Mod. Existing vanilla
-replacement Adapters retain their reviewed scopes; ordinary new-content effect bodies use public
-C# directly. The maintained representation chosen from the audit must encode or resolve these
-composition facts without duplicating eight independently drifting surface boundaries.
+- the refreshed `0.5.11` guide/source/API/Compat audit accounts for the complete selected effect
+  surface;
+- every current-profile player-visible effect has concise shipped recipe/reference ownership or a
+  concrete retained product boundary;
+- representative requirement-to-authoring, API compatibility, capability reachability, and
+  SelfTest-verifier tests pass;
+- the sole preflight remains within its three admission criteria;
+- existing M8.7 abilities and hard boundaries are preserved;
+- active docs and both generated payloads are synchronized and repeatable;
+- the result record distinguishes framework-expressible, open-mod-authorable, and game-observed
+  facts and lists every unrun Build/Tier/headed path literally; and
+- the human lead explicitly accepts `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`
+  and closes the Package.
 
-### 3. Close SPEC And The Existing Contract-Trace Chain
+M8.8 closure does not itself start M8.6.
 
-Keep `sts2-content-semantic/v3` and `open-mod-spec-trace/v1`. Each existing `OP-###` continues to
-mean one complete player-facing behavior selected by DESIGN.
+## M8.6 Waiting Gate
 
-Add one project-local `open-mod-effect-grounding/v1` block to each newly written or user-accepted
-revised v3 SPEC that contains effect behavior. The human-readable envelope still owns exact
-semantics: trigger, target, values, sequence, scaling, state, text, presentation, fallback, and
-proof. The grounding block connects that semantic promise to implementation without choosing from
-a closed set of implementation shapes. Each entry is keyed by its existing `OP-###` and records:
+M8.6 is the only planned fresh natural-language full-pipeline acceptance. It remains unstarted.
+When eventually selected, its execution contract must name the request, clean installed source,
+host platform, success criteria, cleanup ownership, and literal evidence boundaries.
 
-- selected surface trigger and the exact lifecycle context used;
-- each public effect call or maintained Adapter, its pinned documentation/source anchor, and every
-  required input mapped to its concrete context/query/result/calculation/state source;
-- target cardinality/nullability, conditions, data flow, control-flow outline, await/order rules,
-  intermediate results, and failure/neutral behavior;
-- state ownership, lifetime, transition/check/reset/consume order, persistence, and refresh;
-- Mod-owned helper types/methods and the generated source locations that will implement it;
-- behavior/text/DynamicVar/Hover Tip/localization/preview/presentation equivalence; and
-- implementation status and exact evidence boundary, including `game-unobserved` where applicable.
+It also owns the two real-host proofs deferred from M8.2:
 
-Framework symbols stay in this marked grounding block, not in the semantic envelope. A legacy
-v1/v2 or pre-M8.8 v3 project resumes unchanged until the user accepts an effect revision; a newly
-written effect cannot omit the block. The block may describe arbitrary ordinary C# control/data
-flow and multiple calls. It is project-local implementation grounding.
+- one custom content element declaring an incoming-damage multiplier, including the guarded value,
+  neutral case, and matching rules-text number; and
+- one collection edit that proves both its intended entry and preservation of unrelated entries.
 
-The contract chain closes at two different scopes:
-
-- Maintainer audit completeness: a focused source check proves that every official guide page and
-  relevant pinned public symbol has an audit disposition, and that every `current-profile effect`
-  reaches a real shipped authoring-contract owner.
-- Generated project closure: `design_trace.py` retains D-to-OP closure and verifies that an
-  effect-bearing operation has project-local grounding. `spec_envelope_trace.py` remains the single
-  SPEC entry point, retains v1/v2/v3 plus M8.7 structural checks, and invokes one shared grounding
-  validator. `surface_contract_trace.py` continues to own M8.7 structural families. No validator
-  is duplicated once per surface.
-
-The shared grounding validator checks only facts that can be checked without pretending to prove
-arbitrary C# semantics:
-
-- every current effect-bearing `OP-###` has exactly one entry and every entry maps back to current
-  DESIGN/SPEC semantics;
-- the cited surface trigger is real and reachable, and every declared call input maps to supplied or
-  legally derived context with compatible type/cardinality/nullability/scope/lifetime;
-- target/choice handling, state phase, await/order, result flow, value/text bindings, fallback, and
-  proof obligations are explicit and internally consistent;
-- pinned provenance, intended public symbols, local helpers, implementation files, and evidence
-  status are recorded; and
-- no entry uses a forbidden mechanism, historical fixture, generic recipe, or previous proof as a
-  substitute for context/parameter closure.
-
-The generated-project validator resolves the maintained capability/lifecycle representation and
-verifies the mapping structure. Static authoring review checks the exact C# against those contracts,
-compilation later proves symbols and types, and selected Mod verification proves only its own cases.
-Author marks generated classes/methods with their owning `OP-###` so post-Author checks can pair
-source back to SPEC. M8.3 clears behavior, state, text, tips, localization, preview, presentation,
-grounding, generated source, and proof settlements together when an effect changes.
-
-M8.7 `bounded_state.outputs` links to the owning `OP-###` grounding and phase. For example, an
-effect that fires after every four owner Card plays records the listener context, counter update,
-threshold check, effect invocation, and reset order inside one project-local contract.
-
-Focused contract scenarios must include a bounded-state payoff, an ordered multi-call composition
-with an intermediate result, at least one RitsuLib docs/source-only effect absent from old open-mod
-recipes/proofs, and legacy resume. Negative scenarios reject missing or expired lifecycle values,
-false context derivation, illegal choice/target handling, unreachable hooks, ambiguous order/state,
-stale text or DynamicVar bindings, missing pinned provenance, and forbidden mechanisms.
-
-The docs/source-only coverage regression is mandatory: add the capability to a temporary project's
-DESIGN/SPEC grounding and generated-source sample using the shared contract created from the
-exhaustive audit. The complete version must pass through the maintained representation and trace
-chain; an incomplete version must fail for the concrete missing context, parameter, or trace fact.
-
-### 4. Use Existing Acceptance As Point-To-Family Evidence
-
-Use the following existing records as representative host/path evidence, never as proof that every
-possible effect or surface pairing was observed:
-
-- `M80_SKILL_STRUCTURE_RESULTS.md`: the Card pilot's real `[PASS] Tier-2 verified` result;
-- `RITSULIB_MIGRATION_RESULTS.md`: R3 coverage of Card, Relic, Potion, Power, Enchantment, and Orb,
-  and R4 coverage of Monster/Encounter and Event/World Node;
-- `M6_NATIVE_PRESENTATION_RESULTS.md` and `M6_FORCED_FOLLOWUP_EVENT_RESULTS.md`: strict Tier 2
-  examples for ordered Event consequences/presentation and one bounded forced follow-up lifecycle;
-- `M66_ADVANCED_TARGETING_RESULTS.md`, `M66_COMPUTED_VALUES_RESULTS.md`,
-  `M66_REST_SITE_OPTIONS_RESULTS.md`, and maintained state/cadence evidence: focused target,
-  value-phase, ownership, threshold/reset, and lifecycle observations with their recorded
-  exceptions; and
-- `M67_VANILLA_OVERRIDES_RESULTS.md`: consolidated existing-owner composition acceptance, without
-  inferring individual-route observation for unselected behaviors.
-
-These records establish representative legal hosts, awaited/ordered C# execution, target and owner
-handling, state/cadence patterns, and the SPEC-to-generated-code development path. They do not
-establish all eight surfaces independently, every callback context, every newly covered effect,
-multiplayer, or every combination. Preserve each record's literal exceptions. Their accepted
-development paths are the point-to-family runtime rationale requested for M8.8: absence of a new
-bespoke runtime proof does not remove a pinned RitsuLib capability from support. Newly covered
-effects are `open-mod-authorable` and remain `game-unobserved` until later evidence observes them.
-
-After implementation authorization, source verification is limited to the contract layer:
-
-1. Run/check the maintainer audit coverage projection: every official guide page and relevant
-   pinned public symbol has a disposition; every current-profile effect has a shipped contract
-   owner. Recheck changed public signatures against the RitsuLib `v0.5.11` guide/source/API and
-   pinned assembly metadata.
-2. Run existing pinned catalog `--check` commands, including
-   `python games/sts2/tools/collect_model_hooks.py extract --check` if the callback projection
-   changes. Verify every lifecycle context and effect parameter contract against its cited source.
-3. Set `$env:PYTHONUTF8='1'`, then run focused M8.8 audit/context/grounding/trace/legacy/coverage
-   tests plus existing M8.2/M8.3/M8.7 trace modules; name their exact module paths in the
-   implementation result. Run the full suite with `python -m unittest discover -s
-   games/sts2/tools/tests -p 'test_*.py'`; then run `python -m compileall -q games/sts2/tools
-   scripts/publish` and `git diff --check`. Report exact counts.
-4. Search source for fixture-shaped support wording, uncovered guide/source capabilities,
-   independently drifting per-surface boundaries, and any rule requiring prior recipe/proof
-   membership. Review the diff against the Part 1 ledger and state the evidence boundary literally.
-
-The contract scenarios may use temporary, noncompiled generated-source samples solely to pair
-current `OP-###` grounding with intended C# shape. Do not create an M8.8-specific compiled C# proof
-fixture, per-effect/per-surface compile matrix, generated Mod matrix, install, game launch, or new
-Tier 1, Tier 2, headed, save/load, or gameplay acceptance. The new checks prove audit completeness,
-contract coverage, and composition/trace closure; they do not claim that every effect ran. A missing
-bespoke runtime case must remain `game-unobserved`, never become an effect or surface whitelist.
-
-The initial authorized implementation stops after the source/static checks and reports the exact
-dirty scope for human review. It does not regenerate either payload, update active status documents,
-write a history result, close M8.8/M8.7, commit, push, or begin M8.6.
-
-Only a later explicit combined-delivery instruction authorizes all of the following as one step:
-
-- regenerate `plugins/open-mod/` and top-level `skills/` from `games/sts2/` through `publish.sh`,
-  never by hand, and run repeatability, parity, payload-tool-layout, and payload-shaped validators;
-- synchronize the active documents that own M8.7/M8.8 facts without reimplementing M8.7;
-- write `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` and
-  `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`, each with exact tests,
-  evidence labels, exceptions, changed files, and active documents reviewed but unchanged; and
-- request explicit human closure of M8.7 and M8.8. Closure does not start M8.6.
-
-M8.8 source is ready for review when the official guide and pinned public source/API audit is
-complete, every current-profile effect has a shipped authoring-contract owner, all eight surfaces
-publish their legal lifecycle contexts, the input-closure rule supports arbitrary valid
-combinations, and SPEC grounding closes through the existing trace chain. At least one
-docs/source-only effect absent from old recipes/proofs must pass the representative coverage case.
-Focused and full static regressions must pass, and unobserved effects must retain literal
-`game-unobserved` status. M8.8 is not closed until the later
-delivery artifacts exist and the human lead explicitly closes it.
-
-## M8.6 - Clean Installed Whole-Skill Acceptance
-
-M8.6 remains intent only. It is not eligible until M8.7 and M8.8 close and the human lead selects
-the fresh request, host, installed payload, completion claim, and acceptance boundary. Its
-contract must be written and confirmed before execution.
-
-At selection, M8.6 must include:
-
-- one untouched installed-payload workflow driven from a fresh natural-language request;
-- the literal deliverable and every required player experience;
-- current M8.7 structural contracts and M8.8 RitsuLib-supported effect contracts actually selected
-  by that request, without pretending the run covers unselected variants;
-- M8.2's deferred incoming-damage multiplier proof with a neutral case and collection-edit proof
-  preserving unrelated entries;
-- build, Tier 1, selected Tier 2, bilingual checks, presentation/human observation, process cleanup,
-  and literal final reporting; and
-- explicit carry-forward of unresolved M8.5 exceptions unless separately repaired.
-
-Do not draft technical implementation details for M8.6 before its request and host are selected.
+Human review owns design quality, comprehension, enjoyment, tuning, visual presentation,
+controller behavior, and animation. Tier 1 and Tier 2 retain their exact technical meanings.
 
 ## Verification Policy
 
-- Static/design/payload evidence proves only the layer it exercised.
-- A build proves compilation/packaging, not load or behavior.
-- Tier 1 proves load and absence of fresh scoped errors, not mechanic semantics.
-- Tier 2 proves only its structured cases on the claimed host/profile.
-- Headed human observation owns subjective presentation and player-experience claims.
-- User decision can accept an exception but cannot be relabeled as observation.
-- Every generated expected value, identity, route, and terminal marker comes from current SPEC and
-  its validated current contracts/catalogs, never a historical proof Mod.
+For source maintenance, use tests proportional to the changed surface. Preserve scaffold/build,
+profile, manifest, localization, art, catalog, packaging, payload layout, capability reachability,
+vanilla route, and launch/log/autotest reliability coverage. Prefer a small behavior-level scenario
+over tests that only freeze prose or Markdown structure.
+
+Source delivery requires:
+
+```powershell
+$env:PYTHONUTF8='1'
+python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
+python -m compileall -q games/sts2/tools scripts/publish plugins/open-mod/skills skills
+git diff --check
+```
+
+When payload regeneration is authorized, run both publish modes and verify repeatability,
+source/payload parity, and payload tool layout. Payload checks are not install, game, Tier 1,
+Tier 2, macOS, or gameplay proof.
+
+For generated Mods:
+
+- Build proves compilation and static packaging/profile contracts.
+- Tier 1 proves the exact load marker and no fresh error block.
+- Tier 2 proves a structured post-state assertion in a real STS2 host plus `selftest done`.
+- `played`/`fired`/`used` logs are diagnostics only.
+- Headed review proves only the concrete visual/UI/controller/animation observations a human
+  actually reports.
+- Final reporting states every run, failure, exception, fallback, and unrun check directly.
 
 ## Closed Work And Future Outlook
 
-Completed M6/M7/M8 evidence remains indexed by `documents/history/README.md`. This plan keeps only
-closed status that changes current prerequisites or verification boundaries.
+Closed Package details stay in `documents/history/` and must not return as per-Mod workflow
+ceremony. The active plan carries only current status, prerequisites, and the next authorized work
+boundary.
 
-Future work requires separate human selection. In particular: multiplayer authoring, arbitrary
-asset/scene behavior, profile progression, cross-Mod conflict coordination, M8.5 process-tree
-ownership repair, and publication/release remain outside the current M8.8 direction.
+Future interests such as multiplayer vanilla overrides, unsupported presentation hosts, broader
+effect composability, and process-tree cleanup remain separate work until explicitly selected and
+grounded. They do not silently widen the current product or acceptance scope.

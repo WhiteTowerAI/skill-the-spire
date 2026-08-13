@@ -1,11 +1,11 @@
 # Surface: power
 
-Everything the pipeline needs for one custom Power, in one place: the SPEC envelope it must
+Everything the pipeline needs for one custom Power, in one place: the SPEC fields it must
 declare, the element class the author writes, and the proof its verification owes. Read
 this page at the `spec.md`, `author.md`, and `verify.md` stages for every authored custom
 Power, whether it stands alone or is a dependency of a Card, relic, or potion.
 
-## SPEC envelope
+## SPEC fields
 
 Include one block for every authored custom Power.
 

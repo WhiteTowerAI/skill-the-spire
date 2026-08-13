@@ -47,7 +47,8 @@ which passes a single-value assertion while doubling every damage event in the r
 scope, and the run-scope listener set contains no Powers. So the declaration is rejected before
 generation, with a message naming the capability, the declaring surface, and the surfaces that can
 receive it. The workflow then offers what actually works: the same rule on a Relic or a Potion,
-which are in the run-scope set. If the user's design requires it to be a Power, that is `INV-3` —
+which are in the run-scope set. If the user's design requires it to be a Power, the route is
+unreachable and authoring must stop -
 a gap recorded in `DESIGN.md`, not an approximation.
 
 **Rejected.** Generating the override because the method exists on `AbstractModel` and compiles.

@@ -1,6 +1,6 @@
 # Surface: card
 
-Everything the pipeline needs for one Card, in one place: the SPEC envelope it must
+Everything the pipeline needs for one Card, in one place: the SPEC fields it must
 declare, the element class the author writes, and the proof its verification owes. Read
 this page at the `spec.md`, `author.md`, and `verify.md` stages when `surface: card`.
 
@@ -8,56 +8,12 @@ Shared declarations that several surfaces use — advanced targeting, stateful m
 interaction contracts, the art plan — stay in `spec.md`. Shared proof machinery stays in
 `verify.md`.
 
-<!-- open-mod-surface-contract/v1
-{
-  "family": "card_costs",
-  "owner": "surfaces/card.md",
-  "spec_key": "card_costs",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
-  "fields": {
-    "costs": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "costs[].card_id": {"type": "text", "cardinality": "1", "unique": true},
-    "costs[].energy.kind/amount/upgrade": {"type": "enum/integer/text", "cardinality": "1 each"},
-    "costs[].stars.kind/amount/upgrade": {"type": "enum/integer/text", "cardinality": "1 each"},
-    "costs[].native_payment/native_ui": {"type": "boolean", "cardinality": "1 each", "fixed": true},
-    "costs[].combined_x_replay": {"type": "text", "cardinality": "1", "fixed": "game-unobserved"},
-    "costs[].route": {"type": "declared route", "cardinality": "1"}
-  },
-  "enums": {
-    "energy_kind": ["fixed", "x"],
-    "star_kind": ["none", "fixed", "x"]
-  },
-  "conditions": [
-    "fixed costs are nonnegative",
-    "X costs use amount -1",
-    "native_payment and native_ui are true"
-  ],
-  "mutually_exclusive": ["simultaneous Energy-X and Star-X"],
-  "routes": [
-    "recipes/card.md#the-constructor-arguments-all-required--passed-to-base",
-    "recipes/card.md#dynamicvars-upgrade--description-see-referencemechanicsmd-12"
-  ],
-  "hard_boundaries": [
-    "use the native CardModel Energy and Star lifecycle",
-    "no parallel Star store",
-    "combined and X replay semantics remain game-unobserved"
-  ],
-  "generated_obligations": [
-    "declare independent Energy and Star costs from current SPEC",
-    "lower upgrades through native cost members",
-    "keep payment rejection nondestructive"
-  ],
-  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
-  "legacy": "v1/v2 Energy-only Cards resume unchanged; a revised cost declaration writes v3"
-}
--->
 
-## SPEC envelope
+## SPEC fields
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:

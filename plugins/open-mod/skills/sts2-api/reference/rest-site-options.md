@@ -5,57 +5,6 @@ native Rest Site. The historical headed proof observed the Relic-owned profile o
 Card ownership is framework-expressible and authorable here but remains game-unobserved.
 The route is grounded against STS2 `0.107.1` and RitsuLib `0.5.11`.
 
-<!-- open-mod-surface-contract/v1
-{
-  "family": "rest_site_options",
-  "owner": "reference/rest-site-options.md",
-  "spec_key": "rest_site_options",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
-  "fields": {
-    "options": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "options[].id": {"type": "text", "cardinality": "1", "unique": true},
-    "options[].owner.surface/id": {"type": "enum/text", "cardinality": "1 each"},
-    "options[].owner_multiplicity": {"type": "text", "cardinality": "1", "fixed": "exactly_one"},
-    "options[].state_handle.surface/id/kind": {"type": "matching enum/text/enum", "cardinality": "1 each"},
-    "options[].eligibility/affordability": {"type": "text", "cardinality": "1 each"},
-    "options[].transaction.preflightable": {"type": "boolean", "cardinality": "1", "fixed": true},
-    "options[].transaction.steps": {"type": "list<semantic operation>", "cardinality": "1..*"},
-    "options[].repeatability/after_success": {"type": "enum", "cardinality": "1 each"},
-    "options[].successful_same_visit_repeat": {"type": "boolean", "cardinality": "1", "fixed": false},
-    "options[].multiplayer": {"type": "text", "cardinality": "1", "fixed": "singleplayer"},
-    "options[].route": {"type": "declared route", "cardinality": "1"}
-  },
-  "enums": {
-    "owner_surface": ["relic", "card"],
-    "state_kind": ["host_visit_removal", "saved_owner_bool"],
-    "repeatability": ["once_per_site", "once_per_run"],
-    "after_success": ["leave", "stay"]
-  },
-  "conditions": [
-    "owner and state_handle identities agree and owner multiplicity is exactly one",
-    "once_per_site uses host_visit_removal; once_per_run uses saved_owner_bool",
-    "transaction is deterministic and preflightable",
-    "successful_same_visit_repeat is false"
-  ],
-  "mutually_exclusive": ["leave and stay"],
-  "routes": [
-    "reference/rest-site-options.md#public-host-lifecycle",
-    "reference/rest-site-options.md#ritsulib-route"
-  ],
-  "hard_boundaries": [
-    "singleplayer only",
-    "Modifier ownership is not authorable",
-    "post-payment choices and rollback-dependent transactions are rejected"
-  ],
-  "generated_obligations": [
-    "contribute through the exact owner hook",
-    "separate eligibility from affordability",
-    "commit repeatability only after successful outcome"
-  ],
-  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
-  "legacy": "v1/v2 Relic-owned declarations resume unchanged; revised owner data writes v3"
-}
--->
 
 ## Supported contract
 

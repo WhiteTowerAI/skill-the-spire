@@ -17,7 +17,7 @@ Before MSBuild, the tool verifies:
 - the manifest keeps the authoring API floor `STS2-RitsuLib >= 0.5.11` and targets host
   `0.107.1` even when the scaffold-pinned local compile runtime is newer;
 - `has_pck` is `true` exactly when the authored Mod resource tree is non-empty;
-- when localization tables exist, `INV-10` requires both `eng` and `zhs` directories with
+- when localization tables exist, require both `eng` and `zhs` directories with
   identical table names, keys, and SmartFormat tokens plus nonempty localized values;
 - the installed host's `release_info.json` is stable `0.107.1`;
 - the game `mods/STS2-RitsuLib` directory or official Steam Workshop item `3747602295`
@@ -78,17 +78,16 @@ Read `${STS2_API_SKILL_DIR}/errors.md` § Build And Profile and match the exact 
 before changing anything. It carries the cause and fix for every profile, manifest, pack,
 Ancient-dialogue, and vanilla-override failure this stage can emit.
 
-Before applying a fix, classify the observed difference through `repair.md`, write the active
-PLAN route, and run `repair_trace.py`. A compiler or grounded package-path correction is usually
-implementation-equivalent, but a proposed fix that changes the accepted operation is not.
+Before applying a fix, follow `repair.md` from the observed signature. A compiler or grounded
+package-path correction normally fixes the project directly, but a proposed fix that changes
+the accepted operation returns to DESIGN and SPEC for user acceptance.
 
 Two rules that decide *where* the fix goes, and are not in the catalog:
 
 - A `RitsuLib profile FAILED` / `RitsuLib restore FAILED` contract error is fixed in the
   local runtime, bundled SDK, manifest, host, or runtime profile chosen at `scaffold.md`.
   Never enter a C# repair loop for one.
-- Ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol, after
-  classification.
+- Ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
 
 On success, mark `build` done in `PLAN.md`, record the resolved Mods path and profile in
 `MEMORY.md`, and continue to `verify.md`.

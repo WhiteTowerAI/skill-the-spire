@@ -24,10 +24,7 @@ its handoff:
   archetype, multi-element set, or another content ecosystem; and
 - read `../sts2-api/design/balance-planning.md` when balance, numeric resource
   sources/sinks/cadence, a formula, or materially unresolved values are a current design
-  question; and
-- read `../sts2-api/design/coherence-review.md` when multiple intentional
-  expressive surfaces, explicit theme/narrative/presentation work, or an identity-changing
-  revision needs cross-artifact review and bounded propagation.
+  question.
 
 The references separate pinned facts, observed conventions, creative decisions, and open
 hypotheses. Load the smallest applicable set: an exact simple Card does not load balance
@@ -174,7 +171,6 @@ explicitly accepted composition instead.
 | `design/mechanic-planning.md` | Player fantasy, core decision, loop, risk/reward, singleplayer pressure, edge cases, tuning knobs, and dominant-strategy review | Designing or revising a materially unresolved mechanic, resource, stateful loop, or interacting system |
 | `design/content-set-planning.md` | Foundation/access/payoff/consistency/defense/scaling/bridge/release roles, directed interaction graph, coverage, and dominance review | Designing a Character card pool, archetype, multi-element set, or content ecosystem |
 | `design/balance-planning.md` | Evidence hierarchy, Mod-forward power bias, formulas, resource economy audit, sensitivity, tuning knobs, and open hypotheses | Answering a balance/economy question or selecting materially unresolved numeric values |
-| `design/coherence-review.md` | Accepted identity anchors, mechanics/name/localization/visual/Event/Character surface checks, specific conflicts, deliberate tension, and revision impact queues | Reviewing multiple expressive surfaces or propagating an identity-affecting revision before SPEC |
 | `reference/ritsulib-adapter.md` | Pinned RitsuLib compat profile, public registration/template routing, asset profiles, lifecycle/persistence/resource routes, and diagnostics | After the semantic SPEC and before a surface recipe |
 | `reference/vanilla-overrides.md` | Pinned vanilla catalog, exact alias resolution, semantic manifest, promotion, baseline/fingerprint, and conflict checks | Any request targeting existing vanilla content; before category-specific routing |
 | `reference/vanilla-card-overrides.md` | public existing-Card operations: properties, evaluated costs, play state/result, localized text/tips, native glow, capability variables, owner hooks, and `OnPlay` composition/replacement | Authoring an override for an exact existing `CARD.*` target |

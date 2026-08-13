@@ -1,18 +1,17 @@
 # Surface: relic
 
-Everything the pipeline needs for one Relic, in one place: the SPEC envelope it must
+Everything the pipeline needs for one Relic, in one place: the SPEC fields it must
 declare, the element class the author writes, and the proof its verification owes. Read
 this page at the `spec.md`, `author.md`, and `verify.md` stages when `surface: relic`.
 
 Shared declarations that several surfaces use — stateful mechanics, interaction contracts,
 the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
 
-## SPEC envelope
+## SPEC fields
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -39,7 +38,7 @@ the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
 - **hook participation**: none | one or more; see § Hook participation in `spec.md`
   - A Relic reaches the widest set (66 of 68): both run-scope and combat-scope. `Owner` is a
     `Player`, so a subject guard compares against `Owner.Creature` **and** `Owner.Osty` where
-    an Osty can act. Rest Site contribution is not declared here — see § SPEC envelope above.
+    an Osty can act. Rest Site contribution is not declared here — see § SPEC fields above.
 - **state**: none | see the stateful-mechanic contract below
 - **presentation**:
   - assets: relic icon; placeholder | generate
@@ -141,7 +140,7 @@ hover.
 - Declare every keyword named in the description through `RegisteredKeywordIds`.
 - Fill **only** the effect block with the confirmed Cmds/RNG from the recipe. `await`
   every Cmd. Use `Rng`, never `System.Random`. Call `Flash()` when it visibly triggers.
-- For selected bounded state, follow `reference/stateful-mechanics.md` and the v3 family.
+- For selected bounded state, follow `reference/stateful-mechanics.md`.
   A Relic run-save profile may use `SavedAttachedState<SpecificRelic, bool/int/string>`;
   combat-local native-turn timing may read `PlayerCombatState.TurnNumber`. Emit only declared
   transitions/consumers, and route every visible mutation through one refresh path.

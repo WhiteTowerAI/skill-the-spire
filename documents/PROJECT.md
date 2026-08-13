@@ -2,301 +2,211 @@
 
 ## Product
 
-open-mod is a free, open-source Codex plugin that turns a non-programmer's description into
-a working game Mod. Slay the Spire 2 is the first supported game. The strategy is one game
-deep, then a reusable platform once multiple independent consumers justify shared
-abstractions.
+open-mod is a free, open-source Codex plugin that turns a non-programmer's description into a
+working game Mod. Slay the Spire 2 is the first supported game. The strategy is one game deep,
+then a reusable platform once independent consumers justify shared abstractions.
 
-The product combines design collaboration with a grounded implementation pipeline. It asks
-only material questions, records intent separately from exact generated operations, authors
-against pinned public/fixed routes, builds the Mod, and reports verification literally.
+The product combines adaptive design collaboration with grounded implementation. It asks only
+material questions, records human intent separately from the exact implementation work order,
+authors against pinned public/fixed routes, builds the Mod, and reports real verification results
+literally.
 
 ## Release State
 
 `0.7.0` is an unreleased RitsuLib-only development baseline for STS2 stable `0.107.1` and
-RitsuLib `0.5.11`. BaseLib has been removed from generated projects. M6.5, M6.6, M6.7, and
-M7 are closed; their detailed results and exceptions live under `documents/history/`.
+RitsuLib `0.5.11`. BaseLib is absent from generated projects. M6.5-M6.7, M7, M8.0-M8.3, and
+M8.5 are closed; their detailed results and exceptions live under `documents/history/`.
 
-M7.0 was canceled as a standalone evaluation Package. M7.1 through M7.5 are implemented
-and synchronized into both committed payloads:
+M8.7 Product Boundary Generalization is implemented in authoritative source and both payload
+forms, but remains open pending its result record and explicit human closure. Its nine generalized
+families remain part of the product boundary and must not be narrowed or reimplemented.
 
-- M7.1 infers fast, co-design, or revision and preserves direct resume;
-- M7.2 grounds Character Foundation recommendations in the pinned native starter inventory;
-- M7.3 plans mechanics, content sets, formulas, economies, and honest tuning hypotheses;
-- M7.4 writes adaptive DESIGN before a validated current-slice SPEC; and
-- M7.5 checks selected identity/presentation surfaces and propagates revisions narrowly.
+M8.8 Surface Effect Composability Generalization is paused and unimplemented. Its previous
+trace/schema-oriented draft has been replaced in the active plan with a simplified future plan:
+refresh the RitsuLib `0.5.11` effect surface, place durable knowledge in concise
+recipes/references, extend the sole thin preflight only when all three admission criteria hold,
+and prove requirement-to-code plus autotest readiness with behavior-level tests. It still requires
+a refreshed guide/source/API audit and explicit human confirmation before implementation.
 
-M7.6 closed through a human-led external whole-skill evaluation rather than a new source
-Package. The Watcher evaluation built, loaded, and exercised a bounded state subset on
-macOS; the human lead reported that it was playable but not very good. That is not a
-successful tuning-loop, complete Character, or broad route-acceptance claim. The exact
-result is `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`.
-
-M8 End-to-End Product Integrity is the active milestone. It addresses literal
-deliverable scope, complete player-facing operation semantics, maintained exact capability
-preflight, semantic backtracking, cross-platform installed reproducibility with owned-process
-cleanup, and correction of fixture-shaped product boundaries. One final clean installed
-whole-skill acceptance is scheduled only after the preceding M8 Packages close. No acceptance
-run, payload publication, or GitHub release is currently authorized.
-
-M8.1 Literal Deliverable Contract is closed by explicit human-lead decision on 2026-08-10. Every
-`DESIGN.md` now carries one literal deliverable claim — what the user has when this is done,
-the `E-###` player experiences required for that claim to be honest, how each will be settled,
-and what the claim does not include — and Finalize generates its report from a `PLAN.md`
-settlement ledger instead of free prose. `deliverable_trace.py` checks the claim before SPEC and
-the ledger at finalize, where no other validator runs. A requirement is not an experience: a
-generated operation can pass while the thing the player was promised is false. The result is
-`documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md`.
-
-M8.0 Skill Structure Restructuring is closed by explicit human-lead decision on 2026-08-10. The
-shipped pack now reads one file per element instead of three per stage, projects its art contract
-from code into a catalog, separates diagnostic signatures from preventive constraints, states what
-is supported rather than which Package promoted it, and states each cross-stage invariant once.
-Both committed payloads are synchronized. Nine of the ten co-located surfaces have never been
-piloted; the durable result is `documents/history/M80_SKILL_STRUCTURE_RESULTS.md`. Three of the
-thirteen contradictions it found were deferred to M8.2 and are resolved there.
-
-M8.2 Exact Semantic Capability Conformance and Preflight is closed by explicit human-lead
-decision on 2026-08-10. A mechanic that changes a value or decision the engine is computing is now
-a declaration rather than prose: a capability id, the subject guard that decides direction, the
-condition, the value with the name that puts it in rules text, and the neutral result outside the
-guard. Preflight resolves each cited route and its anchor, pairs the declared capability against
-what that route provides, and rejects a hook the declaring surface cannot receive — which on this
-engine is decided by the dispatching iterator, so an override on the wrong surface compiles and
-never fires. The SPEC envelope is normalized to `sts2-content-semantic/v2` with a migration path,
-which is what made a generated project's SPEC checkable against its surface at all, and closed the
-three inherited M8.0 mismatches. `INV-9` states where a claimed-but-broken route blocks. **The two
-real-host proofs it owed were deferred to M8.6 and did not run**, so every hook route is
-implemented and unobserved in a running game. Four defects were found while spending its own
-catalog, three of them in its own earlier steps. The result is
-`documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`.
-
-M8.3 Semantic Continuity and Backtracking closed by explicit human-lead decision on 2026-08-11.
-It adds one resumable active-repair decision to PLAN, validates four artifact-owned routes with
-`repair_trace.py`, and treats each affected operation's behavior/lifecycle/text/tips/localization/
-preview/presentation/proof as one impact view. Its `384`-test regression is static/workflow
-evidence; no generated Mod or game run occurred.
-The result is `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md`. M8.4 was removed by the human
-lead; M8.5 and M8.6 retain their numbers.
-
-Generated-Mod localization is bilingual by contract in `sts2-content-semantic/v2`. A Mod with no
-localization tables remains language-neutral; once any table exists, English (`eng`) and
-Simplified Chinese (`zhs`) are both required with matching table names, keys, and SmartFormat
-tokens and with nonempty values. DESIGN and SPEC record the exact text, `INV-10` preserves the
-obligation through the workflow, and future Tier 2 checks switch through both languages before
-restoring the original language. Translation quality remains a human judgment. This source and
-payload implementation was not tested, built, launched, or otherwise verified by human-lead
-instruction, so it carries no runtime or game proof.
-
-A pre-M8.5 maintenance debug removed generated-project framework `PackageReference` entries.
-At the time, scaffold kept the RitsuLib `0.5.4` authoring baseline, pinned the selected local Compat
-DLL version and hash, resolved game/framework assemblies locally, and copied the bundled Godot.NET
-SDK import set. Its player manifest remained `STS2-RitsuLib >= 0.5.4` even when the local compiler
-used a newer compatible runtime. Its one focused scaffold contract test passed. No Mod compile,
-restore/offline, cross-platform, Tier 1, Tier 2, or game run was performed by that maintenance.
-
-On 2026-08-13 the human lead selected a forward-only dependency profile migration for newly
-generated Mods. The current authoring/API baseline, compile-runtime minimum, manifest dependency,
-and Tier 1 runtime floor are RitsuLib `0.5.11` with the `0.107.1` Compat variant. Existing Mods
-created under earlier skill payloads are outside this migration and were not rebuilt or migrated.
-Historical `0.5.4` proof records retain their literal version and do not become `0.5.11` runtime
-proof. M8.8 was paused; its existing research draft must be refreshed against the current
-`0.5.11` guide/source/API profile before future use.
-
-A subsequent pre-M8.5 maintenance repair makes generated macOS paths executable-adjacent:
-deployment and local RitsuLib discovery use the app bundle's `Contents/MacOS/mods/`, host
-validation reads `Contents/Resources/release_info.json`, and `steam_appid.txt` sits beside the
-inner executable. New projects use canonical `mod_manifest.json`; a single legacy
-`<ModName>.json` remains compatible and a dual-manifest project fails closed. The `395/395`
-static regression and one Windows reference-only scaffold C# compile passed, and both payloads
-were regenerated. No macOS host, installed-workflow, Tier 1, Tier 2, or game evidence is claimed;
-those checks do not prove the intended cross-platform workflow.
-
-M8.5 Cross-Platform Reproducible Installed Workflow closed by explicit human-lead decision on
-2026-08-12 with unresolved exceptions. No execution contract was ever drafted. The macOS
-installed workflow was not run, and the current `open -a` launch path plus held-`Popen` cleanup
-does not own or clean the launched game process tree. Restore/offline behavior, Tier 1, Tier 2,
-and game behavior remain unrun. The bounded result is
-`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. That closure did not itself authorize
-or prove any later M8.7/M8.8/M8.6 work.
-
-M8.7 Product Boundary Generalization source development is implemented and committed. The
-authoritative `games/sts2/` source now uses `sts2-content-semantic/v3`, parseable owner contracts,
-one shared `surface_contract_trace.py` validator, lowering guidance, and independent
-framework/authorable/observed labels for nine families: broader secondary resources; Monster
-graph/composition/HP shapes; Character starting fields; Card- or Relic-owned Rest Site options;
-multiple computed Card values; reusable bounded state; bounded forced Event mappings; new-Card
-Star costs; and bounded Event acquisition/shake profiles. The generalized shapes are
-open-mod-authorable in source and remain game-unobserved. By explicit human-lead authorization on
-2026-08-13, both committed payload trees now include M8.7. The durable
-`documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` record and explicit closure
-remain outstanding; M8.7 is delivered but still open.
-
-M8.8 Surface Effect Composability Generalization is paused. Its previous research and four-part
-draft predate the current dependency profile and are not a valid execution contract as-is. Future
-resumption must first refresh the full guide/source/API audit and its contract against the current
-`0.5.11` profile. No M8.8 source implementation, payload delivery, runtime proof, or
-closure has occurred. M8.6 waits for both M8.7 and M8.8 to close.
+M8.6 remains the final clean installed whole-skill acceptance. It is ineligible until M8.7 and
+M8.8 close and the human lead selects the exact request, host, and execution contract. No new
+acceptance run, payload installation, commit, push, GitHub release, or game launch is implied by
+the current source state.
 
 ## User Experience
 
+A user describes a Mod in ordinary language. The skill resumes unfinished work when present,
+otherwise chooses a fast, co-design, or revision route and asks only questions that change the
+result materially.
+
+The active workflow is:
+
 ```text
-plain-language idea
-  -> resume or infer fast / co-design / revision
-  -> ask only decisions that materially change the Mod
-  -> write DESIGN.md for intent, scope, coherence, and revision impact
-  -> write SPEC.md for exact supported operations generated now
-  -> scaffold, author, build, package, and deploy
-  -> run proportional load/behavior verification when required
-  -> report passes, failures, and unrun checks literally
+idea
+  -> concise DESIGN
+  -> implementable SPEC
+  -> thin capability authenticity/reachability preflight
+  -> Author + SelfTest
+  -> Build
+  -> Tier 1
+  -> Tier 2 / SelfTest
+  -> optional headed human review
+  -> direct evidence-bounded report
 ```
 
-M8 strengthens this flow. The literal deliverable contract, exact capability preflight, and
-semantic-impact backtracking are implemented: DESIGN carries the claim, SPEC is checked against
-its surface and cited routes, and active repair returns to MEMORY, SPEC, DESIGN, or a shared route
-according to what changed. Durable cross-platform reproduction with no launcher-owned process left
-behind remains an unresolved M8.5 exception rather than a proved outcome. Existing literal
-reporting and verification ownership remain in force; M8 adds no separate evidence-reporting
-subsystem.
-
-A complete narrow request retains a zero-question path. Ambiguous work receives materially
-different player-facing options with trade-offs, not an exhaustive questionnaire. Revision
-updates only affected decisions and artifacts instead of restarting the project.
-
-Character/content-set requests lazily load one pinned Foundation reference before creative
-deck questions. The skill proposes an exact native-shaped starter deck and explains how it
-teaches the intended mechanic. Deliberate implementable departures remain allowed after
-their onboarding, compatibility, and balance consequences are explicit.
+A complete narrow request keeps a zero-question fast path. Character work lazily loads pinned
+native foundation facts and proposes one exact starter shape before asking for deck detail.
+Co-design may compare alternatives and preserve deliberate departures, but it must label pinned
+facts, observed conventions, creative decisions, and open playtest hypotheses distinctly.
 
 ## Artifact Boundary
 
-DESIGN and SPEC have different jobs:
+`DESIGN.md` contains the human-owned product meaning:
 
-```text
-DESIGN D-### decisions
-  -> current MUST / PLACEHOLDER
-  -> future DEFER / OUT-OF-SCOPE
-  -> blocking gaps
-  -> A-### identity anchors and selected expression checks
-  -> revision-only Q-### impact queue
+- the intended player experience;
+- confirmed creative and scope decisions;
+- the current playable slice; and
+- explicit `Not Now` items.
 
-current DESIGN decisions only
-  -> SPEC OP-### operation allowlist
-  -> exact semantic targets and existing supported routes
-  -> generated source/resources
+It contains no machine-readable coherence, deliverable, impact, settlement, repair, or evidence
+management contracts. Design quality is a human judgment, not a Markdown validator result.
+
+`SPEC.md` is the only implementation work order. It records concrete content, triggers, targets,
+conditions, values, ordering, state/lifetime/reset behavior, bilingual text and presentation,
+selected recipe/reference routes, and the exact autotest scenarios required for the current
+behavior. Simple Mods stay compact.
+
+`PLAN.md` is a plain stage checklist. `MEMORY.md` stores technical discoveries, stable resolved
+IDs/keys, exact commands/results, and repair attempts. Existing projects may retain old metadata;
+the workflow ignores it and does not force migration.
+
+## Thin Preflight
+
+Author runs one checker before writing source:
+
+```powershell
+python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
 ```
 
-`design_trace.py` rejects missing/extra operations, one-way links, future leakage,
-unresolved gaps, invalid dispositions, invented route forms, absent route files, unresolvable
-route anchors, and a capability id no route declares. `coherence_trace.py` rejects invalid
-references, unresolved pre-SPEC conflicts, and unbounded revision queues. `deliverable_trace.py`
-rejects a malformed claim before SPEC and an outcome that outruns its evidence at finalize.
-`spec_envelope_trace.py` rejects a SPEC that drops a shared section, invents a top-level key, or
-declares a hook its own surface cannot receive. No validator can prove subjective quality,
-balance, enjoyment, or runtime behavior.
+It verifies only facts that a compiler cannot detect and whose violation would produce unsupported
+or silently ineffective code:
+
+- selected support routes exist in the shipped pack;
+- selected hook capabilities exist in the pinned catalog;
+- the cited route declares the hook;
+- hook shape matches the catalog;
+- route-owned hooks are not authored as raw participation; and
+- the selected surface belongs to the dispatcher's authorable listener set.
+
+It does not validate prose, Markdown headings, ordinary fields, business rules, C# signatures,
+manifest/resources/localization, runtime state, presentation, evidence status, or project stage.
+Those remain owned by recipes/references, Scaffold/Build, real-host SelfTest, and headed review.
 
 ## Architecture
 
-1. `games/sts2/skills/modmaker/` owns routing, Interview, DESIGN, SPEC, scaffold, author,
-   build, verify, and bounded repair.
-2. `games/sts2/skills/sts2-api/` owns lazy design references, exact recipes, pinned API
-   facts, error guidance, and current runtime routes.
-3. `games/sts2/tools/` owns cross-platform build, launch, log, art, catalog, and artifact
-   validators.
-4. `games/sts2/tests/` owns the active capability graph, verification ownership, semantic
-   scenarios, and deterministic regressions.
-5. `plugins/open-mod/` and `skills/` are generated Codex-plugin and portable payloads.
+- `games/sts2/skills/modmaker/`: routing, DESIGN/SPEC, scaffold, authoring, build, verification,
+  repair guidance, and direct reporting.
+- `games/sts2/skills/sts2-api/`: lazy design references, pinned recipes/API contracts, catalogs,
+  and diagnostic signatures.
+- `games/sts2/tools/`: scaffold, build, launch, log, art, catalog, and thin preflight tooling.
+- `games/sts2/tests/`: current capability graph and verification ownership.
+- `games/sts2/experimental/`: maintainer research excluded from shipped payloads.
+- `plugins/open-mod/`: generated Codex plugin payload.
+- `skills/`: generated portable Agent Skills payload.
 
-M8 work crosses these ownership boundaries rather than creating a separate runtime framework, and
-the delivered/source-implemented Packages follow that split: `modmaker` owns the deliverable claim,
-SPEC capability declarations, and v3 surface data; `sts2-api` owns maintained routes, owner
-contracts, and pinned research; tools own shared validators; and tests own capability conformance
-and audit ledgers. M8.3 follows the same division through `repair_trace.py`; M8.7 follows it through
-`surface_contract_trace.py`. M8.8 is planned to extend the same ownership chain for complete
-RitsuLib effect grounding. Final whole-skill coverage remains with M8.6.
+Authoritative edits happen under `games/sts2/`. Both payloads are regenerated through
+`publish.sh`; they are never hand-edited.
 
-Edit source under `games/sts2/`; regenerate both payloads through `publish.sh`. Generated
-Mods use the `0.5.11` RitsuLib API baseline, then compile against the exact validated local
-RitsuLib Compat DLL selected at scaffold time. The project carries no framework
-`PackageReference`: the skill supplies the Godot.NET SDK import files and resolves STS2,
-Harmony, GodotSharp, System.IO.Hashing, and RitsuLib from the game/runtime installation.
-Runtime discovery prefers the game-local or official Workshop RitsuLib runtime, and an upgrade
-after scaffold requires an explicit profile migration. Generated Mods never copy the maintainer
-checkout or depend on BaseLib.
+## Runtime Profile
 
-## Design Intelligence Boundary
+Generated Mods target STS2 `0.107.1` and the RitsuLib Compat `0.5.11` authoring/API baseline.
+Scaffold pins the exact validated local Compat DLL version and hash used to compile. Runtime
+manifests depend on `STS2-RitsuLib >= 0.5.11`; a newer local compile input does not raise that
+minimum while generated code stays inside the baseline.
 
-M7 separates four knowledge classes:
+Generated projects have no framework `PackageReference`. The scaffold supplies Godot.NET SDK
+imports and resolves STS2, RitsuLib, GodotSharp, Harmony, and other required assemblies from the
+validated local game/runtime. Runtime discovery accepts a checked game-local install or official
+Workshop item `3747602295`. BaseLib, Alchyr templates, maintainer decompiles, and research
+checkouts are never generated-project dependencies.
 
-- pinned facts from the `0.107.1` catalog/game substrate;
-- observed native conventions that support a recommendation but can be deliberately broken;
-- creative decisions owned by the user; and
-- open hypotheses requiring measurement or human playtest evidence.
+## Product Boundary
 
-Balance uses a human-lead-selected Mod-forward posture: prefer a clearly rewarding,
-modestly stronger working value over a no-pick result, while reducing values that erase
-choices, setup, costs, ordinary opposition, or create deterministic/self-funding/unbounded
-loops. This is a product preference, not a pinned STS2 fact or fixed percentage.
+Support, authorability, and observation are separate facts:
 
-Coherence review is proportional. It checks only selected mechanics, naming, localization,
-visuals, Event text, and Character identity against accepted anchors. Placeholder art is a
-fallback, not an invented theme. An accepted ironic contrast is recorded as deliberate
-tension instead of being normalized automatically.
+- `framework-expressible`: the pinned public/fixed route can express the operation;
+- `open-mod-authorable`: the shipped recipes/references fully guide its implementation and proof;
+- `game-observed`: its exact declared shape ran successfully in the real host.
+
+Missing runtime proof does not automatically make a public capability unsupported. Conversely,
+static source or Build success is not game observation. The exact inventory and narrow limitations
+live in `games/sts2/tests/content-capability-graph.md`.
+
+Generated code may combine the pinned public STS2/RitsuLib APIs, ordinary C#/BCL, Mod-owned helper
+types/state, and maintained fixed Adapters. It must not invent prompt-derived Harmony, reflection,
+Publicizer, or IL. A missing or broken shared route blocks authoring rather than inviting a local
+approximation.
+
+M8.7 generalized these nine families without claiming runtime observation for every new shape:
+secondary resources; Monster move graphs/Encounter composition/HP ranges; Character starting
+fields; Card- or Relic-owned Rest Site options; multiple computed Card values; reusable bounded
+state; bounded forced Event mappings; new-Card Star costs; and bounded Event acquisition/shake
+profiles.
+
+## Design Intelligence
+
+The design layer distinguishes pinned facts, observed native conventions, creative decisions, and
+open hypotheses. Balance uses a Mod-forward preference: favor a clearly rewarding working value,
+while constraining values that erase choices, setup, costs, ordinary opposition, or produce
+deterministic, self-funding, or unbounded loops. This is a creative posture, not a fixed percentage
+or proof of fun.
+
+Coherence review is conversational and proportional. It examines only selected mechanics, naming,
+localization, visuals, Event text, and Character identity. Deliberate tension may remain when the
+user accepts it. No validator decides that a design is coherent, complete, fun, or balanced.
+
+## Localization And Presentation
+
+A Mod with no localization tables is language-neutral. Once any table exists, `eng` and `zhs` are
+both required with identical table/key sets, identical SmartFormat token multisets, and nonempty
+values. Build checks the static files. Tier 2 changes languages through the real localization
+consumer and restores the original language. Translation quality remains human-owned.
+
+Art normalization is defined in code (`gen_sprite.SPECS` and
+`character_art.CHARACTER_ART_BUNDLE`) and projected into the checked art catalog. Generated raster
+assets use `gen_sprite.py import`; the selected RitsuLib asset profile/provider owns runtime wiring.
+Placeholder art is the default. A paid or external generation backend is never selected silently.
 
 ## Verification Philosophy
 
-Support and verification are separate. Official tutorial Package semantics plus the needed
-public API in the pinned profile define support. Missing recipes, validators, builds,
-Tier 1/Tier 2 runs, or headed review mean implementation or verification is missing; they
-do not narrow a documented public Package automatically.
+Build and real-host autotest prove code; authoring contracts guide code.
 
-Use deterministic local assertions for calculations and state rules, then the nearest real
-host for changed runtime behavior or presentation. Fresh end-to-end acceptance is reserved
-for an explicit milestone gate or human-lead request. Historical evidence is immutable and
-does not become a reusable test fixture.
+- Build proves compilation, packaging, manifests, resources, localization shape, PCK output, and
+  deployable static artifacts under the pinned profile.
+- Tier 1 proves the exact load marker, exact framework/host/compat identity, and no fresh error
+  block.
+- Tier 2 runs the arg-gated `SelfTest.cs` inside real STS2, drives the selected hosted behavior,
+  waits for queued actions, asserts exact post-state and object identity, and requires
+  `selftest done`.
+- `played`, `fired`, and `used` logs are diagnostics, never pass evidence.
+- Headed review owns real images, UI, mouse/controller interaction, animation, and subjective
+  quality.
 
-M8 will make that ownership operation-complete: state behavior, lifecycle, rules text,
-DynamicVars/keywords, Hover Tips, localization, preview, and real presentation must agree.
-Those obligations will use machine-checkable metadata on the existing authoritative route,
-not a mechanic-name checklist or second capability catalog. Maintained complex helpers must
-prove their selection, ordering, movement, hooks, degenerate states, and input modes; a
-claimed route that fails conformance blocks until repaired or narrowed. A claimed platform
-run also ends only after the tool confirms that its owned process tree is gone.
+The final report states actual Build, Tier 1, Tier 2, and human results directly. A skipped or
+failed check stays visible. Historical evidence is immutable and version-literal; older `0.5.4`
+results do not become `0.5.11` runtime proof.
 
-M7.1-M7.5 are prompt/design workflow changes. Their deterministic scenarios and validators
-prove shipped contracts only. Two focused read-only forward-model prompts exercised M7.5
-conflict and revision behavior. The later external Watcher evaluation supplies bounded
-build/Tier/human evidence under its own result record; it does not retroactively prove the
-full M7 forward-model matrix, all generated operations, headed design quality, visual
-quality, or successful playtest tuning.
-
-Current commands and exact verification ownership live in `games/sts2/tests/README.md`.
-
-## Runtime Boundary
-
-The exact supported and unsupported inventory lives in
-`games/sts2/tests/content-capability-graph.md`. It includes new content, Character
-Foundation and presentation, Custom Card Piles, readability, Events/Ancients, and the five
-promoted M6.7 vanilla-override operation families.
-
-Important global limits remain:
-
-- singleplayer-only surfaces are never relabeled as multiplayer support;
-- no prompt may invent arbitrary Harmony, reflection, Publicizer, or IL;
-- unsupported current intent remains a blocking gap or explicit future item;
-- no behavior-bearing arbitrary scene/material/audio generation outside promoted routes;
-- no alternative Energy, global acquisition weighting, arbitrary transitions, or
-  one-click Workshop publishing; and
-- build/static/design evidence never substitutes for real-game behavior or presentation.
+Verification is proportional. Reuse the nearest maintained host for a changed behavior. A fresh
+natural-language acceptance Mod is reserved for an explicitly scheduled full-pipeline gate or a
+direct human request. M8.6 is that future final gate, but is not currently eligible or started.
 
 ## Distribution
 
-The Codex plugin manifest is `plugins/open-mod/.codex-plugin/plugin.json`; the repo-local
-marketplace entry is `.agents/plugins/marketplace.json`. `publish.sh --plugin` renders the
-committed plugin payload and `publish.sh --portable` renders the top-level Agent Skills
-payload. Both contain relative paths so installation does not depend on the user's current
-working directory.
+The repository publishes two generated forms from the same authoritative source:
 
-The active implementation plan is `documents/IMPLEMENTATION_PLAN.md`. Completed milestone
-results, earlier planning snapshots, and retired audits are indexed by
-`documents/history/README.md`.
+- a Codex plugin under `plugins/open-mod/`; and
+- portable Agent Skills under top-level `skills/`.
+
+Regenerate both only through `publish.sh`, then verify repeatability, source/payload parity, payload
+tool layout, Python compilation, and `git diff --check`. Installation and release are separate,
+explicitly authorized operations.

@@ -3,11 +3,11 @@
 Everything the pipeline needs for one custom card keyword, in one place. Read this page at
 the `spec.md`, `author.md`, and `verify.md` stages when SPEC declares a custom keyword.
 
-## No SPEC envelope of its own
+## No SPEC fields of its own
 
 A custom keyword is never standalone content: it owns shared vocabulary and a tooltip, and
 its named behavior always lives in a host Card, Power, or helper. It therefore has **no
-element block**. Declare it inside its host Card's envelope:
+element block**. Declare it inside its host Card's SPEC fields:
 
 ```markdown
   - keywords: <keyword name> — <the shared rule the tooltip states>

@@ -1,6 +1,6 @@
 # Surface: character (Character Foundation)
 
-Everything the pipeline needs for one playable Character, in one place: the SPEC envelope it
+Everything the pipeline needs for one playable Character, in one place: the SPEC fields it
 must declare, the element class the author writes, and the proof its verification owes. Read
 this page at the `spec.md`, `author.md`, and `verify.md` stages when `element: character`.
 
@@ -9,59 +9,12 @@ One selectable character shell plus its starter ecosystem; scenarios are `RunSta
 ordered semantic buffer — keep their separate contracts in this same page, below the
 Foundation SPEC. The Foundation proof matrix owns the complete verification contract.
 
-<!-- open-mod-surface-contract/v1
-{
-  "family": "character_starting",
-  "owner": "surfaces/character.md",
-  "spec_key": "character_starting",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
-  "fields": {
-    "starting_hp": {"type": "integer", "cardinality": "1"},
-    "starting_gold": {"type": "integer", "cardinality": "1"},
-    "max_energy": {"type": "integer", "cardinality": "1"},
-    "base_orb_slots": {"type": "integer", "cardinality": "1"},
-    "cards": {"type": "multiset", "cardinality": "0..*"},
-    "relics": {"type": "multiset", "cardinality": "0..*"},
-    "potions": {"type": "multiset", "cardinality": "0..*"},
-    "cards/relics/potions[].id": {"type": "text", "cardinality": "1"},
-    "cards/relics/potions[].count": {"type": "integer", "cardinality": "1", "minimum": 1},
-    "registered_content": {"type": "list<object>", "cardinality": "0..*"},
-    "registered_content[].kind/id/pool": {"type": "enum/text/text", "cardinality": "1 each"},
-    "pools": {"type": "typed object", "cardinality": "1"},
-    "pools.card/relic/potion": {"type": "text", "cardinality": "1 each"},
-    "route": {"type": "declared route", "cardinality": "1"}
-  },
-  "enums": {"starter_kind": ["card", "relic", "potion"]},
-  "conditions": [
-    "starting_hp and max_energy are positive",
-    "starting_gold and base_orb_slots are nonnegative",
-    "every starter exists in the registered typed content graph"
-  ],
-  "mutually_exclusive": [],
-  "routes": [
-    "recipes/character.md#registration-and-model-shell",
-    "recipes/character.md#typed-pools-and-starter-ecosystem"
-  ],
-  "hard_boundaries": [
-    "native values are defaults or analogies rather than inferred requirements",
-    "current SPEC owns every starting value and multiset"
-  ],
-  "generated_obligations": [
-    "use the public CharacterModel fields and typed RitsuLib template",
-    "register every starter and pool member exactly once",
-    "derive verification values from current SPEC"
-  ],
-  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
-  "legacy": "v1/v2 Character starts resume unchanged; a revised starting ecosystem writes v3"
-}
--->
 
-## SPEC envelope
+## SPEC fields
 
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -294,13 +247,13 @@ Trigger it:
    cues are selected, watch one full Idle loop, play an Attack, take one Hit, and reach Dead;
    confirm the first two return to Idle, Dead holds its last pose, and no anchor jumps.
 
-## Advanced capability sub-envelopes
+## Advanced capability capability sections
 
 When `advanced mechanic` is not `none`, also record the matching block from this section.
 Author it only when the named semantic capability has its own recipe in the shipped pack.
 The current implemented public framework routes are exactly `reference/character-resource.md`
 and `reference/ordered-card-buffer.md`. If neither can express the mechanic, mark it
-unsupported and name the gap (`INV-3`); this envelope never implies non-public access or a
+unsupported and name the gap; these fields never imply non-public access or a
 patch target.
 
 ### Capability module
@@ -320,7 +273,7 @@ patch target.
 
 ### Secondary resources
 
-The adapter lowers the v3 `secondary_resources` family to one or more framework-owned
+The adapter lowers the selected secondary-resource fields to one or more framework-owned
 bounded resources, exact combat/run and turn-start policies, declared payment planner/commit
 uses, and selected built-in or explicit UI consumers. Implementation records belong in
 `MEMORY.md`, not SPEC.

@@ -12,59 +12,8 @@ reachable result, while one Monster may serve several Encounters and one Encount
 multiple or repeated Monster models. Use one recipe (`recipes/monster.md`) and derive future
 `CombatEnemy` checks only for the concrete variants selected by SPEC.
 
-<!-- open-mod-surface-contract/v1
-{
-  "family": "monster_encounter",
-  "owner": "surfaces/monster.md",
-  "spec_key": "monster_encounter",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
-  "fields": {
-    "monsters": {"type": "list<object>", "cardinality": "1..*"},
-    "monsters[].id": {"type": "text", "cardinality": "1", "unique": true},
-    "monsters[].min_hp/max_hp": {"type": "integer", "cardinality": "1 each", "minimum": 1},
-    "monsters[].reachability_route": {"type": "declared route", "cardinality": "1"},
-    "monsters[].initial_state": {"type": "declared move or branch id", "cardinality": "1"},
-    "encounters": {"type": "list<object>", "cardinality": "1..*"},
-    "encounters[].id": {"type": "text", "cardinality": "1", "unique": true},
-    "encounters[].actual_roster": {"type": "list<declared monster id>", "cardinality": "1..*"},
-    "encounters[].all_possible": {"type": "list<declared monster id>", "cardinality": "1..*"},
-    "encounters[].placement_route": {"type": "declared route", "cardinality": "1"},
-    "moves": {"type": "list<object>", "cardinality": "1..* per monster"},
-    "moves[].id/intents/effects/next": {"type": "text/list/list/state id", "cardinality": "1 each"},
-    "branches": {"type": "list<object>", "cardinality": "0..* per monster", "default": []},
-    "branches[].id/kind": {"type": "text/enum", "cardinality": "1 each"},
-    "branches[].targets": {"type": "list<object>", "cardinality": "1..*"},
-    "branches[].targets[].successor": {"type": "declared state id", "cardinality": "1"},
-    "branches[].targets[].condition": {"type": "text", "cardinality": "1 for conditional"},
-    "branches[].targets[].weight": {"type": "positive number", "cardinality": "1 for random"}
-  },
-  "enums": {"branch_kind": ["conditional", "random"]},
-  "conditions": [
-    "1 <= min_hp <= max_hp",
-    "every move and branch successor is registered and reachable",
-    "actual roster is nonempty and included in all_possible"
-  ],
-  "mutually_exclusive": ["a branch is conditional or random"],
-  "routes": [
-    "recipes/monster.md#registration-one-explicit-ritsulib-content-pack",
-    "recipes/monster.md#move-state-machine"
-  ],
-  "hard_boundaries": [
-    "random branches use the supplied move-state-machine Rng",
-    "intent and effect declarations must agree",
-    "Ascension-dependent HP formulas require another grounded declaration"
-  ],
-  "generated_obligations": [
-    "register Monster and Encounter identities once",
-    "keep GenerateMonsters and AllPossibleMonsters consistent",
-    "emit every state and successor from current SPEC"
-  ],
-  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
-  "legacy": "v1/v2 one-slice projects resume unchanged; revised topology migrates this family to v3"
-}
--->
 
-## SPEC envelope
+## SPEC fields
 
 Scenario is `CombatEnemy`, not `CombatPlayer`; loc tables are `monsters` + `encounters`;
 generated art is one static body shared by combat and bestiary; animation is later.
@@ -75,7 +24,6 @@ explicit and one recipe can emit the selected graph. This does not force a one-t
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:
@@ -118,7 +66,7 @@ explicit and one recipe can emit the selected graph. This does not force a one-t
   - advance/check: the declared move/branch cycle
   - reset: combat end
   - persistence: none
-  - visible state: native intent display (a plan, not a result — `INV-1`)
+  - visible state: native intent display (a plan, not behavior proof)
 - **presentation**:
   - assets: static monster body; placeholder | generate: <one full creature in a neutral
     combat-ready pose>
@@ -147,7 +95,7 @@ explicit and one recipe can emit the selected graph. This does not force a one-t
 ```
 
 A one-move enemy may keep one self-looping move. A multi-move enemy must fill the compact
-move/branch contract above before authoring. An intent label is not behavior proof (`INV-1`):
+move/branch contract above before authoring. An intent label is not behavior proof:
 the intent UI shows what the Monster *plans*, which is not evidence the move resolved.
 
 ## Every move needs a bestiary title

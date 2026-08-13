@@ -9,87 +9,6 @@ Use this page whenever an effect remembers progress, limits uses, compares turns
 changes behavior after a prior event. State is part of the mechanic, not an implementation
 detail.
 
-<!-- open-mod-surface-contract/v1
-{
-  "family": "bounded_state",
-  "owner": "reference/stateful-mechanics.md",
-  "spec_key": "bounded_state",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
-  "fields": {
-    "states": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "states[].id": {"type": "text", "cardinality": "1", "unique": true},
-    "states[].owner.surface/id": {"type": "enum/text", "cardinality": "1 each"},
-    "states[].schema": {"type": "list<object>", "cardinality": "1..*"},
-    "states[].schema[].name/type/initial": {"type": "text/enum/typed scalar", "cardinality": "1 each"},
-    "states[].schema[].min/max": {"type": "finite number", "cardinality": "1 each for numeric"},
-    "states[].schema[].max_length": {"type": "positive integer", "cardinality": "1 for string"},
-    "states[].lifetime/persistence": {"type": "enum", "cardinality": "1 each"},
-    "states[].reset/visibility": {"type": "text", "cardinality": "1 each"},
-    "states[].transitions": {"type": "list<object>", "cardinality": "1..*"},
-    "states[].transitions[].id": {"type": "text", "cardinality": "1", "unique": true},
-    "states[].transitions[].listener.surface/id": {"type": "enum/text", "cardinality": "1 each"},
-    "states[].transitions[].hook": {"type": "enum", "cardinality": "1"},
-    "states[].transitions[].updates": {"type": "list<declared field name>", "cardinality": "1..*"},
-    "states[].transitions[].route": {"type": "declared route", "cardinality": "1"},
-    "states[].consumers": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "states[].consumers[].id/route": {"type": "text/route", "cardinality": "1 each"},
-    "states[].outputs": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "states[].outputs[].consumer/route": {"type": "declared consumer id/route", "cardinality": "1 each"}
-  },
-  "enums": {
-    "owner_surface": ["card", "relic", "potion", "power", "orb", "enchantment", "monster", "character", "combat"],
-    "transition_surface": ["card", "relic", "potion", "power", "orb", "enchantment", "monster", "character", "combat", "event"],
-    "saved_type": ["bool", "int", "decimal", "string"],
-    "run_saved_type": ["bool", "int", "string"],
-    "run_saved_owner_surface": ["card", "relic", "enchantment"],
-    "lifetime": ["turn", "combat", "run"],
-    "persistence": ["none", "combat_snapshot", "run_save"],
-    "transition_hook": [
-      "before_owner_turn_start",
-      "after_owner_turn_start",
-      "after_owner_card_played",
-      "after_combat_entered",
-      "after_combat_end",
-      "on_owner_card_play",
-      "on_event_option_success",
-      "on_rest_site_success",
-      "on_monster_move_transition",
-      "on_secondary_resource_changed"
-    ],
-    "hook_listener_surfaces": {
-      "on_owner_card_play": ["card"],
-      "on_event_option_success": ["event"],
-      "on_rest_site_success": ["card", "relic"],
-      "on_monster_move_transition": ["monster"],
-      "on_secondary_resource_changed": ["card", "character", "combat"]
-    }
-  },
-  "conditions": [
-    "numeric fields have finite ordered bounds",
-    "run_save requires run lifetime, a Card/Relic/Enchantment SavedProperties owner, and bool/int/string fields",
-    "every transition updates only declared fields and has an exact listener plus allowlisted hook",
-    "specialized hooks use only their declared listener surfaces",
-    "every output names a declared grounded consumer"
-  ],
-  "mutually_exclusive": ["run_save with a non-SavedProperties owner or field"],
-  "routes": [
-    "reference/stateful-mechanics.md#semantic-contract",
-    "reference/stateful-mechanics.md#other-bounded-shapes"
-  ],
-  "hard_boundaries": [
-    "no arbitrary executable state machine from user text",
-    "no retained physical played-Card instances or ungrounded custom zones",
-    "every visible mutation has one refresh route"
-  ],
-  "generated_obligations": [
-    "bind state to the exact owner and clone lifecycle",
-    "use AttachedState or SavedAttachedState according to persistence",
-    "lower only declared transitions consumers and outputs"
-  ],
-  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
-  "legacy": "v1/v2 cadence and ordered-buffer profiles resume unchanged; revised state writes v3"
-}
--->
 
 ## Semantic contract
 
@@ -145,7 +64,7 @@ side/Card events to the declared listener and state owner. For a side hook, requ
 
 Lower only the allowlisted transition hooks in the owner contract. A request needing an
 arbitrary graph, timer, delegate, custom collection, or hook outside this vocabulary is a
-missing capability and blocks under INV-9.
+missing capability and blocks consumer authoring.
 
 ## Saved model-owned run state
 
@@ -268,7 +187,7 @@ mutate it at the real use site, and derive remaining uses/`IsUsedUp` from that s
 ## Save boundary
 
 RitsuLib bridges `SavedAttachedState` through the model's normal `SavedProperties`
-serialization. Although RitsuLib accepts additional values, the v3 bounded-state family
+serialization. Although RitsuLib accepts additional values, the bounded-state authoring contract
 admits only `bool`, `int`, and length-bounded `string` for run saves. `decimal` is
 runtime/combat-only. Card, Relic, and Enchantment are the pinned owner surfaces whose normal
 serialization calls `SavedProperties.From`/`Fill`; do not infer a save path for another owner.

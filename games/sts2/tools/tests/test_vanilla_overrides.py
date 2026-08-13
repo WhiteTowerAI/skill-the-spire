@@ -2482,22 +2482,26 @@ class VanillaOverrideManifestTests(unittest.TestCase):
 class VanillaOverridePipelineTests(unittest.TestCase):
     def test_authoring_docs_route_all_promoted_packages(self) -> None:
         sts2_root = TOOLS_DIR.parent
-        routed = (
-            sts2_root / "skills" / "sts2-api" / "SKILL.md",
-            sts2_root / "skills" / "modmaker" / "SKILL.md",
-            sts2_root / "skills" / "modmaker" / "interview.md",
-            sts2_root / "skills" / "modmaker" / "spec.md",
-            sts2_root / "skills" / "modmaker" / "author.md",
-            sts2_root / "skills" / "modmaker" / "semantic-contract.md",
+        api_skill = (sts2_root / "skills" / "sts2-api" / "SKILL.md").read_text(
+            encoding="utf-8"
         )
-        for path in routed:
-            text = path.read_text(encoding="utf-8")
-            self.assertIn("vanilla-overrides.md", text, path)
-            self.assertIn("vanilla-card-overrides.md", text, path)
-            self.assertIn("vanilla-visual-overrides.md", text, path)
-            self.assertIn("vanilla-ancient-overrides.md", text, path)
-            self.assertIn("vanilla-availability-overrides.md", text, path)
-            self.assertIn("vanilla-non-card-overrides.md", text, path)
+        author = (sts2_root / "skills" / "modmaker" / "author.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("vanilla-overrides.md", author)
+        for reference in (
+            "vanilla-overrides.md",
+            "vanilla-card-overrides.md",
+            "vanilla-visual-overrides.md",
+            "vanilla-ancient-overrides.md",
+            "vanilla-availability-overrides.md",
+            "vanilla-non-card-overrides.md",
+        ):
+            with self.subTest(reference=reference):
+                self.assertTrue(
+                    (sts2_root / "skills" / "sts2-api" / "reference" / reference).is_file()
+                )
+                self.assertIn(reference, api_skill)
 
         for path in (
             sts2_root / "skills" / "modmaker" / "build.md",
@@ -2591,27 +2595,17 @@ class VanillaOverridePipelineTests(unittest.TestCase):
 
     def test_card_description_conflict_stops_across_the_authoring_pipeline(self) -> None:
         sts2_root = TOOLS_DIR.parent
-        guarded = (
-            sts2_root / "skills" / "modmaker" / "SKILL.md",
-            sts2_root / "skills" / "modmaker" / "interview.md",
-            sts2_root / "skills" / "modmaker" / "semantic-contract.md",
-            sts2_root / "skills" / "modmaker" / "spec.md",
-            sts2_root / "skills" / "modmaker" / "author.md",
-            sts2_root / "skills" / "sts2-api" / "SKILL.md",
-            sts2_root / "skills" / "sts2-api" / "reference" / "vanilla-card-overrides.md",
-        )
-        for path in guarded:
-            text = path.read_text(encoding="utf-8")
-            normalized = " ".join(text.split())
-            self.assertIn("base-description replacement", normalized, path)
-            self.assertIn("stop", text.lower(), path)
-
-        semantic_contract = guarded[2].read_text(encoding="utf-8")
-        self.assertIn("cannot turn `replace` into", semantic_contract)
-        spec = guarded[3].read_text(encoding="utf-8")
-        self.assertIn("Never rewrite", spec)
-        interview = guarded[1].read_text(encoding="utf-8")
-        self.assertIn("does not authorize that downgrade", interview)
+        reference = (
+            sts2_root
+            / "skills"
+            / "sts2-api"
+            / "reference"
+            / "vanilla-card-overrides.md"
+        ).read_text(encoding="utf-8")
+        normalized = " ".join(reference.split())
+        self.assertIn("base-description replacement", normalized)
+        self.assertIn("stop", reference.lower())
+        self.assertIn("before/after", reference)
 
         capability_graph = (
             sts2_root / "tests" / "content-capability-graph.md"

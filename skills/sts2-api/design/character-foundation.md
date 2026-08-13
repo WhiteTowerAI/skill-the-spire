@@ -118,5 +118,5 @@ For a Character, carry these fields into the Character Foundation block in `SPEC
 - deliberate departure plus onboarding, compatibility, and balance consequences, or
   `none`.
 
-This bounded design basis is not `DESIGN.md` traceability and does not authorize an
+This bounded design basis does not define `DESIGN.md` and does not authorize an
 unsupported operation.

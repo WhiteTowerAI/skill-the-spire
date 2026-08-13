@@ -9,75 +9,6 @@ Use this capability when Cards or other character-owned effects gain and spend o
 named nonnegative resources. It is a selected Character capability, not a new content type
 and not a replacement for native Energy or Stars.
 
-<!-- open-mod-surface-contract/v1
-{
-  "family": "secondary_resources",
-  "owner": "reference/character-resource.md",
-  "spec_key": "secondary_resources",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
-  "fields": {
-    "resources": {"type": "list<object>", "cardinality": "1..*"},
-    "resources[].id": {"type": "text", "cardinality": "1", "unique": true},
-    "resources[].min/default/max": {"type": "nonnegative integer", "cardinality": "1 each"},
-    "resources[].persistence": {"type": "enum", "cardinality": "1"},
-    "resources[].turn_start": {"type": "enum", "cardinality": "1"},
-    "resources[].native_energy": {"type": "boolean", "cardinality": "1", "fixed": false},
-    "resources[].route": {"type": "declared route", "cardinality": "1"},
-    "uses": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "uses[].id/resource/card": {"type": "text", "cardinality": "1 each"},
-    "uses[].role/cost/shortfall": {"type": "enum", "cardinality": "1 each"},
-    "uses[].amount": {"type": "integer", "cardinality": "1", "fixed": "-1 for X; nonnegative for fixed"},
-    "uses[].replacement_resource": {"type": "declared resource id", "cardinality": "1 for replacement shortfall; otherwise 0"},
-    "uses[].planner_side_effect_free": {"type": "boolean", "cardinality": "1 for replacement shortfall", "fixed": true},
-    "uses[].max_stacks": {"type": "positive integer or null", "cardinality": "1 for repeatable_extra; otherwise 0"},
-    "uses[].payoff_after_commit": {"type": "boolean", "cardinality": "1", "fixed": true},
-    "ui_consumers": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "ui_consumers[].resource": {"type": "declared resource id", "cardinality": "1"},
-    "ui_consumers[].host": {"type": "enum", "cardinality": "1"},
-    "ui_consumers[].route": {"type": "declared route", "cardinality": "1"}
-  },
-  "enums": {
-    "persistence": ["combat", "run"],
-    "turn_start": ["none", "reset_to_max", "add_max_to_current", "clear"],
-    "role": ["required", "optional", "repeatable_extra"],
-    "cost": ["fixed", "x"],
-    "shortfall": [
-      "not_applicable",
-      "block",
-      "allow_remaining_spend_available",
-      "allow_remaining_keep_available",
-      "replacement_then_allow_remaining_spend_available",
-      "replacement_then_allow_remaining_keep_available"
-    ],
-    "ui_host": ["combat_counter_row", "card_payment_line"]
-  },
-  "conditions": [
-    "0 <= min <= default <= max",
-    "every use and UI consumer names a declared resource",
-    "only required uses declare shortfall behavior",
-    "replacement planning names a different declared resource and is side-effect-free",
-    "payoff_after_commit is true"
-  ],
-  "mutually_exclusive": ["repeatable_extra with x cost"],
-  "routes": [
-    "reference/character-resource.md#registration-and-commands",
-    "reference/character-resource.md#card-payment-uses",
-    "reference/character-resource.md#public-combat-ui-attachment"
-  ],
-  "hard_boundaries": [
-    "native_energy is false",
-    "no prompt-authored payment delegate",
-    "multiplayer is unclaimed"
-  ],
-  "generated_obligations": [
-    "register each stable resource id once",
-    "use SecondaryResourceCmd and payment planning/commit as the authoritative store",
-    "refresh every declared visible consumer"
-  ],
-  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
-  "legacy": "v1/v2 resume unchanged; a deliberate revision writes only the affected v3 family"
-}
--->
 
 ## Semantic contract
 
@@ -106,7 +37,7 @@ behavior and applies the consequence only when RitsuLib reports successful payme
 ## Registration and commands
 
 Register every resource once from Mod initialization, before the content pack is used in
-combat. Translate the v3 policy names exactly: `none`, `reset_to_max`,
+combat. Translate the SPEC policy names exactly: `none`, `reset_to_max`,
 `add_max_to_current`, and `clear` map to the four `SecondaryResourceTurnStartPolicy`
 members; `combat` and `run` map to the matching `SecondaryResourcePersistencePolicy`
 members. Do not infer either policy from the resource's name.

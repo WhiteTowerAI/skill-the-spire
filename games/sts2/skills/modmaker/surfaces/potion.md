@@ -1,13 +1,13 @@
 # Surface: potion
 
-Everything the pipeline needs for one Potion, in one place: the SPEC envelope it must
+Everything the pipeline needs for one Potion, in one place: the SPEC fields it must
 declare, the element class the author writes, and the proof its verification owes. Read
 this page at the `spec.md`, `author.md`, and `verify.md` stages when `surface: potion`.
 
 Shared declarations that several surfaces use — advanced targeting, interaction contracts,
 the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
 
-## SPEC envelope
+## SPEC fields
 
 Usage/target replace the trigger line; the loc table is `potions`, with no flavor plus an
 optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/power.
@@ -15,7 +15,6 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
 ```markdown
 # SPEC — <Mod Name>
 
-- **contract**: sts2-content-semantic/v3
 - **mod id**: <stable mod identity>
 - **author**: <author>
 - **content**:

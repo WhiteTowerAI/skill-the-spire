@@ -6,59 +6,6 @@ may declare a bounded ordered mapping list. It is a public-hook pattern; it does
 Harmony, a vanilla-content edit, or a custom map node. The historical headed proof observed
 one token, one act, and one target; generalized mappings and sequences remain game-unobserved.
 
-<!-- open-mod-surface-contract/v1
-{
-  "family": "forced_event_mappings",
-  "owner": "reference/forced-followup-event.md",
-  "spec_key": "forced_event_mappings",
-  "profile": {"sts2": "0.107.1", "ritsulib_compat": "0.5.11"},
-  "fields": {
-    "mappings": {"type": "list<object>", "cardinality": "0..*", "default": []},
-    "mappings[].id/token_id/target_event": {"type": "text", "cardinality": "1 each"},
-    "mappings[].condition": {"type": "enum", "cardinality": "1"},
-    "mappings[].act_set": {"type": "list<nonnegative integer>", "cardinality": "1..*"},
-    "mappings[].priority": {"type": "integer", "cardinality": "1"},
-    "mappings[].conflict/consumption": {"type": "enum", "cardinality": "1 each"},
-    "mappings[].sequence": {"type": "list<unique event id>", "cardinality": "1..*"},
-    "mappings[].consume_at_event": {"type": "event id", "cardinality": "1"},
-    "mappings[].progress_state": {"type": "text", "cardinality": "1", "fixed": "saved_card_index"},
-    "mappings[].terminal": {"type": "boolean", "cardinality": "1", "fixed": true},
-    "mappings[].save_claim": {"type": "text", "cardinality": "1", "fixed": "game-unobserved"},
-    "mappings[].route": {"type": "declared route", "cardinality": "1"}
-  },
-  "enums": {
-    "condition": ["token_in_owner_deck"],
-    "conflict": ["fail_closed"],
-    "consumption": ["on_target_success", "on_sequence_complete"]
-  },
-  "conditions": [
-    "mapping identity and globally ordered priority are unambiguous",
-    "act_set is nonempty and duplicate-free",
-    "target_event is the first sequence entry",
-    "sequence identities are unique and terminal",
-    "on_target_success is single-step; on_sequence_complete consumes at the final event"
-  ],
-  "mutually_exclusive": ["two mappings with the same token and act set"],
-  "routes": [
-    "reference/forced-followup-event.md#why-this-works",
-    "reference/forced-followup-event.md#quest-card-token",
-    "reference/forced-followup-event.md#forced-sequence-events"
-  ],
-  "hard_boundaries": [
-    "singleplayer only",
-    "neutral hook input is returned when no mapping matches",
-    "target Event is excluded from its ordinary pool",
-    "save resume remains game-unobserved"
-  ],
-  "generated_obligations": [
-    "evaluate mappings in explicit priority order",
-    "never cache a mutable canonical Event",
-    "consume the matching token exactly at the declared terminal point"
-  ],
-  "evidence": {"framework_expressible": true, "open_mod_authorable": true, "game_observed": false},
-  "legacy": "v1/v2 one-token route resumes unchanged; revised mapping sets write v3"
-}
--->
 
 ## Supported boundary
 

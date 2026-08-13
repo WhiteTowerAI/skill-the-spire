@@ -5,31 +5,27 @@ fill only the effect logic, add localization, and inject the shared diagnostics.
 Registration, model templates, localization-key derivation, and asset profiles come
 from the adapter rather than the user-facing SPEC.
 
-Before writing source, validate design coherence and the generation allowlist:
+Before writing source, validate selected support routes and raw model-hook reachability:
 
 ```powershell
-python ../modmaker/scripts/coherence_trace.py --design DESIGN.md
-python ../modmaker/scripts/design_trace.py --design DESIGN.md --spec SPEC.md
+python ../modmaker/scripts/capability_preflight.py --spec SPEC.md
 ```
 
-Emit only operations listed in the validated `open-mod-spec-trace/v1` block. Every emitted
-content registration, behavior/data operation, selected presentation, and placeholder must
-belong to its stated `OP-###` and supported recipe/reference. Never emit `DEFER`,
-`OUT-OF-SCOPE`, or unresolved-gap intent, and never add an untraced convenience feature.
+Emit only current operations written in the human-readable SPEC. Every emitted content
+registration, behavior/data operation, selected presentation, and placeholder must follow its
+stated recipe/reference. Never emit deferred, out-of-scope, or unresolved-gap intent, and never
+add an unrequested convenience feature.
 
 If authoring reveals that the selected route cannot produce the accepted complete operation,
-stop before a workaround and classify it through `repair.md`. Record the active PLAN route and
-run `repair_trace.py` before changing source. A local lowering omission may be contract
-fulfillment; a different visible result is a semantic revision; an absent or broken shared route
-blocks upstream (`INV-3`, `INV-5`, `INV-9`).
+stop before a workaround and follow `repair.md` from the observed failure. A local lowering
+omission may be corrected directly; a different visible result returns to DESIGN and SPEC for
+acceptance; an absent or broken shared route blocks consumer authoring.
 
-On revision, follow DESIGN's validated impact/re-evaluation queue before editing. Update
-only confirmed affected localization, Event text, visual prompts/resources, Character
-identity, or generated source. REVIEW stable runtime/localization identifiers instead of
-renaming them from a display-name change. PRESERVE entries are explicit guards against
-changing settled or rejected decisions. Reopen only affected PLAN stages and use the
-nearest proportional host/check for a REVERIFY entry; do not schedule a full acceptance
-unless the active plan or human lead explicitly selects it.
+On revision, update only the confirmed delta and its direct consumers: behavior, localization,
+Event text, visual prompts/resources, Character identity, generated source, and SelfTest.
+Preserve stable runtime/localization identifiers unless the user changes identity. Re-run only
+affected PLAN stages and the nearest proportional host/check; do not schedule a full acceptance
+unless the user or active project plan explicitly selects it.
 
 Read `semantic-contract.md` first, then read the selected framework reference
 (`sts2-api/reference/ritsulib-adapter.md` for the current target). RitsuLib-specific
@@ -125,10 +121,10 @@ second framework branch into this file.
   exercised UI presets.
   A selected resource UI uses RitsuLib's public `RegisterCombatUi` route from
   `reference/character-resource.md`. A capability with no documented public game/framework
-  seam is `INV-3`; the specific substitutes to refuse here are alternative-energy patches,
+  route is a pack authoring gap; the specific substitutes to refuse here are alternative-energy patches,
   C/D access, assembly-wide `PatchAll`, and `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
-  building blocks, and the loc-key derivation rule. A Cmd name is the thing `INV-3` most
+  building blocks, and the loc-key derivation rule. A Cmd name is the thing grounding most
   often catches: if the effect needs one the recipe lacks, follow `grounding.md` — at runtime
   that means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
   snapshots, `errors.md`). An invented Cmd is the #1 way the repair loop burns its attempts.
@@ -146,7 +142,7 @@ second framework branch into this file.
   Mod-local target registration, use only its implemented consumer/mode matrix, and stop
   authoring for the limited `potion + many`; do not generate a lifecycle patch or
   restore a consumed Potion.
-- If v3 surface data selects **bounded state**, also read `reference/stateful-mechanics.md`.
+- If SPEC selects **bounded state**, also read `reference/stateful-mechanics.md`.
   Emit only the selected bounded schemas, exact owners/listeners, transitions, reset,
   persistence, visibility, consumers, and outputs; never infer lifetime or a transition from
   the C# field or hook that happens to be easiest.
@@ -429,7 +425,7 @@ user launch never arms it — no menu driving, fully inert. It ships dormant ins
 
 ## 3. Write localization
 
-Apply `INV-10` to every player-facing string. Author both
+For every player-facing string, author both
 `<ModName>/localization/eng/` and `<ModName>/localization/zhs/` from the exact bilingual
 SPEC text. The directory trees, table names, keys, and SmartFormat tokens are identical;
 only the localized prose differs. Do not satisfy the Chinese table by copying its English
@@ -847,5 +843,5 @@ Record in `MEMORY.md`: the class name, the hook used, the exact loc keys written
 any Cmd choices, the state lifetime/reset/persistence (when present), which DRIVER body
 the harness uses, and the **art outcome**
 (placeholder, or generated `<slug>.png`/`big/<slug>.png` — and if generate was chosen
-but fell back to placeholder, why). Mark `author` and `art` done in `PLAN.md`. Then go
+but fell back to placeholder, why). Mark `author and SelfTest` done in `PLAN.md`. Then go
 to `build.md`.

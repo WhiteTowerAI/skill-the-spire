@@ -82,5 +82,5 @@ not restate the other file's half — a diagnostic in two homes drifts.
 
 ## Feedback loop
 
-New quirks discovered during a real build go into the project's `MEMORY.md` first (`INV-8`).
+New quirks discovered during a real build go into the project's `MEMORY.md` first.
 Recurring ones get promoted here and into `errors.md` (append-only) by the skill maintainer.

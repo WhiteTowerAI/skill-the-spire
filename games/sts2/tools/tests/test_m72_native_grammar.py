@@ -226,8 +226,8 @@ class M72NativeGrammarContractTests(unittest.TestCase):
             self.assertIn(path, routed)
         route = normalized(self.route)
         api_skill = normalized(self.api_skill)
-        self.assertIn("before asking a creative question", route)
-        self.assertIn("for other surfaces, record `none`", route)
+        self.assertIn("character/foundation", route)
+        self.assertIn("load only the design references", route)
         self.assertIn("load it only for that character surface", api_skill)
 
     def test_interview_proposes_an_exact_deck_before_requesting_details(self) -> None:
@@ -268,7 +268,7 @@ class M72NativeGrammarContractTests(unittest.TestCase):
             self.assertIn(field, spec)
         # The rule is that this bounded basis is not the durable DESIGN traceability, not
         # which milestone introduced that separation.
-        self.assertIn("not `design.md` traceability", normalized(self.grammar))
+        self.assertIn("does not define `design.md`", normalized(self.grammar))
 
     def test_scenario_matrix_covers_required_inputs_and_semantic_rubric(self) -> None:
         headings = [

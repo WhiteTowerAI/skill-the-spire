@@ -1,15 +1,15 @@
 # Verify — prove it loads (tier-1), then that the effect fires (tier-2)
 
-Goal: verify on **observed reality**, not "it compiled" (`INV-2`). Two tiers, and which one
-you reached is itself a reported fact (`INV-1`).
+Goal: verify on **observed reality**, not "it compiled". Two tiers, and which one you reached
+is itself a reported fact.
 
 Any difference found here is classified through `repair.md` before a fix. Write and validate
 the active PLAN route first; do not infer that every behavior difference is a consumer-local
-bug when the cited shared route may be violating its own contract (`INV-9`).
+bug when the cited shared route may be violating its own contract.
 
 ## Bilingual localization proof
 
-Build preflight establishes the static half of `INV-10`: required directories, table/key
+Build preflight establishes the static localization half: required directories, table/key
 parity, nonempty values, and SmartFormat token parity. Tier 2 owns the runtime half. Before
 driving the selected behavior, the generated harness snapshots `LocManager.Instance.Language`,
 switches through `eng` and `zhs` with the public `SetLanguage` route, and resolves every
@@ -94,10 +94,10 @@ not require a separate run for every documented public consumer. The verifier ig
   ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
   requires the exact load marker and `selftest done`.
 
-For a v3 SPEC, derive the ordinary verification checklist only from the families and concrete
-variants present in its `open-mod-surface-data/v1` block. Do not prebuild a nine-family matrix,
-claim omitted variants, or turn M8.7 structural validation into runtime proof. Each selected
-variant keeps its own evidence status until the current run actually observes it.
+Derive the verification checklist only from the concrete variants selected in the current
+human-readable SPEC. Do not prebuild a nine-family matrix, claim omitted variants, or turn an
+authoring contract into runtime proof. Each selected variant remains unobserved until the current
+run actually proves it.
 
 > **Isolation before any `--self-test` run:** `--t2selftest` arms **every** loaded harness
 > mod, so park all non-target harness mods first (move them out of `mods/`), leaving only the
@@ -142,7 +142,7 @@ The structured state proof does not establish selection UI. In the same focused
 then checks the exact matrix from `reference/advanced-targeting.md`: mouse and controller
 can select only legal single targets, cancel returns normally, zero legal targets cannot
 commit the action, multi-target reticles appear only on the resolved creatures, and no
-reticle remains after resolution. This is a manually observed result (`INV-1`).
+reticle remains after resolution. This is a manually observed result.
 
 ### Gameplay-readability headed acceptance
 
@@ -156,7 +156,7 @@ labels must remain unobstructed.
 
 When the human lead reserves this review, do not launch the game or take screenshots.
 Build/deploy the focused proof and provide exact console commands plus the matrix above.
-Record the lead's reported observations separately (`INV-1`); any unrun Tier 1 or structured
+Record the lead's reported observations separately; any unrun Tier 1 or structured
 Tier 2 gate remains an explicit exception.
 
 ### Rest Site option headed acceptance
@@ -166,7 +166,7 @@ Build and deploy the focused proof, then provide the exact dev-console route fro
 `reference/rest-site-options.md`. The reviewer checks native localization, custom and
 fallback icon framing, gray state, mouse click, controller focus loop, native-option
 coexistence, failed-payment retention, successful list rebuild, and the declared second
-visit. Record the reported matrix separately from Tier 1 and strict Tier 2 (`INV-1`); an unrun
+visit. Record the reported matrix separately from Tier 1 and strict Tier 2; an unrun
 structured harness remains an exception, never a pass.
 
 On the pinned host, `gold -N` is not a removal command: negative values are ignored. Use
@@ -287,70 +287,23 @@ state change; otherwise report tier-1 only.
 
 ## Finalize
 
-Update `PLAN.md` (check the verify boxes for the tiers actually reached) and record the
-checks that actually ran in `MEMORY.md`.
+Update the plain `PLAN.md` checklist only for stages that actually completed and record the
+commands and results in `MEMORY.md`. If a repair is still active or a required check failed,
+leave the affected stage unchecked and report the failure; no separate repair-state validator is
+needed.
 
-Before settling or reporting, require repair state to be clear:
+Build the user-facing report directly from observed results:
 
-```bash
-python ../modmaker/scripts/repair_trace.py --design DESIGN.md --spec SPEC.md --plan PLAN.md --finalize
-```
+- **Built:** name the generated Mod and artifact path only when Build passed.
+- **Tier 1:** quote the load-marker result and fresh-error result, or say it was not run/failed.
+- **Tier 2:** name the real host scenario and concrete structured state assertion, or say it was
+  not run, could not be reached, or failed. Never promote a fired/used log to proof.
+- **Headed review:** name only observations a human actually reported. Otherwise state that
+  visual/UI/controller/animation/subjective review was not run.
+- **Not included:** summarize explicit DESIGN `Not Now` items and accepted placeholders when
+  relevant to what the user asked for.
 
-An active repair blocks Finalize. Classify a difference discovered while settling just like
-one found during Verify; clear affected `E-###` settlements and reopen only its recorded stages.
-
-### Settle the deliverable claim first
-
-Before writing anything for the user, settle every required experience in `DESIGN.md`'s
-`open-mod-deliverable:v1` block. Fill `PLAN.md`'s settlement ledger with one entry per
-`E-###`, then generate the summary **from that ledger**. Writing the summary first and the
-ledger afterward defeats the check: the ledger exists so the report cannot say more than the
-run earned.
-
-Each entry records one outcome:
-
-| Outcome | Means |
-|---|---|
-| `observed` | The evidence this experience's `settled_by` requires actually exists |
-| `unobserved` | The check that would settle it ran and did not establish it |
-| `exception` | The check did not run, was waived, or is reserved for a human |
-
-`evidence` quotes or names the concrete thing that settled it — the structured state-proof
-line, the load marker, the human's reported observation, the user's acceptance. `observed`
-also records `evidence_kind`, and it must be evidence that experience's `settled_by` can
-actually accept: a `tier-2-structured` experience is not `observed` because tier-1 passed,
-and a `headed-human` experience no human looked at is an `exception`. `unobserved` and
-`exception` both require a `note` saying what is missing. Then run:
-
-```bash
-python ../modmaker/scripts/deliverable_trace.py --design DESIGN.md --plan PLAN.md
-```
-
-This is the one validator that runs here rather than before SPEC, because it is the only
-check that compares what was promised against what happened. It fails on a required
-experience with no settlement and on an outcome that outruns its evidence type.
-
-An `unobserved` or `exception` outcome is not a failure to hide — it is the honest state of a
-run whose harness could not reach its scenario, or whose art nobody has looked at yet. What
-it may never become is silence.
-
-### Report from the ledger
-
-> Built **<Title>** (Common relic). <Claim restated in one sentence.>
->
-> What was proved: <each `observed` experience in plain words>.
-> Not proved: <each `unobserved`/`exception` experience, with what is missing>.
-> Not included: <the excluded experiences that a reader of the claim would ask about>.
->
-> Artifacts are in `mods/<ModName>/`.
-
-Say which tier each claim rests on in the user's own terms — "its effect fired automatically
-in its self-test scenario" for a structured proof, "it loads and registers, but the effect
-hasn't been observed yet" for tier-1 only, "you accepted template art for this build" for a
-`user-decision`. This is `INV-1` in the form the user reads.
-
-Two failures this replaces, both from the same real run: a closing summary that called a
-mechanic verified while the same record disclosed the harness never drove it, and a
-deliverable whose accumulated placeholders were never read back as one thing. If every
-required experience is `observed`, say so plainly and stop — a fully earned claim needs no
-hedging.
+Use plain terms: "its effect fired automatically and the post-state matched" for a Tier 2 pass;
+"it loads and registers, but its behavior was not observed" for Tier 1 only; "Build passed, but
+the game was not launched" when runtime verification did not run. Missing evidence must remain
+visible, never silently disappear behind a completion claim.
