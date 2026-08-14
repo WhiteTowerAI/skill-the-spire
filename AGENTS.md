@@ -32,19 +32,17 @@ existed before or were implemented in WP1-WP5; do not retract or reimplement the
 narrow M8.7's existing availability routes or the unrelated Power/Relic/Intent Extra Badges
 feature. `documents/IMPLEMENTATION_PLAN.md` owns the exact closed scope and boundaries.
 
-M8.9 Ordinary Effect Primitive Coverage completed its authoritative-source/static stage and its
-separately authorized plugin/portable payload delivery on 2026-08-14. Its audit, shared lowering
-reference, truthful surface projections, grouped compile probes, three authoring smoke scenarios,
-and generated payload projections are complete; payload repeatability/parity and repository static
-validation passed. M8.9 remains open for human review, a durable result record, and explicit
-closure. Do not regenerate or install a payload, run the game, create an acceptance Mod, record
-results, close M8.9, or start M8.6 without the corresponding later instruction.
+M8.9 Ordinary Effect Primitive Coverage closed by explicit human-lead acceptance on 2026-08-14
+after its authoritative-source/static stage, separately authorized plugin/portable payload
+delivery, and durable result record completed. Preserve its nine admitted ordinary-result
+families, twelve excluded/specialized groups, truthful surface bindings, and literal evidence
+boundaries. Its durable record is
+`documents/history/M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md`.
 
-M8.6 is the final clean installed whole-skill acceptance. M8.7 and M8.8 are closed, but M8.6 has
-not been selected and still has no request, host, or execution contract; it also waits for
-explicit M8.9 closure. Do not start it
-automatically. Do not install a payload, launch the game, create an acceptance Mod, commit, push,
-or publish without explicit instruction.
+M8.6 is the final clean installed whole-skill acceptance. M8.7, M8.8, and M8.9 are closed, so its
+Package prerequisite is satisfied, but M8.6 has not been selected and still has no request, host,
+or execution contract. Do not start it automatically. Do not install a payload, launch the game,
+create an acceptance Mod, commit, push, or publish without explicit instruction.
 
 ## Current Workflow
 

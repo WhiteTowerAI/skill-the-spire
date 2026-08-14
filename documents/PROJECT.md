@@ -14,8 +14,8 @@ literally.
 ## Release State
 
 `0.7.0` is an unreleased RitsuLib-only development baseline for STS2 stable `0.107.1` and
-RitsuLib `0.5.11`. BaseLib is absent from generated projects. M6.5-M6.7, M7, M8.0-M8.3, and
-M8.5 are closed; their detailed results and exceptions live under `documents/history/`.
+RitsuLib `0.5.11`. BaseLib is absent from generated projects. M6.5-M6.7, M7, M8.0-M8.3, M8.5,
+and M8.7-M8.9 are closed; their detailed results and exceptions live under `documents/history/`.
 
 M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
 its authoritative source, both payload forms, and result record completed. Its nine generalized
@@ -34,19 +34,19 @@ Existing asset, presentation, audio, and interoperability routes remain supporte
 literal boundaries. This does not narrow M8.7's existing availability routes or the unrelated
 Power/Relic/Intent Extra Badges feature.
 
-M8.9 Ordinary Effect Primitive Coverage completed its authorized source/static stage and its
-separately authorized plugin/portable payload delivery on 2026-08-14. Nine audited ordinary result
-families now route from ordered SPEC effects through one shared lowering reference and truthful
-per-surface callback bindings; missing context blocks with the exact absent input. Grouped pinned
-compile probes, payload repeatability/parity/layout, and repository static tests passed. M8.9 is
-still open for human review, a durable result record, and explicit closure. No generated-Mod Build,
-payload install, host, Tier 1, Tier 2, headed, save/load, multiplayer, cross-platform runtime, or
-gameplay proof ran.
+M8.9 Ordinary Effect Primitive Coverage closed by explicit human-lead acceptance on 2026-08-14
+after its source/static stage, separately authorized plugin/portable payload delivery, and durable
+result record completed. Nine audited ordinary result families route from ordered SPEC effects
+through one shared lowering reference and truthful per-surface callback bindings; missing context
+blocks with the exact absent input. Grouped pinned compile probes, payload repeatability/parity/
+layout, and repository static tests passed. No generated-Mod Build, payload install, host, Tier 1,
+Tier 2, headed, save/load, multiplayer, cross-platform runtime, or gameplay proof ran. The durable
+record is `documents/history/M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md`.
 
-M8.6 remains the final clean installed whole-skill acceptance. M8.7 and M8.8 are closed, but M8.6
-remains unselected until M8.9 explicitly closes and the human lead defines its exact request, host,
-and execution contract. No acceptance run, payload installation, GitHub release, or game launch is
-implied by the current source and payload state.
+M8.6 remains the final clean installed whole-skill acceptance. Its M8.9 prerequisite is satisfied,
+but M8.6 remains unselected until the human lead defines its exact request, host, and execution
+contract. No acceptance run, payload installation, GitHub release, or game launch is implied by
+the current source and payload state.
 
 ## User Experience
 
@@ -214,7 +214,7 @@ results do not become `0.5.11` runtime proof.
 
 Verification is proportional. Reuse the nearest maintained host for a changed behavior. A fresh
 natural-language acceptance Mod is reserved for an explicitly scheduled full-pipeline gate or a
-direct human request. M8.6 is that future final gate, but is not currently eligible or started.
+direct human request. M8.6 is that future final gate; it is eligible but not selected or started.
 
 ## Future Outlook
 

@@ -119,7 +119,7 @@ gameplay result.
 
 ## Development Status
 
-The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, M8.5, M8.7, and M8.8 are closed; completed
+The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, M8.5, and M8.7-M8.9 are closed; completed
 evidence and literal exceptions are indexed under `documents/history/`.
 
 M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
@@ -131,16 +131,15 @@ animation/audio and shared-presentation expansion, WP7 named typed interoperabil
 integrations with those deferred groups are future work. Existing asset, presentation, audio,
 interoperability, M8.7, and WP1-WP5 capabilities remain preserved.
 
-M8.9 Ordinary Effect Primitive Coverage completed its authoritative source/static stage and
-authorized plugin/portable payload delivery on 2026-08-14. Its nine admitted ordinary-result
-families now use one shared lowering reference plus truthful surface bindings, and the generated
-payloads passed repeatability, parity, layout, and repository static validation. M8.9 remains open
-for human review, a durable result record, and explicit closure. No generated Mod was built or
-installed, and no game, Tier 1, Tier 2, headed, save/load, multiplayer, cross-platform runtime, or
-gameplay proof ran.
+M8.9 Ordinary Effect Primitive Coverage closed by explicit human-lead acceptance on 2026-08-14
+after its authoritative source/static stage, plugin/portable payload delivery, and durable result
+record completed. Its nine admitted ordinary-result families use one shared lowering reference
+plus truthful surface bindings; the generated payloads passed repeatability, parity, layout, and
+repository static validation. No generated Mod was built or installed, and no game, Tier 1,
+Tier 2, headed, save/load, multiplayer, cross-platform runtime, or gameplay proof ran.
 
-M8.6 final installed acceptance still waits for explicit M8.9 closure and human selection of its
-request, host, and execution contract.
+M8.6 final installed acceptance is now eligible but remains unselected until the human lead names
+its request, host, and execution contract.
 
 ## For Contributors
 

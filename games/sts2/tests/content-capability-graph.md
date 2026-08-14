@@ -24,10 +24,14 @@ human-lead acceptance on 2026-08-14; its nine generalized families are preserved
 closed by explicit human-lead acceptance on 2026-08-13 after its full RitsuLib `0.5.11` inventory,
 WP1-WP5 implementation, WP8 source/static closeout, authorized plugin/portable payload delivery,
 and final result record completed. Its newly generalized shapes remain game-unobserved.
+M8.9 closed by explicit human-lead acceptance on 2026-08-14 after authoritative source/static
+verification, synchronized payload delivery, and its result record completed. Its nine admitted
+ordinary-effect families remain game-unobserved.
 Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/
 scene/animation/audio/shared-presentation expansion, WP7 named typed interoperability, and new
 interactions with those deferred groups are future work. Existing routes in those domains remain
-preserved. M8.6 remains unselected until its execution contract is explicitly selected.
+preserved. M8.6 is eligible but remains unselected until its execution contract is explicitly
+selected.
 
 The current workflow uses one thin pre-Author check for shipped-route existence and raw model-hook
 reachability. Build and real-host SelfTest prove implementation. Removing old workflow-management

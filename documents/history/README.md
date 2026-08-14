@@ -72,8 +72,10 @@ numbers.
 - `M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md` - surface effect composability generalization,
   closed by explicit human-lead acceptance on 2026-08-13 without real-game observation of its
   newly generalized shapes.
+- `M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md` - ordinary effect primitive coverage,
+  closed by explicit human-lead acceptance on 2026-08-14 without real-game observation.
 
-M8 is the active milestone; M8.0-M8.3, M8.5, M8.7, and M8.8 are closed. Unlike most
+M8 is the active milestone; M8.0-M8.3, M8.5, and M8.7-M8.9 are closed. Unlike most
 records here, the M8.0 result points at a file that is still active instruction rather than
 archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md` must be read before
 treating any surface page as validated, since nine of its ten surfaces have never been piloted.
@@ -94,6 +96,10 @@ remains unimplemented. M8.6 remains unselected.
 The M8.8 record separates public-framework expressibility, open-mod authorability, and actual game
 observation. Its newly generalized WP1-WP5 shapes have source, compile-probe, test, and synchronized
 payload evidence but no generated-Mod Build, Tier 1, Tier 2, headed, or gameplay observation.
+
+The M8.9 record owns the nine admitted shared ordinary-effect families, twelve explicit
+specialized/excluded groups, generated payload delivery facts, and the unchanged boundary that no
+generated-Mod Build, install, Tier 1, Tier 2, headed, or gameplay observation ran.
 
 ## Research And Retired Evidence
 
