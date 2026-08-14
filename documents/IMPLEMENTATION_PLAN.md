@@ -1,9 +1,9 @@
-# Implementation plan: M8 end-to-end product integrity
+# Implementation plan: M8 end-to-end product integrity (closed)
 
 ## Status
 
-M8 is the active milestone. M8.0-M8.3, M8.5, and M8.7-M8.9 are closed; their implementation detail
-and exceptions belong in `documents/history/`. M8.4 was removed by the human lead.
+M8 is closed. M8.0-M8.3 and M8.5-M8.9 are complete; their implementation detail and historical
+evidence belong in `documents/history/`. M8.4 was removed by the human lead and is not missing work.
 
 M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
 its authoritative source, both payload forms, and durable result record completed. Do not
@@ -29,16 +29,17 @@ grounding to one shared lowering reference plus truthful surface bindings. The d
 execution, acceptance Mods, generated-Mod Build, Tier 1/Tier 2, headed review, save/load,
 multiplayer, cross-platform runtime, and gameplay proof remain unrun.
 
-M8.6 is the final clean installed whole-skill acceptance. It intentionally follows M8.9 despite
-its number. Its M8.9 prerequisite is satisfied, but M8.6 remains unselected and has no executable
-contract until the human lead selects its exact request and host.
+M8.6 Clean Installed Whole-Skill Acceptance closed by explicit human-lead confirmation on
+2026-08-14. The same final decision confirms the remaining M8.2 and M8.5 completion items are done
+and closes M8 as a whole. Its controlling record is
+`documents/history/M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md`.
 
-Current order and gate:
+Final Package order:
 
 1. M8.8: closed by explicit human-lead acceptance on 2026-08-13.
 2. M8.7: closed by explicit human-lead acceptance on 2026-08-14.
 3. M8.9: closed by explicit human-lead acceptance on 2026-08-14.
-4. M8.6: eligible but waiting for explicit selection of its request, host, and contract.
+4. M8.6: closed by explicit human-lead confirmation on 2026-08-14; M8 closed with it.
 
 ## New-Session Start Protocol
 
@@ -46,8 +47,8 @@ Current order and gate:
    `games/sts2/tests/README.md`, and `games/sts2/tests/content-capability-graph.md`.
 2. Treat `documents/history/` as immutable evidence, never as current instruction.
 3. Check `git status` before editing and preserve unrelated dirty/untracked work.
-4. A plan entry is not execution authorization. Do not restart closed M8.7/M8.8/M8.9 or start M8.6
-   before its execution contract is explicitly selected.
+4. A plan entry is not execution authorization. Do not restart any closed M8 Package or treat
+   Future Outlook as an implicit next milestone.
 5. Work in authoritative source under `games/sts2/`. Never hand-edit `plugins/open-mod/` or
    top-level `skills/`; regenerate them through `publish.sh` only when explicitly authorized.
 6. Do not install a payload, launch the game, run Tier 1/Tier 2, create a fresh acceptance Mod,
@@ -103,14 +104,14 @@ Static source, tests, Build, or payload synchronization do not imply game observ
 |---|---|---|
 | M8.0 - skill structure restructuring | Closed 2026-08-10 | `documents/history/M80_SKILL_STRUCTURE_RESULTS.md` |
 | M8.1 - literal deliverable contract | Closed 2026-08-10 | `documents/history/M81_DELIVERABLE_CONTRACT_RESULTS.md` |
-| M8.2 - exact semantic capability conformance | Closed 2026-08-10 | `documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`; its two real-host hook proofs remain assigned to M8.6 |
+| M8.2 - exact semantic capability conformance | Complete; final confirmation 2026-08-14 | `documents/history/M82_CAPABILITY_CONFORMANCE_RESULTS.md`; later completion is recorded by the M8.6/M8 closeout |
 | M8.3 - semantic continuity and backtracking | Closed 2026-08-11 | `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md` |
 | M8.4 | Removed 2026-08-05 | Do not reuse the number or recreate the Package |
-| M8.5 - cross-platform installed workflow | Closed 2026-08-12 with exceptions | `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`; macOS installed reproduction and launcher-owned process-tree cleanup remain unresolved |
+| M8.5 - cross-platform installed workflow | Complete; final confirmation 2026-08-14 | `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`; later completion is recorded by the M8.6/M8 closeout |
 | M8.7 - product boundary generalization | Closed 2026-08-14 | `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`; newly generalized variants remain game-unobserved |
 | M8.8 - surface effect composability | Closed 2026-08-13 | `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`; newly generalized shapes remain game-unobserved |
 | M8.9 - ordinary effect primitive coverage | Closed 2026-08-14 | `documents/history/M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md`; all runtime/gameplay paths remain unrun |
-| M8.6 - clean installed whole-skill acceptance | Waiting | M8.9 prerequisite satisfied; the human lead must select its exact contract |
+| M8.6 - clean installed whole-skill acceptance | Closed 2026-08-14 | `documents/history/M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md`; closes M8 |
 
 ## M8.7 Preservation Gate
 
@@ -126,8 +127,8 @@ generalized variants remain game-unobserved unless their exact real-host scenari
 No M8.7-specific compile, Tier 1, Tier 2, headed, install, game, or save/load proof is inferred from
 source implementation or payload presence.
 
-The human lead accepted the bounded result and closed M8.7 on 2026-08-14. Closure preserved every
-unrun path above and did not start M8.6.
+The human lead accepted the bounded result and closed M8.7 on 2026-08-14. At that checkpoint,
+closure preserved every unrun path above and M8.6 remained a separate later gate.
 
 ## M8.8 - Surface Effect Composability Generalization
 
@@ -135,9 +136,9 @@ unrun path above and did not start M8.6.
 
 M8.8's complete capability inventory and ownership proposal were reported to the human lead on
 2026-08-13. The human lead confirmed the revised scope, authorized implementation and payload
-delivery in separate steps, then accepted the final result and closed M8.8 the same day. Closure did
-not authorize a generated proof project, installation, game launch, Tier 1/Tier 2, headed review,
-commit, push, publication, release, or M8.6.
+delivery in separate steps, then accepted the final result and closed M8.8 the same day. At that
+checkpoint, closure did not include a generated proof project, installation, game launch, Tier 1/
+Tier 2, headed review, commit, push, publication, release, or the later M8.6 acceptance.
 
 The required first phase was research and plan confirmation:
 
@@ -163,7 +164,7 @@ Badges on Power, Relic, and Intent. All deferred groups remain future interests,
 work.
 
 M8.7 remains a preservation baseline. M8.8 may reuse and compose its nine generalized families but
-must not reimplement, narrow, or relabel them. M8.8 does not start M8.6.
+must not reimplement, narrow, or relabel them. M8.6 remained a separate later gate at M8.8 closure.
 
 ### Goal
 
@@ -366,9 +367,8 @@ must protect authorability, compilation, generated artifacts, or runtime-verific
 If the human lead separately authorizes real-host proof during M8.8, use the smallest
 representative generated Mod(s) needed to exercise genuinely new lifecycle classes. Run Build,
 Tier 1, and structured Tier 2 in real STS2 and record only the exact shapes observed. Do not claim
-unselected capabilities or infer a family-wide gameplay result. Without that separate
-authorization, label every new shape game-unobserved and leave M8.6's final installed acceptance
-untouched.
+unselected capabilities or infer a family-wide gameplay result. At that checkpoint, every new
+shape stayed game-unobserved and the later M8.6 installed acceptance remained outside WP8.
 
 ### Part 6 - Source And Payload Delivery
 
@@ -411,7 +411,7 @@ M8.8 was eligible for human closure only when:
   and closes the Package.
 
 All criteria were satisfied within their literal evidence boundaries, and the human lead accepted
-the result record and closed M8.8 on 2026-08-13. Closure did not itself start M8.6.
+the result record and closed M8.8 on 2026-08-13. M8.6 remained a separate later gate at that time.
 
 ## M8.9 - Ordinary Effect Primitive Coverage
 
@@ -430,8 +430,9 @@ The initial authorization covered the pinned guide/source/API audit, the reposit
 audit, authoritative source under `games/sts2/`, affected active documents, grouped C# compile
 probes, focused tests, the full Python source suite, `compileall`, and `git diff --check`. On
 2026-08-14 the human lead separately authorized plugin/portable payload generation, active-document
-updates, commit, and push. It did not authorize installation, a game launch, an acceptance Mod,
-runtime proof, a durable result record, explicit M8.9 closure, or M8.6.
+updates, commit, and push. At that checkpoint it did not include installation, a game launch, an
+acceptance Mod, runtime proof, a durable result record, explicit M8.9 closure, or the later M8.6
+acceptance.
 `capability_preflight.py` remains unchanged because ordinary context, C# signatures, values, and
 lifecycle rules are compiler/recipe/host concerns rather than silent route-reachability facts.
 
@@ -472,8 +473,8 @@ observation remain unrun in this Package.
 ### Human Review And Delivery Gate
 
 The source/static stage stopped for human review. The later 2026-08-14 authorization selected
-payload generation, repeatability/parity, active-document updates, commit, and push only. Payload
-installation, real-host proof, release, and any M8.6 selection still require later instructions.
+payload generation, repeatability/parity, active-document updates, commit, and push only. At that
+checkpoint, payload installation, real-host proof, release, and M8.6 remained separately gated.
 The human lead subsequently supplied the separate result-record and explicit-closure instruction
 recorded below.
 
@@ -514,9 +515,8 @@ The authorized stage satisfied the criteria above and stopped before delivery or
   install, game launch, acceptance Mod, Tier 1, Tier 2, headed review, game observation,
   save/load, multiplayer, and cross-platform runtime all remain unrun.
 
-This is a source/static checkpoint, not M8.9 closure. Human review, payload delivery, durable
-result record, commit/push/release, explicit closure, and any M8.6 selection still require later
-authorization.
+This was a source/static checkpoint, not M8.9 closure. At that time, human review, payload delivery,
+durable result record, commit/push/release, explicit closure, and M8.6 remained separately gated.
 
 ### Authorized Payload Delivery - 2026-08-14
 
@@ -551,24 +551,23 @@ The human lead explicitly accepted the bounded M8.9 result and formally closed t
 delivered scope, checks, payload facts, exclusions, and every unrun runtime boundary. This closure
 updated documentation only and did not regenerate either payload.
 
-Closure does not install a payload, launch the game, create an acceptance Mod, run any runtime
-proof, release the repository, or start M8.6.
+At that checkpoint, closure did not install a payload, launch the game, create an acceptance Mod,
+run runtime proof, release the repository, or include the later M8.6 acceptance.
 
-## M8.6 Waiting Gate
+## M8.6 And M8 Closure - 2026-08-14
 
-M8.6 is the only planned fresh natural-language full-pipeline acceptance. Its M8.9 prerequisite is
-satisfied, but it remains unstarted and waits for explicit selection of its execution contract.
-When eventually selected, its execution contract must name the request, clean installed source,
-host platform, success criteria, cleanup ownership, and literal evidence boundaries.
+The human lead confirmed M8.6 Clean Installed Whole-Skill Acceptance complete and closed M8. The
+same final decision confirms completion of the two M8.2 real-host items and the remaining M8.5
+portability/process items. They are no longer active proof debts, exceptions, prerequisites, or
+development gaps.
 
-It also owns the two real-host proofs deferred from M8.2:
+The durable closeout is
+`documents/history/M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md`. It deliberately records
+the final human completion decision without rewriting the earlier point-in-time result files or
+turning unrelated game-unobserved capability rows into runtime passes.
 
-- one custom content element declaring an incoming-damage multiplier, including the guarded value,
-  neutral case, and matching rules-text number; and
-- one collection edit that proves both its intended entry and preservation of unrelated entries.
-
-Human review owns design quality, comprehension, enjoyment, tuning, visual presentation,
-controller behavior, and animation. Tier 1 and Tier 2 retain their exact technical meanings.
+No M8 Package remains selectable or pending. A later acceptance run, platform expansion, or product
+family requires a new explicit scope outside M8.
 
 ## Verification Policy
 
@@ -603,12 +602,12 @@ For generated Mods:
 ## Closed Work And Future Outlook
 
 Closed Package details stay in `documents/history/` and must not return as per-Mod workflow
-ceremony. The active plan carries only current status, prerequisites, and the next authorized work
-boundary.
+ceremony. This plan records the completed M8 boundary; it does not define an implicit next
+milestone.
 
-Future interests such as Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update
+Optional future interests such as Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update
 Check, full asset/scene/animation/audio/shared-presentation generalization, named typed
 interoperability generalization, multiplayer vanilla overrides, unsupported presentation hosts, and
-process-tree cleanup remain separate work until explicitly selected and grounded. Their new
-cross-family integrations are future work as well. Existing capabilities are preserved, but these
-interests do not silently widen the current product or acceptance scope.
+other product expansion remain separate work until explicitly selected and grounded. Their new
+cross-family integrations are future work as well. Existing capabilities are preserved; none of
+these interests is M8 debt or a blocker for the `0.7.0` public-release candidate.

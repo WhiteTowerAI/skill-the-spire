@@ -13,9 +13,9 @@ literally.
 
 ## Release State
 
-`0.7.0` is an unreleased RitsuLib-only development baseline for STS2 stable `0.107.1` and
-RitsuLib `0.5.11`. BaseLib is absent from generated projects. M6.5-M6.7, M7, M8.0-M8.3, M8.5,
-and M8.7-M8.9 are closed; their detailed results and exceptions live under `documents/history/`.
+`0.7.0` is the complete RitsuLib-only public-release candidate for STS2 stable `0.107.1` and
+RitsuLib `0.5.11`. BaseLib is absent from generated projects. M6.5-M6.7, M7, and M8 are closed;
+their detailed records live under `documents/history/`.
 
 M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
 its authoritative source, both payload forms, and result record completed. Its nine generalized
@@ -43,10 +43,11 @@ layout, and repository static tests passed. No generated-Mod Build, payload inst
 Tier 2, headed, save/load, multiplayer, cross-platform runtime, or gameplay proof ran. The durable
 record is `documents/history/M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md`.
 
-M8.6 remains the final clean installed whole-skill acceptance. Its M8.9 prerequisite is satisfied,
-but M8.6 remains unselected until the human lead defines its exact request, host, and execution
-contract. No acceptance run, payload installation, GitHub release, or game launch is implied by
-the current source and payload state.
+M8.6 Clean Installed Whole-Skill Acceptance and M8 closed by explicit human-lead confirmation on
+2026-08-14. That final decision also confirms completion of the remaining M8.2 and M8.5 items. No
+M8 Package, prerequisite, proof debt, portability exception, or development gap remains active.
+`documents/history/M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md` is the controlling
+milestone closeout record.
 
 ## User Experience
 
@@ -214,9 +215,13 @@ results do not become `0.5.11` runtime proof.
 
 Verification is proportional. Reuse the nearest maintained host for a changed behavior. A fresh
 natural-language acceptance Mod is reserved for an explicitly scheduled full-pipeline gate or a
-direct human request. M8.6 is that future final gate; it is eligible but not selected or started.
+direct human request. M8.6 was the final M8 gate and is closed; any later whole-skill acceptance is
+newly selected release or product work.
 
 ## Future Outlook
+
+Future Outlook contains optional product expansion only. None of it is an open M8 development gap
+or a blocker for the `0.7.0` public-release candidate.
 
 Progression, post-run/run-history Badge, player Settings, consented Telemetry, Multiplayer, and
 Update Check are grounded RitsuLib product families but are not part of M8.8. Future work may add

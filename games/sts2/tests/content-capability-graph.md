@@ -18,9 +18,8 @@ but not very good, overclaim findings, and unrun paths are recorded in
 `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`. No copied-project observation
 changes a support row without current pinned maintainer grounding.
 
-M8 End-to-End Product Integrity is active. M8.0-M8.3 and M8.5 are closed; M8.5 retains unresolved
-macOS installed-workflow and launcher-owned process cleanup exceptions. M8.7 closed by explicit
-human-lead acceptance on 2026-08-14; its nine generalized families are preserved below. M8.8
+M8 End-to-End Product Integrity is closed. M8.0-M8.3 and M8.5-M8.9 are complete. M8.7 closed by
+explicit human-lead acceptance on 2026-08-14; its nine generalized families are preserved below. M8.8
 closed by explicit human-lead acceptance on 2026-08-13 after its full RitsuLib `0.5.11` inventory,
 WP1-WP5 implementation, WP8 source/static closeout, authorized plugin/portable payload delivery,
 and final result record completed. Its newly generalized shapes remain game-unobserved.
@@ -30,8 +29,9 @@ ordinary-effect families remain game-unobserved.
 Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/
 scene/animation/audio/shared-presentation expansion, WP7 named typed interoperability, and new
 interactions with those deferred groups are future work. Existing routes in those domains remain
-preserved. M8.6 is eligible but remains unselected until its execution contract is explicitly
-selected.
+preserved. M8.6 and M8 closed by explicit human-lead confirmation on 2026-08-14; that same final
+decision confirms completion of the remaining M8.2 and M8.5 items. None is a current development
+gap. The closeout does not relabel unrelated game-unobserved rows below as runtime passes.
 
 The current workflow uses one thin pre-Author check for shipped-route existence and raw model-hook
 reachability. Build and real-host SelfTest prove implementation. Removing old workflow-management
