@@ -39,9 +39,10 @@ Recommended shape:
 ```
 
 For a revision, edit only affected decisions and scope. Keep rejected alternatives only when
-they prevent a later agent from reintroducing them. If the requested result cannot be expressed
-by a maintained recipe/reference/API route, leave the exact gap in `Not Now`, explain it to the
-user, and stop before SPEC until they select a supported result, deferral, or removal.
+they prevent a later agent from reintroducing them. If no maintained route exists but a public
+implementation can be grounded, record it as a Mod-local public-API implementation and continue
+to SPEC. Stop only when public grounding fails or the implementation requires prohibited
+techniques.
 
 Existing projects may keep old DESIGN metadata. Read the human meaning, ignore the old blocks,
 and do not rewrite an unchanged project merely to match this format. A project with SPEC but no

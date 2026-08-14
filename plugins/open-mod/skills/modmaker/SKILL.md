@@ -16,8 +16,14 @@ real STS2 host. Contracts guide authoring; Build and host autotests establish re
 - Target STS2 stable `0.107.1` and the RitsuLib Compat `0.5.11` authoring/API baseline.
   Scaffold pins the checked local Compat DLL; runtime manifests require only
   `STS2-RitsuLib >= 0.5.11`.
-- Generate only maintained public RitsuLib routes or fixed reviewed Adapters in this pack.
-  Never invent Harmony, reflection, Publicizer, or IL from a prompt.
+- Prefer maintained public RitsuLib routes and reviewed Adapters in this pack.
+  When the required behavior is absent, inspect the checked local STS2, GodotSharp,
+  and RitsuLib public assembly metadata and author the smallest Mod-local implementation
+  using public APIs.
+
+  Do not read or decompile local source. Do not ship Harmony, reflection, Publicizer,
+  or IL. Require Build, Tier 1, Tier 2, and relevant headed UI/input verification before
+  reporting the new implementation as working.
 - Preserve settled user decisions and unrelated project artifacts. A player-visible substitute
   needs explicit acceptance.
 - Every player-facing localization table has matching `eng` and `zhs` tables/keys, nonempty
@@ -62,10 +68,14 @@ Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, and
 whose purpose is to connect another element to those families are deferred. Do not route one
 through Runtime UI, persistence, lifecycle, or another included owner.
 
-Outside maintained routes, stop at the exact boundary. Known unsupported areas include arbitrary
-behavior-bearing scenes/materials without a public host, global room replacement, arbitrary
-transactions/transitions/RNG rewrites, alternative Energy, retained played-Card zones, ungrounded
-disable/weighting surfaces, multiplayer integrations, and one-click Workshop publishing.
+Outside maintained routes, distinguish a missing authoring recipe from a missing public
+capability. A missing recipe is not a stop condition: ground the exact public signatures from the
+checked local assemblies and implement the smallest truthful Mod-local route. Stop only when the
+behavior requires private APIs, runtime patching, source/decompilation, or cannot be given a
+verifiable lifecycle. Known unsupported areas include arbitrary behavior-bearing scenes/materials
+without a public host, global room replacement, arbitrary transactions/transitions/RNG rewrites,
+alternative Energy, retained played-Card zones, ungrounded disable/weighting surfaces, multiplayer
+integrations, and one-click Workshop publishing.
 
 ## Read stages lazily
 

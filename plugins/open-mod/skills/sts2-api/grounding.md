@@ -1,8 +1,8 @@
 # Grounding rules
 
-The runtime skill reads this shipped pack only. It does not decompile local assemblies,
-scan maintainer baselines, or browse for an API during a user's Mod build. If the pack does
-not contain the needed signature, report a pack gap instead of guessing.
+If the shipped pack lacks the signature, inspect public metadata from the checked local
+assemblies. Record the exact owner, signature, lifecycle, await behavior, limitations, and
+verification status. Do not inspect or decompile source.
 
 ## Four Sources
 
