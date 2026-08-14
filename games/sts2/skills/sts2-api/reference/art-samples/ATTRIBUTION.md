@@ -4,8 +4,7 @@ These 85 images are **© Mega Crit**, derived from *Slay the Spire 2* art. They 
 **solely as visual style references** for the art pipeline (`reference/art-contract.md` →
 `tools/gen_sprite.py --reference`): they are shown to a user-configured image model as
 few-shot examples so a generated custom sprite matches the game's art style. They are
-**not** redistributed as game content, are **not** used in any produced mod, and carry
-**no** open-source license from this project — they remain Mega Crit's property.
+**not** redistributed as game content, are **not** used in any produced mod.
 
 Source: card/icon/monster files were extracted or rendered via `ptrlrd/spire-codex` (GDRE
 unpack), which mirrors our own grounding method. Event previews came from the attributed
