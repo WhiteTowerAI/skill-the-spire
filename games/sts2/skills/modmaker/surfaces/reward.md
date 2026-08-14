@@ -35,6 +35,17 @@ through this surface.
 - Read the owner recipe for each concrete side effect (Card, Relic, Potion, state, or another
   included route). Do not perform the grant during reconstruction.
 
+## Ordinary effect projection
+
+`ModCustomReward.OnSelect()` supplies its exact owner Player and an awaited blocking transaction;
+it supplies no general combat `PlayerChoiceContext`, target Creature, Card source, or `CardPlay`.
+Use `reference/effect-primitives.md` for known run-content acquisition and other primitives whose
+inputs are truly available. Perform final availability checks first, await the ordered sequence,
+inspect Card/Potion acquisition results, return `false` on rejection without claiming success,
+and return `true` only after the complete deterministic result. Serialization/reconstruction must
+never run the effect. Combat-only primitives require a separately selected callback that exposes
+their missing context rather than an `OnSelect()` approximation.
+
 ## Proof matrix
 
 Use the real native rewards host selected by SPEC:

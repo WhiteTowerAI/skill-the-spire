@@ -112,6 +112,17 @@ independent capability/service behavior, preserving cadence, phase/order, subjec
 case, persistence/reset, display refresh, and exact real-host assertions. Do not register a
 process-wide listener for a Relic-owned rule.
 
+## Ordinary effect projection
+
+Choose the exact async Relic hook whose phase matches SPEC; the hook parameters provide its live
+combat state, participant/subject, Card, or other trigger context. The mutable Relic supplies owner
+Player `Owner` and owner Creature `Owner.Creature`, but it supplies no Card source and no general
+`PlayerChoiceContext`. Read `reference/effect-primitives.md` and use only primitives whose inputs
+the selected hook actually has. Resource gain, self Block/heal, and known combat-Card creation can
+bind to `Owner` in a live combat hook; a target-dependent Power, draw/discard, Orb action, or Max
+HP loss blocks unless that hook truthfully supplies its required context/target. Never manufacture
+a `PlayerChoiceContext` merely because the Relic is in combat.
+
 ## Displayed values the engine keeps current
 
 `RelicModel` runs SmartFormat/DynamicVar substitution over the description and its Hover

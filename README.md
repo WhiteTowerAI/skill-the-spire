@@ -119,19 +119,28 @@ gameplay result.
 
 ## Development Status
 
-The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, and M8.5 are closed; completed evidence and
-literal exceptions are indexed under `documents/history/`.
+The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, M8.5, M8.7, and M8.8 are closed; completed
+evidence and literal exceptions are indexed under `documents/history/`.
 
-M8.7 Product Boundary Generalization is implemented in source and both payload forms, but remains
-open pending its result record and explicit human closure. M8.8 Surface Effect Composability closed
+M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
+its source, both payload forms, and result record completed. M8.8 Surface Effect Composability closed
 by explicit human-lead acceptance on 2026-08-13 after inventory, WP1-WP5 implementation, WP8
 source/static closeout, authorized plugin/portable payload delivery, and its final result record.
 Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/scene/
 animation/audio and shared-presentation expansion, WP7 named typed interoperability, and new
 integrations with those deferred groups are future work. Existing asset, presentation, audio,
-interoperability, M8.7, and WP1-WP5 capabilities remain preserved. M8.6 final installed acceptance
-still waits for M8.7 closure and explicit human selection. None of these states authorizes a game
-run, install, commit, push, or release.
+interoperability, M8.7, and WP1-WP5 capabilities remain preserved.
+
+M8.9 Ordinary Effect Primitive Coverage completed its authoritative source/static stage and
+authorized plugin/portable payload delivery on 2026-08-14. Its nine admitted ordinary-result
+families now use one shared lowering reference plus truthful surface bindings, and the generated
+payloads passed repeatability, parity, layout, and repository static validation. M8.9 remains open
+for human review, a durable result record, and explicit closure. No generated Mod was built or
+installed, and no game, Tier 1, Tier 2, headed, save/load, multiplayer, cross-platform runtime, or
+gameplay proof ran.
+
+M8.6 final installed acceptance still waits for explicit M8.9 closure and human selection of its
+request, host, and execution contract.
 
 ## For Contributors
 

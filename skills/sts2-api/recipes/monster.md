@@ -123,6 +123,10 @@ Every visible effect therefore needs both the matching intent and a real Cmd in 
 | multi-attack | `new MultiAttackIntent(damage, repeats)` | `DamageCmd.Attack(damage).WithHitCount(repeats).FromMonster(this).Execute(null)` |
 | attack + effect | list both intents, e.g. `SingleAttackIntent` + `DebuffIntent` | await the attack, then await the Power/block/buff Cmd in the declared order |
 
+The table projects move callbacks onto `reference/effect-primitives.md`; that shared reference
+owns the command contracts. This recipe owns Monster intent parity, state-machine ordering,
+`Creature`/`targets`, and the `.FromMonster(this).Execute(null)` distinction.
+
 Use the monster's mutable `Creature`, not a canonical model. For a player-targeted Power,
 the `targets` passed to the move are the player creatures. `ValueProp.Move` is the vanilla
 monster block convention. A custom Power follows `recipes/power.md` (including all three

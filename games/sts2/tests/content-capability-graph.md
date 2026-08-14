@@ -19,16 +19,15 @@ but not very good, overclaim findings, and unrun paths are recorded in
 changes a support row without current pinned maintainer grounding.
 
 M8 End-to-End Product Integrity is active. M8.0-M8.3 and M8.5 are closed; M8.5 retains unresolved
-macOS installed-workflow and launcher-owned process cleanup exceptions. M8.7 is implemented in
-source and payloads but remains open; its nine generalized families are preserved below. M8.8
+macOS installed-workflow and launcher-owned process cleanup exceptions. M8.7 closed by explicit
+human-lead acceptance on 2026-08-14; its nine generalized families are preserved below. M8.8
 closed by explicit human-lead acceptance on 2026-08-13 after its full RitsuLib `0.5.11` inventory,
 WP1-WP5 implementation, WP8 source/static closeout, authorized plugin/portable payload delivery,
 and final result record completed. Its newly generalized shapes remain game-unobserved.
 Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/
 scene/animation/audio/shared-presentation expansion, WP7 named typed interoperability, and new
 interactions with those deferred groups are future work. Existing routes in those domains remain
-preserved. M8.6 remains ineligible until M8.7 closes and its execution contract is explicitly
-selected.
+preserved. M8.6 remains unselected until its execution contract is explicitly selected.
 
 The current workflow uses one thin pre-Author check for shipped-route existence and raw model-hook
 reachability. Build and real-host SelfTest prove implementation. Removing old workflow-management
@@ -41,6 +40,7 @@ blocks generation until repaired or narrowed instead of receiving a per-Mod appr
 |---|---|---|
 | card / relic / potion / power | `CombatPlayer` | RitsuLib `Mod*Template`, exactly-once content-pack registration, explicit pools, checked art fallback |
 | computed Card values | `CombatPlayer` | zero or more independently named bounded formulas with per-value preview/execution parity; computed Damage/Block, Energy/Star icons, raw/amount-given typed Power, localized variable tooltips; generalized combinations game-unobserved |
+| ordinary effect primitives | truthful Card/Potion/attached/model/Monster/world callbacks | authorable through one shared lowering reference for attack/effect damage; Block/healing/bounded HP; Power application/change/removal; Energy/Stars/Gold/potion capacity; draw; known-Card discard/exhaust; known combat-Card creation; known Card/Relic/Potion run acquisition; and Orb channel/evoke/slots. Surface pages own exact callback/context/owner/source/target projections and block missing inputs. Grouped pinned compile probe passed with 0 warnings/errors; generated-Mod Build and every real-host/game-observed combination remain unrun |
 | custom-content model hook participation | `CombatPlayer`, `CombatEnemy`, `RunStart` | authorable: 66 public hooks on Card/Relic/Potion/Modifier, 45 on Power/Orb/Monster/Affliction, 66 on Enchantment including five mandatory `Enchant*` replacements, 32 on Run Global Effect, and 45 on Combat Global Effect. Three declaration shapes are cataloged (54 scalar-return, 6 out-replacement, 8 collection-edit); dispatcher-derived reachability is enforced at thin preflight, including exact Global Effect scope. Two Rest Site hooks remain route-owned. All generated hook shapes remain game-unobserved |
 | Affliction | attached Card in `CombatPlayer` | authorable: `.Affliction<T>()`, `ModAfflictionTemplate`, Card validity, integer amount/stacking, `AfterApplied`/`BeforeRemoved`, attached `OnPlay`, combat hooks/capabilities, `CardCmd.Afflict`/preview/clear, bilingual text/tips, and optional overlay. Compile probe passed with 0 warnings/errors; combat-only attachment and visuals remain game-unobserved |
 | Modifier | custom/daily selection, `RunStart`, combat | authorable: good/bad registration, deterministic before/after-list placement, merged mutual-exclusion groups, `ModModifierTemplate`, new-run versus load lifecycle, saved model properties, Neow option, run/combat hooks, text/tips/icon, and Rest Site ownership. Compile probe passed; setup, save/load, behavior, and headed UI remain game-unobserved |

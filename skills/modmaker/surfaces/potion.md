@@ -77,6 +77,16 @@ Keep the drinking action in `effects.sequence`. Append a shared-route SPEC block
 while the Potion is held, and specify exact phase/order, subject guard, neutral case, removal
 cleanup, and pre/post belt plus behavior assertions. Do not register a process-wide listener.
 
+## Ordinary effect projection
+
+`OnUse(PlayerChoiceContext choiceContext, Creature? target)` supplies the real
+`choiceContext`, owner Player `base.Owner`, acting Creature `base.Owner.Creature`, no Card source,
+and the nullable selected `target`. Call `AssertValidForTargetedPotion(target)` before a targeted
+sequence, then use `reference/effect-primitives.md` and await in SPEC order. Self effects bind
+`base.Owner.Creature`; all-enemy effects bind the live combat targets. `AnyTime` does not promise
+combat context: reject draw, combat-pile, Orb, Energy/Stars, or Creature-target effects when the
+selected use window cannot supply their required live combat inputs.
+
 ## Displayed values the engine keeps current
 
 `PotionModel` runs the same SmartFormat/DynamicVar substitution as `RelicModel`, so a value
@@ -109,9 +119,9 @@ term with nothing to hover.
 - Add exactly one `.Potion<SharedPotionPool,TPotion>()` step to `MainFile.Content.cs`.
   Use another pool only when SPEC makes the Potion character-specific; do not add a pool
   attribute or a per-Mod Potion base.
-- Fill **only** the `OnUse` effect block with confirmed Cmds (`CreatureCmd.Damage/
-  GainBlock/Heal`, `PowerCmd.Apply<T>`, `PlayerCmd.*`), using `ValueProp.Unpowered`
-  for damage/block. `await` every Cmd; call `AssertValidForTargetedPotion(target)` first.
+- Fill **only** the `OnUse` effect block through `reference/effect-primitives.md`, using the
+  SPEC-selected `ValueProp` and truthful bindings above. `await` every command and call
+  `AssertValidForTargetedPotion(target)` first when targeted.
 - Declare a SPEC displayed value in `CanonicalVars` and reference it as a placeholder in the
   localized text; use a literal only under § Displayed values the engine keeps current.
 - Put an optional loose PNG in `PotionAssetProfile`; omit the override for the checked

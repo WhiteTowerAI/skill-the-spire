@@ -81,6 +81,21 @@ python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
 This check is intentionally thin. It does not judge missing ordinary fields, Markdown layout,
 business rules, C# types, manifests, localization payloads, runtime lifecycle, visuals, or proof.
 
+Write ordinary player-visible results as one ordered `effects.sequence` in game terms. When that
+sequence uses damage, Block/healing/HP changes, Powers, native resources, draw/discard/exhaust,
+known-Card creation, known run-content acquisition, or Orb queue/slot effects, add exactly one:
+
+```markdown
+- Support: `reference/effect-primitives.md`
+```
+
+The element recipe owns its callback and lifecycle; the shared reference owns command lowering.
+Do not put API symbols in SPEC. A sequence that needs selection, a Reward/Event/Rest Site
+transaction, Card-play lifecycle control, a custom Card Pile, or another specialized operation
+also cites that owning route. If the selected callback cannot provide a primitive's required
+context/owner/source/target, record the exact unsupported combination instead of changing the
+accepted result.
+
 ## Autotest
 
 Write concrete scenarios, not evidence placeholders. Each scenario names:

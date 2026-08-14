@@ -34,6 +34,15 @@ Telemetry, Multiplayer, post-run Badge, and Update Check integrations remain def
   `reference/vanilla-ancient-overrides.md` is not a shortcut for a new model.
 - Read `reference/lifecycle-state-rng.md` when state crosses callbacks or an option is randomized.
 
+## Ordinary effect projection
+
+An `EventOption` `Func<Task>` runs on the mutable Ancient and binds its owner Player through
+`Owner`. Use `reference/effect-primitives.md` for immediate child effects only after all option
+eligibility/cost checks pass. The callback owns blocking completion: await every command, inspect
+nullable/result outcomes, then call `SetEventState(...)` or `Done()` and return the completed
+Task. It has no generic combat target/context, so combat-pile, Energy/Stars, Orb, draw, or targeted
+Creature effects block unless a selected specialized Ancient/Event route actually supplies them.
+
 ## Proof matrix
 
 Drive the real Ancient room:

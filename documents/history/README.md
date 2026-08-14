@@ -67,11 +67,13 @@ numbers.
 - `M83_SEMANTIC_CONTINUITY_RESULTS.md` — semantic continuity and backtracking, closed 2026-08-11.
 - `M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md` - cross-platform installed workflow, closed by
   explicit human-lead decision with unresolved exceptions on 2026-08-12.
+- `M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` - product boundary generalization, closed by
+  explicit human-lead acceptance on 2026-08-14; newly generalized variants remain game-unobserved.
 - `M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md` - surface effect composability generalization,
   closed by explicit human-lead acceptance on 2026-08-13 without real-game observation of its
   newly generalized shapes.
 
-M8 is the active milestone; M8.0-M8.3, M8.5, and M8.8 are closed. Unlike most
+M8 is the active milestone; M8.0-M8.3, M8.5, M8.7, and M8.8 are closed. Unlike most
 records here, the M8.0 result points at a file that is still active instruction rather than
 archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md` must be read before
 treating any surface page as validated, since nine of its ten surfaces have never been piloted.

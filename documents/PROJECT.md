@@ -17,9 +17,10 @@ literally.
 RitsuLib `0.5.11`. BaseLib is absent from generated projects. M6.5-M6.7, M7, M8.0-M8.3, and
 M8.5 are closed; their detailed results and exceptions live under `documents/history/`.
 
-M8.7 Product Boundary Generalization is implemented in authoritative source and both payload
-forms, but remains open pending its result record and explicit human closure. Its nine generalized
-families remain part of the product boundary and must not be narrowed or reimplemented.
+M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
+its authoritative source, both payload forms, and result record completed. Its nine generalized
+families remain part of the product boundary and must not be narrowed or reimplemented. The durable
+record is `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`.
 
 M8.8 Surface Effect Composability Generalization completed its full RitsuLib `0.5.11` inventory,
 ownership-confirmation gate, WP1-WP5 implementation, WP8 source/static closeout, and authorized
@@ -33,10 +34,19 @@ Existing asset, presentation, audio, and interoperability routes remain supporte
 literal boundaries. This does not narrow M8.7's existing availability routes or the unrelated
 Power/Relic/Intent Extra Badges feature.
 
-M8.6 remains the final clean installed whole-skill acceptance. It is ineligible while M8.7 remains
-open and until the human lead selects the exact request, host, and execution contract. No new
-acceptance run, payload installation, commit, push, GitHub release, or game launch is implied by
-M8.8 closure or the current source state.
+M8.9 Ordinary Effect Primitive Coverage completed its authorized source/static stage and its
+separately authorized plugin/portable payload delivery on 2026-08-14. Nine audited ordinary result
+families now route from ordered SPEC effects through one shared lowering reference and truthful
+per-surface callback bindings; missing context blocks with the exact absent input. Grouped pinned
+compile probes, payload repeatability/parity/layout, and repository static tests passed. M8.9 is
+still open for human review, a durable result record, and explicit closure. No generated-Mod Build,
+payload install, host, Tier 1, Tier 2, headed, save/load, multiplayer, cross-platform runtime, or
+gameplay proof ran.
+
+M8.6 remains the final clean installed whole-skill acceptance. M8.7 and M8.8 are closed, but M8.6
+remains unselected until M8.9 explicitly closes and the human lead defines its exact request, host,
+and execution contract. No acceptance run, payload installation, GitHub release, or game launch is
+implied by the current source and payload state.
 
 ## User Experience
 
@@ -112,7 +122,8 @@ Those remain owned by recipes/references, Scaffold/Build, real-host SelfTest, an
 - `games/sts2/skills/modmaker/`: routing, DESIGN/SPEC, scaffold, authoring, build, verification,
   repair guidance, and direct reporting.
 - `games/sts2/skills/sts2-api/`: lazy design references, pinned recipes/API contracts, catalogs,
-  and diagnostic signatures.
+  shared ordinary-effect lowering, and diagnostic signatures. Effect primitives define required
+  command inputs while executable surface pages define the callback bindings actually available.
 - `games/sts2/tools/`: scaffold, build, launch, log, art, catalog, and thin preflight tooling.
 - `games/sts2/tests/`: current capability graph and verification ownership.
 - `games/sts2/experimental/`: maintainer research excluded from shipped payloads.

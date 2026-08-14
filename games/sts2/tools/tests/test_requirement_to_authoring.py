@@ -204,7 +204,105 @@ WORK_PACKAGE_8_SPEC = """# SPEC - Archive Delivery
 """
 
 
+M89_ACTIVE_OWNER_SPEC = """# SPEC - Charged Strike
+
+## Card
+
+- Create a targeted Attack. On play, deal 8 Damage, apply 2 Weak, draw 1 Card, then gain 1 Energy
+  in that exact order. If the selected target is absent, authoring stops before emitting effects.
+
+## Implementation
+
+- Support: `recipes/card.md`
+- Support: `reference/effect-primitives.md`
+
+## Autotest
+
+- `CombatPlayer`: play the real Card, assert ordered target damage/Weak/draw/Energy post-state and
+  its normal result pile after queued commands complete.
+"""
+
+
+M89_ATTACHED_OWNER_SPEC = """# SPEC - Guarded Script
+
+## Enchantment
+
+- Attach an Enchantment to one playable Card. After that host Card's own OnPlay body, gain 5 Block
+  using the same play context. An unenchanted Card and a rejected attachment remain unchanged.
+
+## Implementation
+
+- Support: `recipes/enchantment.md`
+- Support: `reference/effect-primitives.md`
+
+## Autotest
+
+- `CombatPlayer`: attach to the exact Card, play it, assert host-body then attached-Block order,
+  and assert the unenchanted and rejected-host neutral cases.
+"""
+
+
+M89_BLOCKING_WORLD_SPEC = """# SPEC - Curator's Gift
+
+## Event
+
+- One enabled option gains 25 Gold, creates one known Card in the owner's run, adds that exact
+  Card to Deck, then obtains one known Relic. Finish the Event only after all awaited results
+  complete. A failed preflight leaves the Event and run unchanged.
+
+## Implementation
+
+- Support: `recipes/event.md`
+- Support: `reference/event-outcomes.md`
+- Support: `reference/effect-primitives.md`
+
+## Autotest
+
+- `MapNode`: click the real option, assert ordered Gold/Card/Relic state and exact Card identity,
+  then assert the result page appears only after acquisition completion.
+"""
+
+
 class RequirementToAuthoringTests(unittest.TestCase):
+    def test_m89_effect_reference_covers_audited_families_and_rejections(self) -> None:
+        reference = (
+            SKILLS_DIR / "sts2-api" / "reference" / "effect-primitives.md"
+        ).read_text(encoding="utf-8")
+        audit = (
+            TOOLS_DIR.parent / "experimental" / "M89_EFFECT_PRIMITIVE_AUDIT.md"
+        ).read_text(encoding="utf-8")
+
+        family_symbols = (
+            "DamageCmd.Attack",
+            "CreatureCmd.GainBlock",
+            "PowerCmd.Apply<TPower>",
+            "PlayerCmd.GainEnergy",
+            "CardPileCmd.Draw",
+            "CardCmd.DiscardAndDraw",
+            "CardPileCmd.AddGeneratedCardToCombat",
+            "PotionCmd.TryToProcure<TPotion>",
+            "OrbCmd.Channel<TOrb>",
+        )
+        for symbol in family_symbols:
+            with self.subTest(symbol=symbol):
+                self.assertIn(symbol, reference)
+
+        specialized_routes = (
+            "reference/card-play-lifecycle.md",
+            "recipes/card-pile.md",
+            "recipes/reward.md",
+            "reference/rest-site-options.md",
+            "reference/character-resource.md",
+        )
+        for route in specialized_routes:
+            with self.subTest(route=route):
+                self.assertIn(route, audit + reference)
+
+        self.assertEqual(9, audit.count("**Include."))
+        self.assertGreaterEqual(audit.count("**Exclude:"), 1)
+        self.assertNotIn("EffectEngine", reference.replace("runtime EffectEngine", ""))
+        self.assertIn("report it literally", reference)
+
     def test_simple_card_request_reaches_an_implementable_authoring_route(self) -> None:
         self.assertEqual((1, 0, False), preflight.validate_spec_text(EMBER_STEP_SPEC))
 
@@ -519,6 +617,98 @@ class RequirementToAuthoringTests(unittest.TestCase):
         runtime_surface = (modmaker / "surfaces" / "runtime-ui.md").read_text(encoding="utf-8")
         for boundary in deferred:
             self.assertIn(boundary, runtime_surface)
+
+    def test_m89_active_owner_composes_ordered_effect_primitives(self) -> None:
+        self.assertEqual((2, 0, False), preflight.validate_spec_text(M89_ACTIVE_OWNER_SPEC))
+
+        api = SKILLS_DIR / "sts2-api"
+        reference = (api / "reference" / "effect-primitives.md").read_text(encoding="utf-8")
+        surface = (SKILLS_DIR / "modmaker" / "surfaces" / "card.md").read_text(
+            encoding="utf-8"
+        )
+        author = (SKILLS_DIR / "modmaker" / "author.md").read_text(encoding="utf-8")
+
+        for binding in (
+            "OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)",
+            "base.Owner.Creature",
+            "cardPlay.Target",
+        ):
+            self.assertIn(binding, surface)
+        for lowering in (
+            ".FromCard(cardSource)",
+            "ICombatState combatState = cardSource.CombatState",
+            ".TargetingAllOpponents(combatState)",
+            ".TargetingRandomOpponents(combatState)",
+            ".WithHitCount(hitCount)",
+            "Call `Unpowered()` only",
+            "PowerCmd.Apply<TPower>",
+            "fromHandDraw: false",
+            "PlayerCmd.GainEnergy",
+        ):
+            self.assertIn(lowering, reference)
+        self.assertLess(reference.index("## Damage"), reference.index("## Draw Cards"))
+        self.assertIn("emit each awaited call in SPEC order", author)
+        self.assertIn("must be non-null", reference)
+
+    def test_m89_attached_owner_composes_without_losing_host_provenance(self) -> None:
+        self.assertEqual((2, 0, False), preflight.validate_spec_text(M89_ATTACHED_OWNER_SPEC))
+
+        api = SKILLS_DIR / "sts2-api"
+        reference = (api / "reference" / "effect-primitives.md").read_text(encoding="utf-8")
+        surface = (SKILLS_DIR / "modmaker" / "surfaces" / "enchantment.md").read_text(
+            encoding="utf-8"
+        )
+        recipe = (api / "recipes" / "enchantment.md").read_text(encoding="utf-8")
+
+        for binding in (
+            "OnPlay(PlayerChoiceContext choiceContext, CardPlay? cardPlay)",
+            "exact host Card `Card`",
+            "Card.Owner.Creature",
+            "Preserve the host Card as `cardSource`",
+        ):
+            self.assertIn(binding, surface)
+        self.assertIn("drive the host Card", recipe)
+        self.assertIn("cardPlay", reference)
+        self.assertIn("Synchronous", surface)
+        self.assertIn("cannot await commands", surface)
+
+        affliction_surface = (SKILLS_DIR / "modmaker" / "surfaces" / "affliction.md").read_text(
+            encoding="utf-8"
+        )
+        for binding in (
+            "OnPlay(PlayerChoiceContext choiceContext, Creature? target)",
+            "Card.Owner.Creature",
+            "host Card as `cardSource`",
+            "does not receive the enclosing `CardPlay`",
+            "`cardPlay: null`",
+        ):
+            self.assertIn(binding, affliction_surface)
+
+    def test_m89_blocking_world_transaction_waits_for_ordinary_results(self) -> None:
+        self.assertEqual((3, 0, False), preflight.validate_spec_text(M89_BLOCKING_WORLD_SPEC))
+
+        api = SKILLS_DIR / "sts2-api"
+        reference = (api / "reference" / "effect-primitives.md").read_text(encoding="utf-8")
+        surface = (SKILLS_DIR / "modmaker" / "surfaces" / "event.md").read_text(
+            encoding="utf-8"
+        )
+
+        for contract in (
+            "mutable run owner `Owner`",
+            "Preflight every cost/availability condition before the first mutation",
+            "inspect rejected acquisition results",
+            "only then call",
+        ):
+            self.assertIn(contract, surface)
+        for lowering in (
+            "player.RunState.CreateCard<TCard>",
+            "PileType.Deck",
+            "RelicCmd.Obtain<TRelic>",
+            "potionResult",
+        ):
+            self.assertIn(lowering, reference)
+        self.assertIn("The owning callback must await the acquisition", reference)
+        self.assertIn("does not invent a combat target", surface)
 
 
 if __name__ == "__main__":

@@ -110,6 +110,17 @@ Keep moves in the move graph. Append a shared-route SPEC block only for independ
 behavior, with exact phase/order, neutral case, lifetime/reset, and a real `CombatEnemy` assertion.
 Never widen a Monster rule into a process-wide listener.
 
+## Ordinary effect projection
+
+A `MoveState` body receives `IReadOnlyList<Creature> targets`; the mutable Monster supplies
+`this` and acting `Creature`, with no owner Player or Card source. Read
+`reference/effect-primitives.md`. Monster attacks use
+`DamageCmd.Attack(...).FromMonster(this).Execute(null)` and never `.Targeting(...)`; commands that
+require a choice context use a fresh `ThrowingPlayerChoiceContext` inside the move, and player
+effects bind only to the live `targets` passed by the state machine. Await effects in the exact
+move order. Monster resource/Orb/run-acquisition effects block because the move has no truthful
+receiving Player unless SPEC and callback explicitly identify one through the target Creature.
+
 ## Every move needs a bestiary title
 
 The bestiary move list looks up `<monster entry>.moves.<MOVE_ID>.title` in the `monsters`

@@ -2,12 +2,13 @@
 
 ## Status
 
-M8 is the active milestone. M8.0-M8.3 and M8.5 are closed; their implementation detail and
-exceptions belong in `documents/history/`. M8.4 was removed by the human lead.
+M8 is the active milestone. M8.0-M8.3, M8.5, M8.7, and M8.8 are closed; their implementation
+detail and exceptions belong in `documents/history/`. M8.4 was removed by the human lead.
 
-M8.7 Product Boundary Generalization is implemented in authoritative source and both payload
-forms. Its result record and explicit human closure remain outstanding, so it is implemented but
-open. Do not re-execute, reimplement, or narrow it.
+M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
+its authoritative source, both payload forms, and durable result record completed. Do not
+re-execute, reimplement, or narrow it. Its record is
+`documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`.
 
 M8.8 Surface Effect Composability Generalization completed its full capability inventory and
 ownership-confirmation gate on 2026-08-13 and implemented WP1-WP5. The human lead deferred
@@ -20,15 +21,24 @@ result and closed M8.8 on 2026-08-13. The durable record is
 `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`. Existing asset, presentation,
 audio, and interoperability routes must be preserved at their current literal boundaries.
 
-M8.6 is the final clean installed whole-skill acceptance. It intentionally follows M8.7 and M8.8
-despite its number. M8.8 is closed, but M8.6 remains ineligible while M8.7 is open and has no
-executable contract until the human lead selects the exact request and host.
+M8.9 Ordinary Effect Primitive Coverage completed its authoritative-source/static stage and its
+separately authorized plugin/portable payload delivery on 2026-08-14. It promotes audited ordinary
+player-visible effects from per-recipe/API grounding to one shared lowering reference plus
+truthful surface bindings. Human review, a durable result record, and explicit closure remain;
+payload installation, game execution, acceptance Mods, generated-Mod Build, Tier 1/Tier 2, headed
+review, save/load, multiplayer, cross-platform runtime, and gameplay proof remain unrun.
+
+M8.6 is the final clean installed whole-skill acceptance. It intentionally follows M8.9 despite
+its number. M8.6 remains unselected and has no executable contract until M8.9 is explicitly closed
+and the human lead selects M8.6's exact request and host.
 
 Current order and gate:
 
 1. M8.8: closed by explicit human-lead acceptance on 2026-08-13.
-2. M8.7: implemented and open; result record and explicit closure remain.
-3. M8.6: waiting for M8.7 closure and explicit selection.
+2. M8.7: closed by explicit human-lead acceptance on 2026-08-14.
+3. M8.9: authoritative source/static and authorized payload delivery complete; awaiting human
+   review, durable result record, and explicit closure.
+4. M8.6: waiting for M8.9 closure and explicit selection of its request, host, and contract.
 
 ## New-Session Start Protocol
 
@@ -36,8 +46,8 @@ Current order and gate:
    `games/sts2/tests/README.md`, and `games/sts2/tests/content-capability-graph.md`.
 2. Treat `documents/history/` as immutable evidence, never as current instruction.
 3. Check `git status` before editing and preserve unrelated dirty/untracked work.
-4. A plan entry is not execution authorization. Do not restart closed M8.8 or start M8.6 while
-   M8.7 remains open or before its execution contract is explicitly selected.
+4. A plan entry is not execution authorization. Do not restart closed M8.7/M8.8 or start M8.6
+   before its execution contract is explicitly selected.
 5. Work in authoritative source under `games/sts2/`. Never hand-edit `plugins/open-mod/` or
    top-level `skills/`; regenerate them through `publish.sh` only when explicitly authorized.
 6. Do not install a payload, launch the game, run Tier 1/Tier 2, create a fresh acceptance Mod,
@@ -97,9 +107,10 @@ Static source, tests, Build, or payload synchronization do not imply game observ
 | M8.3 - semantic continuity and backtracking | Closed 2026-08-11 | `documents/history/M83_SEMANTIC_CONTINUITY_RESULTS.md` |
 | M8.4 | Removed 2026-08-05 | Do not reuse the number or recreate the Package |
 | M8.5 - cross-platform installed workflow | Closed 2026-08-12 with exceptions | `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`; macOS installed reproduction and launcher-owned process-tree cleanup remain unresolved |
-| M8.7 - product boundary generalization | Implemented; open | `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` and explicit closure remain required |
+| M8.7 - product boundary generalization | Closed 2026-08-14 | `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`; newly generalized variants remain game-unobserved |
 | M8.8 - surface effect composability | Closed 2026-08-13 | `documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`; newly generalized shapes remain game-unobserved |
-| M8.6 - clean installed whole-skill acceptance | Waiting | Eligible only after M8.7 closes and the human lead selects its contract |
+| M8.9 - ordinary effect primitive coverage | Source/static and payload delivery complete; open | Human review, durable result record, and explicit closure remain; no install, game, or acceptance proof ran |
+| M8.6 - clean installed whole-skill acceptance | Waiting | Eligible only after M8.9 closes and the human lead selects its exact contract |
 
 ## M8.7 Preservation Gate
 
@@ -114,6 +125,9 @@ generalized variants remain game-unobserved unless their exact real-host scenari
 
 No M8.7-specific compile, Tier 1, Tier 2, headed, install, game, or save/load proof is inferred from
 source implementation or payload presence.
+
+The human lead accepted the bounded result and closed M8.7 on 2026-08-14. Closure preserved every
+unrun path above and did not start M8.6.
 
 ## M8.8 - Surface Effect Composability Generalization
 
@@ -399,9 +413,140 @@ M8.8 was eligible for human closure only when:
 All criteria were satisfied within their literal evidence boundaries, and the human lead accepted
 the result record and closed M8.8 on 2026-08-13. Closure did not itself start M8.6.
 
+## M8.9 - Ordinary Effect Primitive Coverage
+
+### Goal And Current Authorization
+
+Answer which ordinary player-visible game results a truthful behavior owner can execute through
+the pinned public/fixed profile, then make every admitted family authorable without fresh API
+research. The maintained flow is:
+
+```text
+SPEC effects.sequence -> selected surface callback -> reference/effect-primitives.md
+                      -> exact owner/context/source/target binding -> ordered awaited commands
+```
+
+The initial authorization covered the pinned guide/source/API audit, the repository-only M8.9
+audit, authoritative source under `games/sts2/`, affected active documents, grouped C# compile
+probes, focused tests, the full Python source suite, `compileall`, and `git diff --check`. On
+2026-08-14 the human lead separately authorized plugin/portable payload generation, active-document
+updates, commit, and push. It did not authorize installation, a game launch, an acceptance Mod,
+runtime proof, a durable result record, explicit M8.9 closure, or M8.6.
+`capability_preflight.py` remains unchanged because ordinary context, C# signatures, values, and
+lifecycle rules are compiler/recipe/host concerns rather than silent route-reachability facts.
+
+### Source And Static Scope
+
+1. Audit the current RitsuLib guide, pinned `v0.5.11` source/Compat metadata, STS2 `0.107.1`
+   public commands/builders, current recipes/references/surfaces, and only the vanilla call sites
+   needed to disambiguate context, ordering, and partial results.
+2. Record every discovered semantic family and one `include` or `exclude` decision in
+   `games/sts2/experimental/M89_EFFECT_PRIMITIVE_AUDIT.md`. An exclusion names the concrete
+   reason or existing specialized route.
+3. Put every included lowering, required binding, await/return/neutral behavior, and lifecycle
+   boundary in `games/sts2/skills/sts2-api/reference/effect-primitives.md`. Do not introduce a
+   runtime EffectEngine.
+4. Update only executable surfaces with materially different or easy-to-misuse callback
+   projections. The primitive defines what a call needs; the surface defines what its selected
+   callback truthfully supplies.
+5. Route ordered `effects.sequence` authoring through the shared reference. A missing required
+   context blocks that primitive at that callback and reports the exact missing input instead of
+   inventing a substitute.
+6. Add one representative compile group per materially distinct call shape and no more than
+   three requirement-to-authoring smoke scenarios: active owner composition, passive/attached
+   owner composition, and blocking world transaction composition.
+
+### Preservation And Evidence Boundary
+
+Preserve all M8.7 families, M8.8 surfaces/lifecycles/compositions, existing asset/presentation/
+audio/interop routes, and the existing deferred status of Progression, post-run Badge, Settings,
+Telemetry, Multiplayer, Update Check, WP6, and WP7. Preserve independent
+`framework-expressible`, `open-mod-authorable`, and `game-observed` facts.
+
+Source/reference and Python tests establish maintained authoring contracts. Compile probes
+establish only selected public call-shape compatibility. Payload repeatability/parity/layout prove
+only generated projection and distribution shape. Generated-Mod Build, payload installation, game
+launch, Tier 1, Tier 2, headed review, save/load, multiplayer, cross-platform runtime, and gameplay
+observation remain unrun in this Package.
+
+### Human Review And Delivery Gate
+
+The source/static stage stopped for human review. The later 2026-08-14 authorization selected
+payload generation, repeatability/parity, active-document updates, commit, and push only. Payload
+installation, real-host proof, a durable result record, release, explicit M8.9 closure, and any
+M8.6 selection still require later instructions.
+
+### Source/Static Close Criteria
+
+- every discovered semantic family has one audit decision;
+- every included family appears in the shared reference and every excluded family has a reason or
+  specialized route;
+- executable surfaces expose sufficient callback/context/owner/source/target bindings;
+- ordered SPEC effects route through the maintained reference, with explicit missing-context
+  rejection;
+- grouped compile probes pass for the selected call shapes;
+- no more than three authoring smoke scenarios pass;
+- the complete Python suite, `compileall`, and `git diff --check` pass; and
+- the final report lists the audit basis, decisions, files, exact checks, unrun verification, and
+  remaining boundaries without claiming human closure or game observation.
+
+### Source/Static Closeout - 2026-08-14
+
+The authorized stage satisfied the criteria above and stopped before delivery or runtime work:
+
+- the audit recorded nine included shared semantic families and twelve explicit exclusion/
+  specialized groups after the guide, pinned source/Compat/API, current-pack, and representative
+  vanilla-call-site review;
+- `reference/effect-primitives.md` owns exact lowering, bindings, await/result behavior, bounds,
+  and rejection for every included family; executable surface pages own their materially distinct
+  callback projections, and Author/SPEC route ordered `effects.sequence` through the reference;
+- `capability_preflight.py` was unchanged;
+- grouped probe command:
+  `dotnet build games/sts2/experimental/m89-effect-primitive-probes/m89-effect-primitive-probes.csproj -p:Sts2DataDir='D:\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64' -p:RitsuLibCompileAssemblyPath='D:\Steam\steamapps\workshop\content\2868840\3747602295\lib\0.107.1\STS2-RitsuLib.dll' --nologo`
+  passed with 0 warnings and 0 errors;
+- focused `python -m unittest games.sts2.tools.tests.test_requirement_to_authoring -v` passed
+  12 tests, including exactly three M8.9 authoring scenarios;
+- full `python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'` passed 248 tests;
+- `python -m compileall -q games/sts2/tools scripts/publish plugins/open-mod/skills skills` and
+  `git diff --check` passed; and
+- generated payload skill trees were unchanged. Generated-Mod Build, payload generation/parity,
+  install, game launch, acceptance Mod, Tier 1, Tier 2, headed review, game observation,
+  save/load, multiplayer, and cross-platform runtime all remain unrun.
+
+This is a source/static checkpoint, not M8.9 closure. Human review, payload delivery, durable
+result record, commit/push/release, explicit closure, and any M8.6 selection still require later
+authorization.
+
+### Authorized Payload Delivery - 2026-08-14
+
+After the checkpoint above, the human lead explicitly authorized plugin/portable payload
+generation, active-document updates, commit, and push. Delivery produced the following literal
+results:
+
+- `& 'D:\Git\bin\bash.exe' './publish.sh' '--plugin' '--force'` and
+  `& 'D:\Git\bin\bash.exe' './publish.sh' '--portable' '--force'` both succeeded;
+- each publisher run reported 53 `modmaker` files, 159 `sts2-api` files, and 14 bundled tool
+  files;
+- the plugin skill tree contained 212 files and the portable tree contained 213 files. Their only
+  path difference was the portable-owned `GENERATED.md`; all 212 shared paths had matching
+  SHA-256 content;
+- a second publication produced the same tree digests: plugin
+  `f95889884e4a21075a20214f89b3a1827f72787778df4df3e511e203e27f6663` and portable
+  `b7a7173b3ef11e37768adf9566ef24218c070f76ba54bbf515d0f147172ac38f`;
+- `python -m unittest games.sts2.tools.tests.test_payload_tool_layout -v` passed 3 tests;
+- `python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'` passed 248 tests;
+- `python -m compileall -q games/sts2/tools scripts/publish plugins/open-mod/skills skills` and
+  `git diff --check` passed.
+
+This delivery synchronizes generated payloads; it is not installation or gameplay evidence. No
+generated Mod Build, payload install, game launch, acceptance Mod, Tier 1, Tier 2, headed review,
+save/load, multiplayer, cross-platform runtime, or gameplay observation ran. M8.9 remains open for
+human review, a durable result record, and explicit closure; M8.6 remains waiting.
+
 ## M8.6 Waiting Gate
 
-M8.6 is the only planned fresh natural-language full-pipeline acceptance. It remains unstarted.
+M8.6 is the only planned fresh natural-language full-pipeline acceptance. It remains unstarted
+and waits for explicit M8.9 closure.
 When eventually selected, its execution contract must name the request, clean installed source,
 host platform, success criteria, cleanup ownership, and literal evidence boundaries.
 

@@ -122,6 +122,15 @@ Append only the selected reference's game-term SPEC block. Keep an ordinary play
 route, name the owner, phase/order, guard and neutral case, state lifetime, cleanup, and exact
 SelfTest post-state. A process-wide registration belongs only to an explicit Global Effect.
 
+## Ordinary effect projection
+
+`OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)` supplies `choiceContext`, owner
+Player `base.Owner`, owner Creature `base.Owner.Creature`, Card source `this`, and current
+`cardPlay`. A single targeted Card uses the live non-null `cardPlay.Target`; a multi-target Card
+uses only the resolved list from `reference/advanced-targeting.md`. Read
+`reference/effect-primitives.md`, bind only those values, and await the sequence in SPEC order.
+Do not substitute another Player/Creature or turn a missing target into an all-enemy effect.
+
 ## Author the element class
 
 **Card** — add `<ModName>Code/Cards/<CardName>.cs` and extend `ModCardTemplate`:
@@ -144,11 +153,10 @@ SelfTest post-state. A process-wide registration belongs only to an explicit Glo
   one pure bounded helper, select the matching computed variable role, account for upgrade
   preview and play-transition timing, and execute through the matching `Compute*Value`
   extension. `PreviewValue` remains display-only and `BaseValue` is not a computed result.
-- Fill **only** the `OnPlay` effect block with the recipe's confirmed Cmds
-  (`DamageCmd.Attack(...).FromCard(this).Targeting(...).Execute(...)`, `CreatureCmd.GainBlock`
-  with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
-  targeted card. `await` every Cmd. If a custom power is needed, author it first
-  (`recipes/power.md`) and register it once through `.Power<T>()`.
+- Fill **only** the `OnPlay` effect block through `reference/effect-primitives.md`. Null-check
+  `cardPlay.Target` on a targeted Card, preserve `this`/`cardPlay` provenance, and await every
+  command. If a custom Power is needed, author it first (`recipes/power.md`) and register it once
+  through `.Power<T>()`.
 - For hand emphasis, keep one native gold/red rule on the Card or append one typed ordered
   ruleset to the existing content-pack builder. Generate fixed colors with
   `RefreshEveryFrame: false`; stop if the condition can change without a normal combat-state

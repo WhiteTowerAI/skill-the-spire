@@ -221,13 +221,10 @@ above, which carries boundaries the bare hook does not.
 
 Namespaces: commands in `MegaCrit.Sts2.Core.Commands`, RNG in `...Core.Random`.
 
-**Energy** (`PlayerCmd`, all `static async Task`, amount is `decimal`):
-```csharp
-int current = Owner.PlayerCombatState!.Energy;           // read current energy (int)
-await PlayerCmd.GainEnergy(current, Owner);              // +current  => doubles it
-await PlayerCmd.SetEnergy(0m, Owner);                    // set to exactly 0
-await PlayerCmd.LoseEnergy(2m, Owner);                   // -2 (clamped at 0)
-```
+Ordinary command signatures, return/rejection behavior, and lifecycle bounds live in
+`reference/effect-primitives.md`. Select the exact async Relic hook first and bind only the inputs
+its callback plus `Owner` truthfully supply. Absolute setters are setup/lifecycle control and are
+not an ordinary Relic effect.
 
 **Seeded RNG** (NEVER `System.Random` — breaks determinism/seed sharing):
 ```csharp
@@ -245,11 +242,8 @@ Creature myBody = Owner.Creature;
 var combatState = Owner.PlayerCombatState!;     // Energy, MaxEnergy, TurnNumber
 ```
 
-For other effects (damage, block, powers), query the rest of the pack rather than an
-invented catalog: use `reference/mechanics.md` for shared Cmd/value foundations,
-`reference/build-constraints.md` for enforced model rules, and `errors.md` for known
-failure signatures. If the exact symbol is still absent, follow `grounding.md` and report
-a pack gap — never guess a Cmd name.
+For an effect family outside the shared reference, query the rest of the pack rather than an
+invented catalog. If the exact route is still absent, follow `grounding.md` and report a pack gap.
 
 **Always** call `Flash()` when the relic visibly triggers, and log a diagnostic marker.
 The automated harness uses it to localize the trigger, but independently asserted state is

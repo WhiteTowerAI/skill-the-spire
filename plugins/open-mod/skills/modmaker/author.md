@@ -149,10 +149,16 @@ second framework branch into this file.
   route is a pack authoring gap; the specific substitutes to refuse here are alternative-energy patches,
   C/D access, assembly-wide `PatchAll`, and `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
-  building blocks, and the loc-key derivation rule. A Cmd name is the thing grounding most
-  often catches: if the effect needs one the recipe lacks, follow `grounding.md` — at runtime
-  that means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
-  snapshots, `errors.md`). An invented Cmd is the #1 way the repair loop burns its attempts.
+  building blocks, and the loc-key derivation rule. When SPEC has an ordered
+  `effects.sequence` containing an ordinary player-visible effect, read
+  `reference/effect-primitives.md` once. Take exact command lowering and required inputs from
+  that reference, take callback/context/owner/source/target bindings from the selected surface
+  page, and emit each awaited call in SPEC order. If the callback lacks a required input, stop
+  and name that input plus the applicable specialized route; do not use live grounding or invent
+  a substitute for a maintained primitive. For a different family the selected recipe lacks,
+  follow `grounding.md` through the rest of the shipped pack (`reference/mechanics.md`,
+  `build-constraints.md`, snapshots, `errors.md`). An invented Cmd is the #1 way the repair loop
+  burns its attempts.
 - If a Card SPEC selects non-`none` **hand emphasis**, read
   `reference/card-hand-emphasis.md`. Preserve every ordered rule, lower a lone gold/red
   rule through its native channel, or lower all competing/custom rules through one typed

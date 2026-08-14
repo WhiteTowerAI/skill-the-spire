@@ -603,14 +603,15 @@ changes no runtime capability row and did not itself authorize or prove later M8
 Its bounded record is `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 source
 development is implemented and committed: its nine selected families retain complete owner
 guidance, lowering, hard boundaries, proof matrices, and literal game-unobserved labels. Both
-committed payload trees include M8.7 after explicit human-lead authorization on 2026-08-13; its
-result record and explicit closure remain outstanding. The workflow simplification removes only
-machine-management wrappers around those capabilities, not the capabilities themselves. M8.8
+committed payload trees include M8.7 after explicit human-lead authorization on 2026-08-13. The
+human lead accepted its bounded result and closed it on 2026-08-14; the durable record is
+`documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`. The workflow simplification
+removes only machine-management wrappers around those capabilities, not the capabilities themselves. M8.8
 completed its full `0.5.11` inventory, confirmed WP1-WP5 implementation, WP8 source/static closeout,
 and authorized plugin/portable payload delivery. The human lead accepted its result and closed it
 on 2026-08-13; newly generalized shapes remain game-unobserved. Its retired prior contract is not
-executable under the current profile. M8.6 still waits for M8.7 closure and an explicitly selected
-execution contract. Current status and gates live in the active implementation plan.
+executable under the current profile. M8.6 still waits for an explicitly selected request/host
+contract. Current status and gates live in the active implementation plan.
 
 No generic Watcher discovery is promoted from the copied project alone. Exact API, lifecycle,
 platform, and payload conclusions still require pinned source and proportionate maintained

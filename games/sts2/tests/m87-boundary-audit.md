@@ -1,10 +1,12 @@
 # M8.7 product-boundary audit ledger
 
-This is the active source-development ledger for the boundary families selected in
-`documents/IMPLEMENTATION_PLAN.md`. It freezes the restriction classification before the v3
-authoring contract changes. The evidence is pinned to STS2 `0.107.1`, RitsuLib `0.5.4`
+This is the pre-implementation audit ledger for the boundary families later closed by M8.7. It
+freezes the restriction classification before the original v3 authoring-contract changes; current
+support is owned by `content-capability-graph.md` and the shipped recipes/references. This audit's
+evidence is pinned to STS2 `0.107.1`, RitsuLib `0.5.4`
 (`8b971a79e6b0a62daddd948790cd3661bb13a930`), and the official tutorial checkout
-`5a9110b3c1b1c428f9f349e51cd4a155266b92e3`. Historical proof records are evidence only.
+`5a9110b3c1b1c428f9f349e51cd4a155266b92e3`. The delivered Package was subsequently updated to the
+RitsuLib/Compat `0.5.11` profile. Historical proof records are evidence only.
 
 Categories are the Package contract's exact categories: **1** game/framework hard boundary,
 **2** current open-mod implementation boundary, **3** proof-fixture detail promoted to policy,

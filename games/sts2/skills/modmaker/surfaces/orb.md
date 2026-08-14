@@ -84,6 +84,16 @@ Keep channel/passive/evoke behavior in their native fields. Append a shared-rout
 for an independent rule, preserving exact phase/order, unchanged neutral behavior, combat cleanup,
 display refresh, and real queue-host assertions. Do not use a process-wide listener.
 
+## Ordinary effect projection
+
+`Passive(PlayerChoiceContext choiceContext, Creature? target)` and
+`Evoke(PlayerChoiceContext choiceContext)` supply the real choice context, owner Player `Owner`,
+owner Creature `Owner.Creature`, no Card source, and only the target explicitly passed to the
+passive callback. Use `reference/effect-primitives.md` inside those behaviors and return the exact
+Creatures affected by `Evoke`. The host Card/Relic/Power that channels the Orb owns the
+`OrbCmd.Channel<T>` call and its own callback bindings. Do not channel from the Orb itself or use a
+direct `OrbCmd.Passive` call as a substitute for the native turn callback.
+
 ## `smartDescription` is what makes the numbers live
 
 `OrbModel` substitutes `{Passive}`, `{Evoke}`, and `{energyPrefix}` only when a

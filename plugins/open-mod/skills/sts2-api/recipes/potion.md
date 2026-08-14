@@ -77,6 +77,10 @@ fallback stays available.
 
 ## Target and effect rules
 
+Read `reference/effect-primitives.md` for ordinary command lowering. `OnUse` supplies
+`choiceContext`, `Owner`, `Owner.Creature`, no Card source, and its nullable selected target; this
+recipe owns only Potion usage/target/lifecycle details.
+
 - Enemy damage uses `TargetType.AnyEnemy` and a non-null target.
 - Player buffs normally use `TargetType.AnyPlayer`; the selected target is a player
   creature, unlike a self-targeting Card.
@@ -88,16 +92,6 @@ fallback stays available.
   generate a patch. Report the pinned-profile gap.
 - Potion damage, Block, and Power effects normally use `ValueProp.Unpowered`.
 - `OnUse` must await every Cmd. A diagnostic `used:` line does not prove behavior.
-
-Common grounded operations:
-
-```csharp
-await CreatureCmd.GainBlock(target, 12m, ValueProp.Unpowered, null);
-await CreatureCmd.Heal(target, 10m);
-await PowerCmd.Apply<StrengthPower>(
-    choiceContext, target, 2m, Owner.Creature, null);
-await PlayerCmd.GainEnergy(2m, Owner);
-```
 
 ## Optional shared capability routes
 

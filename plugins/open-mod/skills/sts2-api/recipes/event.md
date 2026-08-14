@@ -199,8 +199,9 @@ allowed values, and the combined headed proof.
 
 `Owner` is null on the canonical model and non-null only after the mutable event enters a
 run. Read it inside option methods / lifecycle hooks, never from the canonical instance.
-Use game `Cmd`s for consequences (`PlayerCmd.GainGold`, card/relic/potion Cmds, creature
-Cmds); do not mutate run fields directly.
+Use `reference/effect-primitives.md` for ordinary consequences and do not mutate run fields
+directly. `reference/event-outcomes.md` continues to own selection/reward/special-combat
+transactions and Event-specific presentation around those primitives.
 
 This fast-path recipe shows one immediate effect. `reference/event-outcomes.md` is the
 authoritative contract for composed effects, selection/reward overlays, locked options,

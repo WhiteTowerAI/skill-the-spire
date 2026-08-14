@@ -38,6 +38,16 @@ The mutable Modifier instance in the run is the owner of run-lifetime behavior a
 properties. Do not keep current-run state on the canonical `ModelDb` instance or on a process
 static. Do not use a Global Effect for a rule whose visible identity is the selected Modifier.
 
+## Ordinary effect projection
+
+Choose an actual async run/combat hook whose signature matches the trigger in SPEC, then combine
+only its concrete Player/Creature/Card/choice-context parameters with
+`reference/effect-primitives.md`. The mutable Modifier supplies identity and run lifetime, not an
+automatic Player, target, Card source, or `PlayerChoiceContext`. `AfterRunCreated` and
+`AfterRunLoaded` are synchronous setup/restoration callbacks and cannot run awaited ordinary
+effects; a Neow option uses its own awaited function and world-transaction boundary. Block with
+the exact missing input rather than moving the effect into setup or a process listener.
+
 ## Proof matrix
 
 Use the real custom-run/daily selection host and the resulting run:

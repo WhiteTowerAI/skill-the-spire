@@ -38,6 +38,19 @@ replacement route.
 The Affliction itself is the truthful owner. Do not register a process-wide listener or Global
 Effect to imitate a Card-attached condition.
 
+## Ordinary effect projection
+
+Only the attached awaited `OnPlay(PlayerChoiceContext choiceContext, Creature? target)` path can
+compose ordinary commands directly. It binds the exact host `Card`, `Card.Owner`,
+`Card.Owner.Creature`, `choiceContext`, and nullable resolved `target`; null-check the target when
+the selected primitive requires one, follow `reference/effect-primitives.md`, and preserve the
+host Card as `cardSource`. This callback does not receive the enclosing `CardPlay`, so pass
+`cardPlay: null` where a primitive permits it and block any effect that specifically requires the
+current `CardPlay`. `AfterApplied` and `BeforeRemoved` are synchronous and cannot run awaited
+primitives; select an actual async lifecycle hook or block with that exact missing async context.
+Affliction apply/preview/clear remain this surface's specialized transaction, not ordinary Card
+creation or movement.
+
 ## Proof matrix
 
 Use a real mutable Card in `CombatPlayer`:

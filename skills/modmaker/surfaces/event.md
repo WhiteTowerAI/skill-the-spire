@@ -126,6 +126,17 @@ await queued effects, and prove exact transition/order, neutral disabled/preview
 deterministic replay, persistence/reset, and cleanup in `MapNode`. Do not use lifecycle observation
 as cancellation or route deferred Progression, Telemetry, Settings, or Multiplayer behavior.
 
+## Ordinary effect projection
+
+An async Event option method supplies mutable run owner `Owner` only after the Event enters a run;
+canonical models supply none. Read `reference/effect-primitives.md` for immediate Gold,
+healing/HP, known run-content acquisition, and any other primitive whose exact inputs exist. The
+bounded Event outcome route permits `ThrowingPlayerChoiceContext` for its documented HP/Max HP
+commands, but it does not invent a combat target, combat piles, Energy/Stars, or Orb queue outside
+a live combat-resume route. Preflight every cost/availability condition before the first mutation,
+await the full sequence, inspect rejected acquisition results, and only then call
+`SetEventFinished`, `SetEventState`, or enter/return from the selected special combat.
+
 ## Numbers the player reads should be declared values
 
 The engine substitutes the Event's `DynamicVars` into every option title, option description,

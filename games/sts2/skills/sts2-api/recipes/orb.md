@@ -77,15 +77,10 @@ channeling always plays one and an empty custom value probes a missing debug-aud
 
 ## Host commands and domains
 
-```csharp
-await OrbCmd.Channel<<Name>Orb>(choiceContext, player);
-await OrbCmd.Passive(choiceContext, orb, null);
-await OrbCmd.EvokeNext(choiceContext, player);
-```
-
-`Channel<T>` adds one slot when both base slots and queue capacity are zero. Clamp variable
-slot changes nonnegative before `AddSlots`/`RemoveSlots`; negative values can reverse the
-intended direction.
+Read `reference/effect-primitives.md` for channel/evoke/slot signatures and boundaries. The host
+Card/Relic/Power owns channeling; the Orb's native passive and evoke callbacks supply their own
+`choiceContext`, `Owner`, and optional passive target. Direct `OrbCmd.Passive` remains diagnostic
+only and is not authoring or proof of the per-turn trigger.
 
 ## Optional shared capability routes
 

@@ -33,6 +33,16 @@ Its transient keep-remaining signal and repeat state attach to the concrete Play
 canonical singleton. Modifier ownership uses the selected mutable Modifier instance already in
 `RunState.Modifiers`; it does not create a second global owner.
 
+## Ordinary effect projection
+
+The selected `ModRestSiteOptionTemplate.OnSelect()` owns a blocking run transaction and provides
+its exact owner Player. After the shared route's stale-button final recheck, use
+`reference/effect-primitives.md` only for deterministic run-safe child effects such as Gold,
+healing/Max HP gain, or known acquisition. Complete all failure-prone checks before payment or any
+other mutation, await every command, inspect rejected results, then mark success and apply the
+declared stay/leave behavior. The option has no live combat `PlayerChoiceContext`, target, Card
+play, combat piles, Energy/Stars, or Orb queue; those primitives block instead of being simulated.
+
 ## Proof matrix
 
 Follow the complete matrix in `reference/rest-site-options.md`: absent, disabled, enabled,

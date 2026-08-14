@@ -15,10 +15,11 @@ working game Mod. Slay the Spire 2 (STS2) is the first supported game. Read
 RitsuLib `0.5.11`. The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, and M8.5 are closed.
 Their exact evidence and exceptions remain in `documents/history/`.
 
-M8.7 Product Boundary Generalization is implemented in authoritative source and both committed
-payload forms, but its result record and explicit human closure remain outstanding. Preserve its
-nine generalized product families and their independent `framework-expressible`,
-`open-mod-authorable`, and `game-observed` facts. Do not reimplement or narrow them.
+M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
+its authoritative source and both payload forms were implemented and its result record completed.
+Preserve its nine generalized product families and their independent `framework-expressible`,
+`open-mod-authorable`, and `game-observed` facts. Do not reimplement or narrow them. Its durable
+record is `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`.
 
 M8.8 Surface Effect Composability Generalization closed by explicit human-lead acceptance on
 2026-08-13 after its inventory, WP1-WP5 implementation, WP8 source/static closeout, and authorized
@@ -31,10 +32,19 @@ existed before or were implemented in WP1-WP5; do not retract or reimplement the
 narrow M8.7's existing availability routes or the unrelated Power/Relic/Intent Extra Badges
 feature. `documents/IMPLEMENTATION_PLAN.md` owns the exact closed scope and boundaries.
 
-M8.6 is the final clean installed whole-skill acceptance. It remains ineligible because M8.7 is
-open and because the human lead has not selected its request, host, and execution contract. Do not
-start it automatically. Do not install a payload, launch the game, create an acceptance Mod,
-commit, push, or publish without explicit instruction.
+M8.9 Ordinary Effect Primitive Coverage completed its authoritative-source/static stage and its
+separately authorized plugin/portable payload delivery on 2026-08-14. Its audit, shared lowering
+reference, truthful surface projections, grouped compile probes, three authoring smoke scenarios,
+and generated payload projections are complete; payload repeatability/parity and repository static
+validation passed. M8.9 remains open for human review, a durable result record, and explicit
+closure. Do not regenerate or install a payload, run the game, create an acceptance Mod, record
+results, close M8.9, or start M8.6 without the corresponding later instruction.
+
+M8.6 is the final clean installed whole-skill acceptance. M8.7 and M8.8 are closed, but M8.6 has
+not been selected and still has no request, host, or execution contract; it also waits for
+explicit M8.9 closure. Do not start it
+automatically. Do not install a payload, launch the game, create an acceptance Mod, commit, push,
+or publish without explicit instruction.
 
 ## Current Workflow
 

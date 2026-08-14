@@ -51,6 +51,10 @@ Read only the selected Event outcome/presentation references for typed Hover Tip
 Cmds, page effects, or acquisitions. They do not turn this into an ordinary Event or authorize a
 deferred Settings/Progression/Telemetry/Multiplayer integration.
 
+For an option's immediate child effects, read `reference/effect-primitives.md`, bind the mutable
+Ancient's owner Player, await the exact sequence, and finish/page only after all required results
+succeed. This recipe retains the Ancient option/dialogue/presentation transaction.
+
 ## Dialogue and localization
 
 The template's `DefineDialogues()` loads `ancients.json`; override it only when the localization

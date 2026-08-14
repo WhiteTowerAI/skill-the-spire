@@ -238,84 +238,19 @@ subject. An **Enchantment** attached to this Card inherits the same pile-depende
 and it must use its five `Enchant*` replacements for damage, block, and play count — see
 `recipes/enchantment.md`.
 
-## Effect building blocks (confirmed APIs — pick the block(s) matching SPEC)
+## Ordinary effect sequence
 
-All `Cmd`s are `static async Task` — `await` every one. Read static scaling numbers from
-their normal `DynamicVars`; read calculated values through the matching `Compute*Value`
-extension. Never execute a calculated effect from `BaseValue` or display-only
-`PreviewValue`.
+Read `reference/effect-primitives.md` for every ordinary command in `effects.sequence`. This Card
+surface supplies `choiceContext`, `base.Owner`, `base.Owner.Creature`, `this`, the current
+`cardPlay`, and (after the required null-check) `cardPlay.Target`. Preserve that exact Card
+provenance and await commands in SPEC order. A Card cannot invent a target or another Player.
 
-### Attack — deal damage (`CardType.Attack`, `TargetType.AnyEnemy`)
-
-`DamageCmd.Attack(...)` returns a **fluent builder** (`AttackCommand`) — chain the
-attacker, target, and fx, then `.Execute(choiceContext)`:
-
-```csharp
-ArgumentNullException.ThrowIfNull(cardPlay.Target, "cardPlay.Target");
-await DamageCmd.Attack(base.DynamicVars.Damage.BaseValue)
-    .FromCard(this)                        // attacker = this card's owner; enables Strength etc.
-    .Targeting(cardPlay.Target)            // the single chosen enemy
-    .WithHitFx("vfx/vfx_attack_slash")     // hit vfx (+ optional sfx args); slash is the generic one
-    .Execute(choiceContext);
-```
-
-Builder methods you may need (all return the builder, keep chaining):
-- `.TargetingAllOpponents(combatState)` — hit every enemy (`TargetType.AllEnemies`).
-  Get `combatState` from `base.Owner.PlayerCombatState!`.
-- `.TargetingRandomOpponents(combatState)` — random target(s).
-- `.WithHitCount(n)` — multi-hit (Twin Strike = 2). `n` can be a `DynamicVar` value.
-- `.Unpowered()` — do NOT scale with Strength (rare; for fixed-damage attacks).
-
-### Block — gain block (`CardType.Skill`, `TargetType.Self`)
-
-Set `GainsBlock => true` (the engine uses it for previews/tags) and use the
-**`cardPlay` overload** of `GainBlock` (different from the potion's 3-arg overload):
-
-```csharp
-public override bool GainsBlock => true;
-// ...in OnPlay:
-await CreatureCmd.GainBlock(base.Owner.Creature, base.DynamicVars.Block, cardPlay);
-```
-
-### Power — apply a buff/debuff (`CardType.Power` for self-buffs, or on any card)
-
-Use a vanilla power if one fits (`StrengthPower`, `DexterityPower`, `VulnerablePower`,
-`WeakPower`, `PoisonPower`…). `cardSource` is `this`:
-
-```csharp
-// self-buff (Inflame — gain Strength; TargetType.Self):
-await PowerCmd.Apply<StrengthPower>(choiceContext, base.Owner.Creature,
-    base.DynamicVars["StrengthPower"].BaseValue, base.Owner.Creature, this);
-
-// debuff on the target enemy (needs TargetType.AnyEnemy + a null-check):
-await PowerCmd.Apply<VulnerablePower>(choiceContext, cardPlay.Target,
-    base.DynamicVars["VulnerablePower"].BaseValue, base.Owner.Creature, this);
-```
-
-If no vanilla power matches the request ("at end of turn deal 3 to all"), author a
-**custom power** first (`recipes/power.md`), then `PowerCmd.Apply<YourPower>(...)` here.
-
-`Apply<T>` is the gain/application path. If the card **consumes** a custom nonnegative
-Counter ("lose/consume up to N stacks"), do not pass a negative amount to `Apply<T>`.
-Use `recipes/power.md`'s amount-domain pattern: `GetPower<T>()`, clamp the spend to the
-existing amount, then `PowerCmd.ModifyAmount` that instance.
-
-### Combine — attack THEN debuff (Bash pattern)
-
-Declare both vars, run the attack, then apply the power on the same target:
-
-```csharp
-ArgumentNullException.ThrowIfNull(cardPlay.Target, "cardPlay.Target");
-await DamageCmd.Attack(base.DynamicVars.Damage.BaseValue).FromCard(this)
-    .Targeting(cardPlay.Target).WithHitFx("vfx/vfx_attack_blunt").Execute(choiceContext);
-await PowerCmd.Apply<VulnerablePower>(choiceContext, cardPlay.Target,
-    base.DynamicVars["VulnerablePower"].BaseValue, base.Owner.Creature, this);
-```
-
-> For any effect not covered here (draw, energy, card generation), follow
-> `grounding.md`: check the rest of the pack (`reference/mechanics.md`, snapshots,
-> `errors.md`) for the Cmd. If it's genuinely not in the pack, report a pack gap —
-> **do not guess a Cmd name** (the maintainer grounds new Cmds offline).
+Read static scaling numbers from their normal `DynamicVars`; read calculated values through the
+matching `Compute*Value` extension. Never execute a calculated effect from `BaseValue` or the
+display-only `PreviewValue`. Keep `GainsBlock => true` for a Card that gains Block and use
+`WithHitCount(n)` rather than an outer loop for a multi-hit attack. If no vanilla Power matches
+the request, author the custom identity through `recipes/power.md`; the shared primitive reference
+then owns applying, changing, or removing it.
 
 ### Calculated values, icon counts, and variable tooltips
 

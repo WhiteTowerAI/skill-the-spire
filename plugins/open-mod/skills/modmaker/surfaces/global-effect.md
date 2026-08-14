@@ -38,6 +38,16 @@ subscribed to both streams.
 Do not use raw `ModHelper.SubscribeFor*Hooks`, a process-wide service, or static mutable state when
 the maintained singleton route expresses the same ownership.
 
+## Ordinary effect projection
+
+Select one real async hook on the chosen Run or Combat dispatcher before authoring a sequence.
+That callback, not the canonical singleton, must supply every Player, Creature, target, Card,
+`CardPlay`, and `PlayerChoiceContext` consumed through `reference/effect-primitives.md`. A queried
+scalar/decision/collection hook returns its neutral or edited value and must not enqueue side
+effects. If the selected callback lacks any required input, report the exact hook/input mismatch;
+do not fetch a current global Player, retain a stale scope object, or broaden the singleton to the
+other dispatcher.
+
 ## Proof matrix
 
 Drive the nearest real host:

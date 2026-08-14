@@ -44,6 +44,10 @@ policy, and must not grant content, consume RNG, publish UI, or repeat selection
 
 ## Reward implementation
 
+Read `reference/effect-primitives.md` for deterministic ordinary child effects in `OnSelect()`.
+The Reward supplies its owner Player and blocking success/refusal boundary, not a generic combat
+choice context or target.
+
 Derive from `ModCustomReward(Player)`. The base supplies `RewardsSetIndex == 9`,
 `IsPopulated == true`, a `gameplay_ui` description keyed by the registered qualified ID, optional
 icon loading, and save-data creation. Implement the dynamic type, claim, and seen-state behavior:

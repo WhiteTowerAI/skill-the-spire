@@ -110,6 +110,16 @@ exact phase/order, owner/subject guard, unchanged neutral behavior, and cleanup 
 capability is removed. SelfTest must assert both the dependent effect and no second firing after
 removal; do not use a process-wide listener.
 
+## Ordinary effect projection
+
+Choose an async Power hook whose phase and parameters match SPEC. `Owner` is the attached mutable
+Creature; derive its Player only when `Owner.Player` is non-null. The Power is the truthful source
+identity but not a Card source, and many hooks provide no `PlayerChoiceContext` or selected target.
+Read `reference/effect-primitives.md` and author only commands whose required inputs are present.
+For example, a guarded turn hook can affect `Owner`, while draw, targeted Power application, Orb
+queue actions, or Max HP loss require the exact Player/context/target callback. A synchronous
+value hook modifies its return value and cannot run an awaited effect sequence.
+
 ## Author the element class
 
 **Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend `ModPowerTemplate`:

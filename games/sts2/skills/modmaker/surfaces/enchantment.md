@@ -68,6 +68,16 @@ Append only the selected reference's nested game-term SPEC block. Preserve the f
 hooks above, each service's own phase/order, an unchanged neutral case, and removal/cleanup proof.
 Do not register a process-wide listener for an Enchantment-owned rule.
 
+## Ordinary effect projection
+
+The awaited attached callback is `OnPlay(PlayerChoiceContext choiceContext, CardPlay? cardPlay)`.
+It supplies `choiceContext`, exact host Card `Card`, owner Player `Card.Owner`, owner Creature
+`Card.Owner.Creature`, and the nullable host `cardPlay`; use `cardPlay?.Target` only when the
+attached effect truthfully follows that selected target. Read `reference/effect-primitives.md`
+for the sequence. Preserve the host Card as `cardSource`, pass the real `cardPlay` for Card-caused
+Block, and reject target-dependent effects when `cardPlay`/target is absent. Synchronous
+attachment/restriction hooks cannot await commands.
+
 ## The engine writes `extraCardText` onto the host card
 
 When `HasExtraCardText` is true, the engine stamps the enchantment's localized

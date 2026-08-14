@@ -84,6 +84,11 @@ explicitly accepted composition instead.
    reward, card pile, runtime UI, affliction, modifier, global effect, rest site). For a **fought enemy** read
    `recipes/monster.md`; it owns separate Monster/Encounter registrations, explicit roster
    edges, HP ranges, and deterministic/conditional/fixed-weight-random move graphs.
+   For an ordered `effects.sequence` containing ordinary damage, Block/healing/HP, Power,
+   native-resource, draw/discard/exhaust, known-Card creation, known run-content acquisition, or
+   Orb effects, also read `${STS2_API_SKILL_DIR}/reference/effect-primitives.md`. Combine its
+   required inputs with the selected `modmaker/surfaces/<surface>.md` projection; neither file
+   replaces the other.
    For a complete playable chapter read `recipes/act.md`; it owns `ModActTemplate`, required
    content pools/assets, and the separate singleplayer entry policy. For a new Ancient read
    `recipes/ancient.md`; it owns Shared/Act-scoped registration, options, localization-driven
@@ -250,6 +255,7 @@ explicitly accepted composition instead.
 | `reference/lifecycle-state-rng.md` | Truthful lifecycle subscriptions, attached/model/run/player/profile state, persistence and migrations, deterministic host/Mod RNG, cleanup, and deferred-family boundaries | Authoring included behavior that crosses callback, combat, room, run, save, or profile boundaries or makes gameplay-random choices |
 | `reference/shared-effect-hooks.md` | Owner-bound per-hit attack, healing, Energy/Stars gain, and maximum-hand-size effects with exact passes, guards, neutral results, and Global Effect boundary | Authoring those shared effects on a reachable model/capability or explicit Global Effect |
 | `reference/card-play-lifecycle.md` | Before/after Card OnPlay, suppression, free-play durations, transform listeners/carry-over, type-text composition, phase order, cleanup, and real-host proof | Authoring behavior around Card play rather than only the Card's ordinary OnPlay body |
+| `reference/effect-primitives.md` | Shared ordinary player-result lowering: exact commands, required context/owner/source/target, await order, result/rejection behavior, and lifecycle bounds | Authoring an ordered `effects.sequence` on a truthful executable surface |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Bounded state schemas with exact owner/listener transitions, lifetime/reset/persistence, visibility, consumers/outputs, and selected proof derivation | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
@@ -342,4 +348,8 @@ do not author an operation outside a listed catalog package.
   clamp to the existing amount and never create a missing instance with a negative value.
 - **Never use process-local random state** for in-game RNG; use the game's seeded random
   source through the selected adapter.
-- **Don't guess an API** — if the recipe lacks it, check the rest of the pack (`reference/mechanics.md`, `reference/build-constraints.md`, snapshots, `errors.md`) per `grounding.md`. If it's genuinely not in the pack, report a pack gap rather than digging or guessing.
+- **Don't guess an API** — first use `reference/effect-primitives.md` for its maintained ordinary
+  effects. For a different family the selected recipe lacks, check the rest of the pack
+  (`reference/mechanics.md`, `reference/build-constraints.md`, snapshots, `errors.md`) per
+  `grounding.md`. If it is genuinely not in the pack, report a pack gap rather than digging or
+  guessing.
