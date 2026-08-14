@@ -1,14 +1,14 @@
 # Recipe: Character Foundation
 
-> Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.67` by the
-> 2026-07-23 Wayfinder R4 proof and 2026-07-27 Meridian M6.5 proof. This recipe covers exactly-once registration,
+> Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.67` by focused Character
+> Foundation and M6.5 presentation proofs. This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
 > the nine promoted static presentation profiles, and the bounded non-Spine
-> Idle/Attack/Hit/Dead combat cues. Selected R5 resource/buffer/UI
+> Idle/Attack/Hit/Dead combat cues. Selected resource/buffer/UI
 > capability details live in `reference/character-resource.md` and
 > `reference/ordered-card-buffer.md`; this Foundation recipe does not duplicate them or
 > promote Ancient, Spine, Cast, trails, arbitrary custom materials, multiplayer
-> presentation, or audio. Its bounded M6.5 theme uses only RitsuLib's public
+> presentation, or audio. Its bounded theme uses only RitsuLib's public
 > pool-material helper.
 
 Read `reference/ritsulib-adapter.md` first. When static art is selected, also
@@ -17,7 +17,7 @@ When combat cues are selected, additionally read `reference/character-combat-cue
 
 This recipe creates a new Mod-owned Character. For a pinned existing vanilla Character's
 fresh unlock gate, resolve it through `reference/vanilla-overrides.md` and then use
-`reference/vanilla-availability-overrides.md`. M6.7.4 permits a singleplayer pinned-epoch
+`reference/vanilla-availability-overrides.md`, which permits a singleplayer pinned-epoch
 requirement only; it does not permit permanent disable, pool replacement, or registration
 as a generated-Mod Character.
 
@@ -74,6 +74,9 @@ public sealed class <CharacterName>
     public override CharacterGender Gender => CharacterGender.Neutral;
     public override int StartingHp => InitialHp;
     public override int StartingGold => <gold>;
+    public override int MaxEnergy => <max-energy>;
+    public override int BaseOrbSlotCount => <base-orb-slots>;
+    public override string? PlaceholderCharacterId => "ironclad";
     public override Color NameColor => <CharacterName>Theme.NameColor;
     public override Color EnergyLabelOutlineColor => <CharacterName>Theme.EnergyLabelOutlineColor;
     public override float AttackAnimDelay => 0.15f;
@@ -91,9 +94,19 @@ public sealed class <CharacterName>
 }
 ```
 
-The inherited combat energy is the normal `3`. Foundation may prove a separate
-starter mechanic such as one turn-1 Energy gain, but must not replace native
-Energy or invent an alternative-energy hook.
+`StartingHp`, `StartingGold`, `MaxEnergy`, and `BaseOrbSlotCount` come from current SPEC.
+Native values such as 99 Gold, 3 Energy, and 0 base Orb slots are design analogies/defaults,
+not hard requirements. Foundation may prove a separate starter mechanic such as one turn-1
+Energy gain, but must not replace native Energy or invent an alternative-energy hook.
+
+## Optional Character capability and state routes
+
+For a separable Character-owned state/display bundle, read `reference/model-capabilities.md` and
+use `CharacterCapability`; do not claim normal owner-hook dispatch. For Character-owned
+player/run/profile state, lifecycle, persistence, or deterministic RNG, read
+`reference/lifecycle-state-rng.md`. Keep gameplay effects on the actual Card/Relic/Power owner,
+and prove Character identity plus the selected save/profile lifecycle. These routes do not create
+Settings, Progression, Multiplayer, or process-wide effects.
 
 ## Typed pools and starter ecosystem
 
@@ -103,7 +116,7 @@ Use RitsuLib's public pool models:
 public sealed class <CardPool> : TypeListCardPoolModel
 {
     public override string Title => "<Character> Cards";
-    public override string EnergyColorName => "<color>";
+    public override string EnergyColorName => "<stable custom energy prefix>";
     public override Color DeckEntryCardColor => <CharacterName>Theme.DeckEntryCardColor;
     public override Color EnergyOutlineColor => <CharacterName>Theme.EnergyOutlineColor;
     public override Material? PoolFrameMaterial => <CharacterName>Theme.CardFrameMaterial;
@@ -114,21 +127,32 @@ public sealed class <CardPool> : TypeListCardPoolModel
 
 public sealed class <RelicPool> : TypeListRelicPoolModel
 {
-    public override string EnergyColorName => "<color>";
+    public override string EnergyColorName => "<stable custom energy prefix>";
 }
 
 public sealed class <PotionPool> : TypeListPotionPoolModel
 {
-    public override string EnergyColorName => "<color>";
+    public override string EnergyColorName => "<stable custom energy prefix>";
 }
 ```
 
+Use the same stable, Mod-owned prefix for all three pools. It is a lookup key, not a display
+color: never lower a palette name such as `red` into `EnergyColorName`, because missing
+custom art would make the engine request an ungrounded `energy_red` resource.
+
 Register every concrete member with its pool generic. Starter cards are
-`CardRarity.Basic`; the starter relic is `RelicRarity.Starter`. Before entering a
+`CardRarity.Basic`; starter relics are `RelicRarity.Starter`. Use the same Character
+registration entry for all current-SPEC starter multisets: `.AddStartingCard<T>(count, order)`,
+`.AddStartingRelic<T>(count, order)`, and `.AddStartingPotion<T>(count, order)`. Zero entries
+means an empty starter multiset; never register a placeholder model merely to fill one. Every
+starter must also be registered in its typed content graph.
+
+Before entering a
 native Shop, the unlocked non-Basic pool must contain at least two eligible
 Attacks, two eligible Skills, and one eligible Power. The merchant excludes the
 first same-type result while filling the second slot, so a `1/1/1` pool throws
-before the Shop UI exists. Author real effect cards for all five slots.
+before the Shop UI exists. Author real effect cards for all five slots. Verification derives
+HP, Gold, Energy, Orb slots, and all three exact starter multisets from current SPEC.
 
 ## Character-wide theme
 
@@ -139,6 +163,7 @@ card-frame texture, so no generated frame image, custom shader, or `.tres` file 
 
 ```csharp
 using Godot;
+using MegaCrit.Sts2.Core.Helpers;
 using STS2RitsuLib.Utils;
 
 internal static class <CharacterName>Theme
@@ -163,10 +188,18 @@ internal static class <CharacterName>Theme
     public static string TextEnergyIconPath =>
         <CharacterName>.CharacterUi("energy_text.png");
 
+    public const string PlaceholderEnergyColorName = "ironclad";
+    public const string PlaceholderTextEnergyIconPath =
+        "res://images/packed/sprite_fonts/ironclad_energy_icon.png";
+
     public static string? ExistingLargeEnergyIconPath =>
-        ResourceLoader.Exists(LargeEnergyIconPath) ? LargeEnergyIconPath : null;
+        ResourceLoader.Exists(LargeEnergyIconPath)
+            ? LargeEnergyIconPath
+            : EnergyIconHelper.GetPath(PlaceholderEnergyColorName);
     public static string? ExistingTextEnergyIconPath =>
-        ResourceLoader.Exists(TextEnergyIconPath) ? TextEnergyIconPath : null;
+        ResourceLoader.Exists(TextEnergyIconPath)
+            ? TextEnergyIconPath
+            : PlaceholderTextEnergyIconPath;
 }
 ```
 
@@ -174,7 +207,11 @@ The large icon is a transparent 256x256 `character_energy_large` output consumed
 `EnergyIconHelper.GetPath` by a real `NCard.%EnergyIcon`. The text icon is a separate
 transparent 24x24 `character_energy_text` output consumed by `EnergyIconsFormatter` in
 rich-text card descriptions. Both use the SPEC's shared palette/motif brief, but each is
-composed and normalized for its own size. Missing files fall back independently.
+composed and normalized for its own size. Missing files fall back independently to the
+base-game Ironclad resources: `energy_ironclad.tres` for the large Card icon and
+`ironclad_energy_icon.png` for rich text. The full combat counter follows the explicit
+`PlaceholderCharacterId = "ironclad"` profile and resolves
+`ironclad_energy_counter.tscn`. Do not derive any fallback path from the theme color.
 
 Tier 2 asserts the exact pool sets, not only their counts, and separately asserts
 the exact starter deck/relic multisets. A non-starter pool card must never leak
@@ -236,8 +273,9 @@ Put the promoted paths in one `CharacterAssetProfile`:
 | text card energy | card-pool `TextEnergyIconPath` | checked 24x24 PNG |
 
 Locked selection and map marker paths may retain checked assets, but they are not
-pipeline-promoted until their real consumers are visibly proved. RitsuLib's
-resolved profile keeps the placeholder/native fallback for missing fields. Do not
+pipeline-promoted until their real consumers are visibly proved. RitsuLib's resolved
+profile keeps the explicitly selected Ironclad placeholder/native fallback for missing
+fields. Do not
 add the historical static-merchant prefix: the R4 Shop proof rendered a real
 `NMerchantCharacter` directly from the RitsuLib scene profile.
 
@@ -308,11 +346,10 @@ backgrounds/layouts, options/rewards, line audio, and multiplayer remain unsuppo
    marker only after every assertion passes, followed by `selftest done` and a
    strict no-fresh-error check.
 
-The 2026-07-23 RitsuLib-only Wayfinder proof observed exactly one selected model,
-HP `72/72`, Gold `99`, exact pools `cards7/relic1/potion1/power1`, starter deck
-`5 Strike + 5 Guard`, one Compass, Energy `3/4`, and the original static consumers.
-It built with zero warnings/errors against the pinned profile and passed strict Tier 2
-with no fresh error. The 2026-07-27 Meridian proof added the split large/text Energy
+For every generated Character, derive the selected model identity, HP, Gold, pool members,
+starter deck/relic multiset, supporting models, MaxEnergy, and terminal state summary from
+the current `SPEC.md`. Do not copy exact values or log markers from a historical acceptance
+Mod. The 2026-07-27 Meridian proof added the split large/text Energy
 consumers and bounded card/UI theme; the maintainer's headed review passed all seven
 visible checks, while generated Mods retain the automatic node/property assertions.
 The 2026-07-27 Meridian cue proof separately passed the complete four-action route,

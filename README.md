@@ -1,57 +1,37 @@
 # open-mod
 
-open-mod is a free, open-source Codex plugin that turns a plain-language idea into a
-working Slay the Spire 2 mod. It interviews only when a decision matters, writes a
-semantic spec, scaffolds and authors the project, builds it, launches the real game, and
-checks both load and behavior.
+open-mod is a free, open-source Codex plugin that turns a plain-language idea into a working
+Slay the Spire 2 Mod. It can help shape the idea, records a concise design and implementable work
+order, authors against grounded RitsuLib routes, builds the project, and uses real-game autotest to
+prove behavior when authorized.
 
-The first supported game is **Slay the Spire 2 (STS2)**.
-
-> **Unreleased development version: 0.6.0.** The generated-mod pipeline now targets only RitsuLib
-> `0.4.62` on STS2 stable `0.107.1`. The BaseLib implementation path has been retired.
-> The migration and external clean-workspace Codex acceptance are complete; details are
-> archived in `documents/history/RITSULIB_MIGRATION_RESULTS.md`. A GitHub release is
-> deliberately deferred while remaining bugs are fixed. M6.5 acceptance is closed; its
-> lead-approved Prismwright result is archived in
-> `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`. M6.6 computed values, bounded
-> advanced targeting, native custom-Character Ancient dialogue, and bounded Relic-owned
-> Rest Site options are individually implemented; M6.6 itself remains open.
-
-The provisional M6.6 capability roadmap and planned M6.7 version-bound vanilla-content
-override track are maintained in `documents/IMPLEMENTATION_PLAN.md`. Support is declared at
-the documented RitsuLib Package level when its public API exists in the pinned profile.
+> **Unreleased development version: `0.7.0`.** Generated Mods target STS2 stable `0.107.1`
+> with RitsuLib `0.5.11`. A GitHub release is not currently authorized.
 
 ## Requirements
 
 1. Slay the Spire 2 stable `0.107.1`, installed through Steam.
-2. .NET SDK `9.0` or newer (`dotnet --version`).
-3. Python 3. On Windows, use a real python.org/Anaconda installation rather than the
-   non-working Windows Store `python3` shim.
-4. RitsuLib `0.4.62`, installed in the STS2 Mods directory with the `0.107.1` compat
-   variant. Use the release from
-   [BAKAOLC/STS2-RitsuLib](https://github.com/BAKAOLC/STS2-RitsuLib); the installed
-   runtime must contain `lib/0.107.1/STS2-RitsuLib.dll` or the equivalent direct compat
-   asset.
+2. .NET SDK `9.0` or newer.
+3. Python 3. On Windows, use a working python.org or Anaconda installation.
+4. RitsuLib `>=0.5.11` with the `0.107.1` Compat variant, installed locally or through official
+   Steam Workshop item `3747602295`.
 5. Codex with plugin support.
 
-You do not need BaseLib, an Alchyr template, Godot, MegaDot, or PckPacker. The generated
-project uses open-mod's pinned scaffold and bundled Python build/packaging tools.
+Generated projects compile against the checked local runtime and have no framework
+`PackageReference`. You do not need BaseLib, an Alchyr template, Godot, MegaDot, or PckPacker;
+open-mod supplies its scaffold, Godot.NET SDK imports, and Python build/packaging tools.
 
 ## Install In Codex
 
-Until `0.6.0` is merged and published from GitHub, install the current local checkout as a
-repo marketplace:
+Until `0.7.0` is published, install the checkout as a repository marketplace:
 
 ```powershell
 codex plugin marketplace add D:\path\to\open-mod
 codex plugin add open-mod@open-mod
 ```
 
-Start a new Codex thread after installation so it loads the new skills and tools. The
-plugin is defined by `.agents/plugins/marketplace.json` and
-`plugins/open-mod/.codex-plugin/plugin.json`.
-
-The portable Agent Skills payload remains available for compatible non-plugin hosts:
+Start a new Codex task after installation. The portable Agent Skills payload remains available for
+compatible hosts:
 
 ```powershell
 npx skills add WhiteTowerAI/open-mod
@@ -59,124 +39,127 @@ npx skills add WhiteTowerAI/open-mod
 
 ## Make A Mod
 
-Invoke the skill in Codex:
+Invoke the skill:
 
 ```text
 $modmaker
 ```
 
-Then describe the mod in ordinary language, for example:
+Then describe the Mod in ordinary language, for example:
 
 > A relic that gives 5 Block at the start of every third turn.
 
-The skill will:
+The skill follows this pipeline:
 
-1. Ask at most one compact round of questions when the answer changes the implementation.
-2. Show a plain-language plan and record the accepted semantic contract.
-3. Create a pinned RitsuLib project and author the required content.
-4. Build and install the mod into STS2's Mods directory.
-5. Launch the real game for Tier 1 load verification.
-6. Run the closest hosted self-test for Tier 2 behavior verification when that host is
-   supported; otherwise report the exact manual fallback without pretending it passed.
+```text
+idea
+  -> concise DESIGN
+  -> implementable SPEC
+  -> thin capability preflight
+  -> Author + SelfTest
+  -> Build
+  -> Tier 1
+  -> Tier 2 / SelfTest
+  -> headed human review when needed
+  -> direct report from actual results
+```
+
+A complete narrow request keeps a zero-question fast path. `DESIGN.md` preserves intent, accepted
+decisions, current scope, and explicit `Not Now` items. `SPEC.md` is the sole implementation work
+order: exact behavior, values, state, text/presentation, support routes, and autotest scenarios.
+
+Before Author, one small checker confirms that selected support routes exist and that raw model
+hooks are real and reachable by the chosen surface. Build owns compilation, manifests, resources,
+localization, packaging, and deployment. Real STS2 SelfTest owns behavior. Headed human review owns
+images, UI, controller behavior, animation, and subjective quality.
+
+Existing projects may retain older metadata. The current workflow ignores it and does not force a
+migration.
 
 ## Supported Surface
 
-The current RitsuLib-only generator implements:
+The RitsuLib-only generator covers:
 
-- cards, relics, potions, powers, keywords, enchantments, and orbs;
-- filtered live-creature targeting for single-target Cards/Potions and multi-target Cards,
-  including native mouse/controller selection and cancellation;
-- singleplayer top-X Scry through a generated-Mod-local helper;
-- conditional Card hand emphasis with ordered fixed-color rules, priority, and explicit
-  unplayable visibility;
-- up to three bounded supplemental Relic labels in safe corners, or one top-left Power
-  label, with explicit refresh and removal;
-- monsters and encounters with deterministic and conditional move vocabularies;
-- Events / World Nodes with pages, options, public Cmd outcomes, selections, rewards,
-  resumable or terminal special combat, bounded rich text and VFX, and one bounded solo
-  Quest Card to forced-Event composition;
-- playable Character Foundation with exact pools, starters, HP, and Energy;
-- custom-Character localization dialogue in the nine cataloged native Ancient and
-  Architect scenes, preserving native models, layouts, options, and outcomes;
-- singleplayer Relic-owned Rest Site options with free/fixed Gold, deterministic outcomes,
-  once-per-site/run repeatability, native stay/leave behavior, and checked custom/fallback
-  button art;
-- stateful relic cadence with combat-local and run-persistent state;
-- combat-only secondary resources with all-or-nothing payment and a public fixed live UI;
-- ordered semantic card-play buffers whose source Cards follow normal Play -> Discard;
-- placeholder, local, or generated static art for the grounded content families, including
-  nine verified Character profiles;
-- optional private combat-only Character `Idle`/`Attack`/`Hit`/`Dead` frame cues with an
-  all-or-nothing static fallback.
+- Cards, Relics, Potions, Powers, Keywords, Enchantments, Orbs, Monsters, and Encounters;
+- computed Card values, native Energy/Star costs, typed Power values, and DynamicVar tips;
+- native single/multi creature targeting within the documented Card/Potion boundary;
+- reusable bounded state, secondary resources/payment/UI, and ordered semantic buffers;
+- Events/World Nodes, bounded native presentation, acquisition/shake profiles, and forced Event
+  mappings;
+- playable Character Foundation, static presentation, bounded combat cues, and native
+  Ancient/Architect dialogue;
+- Card- or Relic-owned singleplayer Rest Site options within the documented boundary;
+- complete documented Custom Card Piles authoring, including ExtraHand;
+- conditional Card hand glow and bounded Relic/Power corner labels;
+- promoted vanilla Card, visual, Ancient, availability, and non-Card data/behavior overrides; and
+- declared custom-content model-hook participation, restricted to the hooks each surface can
+  actually receive.
 
-The official RitsuLib Extra Badges Package also supports Intent because its documented
-public API exists in the pinned profile. Intent badge authoring is not part of the current
-implementation plan.
+Some generalized shapes are implemented but not yet observed in a running game. The authoritative
+inventory and exact limitations live in
+[`games/sts2/tests/content-capability-graph.md`](games/sts2/tests/content-capability-graph.md).
 
-Static art acquisition prefers a callable host-native raster tool (`image_gen` in Codex),
-then the explicitly selected Vofy, compatible HTTP backend, or local-image route. Tool
-availability is detected at runtime. A skill file or model name alone is not proof that
-image generation is callable, and open-mod never silently switches to a paid backend.
+Generated Mods do not invent prompt-derived Harmony, reflection, Publicizer, or IL. A missing
+maintained public/fixed route blocks authoring rather than being replaced with a silent
+approximation.
 
-## Current Limits
+## Verification
 
-The exact known limitations and unsupported public routes live in the capability graph:
+- **Build** means the project compiled and packaged under the pinned static contract.
+- **Tier 1** means the exact load marker and framework/host/compat profile were observed with no
+  fresh error block.
+- **Tier 2** means `SelfTest.cs` drove the behavior in real STS2, asserted structured post-state,
+  and emitted `selftest done`.
+- `played`, `fired`, and `used` logs are diagnostics only, not Tier 2 evidence.
+- Headed review covers only the concrete visual/UI/controller/animation observations a person
+  actually made.
 
-- custom multi-target Potions have a confirmed lifecycle limitation;
-- arbitrary Card/object/map targeting has no supported public route;
-- remaining M6.6 CardPile/ExtraHand authoring work and planned M6.7 vanilla-content
-  overrides are not yet implemented by the generator;
-- hand emphasis whose condition changes without a normal combat-state refresh, arbitrary
-  extra-label rectangles, bottom-right extra labels, and Intent badge authoring;
-- Card/Modifier-owned Rest Site options, variable or non-Gold Rest Site costs, arbitrary
-  transactions, same-site repeat, or multiplayer Rest Site extensions;
-- retained-card custom-zone UI or hidden retained played cards;
-- alternative Energy engine hooks;
-- run-persistent or remote-player Character resources and UI;
-- multiplayer/replay Scry or global cross-Mod Scry hooks;
-- production Character animation beyond the bounded combat cues, arbitrary materials,
-  audio, or multiplayer presentation;
-- custom Character Ancient models/layouts/options/rewards/audio/VFX, global dialogue
-  replacement, and unproved locked-selection/map-marker art;
-- arbitrary Event VFX/layouts, direct merchant/rest/treasure transitions, or more than one
-  special combat from the same mutable Event instance;
-- one-click Steam Workshop publishing.
+Reports state passed, failed, and unrun checks directly. Source/static/payload validation is not a
+gameplay result.
 
-## Verification Model
+## Development Status
 
-Tier 1 requires the exact load marker and no fresh error block. Tier 2 additionally
-requires a structured post-state marker and `selftest done`. A successful build, a trigger
-log, or a screenshot by itself is not behavior proof. Player-visible state is part of
-correctness whenever open-mod owns UI or presentation.
+The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, M8.5, and M8.7-M8.9 are closed; completed
+evidence and literal exceptions are indexed under `documents/history/`.
 
-Fresh natural-language acceptance mods are disposable. Durable contract and hosted proof
-ownership live in `games/sts2/tests/`; completed evidence is indexed under
-`documents/history/`.
+M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
+its source, both payload forms, and result record completed. M8.8 Surface Effect Composability closed
+by explicit human-lead acceptance on 2026-08-13 after inventory, WP1-WP5 implementation, WP8
+source/static closeout, authorized plugin/portable payload delivery, and its final result record.
+Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/scene/
+animation/audio and shared-presentation expansion, WP7 named typed interoperability, and new
+integrations with those deferred groups are future work. Existing asset, presentation, audio,
+interoperability, M8.7, and WP1-WP5 capabilities remain preserved.
+
+M8.9 Ordinary Effect Primitive Coverage closed by explicit human-lead acceptance on 2026-08-14
+after its authoritative source/static stage, plugin/portable payload delivery, and durable result
+record completed. Its nine admitted ordinary-result families use one shared lowering reference
+plus truthful surface bindings; the generated payloads passed repeatability, parity, layout, and
+repository static validation. No generated Mod was built or installed, and no game, Tier 1,
+Tier 2, headed, save/load, multiplayer, cross-platform runtime, or gameplay proof ran.
+
+M8.6 final installed acceptance is now eligible but remains unselected until the human lead names
+its request, host, and execution contract.
 
 ## For Contributors
 
-Edit only the source under `games/sts2/`:
+Read `AGENTS.md` and active documents before changing the repository. Edit authoritative source
+under `games/sts2/`; never hand-edit generated `plugins/open-mod/` or top-level `skills/` payloads.
 
-- `games/sts2/skills/modmaker/`: staged orchestrator;
-- `games/sts2/skills/sts2-api/`: lazy recipes and grounded references;
-- `games/sts2/tools/`: scaffold, build, launch, log, and art tools.
-
-Regenerate, do not hand-edit, the two committed payloads:
+Regenerate both payloads through:
 
 ```powershell
 & '<Git-install>\bin\bash.exe' './publish.sh' '--plugin'
 & '<Git-install>\bin\bash.exe' './publish.sh' '--portable'
 ```
 
-The local Codex development shape is generated with `./publish.sh --agent codex` under
-`.agents/skills/` and is git-ignored.
-
-Run the normal checks before handing off:
+Run the normal source checks:
 
 ```powershell
+$env:PYTHONUTF8='1'
 python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
 python -m compileall -q games/sts2/tools scripts/publish plugins/open-mod/skills skills
 git diff --check
 ```
 
-Read `AGENTS.md` before changing the repository. See `LICENSE` for licensing.
+The active plan is `documents/IMPLEMENTATION_PLAN.md`. See `LICENSE` for licensing.

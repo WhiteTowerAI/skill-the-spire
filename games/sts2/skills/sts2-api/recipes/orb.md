@@ -77,19 +77,33 @@ channeling always plays one and an empty custom value probes a missing debug-aud
 
 ## Host commands and domains
 
-```csharp
-await OrbCmd.Channel<<Name>Orb>(choiceContext, player);
-await OrbCmd.Passive(choiceContext, orb, null);
-await OrbCmd.EvokeNext(choiceContext, player);
-```
+Read `reference/effect-primitives.md` for channel/evoke/slot signatures and boundaries. The host
+Card/Relic/Power owns channeling; the Orb's native passive and evoke callbacks supply their own
+`choiceContext`, `Owner`, and optional passive target. Direct `OrbCmd.Passive` remains diagnostic
+only and is not authoring or proof of the per-turn trigger.
 
-`Channel<T>` adds one slot when both base slots and queue capacity are zero. Clamp variable
-slot changes nonnegative before `AddSlots`/`RemoveSlots`; negative values can reverse the
-intended direction.
+## Optional shared capability routes
+
+Keep channel/passive/evoke in their native methods. For a separable Orb-owned behavior/state
+bundle, read `reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Orb or
+typed capability, with queue reachability, neutral behavior, display refresh, and combat cleanup.
+
+## SPEC `hook participation`
+
+Channel, passive, and evoke are the Orb acting. A SPEC `hook participation` block is the engine
+asking the queued Orb for a number or a decision while resolving something else — a fourth,
+independent behavior. Read `reference/model-hook-participation.md`.
+
+An Orb reaches the combat-scope set only, and `Owner` is a `Player`, so a subject guard goes
+through `Owner.Creature`. The participation holds while the Orb is in the queue, so it stops when
+the Orb is evoked out — state that in SPEC if the design depends on it.
 
 ## Localization
 
-Ship `localization/eng/orbs.json` using the exact public entry:
+Ship matching `localization/eng/orbs.json` and `localization/zhs/orbs.json` using the exact
+public entry:
 
 ```json
 {

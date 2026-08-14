@@ -1,9 +1,9 @@
 # Ordered combat buffer and deterministic dynamic output
 
-Status: **implemented with RitsuLib on STS2 0.107.1**. `RitsuResourceProof` proved the
-mechanic in isolation and `RitsuWayfinderProof` proved the final Character composition on
-2026-07-23. The buffer stores semantic values in combat-attached state while source cards
-use STS2's normal Play -> Discard lifecycle.
+Status: **implemented with RitsuLib on STS2 0.107.1**. Focused two-combat proofs established
+the isolated mechanic and final generated-Character composition. The buffer stores semantic
+values in combat-attached state while source cards use STS2's normal Play -> Discard
+lifecycle.
 
 This page does not support retaining played card instances in a `CustomPile`. The retired
 model-only implementation missed overlapping/stale card views in real player use and is
@@ -37,17 +37,17 @@ Use RitsuLib `AttachedState<PlayerCombatState,TState>` and key it by the current
 ```csharp
 using STS2RitsuLib.Utils;
 
-internal sealed class RouteState
+internal sealed class SemanticBufferState
 {
-    public List<RouteDirection> Directions { get; } = [];
+    public List<SemanticValue> Values { get; } = [];
 }
 
-private static readonly AttachedState<PlayerCombatState, RouteState> States =
-    new(() => new RouteState());
+private static readonly AttachedState<PlayerCombatState, SemanticBufferState> States =
+    new(() => new SemanticBufferState());
 
-public static RouteState GetState(Player player) =>
+public static SemanticBufferState GetState(Player player) =>
     States.GetOrCreate(player.PlayerCombatState ??
-        throw new InvalidOperationException("route requires combat state"));
+        throw new InvalidOperationException("buffer requires combat state"));
 ```
 
 Do not add a process-wide list, custom `ScopedState`, run-save holder, or explicit combat
@@ -57,15 +57,15 @@ Reject overflow before mutating the buffer or any coupled resource. Append the s
 value first, then apply the accepted-play consequence:
 
 ```csharp
-public static async Task<bool> TryPlot(
-    Player player, RouteDirection direction)
+public static async Task<bool> TryAppend(
+    Player player, SemanticValue value)
 {
     var state = GetState(player);
-    if (state.Directions.Count >= Capacity)
+    if (state.Values.Count >= Capacity)
         return false;
 
-    state.Directions.Add(direction);
-    await InkResource.Gain(player, 1);
+    state.Values.Add(value);
+    await CharacterResource.Gain(player, GainPerAcceptedValue);
     return true;
 }
 ```
@@ -77,7 +77,7 @@ the normal result-pile lifecycle:
 protected override async Task OnPlay(
     PlayerChoiceContext choiceContext, CardPlay cardPlay)
 {
-    PlotAccepted = await RouteBuffer.TryPlot(Owner, Direction);
+    AppendAccepted = await SemanticBuffer.TryAppend(Owner, Value);
 }
 ```
 
@@ -90,16 +90,16 @@ clear the live buffer, refresh the shared UI, and create one real output:
 
 ```csharp
 var state = GetState(player);
-if (state.Directions.Count != Capacity)
+if (state.Values.Count != Capacity)
     return null;
 
-RouteDirection[] snapshot = state.Directions.ToArray();
-state.Directions.Clear();
-InkResource.Refresh(player);
+SemanticValue[] snapshot = state.Values.ToArray();
+state.Values.Clear();
+CharacterResource.Refresh(player);
 
 var combat = CombatManager.Instance.DebugOnlyGetState()
     ?? throw new InvalidOperationException("combat state missing");
-var output = combat.CreateCard<MappedRoute>(player);
+var output = combat.CreateCard<ConfiguredOutputCard>(player);
 output.Configure(snapshot);
 await CardPileCmd.AddGeneratedCardToCombat(output, PileType.Hand, player);
 return output;
@@ -108,17 +108,17 @@ return output;
 Store the snapshot and configured `DynamicVars` on the mutable output Card. Do not create
 a model type at runtime or encode the result only in UI/log text.
 
-The proven Wayfinder formula interprets `N>E>S>W` as a closed path with three right turns
-and computes Block `5 + 3 * rightTurns + leftTurns + (closed ? 6 : 0) = 20`. This exact
-formula is proof data, not a universal buffer rule; a generated Mod uses its SPEC formula.
+The output formula, semantic values, bounds, and payoff come only from the current `SPEC.md`.
+Do not reuse a historical acceptance Mod's route vocabulary or numeric formula as a default.
 
 ## Player-visible state
 
-Render a compact value such as `Route: N>E>S>W` through the `RegisterCombatUi` route in
-`character-resource.md`. The promoted composition renders `Ink: N | Route: ...` in the
-fixed 220x32 control at offset `(160,0)`, with a checked 24x24 icon and the same live text
-when that icon is missing. Refresh after append/resource mutation, compile/clear, and
-combat reset. Overflow must leave both state and UI unchanged.
+Render a compact SPEC-derived value such as `<Buffer>: <ordered values>` through the
+`RegisterCombatUi` route in `character-resource.md`. A composed resource/buffer view uses
+`<Resource>: <amount> | <Buffer>: <ordered values>` in the fixed 220x32 control at offset
+`(160,0)`, with a checked 24x24 icon and the same live text when that icon is missing.
+Refresh after append/resource mutation, compile/clear, and combat reset. Overflow must
+leave both state and UI unchanged.
 
 This does not authorize custom zone art, a Harmony patch, or a new UI host.
 
@@ -136,11 +136,10 @@ Reuse the owning `CombatPlayer` or Character suite and assert:
 7. rejected output payment changes neither resource nor payoff;
 8. combat 2 has a distinct attached state, empty route, reset resource, and reset UI.
 
-The final `RitsuWayfinderProof` observed direction and Survey Cards in Discard, route
-`- -> N>E>S>W -> -`, capacity-4 overflow without mutation, one generated `MappedRoute`,
-Block `20`, successful Ink `4 -> 0`, rejected payment at `0`, and combat-2 Ink `0` / Route
-`-`. It reached `wayfinder R5 parity complete expected=all observed=all`, `selftest done`,
-strict Tier 2, and no fresh error with only the declared RitsuLib runtime dependency.
+The maintained harness derives source/output identities, semantic order, capacity, formula,
+resource cost, payoff, and terminal summary from the current `SPEC.md`. It reaches
+`selftest done` only after every configured invariant above passes with the declared
+RitsuLib runtime dependency; historical proof values and markers are not reusable.
 
 ## Unsupported extensions
 

@@ -3,14 +3,12 @@
 param(
     [Parameter(Mandatory = $true)] [string] $ProjectDir,
     [string] $ModName,
-    [string] $RuntimeDir,
-    [switch] $SkipRuntimeCheck
+    [string] $RuntimeDir
 )
 
 $ErrorActionPreference = 'Stop'
 $argsList = @((Join-Path $PSScriptRoot 'build.py'), '--project-dir', $ProjectDir)
 if ($ModName) { $argsList += @('--mod-name', $ModName) }
 if ($RuntimeDir) { $argsList += @('--runtime-dir', $RuntimeDir) }
-if ($SkipRuntimeCheck) { $argsList += '--skip-runtime-check' }
 & python @argsList
 exit $LASTEXITCODE

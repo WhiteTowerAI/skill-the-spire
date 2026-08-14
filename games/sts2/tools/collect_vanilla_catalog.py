@@ -198,7 +198,7 @@ def create_runtime_collector(project_dir: Path, mod_name: str, author: str) -> N
         .replace("__PROFILE_ID__", PROFILE.profile_id)
     )
     _write(project_dir / f"{mod_name}Code" / "RuntimeCatalogCollector.cs", source)
-    manifest_path = project_dir / f"{mod_name}.json"
+    manifest_path = project_dir / "mod_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["description"] = "open-mod M6.7.0 no-op vanilla runtime catalog collector"
     manifest["affects_gameplay"] = False

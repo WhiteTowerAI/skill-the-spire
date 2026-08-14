@@ -6,19 +6,22 @@ switching to an old template.
 
 ## Build And Profile
 
-### Required compile asset is `STS2.RitsuLib.Compat.0.107.1 0.5.4`
+### Generated project is missing a local compile asset
 
-- **Cause:** the project selected a floating/default RitsuLib package, another compat
-  target, or an additional framework package.
-- **Fix:** regenerate with `scaffold.py` or restore the exact pinned `PackageReference`,
-  `Sts2ApiCompat`, `RitsuLibAutoCopy=false`, and single runtime manifest dependency.
+- **Cause:** the bundled Godot SDK files, one local game DLL, or the scaffold-pinned
+  RitsuLib Compat DLL is missing; the project may also have reintroduced a framework
+  `PackageReference`.
+- **Fix:** regenerate with `scaffold.py`, restore the checked local host/runtime install,
+  and retain `Sts2ApiCompat`, `RitsuLibAutoCopy=false`, local assembly references, and the
+  single runtime manifest dependency. Do not add a NuGet framework package as a repair.
 
 ### Runtime asset does not contain the `0.107.1` compat DLL/marker
 
 - **Cause:** RitsuLib is missing, another host variant was installed, or its variant
   manifest/hash does not match.
-- **Fix:** install RitsuLib `0.5.4` with `lib/0.107.1/STS2-RitsuLib.dll`; do not use
-  `--skip-runtime-check` for Tier 1.
+- **Fix:** install RitsuLib `>=0.5.11` with `lib/0.107.1/STS2-RitsuLib.dll`, then scaffold or
+  explicitly migrate the project runtime profile. A release zip must be installed before it
+  can compile a Mod.
 
 ### Host version is not `0.107.1`
 
@@ -32,6 +35,45 @@ switching to an old template.
   bypassed open-mod's pack step.
 - **Fix:** place resource files under the Mod resource tree and run
   `${GAME_TOOLS_DIR}/build.py`.
+
+### `manifest has_pck must be <true|false>`
+
+- **Cause:** the manifest boolean and the authored Mod resource tree disagree — resources
+  exist with `has_pck: false`, or the tree is empty with `has_pck: true`.
+- **Fix:** set the boolean to match the resource tree, then rebuild. Do not empty the tree to
+  satisfy the flag.
+
+### Deployed Mod contains a loose `.json` other than `mod_manifest.json`
+
+- **Cause:** a build-time sidecar was copied into the deployed Mod. The game parses every
+  `.json` under a Mod directory at any depth as a manifest and logs a load error for each one
+  without an `id`.
+- **Fix:** keep authored JSON inside the `.pck` and build-time inputs in the project
+  directory. `build.py` prunes a copy left by an older build; any other deployed
+  non-manifest `.json` fails the build.
+
+### `[ancient-dialogue]` or an Ancient localization detail in a profile failure
+
+- **Cause:** the generated flat dialogue table is structurally unsafe — wrong semantic
+  group/key, non-contiguous line structure, bad visit/repeat/Architect metadata, or keys that
+  differ across shipped languages.
+- **Fix:** fix the reported semantic group/key. Never bypass the preflight and never enable
+  the debug missing-Architect fallback to make it pass.
+
+### `localization FAILED` with a language/table/key/token detail
+
+- **Cause:** one of required `eng`/`zhs` is absent, the language trees contain different
+  tables or keys, a value is empty, or a translation changed a SmartFormat token.
+- **Fix:** regenerate both language tables from SPEC's bilingual text, preserving exact table
+  names, keys, and token multisets. Do not copy English prose into `zhs` or weaken the validator.
+
+### `[vanilla-overrides]` with a target/route/page/localization/fingerprint detail
+
+- **Cause:** the override manifest, generated flow, or `events.json` drifted from the pinned
+  catalog — unpromoted operation, wrong baseline, same-Mod conflict, or a stale Adapter
+  fingerprint.
+- **Fix:** fix the named semantic operation or generated source. Never relax the catalog and
+  never swap in a guessed patch target.
 
 ### MSB1008 when passing MSBuild properties
 
@@ -98,6 +140,15 @@ switching to an old template.
 - **Cause:** run-owned progress was stored in combat state or an unsaved field.
 - **Fix:** use the concrete-Relic saved attached-state contract and its exact
   `SavedProperties.From`/`Fill` round trip.
+- **Localize by the first failed boundary**, and fix that boundary rather than the effect's
+  numeric Cmd:
+  - wrong `N-1` progress → the advancing event, owner guard, or phase is wrong;
+  - same-combat threshold passes but second-combat progress resets → `SavedAttachedState` is
+    missing, or a combat-end hook cleared it;
+  - a combat-local effect leaks into combat 2 → code duplicated the turn count instead of
+    reading `PlayerCombatState.TurnNumber`;
+  - a failed save round trip → the selected adapter's property type/holder or the run-save
+    bridge is unsupported.
 
 ### Turn-N effect leaks across combats
 
@@ -115,6 +166,11 @@ switching to an old template.
   offset/size changed.
 - **Fix:** refresh the registered control and retain the 220x32 geometry at offset 160;
   verify disjoint global rects and the text fallback.
+- **Localize a character resource by symptom:** a missing amount or reset points at the
+  registered `SecondaryResourceDefinition` id or its persistence policy; a changed amount with
+  stale UI points at `RegisterCombatUi` visibility/update or a missing explicit refresh after
+  buffer-only mutation. Never add a duplicate integer and never restore the historical UI
+  postfix.
 
 ### Ordered buffer has stale Card views or leaks across combat
 
@@ -122,14 +178,10 @@ switching to an old template.
   state used a non-combat owner.
 - **Fix:** store semantic values in `AttachedState<PlayerCombatState,TState>` and let every
   source Card follow normal Play -> Discard.
-
-### Scry overlay is missing, unawaited, or has wrong order/history
-
-- **Cause:** an empty/no-op boundary was reached; selector command was not awaited; code
-  iterated the selected set instead of the stable seen list; or discard history/hooks were
-  omitted.
-- **Fix:** follow `reference/scry-helper.md` exactly. Await selection and pile commands,
-  filter the stable seen list, record normal history/hooks once, and reject multiplayer.
+- **Localize by symptom:** cross-combat leakage points at a non-combat key or a process-wide
+  collection; wrong overflow means capacity was checked after mutation; stale or overlapping
+  Card views mean source Cards were retained or skipped their native lifecycle — restore
+  normal Play -> Discard instead of hiding visuals.
 
 ### Resumed Event starts a second special combat
 
@@ -166,6 +218,18 @@ switching to an old template.
   proof marker is wrong.
 - **Fix:** use diagnostic trigger lines to localize source-vs-dependent behavior, repair the
   failed invariant, rebuild, and rerun Tier 2.
+
+### Dev console will not open, or a debug grant says `Unable to create`
+
+- **Cause:** debug commands exist only while the game is running modded
+  (`ModManager.IsRunningModded()`, true whenever at least one gameplay Mod loaded), so a
+  missing console means no Mod loaded. `Unable to create` instead means the console is live but
+  the requested id did not resolve.
+- **Fix:** confirm the Mod actually loaded by grepping the log for `RUNNING MODDED`, and open
+  the console with `` ` `` (also `'`, `*`, `^`, `Shift+8`; `Esc` closes). For a failed grant,
+  pass a unique substring of the id — `relic add` matches by uppercased `Contains`.
+- A manual console observation never substitutes for the structured Tier 2 state proof. Report
+  it as manually observed, and only when the user confirms the concrete result.
 
 ### Only a known unrelated shutdown/backup error appears
 

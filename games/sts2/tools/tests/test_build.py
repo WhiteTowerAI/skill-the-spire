@@ -14,6 +14,16 @@ import build  # noqa: E402
 
 
 class BuildTests(unittest.TestCase):
+    def test_msbuild_property_uses_selected_dotnet_environment(self) -> None:
+        completed = mock.Mock(returncode=0, stdout="value\n")
+        with mock.patch.object(build.subprocess, "run", return_value=completed) as run:
+            env = {"NUGET_PACKAGES": "shared-cache"}
+            self.assertEqual(
+                "value",
+                build.get_msbuild_property(Path("Proof.csproj"), "ModsPath", env),
+            )
+            self.assertEqual(env, run.call_args.kwargs["env"])
+
     def test_resource_manifest_must_match_authored_assets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -63,21 +73,22 @@ class BuildTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "Proof.csproj").write_text("<Project />", encoding="utf-8")
-            localization = root / "Proof" / "localization" / "eng"
-            localization.mkdir(parents=True)
-            (localization / "characters.json").write_text(
-                json.dumps({"PROOF_CHARACTER_WAYFINDER.title": "Wayfinder"}),
-                encoding="utf-8",
-            )
-            (localization / "ancients.json").write_text(
-                json.dumps(
-                    {
-                        "THE_ARCHITECT.talk.PROOF_CHARACTER_WAYFINDER.0-0r.char": "Ready",
-                        "THE_ARCHITECT.talk.PROOF_CHARACTER_WAYFINDER.0-0r.next": "Continue",
-                    }
-                ),
-                encoding="utf-8",
-            )
+            for language in ("eng", "zhs"):
+                localization = root / "Proof" / "localization" / language
+                localization.mkdir(parents=True)
+                (localization / "characters.json").write_text(
+                    json.dumps({"PROOF_CHARACTER_WAYFINDER.title": "Wayfinder"}),
+                    encoding="utf-8",
+                )
+                (localization / "ancients.json").write_text(
+                    json.dumps(
+                        {
+                            "THE_ARCHITECT.talk.PROOF_CHARACTER_WAYFINDER.0-0r.char": "Ready",
+                            "THE_ARCHITECT.talk.PROOF_CHARACTER_WAYFINDER.0-0r.next": "Continue",
+                        }
+                    ),
+                    encoding="utf-8",
+                )
             with (
                 mock.patch.object(build, "validate_project_contract", return_value="ok"),
                 mock.patch.object(build, "validate_resource_manifest", return_value="has_pck=true"),
@@ -92,7 +103,6 @@ class BuildTests(unittest.TestCase):
                             str(root),
                             "--mod-name",
                             "Proof",
-                            "--skip-runtime-check",
                         ]
                     ),
                 )

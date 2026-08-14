@@ -88,6 +88,15 @@ if (power is { Amount: > 0 })
 Never use a negative `PowerCmd.Apply<T>` to consume. With no existing instance it can
 create invalid negative state.
 
+## Optional shared capability routes
+
+For a separable Power-owned behavior/state bundle, read `reference/model-capabilities.md`; for
+lifecycle/persistence/RNG, read `reference/lifecycle-state-rng.md`; and for reachable per-hit
+attack, healing, Energy/Stars-gain response, or maximum hand size, read
+`reference/shared-effect-hooks.md`. Implement on the Power or typed capability and preserve amount,
+duration, owner guard, phase/order, neutral behavior, display refresh, and removal cleanup.
+Process-wide registration is not a Power route.
+
 ## Hooks
 
 Override only the hook selected by SPEC. Examples:
@@ -100,9 +109,42 @@ Override only the hook selected by SPEC. Examples:
 Use `Owner` for the attached Creature, `Amount` for current stacks, and `Flash()` for a
 real trigger. Await all command hooks.
 
+## SPEC `hook participation`: modify a value the host is computing
+
+When SPEC declares `hook participation`, the Power is not acting at a trigger — the engine is
+asking it for a number or a decision while resolving someone else's event. Read
+`reference/model-hook-participation.md` for the full contract; a Power reaches the combat-scope
+set, and `Owner` is the attached `Creature` directly.
+
+The shape is a guard, then the value, with the hook's neutral default on every other path:
+
+```csharp
+public override decimal ModifyDamageMultiplicative(
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+{
+    if (target != Owner) return 1m;               // SPEC `subject`: incoming, not outgoing
+    if (!props.IsPoweredAttack()) return 1m;      // SPEC `condition`: attack damage only
+    return DynamicVars["DamageIncrease"].BaseValue;
+}
+```
+
+That is vanilla `VulnerablePower`. Copy its structure, and keep three things straight:
+
+- **`target` versus `dealer` is the whole difference** between "damage I take" and "damage I
+  deal". `VulnerablePower` guards `target`; `WeakPower` guards `dealer`. SPEC's `subject` line
+  says which.
+- **Return the neutral default outside the guard**, never a stored modifier. It is also what the
+  engine uses to decide whether to list this Power as a modifier of that number in the UI.
+- **Read the number from `DynamicVars`** and declare it in `CanonicalVars`, so the value in the
+  rules text is the same value the body applies. Two literals will diverge.
+
+Do not use `ModifyDamageMultiplicative` or the other four redirected hooks on an
+**Enchantment**; see `recipes/enchantment.md`.
+
 ## Localization
 
-Ship `localization/eng/powers.json` with the exact public entry:
+Ship matching `localization/eng/powers.json` and `localization/zhs/powers.json` with the
+exact public entry:
 
 ```json
 {

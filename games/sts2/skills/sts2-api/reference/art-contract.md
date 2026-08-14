@@ -2,9 +2,19 @@
 
 > **The art source of truth.** When a mod ships a custom sprite (a card portrait, a
 > relic icon, …) the image only shows up in-game if it lands at the **exact path** the
-> template's base class resolves AND is the **exact pixel size** the game expects. This
-> page is the single place that records both. `tools/gen_sprite.py` reads the same
-> contract; keep them in sync.
+> template's base class resolves AND is the **exact pixel size** the game expects.
+>
+> The exact values live in code: `gen_sprite.py`'s `SPECS` and `character_art.py`'s
+> `CHARACTER_ART_BUNDLE`. They are projected into
+> `reference/catalogs/art-contract-sts2-0.107.1.json` by
+> `python ${GAME_TOOLS_DIR}/gen_sprite.py export-contract`, so you can read every path,
+> size, fit, chroma, and fallback as data instead of executing anything. Query that catalog
+> when you need a value the tables below do not spell out.
+>
+> The tables on this page are a readable view of that same contract, not a second
+> definition. `test_art_contract_catalog.py` asserts every size here equals the catalog's
+> and that every spec in the catalog has a row, so the two cannot drift apart. Do not
+> hand-edit the catalog, and do not re-derive a size by eye.
 >
 > **How the placeholder mechanism works (read this first).** The scaffolded card/relic/
 > power bases resolve each sprite path with a `ResourceLoader.Exists(path)` check and, if
@@ -28,6 +38,11 @@
 > `res://images/ui/rest_site/option_heal.png` before constructing
 > `RestSiteOptionAssetProfile`. The vanilla path derived from a custom `OptionId` is not a
 > usable fallback.
+> A generated Character explicitly selects the base-game Ironclad placeholder profile. Its
+> missing Energy resources resolve to `ironclad_energy_counter.tscn`,
+> `EnergyIconHelper.GetPath("ironclad")` (`energy_ironclad.tres`), and
+> `res://images/packed/sprite_fonts/ironclad_energy_icon.png`; they are never derived from a
+> theme palette name such as `red`.
 >
 > **Acquisition is source-independent.** When the current agent runtime exposes a
 > callable host-native raster image tool, it may create the source PNG without a separate
@@ -171,7 +186,7 @@ Ancient cards.
 
 Character assets are separate contracts because `CharacterAssetProfile` maps distinct
 game hosts. The active profiles are re-grounded against STS2 `0.107.1` and RitsuLib
-`0.5.4`; archived framework inventories are style/consumer research only.
+`0.5.11`; archived framework inventories are style/consumer research only.
 Each profile is promoted independently only after a real headed Character run shows the
 packed resource instead of the resolved fallback.
 
@@ -190,16 +205,17 @@ packed resource instead of the resolved fallback.
 | `character_energy_text` | `<slug>.png` | 24x24 | transparent rich-text Energy icon |
 
 The bounded combat-cue sources are four action sheets rather than ordinary single-file
-runtime specs:
+runtime specs. Every grid below is **columns x rows**, matching the sheet you actually
+request: cells are read left-to-right, then top-to-bottom, and each cell is 512x512.
 
-| source spec | sheet grid | runtime output | timing |
-|---|---:|---|---:|
-| `character_cue_idle` | 2x2 | `cues/idle/00.png` .. `03.png` | 180 ms, loop |
-| `character_cue_attack` | 2x2 | `cues/attack/00.png` .. `03.png` | 90 ms, one shot |
-| `character_cue_hit` | 2x2 | `cues/hit/00.png` .. `03.png` | 80 ms, one shot |
-| `character_cue_dead` | 2x3 | `cues/dead/00.png` .. `05.png` | 140 ms, terminal |
+| source spec | sheet grid (cols x rows) | source size | runtime output | timing |
+|---|---:|---:|---|---:|
+| `character_cue_idle` | 2x2 | 1024x1024 | `cues/idle/00.png` .. `03.png` | 180 ms, loop |
+| `character_cue_attack` | 2x2 | 1024x1024 | `cues/attack/00.png` .. `03.png` | 90 ms, one shot |
+| `character_cue_hit` | 2x2 | 1024x1024 | `cues/hit/00.png` .. `03.png` | 80 ms, one shot |
+| `character_cue_dead` | 2x3 | 1024x1536 | `cues/dead/00.png` .. `05.png` | 140 ms, terminal |
 
-The 2026-07-23 RitsuLib-only Wayfinder run re-proved `character_select`, `character_background`,
+The focused RitsuLib-only Character run re-proved `character_select`, `character_background`,
 `character_icon`, `character_combat`, `character_rest`, `character_merchant`,
 `character_energy`, and `character_energy_text`. Real selection, CombatPlayer, RestSite,
 and Shop hosts rendered the exact PNGs; one native energy counter exposed five 256x256
@@ -224,7 +240,7 @@ the contract. Read `reference/character-combat-cues.md` for runtime ownership an
 
 ### CharacterArtBundle and reference routing
 
-`games/sts2/tools/character_art.py` owns one structured `CharacterArtBundle` for every
+`character_art.py` owns one structured `CharacterArtBundle` for every
 Character static slot and the four-action cue contract. Each static row records
 required/optional status, normalized output path,
 exact dimensions, alpha policy, checked fallback, real consumer, style-reference family,
@@ -249,7 +265,7 @@ to the raw icon scene that layers the outline behind the main texture in the sup
 top-panel host. The Meridian proof passed the exact model/resource/node assertions and the
 maintainer's headed review for this outline route.
 
-M6.5 splits `energy_large.png` into a 256x256 pool Energy icon while retaining
+The contract splits `energy_large.png` into a 256x256 pool Energy icon while retaining
 `energy_text.png` as the 24x24 rich-text icon. They are separate required bundle rows,
 paths, normalization specs, and real consumers; neither path may stand in for the other.
 
@@ -918,7 +934,7 @@ corners.
 
 The orb source also provided a useful negative case: the model textured its requested
 magenta background with dark fragments. Color keying alone kept those fragments and shrank
-the orb. The bounded M6 cut-out cleanup now retains the centered subject cluster, removes
+the orb. The bounded cut-out cleanup retains the centered subject cluster, removes
 disconnected debris, and performs the final `contain` fit; the already-paid source then
 passed locally without regeneration. This acceptance proves reference delivery, prompt
 shaping, and deterministic normalization. It does not replace the existing headed
@@ -998,7 +1014,7 @@ automatically; event and Character selection/background remain opaque. It prints
 so the random few-shot choice is auditable without exposing account data. For enchantment,
 orb, and monster, normalization also keeps the centered subject cluster and removes
 disconnected dark/chroma debris before the final `contain` fit; this is bounded to the new
-profiles and does not alter the earlier M5.5 specs. Before crossing a Windows/npm `.cmd` shim it folds all prompt whitespace
+profiles and does not alter the earlier icon specs. Before crossing a Windows/npm `.cmd` shim it folds all prompt whitespace
 to one line, preserving every sentence; an empty/whitespace-only prompt stops before any
 CLI call. A missing CLI/auth/account, model lookup failure, task failure/timeout, or
 zero/multiple downloads exits nonzero. Do not automatically resubmit after a timeout or

@@ -4,7 +4,7 @@ Status: **implemented for nine static profiles, deterministic top-icon/generated
 Relic outlines, the bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and
 Character dialogue in native Ancient/Architect scenes on STS2 `0.107.1` / RitsuLib
 `0.4.67`**.
-The 2026-07-23 Wayfinder headed proof established selection
+The focused RitsuLib-only headed proof established selection
 portrait/background, top-panel icon, non-Spine combat/rest/merchant bodies, five-layer
 energy, and the original compact shared card-energy icon. Locked selection and map marker
 remain unverified. The 2026-07-27 M6.5 Meridian
@@ -20,6 +20,12 @@ Use this page with `recipes/character.md` and `reference/art-contract.md`; also 
 independently: a valid path or successful PCK build is not render evidence.
 
 ## Profile and consumer matrix
+
+The sizes in this matrix are a readable view of the code-owned art contract, projected into
+`reference/catalogs/art-contract-sts2-0.107.1.json`. That catalog also carries each slot's
+output path, alpha policy, required/optional status, fallback, and generation-call budget.
+The status column below is this page's own: it records how strongly each consumer has been
+observed, which is not something the contract holds.
 
 | profile | RitsuLib surface | real consumer | status |
 |---|---|---|---|
@@ -42,6 +48,8 @@ independently: a valid path or successful PCK build is not render evidence.
 The promoted static profile is one declarative object:
 
 ```csharp
+public override string? PlaceholderCharacterId => "ironclad";
+
 public override CharacterAssetProfile AssetProfile => new()
 {
     Scenes = new()
@@ -102,9 +110,11 @@ entire opaque source composition inside `(6,8)-(126,187)`; the real button remai
 the viewport, and settled same-window Ironclad/Meridian comparison showed no additional
 zoom, UI occlusion, or host clipping.
 
-Missing/unused rows resolve against the template's placeholder/native profile. Do not
-invent a second getter path or patch. In particular, the RitsuLib Shop route does not need
-the historical `NMerchantCharacter._Ready()` prefix.
+Missing/unused rows resolve against the explicitly selected base-game Ironclad profile. For
+Energy this means `ironclad_energy_counter.tscn`; it must not be derived from the Character
+theme or an `EnergyColorName` such as `red`. Do not invent a second getter path or patch. In
+particular, the RitsuLib Shop route does not need the historical
+`NMerchantCharacter._Ready()` prefix.
 
 ## Combat cue composition
 
@@ -213,11 +223,15 @@ The pool icons stay separate from full energy and from one another. The card poo
 `energy_text.png` before returning `TextEnergyIconPath`. The large route must resolve the
 256x256 texture in a real hand card's `%EnergyIcon`. The text route must resolve the 24x24
 path in a real card description using `EnergyIconsFormatter`; seeing the large icon does
-not prove the rich-text consumer.
+not prove the rich-text consumer. When either custom file is absent, map the stable custom
+pool prefix to the corresponding original Ironclad resource: `EnergyIconHelper.GetPath("ironclad")`
+(`energy_ironclad.tres`) or
+`res://images/packed/sprite_fonts/ironclad_energy_icon.png`. Never synthesize the fallback
+from a palette label such as `red`.
 The static proof is independent from the public resource/control proof; read
 `character-resource.md` for its fixed control, offset, fallback, and non-overlap contract.
 
-## M6.5 card/UI theme
+## Card/UI theme
 
 One Character-local theme contract owns `NameColor`, `EnergyLabelOutlineColor`,
 `DeckEntryCardColor`, `EnergyOutlineColor`, frame target RGB/brightness, both Energy-icon
@@ -263,10 +277,10 @@ For every selected visual:
 9. emit the final Foundation/static marker only after selection, combat, RestSite, and Shop
    all pass; then require `selftest done` and no fresh error.
 
-The 2026-07-23 proof captured selection, combat, RestSite, and Shop. Structured state
-proved exactly one selected Wayfinder, HP `72/72`, exact pools and starters, one native
-energy counter/five layers, visible 24x24 card icon, `NRestSiteCharacter`, and
-`NMerchantCharacter`, then emitted
+The focused proof captured selection, combat, RestSite, and Shop. Structured state must
+derive the selected Character identity, HP, pools, and starters from the current `SPEC.md`,
+then assert one native energy counter/five layers, the visible 24x24 card icon,
+`NRestSiteCharacter`, and `NMerchantCharacter` before emitting
 `character foundation/static-presentation ... observed=all`. Strict RitsuLib-only Tier 2
 passed with no fresh error.
 

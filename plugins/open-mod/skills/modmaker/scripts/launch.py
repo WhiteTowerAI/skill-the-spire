@@ -34,6 +34,8 @@ import sys
 import time
 from pathlib import Path
 
+from ritsu_profile import game_executable_dir
+
 APPID = "2868840"
 GAME_FOLDER = "Slay the Spire 2"
 
@@ -151,6 +153,10 @@ def default_log_path() -> Path:
     return Path(xdg) / "SlayTheSpire2" / "logs" / "godot.log"
 
 
+def steam_appid_path(game_dir: Path, platform_name: str | None = None) -> Path:
+    return game_executable_dir(game_dir, platform_name) / "steam_appid.txt"
+
+
 def launch_process(exe: Path, game_dir: Path, extra_args: list[str]) -> subprocess.Popen:
     """Start the game detached-ish. On macOS an .app bundle is opened via `open`."""
     if sys.platform == "darwin" and exe.suffix == ".app":
@@ -247,7 +253,7 @@ def main(argv: list[str]) -> int:
         return 2
 
     # No-Steam launch: steam_appid.txt must sit next to the exe.
-    appid_file = game_dir / "steam_appid.txt"
+    appid_file = steam_appid_path(game_dir)
     if not appid_file.exists():
         appid_file.write_text(APPID, encoding="ascii")
         print(f"[launch] created steam_appid.txt ({APPID}) for no-Steam launch")

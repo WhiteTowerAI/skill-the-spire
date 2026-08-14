@@ -13,6 +13,7 @@ import unicodedata
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
+from localization_contract import REQUIRED_LANGUAGES
 from ritsu_profile import PROFILE
 
 
@@ -1732,7 +1733,7 @@ def _validate_effect(
         )
         if value.get("target") == "play_target" and not allow_play_target:
             raise VanillaOverrideError(f"{label} cannot use play_target in an owner hook")
-    elif kind in {"draw", "gain_energy", "gain_stars", "scry"}:
+    elif kind in {"draw", "gain_energy", "gain_stars"}:
         _require_exact_keys(value, {"kind", "amount", "target"}, label)
         _validate_amount_ref(value.get("amount"), f"{label} amount", target_model)
         _require_choice(value.get("target"), {"owner"}, f"{label} target")
@@ -1803,7 +1804,7 @@ def _validate_non_card_effect(
             {"all_enemies", "event_target", "owner", "random_enemy"},
             f"{label} target",
         )
-    elif kind in {"draw", "gain_energy", "gain_gold", "gain_stars", "scry"}:
+    elif kind in {"draw", "gain_energy", "gain_gold", "gain_stars"}:
         _require_exact_keys(value, {"kind", "amount", "target"}, label)
         validate_amount(value.get("amount"))
         _require_choice(value.get("target"), {"owner"}, f"{label} target")
@@ -3961,7 +3962,7 @@ def _validate_project_ancient_localization(
         return "event_localizations=0 keys=0"
 
     localization_root = project_dir / mod_name / "localization"
-    languages = {"eng"}
+    languages = set(REQUIRED_LANGUAGES)
     if localization_root.is_dir():
         languages.update(path.name for path in localization_root.iterdir() if path.is_dir())
 

@@ -18,7 +18,12 @@ import build  # noqa: E402
 import collect_vanilla_catalog as collector  # noqa: E402
 import scaffold  # noqa: E402
 import vanilla_overrides as overrides  # noqa: E402
-from ritsu_profile import PROFILE  # noqa: E402
+from ritsu_profile import (  # noqa: E402
+    PROFILE,
+    local_mods_dir,
+    resolve_runtime_asset,
+    resolve_runtime_compile_profile,
+)
 
 
 ASSEMBLY_SHA256 = "a" * 64
@@ -823,7 +828,7 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         catalog = overrides.load_catalog()
 
         self.assertEqual("0.107.1", catalog["host_version"])
-        self.assertEqual("0.5.4", catalog["framework_version"])
+        self.assertEqual("0.5.11", catalog["framework_version"])
         self.assertEqual(
             "a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52",
             catalog["assembly"]["sha256"],
@@ -832,7 +837,7 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         self.assertEqual(3883, catalog["assembly"]["model_namespace_type_count"])
         self.assertEqual(LOCALIZATION_LANGUAGES, catalog["localization_languages"])
         self.assertEqual(
-            "705ac47e9dc3ca111033c8734aff342da41fecfdf8590cea59601f57e865e546",
+            "78c3f607d8ff618c7361bdbc3cfc87956bceb72f2f003f645d87d2bdd4d690cf",
             catalog["catalog_sha256"],
         )
         adapter_hashes = {
@@ -2477,22 +2482,26 @@ class VanillaOverrideManifestTests(unittest.TestCase):
 class VanillaOverridePipelineTests(unittest.TestCase):
     def test_authoring_docs_route_all_promoted_packages(self) -> None:
         sts2_root = TOOLS_DIR.parent
-        routed = (
-            sts2_root / "skills" / "sts2-api" / "SKILL.md",
-            sts2_root / "skills" / "modmaker" / "SKILL.md",
-            sts2_root / "skills" / "modmaker" / "interview.md",
-            sts2_root / "skills" / "modmaker" / "spec.md",
-            sts2_root / "skills" / "modmaker" / "author.md",
-            sts2_root / "skills" / "modmaker" / "semantic-contract.md",
+        api_skill = (sts2_root / "skills" / "sts2-api" / "SKILL.md").read_text(
+            encoding="utf-8"
         )
-        for path in routed:
-            text = path.read_text(encoding="utf-8")
-            self.assertIn("vanilla-overrides.md", text, path)
-            self.assertIn("vanilla-card-overrides.md", text, path)
-            self.assertIn("vanilla-visual-overrides.md", text, path)
-            self.assertIn("vanilla-ancient-overrides.md", text, path)
-            self.assertIn("vanilla-availability-overrides.md", text, path)
-            self.assertIn("vanilla-non-card-overrides.md", text, path)
+        author = (sts2_root / "skills" / "modmaker" / "author.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("vanilla-overrides.md", author)
+        for reference in (
+            "vanilla-overrides.md",
+            "vanilla-card-overrides.md",
+            "vanilla-visual-overrides.md",
+            "vanilla-ancient-overrides.md",
+            "vanilla-availability-overrides.md",
+            "vanilla-non-card-overrides.md",
+        ):
+            with self.subTest(reference=reference):
+                self.assertTrue(
+                    (sts2_root / "skills" / "sts2-api" / "reference" / reference).is_file()
+                )
+                self.assertIn(reference, api_skill)
 
         for path in (
             sts2_root / "skills" / "modmaker" / "build.md",
@@ -2586,39 +2595,30 @@ class VanillaOverridePipelineTests(unittest.TestCase):
 
     def test_card_description_conflict_stops_across_the_authoring_pipeline(self) -> None:
         sts2_root = TOOLS_DIR.parent
-        guarded = (
-            sts2_root / "skills" / "modmaker" / "SKILL.md",
-            sts2_root / "skills" / "modmaker" / "interview.md",
-            sts2_root / "skills" / "modmaker" / "semantic-contract.md",
-            sts2_root / "skills" / "modmaker" / "spec.md",
-            sts2_root / "skills" / "modmaker" / "author.md",
-            sts2_root / "skills" / "sts2-api" / "SKILL.md",
-            sts2_root / "skills" / "sts2-api" / "reference" / "vanilla-card-overrides.md",
-        )
-        for path in guarded:
-            text = path.read_text(encoding="utf-8")
-            normalized = " ".join(text.split())
-            self.assertIn("base-description replacement", normalized, path)
-            self.assertIn("stop", text.lower(), path)
-
-        semantic_contract = guarded[2].read_text(encoding="utf-8")
-        self.assertIn("cannot turn `replace` into", semantic_contract)
-        spec = guarded[3].read_text(encoding="utf-8")
-        self.assertIn("Never rewrite", spec)
-        interview = guarded[1].read_text(encoding="utf-8")
-        self.assertIn("does not authorize that downgrade", interview)
-
-        implementation_plan = (
-            sts2_root.parents[1] / "documents" / "IMPLEMENTATION_PLAN.md"
+        reference = (
+            sts2_root
+            / "skills"
+            / "sts2-api"
+            / "reference"
+            / "vanilla-card-overrides.md"
         ).read_text(encoding="utf-8")
+        normalized = " ".join(reference.split())
+        self.assertIn("base-description replacement", normalized)
+        self.assertIn("stop", reference.lower())
+        self.assertIn("before/after", reference)
+
+        capability_graph = (
+            sts2_root / "tests" / "content-capability-graph.md"
+        ).read_text(encoding="utf-8")
+        normalized_graph = " ".join(capability_graph.split())
         self.assertIn(
-            "no promoted route for canonical variables, tag removal, or "
-            "base-description replacement",
-            implementation_plan,
+            "Canonical variable edits, tag removal, and base-description replacement "
+            "remain unsupported",
+            normalized_graph,
         )
         self.assertNotIn(
             "Adapter for canonical variables, tag removal, and base-description replacement",
-            implementation_plan,
+            normalized_graph,
         )
 
     def test_reference_only_symbols_have_local_imports(self) -> None:
@@ -2669,6 +2669,11 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         if host_and_data is None:
             self.skipTest("STS2 host is unavailable; set OPEN_MOD_STS2_DIR")
         host, data_dir = host_and_data
+        try:
+            runtime = resolve_runtime_asset(host, local_mods_dir(host))
+            compile_profile = resolve_runtime_compile_profile(runtime.path)
+        except ValueError as exc:
+            self.skipTest(f"checked local RitsuLib runtime is unavailable: {exc}")
 
         source = """using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Gold;
@@ -2704,7 +2709,12 @@ public static partial class MainFile
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             project = root / "reference-compile-project"
-            scaffold.generate(project, "ReferenceCompile", "OpenMod")
+            scaffold.generate(
+                project,
+                "ReferenceCompile",
+                "OpenMod",
+                compile_profile=compile_profile,
+            )
             (project / "ReferenceCompileCode" / "ReferenceImports.cs").write_text(
                 source, encoding="utf-8", newline="\n"
             )
@@ -2720,6 +2730,7 @@ public static partial class MainFile
                     f"-p:Sts2Dir={host}",
                     f"-p:Sts2DataDir={data_dir}",
                     f"-p:ModsPath={mods_path.as_posix()}/",
+                    f"-p:RitsuLibCompileAssemblyPath={compile_profile.assembly_path}",
                     "-p:RestoreIgnoreFailedSources=true",
                 ],
                 capture_output=True,
@@ -2742,7 +2753,10 @@ public static partial class MainFile
 
             manifest_path = project / overrides.MANIFEST_RELATIVE_PATH
             self.assertTrue(manifest_path.is_file())
-            self.assertIn("openmod\\vanilla-overrides.json", (project / "Proof.csproj").read_text())
+            csproj = (project / "Proof.csproj").read_text()
+            self.assertIn("<None Include=\"openmod\\vanilla-overrides.json\"", csproj)
+            # It is a build-time input, so it must never be copied into mods/<ModName>/.
+            self.assertNotIn("DestinationFolder=\"$(ModsPath)$(MSBuildProjectName)\\openmod\"", csproj)
             summary = overrides.validate_project_override_manifest(project, "Proof")
             self.assertIn("operations=0", summary)
 
@@ -2776,32 +2790,58 @@ public static partial class MainFile
                             str(project),
                             "--mod-name",
                             "Proof",
-                            "--skip-runtime-check",
                         ]
                     ),
                 )
                 run.assert_not_called()
 
-    def test_deployed_override_manifest_must_match_validated_source(self) -> None:
+    def _deployed_proof_tree(self, root: Path) -> tuple[Path, Path]:
+        """A validated source project plus its deployed Mod directory."""
+        project = root / "project"
+        deployed = root / "mods" / "Proof"
+        source_override = project / overrides.MANIFEST_RELATIVE_PATH
+        source_override.parent.mkdir(parents=True)
+        deployed.mkdir(parents=True)
+        (project / "Proof.json").write_text("{}\n", encoding="utf-8")
+        (deployed / "Proof.json").write_text("{}\n", encoding="utf-8")
+        (deployed / "Proof.dll").write_bytes(b"proof")
+        source_override.write_text('{"source": true}\n', encoding="utf-8")
+        return project, deployed
+
+    def test_the_override_sidecar_is_not_deployed_into_the_mod_tree(self) -> None:
+        """The game parses every deployed `.json` as a manifest, so the sidecar stays home."""
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            project = root / "project"
-            deployed = root / "mods" / "Proof"
-            source_override = project / overrides.MANIFEST_RELATIVE_PATH
-            deployed_override = deployed / overrides.MANIFEST_RELATIVE_PATH
-            source_override.parent.mkdir(parents=True)
-            deployed_override.parent.mkdir(parents=True)
-            (project / "Proof.json").write_text("{}\n", encoding="utf-8")
-            (deployed / "Proof.json").write_text("{}\n", encoding="utf-8")
-            (deployed / "Proof.dll").write_bytes(b"proof")
-            source_override.write_text('{"source": true}\n', encoding="utf-8")
-            deployed_override.write_text('{"source": false}\n', encoding="utf-8")
+            project, deployed = self._deployed_proof_tree(Path(tmp))
 
-            with self.assertRaisesRegex(build.RitsuProfileError, "differs from"):
-                build.validate_deployed_artifacts(project, "Proof", deployed)
-
-            deployed_override.write_bytes(source_override.read_bytes())
             build.validate_deployed_artifacts(project, "Proof", deployed)
+
+            self.assertTrue((project / overrides.MANIFEST_RELATIVE_PATH).is_file())
+            self.assertFalse((deployed / overrides.MANIFEST_RELATIVE_PATH).exists())
+
+    def test_build_prunes_a_stale_deployed_override_sidecar(self) -> None:
+        """An existing project deployed by an older build self-heals on the next build."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project, deployed = self._deployed_proof_tree(Path(tmp))
+            stale = deployed / overrides.MANIFEST_RELATIVE_PATH
+            stale.parent.mkdir(parents=True)
+            stale.write_text('{"source": true}\n', encoding="utf-8")
+
+            build.validate_deployed_artifacts(project, "Proof", deployed)
+
+            self.assertFalse(stale.exists())
+            self.assertFalse(stale.parent.exists())
+            self.assertTrue((deployed / "Proof.json").is_file())
+
+    def test_any_other_deployed_json_fails_the_build(self) -> None:
+        """One rule, not one exception: only the Mod's own manifest may be loose JSON."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project, deployed = self._deployed_proof_tree(Path(tmp))
+            phantom = deployed / "data" / "future-sidecar.json"
+            phantom.parent.mkdir(parents=True)
+            phantom.write_text('{"schema": "whatever"}\n', encoding="utf-8")
+
+            with self.assertRaisesRegex(build.RitsuProfileError, "data/future-sidecar.json"):
+                build.validate_deployed_artifacts(project, "Proof", deployed)
 
 
 if __name__ == "__main__":

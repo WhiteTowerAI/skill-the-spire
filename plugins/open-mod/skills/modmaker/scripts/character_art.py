@@ -653,6 +653,15 @@ def _readable_image(path: Path) -> bool:
 
 _PROFILE_FALLBACK = "RitsuLib resolved CharacterAssetProfile fallback"
 _UNPROMOTED_FALLBACK = "checked native/shared fallback; custom consumer unsupported"
+_IRONCLAD_ENERGY_COUNTER_FALLBACK = (
+    "base-game Ironclad profile: ironclad_energy_counter.tscn"
+)
+_IRONCLAD_LARGE_ENERGY_FALLBACK = (
+    'base-game EnergyIconHelper.GetPath("ironclad"): energy_ironclad.tres'
+)
+_IRONCLAD_TEXT_ENERGY_FALLBACK = (
+    "base-game sprite font: ironclad_energy_icon.png"
+)
 
 
 CHARACTER_ART_BUNDLE = CharacterArtBundle(
@@ -719,37 +728,39 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
         ),
         CharacterArtSlot(
             "full_energy_layer_1", "character_energy", "charui/orb_layer_1.png", (256, 256),
-            "transparent", True, _PROFILE_FALLBACK, "NEnergyCounter.Layer1",
+            "transparent", True, _IRONCLAD_ENERGY_COUNTER_FALLBACK, "NEnergyCounter.Layer1",
             "character_icon", "contain", True, "palette",
         ),
         CharacterArtSlot(
             "full_energy_layer_2", "character_energy", "charui/orb_layer_2.png", (256, 256),
-            "transparent", True, _PROFILE_FALLBACK, "NEnergyCounter.Layer2",
+            "transparent", True, _IRONCLAD_ENERGY_COUNTER_FALLBACK, "NEnergyCounter.Layer2",
             "character_icon", "contain", True, "palette", "fixed_template", 0, "layer_2.png",
         ),
         CharacterArtSlot(
             "full_energy_layer_3", "character_energy", "charui/orb_layer_3.png", (256, 256),
-            "transparent", True, _PROFILE_FALLBACK, "NEnergyCounter.Layer3",
+            "transparent", True, _IRONCLAD_ENERGY_COUNTER_FALLBACK, "NEnergyCounter.Layer3",
             "character_icon", "contain", True, "palette", "fixed_template", 0, "layer_3.png",
         ),
         CharacterArtSlot(
             "full_energy_layer_4", "character_energy", "charui/orb_layer_4.png", (256, 256),
-            "transparent", True, _PROFILE_FALLBACK, "NEnergyCounter.Layer4",
+            "transparent", True, _IRONCLAD_ENERGY_COUNTER_FALLBACK, "NEnergyCounter.Layer4",
             "character_icon", "contain", True, "palette", "fixed_template", 0, "layer_4.png",
         ),
         CharacterArtSlot(
             "full_energy_layer_5", "character_energy", "charui/orb_layer_5.png", (256, 256),
-            "transparent", True, _PROFILE_FALLBACK, "NEnergyCounter.Layer5",
+            "transparent", True, _IRONCLAD_ENERGY_COUNTER_FALLBACK, "NEnergyCounter.Layer5",
             "character_icon", "contain", True, "palette", "fixed_template", 0, "layer_5.png",
         ),
         CharacterArtSlot(
             "large_energy_icon", "character_energy_large", "charui/energy_large.png", (256, 256),
-            "transparent", True, _PROFILE_FALLBACK, "EnergyIconHelper.GetPath -> NCard.%EnergyIcon",
+            "transparent", True, _IRONCLAD_LARGE_ENERGY_FALLBACK,
+            "EnergyIconHelper.GetPath -> NCard.%EnergyIcon",
             "character_icon", "contain", True, "palette",
         ),
         CharacterArtSlot(
             "compact_energy_icon", "character_energy_text", "charui/energy_text.png", (24, 24),
-            "transparent", True, _PROFILE_FALLBACK, "EnergyIconsFormatter rich-text image",
+            "transparent", True, _IRONCLAD_TEXT_ENERGY_FALLBACK,
+            "EnergyIconsFormatter rich-text image",
             "character_icon", "contain", True, "palette",
         ),
     ),

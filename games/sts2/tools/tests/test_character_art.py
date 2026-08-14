@@ -10,7 +10,10 @@ from PIL import Image, ImageDraw
 
 
 TOOLS_DIR = Path(__file__).resolve().parents[1]
-ART_SAMPLES = TOOLS_DIR.parent / "skills" / "sts2-api" / "reference" / "art-samples"
+STS2_DIR = TOOLS_DIR.parent
+ART_SAMPLES = STS2_DIR / "skills" / "sts2-api" / "reference" / "art-samples"
+CHARACTER_RECIPE = STS2_DIR / "skills" / "sts2-api" / "recipes" / "character.md"
+MODMAKER_AUTHOR = STS2_DIR / "skills" / "modmaker" / "author.md"
 sys.path.insert(0, str(TOOLS_DIR))
 from character_art import (  # noqa: E402
     CHARACTER_ART_BUNDLE,
@@ -146,6 +149,37 @@ class CharacterArtBundleTests(unittest.TestCase):
         outline = CHARACTER_ART_BUNDLE.slot("top_panel_icon_outline")
         self.assertEqual("derived", outline.asset_origin)
         self.assertEqual(0, outline.generation_calls)
+
+    def test_placeholder_energy_fallback_is_explicitly_ironclad(self) -> None:
+        counter_fallback = "base-game Ironclad profile: ironclad_energy_counter.tscn"
+        for index in range(1, 6):
+            self.assertEqual(
+                counter_fallback,
+                CHARACTER_ART_BUNDLE.slot(f"full_energy_layer_{index}").fallback,
+            )
+        self.assertIn(
+            "energy_ironclad.tres",
+            CHARACTER_ART_BUNDLE.slot("large_energy_icon").fallback,
+        )
+        self.assertIn(
+            "ironclad_energy_icon.png",
+            CHARACTER_ART_BUNDLE.slot("compact_energy_icon").fallback,
+        )
+
+        recipe = CHARACTER_RECIPE.read_text(encoding="utf-8")
+        author = MODMAKER_AUTHOR.read_text(encoding="utf-8")
+        for required in (
+            'public override string? PlaceholderCharacterId => "ironclad";',
+            'public const string PlaceholderEnergyColorName = "ironclad";',
+            "EnergyIconHelper.GetPath(PlaceholderEnergyColorName)",
+            "res://images/packed/sprite_fonts/ironclad_energy_icon.png",
+            'EnergyColorName => "<stable custom energy prefix>";',
+        ):
+            self.assertIn(required, recipe)
+        self.assertNotIn('EnergyColorName => "<color>";', recipe)
+        self.assertIn('EnergyIconHelper.GetPath("ironclad")', author)
+        self.assertNotIn('EnergyColorName => "red"', recipe + author)
+        self.assertNotIn('EnergyIconHelper.GetPath("red")', recipe + author)
 
     def test_install_fixed_templates_copies_source_assets_without_resizing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

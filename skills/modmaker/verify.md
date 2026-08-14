@@ -1,7 +1,26 @@
 # Verify — prove it loads (tier-1), then that the effect fires (tier-2)
 
-Goal: verify on **observed reality**, not "it compiled". Two tiers. Always report
-which tier you reached; never claim the effect is verified when only load was.
+Goal: verify on **observed reality**, not "it compiled". Two tiers, and which one you reached
+is itself a reported fact.
+
+Any difference found here is classified through `repair.md` before a fix. Write and validate
+the active PLAN route first; do not infer that every behavior difference is a consumer-local
+bug when the cited shared route may be violating its own contract.
+
+## Bilingual localization proof
+
+Build preflight establishes the static localization half: required directories, table/key
+parity, nonempty values, and SmartFormat token parity. Tier 2 owns the runtime half. Before
+driving the selected behavior, the generated harness snapshots `LocManager.Instance.Language`,
+switches through `eng` and `zhs` with the public `SetLanguage` route, and resolves every
+SPEC-required player-facing `LocString` through its real model/UI consumer. Compare against the
+exact text recorded for that language, reject raw keys and unresolved placeholders, and restore
+the original language in `finally`.
+
+Emit one structured `state proof:` naming both observed language codes only after both passes.
+One language resolving, static JSON parity, or a catalog lookup is not bilingual runtime proof.
+Use the reusable route in `reference/selftest-harness.md`; do not write the player's language
+setting or leave the verification language active after the check.
 
 ## Tier-1 — does it load? (automated, guaranteed)
 
@@ -18,31 +37,26 @@ python ../modmaker/scripts/grep_log.py --mod-name <ModName>
   waits ~25s, and closes it.
 - `grep_log.py` reads the **current** `godot.log` in full. The verifier passes
   only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
-  `framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1`, with no
+  `framework=RitsuLib`, an actual `frameworkVersion>=0.5.11`, and exact
+  `host=0.107.1 compat=0.107.1`, with no
   error/exception block after that
   boundary. It includes multiline stack context and global errors whose header does not
   name the mod. It also reports the `RUNNING MODDED` flag. Two exact, stack-qualified
   base-game cleanup blocks are reported but ignored: abandon deleting a nonexistent
   `current_run.save.backup`, and native Sentry close during launcher termination. Similar
   headers without those cleanup stacks still fail.
-- **Why no byte offset:** STS2 archives the previous log (to
-  `godot<timestamp>.log`) and starts a fresh `godot.log` on every launch, so the
-  current file already holds exactly this run. Do NOT try to slice the log by a
-  pre-launch byte offset — a stale offset from the old file points into the wrong
-  place in the new file and makes a working mod look like it failed to load. This
-  was a real bug; read the whole current log instead.
+- Read the whole current log. Never slice it by a pre-launch byte offset: STS2 archives the
+  previous log and starts a fresh `godot.log` each launch, so a stale offset points into the
+  wrong file and makes a working Mod look like it failed to load.
 
-**PASS** = marker found, no fresh-run error blocks. **FAIL** → go to `repair.md`. It
-distinguishes the two tier-1 failure modes and fixes accordingly:
+**PASS** = marker found, no fresh-run error blocks. **FAIL** → go to `repair.md`.
 
-- **framework marker missing/mismatched** → the selected compat profile did not resolve;
-  stop with the adapter's `missing-compat-asset` or `host-mismatch` diagnostic.
-- **load marker NOT FOUND but `RUNNING MODDED` = YES** → the mod loaded but logged no
-  marker: it wasn't injected by the selected adapter (author.md step 2), or
-  the code change never rebuilt. (Distinct from the log-rotation false-FAIL, which
-  errors.md already retired.)
-- **fresh error/exception block** → registration/load/runtime threw; use the selected
-  adapter's registration and localization diagnostics rather than guessing a fix.
+Tier 1 has three distinct failure modes, and they are not interchangeable: a **framework
+marker** missing or mismatched is a profile/scaffold problem, a **load marker NOT FOUND while
+`RUNNING MODDED` = YES** means the Mod loaded but emitted no marker, and a **fresh
+error/exception block** means registration or runtime threw. Match the exact signature in
+`../sts2-api/errors.md` § Verification and § Registration And Localization for the
+cause and fix; do not guess one.
 
 A code/csproj fix only reaches the game through a fresh build, so repair **rebuilds
 first**, then re-runs tier-1 — bounded to 3 attempts.
@@ -51,7 +65,7 @@ This is the guaranteed check: it proves "installs + loads + registered".
 
 ## Tier-2 — does the effect fire? (automated harness, the headline)
 
-**Tier-2 is now unattended** (M5). The mod ships an arg-gated in-process harness
+**Tier-2 is unattended.** The mod ships an arg-gated in-process harness
 (`SelfTest.cs`, author.md step 2.5). Launched with `--self-test`, it drives itself from the
 main menu into the required hosted scenario and fires the effect — **no dev-console typing,
 no human triggering**. You then grep its independently asserted state proof.
@@ -63,7 +77,8 @@ python ../modmaker/scripts/grep_log.py --mod-name <ModName> --tier2-pattern "<st
 
 The `--tier2-pattern` selects the SPEC invariant from structured
 `[T2MOD-SELFTEST] <ModName> state proof:` lines. Every proof also records
-`framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1`. Use concrete
+`framework=RitsuLib`, the actual loaded version, and exact
+`host=0.107.1 compat=0.107.1`. Use concrete
 expected/observed vocabulary:
 `"card damage.*observed=6"`, `"counter.*6 -> 2"`,
 `"cadence cross-combat threshold.*observed=0/4"`,
@@ -73,13 +88,19 @@ expected/observed vocabulary:
 `"character foundation/static-presentation.*observed=all"`,
 `"resource UI complete.*observed=all"`, or
 `"ordered buffer complete.*observed=all"`, or
-`"wayfinder R5 parity complete.*observed=all"`, or
-`"R6 scry helper complete.*observed=all"`, or
-`"custom card piles complete.*observed=all"`. A custom-pile run follows
+`"reward complete.*observed=all"`, or
+`"custom card piles complete.*observed=all"`, or
+`"runtime UI complete.*observed=all"`. A Reward run follows `surfaces/reward.md` and proves
+claim/refusal, the selected presentation route, and pending-save reconstruction. A custom-pile run follows
 `reference/card-piles.md` and proves the consumers selected by SPEC; Package support does
 not require a separate run for every documented public consumer. The verifier ignores all
-ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
-requires the exact load marker and `selftest done`.
+  ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
+  requires the exact load marker and `selftest done`.
+
+Derive the verification checklist only from the concrete variants selected in the current
+human-readable SPEC. Do not prebuild a nine-family matrix, claim omitted variants, or turn an
+authoring contract into runtime proof. Each selected variant remains unobserved until the current
+run actually proves it.
 
 > **Isolation before any `--self-test` run:** `--t2selftest` arms **every** loaded harness
 > mod, so park all non-target harness mods first (move them out of `mods/`), leaving only the
@@ -101,47 +122,36 @@ requires the exact load marker and `selftest done`.
   harness must assert `N-1`, threshold, and reset/carry-over before it emits `selftest done`;
   run-save state also asserts a real save/fill round trip. Use the multi-combat
   variant in `reference/selftest-harness.md`.
-- For a multi-move enemy, one HP delta is likewise insufficient. Before the terminal proof,
-  the harness must execute every SPEC move/branch outcome and assert its move history,
-  concrete creature/Power state, downstream buff consequence, and multi-hit result count.
-- For a Character Foundation, the final proof is valid only after the harness has asserted
-  exactly one content-pack-registered model, the real selected/unlocked button, runtime
-  identity and exact SPEC HP/Max HP, exact typed Card/Relic/Potion pools and member models,
-  every independently registered supporting Power, exact starter deck/relic multisets, and
-  designed MaxEnergy. The unlocked Card pool must also fill Shop's native colored Attack,
-  Skill, and Power slots without falling back to another character's pool. The live
-  Wayfinder regression is exactly `72/72`, cards/relic/potion/power `7/1/1/1`, five Strike
-  plus five Guard, and one Wayfinder Compass.
-- For a character resource, require gain, affordable and unaffordable checks, one exact
-  successful payoff, one rejected spend with no mutation/negative state, live counter
-  values, public `RegisterCombatUi` attachment, the fixed 220x32 control at offset 160,
-  a disjoint native-Energy global rect, and a distinct zero state/counter in combat 2.
-- For an ordered semantic buffer/dynamic output, require exact source/compile-card result
-  piles, visible order, capacity and overflow behavior, one generated-history entry, exact
-  configured output/effect, `AttachedState` ownership, and a distinct empty state/UI in
-  combat 2. Reject retained-card, hidden-zone, and `skipVisuals` substitutions.
-- For a Scry Card, follow `reference/scry-helper.md`: require one visible native selector
-  and a pending Card play task before
-  confirmation, plus zero/empty/short/full cases, exact seen/discarded/unselected order,
-  source result pile, one history/hook dispatch per discarded Card, and an explicit
-  singleplayer restriction. Do not require another headed run after this combined proof.
+- For a multi-move enemy, one HP delta is likewise insufficient. See `surfaces/monster.md`
+  § Proof matrix.
+- For a Character Foundation, see `surfaces/character.md` § Proof matrix. Its opening
+  paragraph is the gate the final proof must clear before it is valid.
+- For selected secondary resources, see `reference/character-resource.md` and derive only the
+  declared resource/use/UI/lifecycle cases. For an ordered semantic buffer/dynamic output,
+  see `surfaces/character.md` § Proof matrix.
 - For advanced Card/Potion targeting, follow `reference/advanced-targeting.md`: require
   the source-aware single Card, single Potion, and player-aware multi Card as distinct real
   consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
   queued invalidation, unchanged rejected payment/Potion state, and normal Card result
   pile. `potion + many` remains a known lifecycle limitation.
-- For a Relic-owned Rest Site option, follow `reference/rest-site-options.md`: require the
-  real native room, absent/disabled/enabled states, final click-time payment rejection with
-  no deltas, exact successful Gold/outcome/history deltas, no duplicate after rebuild,
-  declared stay/leave and second-visit repeatability, explicit singleplayer mode, custom
-  icon, and missing-icon native fallback. Model-generated option lists are diagnostics,
-  not hosted proof.
-- For an Event, require one real UI path per independent SPEC outcome family. Blocking
-  card/reward overlays must finish before their post-state assertion. A special combat must
-  identify the custom encounter and prove exactly one authored completion path: named
-  `Resume` page or direct map. Use a fresh Event instance if SPEC independently exercises
-  both forms; never start two combats from one mutable Event. The final structured marker
-  lists identical expected/observed outcome families.
+- For a standalone/Card/Relic/Modifier Rest Site option, follow
+  `reference/rest-site-options.md` and the matching owner surface. Only the historical Relic route
+  is observed; every other ownership shape remains game-unobserved until that exact route runs.
+- For Affliction, Modifier, or Global Effect, follow its surface proof matrix. Registration,
+  direct method calls, or a model lookup do not prove attachment, selection, or dispatcher delivery.
+- For an Act, follow `surfaces/act.md`: only a real singleplayer transition through the selected
+  force/pool policy proves entry, and the run must reach every required room/content family.
+- For a new Ancient, follow `surfaces/ancient.md`: only the real Ancient room proves option,
+  dialogue, choice-history, and cleanup behavior. Existing-Ancient override proof is separate.
+- For a Reward, follow `surfaces/reward.md`: registration, direct serialization, or a direct method
+  surrogate does not prove the native screen, claim/refusal, insertion, linked set, or reload.
+- For a Card Pile, follow `surfaces/card-pile.md` and the complete Package reference; static type
+  lookup does not prove movement, persistence, UI, manual play, or cleanup.
+- For Runtime UI, follow `surfaces/runtime-ui.md`: compilation, registry lookup, direct callbacks,
+  or constructed Godot nodes do not prove the real top bar, input router, Toast host, Capstone,
+  window, Catalog, attachment, focus, controller, layout, or cleanup behavior. Keep structured
+  host state separate from headed visual/input judgment.
+- For an Event, see `surfaces/event.md` § Proof matrix.
 
 ### Advanced-target headed acceptance
 
@@ -150,15 +160,11 @@ The structured state proof does not establish selection UI. In the same focused
 then checks the exact matrix from `reference/advanced-targeting.md`: mouse and controller
 can select only legal single targets, cancel returns normally, zero legal targets cannot
 commit the action, multi-target reticles appear only on the resolved creatures, and no
-reticle remains after resolution. Record the visible result as manually observed; do not
-rename it an automated Tier-2 pass.
+reticle remains after resolution. This is a manually observed result.
 
 ### Gameplay-readability headed acceptance
 
-For Card hand emphasis, read `reference/card-hand-emphasis.md`. Put the real Card in hand
-and drive no-active, activation, deactivation, conflict winner, unplayable show/hide,
-hover/drag, and hand enter/leave states. Confirm that cost, art, rules text, rarity,
-selection, and native playable feedback remain readable.
+For Card hand emphasis, see `surfaces/card.md` § Gameplay-readability headed acceptance.
 
 For Relic/Power extra labels, read `reference/extra-corner-labels.md`. Obtain the real hosts
 and drive Power zero/one plus Relic zero/one/bounded-multiple, plain/rich text, state
@@ -168,8 +174,8 @@ labels must remain unobstructed.
 
 When the human lead reserves this review, do not launch the game or take screenshots.
 Build/deploy the focused proof and provide exact console commands plus the matrix above.
-Record the lead's reported observations separately; any unrun Tier 1 or structured Tier 2
-gate remains an explicit exception.
+Record the lead's reported observations separately; any unrun Tier 1 or structured
+Tier 2 gate remains an explicit exception.
 
 ### Rest Site option headed acceptance
 
@@ -222,7 +228,7 @@ assertion plus visual inspection. In particular:
   exact 132x195 portrait, 1920x1200 background, normal and outlined 88x88 top-panel
   textures under one `NTopBarPortrait`, and 512x512 non-Spine
   combat body in their real hosts. Full energy asserts one native counter with five 256x256
-  custom layers and its live number label. For the M6.5 theme, automatically assert all
+  custom layers and its live number label. For the Character theme, automatically assert all
   four exact color values, frame shader target/brightness, distinct existing icon paths,
   the 256x256 large icon in a real hand card's `NCard.%EnergyIcon`, and the 24x24 path in a
   real `EnergyIconsFormatter` card-description result. Enter real RestSite and Shop hosts and assert their
@@ -256,49 +262,37 @@ unverified; do not infer it from a resource path, `.pck` build, or primary view.
   observed the exact SPEC state, driven end-to-end with zero interaction.
 - `selftest done` but the matching state proof is **absent** → the harness reached its
   scenario, but no accepted post-state assertion passed → a **real tier-2 behavior bug** →
-  `repair.md` (ordinary trigger markers may still reveal where behavior diverged).
+  classify in `repair.md` (ordinary trigger markers may still reveal where behavior diverged).
 - `selftest FAILED: <stage>` or timeout → the **harness couldn't reach/drive its scenario**
   (navigation/timing — a setup problem, not your effect). Do **not** report a tier-2
-  failure of the mod. Fall back to the **manual guide below**, and if that's not feasible,
-  report **tier-1 only** honestly.
+  failure of the mod or rewrite the element. Classify any harness navigation/timing repair as
+  implementation-equivalent, or fall back to the **manual guide below**; if that is not
+  feasible, report **tier-1 only** honestly.
+
+This tells you *which* failure you have. For the cause and fix of each, match the signature in
+`../sts2-api/errors.md` § Verification, and § Behavior for a state proof that
+reports a wrong observed value.
 
 ### Manual fallback (only if the harness reported FAILED / timed out)
 
-Ask the user to drive it by hand via the dev console — the pre-M5 path:
+Ask the user to drive it by hand via the dev console:
 
 1. Start a run in STS2 (the mod is loaded — tier-1 confirmed it).
 2. Open the **dev console** with **`` ` `` (backtick)** (also `'`, `*`, `^`, `Shift+8`);
    close with `Esc`. Debug commands are auto-enabled because the game is running modded.
-3. Grant the element by its `<PREFIX>-<SLUG>` id:
-   - **relic:** `relic add <PREFIX>-<SLUG>` (`add` is default; matching is substring `Contains`).
-   - **potion:** `potion <PREFIX>-<SLUG>` (**no `add`**, **exact** match; run in progress).
-   - **card:** `card <PREFIX>-<SLUG>` spawns into **hand** (**no `add`**, **exact** match;
-     run in progress, hand not full).
-   - **enemy encounter:** `fight <PREFIX>-<ENCOUNTER_SLUG>` enters the custom encounter
-     (run in progress). Confirm the custom monster spawned before ending the turn.
-   - **event:** `event <PREFIX>-<SLUG>` enters the custom event (**exact** match; run in
-     progress). Confirm the localized option appears before choosing it.
-   - **character:** select the custom character on the real character screen and click
-     Confirm; there is no console shortcut that proves character-select presence.
-4. Trigger it: **relic** → enter a combat; **potion** → use it (pick a target if targeted);
-   **card** → play it (target an enemy for an attack; `energy 3` first for headroom);
-   **enemy encounter** → end enough turns to traverse the declared cycle; confirm every
-   move's visible intent and exact HP/Block/Power change, and drive each conditional outcome;
-   **event** → choose the specified options and confirm each exact Cmd/selection/reward
-    consequence. For special combat, confirm the requested custom encounter and then the
-    named return page or direct map. For `portrait_halo`, visually inspect configured pages
-    and confirm no stale overlay survives a page switch or combat entry. For vanilla Event
-    text effects, inspect the named colored/moving phrase on each authored page and confirm
-    the prior page's text is gone after the transition.
-    For native acquisition presentation, confirm the real Card preview and relic top-bar
-    animation, and for `trial_noble` confirm its exact initial-page placement and absence on
-    the result page. A `weak_short` shake must terminate and must honor a disabled setting.
-    A forced follow-up cannot be proved by the `event` console shortcut; if its automated
-    real-Unknown driver cannot run, report Tier 1 rather than claiming the hook behavior.
-   **character** → confirm HP, starter deck/relic, and standard 3 energy after run start;
-   enter combat and observe the named starter mechanic's exact state delta. When combat
-   cues are selected, watch one full Idle loop, play an Attack, take one Hit, and reach Dead;
-   confirm the first two return to Idle, Dead holds its last pose, and no anchor jumps.
+3. Grant the element and 4. trigger it: each surface page owns both steps in its
+   § Manual fallback — `surfaces/card.md`, `surfaces/relic.md`, `surfaces/potion.md`,
+   `surfaces/monster.md`, `surfaces/event.md`, `surfaces/character.md`, `surfaces/act.md`,
+    `surfaces/ancient.md`, `surfaces/reward.md`, `surfaces/card-pile.md`, and
+    `surfaces/runtime-ui.md`. A Power, keyword, or
+   enchantment has no route of its own and is driven through its host Card; an orb is driven
+   through its declared channel host.
+
+   Two constraints hold across all of them. A `<PREFIX>-<SLUG>` id is matched differently per
+   command — `relic add` is substring `Contains`, while `potion`, `card`, and `event` are exact
+   and take no `add`. And a forced follow-up cannot be proved by the `event` shortcut at all:
+   direct entry skips the forcing behavior, so if its automated real-Unknown driver cannot run,
+   report Tier 1 rather than claiming the hook behavior.
 5. Confirm the change matches intent and grep with the tier-2 pattern **without closing the
    game** (closing rotates the log away):
 
@@ -306,21 +300,30 @@ Ask the user to drive it by hand via the dev console — the pre-M5 path:
 python ../modmaker/scripts/grep_log.py --mod-name <ModName> --tier2-pattern "<state-proof-pattern>"
 ```
 
-If the console won't open or `add` says "Unable to create", see errors.md "Verification
-harness". The automated PASS still requires a structured harness state proof. A manual
+If the console won't open or `add` says "Unable to create", match
+`../sts2-api/errors.md` § Verification. The automated PASS still requires a structured harness state proof. A manual
 fallback may be reported as **manually observed** only when the user confirms the concrete
 state change; otherwise report tier-1 only.
 
 ## Finalize
 
-Update `PLAN.md` (check the verify boxes for the tiers actually reached) and record the
-checks that actually ran in `MEMORY.md`. Then
-summarize for the user in plain language:
+Update the plain `PLAN.md` checklist only for stages that actually completed and record the
+commands and results in `MEMORY.md`. If a repair is still active or a required check failed,
+leave the affected stage unchecked and report the failure; no separate repair-state validator is
+needed.
 
-> Built **<Title>** (Common relic). It **loads in-game** (verified) and its effect
-> **<fired automatically in its self-test scenario / is written but not yet observed —
-> the harness couldn't reach its scenario>**. Artifacts are in `mods/<ModName>/`.
-> <If tier-2 not observed: the harness marker it stopped on, and the manual check.>
+Build the user-facing report directly from observed results:
 
-Be honest about the tier. A loaded-but-effect-unobserved mod is tier-1, not tier-2 —
-and a `selftest FAILED` is a harness miss, not proof the effect is broken.
+- **Built:** name the generated Mod and artifact path only when Build passed.
+- **Tier 1:** quote the load-marker result and fresh-error result, or say it was not run/failed.
+- **Tier 2:** name the real host scenario and concrete structured state assertion, or say it was
+  not run, could not be reached, or failed. Never promote a fired/used log to proof.
+- **Headed review:** name only observations a human actually reported. Otherwise state that
+  visual/UI/controller/animation/subjective review was not run.
+- **Not included:** summarize explicit DESIGN `Not Now` items and accepted placeholders when
+  relevant to what the user asked for.
+
+Use plain terms: "its effect fired automatically and the post-state matched" for a Tier 2 pass;
+"it loads and registers, but its behavior was not observed" for Tier 1 only; "Build passed, but
+the game was not launched" when runtime verification did not run. Missing evidence must remain
+visible, never silently disappear behind a completion claim.

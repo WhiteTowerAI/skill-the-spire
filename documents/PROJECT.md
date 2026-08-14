@@ -2,234 +2,243 @@
 
 ## Product
 
-open-mod gives non-programmers a credible path from one sentence to a working game mod.
-It is a Codex plugin, not a web form or a code-snippet generator. The agent collaborates
-with the user, records a semantic contract, writes the project, builds it, runs the real
-game, and reports what was actually verified.
+open-mod is a free, open-source Codex plugin that turns a non-programmer's description into a
+working game Mod. Slay the Spire 2 is the first supported game. The strategy is one game deep,
+then a reusable platform once independent consumers justify shared abstractions.
 
-The first game is Slay the Spire 2. The project stays one game deep until the workflow and
-support model are mature enough to extract a reusable platform.
+The product combines adaptive design collaboration with grounded implementation. It asks only
+material questions, records human intent separately from the exact implementation work order,
+authors against pinned public/fixed routes, builds the Mod, and reports real verification results
+literally.
 
 ## Release State
 
-Version `0.6.0` is the first RitsuLib-only, externally accepted development baseline:
+`0.7.0` is an unreleased RitsuLib-only development baseline for STS2 stable `0.107.1` and
+RitsuLib `0.5.11`. BaseLib is absent from generated projects. M6.5-M6.7, M7, M8.0-M8.3, M8.5,
+and M8.7-M8.9 are closed; their detailed results and exceptions live under `documents/history/`.
 
-- host: STS2 stable `0.107.1`;
-- compile package: `STS2.RitsuLib.Compat.0.107.1` `0.5.4`;
-- runtime dependency: `STS2-RitsuLib >= 0.5.4`;
-- primary runtime: Codex plugin;
-- secondary distribution: portable Agent Skills payload.
+M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
+its authoritative source, both payload forms, and result record completed. Its nine generalized
+families remain part of the product boundary and must not be narrowed or reimplemented. The durable
+record is `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`.
 
-BaseLib is no longer an implementation option. Historical BaseLib and Downfall checkouts
-are offline research archives, not generated dependencies or runtime inputs.
+M8.8 Surface Effect Composability Generalization completed its full RitsuLib `0.5.11` inventory,
+ownership-confirmation gate, WP1-WP5 implementation, WP8 source/static closeout, and authorized
+plugin/portable payload delivery on 2026-08-13. The human lead accepted its final result and closed
+M8.8 the same day; the durable record is
+`documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`.
+Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, WP6 asset/scene/
+animation/audio and shared-presentation expansion, WP7 named typed interoperability, and new
+interactions with those deferred groups are excluded from M8.8 by explicit product decision.
+Existing asset, presentation, audio, and interoperability routes remain supported at their current
+literal boundaries. This does not narrow M8.7's existing availability routes or the unrelated
+Power/Relic/Intent Extra Badges feature.
 
-The migration and clean-workspace Codex acceptance are complete; the migration record is
-archived in `documents/history/RITSULIB_MIGRATION_RESULTS.md`. `0.6.0` remains unreleased
-while user-test bugs are fixed. M6.5 closed through the lead-approved Prismwright headed
-acceptance recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`; no GitHub
-release is currently planned.
+M8.9 Ordinary Effect Primitive Coverage closed by explicit human-lead acceptance on 2026-08-14
+after its source/static stage, separately authorized plugin/portable payload delivery, and durable
+result record completed. Nine audited ordinary result families route from ordered SPEC effects
+through one shared lowering reference and truthful per-surface callback bindings; missing context
+blocks with the exact absent input. Grouped pinned compile probes, payload repeatability/parity/
+layout, and repository static tests passed. No generated-Mod Build, payload install, host, Tier 1,
+Tier 2, headed, save/load, multiplayer, cross-platform runtime, or gameplay proof ran. The durable
+record is `documents/history/M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md`.
+
+M8.6 remains the final clean installed whole-skill acceptance. Its M8.9 prerequisite is satisfied,
+but M8.6 remains unselected until the human lead defines its exact request, host, and execution
+contract. No acceptance run, payload installation, GitHub release, or game launch is implied by
+the current source and payload state.
 
 ## User Experience
 
-The desired interaction is:
+A user describes a Mod in ordinary language. The skill resumes unfinished work when present,
+otherwise chooses a fast, co-design, or revision route and asks only questions that change the
+result materially.
+
+The active workflow is:
 
 ```text
-plain-language idea
-  -> one compact clarification round when needed
-  -> plain-language plan
-  -> semantic SPEC.md
-  -> pinned scaffold and grounded recipes
-  -> author and package
-  -> real-game load proof
-  -> hosted behavior proof or an honest manual boundary
+idea
+  -> concise DESIGN
+  -> implementable SPEC
+  -> thin capability authenticity/reachability preflight
+  -> Author + SelfTest
+  -> Build
+  -> Tier 1
+  -> Tier 2 / SelfTest
+  -> optional headed human review
+  -> direct evidence-bounded report
 ```
 
-The skill should preserve unusual mechanics instead of flattening them to the nearest easy
-effect. It should recommend concrete defaults, avoid jargon, and tell the user when an idea
-crosses the supported boundary.
+A complete narrow request keeps a zero-question fast path. Character work lazily loads pinned
+native foundation facts and proposes one exact starter shape before asking for deck detail.
+Co-design may compare alternatives and preserve deliberate departures, but it must label pinned
+facts, observed conventions, creative decisions, and open playtest hypotheses distinctly.
+
+## Artifact Boundary
+
+`DESIGN.md` contains the human-owned product meaning:
+
+- the intended player experience;
+- confirmed creative and scope decisions;
+- the current playable slice; and
+- explicit `Not Now` items.
+
+It contains no machine-readable coherence, deliverable, impact, settlement, repair, or evidence
+management contracts. Design quality is a human judgment, not a Markdown validator result.
+
+`SPEC.md` is the only implementation work order. It records concrete content, triggers, targets,
+conditions, values, ordering, state/lifetime/reset behavior, bilingual text and presentation,
+selected recipe/reference routes, and the exact autotest scenarios required for the current
+behavior. Simple Mods stay compact.
+
+`PLAN.md` is a plain stage checklist. `MEMORY.md` stores technical discoveries, stable resolved
+IDs/keys, exact commands/results, and repair attempts. Existing projects may retain old metadata;
+the workflow ignores it and does not force migration.
+
+## Thin Preflight
+
+Author runs one checker before writing source:
+
+```powershell
+python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
+```
+
+It verifies only facts that a compiler cannot detect and whose violation would produce unsupported
+or silently ineffective code:
+
+- selected support routes exist in the shipped pack;
+- selected hook capabilities exist in the pinned catalog;
+- the cited route declares the hook;
+- hook shape matches the catalog;
+- route-owned hooks are not authored as raw participation; and
+- the selected surface belongs to the dispatcher's authorable listener set.
+
+It does not validate prose, Markdown headings, ordinary fields, business rules, C# signatures,
+manifest/resources/localization, runtime state, presentation, evidence status, or project stage.
+Those remain owned by recipes/references, Scaffold/Build, real-host SelfTest, and headed review.
 
 ## Architecture
 
-The product has three layers:
+- `games/sts2/skills/modmaker/`: routing, DESIGN/SPEC, scaffold, authoring, build, verification,
+  repair guidance, and direct reporting.
+- `games/sts2/skills/sts2-api/`: lazy design references, pinned recipes/API contracts, catalogs,
+  shared ordinary-effect lowering, and diagnostic signatures. Effect primitives define required
+  command inputs while executable surface pages define the callback bindings actually available.
+- `games/sts2/tools/`: scaffold, build, launch, log, art, catalog, and thin preflight tooling.
+- `games/sts2/tests/`: current capability graph and verification ownership.
+- `games/sts2/experimental/`: maintainer research excluded from shipped payloads.
+- `plugins/open-mod/`: generated Codex plugin payload.
+- `skills/`: generated portable Agent Skills payload.
 
-1. `modmaker` owns the staged workflow and resumable project state (`SPEC.md`, `PLAN.md`,
-   `MEMORY.md`).
-2. `sts2-api` owns lazy, grounded game knowledge: recipes, lifecycle contracts, art
-   consumers, official-product-semantics distillations, verification hosts, and error
-   fixes.
-3. Python tools own deterministic scaffold, profile validation, build/package, launch,
-   log parsing, and sprite normalization.
+Authoritative edits happen under `games/sts2/`. Both payloads are regenerated through
+`publish.sh`; they are never hand-edited.
 
-The semantic contract stays framework-neutral. RitsuLib details are concentrated in the
-pinned scaffold/profile and the adapter/reference surface. Generated source is preferred
-over a shared open-mod runtime until multiple independent consumers justify a versioned
-binary.
+## Runtime Profile
+
+Generated Mods target STS2 `0.107.1` and the RitsuLib Compat `0.5.11` authoring/API baseline.
+Scaffold pins the exact validated local Compat DLL version and hash used to compile. Runtime
+manifests depend on `STS2-RitsuLib >= 0.5.11`; a newer local compile input does not raise that
+minimum while generated code stays inside the baseline.
+
+Generated projects have no framework `PackageReference`. The scaffold supplies Godot.NET SDK
+imports and resolves STS2, RitsuLib, GodotSharp, Harmony, and other required assemblies from the
+validated local game/runtime. Runtime discovery accepts a checked game-local install or official
+Workshop item `3747602295`. BaseLib, Alchyr templates, maintainer decompiles, and research
+checkouts are never generated-project dependencies.
+
+## Product Boundary
+
+Support, authorability, and observation are separate facts:
+
+- `framework-expressible`: the pinned public/fixed route can express the operation;
+- `open-mod-authorable`: the shipped recipes/references fully guide its implementation and proof;
+- `game-observed`: its exact declared shape ran successfully in the real host.
+
+Missing runtime proof does not automatically make a public capability unsupported. Conversely,
+static source or Build success is not game observation. The exact inventory and narrow limitations
+live in `games/sts2/tests/content-capability-graph.md`.
+
+Generated code may combine the pinned public STS2/RitsuLib APIs, ordinary C#/BCL, Mod-owned helper
+types/state, and maintained fixed Adapters. It must not invent prompt-derived Harmony, reflection,
+Publicizer, or IL. A missing or broken shared route blocks authoring rather than inviting a local
+approximation.
+
+M8.7 generalized these nine families without claiming runtime observation for every new shape:
+secondary resources; Monster move graphs/Encounter composition/HP ranges; Character starting
+fields; Card- or Relic-owned Rest Site options; multiple computed Card values; reusable bounded
+state; bounded forced Event mappings; new-Card Star costs; and bounded Event acquisition/shake
+profiles.
+
+## Design Intelligence
+
+The design layer distinguishes pinned facts, observed native conventions, creative decisions, and
+open hypotheses. Balance uses a Mod-forward preference: favor a clearly rewarding working value,
+while constraining values that erase choices, setup, costs, ordinary opposition, or produce
+deterministic, self-funding, or unbounded loops. This is a creative posture, not a fixed percentage
+or proof of fun.
+
+Coherence review is conversational and proportional. It examines only selected mechanics, naming,
+localization, visuals, Event text, and Character identity. Deliberate tension may remain when the
+user accepts it. No validator decides that a design is coherent, complete, fun, or balanced.
+
+## Localization And Presentation
+
+A Mod with no localization tables is language-neutral. Once any table exists, `eng` and `zhs` are
+both required with identical table/key sets, identical SmartFormat token multisets, and nonempty
+values. Build checks the static files. Tier 2 changes languages through the real localization
+consumer and restores the original language. Translation quality remains human-owned.
+
+Art normalization is defined in code (`gen_sprite.SPECS` and
+`character_art.CHARACTER_ART_BUNDLE`) and projected into the checked art catalog. Generated raster
+assets use `gen_sprite.py import`; the selected RitsuLib asset profile/provider owns runtime wiring.
+Placeholder art is the default. A paid or external generation backend is never selected silently.
 
 ## Verification Philosophy
 
-A documented RitsuLib feature Package is supported when the official tutorials establish
-its player-facing use and its public API exists in the pinned profile. This applies to all
-documented public consumers in the Package; confirmed defects become narrow limitations,
-while only missing public routes are unsupported. Recipes and host runs tell us what the
-generator currently implements and what we actually observed, not whether the Package is
-supported.
+Build and real-host autotest prove code; authoring contracts guide code.
 
-Compilation is necessary but insufficient. Use the lightest proof that establishes the
-changed invariant:
+- Build proves compilation, packaging, manifests, resources, localization shape, PCK output, and
+  deployable static artifacts under the pinned profile.
+- Tier 1 proves the exact load marker, exact framework/host/compat identity, and no fresh error
+  block.
+- Tier 2 runs the arg-gated `SelfTest.cs` inside real STS2, drives the selected hosted behavior,
+  waits for queued actions, asserts exact post-state and object identity, and requires
+  `selftest done`.
+- `played`, `fired`, and `used` logs are diagnostics, never pass evidence.
+- Headed review owns real images, UI, mouse/controller interaction, animation, and subjective
+  quality.
 
-- local assertions for pure calculations;
-- a hosted real-game scenario for lifecycle and behavior;
-- visible evidence when open-mod owns presentation;
-- a fresh natural-language Mod only for an explicitly scheduled end-to-end acceptance
-  gate.
+The final report states actual Build, Tier 1, Tier 2, and human results directly. A skipped or
+failed check stays visible. Historical evidence is immutable and version-literal; older `0.5.4`
+results do not become `0.5.11` runtime proof.
 
-Tier 1 means loaded with no fresh error. Tier 2 means a structured post-state marker plus
-`selftest done`. Record only the checks that actually ran; none is silently inferred from
-another.
+Verification is proportional. Reuse the nearest maintained host for a changed behavior. A fresh
+natural-language acceptance Mod is reserved for an explicitly scheduled full-pipeline gate or a
+direct human request. M8.6 is that future final gate; it is eligible but not selected or started.
+
+## Future Outlook
+
+Progression, post-run/run-history Badge, player Settings, consented Telemetry, Multiplayer, and
+Update Check are grounded RitsuLib product families but are not part of M8.8. Future work may add
+them only through a newly selected scope that covers their own lifecycle, privacy, service,
+persistence, UI, and real-environment verification needs. Integrations from other elements into
+these families are deferred with them; they must not enter the product piecemeal under another
+surface. RitsuLib Extra Badges on Power, Relic, and Intent are a separate existing presentation
+feature, and M8.7's existing availability/epoch routes remain preserved.
+
+Full RitsuLib asset/scene/animation/audio and shared-presentation generalization (former M8.8 WP6)
+and named typed interoperability generalization (former WP7) are also future work. Their public
+families remain accounted for by the M8.8 inventory, but M8.8 does not add new routes, capability
+claims, tests, or cross-surface integrations for them. This deferral does not remove or weaken any
+asset, presentation, audio, or interoperability route already supported by open-mod.
 
 ## Distribution
 
-The Codex plugin manifest is `plugins/open-mod/.codex-plugin/plugin.json`; the repo-local
-marketplace is `.agents/plugins/marketplace.json`. Both skills and their tools are bundled
-inside the plugin with relative paths, so installation is independent of the user's current
-workspace.
+The repository publishes two generated forms from the same authoritative source:
 
-The portable payload at `skills/` follows the Agent Skills layout. Both payloads are
-generated from `games/sts2/` and committed because installers consume repository content
-directly.
+- a Codex plugin under `plugins/open-mod/`; and
+- portable Agent Skills under top-level `skills/`.
 
-## Product Boundaries
-
-The current product supports the surfaces in
-`games/sts2/tests/content-capability-graph.md`. The M6.7.0 grounding kernel identifies and
-validates pinned vanilla targets, and the authoritative source now emits the promoted
-M6.7.1 public Card, M6.7.2 complete public visual, M6.7.3 existing-Ancient, M6.7.4
-availability, and M6.7.5 non-Card data/behavior override Packages. Generated plugin/
-portable payloads are synchronized with that source. The human lead ended M6.7 source
-development at M6.7.5 on 2026-08-03, canceled M6.7.6, and closed the milestone on
-2026-08-04 after the independent representative acceptance passed. Multiplayer vanilla
-overrides are future work outside this milestone. See
-`documents/history/M67_VANILLA_OVERRIDES_RESULTS.md` for the literal result and unrun paths.
-The post-acceptance generation-quality repair that blocks silent Card-description
-downgrades and compile-checks per-file imports is recorded in
-`documents/history/M67_POST_ACCEPTANCE_GENERATION_QUALITY_REPAIR.md`; it does not reopen the
-milestone.
-The current product does not imply arbitrary patching, retained-card zones, alternative
-Energy, multiplayer UI, Spine/production Character motion or audio, behavior-bearing
-arbitrary Event layouts beyond exact packaged public visual resources, or Workshop
-publishing.
-
-The focused M6.5 Character art and presentation packages are implemented:
-role-based identity references without a separate Character sheet, corrected
-selection/combat visible footprints, a structured card/UI theme, alpha-derived
-Character/Relic outlines, one Character-specific Energy layer plus four fixed templates,
-and geometry-stable non-Spine `Idle`/`Attack`/`Hit`/`Dead` combat cues. The fresh
-natural-language Prismwright acceptance is closed with its explicit lead-approved
-verification exceptions recorded in `documents/history/M65_FRESH_ACCEPTANCE_RESULTS.md`.
-Characters keep the game-native shared map-marker fallback; locked selection, Character
-card trails, and a `Cast` cue remain unsupported.
-
-M6.6 is closed by explicit human-lead decision. Package 2A computed Card
-values, Package 5 custom-Character dialogue in native Ancient scenes, Package 1 advanced
-creature targeting, and the bounded Package 3 Relic-owned Rest Site option slice are
-implemented. Package 1 covers single-target Cards, single-target Potions, and
-multi-target Cards through deterministic Mod-local live-creature filters and native
-mouse/controller selection; multi-target Potions have a pinned lifecycle limitation.
-Package 3 covers
-singleplayer Relic-owned options with free/fixed Gold, deterministic preflightable outcomes,
-once-per-site/run repeatability, native stay/leave behavior, and checked custom/Heal-fallback
-button art. Its human-lead acceptance, skipped log check, and omitted strict Tier 2 harness
-are recorded in `documents/history/M66_REST_SITE_OPTIONS_RESULTS.md`.
-
-Package 2B/2C authoring is implemented in the generation pipeline: Cards may declare
-ordered fixed-color hand-emphasis rules with priority and explicit unplayable visibility,
-Relics may declare up to three bounded supplemental labels in distinct safe corners, and
-Powers may declare one top-left label with explicit refresh/removal. The Power boundary was
-narrowed after multiple un-clipped preset bands overflowed an adjacent Power in the human
-lead's crowded 16:9 row. The rebuilt proof passed the human-led 16:9/16:10 recheck and strict
-Tier 1; strict Tier 2 was not run. The result is recorded in
-`documents/history/M66_GAMEPLAY_READABILITY_RESULTS.md`. Package 4 Custom Card Piles is
-implemented across the complete documented public Package on official RitsuLib `0.5.4`.
-It includes combat/run scopes, all five UI styles, preset/custom anchors, public pile-screen
-capabilities, visibility/hotkeys, native movement/localization, and ExtraHand layout/manual
-play/callbacks. The human lead accepted the focused unmodified-runtime ExtraHand recheck;
-strict structured Tier 2 was waived rather than run. Intent belongs to Extra Badges but was removed from M6.6
-work by the human lead on 2026-07-30; current generated 2C authoring is Relic/Power only.
-Optional Mod settings with Global/Profile/run-owned persistence remain future outlook
-outside the closed M6.6 scope.
-
-M6.7 is the closed milestone for version-bound overrides of existing vanilla content. Its
-product goal is broader than numeric Card balance: generated Mods may eventually adjust
-data and upgrades, alter acquisition/pools, compose behavior, or replace a grounded behavior
-entry point while preserving the vanilla model identity and untouched assets. A pinned
-version catalog, semantic override manifest, checked RitsuLib capability/adapter routes,
-conflict diagnostics, and proportional real-host evidence are required before any category
-is implemented. Support follows the same tutorial-plus-public-API rule as the rest of the
-project; arbitrary prompt-generated Harmony/reflection/IL is not part of the design.
-
-M6.7.0 source development implements that grounding kernel for STS2 `0.107.1`: a runtime
-`ModelDb` collector, offline PE metadata collector, checked 1624-model catalog, exact internal and localized
-display-title alias resolver across 14 pinned languages, semantic manifest and
-expected-baseline/adapter/conflict validation, scaffold/build/deployment
-wiring, and fail-closed diagnostics. Repeated localized-title collection passed its
-collector-only literal checks. The current-catalog headed no-op remained intentionally
-unrun. At closure, the full regression passed, generated payloads synchronized repeatably,
-and a fresh nonempty Mod built from the reinstalled plugin in an independent workspace.
-The human lead then reported that its representative in-game effects passed. Tier 1, Tier
-2/SelfTest, and unselected routes remain explicit exceptions rather than passes.
-The catalog now has 4165 reviewed, fingerprinted Adapter targets: the previous twenty plus
-4145 M6.7.5 targets. It promotes five operation Packages.
-`m6.7.1-public-card-overrides` covers the grounded non-asset public Card contributors,
-capability-owned variables, and public play/owner-hook composition. Canonical DynamicVar
-edits, base-description replacement/removal/hiding, destructive metadata edits, acquisition,
-and transform carry-over remain outside that Package. Such description intent stops before
-SPEC unless the user explicitly accepts before/after composition. `m6.7.2-public-visual-overrides`
-covers all 44 public RitsuLib `0.5.4`
-Card-material and external-asset providers across the 12 catalog target families that have
-such a route. It checks exact Mod-local Material/texture/PackedScene/Spine/directory/list
-resources, preserves vanilla fallback, rejects path/resource alternatives on one surface,
-and records process-wide provider cleanup/cross-Mod conflict limits. RitsuLib exposes no
-external vanilla Monster-body provider. Focused manifest/resource tests pass. Its earlier
-Package-specific C# compile remained unrun, while the consolidated acceptance built and
-included selected Card and Darv visual providers; the human lead accepted the Mod as a
-whole, so no individual-provider observation is inferred.
-`m6.7.3-existing-ancient-overrides`
-covers the nine pinned native
-Ancients through public multi-option append or one fixed complete initial-option replacement
-Adapter. It includes nested conditions, visible/locked rules, fixed Gold/HP/Max HP costs,
-typed Hover Tips and relic-backed presentation, ordered deterministic effects, deck
-upgrade/remove/transform/enchant selection, fixed custom rewards, Mod-owned subsequent
-pages, native `Done()` finish/choice history, full shipped-language `events.json`, and
-separate M6.7.2 visual composition. The replacement and protected page/finish calls are the
-three Ancient Adapter targets and fail closed on IL drift; `TheArchitect` is rejected
-because it is an ordinary Event in `0.107.1`. Focused manifest/localization/catalog tests
-pass. The consolidated Mod included one Darv replacement/page/portrait route and was
-accepted as a whole; no individual-route observation is inferred, and other Ancient routes
-remain unrun. `m6.7.4-availability` is the fourth promoted
-Package. It covers the 57 pinned
-public epoch IDs for Card, Character, ordinary Event, and shared `EVENT.DARV`, Relic/Potion
-epoch or permanent-disable filters through fixed six-dependency Adapters, and Card/Relic/
-Potion pool add/remove/move routes. Pool baselines are simulated in manifest order, require
-the pinned primary pool, preserve existing instances, reject debug/empty transitions, and
-are singleplayer-only. Focused manifest/catalog/document-route tests pass; representative
-pool-move behavior was included in the consolidated Mod that was accepted as a whole. No
-individual-route observation is inferred. Cache
-timing, unlock UI, fresh-acquisition ordering/RNG, duplicate absence, and existing-save
-variants remain unrun. `m6.7.5-non-card-data-behavior` is the fifth promoted
-Package. It covers seven public typed owner-capability families with every pinned public
-effect/numeric/decision hook and the four typed Orb callbacks, sixteen intrinsic data
-routes, complete checked lifecycle/body replacements, Monster move graphs, paired
-Encounter rosters, and ordinary Event options/pages. All operations are singleplayer.
-Affliction synchronous apply/remove callbacks may only be suppressed with empty generated
-effect lists; async `OnPlay` and owner hooks remain supported. Focused 40-test manifest/
-catalog/localization/documentation checks and Python syntax pass. The consolidated Mod
-included selected Relic, Monster, and Encounter routes and was accepted as a whole; no
-individual-route observation is inferred, and unselected owner/lifecycle families and
-ordinary Event routes remain unrun. The full regression and
-payload synchronization passed at milestone closure. Other nonempty vanilla operations
-remain rejected until a later Package promotes their grounded route.
-
-M6.7 development stops at those five operation Packages. Multiplayer promotion is not a
-sixth M6.7 Package; it remains a separate future systems track requiring identical peer
-manifests, deterministic synchronized state/RNG, save/load, remote presentation, and
-disconnect handling before any operation family can be promoted.
+Regenerate both only through `publish.sh`, then verify repeatability, source/payload parity, payload
+tool layout, Python compilation, and `git diff --check`. Installation and release are separate,
+explicitly authorized operations.

@@ -84,8 +84,8 @@ public sealed class <RelicName> : ModRelicTemplate
 
 ## Localization (ships in the .pck)
 
-Add entries to `<ModName>/localization/eng/relics.json`. Keys are flat and use the exact
-RitsuLib public entry:
+Add the same entries to `<ModName>/localization/<lang>/relics.json` for both `eng` and
+`zhs`. Keys are flat and use the exact RitsuLib public entry:
 
 ```json
 {
@@ -154,6 +154,15 @@ icon is one verified `rest_site_option` 256x169 image at
 `images/rest_site_options/<slug>.png`. Resolve absence to the native Heal icon before
 building `RestSiteOptionAssetProfile`; do not return a missing custom path.
 
+## Optional shared capability routes
+
+Keep ordinary Relic triggers in their matching override below. For a separable Relic-owned
+behavior/state bundle, read `reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Relic or
+typed capability and preserve cadence, owner guard, phase/order, neutral behavior, reset/save, and
+removal cleanup. Do not register a Relic-owned rule process-wide.
+
 ## Trigger hooks (override the one matching the request)
 
 All are `public virtual async Task` on `AbstractModel` (relics receive them because
@@ -177,17 +186,45 @@ There is NO `ICombatHook` to implement; just override the method.
 The `participants.Contains(Owner.Creature)` check is mandatory in multiplayer —
 the hook fires for every side; act only when your owner's side is the one starting.
 
+## SPEC `hook participation`: modify a value rather than act on a trigger
+
+The hooks above are the relic *doing* something. A SPEC `hook participation` block is different:
+the engine asks the relic for a number or a decision while resolving someone else's event, and
+nothing fires. Read `reference/model-hook-participation.md` for the contract. A Relic reaches
+both the run-scope and combat-scope sets — the widest reach of any surface here.
+
+The one shape difference from a Power: **`Owner` is a `Player`, not a `Creature`.** So a subject
+guard goes through `Owner.Creature`, and through `Owner.Osty` wherever the Osty can be the
+subject. Vanilla `PenNib` checks both:
+
+```csharp
+public override decimal ModifyDamageMultiplicative(
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+{
+    if (!props.IsPoweredAttack()) return 1m;                        // SPEC `condition`
+    if (dealer != Owner.Creature && dealer != Owner.Osty) return 1m; // SPEC `subject`
+    return 2m;
+}
+```
+
+A guard that checks only `Owner.Creature` silently stops applying the moment the player's Osty
+is the one acting, which no single-value assertion catches.
+
+For a **collection** participation (`try_modify_rewards` and its relatives), the bool reports only
+that you touched the list — add or remove entries and return `true`, or return `false` untouched.
+Preserve every entry you did not come for: vanilla `Midas` doubles gold rewards by rebuilding the
+list with `Clear()` plus `AddRange()` of *everything*, transformed and untransformed alike. And do
+not contribute a Rest Site option through the raw hook; use § Optional owned Rest Site action
+above, which carries boundaries the bare hook does not.
+
 ## Effect building blocks (confirmed APIs)
 
 Namespaces: commands in `MegaCrit.Sts2.Core.Commands`, RNG in `...Core.Random`.
 
-**Energy** (`PlayerCmd`, all `static async Task`, amount is `decimal`):
-```csharp
-int current = Owner.PlayerCombatState!.Energy;           // read current energy (int)
-await PlayerCmd.GainEnergy(current, Owner);              // +current  => doubles it
-await PlayerCmd.SetEnergy(0m, Owner);                    // set to exactly 0
-await PlayerCmd.LoseEnergy(2m, Owner);                   // -2 (clamped at 0)
-```
+Ordinary command signatures, return/rejection behavior, and lifecycle bounds live in
+`reference/effect-primitives.md`. Select the exact async Relic hook first and bind only the inputs
+its callback plus `Owner` truthfully supply. Absolute setters are setup/lifecycle control and are
+not an ordinary Relic effect.
 
 **Seeded RNG** (NEVER `System.Random` — breaks determinism/seed sharing):
 ```csharp
@@ -205,11 +242,8 @@ Creature myBody = Owner.Creature;
 var combatState = Owner.PlayerCombatState!;     // Energy, MaxEnergy, TurnNumber
 ```
 
-For other effects (damage, block, powers), query the rest of the pack rather than an
-invented catalog: use `reference/mechanics.md` for shared Cmd/value foundations,
-`reference/build-constraints.md` for enforced model rules, and `errors.md` for known
-failure signatures. If the exact symbol is still absent, follow `grounding.md` and report
-a pack gap — never guess a Cmd name.
+For an effect family outside the shared reference, query the rest of the pack rather than an
+invented catalog. If the exact route is still absent, follow `grounding.md` and report a pack gap.
 
 **Always** call `Flash()` when the relic visibly triggers, and log a diagnostic marker.
 The automated harness uses it to localize the trigger, but independently asserted state is

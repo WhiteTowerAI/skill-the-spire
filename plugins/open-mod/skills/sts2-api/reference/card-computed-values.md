@@ -1,13 +1,14 @@
 # Reference: computed Card values and variable tooltips
 
-> Pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. Use this page only when a
+> Pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. Use this page only when a
 > Card description contains a value calculated from live state. Static upgrade
 > values continue to use the ordinary `DamageVar`, `BlockVar`, or `PowerVar<T>`
 > patterns in `recipes/card.md`.
 
+
 ## Semantic gate
 
-Before writing C#, every calculated value in SPEC must declare:
+Before writing C#, every calculated value in SPEC must declare independently:
 
 - a stable value name and one role: plain, damage, block, Energy icons, Star icons,
   raw typed Power, or applied typed Power;
@@ -52,7 +53,9 @@ preview through `ModifyPowerAmountGiven`; use it when the Card will apply that P
 
 ## One formula for base, upgrade, preview, and execution
 
-Put the calculation in one helper. `CardPreviewMode.Upgrade` must select the upgraded
+Put each declared calculation in one helper and emit one matching DynamicVar factory. A Card
+may compose zero or more uniquely named values; names need only be unique on that Card.
+`CardPreviewMode.Upgrade` must select the upgraded
 branch even when the preview host has not yet exposed a normally upgraded Card instance.
 Live execution calls the same helper indirectly through the matching `Compute*Value`
 extension:
@@ -174,8 +177,8 @@ cleanup after the input changes.
 ## Variable tooltips
 
 Attach a shared tooltip only when SPEC declares its text. Use a deterministic entry stem
-derived from the Card public entry and variable name, then author the two flat keys in
-`localization/eng/static_hover_tips.json`:
+derived from the Card public entry and variable name, then author the same two flat keys in
+both required languages' `static_hover_tips.json`:
 
 ```csharp
 ModCardVars.ComputedEnergy(

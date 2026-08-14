@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build a pinned STS2/RitsuLib Mod into the game's mods/ folder.
+"""Build a local-runtime STS2/RitsuLib Mod into the game's mods/ folder.
 
-Validates the open-mod RitsuLib profile before MSBuild, then verifies the resolved
-NuGet asset and deployed artifacts. RitsuLib itself is installed separately and is
-never copied into the generated Mod's directory.
+Validates the open-mod RitsuLib profile before MSBuild, then verifies the resolved local
+assembly and deployed artifacts. Framework assemblies are supplied by the game/runtime
+installation or bundled build SDK and are never copied into the generated Mod.
 
 On success prints the artifacts found in the mods folder. On failure prints the
 diagnostic lines from the dotnet output and exits non-zero (repair is handled by the
@@ -28,13 +28,20 @@ from ancient_dialogue import (
     AncientDialogueValidationError,
     validate_project_ancient_dialogue,
 )
+from localization_contract import (
+    LocalizationContractError,
+    validate_project_localization,
+)
 from pack_pck import PackError, pack_assets
 from ritsu_profile import (
     PROFILE,
     RitsuProfileError,
     find_manifest,
+    resolve_runtime_asset,
+    resolve_runtime_compile_profile,
     validate_host_version,
     validate_project_contract,
+    validate_project_runtime_profile,
     validate_restore_assets,
     validate_runtime_asset,
 )
@@ -54,11 +61,16 @@ def find_csproj(project_dir: Path, mod_name: str | None) -> Path | None:
     return csprojs[0]
 
 
-def get_msbuild_property(csproj: Path, property_name: str) -> str | None:
+def get_msbuild_property(
+    csproj: Path,
+    property_name: str,
+    dotnet_env: dict[str, str] | None = None,
+) -> str | None:
     try:
         res = subprocess.run(
             ["dotnet", "msbuild", str(csproj), f"-getProperty:{property_name}", "-nologo"],
             capture_output=True, text=True, encoding="utf-8", errors="replace",
+            env=dotnet_env,
         )
     except OSError:
         return None
@@ -68,7 +80,12 @@ def get_msbuild_property(csproj: Path, property_name: str) -> str | None:
     return lines[-1] if lines else None
 
 
-def locate_mods_dir(log_text: str, csproj: Path, mod_name: str) -> Path | None:
+def locate_mods_dir(
+    log_text: str,
+    csproj: Path,
+    mod_name: str,
+    dotnet_env: dict[str, str] | None = None,
+) -> Path | None:
     """Find the mods/<ModName>/ folder the build copied into.
 
     1. Match a path ending in .../mods/<ModName> in the build log (locale-agnostic;
@@ -83,7 +100,7 @@ def locate_mods_dir(log_text: str, csproj: Path, mod_name: str) -> Path | None:
         if m:
             return Path(m.group(1))
 
-    mods_root = get_msbuild_property(csproj, "ModsPath")
+    mods_root = get_msbuild_property(csproj, "ModsPath", dotnet_env)
     if mods_root:
         candidate = Path(mods_root) / mod_name
         if candidate.is_dir():
@@ -123,6 +140,45 @@ def validate_resource_manifest(project_dir: Path, mod_name: str) -> str:
     return f"has_pck={str(has_pck).lower()}"
 
 
+# The game's mod scanner (ModManager.ReadModsInDirRecursive) walks a Mod directory to any
+# depth and parses EVERY `.json` it finds as a Mod manifest, logging a load error for each
+# one that has no `id`. A deployed Mod therefore contains exactly one loose `.json`: its own
+# manifest. Localization and other authored JSON ship inside the `.pck`, never loose.
+STALE_DEPLOYED_SIDECARS = (Path("openmod/vanilla-overrides.json"),)
+
+
+def prune_stale_deployed_sidecars(mods_dir: Path) -> list[str]:
+    """Remove non-manifest `.json` files earlier open-mod builds deployed by mistake."""
+    removed: list[str] = []
+    for relative in STALE_DEPLOYED_SIDECARS:
+        stale = mods_dir / relative
+        if not stale.is_file():
+            continue
+        stale.unlink()
+        removed.append(relative.as_posix())
+        parent = stale.parent
+        if parent != mods_dir and not any(parent.iterdir()):
+            parent.rmdir()
+    if removed:
+        print(f"[build] removed stale deployed sidecar(s): {', '.join(removed)}")
+    return removed
+
+
+def validate_no_phantom_manifests(mods_dir: Path, deployed_manifest: Path) -> None:
+    """Fail when the deployed tree holds a `.json` the game would misread as a manifest."""
+    phantoms = sorted(
+        path.relative_to(mods_dir).as_posix()
+        for path in mods_dir.rglob("*.json")
+        if path.is_file() and path != deployed_manifest
+    )
+    if phantoms:
+        raise RitsuProfileError(
+            "deployed Mod contains non-manifest .json the game parses as a Mod manifest "
+            f"and rejects: {', '.join(phantoms)}. Keep authored JSON inside the .pck and "
+            "keep build-time sidecars in the project directory only"
+        )
+
+
 def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path) -> None:
     manifest = find_manifest(project_dir, mod_name)
     deployed_manifest = mods_dir / manifest.name
@@ -140,15 +196,8 @@ def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path
         raise RitsuProfileError(
             f"generated Mod directory contains a framework payload: {', '.join(present)}"
         )
-    override_manifest = project_dir / "openmod" / "vanilla-overrides.json"
-    deployed_override_manifest = mods_dir / "openmod" / "vanilla-overrides.json"
-    if override_manifest.is_file():
-        if not deployed_override_manifest.is_file():
-            raise RitsuProfileError("deployed Mod is missing openmod/vanilla-overrides.json")
-        if override_manifest.read_bytes() != deployed_override_manifest.read_bytes():
-            raise RitsuProfileError(
-                "deployed openmod/vanilla-overrides.json differs from the validated source"
-            )
+    prune_stale_deployed_sidecars(mods_dir)
+    validate_no_phantom_manifests(mods_dir, deployed_manifest)
 
 
 def main(argv: list[str]) -> int:
@@ -159,10 +208,8 @@ def main(argv: list[str]) -> int:
                     help="Mod name = csproj base name = mods/<ModName>/ folder. "
                          "Defaults to the single .csproj found in project-dir.")
     ap.add_argument("--runtime-dir", default=None,
-                    help="Installed RitsuLib directory or release zip. Defaults to "
-                         "<resolved ModsPath>/STS2-RitsuLib.")
-    ap.add_argument("--skip-runtime-check", action="store_true",
-                    help="Compile-only escape hatch. Tier-1 verification must not use it.")
+                    help="Installed RitsuLib directory. Defaults to "
+                         "the game mods directory, then the official Steam Workshop item.")
     args = ap.parse_args(argv)
 
     project_dir = Path(args.project_dir)
@@ -175,36 +222,64 @@ def main(argv: list[str]) -> int:
         print(f"No .csproj found in {project_dir}", file=sys.stderr)
         return 2
     mod_name = args.mod_name or csproj.stem
-
     try:
         summary = validate_project_contract(project_dir, mod_name)
         print(f"[build] profile OK: {summary}")
         resource_summary = validate_resource_manifest(project_dir, mod_name)
         print(f"[build] resource manifest OK: {resource_summary}")
+        localization_summary = validate_project_localization(project_dir, mod_name)
+        print(f"[build] localization OK: {localization_summary}")
         dialogue_summary = validate_project_ancient_dialogue(project_dir, mod_name)
         print(f"[build] Ancient dialogue OK: {dialogue_summary}")
         override_summary = validate_project_override_manifest(project_dir, mod_name)
         print(f"[build] vanilla override manifest OK: {override_summary}")
-        if args.skip_runtime_check:
-            print("[build] WARNING: runtime/host validation skipped; this build cannot satisfy Tier 1")
-        else:
-            sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir")
-            mods_root_text = get_msbuild_property(csproj, "ModsPath")
-            if not sts2_dir_text or not mods_root_text:
-                raise RitsuProfileError(
-                    "MSBuild did not resolve Sts2Dir/ModsPath; set Sts2Dir in local.props"
-                )
-            print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
-            runtime = Path(args.runtime_dir) if args.runtime_dir else Path(mods_root_text) / PROFILE.runtime_mod_id
-            print(f"[build] runtime OK: {validate_runtime_asset(runtime)}")
-    except (OSError, AncientDialogueValidationError, RitsuProfileError, VanillaOverrideError) as exc:
+        sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir")
+        mods_root_text = get_msbuild_property(csproj, "ModsPath")
+        if not sts2_dir_text or not mods_root_text:
+            raise RitsuProfileError(
+                "MSBuild did not resolve Sts2Dir/ModsPath; set Sts2Dir in local.props"
+            )
+        print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
+        runtime = resolve_runtime_asset(
+            Path(sts2_dir_text),
+            Path(mods_root_text),
+            Path(args.runtime_dir) if args.runtime_dir else None,
+        )
+        if runtime.alternates:
+            alternatives = ", ".join(str(path) for path in runtime.alternates)
+            print(
+                "[build] WARNING: duplicate RitsuLib installs found; "
+                f"using {runtime.source} and ignoring {alternatives}"
+            )
+        print(f"[build] runtime source: {runtime.source} -> {runtime.path}")
+        compile_runtime = resolve_runtime_compile_profile(runtime.path)
+        validate_project_runtime_profile(project_dir, mod_name, compile_runtime)
+        print(f"[build] runtime OK: {validate_runtime_asset(runtime.path)}")
+    except (
+        OSError,
+        AncientDialogueValidationError,
+        LocalizationContractError,
+        RitsuProfileError,
+        VanillaOverrideError,
+    ) as exc:
         print(f"[build] RitsuLib profile FAILED: {exc}", file=sys.stderr)
         return 2
 
     print(f"[build] dotnet build -c Release  ({csproj.name})")
+    build_command = [
+        "dotnet",
+        "build",
+        str(csproj),
+        "-c",
+        "Release",
+        "-p:RestoreIgnoreFailedSources=true",
+        "-p:NuGetAudit=false",
+        f"-p:RitsuLibCompileAssemblyPath={compile_runtime.assembly_path}",
+    ]
     res = subprocess.run(
-        ["dotnet", "build", str(csproj), "-c", "Release"],
+        build_command,
         capture_output=True, text=True, encoding="utf-8", errors="replace",
+        env=None,
     )
     log_text = (res.stdout or "") + (res.stderr or "")
     code = res.returncode

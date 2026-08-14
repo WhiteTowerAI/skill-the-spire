@@ -3,7 +3,7 @@
 This capability adds localization-defined dialogue for a registered Mod Character to a
 cataloged vanilla Ancient. It preserves the vanilla Event model, scene, background,
 options, rewards, progression, and selection rules. It is not custom Ancient creation or
-an M6.7 vanilla replacement.
+a vanilla override replacement.
 
 ## Pinned STS2 0.107.1 catalog
 
@@ -100,7 +100,7 @@ identical structural keys; line-level Ancient dialogue SFX is unsupported.
 
 ## RitsuLib route
 
-RitsuLib `0.5.4` registers `AncientDialoguePopulateLocKeysPatch`. Its prefix appends
+RitsuLib `0.5.11` registers `AncientDialoguePopulateLocKeysPatch`. Its prefix appends
 localization-defined groups for registered Mod Characters once, before the native
 `AncientDialogueSet.PopulateLocKeys` call. Generated Mods only provide `ancients.json`;
 they do not emit Harmony, reflection, IL, Publicizer, a second injection patch, or another

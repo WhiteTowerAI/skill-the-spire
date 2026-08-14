@@ -9,6 +9,28 @@ description: |
 
 # STS2 API Lookup
 
+## Design grammar and planning routing
+
+After `modmaker/route.md` classifies the request, load only the design references named in
+its handoff:
+
+- read `${STS2_API_SKILL_DIR}/design/character-foundation.md` for a playable Character,
+  its Foundation, or a Character/content-set design, before creative questions or a
+  starter-deck proposal; load it only for that Character surface;
+- read `${STS2_API_SKILL_DIR}/design/mechanic-planning.md` when a mechanic, resource,
+  stateful loop, risk/reward structure, or interacting system lacks an exact core
+  decision;
+- read `${STS2_API_SKILL_DIR}/design/content-set-planning.md` for a Character card pool,
+  archetype, multi-element set, or another content ecosystem; and
+- read `${STS2_API_SKILL_DIR}/design/balance-planning.md` when balance, numeric resource
+  sources/sinks/cadence, a formula, or materially unresolved values are a current design
+  question.
+
+The references separate pinned facts, observed conventions, creative decisions, and open
+hypotheses. Load the smallest applicable set: an exact simple Card does not load balance
+planning merely because it contains a number. These files provide design guidance, not an
+adapter, runtime route, playtest result, or expanded capability boundary.
+
 This skill is a narrow reference tool. Answer only what the caller asked — do
 not dump entire files into the response.
 
@@ -17,7 +39,7 @@ not dump entire files into the response.
 For generated content, the semantic contract is the product-level source of truth:
 read `${MODMAKER_SKILL_DIR}/semantic-contract.md` before selecting an implementation.
 Lazily read `reference/ritsulib-adapter.md` next. It
-pins RitsuLib `0.5.4` against STS2 `0.107.1`, maps each semantic surface to one public
+pins RitsuLib `0.5.11` against STS2 `0.107.1`, maps each semantic surface to one public
 registration/template and asset profile, and owns the framework/version diagnostic
 record. Only then load the surface recipe or reference needed for the request.
 
@@ -31,36 +53,47 @@ scaffold, or infer a runtime dependency from a recipe name.
 
 When the request edits an existing vanilla model, read
 `${STS2_API_SKILL_DIR}/reference/vanilla-overrides.md` before any new-content recipe. The
-M6.7.0 kernel resolves and validates the pinned target. For a selected visual surface,
-continue to `${STS2_API_SKILL_DIR}/reference/vanilla-visual-overrides.md`; M6.7.2 promotes
+grounding kernel there resolves and validates the pinned target. For a selected visual surface,
+continue to `${STS2_API_SKILL_DIR}/reference/vanilla-visual-overrides.md`, which owns
 all 44 public Card-material and external-asset providers. For a non-asset exact Card
-target, continue to `${STS2_API_SKILL_DIR}/reference/vanilla-card-overrides.md`; M6.7.1
-promotes its property/cost/play-state/text/tip/glow/capability/behavior routes. For an
+target, continue to `${STS2_API_SKILL_DIR}/reference/vanilla-card-overrides.md`, which owns
+its property/cost/play-state/text/tip/glow/capability/behavior routes. For an
 exact Relic/Potion/Power/Orb/Enchantment/Affliction/Monster/Encounter/ordinary Event data
 or behavior request, continue to
-`${STS2_API_SKILL_DIR}/reference/vanilla-non-card-overrides.md`; M6.7.5 promotes the complete
+`${STS2_API_SKILL_DIR}/reference/vanilla-non-card-overrides.md`, which owns the complete
 public owner-hook surface plus checked intrinsic-data and complete-body Adapters. For an
 exact Card/Character/ordinary Event/shared Darv
 epoch gate, or a Card/Relic/Potion pool membership change, continue to
-`${STS2_API_SKILL_DIR}/reference/vanilla-availability-overrides.md`; M6.7.4 promotes the
+`${STS2_API_SKILL_DIR}/reference/vanilla-availability-overrides.md`, which owns the
 public `RequireEpoch`/`AddModelToPool` routes plus the reviewed Relic/Potion and pool getter
 Adapters. For an exact existing Ancient's option/branch request:
-continue to `${STS2_API_SKILL_DIR}/reference/vanilla-ancient-overrides.md`; M6.7.3 promotes
+continue to `${STS2_API_SKILL_DIR}/reference/vanilla-ancient-overrides.md`, which owns
 public multi-option append plus one fixed fingerprinted replacement/page-flow Adapter.
 Other operations remain grounding-only. Never derive a patch body from the prompt or
 silently convert the request into new content.
 
 A request to replace, remove, or hide a vanilla Card's original description is a blocking
-base-description replacement gap under RitsuLib `0.5.4`. Report that only before/after
+base-description replacement gap under RitsuLib `0.5.11`. Report that only before/after
 fragments exist and stop. Do not return an appended-text implementation unless the user has
 explicitly accepted composition instead.
 
 ## How to answer
 
 1. Check `${STS2_API_SKILL_DIR}/recipes/` for the element or mechanic type (relic, potion,
-   card, power, keyword, enchantment, orb, monster+encounter, event, character). For a **fought enemy** read
-   `recipes/monster.md` — it covers the monster AND its encounter as one vertical slice.
-   For a **World Node/event** read `recipes/event.md` — it covers RitsuLib registration,
+   card, power, keyword, enchantment, orb, monster+encounter, event, character, act, ancient,
+   reward, card pile, runtime UI, affliction, modifier, global effect, rest site). For a **fought enemy** read
+   `recipes/monster.md`; it owns separate Monster/Encounter registrations, explicit roster
+   edges, HP ranges, and deterministic/conditional/fixed-weight-random move graphs.
+   For an ordered `effects.sequence` containing ordinary damage, Block/healing/HP, Power,
+   native-resource, draw/discard/exhaust, known-Card creation, known run-content acquisition, or
+   Orb effects, also read `${STS2_API_SKILL_DIR}/reference/effect-primitives.md`. Combine its
+   required inputs with the selected `modmaker/surfaces/<surface>.md` projection; neither file
+   replaces the other.
+   For a complete playable chapter read `recipes/act.md`; it owns `ModActTemplate`, required
+   content pools/assets, and the separate singleplayer entry policy. For a new Ancient read
+   `recipes/ancient.md`; it owns Shared/Act-scoped registration, options, localization-driven
+   dialogue, presentation, and real-room proof. For a **World Node/event** read
+   `recipes/event.md` — it covers RitsuLib registration,
    flat nested `events.json`, explicit option keys, the fast-path consequence, checked
    portraits, and the `MapNode` proof. Also
    read `${STS2_API_SKILL_DIR}/reference/event-outcomes.md` when options use selections,
@@ -74,8 +107,8 @@ explicitly accepted composition instead.
    Read `${STS2_API_SKILL_DIR}/reference/event-native-presentation.md` when an Event
    option acquires a Card/relic with native presentation, selects the bounded one-shot
    screen shake, or uses the curated `trial_noble` built-in VFX profile.
-   Read `${STS2_API_SKILL_DIR}/reference/forced-followup-event.md` when a custom Quest
-   Card should force one custom Event in a specified act.
+   Read `${STS2_API_SKILL_DIR}/reference/forced-followup-event.md` when custom Quest Cards
+   declare a finite prioritized act-set to custom-Event mapping or sequence.
    For a **playable character Foundation** read `recipes/character.md` — it covers the
    RitsuLib typed template, one content-pack registration, three pools, starters, two-table
    localization, static profile/fallback, and `RunStart` + `CombatPlayer` proof.
@@ -88,12 +121,12 @@ explicitly accepted composition instead.
    For the bounded non-Spine `Idle`/`Attack`/`Hit`/`Dead` frame sequences, additionally
    read `${STS2_API_SKILL_DIR}/reference/character-combat-cues.md`; keep its cue set private
    to the combat state machine and preserve its all-or-nothing static fallback.
-   For a combat-lifetime **character resource with explicit payment and a live counter**,
+   For one or more bounded **secondary resources with explicit payment and selected UI**,
    read `${STS2_API_SKILL_DIR}/reference/character-resource.md`. For a **bounded ordered
    semantic card-play buffer with deterministic dynamic output**, read
    `${STS2_API_SKILL_DIR}/reference/ordered-card-buffer.md`. Both use the public RitsuLib
-   Secondary Resource/node-attachment APIs and are implemented by the final
-   Wayfinder composition. If a requested capability has no documented public game/RitsuLib
+   Secondary Resource/node-attachment APIs and follow the promoted generated-Character
+   contracts. If a requested capability has no documented public game/RitsuLib
    seam, report a pack gap; do not invent a patch target or `OpenMod.Runtime`.
    Cards/powers/keywords/enchantments/orbs also read
    `${STS2_API_SKILL_DIR}/reference/mechanics.md` first (scaling numbers, SmartFormat
@@ -115,21 +148,45 @@ explicitly accepted composition instead.
    read `${STS2_API_SKILL_DIR}/reference/advanced-targeting.md`. It owns the custom target
    registration, selection/resolution lifecycle, supported consumer matrix, and headed
    mouse/controller proof.
-   When a Relic contributes an owned action to the native Rest Site, read
+   When a standalone action, Card, Relic, or Modifier contributes an action to the native Rest Site, read
    `${STS2_API_SKILL_DIR}/reference/rest-site-options.md`. It owns the singleplayer-only
    free/fixed-Gold contract, absence versus disabled state, final payment recheck,
    repeatability, stay/leave lifecycle, icon fallback, and focused real-host proof.
-   When the Mod declares one or more custom Card piles, read
-   `${STS2_API_SKILL_DIR}/reference/card-piles.md`. It owns the complete documented Card
+   For a custom native-screen Reward read `recipes/reward.md`; it owns dynamic type registration,
+   claim/refusal, typed payload reconstruction, normal offer/combat insertion, linked sets, and
+   real-screen proof. When the Mod declares one or more custom Card piles, read
+   `recipes/card-pile.md`, then `${STS2_API_SKILL_DIR}/reference/card-piles.md`. The reference owns the complete documented Card
    Piles Package: combat/run scope, every public UI style and anchor, open/view/visibility/
    hotkey behavior, native movement, localization, and ExtraHand layout/manual play/
    callbacks. Do not reduce routing to only the consumers already exercised by a focused
-   proof.
-   When a Card looks at the top X Draw cards and discards any number, also read
-   `${STS2_API_SKILL_DIR}/reference/scry-helper.md`. It owns the singleplayer-only
-   open-mod helper, native selector/discard lifecycle, structured result, and proof.
+    proof.
+    For a Mod-owned top-bar, Toast, runtime-hotkey, local Capstone, Catalog, floating-window,
+    search-expansion, fixed node-attachment, or shell-token workflow, read
+    `recipes/runtime-ui.md`. It owns one coordinator, registration/handle/node lifetimes,
+    null-player-safe per-frame providers, main-thread UI mutation, deterministic bounded local
+    search, focus/close/content ownership, Mod-scoped theme consumption, and real-host/headed proof.
+    It does not authorize a deferred Settings, Progression, post-run Badge, Telemetry, Multiplayer,
+    or Update Check route or integration.
    For any effect that remembers progress (every N events, once per combat, previous
    turn, limited run uses), read `${STS2_API_SKILL_DIR}/reference/stateful-mechanics.md`.
+   When a separable behavior or state bundle is attached to a Card, Relic, Potion, Power,
+   Orb, Enchantment, Affliction, Monster, or Character, also read
+   `${STS2_API_SKILL_DIR}/reference/model-capabilities.md`. Keep inseparable behavior on the
+   model; a rule without an obtainable model owner belongs to the Global Effect surface.
+   When selected behavior crosses a callback, combat, room, run, save, or profile boundary,
+   or makes a gameplay-random choice, read
+   `${STS2_API_SKILL_DIR}/reference/lifecycle-state-rng.md`. Select the truthful owner,
+   cleanup/persistence boundary, and deterministic host or Mod RNG stream. Do not use its
+   storage routes to author deferred Progression, Settings, or Multiplayer behavior.
+   When a Card, Relic, Potion, Power, Orb, Enchantment, Affliction, or Monster changes an
+   attack hit, healing amount, Energy/Stars gain response, or maximum hand size, read
+   `${STS2_API_SKILL_DIR}/reference/shared-effect-hooks.md`. Use the model or its capability
+   as owner; process-wide registration is reserved for an explicitly selected Global Effect.
+   For behavior immediately before/after Card `OnPlay`, bounded free-play duration, Card
+   transform reaction/carry-over, or composed Card type text, read
+   `${STS2_API_SKILL_DIR}/reference/card-play-lifecycle.md`. Preserve its exact phase,
+   suppression, duration, cleanup, and neutral-Card semantics rather than folding it into an
+   ordinary `OnPlay` body.
 2. For error signatures → fix, read `${STS2_API_SKILL_DIR}/errors.md`.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a
    symbol the recipe lacks, read `${STS2_API_SKILL_DIR}/grounding.md` and, for
@@ -147,13 +204,17 @@ explicitly accepted composition instead.
 
 | File | Content | When to read |
 |------|---------|--------------|
+| `design/character-foundation.md` | Pinned five-Character starter inventory, Strike/Defend facts, native-shaped recommendation, and deliberate-departure consequences | Designing or revising a playable Character or Character/content set, before creative questions |
+| `design/mechanic-planning.md` | Player fantasy, core decision, loop, risk/reward, singleplayer pressure, edge cases, tuning knobs, and dominant-strategy review | Designing or revising a materially unresolved mechanic, resource, stateful loop, or interacting system |
+| `design/content-set-planning.md` | Foundation/access/payoff/consistency/defense/scaling/bridge/release roles, directed interaction graph, coverage, and dominance review | Designing a Character card pool, archetype, multi-element set, or content ecosystem |
+| `design/balance-planning.md` | Evidence hierarchy, Mod-forward power bias, formulas, resource economy audit, sensitivity, tuning knobs, and open hypotheses | Answering a balance/economy question or selecting materially unresolved numeric values |
 | `reference/ritsulib-adapter.md` | Pinned RitsuLib compat profile, public registration/template routing, asset profiles, lifecycle/persistence/resource routes, and diagnostics | After the semantic SPEC and before a surface recipe |
 | `reference/vanilla-overrides.md` | Pinned vanilla catalog, exact alias resolution, semantic manifest, promotion, baseline/fingerprint, and conflict checks | Any request targeting existing vanilla content; before category-specific routing |
-| `reference/vanilla-card-overrides.md` | M6.7.1 public existing-Card operations: properties, evaluated costs, play state/result, localized text/tips, native glow, capability variables, owner hooks, and `OnPlay` composition/replacement | Authoring an override for an exact existing `CARD.*` target |
-| `reference/vanilla-visual-overrides.md` | M6.7.2 complete 44-route visual registry matrix, Mod-local resource manifest, typed loading/fallback, conflicts, cleanup, and art/complex-resource boundary | Authoring a visual override for an exact existing vanilla model |
-| `reference/vanilla-ancient-overrides.md` | M6.7.3 existing-Ancient option append/replacement, conditions/costs/tips/effects/pages, Mod-local localization, and exact finish/page/replacement Adapter fingerprints | Authoring options or page progression for an exact existing `content_kind: ancient` target |
-| `reference/vanilla-availability-overrides.md` | M6.7.4 pinned epoch gates, Relic/Potion override filters, and Card/Relic/Potion pool add/remove/move routes with primary-pool checks | Authoring a grounded availability or pool-membership operation for an exact vanilla target |
-| `reference/vanilla-non-card-overrides.md` | M6.7.5 complete non-Card owner-hook surface, sixteen intrinsic data routes, and complete Relic/Potion/Power/Orb/Enchantment/Affliction/Monster/Encounter/ordinary Event behavior replacements | Authoring grounded data or behavior for an exact existing non-Card target |
+| `reference/vanilla-card-overrides.md` | public existing-Card operations: properties, evaluated costs, play state/result, localized text/tips, native glow, capability variables, owner hooks, and `OnPlay` composition/replacement | Authoring an override for an exact existing `CARD.*` target |
+| `reference/vanilla-visual-overrides.md` | complete 44-route visual registry matrix, Mod-local resource manifest, typed loading/fallback, conflicts, cleanup, and art/complex-resource boundary | Authoring a visual override for an exact existing vanilla model |
+| `reference/vanilla-ancient-overrides.md` | existing-Ancient option append/replacement, conditions/costs/tips/effects/pages, Mod-local localization, and exact finish/page/replacement Adapter fingerprints | Authoring options or page progression for an exact existing `content_kind: ancient` target |
+| `reference/vanilla-availability-overrides.md` | pinned epoch gates, Relic/Potion override filters, and Card/Relic/Potion pool add/remove/move routes with primary-pool checks | Authoring a grounded availability or pool-membership operation for an exact vanilla target |
+| `reference/vanilla-non-card-overrides.md` | complete non-Card owner-hook surface, sixteen intrinsic data routes, and complete Relic/Potion/Power/Orb/Enchantment/Affliction/Monster/Encounter/ordinary Event behavior replacements | Authoring grounded data or behavior for an exact existing non-Card target |
 | `recipes/relic.md` | Relic trigger/effect/state behavior, localization fields, fallback, and proof obligations | Authoring a relic after adapter selection |
 | `recipes/potion.md` | Potion usage/target/effect behavior, localization fields, fallback, and proof obligations | Authoring a potion after adapter selection |
 | `recipes/card.md` | Card play/target/scaling/upgrade behavior, localization fields, fallback, and proof obligations | Authoring a card after adapter selection |
@@ -161,9 +222,17 @@ explicitly accepted composition instead.
 | `recipes/keyword.md` | Keyword behavior-vs-display boundary, host attachment, text-only fallback, and proof | Authoring shared card-mechanic vocabulary after adapter selection |
 | `recipes/enchantment.md` | Enchantment host restrictions, persistent change, 64x64 icon consumers/fallback, and proof | Authoring a persistent Card modification after adapter selection |
 | `recipes/orb.md` | Orb channel/passive/evoke behavior, 100x100 icon consumers, explicit body/SFX fallbacks, and proof | Authoring an orb plus its host after adapter selection |
-| `recipes/monster.md` | Monster + Encounter as one vertical slice: grounded moves, cycles/branches, static combat+bestiary body, fallback, and `CombatEnemy` proof | Authoring a fought enemy or its move cycle after adapter selection |
+| `recipes/monster.md` | Separate Monster/Encounter nodes, explicit rosters, HP ranges, deterministic/conditional/weighted-random moves, static combat+bestiary body, fallback, and selected `CombatEnemy` checks | Authoring a fought enemy graph after adapter selection |
 | `recipes/event.md` | Event / World Node pages/options, outcomes, checked portraits, and `MapNode` proof | Authoring a map event after adapter selection |
 | `recipes/character.md` | Character Foundation pools, starters, localization, selection/run behavior, fallbacks, and proof | Authoring a playable character shell after adapter selection |
+| `recipes/act.md` | Complete Act model, required content pools/assets, explicit singleplayer force/uniform/weighted entry, and transition proof | Authoring a playable chapter |
+| `recipes/ancient.md` | New Shared/Act-scoped Ancient identity, options, localization dialogue, presentation, and native-room proof | Authoring a new Ancient rather than editing a vanilla one |
+| `recipes/reward.md` | Mod-owned Reward type, native claim/refusal, typed save reconstruction, offer/combat insertion, linked sets, and proof | Authoring a custom pending reward-screen option |
+| `recipes/card-pile.md` | Independent Card Pile owner and route into the complete documented Package | Authoring one or more Mod-owned Card piles |
+| `recipes/affliction.md` | Combat Card Affliction validity, stack/application/play/removal lifecycle, text/tips/overlay, and proof | Authoring a new Affliction and its application source |
+| `recipes/modifier.md` | Good/bad run Modifier registration, ordering/exclusivity, new/load lifecycle, text/icon, and proof | Authoring a daily/custom-run Modifier |
+| `recipes/global-effect.md` | Truthful Run/Combat singleton ownership, hook scope, scoped state, reset, and proof | Authoring a rule with no obtainable/selectable model owner |
+| `recipes/rest-site.md` | Standalone/Card/Relic/Modifier owner selection for native Rest Site options | Authoring an independently requested Rest Site action |
 | `reference/ancient-dialogue.md` | Pinned vanilla Ancient catalog, semantic visit groups, flat RitsuLib localization, structural validator, native priority, Architect attackers, and focused proof | Authoring or verifying custom-Character dialogue in native Ancient scenes |
 | `reference/character-presentation.md` | RitsuLib Character profile/consumer matrix; nine live static profiles; no-editor raw-scene packing; five-layer energy scene; split card/text Energy icons; bounded theme; native Ancient/Architect proof boundary | Authoring or verifying Character static/native presentation |
 | `reference/character-combat-cues.md` | Bounded non-Spine Idle/Attack/Hit/Dead sheets, deterministic frame normalization, private combat cue wiring, shared geometry, all-or-nothing static fallback, and hosted proof | Authoring or verifying Character combat cues |
@@ -172,19 +241,23 @@ explicitly accepted composition instead.
 | `reference/event-text-effects.md` | Bounded normal-Event rich text: vanilla-observed color/emphasis/`jitter`/`sine` tags, safe nesting, native host lifecycle, headed proof, completed native-presentation inventory, and the speech-bubble future boundary | Authoring styled Event text or preserving adjacent presentation gaps |
 | `reference/content-text-effects.md` | Per-surface vanilla rich-text allowlists for Card bodies/Card previews and standard relic/potion/power Hover Tips; SmartFormat and auto-keyword composition; headed proof contract | Authoring styled Card/relic/potion/power descriptions |
 | `reference/event-option-presentation.md` | Enabled Event option typed Hover Tips, normal `CreateModRelicOption<T>` text/metadata plus its Ancient-only image blocker, and native exact-lethal HP/Max HP warning glow | Authoring those normal-layout Event option presentation contracts |
-| `reference/event-native-presentation.md` | Native Card/relic acquisition presentation, the preference-respecting `weak_short` screen shake, and the curated built-in `trial_noble` Event VFX path/host/placement/pause/cleanup contract | Authoring native presentation items 4-6 for a normal Event |
-| `reference/forced-followup-event.md` | Public-hook Quest Card -> forced custom Event contract: one act, Unknown room forcing, target pool exclusion, token completion/removal, and one-run MapNode proof | Authoring a bounded delayed/conditional Event follow-up |
-| `reference/character-resource.md` | RitsuLib combat resource: `SecondaryResourceDefinition`/`SecondaryResourceCmd`, combat reset, all-or-nothing spend, public `RegisterCombatUi`, fixed 220x32 counter at offset 160, text fallback, and two-combat proof | Authoring a character resource and explicit-payoff loop |
+| `reference/event-native-presentation.md` | Ordered native Card/relic acquisitions, allowlisted preference-respecting `weak_short`/`strong_normal` shake, and curated `trial_noble` Event VFX | Authoring native presentation items 4-6 for a normal Event |
+| `reference/forced-followup-event.md` | Finite prioritized Quest Card -> act-set -> custom Event mappings/sequences, pool exclusion, saved progress, terminal consumption, and fail-closed conflicts | Authoring a bounded delayed/conditional Event follow-up |
+| `reference/character-resource.md` | Multiple bounded RitsuLib secondary resources, combat/run policies, fixed/X and required/optional/extra payment ledger, selected counter/Card UI, and exact lifecycle boundaries | Authoring resource and explicit-payoff loops |
 | `reference/ordered-card-buffer.md` | Ordered buffer: `AttachedState<PlayerCombatState,TState>`, native source-card Discard, visible order, non-destructive overflow, deterministic output/`CardGeneratedEntry`, and combat reset; retained-card `CustomPile` remains unsupported | Authoring an ordered card-play record and dynamic output |
-| `reference/scry-helper.md` | open-mod Scry helper: top-X native selector, structured result, normal Discard history/hooks, zero/empty/short/full boundaries, await proof, and explicit singleplayer restriction | Authoring a Card that looks at the top X Draw cards and discards any number |
 | `reference/card-computed-values.md` | Computed Card value roles, one-formula preview/execution parity, upgrade/timing/domain rules, Energy/Star formatters, typed Power amount-given behavior, variable tooltips, and focused proof | Authoring a Card with calculated text/effects or DynamicVar tooltips |
 | `reference/card-hand-emphasis.md` | Conditional Card hand emphasis: ordered fixed-color rules, priority/ties, native gold/red versus typed outline lowering, unplayable visibility, refresh boundary, and headed proof | Authoring a Card with hand emphasis |
 | `reference/extra-corner-labels.md` | Bounded extra badges: Relic up to three safe corners, Power one top-left label, text/rich-text limits, specs providers, invalidation/removal, cleanup, and headed proof | Authoring supplemental values on a Relic or Power |
 | `reference/advanced-targeting.md` | RitsuLib custom live-Creature targets: stable Mod-local registration, single Card/Potion and multi Card resolution, revalidation/payment lifecycle, multi-Potion limitation, and headed selection proof | Authoring a filtered Card/Potion target |
-| `reference/rest-site-options.md` | Relic-owned native Rest Site option: singleplayer contribution, free/fixed Gold, final recheck, run/site repeatability, stay/leave, checked icon fallback, and real-host proof | Authoring an owned Rest Site action on a Relic |
+| `reference/rest-site-options.md` | Standalone/Card/Relic/Modifier native Rest Site option: exact owner/state handle, singleplayer contribution, free/fixed Gold, final recheck, run/site repeatability, stay/leave, and checked icon fallback | Authoring any included Rest Site action |
 | `reference/card-piles.md` | Complete Custom Card Piles Package: combat/run lifetime; headless/top-bar/bottom-corner/ExtraHand UI; preset/custom anchors; open/view/visibility/hotkeys; native movement; localization; ExtraHand layout, play, and callbacks | Authoring one or more Mod-owned Card piles |
+| `reference/model-capabilities.md` | Registered model-owned behavior/state bundles: typed owners, default/runtime attachment, merge/order, clone/save/display, bounded lifetime, and Card transform carry-over | Authoring separable behavior or state on a Card, Relic, Potion, Power, Orb, Enchantment, Affliction, Monster, or Character |
+| `reference/lifecycle-state-rng.md` | Truthful lifecycle subscriptions, attached/model/run/player/profile state, persistence and migrations, deterministic host/Mod RNG, cleanup, and deferred-family boundaries | Authoring included behavior that crosses callback, combat, room, run, save, or profile boundaries or makes gameplay-random choices |
+| `reference/shared-effect-hooks.md` | Owner-bound per-hit attack, healing, Energy/Stars gain, and maximum-hand-size effects with exact passes, guards, neutral results, and Global Effect boundary | Authoring those shared effects on a reachable model/capability or explicit Global Effect |
+| `reference/card-play-lifecycle.md` | Before/after Card OnPlay, suppression, free-play durations, transform listeners/carry-over, type-text composition, phase order, cleanup, and real-host proof | Authoring behavior around Card play rather than only the Card's ordinary OnPlay body |
+| `reference/effect-primitives.md` | Shared ordinary player-result lowering: exact commands, required context/owner/source/target, await order, result/rejection behavior, and lifecycle bounds | Authoring an ordered `effects.sequence` on a truthful executable surface |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
-| `reference/stateful-mechanics.md` | Stateful-effect contract: event/threshold/phase/lifetime/reset/persistence; run-save progress vs native combat turn; UI counter and Tier-2 boundary/save proofs | Any effect that remembers progress, limits uses, or compares turns |
+| `reference/stateful-mechanics.md` | Bounded state schemas with exact owner/listener transitions, lifetime/reset/persistence, visibility, consumers/outputs, and selected proof derivation | Any effect that remembers progress, limits uses, or compares turns |
 | `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
 | `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and nine promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
@@ -197,8 +270,8 @@ explicitly accepted composition instead.
 content recipe. Existing Cards use the promoted public route in
 `reference/vanilla-card-overrides.md` and may reuse a grounded effect recipe only for its
 semantic lowering. Existing Ancient option/page behavior uses the promoted bounded route in
-`reference/vanilla-ancient-overrides.md`; its visuals remain separate M6.7.2 operations.
-Existing non-Card data/behavior in the M6.7.5 matrix uses
+`reference/vanilla-ancient-overrides.md`; its visuals remain separate visual-override operations.
+Existing non-Card data/behavior uses
 `reference/vanilla-non-card-overrides.md`. Do not infer that every edit needs Harmony, and
 do not author an operation outside a listed catalog package.
 
@@ -211,30 +284,29 @@ do not author an operation outside a listed catalog package.
   supported. A missing recipe or unrun check does not make it unsupported; report the exact
   authoring or verification gap.
 - **Custom Card Piles:** route the complete documented Package through
-  `reference/card-piles.md`; preserve exact Card identity and awaited movement, and let the
+  `recipes/card-pile.md` and `reference/card-piles.md`; preserve exact Card identity and awaited movement, and let the
   generated SPEC select any public scope/style/anchor/view/ExtraHand consumer.
-- **Scry helper:** use `OpenModScry.Execute` only for the bounded top-X/discard-any Card
-  effect. Await the native selector and every pile/hook command, preserve seen order, and
-  keep the result and hooks local to the generated Mod. Multiplayer/replay remains
-  unsupported; do not silently fall back to local selection.
-- **Monster + encounter are one slice.** Declare every visible move, ordered successor,
-  exhaustive branch, hit count, and downstream state consequence. Keep one checked
-  360x360 body for combat and bestiary with the explicit built-in fallback; animation and
+- **Monster/Encounter graph:** declare separate registered nodes and explicit roster edges,
+  every visible move, ordered successor, exhaustive conditional or requested weighted-random
+  branch, hit count, and downstream state consequence. Keep one checked 360x360 body per
+  Monster for combat and bestiary with the explicit built-in fallback; animation and
   phobia variants remain later work.
 - **Event/World Node:** preserve real page/option UI, blocking overlay completion,
   resume-vs-map choice, one special combat per mutable Event, and the bounded portrait,
   rich-text, native presentation, and cleanup profiles. Direct merchant/rest/treasure
   transitions, custom layouts, arbitrary VFX, and speech bubbles remain unsupported for new
-  normal Events. Exact existing Ancient visuals/options route through the separate M6.7.2/
-  M6.7.3 references; do not treat that override Package as new Ancient authoring.
-- **Forced Event follow-up:** one token, one target Event, one act, one Unknown MapPoint
-  route, and one named completion option. Do not generalize it to arbitrary chains,
-  vanilla edits, multiplayer, or save-roundtrip claims.
+  normal Events. Exact existing Ancient visuals/options route through the separate
+  `reference/vanilla-visual-overrides.md` and `reference/vanilla-ancient-overrides.md`; do not
+  treat those override routes as new Ancient authoring.
+- **Forced Event follow-up:** use only a finite prioritized list of token/act-set/custom-
+  Event sequences with exact saved progress, terminal consumption, pool exclusion, neutral
+  returns, and fail-closed conflicts. Do not generalize it to arbitrary graphs, vanilla
+  edits, multiplayer, or save-roundtrip claims.
 - **Character Foundation:** the adapter owns exactly-once registration, character-scoped
   pools, exact starters, localization, and the real selection/run proof. Static consumers
   remain separate profiles: selection `132x195`, background `1920x1200`, top icon main and
   outline `88x88`, static bodies `512x512`, five energy layers `256x256`, and distinct
-  256x256 large/24x24 rich-text Energy icons. The bounded M6.5 pool-frame/color theme and
+  256x256 large/24x24 rich-text Energy icons. The bounded pool-frame/color theme and
   deterministic top-icon/generated-Relic outlines are implemented. Locked
   selection and map marker still need separate headed evidence. Character-specific native
   Ancient/Architect dialogue is supported only through the dedicated localization contract.
@@ -276,4 +348,8 @@ do not author an operation outside a listed catalog package.
   clamp to the existing amount and never create a missing instance with a negative value.
 - **Never use process-local random state** for in-game RNG; use the game's seeded random
   source through the selected adapter.
-- **Don't guess an API** — if the recipe lacks it, check the rest of the pack (`reference/mechanics.md`, `reference/build-constraints.md`, snapshots, `errors.md`) per `grounding.md`. If it's genuinely not in the pack, report a pack gap rather than digging or guessing.
+- **Don't guess an API** — first use `reference/effect-primitives.md` for its maintained ordinary
+  effects. For a different family the selected recipe lacks, check the rest of the pack
+  (`reference/mechanics.md`, `reference/build-constraints.md`, snapshots, `errors.md`) per
+  `grounding.md`. If it is genuinely not in the pack, report a pack gap rather than digging or
+  guessing.

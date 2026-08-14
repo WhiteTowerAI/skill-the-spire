@@ -77,6 +77,10 @@ fallback stays available.
 
 ## Target and effect rules
 
+Read `reference/effect-primitives.md` for ordinary command lowering. `OnUse` supplies
+`choiceContext`, `Owner`, `Owner.Creature`, no Card source, and its nullable selected target; this
+recipe owns only Potion usage/target/lifecycle details.
+
 - Enemy damage uses `TargetType.AnyEnemy` and a non-null target.
 - Player buffs normally use `TargetType.AnyPlayer`; the selected target is a player
   creature, unlike a self-targeting Card.
@@ -89,19 +93,30 @@ fallback stays available.
 - Potion damage, Block, and Power effects normally use `ValueProp.Unpowered`.
 - `OnUse` must await every Cmd. A diagnostic `used:` line does not prove behavior.
 
-Common grounded operations:
+## Optional shared capability routes
 
-```csharp
-await CreatureCmd.GainBlock(target, 12m, ValueProp.Unpowered, null);
-await CreatureCmd.Heal(target, 10m);
-await PowerCmd.Apply<StrengthPower>(
-    choiceContext, target, 2m, Owner.Creature, null);
-await PlayerCmd.GainEnergy(2m, Owner);
-```
+Keep the drinking action in `OnUse`. For separable behavior/state while this Potion is held, read
+`reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Potion
+or typed capability and prove owner guards, the unchanged neutral case, and cleanup after native
+removal. Do not register a Potion-owned rule process-wide.
+
+## SPEC `hook participation`
+
+`OnUse` is the Potion being used. A SPEC `hook participation` block is different: the engine asks
+the Potion for a number or a decision while resolving someone else's event, **and it does so while
+the Potion is still sitting in the belt** — participation starts when the Potion is procured, not
+when it is drunk. Read `reference/model-hook-participation.md`.
+
+A Potion reaches both the run-scope and combat-scope sets. `Owner` is a `Player`, so a subject
+guard goes through `Owner.Creature`, and through `Owner.Osty` wherever the Osty can be the
+subject.
 
 ## Localization
 
-Ship `localization/eng/potions.json` with flat public-entry keys:
+Ship matching `localization/eng/potions.json` and `localization/zhs/potions.json` with flat
+public-entry keys:
 
 ```json
 {

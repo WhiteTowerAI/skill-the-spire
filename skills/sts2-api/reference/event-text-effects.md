@@ -75,7 +75,7 @@ Reuse the Event `MapNode` suite. One headed run is sufficient:
 5. keep the Event's existing structured outcome proof, `selftest done`, and no fresh error
    block. Do not re-run unrelated outcome branches in a separate rich-text project.
 
-## M6 native-presentation pass
+## Native-presentation pass
 
 All six ordered native-presentation candidates are now implemented with headed
 evidence:

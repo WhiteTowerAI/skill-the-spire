@@ -9,7 +9,12 @@ Use this page with `recipes/character.md`, `reference/character-presentation.md`
 
 ## Cue contract
 
-| cue | source sheet | runtime frames | frame time | behavior |
+Source sheets are **columns x rows** of 512x512 cells, read left-to-right then
+top-to-bottom. The same values are queryable under `character_cues` in
+`reference/catalogs/art-contract-sts2-0.107.1.json`, which names `columns`, `rows`, and
+`sheet_px` separately so the grid order cannot be misread.
+
+| cue | source sheet (cols x rows) | runtime frames | frame time | behavior |
 |---|---|---:|---:|---|
 | `Idle` | 2x2 | 4 | 180 ms | loops |
 | `Attack` | 2x2 | 4 | 90 ms | one shot, then returns to `Idle` |

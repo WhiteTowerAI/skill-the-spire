@@ -1,11 +1,12 @@
 # Vanilla override grounding and routing
 
-M6.7.0 supplies version grounding for edits to existing STS2 content. M6.7.1 promotes the
-public Card behavior package in `vanilla-card-overrides.md`; M6.7.2 promotes all 44 public
-visual registry routes in `vanilla-visual-overrides.md`; M6.7.3 promotes existing Ancient
-initial-option append and reviewed replacement/page-flow routes in
-`vanilla-ancient-overrides.md`; M6.7.4 promotes checked unlock gating and
-Card/Relic/Potion pool membership in `vanilla-availability-overrides.md`. New scaffolds still emit an empty
+This page supplies version grounding for edits to existing STS2 content. The promoted route
+families each have their own reference: public Card behavior in `vanilla-card-overrides.md`,
+all 44 public visual registry routes in `vanilla-visual-overrides.md`, existing Ancient
+initial-option append plus reviewed replacement/page-flow routes in
+`vanilla-ancient-overrides.md`, checked unlock gating and Card/Relic/Potion pool membership in
+`vanilla-availability-overrides.md`, and non-Card data and behavior in
+`vanilla-non-card-overrides.md`. New scaffolds still emit an empty
 semantic manifest; author a nonempty operation only through a package listed in the checked
 catalog. `build.py` rejects every other route before MSBuild.
 
@@ -26,8 +27,8 @@ The checked catalog is
 
 ```text
 host: 0.107.1
-framework: RitsuLib 0.5.4
-profile: ritsulib-0.5.4-sts2-0.107.1
+framework: RitsuLib 0.5.11
+profile: ritsulib-0.5.11-sts2-0.107.1
 sts2.dll SHA-256: a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52
 assembly MVID: 97f10687-c306-4798-ab75-8b9f23f34dfb
 runtime vanilla models: 1624
@@ -60,9 +61,9 @@ contributions into vanilla catalog data.
 The offline collector reads PE metadata with `System.Reflection.Metadata`; it never loads
 `sts2.dll`. It records the assembly hash/MVID and the exact signature, signature hash, IL
 hash, metadata token, and method-body shape for each reviewed target in
-`adapter-targets-0.107.1.json`. The three M6.7.3 targets are the exact protected native
+`adapter-targets-0.107.1.json`. The three existing-Ancient targets are the exact protected native
 Ancient finish/page-flow methods and the initial-options replacement boundary. The 17
-M6.7.4 targets cover the three cached pool getters plus Relic/Potion base and six concrete
+Availability targets cover the three cached pool getters plus Relic/Potion base and six concrete
 unlock-filter overrides per category. Add no adapter merely to make a prompt pass.
 
 ## Exact target resolution
@@ -97,17 +98,20 @@ Every new scaffold contains `openmod/vanilla-overrides.json`:
 {
   "schema": "openmod.sts2.vanilla-overrides/v1",
   "mod_id": "ExampleMod",
-  "profile": "ritsulib-0.5.4-sts2-0.107.1",
+  "profile": "ritsulib-0.5.11-sts2-0.107.1",
   "host_version": "0.107.1",
   "catalog_sha256": "0279fd5e95e7fc9a076f2319bc5ec74952389045f26837c0d72c89d6f416dd73",
   "operations": []
 }
 ```
 
-`build.py` validates this document before MSBuild, copies it as a non-resource artifact,
-and checks that the deployed bytes exactly match the validated source. Projects created
-before M6.7.0 remain buildable without a manifest and are reported as legacy/non-override
-projects.
+`build.py` validates this document before MSBuild. It is a build-time input that stays in
+the project directory and is never deployed into `mods/<ModName>/`: the game parses every
+`.json` under a deployed Mod directory as a Mod manifest and logs a load error for each one
+without an `id`. The generated C# carries the accepted operations at runtime, so the
+deployed Mod needs only its own `mod_manifest.json`. `build.py` deletes a copy left by an older
+build and fails on any other deployed non-manifest `.json`. Projects created before M6.7.0
+remain buildable without a manifest and are reported as legacy/non-override projects.
 
 Every promoted operation carries `order`, stable `operation_id`, resolved
 `target_model_id`, semantic `mode`, affected `surface`, selected route, expected catalog
@@ -124,14 +128,14 @@ target record, for example:
 }
 ```
 
-Types and values must match exactly. Missing or changed fields are baseline drift. M6.7.1
+Types and values must match exactly. Missing or changed fields are baseline drift. Card
 Card operations include exact category/type baselines and the surface-specific fields in
-`vanilla-card-overrides.md`. M6.7.2 visual operations also require exact content kind and a
+`vanilla-card-overrides.md`. Visual operations also require exact content kind and a
 checked Mod-local resource contract from `vanilla-visual-overrides.md`. No other operation
-is authorized merely because this generic shape can identify its target. M6.7.3 Ancient
+is authorized merely because this generic shape can identify its target. Existing-Ancient
 operations additionally require exact `content_kind`, singleplayer semantics, Mod-local
 `events.json`, and every selected flow/route fingerprint from
-`vanilla-ancient-overrides.md`. M6.7.4 availability operations require the exact epoch or
+`vanilla-ancient-overrides.md`. Availability operations require the exact epoch or
 pool membership semantics, complete source baselines, fixed Adapter dependencies, and
 post-operation primary pool from `vanilla-availability-overrides.md`.
 
@@ -187,11 +191,9 @@ Supporting another STS2 version requires a new runtime snapshot, assembly snapsh
 reviewed adapter-target file, merged catalog, and proof. Never change the version label on
 an old catalog.
 
-M6.7.0 development evidence established the exact profile, repeatable localized
-1624-model snapshot, identical assembly hash, structured state proof, `selftest done`, and
-no fresh collector error. That proves the collector only. The current-catalog no-op build,
-full regression, payload synchronization, and final result are deferred to consolidated
-M6.7 closure; they are not current passes. No collector result is headed or behavioral
-proof for a vanilla edit. M6.7.1/M6.7.2/M6.7.3/M6.7.4 source authoring and focused checks likewise do not
-become real-host behavior or presentation proof until the consolidated M6.7 verification
-pass.
+The collector's own development evidence established the exact profile, a repeatable
+localized 1624-model snapshot, an identical assembly hash, a structured state proof,
+`selftest done`, and no fresh collector error. That proves the collector, and nothing else.
+No collector result is headed or behavioral proof for a vanilla edit, and neither is source
+authoring plus focused checks on any override route: real-host behavior and presentation are
+proved only by observing them in the nearest real consumer.

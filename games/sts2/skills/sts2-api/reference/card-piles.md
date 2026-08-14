@@ -1,7 +1,7 @@
 # Reference: custom Card Piles Package
 
 This page owns custom Card Piles authoring for STS2 `0.107.1` with official RitsuLib
-`0.5.4`. The official Custom Card Piles tutorial establishes the Package. Every documented
+`0.5.11`. The official Custom Card Piles tutorial establishes the Package. Every documented
 public consumer present in the pinned profile is supported; a missing focused proof is a
 verification fact, not a reason to shrink the Package.
 
@@ -14,7 +14,8 @@ A Mod may declare one or more piles. Each pile records:
 - `style`: `headless`, `top bar deck`, `bottom left`, `bottom right`, or `extra hand`;
 - `anchor`: style default, a matching preset plus offset, or custom position plus pivot;
 - `icon`: none, checked Mod resource, or explicit built-in fallback;
-- `localization`: title, description, and empty text in every shipped language;
+- `localization`: title, description, and empty text in required `eng` and `zhs`, plus any
+  additional shipped language;
 - `open behavior`: default pile screen or one declared public `ICapstoneScreen` route;
 - `visibility`: one deterministic player/pile/room predicate or always visible;
 - `hover tip`: placement and screen offset;
@@ -70,7 +71,7 @@ existing shared global ID. Normal generated content uses Mod-owned IDs.
 `AllPiles`/combat-pile behavior, and discards it with that combat.
 
 `ModCardPileScope.RunPersistent` attaches the pile to `Player`, includes it in
-`Player.Piles`, persists across combats, and is serialized by RitsuLib `0.5.4` run-save
+`Player.Piles`, persists across combats, and is serialized by RitsuLib `0.5.11` run-save
 data. Save/load, existing-save behavior, and run-end cleanup are verification obligations
 for a generated Mod that actually uses this scope; they are not separate support gates.
 
@@ -171,7 +172,7 @@ native holders. `ModCardPileExtraHandSpec` supports all documented public settin
 - a deterministic `LayoutResolver` returning `ModExtraHandCardTransform`;
 - `OnCardVisualCreated` and `OnCardArrived` callbacks using the public Card/holder context.
 
-With manual play enabled, official RitsuLib `0.5.4` temporarily moves the exact Card into
+With manual play enabled, official RitsuLib `0.5.11` temporarily moves the exact Card into
 the backend native Hand, reparents its holder, and enters `NPlayerHand.StartCardPlay`.
 Cancellation restores the source pile/index; success uses normal payment, hooks, targeting,
 and result-pile processing. Generated Mods do not reproduce or patch this coordinator.
@@ -221,7 +222,7 @@ the human lead; that exception does not narrow this Package-level support declar
 
 The Package creates new Mod-owned piles. It does not by itself replace vanilla piles,
 change unrelated Cards' result locations, or authorize ungrounded Harmony, reflection,
-Publicizer, or IL generation. Multiplayer behavior is supported only where the selected
-public Card Piles API and normal game command already provide it; never add a local-only
-fallback that would desynchronize peers. Record any newly confirmed API/lifecycle defect
-as the smallest affected consumer limitation rather than retracting the whole Package.
+Publicizer, or IL generation. Use only the selected public Card Piles API and normal game
+commands; M8.8 does not design, add, or claim verification for Multiplayer behavior or a Card
+Pile-to-Multiplayer integration. Record any newly confirmed API/lifecycle defect as the smallest
+affected consumer limitation rather than retracting the whole Package.

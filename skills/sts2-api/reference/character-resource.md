@@ -1,29 +1,34 @@
 # Character resource - RitsuLib combat state, payment, and live counter
 
-Status: **implemented with RitsuLib on STS2 0.107.1**. `RitsuResourceProof` proved
-the resource in isolation and `RitsuWayfinderProof` proved the final Character
-composition on 2026-07-23 with RitsuLib 0.4.67 as the sole framework dependency.
+Status: **authorable with RitsuLib on STS2 0.107.1**. The historical focused proof observed
+one combat-persistent, zero-default resource with a custom combat counter. M8.7 generalizes
+the source contract below; multiple resources, run persistence, other turn-start policies,
+named play uses, and built-in row/Card consumers remain game-unobserved.
 
-Use this capability when cards or other character-owned effects gain and spend a named
-nonnegative resource during combat. It is a selected Character capability, not a new
-content type and not a replacement for native Energy.
+Use this capability when Cards or other character-owned effects gain and spend one or more
+named nonnegative resources. It is a selected Character capability, not a new content type
+and not a replacement for native Energy or Stars.
+
 
 ## Semantic contract
 
-SPEC must record:
+For each resource, SPEC records a stable local id, `min/default/max`, persistence, turn-start
+policy, localization/icons, and every Card or combat UI consumer. For each Card payment use,
+record a globally unique use id, Card id, resource id, required/optional/repeatable-extra role,
+fixed or X cost, shortfall policy, and the exact post-commit payoff.
 
 | Field | Required value |
 |---|---|
-| owner | the local `Player` and its current `PlayerCombatState` |
-| lifetime | `combat`; a new combat starts at the registered default |
-| amount domain | integer, minimum `0`; no implicit debt |
+| owner | the local `Player`; RitsuLib stores live amounts on its current `PlayerCombatState` |
+| lifetime | `combat` snapshot or `run` save persistence, selected per resource |
+| amount domain | bounded nonnegative integer; no implicit debt |
 | gain | positive amount and exact source event |
 | affordability | `amount >= cost`, checked explicitly |
-| spend | all-or-nothing; rejection leaves amount and payoff unchanged |
-| reset/save | `SecondaryResourcePersistencePolicy.Combat`; no run-save claim |
-| UI | public `RegisterCombatUi` attachment under `NCombatUi.EnergyCounterContainer` |
-| layout | fixed 220x32 icon+text control at offset `(160,0)`; checked text-only fallback |
-| scenario | gain, affordability, successful/rejected spend, UI refresh, and combat-2 reset |
+| spend | the RitsuLib play plan/commit ledger is authoritative; rejection is nondestructive |
+| reset/save | exact `Combat` or `Run` persistence and exact built-in turn-start policy |
+| UI | selected built-in counter row, Card payment line, or a checked explicit attachment |
+| layout | every selected consumer has stable dimensions and a non-overlap rule |
+| proof | derive only the selected resources, payments, lifecycle, and consumers from SPEC |
 
 Do not reinterpret this contract as alternative Energy payment. Patching card resource
 cost hooks is unsupported. The proven payoff pattern spends inside generated domain/card
@@ -31,8 +36,11 @@ behavior and applies the consequence only when RitsuLib reports successful payme
 
 ## Registration and commands
 
-Register the resource and its UI once from Mod initialization, before the content pack is
-used in combat:
+Register every resource once from Mod initialization, before the content pack is used in
+combat. Translate the SPEC policy names exactly: `none`, `reset_to_max`,
+`add_max_to_current`, and `clear` map to the four `SecondaryResourceTurnStartPolicy`
+members; `combat` and `run` map to the matching `SecondaryResourcePersistencePolicy`
+members. Do not infer either policy from the resource's name.
 
 ```csharp
 using STS2RitsuLib;
@@ -49,21 +57,21 @@ public static string Id => Definition.Id;
 
 public static void Register()
 {
-    Definition = Resources.Register("ink", new SecondaryResourceDefinition(
+    Definition = Resources.Register("resource", new SecondaryResourceDefinition(
         defaultAmount: 0,
         minAmount: 0,
         turnStartPolicy: SecondaryResourceTurnStartPolicy.None,
         persistencePolicy: SecondaryResourcePersistencePolicy.Combat,
         smallIconPath: IconPath,
         largeIconPath: IconPath));
-    Resources.AlwaysShowInCombatUi("ink");
+    Resources.AlwaysShowInCombatUi("resource");
     Resources.RegisterCombatUi(
-        "ink-counter",
-        _ => InkCounter.Create(),
+        "resource-counter",
+        _ => CharacterResourceCounter.Create(),
         UpdateCounter,
         new NodeAttachmentOptions
         {
-            Name = "<ModName>InkCounter",
+            Name = "<ModName>ResourceCounter",
             AttachParentSelector = node =>
                 ((NCombatUi)node).EnergyCounterContainer,
         });
@@ -101,22 +109,47 @@ public static Task<bool> TrySpend(
 ```
 
 Do not add a duplicate `int`, `ScopedState`, save property, or combat-start reset hook.
-RitsuLib owns the amount and creates the combat-lifetime value from the registered
-definition. Keep `CanAfford` for intent/UI decisions; `Spend` remains the authoritative
-all-or-nothing payment.
+RitsuLib owns the amount, combat snapshots, and run-save persistence. Direct
+`SecondaryResourceCmd.Spend` remains the route for an effect that explicitly pays inside
+its own behavior; a Card cost or named Card use must use the play-use planner below.
 
 The spender applies its payoff only after payment:
 
 ```csharp
-bool paid = await InkResource.TrySpend(Owner, cost, this, this);
+bool paid = await CharacterResource.TrySpend(Owner, cost, this, this);
 if (paid)
     await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
 ```
 
+## Card payment uses
+
+Use `SecondaryCosts()` or `SecondaryResourceUses()` so `CanPlay`, `SpendResources`,
+auto-play bookkeeping, Card UI, and the post-commit ledger agree. Required entries reserve
+their amounts before repeatable-extra and optional entries. Use ids are unique across all
+three contribution routes on that Card.
+
+- required fixed/X: `.Require(...)`; default shortfall blocks play;
+- optional fixed/X: `.SpendIfAvailable(...)`; it never blocks play and its payoff checks
+  `cardPlay.SecondaryResources().Activated(useId)`;
+- repeatable extra: `.SpendExtra(...)` with a positive per-stack amount and optional positive
+  max stacks; it cannot use X, and payoff reads `ExtraStacksByUse(useId)`;
+- allowed shortfall: `.RequireAllowingShortfall(...)`, with `spendAvailable` matching the
+  declaration; any remaining-shortfall effect runs only during commit;
+- replacement: a side-effect-free resolver reads one different declared resource during
+  planning and returns a bounded `Cover(...)` callback that spends it only at commit.
+
+No planner mutates state. No Card payoff guesses affordability or reruns payment. It reads
+the committed `SecondaryResourcePlayLedger`; this preserves preview, rejection, auto-play,
+and execution as one transaction.
+
 ## Public combat UI attachment
 
-`RegisterCombatUi` is the promoted host seam. Do not emit the historical Harmony
-`NCombatUi.Activate` postfix or separate patch module for this resource.
+Prefer RitsuLib's built-in `NSecondaryResourceCounterRow` for one or more visible combat
+counters and `NSecondaryResourceCardCostUi.Create(...)` / `CreateForUse(...)` for each
+declared Card payment line. Register them through `RegisterCombatUi` / `RegisterCardUi` and
+bind only the declared definitions or use ids. Use a custom combat attachment only when the
+SPEC selects additional bounded mechanic text that the built-in row cannot render. Do not
+emit the historical Harmony `NCombatUi.Activate` postfix or a separate patch module.
 
 The update callback must use the context's local player and `VisibleDefinitions`, keep the
 control hidden when this resource is not visible, and render the current resource plus any
@@ -124,7 +157,7 @@ bounded mechanic state:
 
 ```csharp
 private static void UpdateCounter(
-    SecondaryResourceCombatUiContext<NCombatUi, InkCounter> context)
+    SecondaryResourceCombatUiContext<NCombatUi, CharacterResourceCounter> context)
 {
     var visible = context.Player != null &&
         context.VisibleDefinitions.Any(definition => definition.Id == Id);
@@ -132,12 +165,13 @@ private static void UpdateCounter(
     if (!visible) return;
 
     context.Node.ValueLabel.Text =
-        $"Ink: {Get(context.Player!)} | Route: " +
-        RouteBuffer.RouteText(context.Player!);
+        $"{DisplayName}: {Get(context.Player!)}" +
+        MechanicStateText.GetOptionalSuffix(context.Player!);
 }
 
-public static bool TryGetMounted(NCombatUi ui, out InkCounter counter) =>
-    Attachments.TryGetAttached(ui, "ink-counter", out counter);
+public static bool TryGetMounted(
+    NCombatUi ui, out CharacterResourceCounter counter) =>
+    Attachments.TryGetAttached(ui, "resource-counter", out counter);
 
 public static void Refresh(Player player)
 {
@@ -160,30 +194,31 @@ RitsuLib owns attachment and combat-UI lifecycle. Call `Refresh(player)` after a
 change that does not itself mutate the secondary resource, such as clearing a composed
 ordered buffer. Resource gain/spend already travels through `SecondaryResourceCmd`.
 
-## Required Tier 2 proof
+## Verification owed by a generated Mod
 
-Use two real `CombatPlayer` combats and assert:
+Verify only the resources and variants selected by the current SPEC. At minimum, drive the
+real Card play/payment lifecycle and the declared persistence boundary; add a second combat
+or save round trip only when that selected policy needs it. Assert:
 
-1. the first mounted control starts at amount `0` and the fallback retains live text;
+1. every selected resource starts at its declared default and remains inside its bounds;
 2. gain changes amount, affordability, and visible text;
 3. one successful spend changes amount and payoff exactly once;
 4. one rejected spend leaves amount/payoff unchanged and never goes negative;
-5. the icon is 24x24, root/label are 220x32 and 188x32, offset is `(160,0)`, and the
-   resource and native energy global rects do not intersect;
-6. combat 2 has a distinct `PlayerCombatState`, amount `0`, and reset UI.
+5. each selected counter/payment line is bound to the right definition/use and does not
+   overlap native Energy/Stars or another declared consumer;
+6. turn-start and combat/run persistence match SPEC, including save/resume only when claimed.
 
-`RitsuResourceProof` observed resource `0 -> 3 -> 1`, affordability `true/false`, Block
-`+4` only on successful payment, rejection at `1`, and a distinct combat-2 value `0`.
-The final `RitsuWayfinderProof` observed Ink `0 -> 4 -> 0`, paid Block `20`, rejected
-payment with no extra Block, route composition in the same control, resource rect
-`(260,828,220,32)` disjoint from energy rect `(100,828,128,128)`, and combat-2 Ink `0`.
-Both reached `selftest done`, strict Tier 2, and no fresh error.
+The maintained harness derives the resource name, gain/spend amounts, payoff, and expected
+counter states from the current `SPEC.md`. It reaches `selftest done` only after the exact
+configured values, rejected-payment invariants, disjoint UI, and distinct combat-2 reset
+state pass; no historical proof constants or markers are reusable defaults.
 
 ## Unsupported extensions
 
-- run-persistent Character resources and save round trips;
 - partial, hybrid, or alternative-Energy engine payment;
-- arbitrary top-bar hosting, animated UI, or custom-zone presentation;
+- prompt-authored arbitrary payment delegates or replacement sources outside the declared
+  bounded secondary-resource plan;
+- arbitrary UI hosting, animated UI, or custom-zone presentation;
 - remote-player or multiplayer resource UI;
 - a private patch fallback when the public attachment is unavailable.
 

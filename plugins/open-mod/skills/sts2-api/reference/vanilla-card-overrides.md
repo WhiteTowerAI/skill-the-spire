@@ -1,7 +1,7 @@
 # Public overrides for existing vanilla Cards
 
-Use this reference after `vanilla-overrides.md` resolves an exact `CARD.*` target. M6.7.1
-is pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. It changes existing Card instances by
+Use this reference after `vanilla-overrides.md` resolves an exact `CARD.*` target. This route
+is pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. It changes existing Card instances by
 attaching a registered default `CardCapability`; it does not register a second Card,
 mutate `ModelDb`, or generate Harmony, reflection, Publicizer, or IL.
 
@@ -33,7 +33,7 @@ type for every small text or number change.
 
 These routes include all non-asset Card contributor interfaces needed by the current
 semantic authoring vocabulary. Card frame/portrait/banner material providers are promoted
-separately by M6.7.2 in `vanilla-visual-overrides.md` because they require asset packaging
+separately in `vanilla-visual-overrides.md` because they require asset packaging
 and presentation contracts. `HasTurnEndInHandEffect` alone
 only asks the game to call the vanilla Card's own protected handler; do not turn it on
 without a grounded compatible owner behavior. A target-bound override must not implement
@@ -46,7 +46,7 @@ read an existing owner variable in an effect. A newly declared variable belongs 
 capability, not to the vanilla Card's canonical `DynamicVars` collection.
 
 **Fail-closed intent rule:** replacing, removing, or hiding the original description body
-is a base-description replacement, not composition. RitsuLib `0.5.4` exposes no public
+is a base-description replacement, not composition. RitsuLib `0.5.11` exposes no public
 replacement placement for `ICardDescriptionContributor`. Tell the user that limitation and
 stop; never turn the request into a before/after fragment automatically. Only an explicit
 user choice to keep the original body and add text authorizes `compose`. Finalized values or
@@ -87,7 +87,7 @@ catalog, and preserve operation order. A rarity change is:
 - a localization table/key plus a checked title/description/type-text placement;
 - keyword, typed model-preview, or localized hover tips;
 - capability variables with `dynamic`, `damage`, `block`, or typed `power` roles;
-- ordered effects: attack, block, heal, apply Power, draw, gain Energy, gain Stars, Scry,
+- ordered effects: attack, block, heal, apply Power, draw, gain Energy, gain Stars,
   and generate a Card into a combat pile; and
 - owner lifecycle triggers `after_owner_drawn`, `after_owner_discarded`, and
   `after_owner_exhausted`.
@@ -124,7 +124,7 @@ static partial void RegisterContent()
     var content = RitsuLibFramework.GetContentRegistry(ModId);
     content.RegisterModelCapability<StrikeIroncladOverride>();
     content.ConfigureDefaultModelCapabilities<StrikeIronclad>(
-        "m671-card-strike-ironclad",
+        "override-card-strike-ironclad",
         (_, capabilities) => capabilities.Add<StrikeIroncladOverride>());
 }
 ```
@@ -219,8 +219,8 @@ the same target.
 
 ## Play composition and replacement
 
-Lower normal effects through the same checked commands and helpers used by `recipes/card.md`,
-`card-computed-values.md`, and `scry-helper.md`. Effects execute exactly once in manifest
+Lower normal effects through the same checked commands and helpers used by `recipes/card.md`
+and `card-computed-values.md`. Effects execute exactly once in manifest
 order. Preserve typed Damage/Block/Power semantics and null-check a selected play target.
 
 - compose-before: execute in `BeforeOwnerCardOnPlay`, then return `false`;
@@ -246,12 +246,12 @@ upgrade level rather than subtracting from an unknown state.
 
 Capability localization lives in the normal Mod resource tree. Use stable capability-entry
 keys such as `<MOD>_MODEL_CAPABILITY_<TYPE>.extraDescription` in the selected table. Supply
-every shipped language required by the accepted SPEC and preserve SmartFormat variables.
+required `eng` and `zhs` plus every additional language named by the accepted SPEC, and
+preserve SmartFormat variables.
 Changing a gameplay effect and its player-facing text is one operation plan, even though
 the manifest records separate ordered surfaces.
 
-During the M6.7 batch window, run focused manifest tests and one compile-only project that
-contains representative selected interfaces. Do not claim real-game behavior, preview,
-clone/save, transform, payment, targeting, result-pile, or presentation proof until the
-consolidated M6.7 host program runs. At closure, cover those paths for every promoted family
-and keep every unrun path as an explicit exception rather than a pass.
+Never claim real-game behavior, preview, clone/save, transform, payment, targeting,
+result-pile, or presentation proof that was not observed in a real host. A focused manifest
+test and a successful compile establish neither. Report every unrun path as an explicit
+exception rather than a pass.

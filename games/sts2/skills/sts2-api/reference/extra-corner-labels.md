@@ -2,7 +2,7 @@
 
 Use this reference when a Relic or custom Power SPEC selects supplemental player-readable
 values. The labels supplement the native main amount; they never replace it. This route is
-pinned to STS2 `0.107.1` and RitsuLib `0.5.4` and uses the public Extra Badges Package.
+pinned to STS2 `0.107.1` and RitsuLib `0.5.11` and uses the public Extra Badges Package.
 
 ## Generated bounds
 
@@ -99,6 +99,6 @@ ratios, then confirm that labels remain readable and do not overlap the native i
 counter, tooltip, or adjacent labels. It must also confirm removal and cleanup after host
 destruction or combat transition.
 
-Intent belongs to the supported public Extra Badges Package, but Intent authoring is not
-scheduled in the active M6.6 work. Do not adapt this Relic/Power recipe to Intent and do not
-describe that scheduling boundary as unsupported.
+Intent belongs to the supported public Extra Badges Package, but no Intent authoring recipe
+exists yet. Do not adapt this Relic/Power recipe to Intent, and do not describe that missing
+recipe as an unsupported capability.

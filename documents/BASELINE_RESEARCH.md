@@ -9,14 +9,43 @@ decisions and the evidence needed to apply them correctly.
 open-mod targets:
 
 - Slay the Spire 2 stable `0.107.1`;
-- RitsuLib `0.5.4` and `STS2.RitsuLib.Compat.0.107.1`;
+- RitsuLib `0.5.11` and `STS2.RitsuLib.Compat.0.107.1`;
 - .NET SDK 9;
 - Codex plugin distribution plus a portable Agent Skills payload;
 - cross-platform Python tools, with the complete loop currently verified on Windows.
 
+The official RitsuLib Steam Workshop item is `3747602295`. Consumer builds may reuse that
+runtime directly when its manifest, version floor, exact `0.107.1` variant marker, and hash
+validate. Compile-time authoring uses that checked local Compat DLL plus the bundled
+`Godot.NET.Sdk 4.5.1` import set; generated projects have no framework `PackageReference`
+and do not depend on a user-level framework NuGet cache.
+
 `baselines/STS2-RitsuLib` is the maintainer checkout for API and compat research. Runtime
-projects use the pinned package and installed runtime variant rather than copying that
+projects use the validated installed runtime variant rather than copying that
 checkout.
+
+The dependency profile moved forward on 2026-08-13. Upstream tag `v0.5.11` resolves to commit
+`8a2eb7c756d926287078f953f2fac1d47ec014b4`; the official Workshop manifest reports `0.5.11`
+and its `0.107.1` Compat DLL has SHA-256
+`6c2f65d2245207226aba80d3ea83b928871bd6e9fb7584d28b2669e10d335413`. New generated Mods
+require `STS2-RitsuLib >= 0.5.11`. Existing Mods and historical `0.5.4` proof records are not
+migrated or relabeled by this baseline change.
+
+## STS2 0.107.1 Decompiled Research Baseline
+
+The gitignored `baselines/decomp` directory is the maintainer-only decompiled snapshot made
+from STS2 `0.107.1`, as confirmed by the human lead. It contains the full game decompile in
+`sts2_full/`, a focused `sts2/RelicModel.cs` extract, and decompiled Mod analyzers under
+`modanalyzers/`. It is useful for locating candidate public signatures, lifecycle flow,
+commands, enums, Hover Tip consumers, and host behavior before checking the authoritative
+pinned substrate.
+
+The snapshot did not retain the original DLL hash or a separate provenance record, so its
+identity cannot be mechanically reverified from the decompiled files alone. Every
+version-bound fact promoted into open-mod must still be checked against the pinned
+`0.107.1` assembly/catalog or the current installed game. Never copy, compile, package, or
+ship decompiled code. A private/internal implementation found here does not create a
+supported route.
 
 ## Official RitsuLib Product-Semantics Baseline
 
@@ -27,7 +56,7 @@ baseline for player-facing purpose, intended usage, examples, and documented Rit
 feature-Package membership.
 
 The tutorial repository currently labels itself `public-beta`. It therefore does not
-replace the stable `0.107.1` / RitsuLib `0.5.4` source and compat profile for exact symbols
+replace the stable `0.107.1` / RitsuLib `0.5.11` source and compat profile for exact symbols
 or lifecycle behavior. Use the tutorial to answer "what product problem does this Package
 solve?" and the pinned RitsuLib checkout to answer "does this exact public API exist on our
 target?" Distill accepted findings into the shipped pack; generated Mods never read the
@@ -138,7 +167,7 @@ research Mod.
 ### M6.6 closure
 
 The human lead closed M6.6 after evaluating its provisional capability packages. Official
-tutorial semantics plus pinned RitsuLib `0.5.4` public source determine Package support.
+tutorial semantics plus pinned RitsuLib `0.5.11` public source determine Package support.
 Recipes, builds, and real hosted proofs show what open-mod has implemented and observed.
 Packages 2A computed Card values, 5
 custom-Character dialogue in native Ancient scenes, 1 bounded advanced targeting, and 3
@@ -362,18 +391,258 @@ tree also records separately licensed third-party code/assets, and individual im
 audio, Spine, and shader provenance cannot be inferred from the root license. Study
 behavior and code shape; do not redistribute or use those assets as generation references.
 
+## M7 Design-Intelligence Research And Closure
+
+The human lead selected M7 Design Intelligence and User Experience for planning on
+2026-08-04 and closed it on 2026-08-05. This research changed authoring workflow and design
+quality; it did not add a runtime Package or widen the capability graph. M7.1-M7.5 are the
+implemented source Packages. M7.6 closed through the human-led external Watcher whole-skill
+evaluation recorded in `documents/history/M76_WHOLE_SKILL_EVALUATION_RESULTS.md`, not a new
+source Package or successful tuning claim.
+
+### Local CCGS baseline
+
+`baselines/Claude-Code-Game-Studios-main` is useful for compact method extraction. Its most
+relevant patterns are:
+
+- Question -> Options with trade-offs -> User decision -> Draft -> Approval;
+- lightweight `quick-design` versus a full system-design route;
+- player fantasy, detailed rules, formulas, edge cases, dependencies, tuning knobs, and
+  acceptance criteria as a complete system-design review;
+- balance review that compares data to an established formula and refuses to invent a
+  missing formula;
+- behavioral skill specifications with happy, failure, and edge cases plus category
+  rubrics;
+- vertical-slice decomposition before large production work.
+
+Do not copy its 49-agent/73-skill scale, mandatory approval before every file section, or
+full GDD ceremony for a simple Mod. open-mod needs one adaptive workflow with lazy design
+references, not a simulated studio org chart.
+
+### Online comparison projects
+
+The following public projects were inspected live on 2026-08-04:
+
+- **[gstack-game](https://github.com/fagemx/gstack-game):** useful Fantasy/Loop/Twist
+  extraction, forcing questions, anti-sycophancy rules, risk-first prototype slices,
+  build-versus-fake decisions, two-layer functional/experiential acceptance, and
+  hypothesis-led playtest protocols. Do not copy its 29-skill shell, telemetry, repeated
+  boilerplate, or uncalibrated numeric confidence scores.
+- **[GDD Toolkit](https://github.com/mamoru-miyagawa/gdd_toolkit):** useful Pillar Gate,
+  design log, tensions, rejected ideas, open questions, pairwise system matrix, and
+  GDD/code-drift checks. Use a compact `DESIGN.md` rather than requiring its complete wiki
+  for every Mod.
+- **[Claude Game Design Suite](https://github.com/baxatron-git/claude-game-design-suite):**
+  useful gravity-not-waterfall model, coherence checks, change propagation, and ordered
+  re-evaluation queues. Do not split open-mod into 22 independent design skills.
+- **[Modmixer](https://github.com/lebek/modmixer):** strongest product-flow comparison for
+  environment preflight, plan approval, visible progress, game launch, log attribution,
+  test/retest, and interrupted-session recovery. open-mod should adopt the workflow
+  qualities without building a desktop application.
+- **[AgentTheSpire](https://github.com/cgxjdzz/AgentTheSpire):** direct STS2 comparison for
+  an editable batch plan, dependency grouping, image approval, and per-item progress. Its
+  one-shot JSON planner, BaseLib/Harmony routes, `latest` target, and prompt-authored API
+  notes are counterexamples to open-mod's pinned and grounded contract.
+- **[godogen](https://github.com/htdt/godogen):** useful adaptive collaboration versus
+  handoff mode and running-result-over-clean-build principle. Its complete-game generation,
+  paid asset stack, and proof-video model are not M7 design architecture.
+- **[Promptfoo](https://github.com/promptfoo/promptfoo):** useful scenario matrix,
+  assertion, and prompt/model comparison concepts. The human lead canceled a standalone
+  M7.0 corpus; each M7 Package should keep its smallest repository-owned cases without
+  adding a Node toolchain.
+
+These repositories are method references, not design authorities. Popularity, a polished
+README, or a generic game-design framework does not establish an STS2 fact or supported
+operation.
+
+### STS2-native Character grammar input
+
+M7.2 now ships the first reliable native design policy at
+`games/sts2/skills/sts2-api/design/character-foundation.md`. Its structured inventory was
+checked directly against the five Character types in the exact pinned `sts2.dll`; the
+assembly SHA-256 and MVID match the M6.7 `0.107.1` catalog. The catalog independently owns
+the Character-specific Strike/Defend identities, localized display titles, costs, tags,
+and values. `baselines/spire-codex/data/characters.json` and `cards.json` remain
+corroborating maintainer research, not sole authority.
+
+The current native pattern is:
+
+- every Character has Character-specific internal Strike and Defend types displayed as
+  `Strike` / `打击` and `Defend` / `防御`;
+- those Cards are Basic, 1 Energy, tagged Strike/Defend, with `6 -> 9` damage and `5 -> 8`
+  Block respectively;
+- Ironclad starts `5 Strike + 4 Defend + Bash`;
+- Silent starts `5 Strike + 5 Defend + Neutralize + Survivor` for twelve total;
+- Defect, Necrobinder, and Regent start `4 Strike + 4 Defend + 2` identity-teaching Cards;
+- the identity Cards and Starter relic teach or reinforce the Character's first core
+  mechanic instead of acting as unrelated bonus content.
+
+The shipped route lazily loads this grammar for Character and Character/content-set work,
+then recommends one exact native-shaped deck before asking the user for deck details. It
+remains a convention: a deliberate implementable departure is preserved when the design
+records its onboarding, compatibility, and balance consequences. The observed counts do
+not collapse into one universal `4/4/2`, ten-Card, or `5/5` template.
+
+### M7.3 planning decision
+
+M7.3 distills the useful local CCGS methods into three independently lazy references rather
+than one always-loaded game-design manual:
+
+- `design/mechanic-planning.md` owns player fantasy, meaningful competing lines, the
+  trigger-to-payoff/reset loop, risk/reward, STS2 singleplayer pressure, exact edge rules,
+  tuning knobs, and dominant-strategy review;
+- `design/content-set-planning.md` owns Foundation/access/payoff/consistency/defense/
+  scaling/bridge/release roles, real content nodes, directed interaction coverage, and
+  archetype dominance risks; and
+- `design/balance-planning.md` owns evidence classes, formula contracts, source/sink
+  economies, sensitivity, independent knobs, and open human-playtest hypotheses.
+
+The human lead selected a creative Mod-forward power bias: an unspecified working value
+should be clearly rewarding and modestly stronger than the closest checked native analog
+in its intended state. There is no universal percentage. An underpowered option with no
+plausible pick/use case fails the design, while the ceiling rejects values that erase
+choices, costs, setup, ordinary opposition, or create deterministic, self-funding, or
+unbounded loops. Without measurements or human playtest evidence the recommendation is a
+generous working hypothesis, never a claim that the content is balanced or fun.
+
+M7.3 carries a compact planning capsule through Interview and lowers only accepted,
+supported, exact rules, values, content nodes, and directed relationships into `SPEC.md`.
+It does not create M7.4's `DESIGN.md` schema, current/future split, or traceability contract,
+and general design confidence never promotes an unsupported runtime operation.
+
+### M7.4 artifact decision
+
+M7.4 established one adaptive durable `DESIGN.md`, not a wiki or full GDD hierarchy. The later
+workflow simplification keeps the useful part of that result and removes its management layer.
+Fast exact content records only intent, accepted/defaulted decisions, current scope, and explicit
+`Not Now` items. Co-design and revision add only relevant rationale, relationships, tuning
+hypotheses, and preserved alternatives.
+
+`SPEC.md` owns the concrete current implementation work: content, timing, targets, conditions,
+values, ordering, state, text/presentation, selected shipped routes, and autotest scenarios.
+Unsupported current intent must still be resolved with the user before authoring, but it is not
+represented as a machine contract. A broader future vision stays in DESIGN and cannot silently
+enter SPEC.
+
+For unfinished projects, resume from the accepted human-readable meaning. Preserve settled intent
+and current operations without inventing historical rationale or restarting Interview. Old
+metadata may remain ignored; migration is not required.
+
+### M7.5 coherence and propagation decision
+
+M7.5's durable design lesson is proportional review, not a machine-readable coherence system.
+Review only selected current mechanics, naming, localization, visuals, Event text, and Character
+identity. Name concrete contradictions, terminology drift, identity breaks, scope leakage, and
+evidence inversion. Preserve a user-selected irony or contrast as deliberate tension instead of
+normalizing it automatically. Localization review compares semantic rules, costs, numbers,
+targets, and terminology rather than demanding word-for-word parity or claiming translation
+quality.
+
+On revision, update the accepted DESIGN decision, the exact SPEC work, and its direct consumers:
+localization, visuals, Event text, Character identity, generated source, and SelfTest. Preserve
+unrelated settled/rejected decisions. Rerun only invalidated stages and the nearest proportional
+host. A validator cannot determine subjective coherence or quality.
+
+### M7 research decision
+
+Adopt a compact, progressive pipeline:
+
+```text
+route -> relevant native grammar/planning -> adaptive interview -> concise DESIGN.md
+      -> implementable SPEC.md -> thin capability preflight -> author/build
+      -> real-host verification -> human playtest delta
+```
+
+`DESIGN.md` owns intent, accepted decisions, trade-offs, rejected alternatives, open questions,
+and current/Not Now scope. `SPEC.md` is the exact implementation work order. The preflight checks
+only shipped-route existence and the hook facts that prevent silent non-dispatch. Build and real
+host behavior prove implementation. Behavioral tests travel with the capability they protect and
+evaluate real authorability or verification mechanisms rather than prose. Real-player observations
+remain human evidence; no design framework or simulated persona may fabricate them.
+
+The external Watcher evaluation then tested the installed workflow as a whole. It showed
+that local design, trace, build, and state-proof success can coexist with a player-facing
+result the human lead considers not very good. Its value is the cross-stage failure shape:
+identity-critical hypotheses entered current scope, player-visible repairs moved forward
+without design backtracking, individually accepted fallbacks accumulated, a minimum
+registrable content set was treated as evaluable, generated implementation/test/reporting
+shared assumptions, macOS success used consumer-session repair, and generic findings stayed
+mixed into project state. Those findings close M7 and become M8 input; they do not
+retroactively change the pinned support graph.
+
+The human lead later identified five concrete symptoms in that same run: the skill-launched
+game process remained open; Exhaust behavior was absent from Card rules text; Scry was only
+an inaccurate approximation; expected Hover Tips were missing; and Wrath omitted its
+incoming-damage multiplier. The useful research result is not five Watcher patches. The
+symptoms expose three reusable failure classes: launch without owned-process cleanup,
+state mutation separated from its complete player-facing semantics, and complex mechanics
+implemented without a maintained exact capability and conformance contract.
+
+## M8 End-to-End Product-Integrity Research Inputs
+
+M8 research identifies two durable end-to-end guarantees:
+
+```text
+request -> concise design -> implementable spec -> supported/reachable route -> generated code
+generated code -> build -> real-host structured state -> optional human observation -> direct report
+```
+
+The workflow-simplification audit found that many earlier safeguards validated whether the model
+filled management documents correctly rather than whether it could make a working Mod. Their
+useful technical residue is small: keep exact recipe/reference knowledge, one thin route and hook
+reachability preflight, strong Scaffold/Build checks, real-host SelfTest, and literal direct
+reporting. Delete duplicate schemas, ledgers, IDs, and status synchronization.
+
+M8.0 skill structure restructuring, M8.1 literal deliverable contract, M8.2 exact semantic
+capability conformance, M8.3 semantic continuity/backtracking, and M8.5 cross-platform installed
+workflow are closed. M8.5 closed by explicit human-lead decision on 2026-08-12 without ever
+receiving an execution contract and with unresolved exceptions: its manifest and
+executable-adjacent path repairs have static/Windows compile evidence, but macOS installed
+reproduction and launcher-owned process-tree cleanup are unimplemented and unproved. This closure
+changes no runtime capability row and did not itself authorize or prove later M8.7/M8.8/M8.6 work.
+Its bounded record is `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 source
+development is implemented and committed: its nine selected families retain complete owner
+guidance, lowering, hard boundaries, proof matrices, and literal game-unobserved labels. Both
+committed payload trees include M8.7 after explicit human-lead authorization on 2026-08-13. The
+human lead accepted its bounded result and closed it on 2026-08-14; the durable record is
+`documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`. The workflow simplification
+removes only machine-management wrappers around those capabilities, not the capabilities themselves. M8.8
+completed its full `0.5.11` inventory, confirmed WP1-WP5 implementation, WP8 source/static closeout,
+and authorized plugin/portable payload delivery. The human lead accepted its result and closed it
+on 2026-08-13; newly generalized shapes remain game-unobserved. Its retired prior contract is not
+executable under the current profile. M8.6 still waits for an explicitly selected request/host
+contract. Current status and gates live in the active implementation plan.
+
+No generic Watcher discovery is promoted from the copied project alone. Exact API, lifecycle,
+platform, and payload conclusions still require pinned source and proportionate maintained
+evidence. M8.7's selected reusable families remain promoted in authoritative source; newly
+generalized shapes remain game-unobserved until a later selected Mod exercises them. M8.8 used a
+complete inventory of documented and relevant public current-profile RitsuLib Mod-authoring
+capabilities, not only effects already represented by the existing surfaces, and applied default
+inclusion across every existing surface while adding grounded new surfaces. Previous recipes and
+proofs remain representative rather than exhaustive. M8.8 closure does not authorize
+prompt-derived Harmony, reflection, Publicizer, or IL or broaden multiplayer support.
+
 ## Reused Design Ideas
 
 The active architecture still borrows these durable ideas from the initial survey:
 
 - **godogen:** file-based staged skills, publish-time rendering, progressive disclosure,
-  and resumable state files;
+  resumable state files, and running-result-over-build claims;
+- **CCGS:** collaborative option/decision cycles, compact/full routing, design review
+  dimensions, and behavioral skill specifications without its studio-scale hierarchy;
+- **gstack-game / GDD Toolkit / Claude Game Design Suite:** forcing questions, risk-first
+  slices, durable decisions/tensions, design coherence, and change propagation without
+  importing their full skill stacks;
+- **Modmixer:** environment preflight, visible plan/build/test progress, log attribution,
+  and recovery as product-experience references;
 - **spire-codex:** content facts and vanilla analogs, never C# API authority or a runtime
   dependency;
 - **official RitsuLib tutorials:** product semantics and documented Package membership,
   never stable-version signature authority or a runtime dependency;
-- **STS2/game decompile:** exact public command, lifecycle, enum, and host signatures used
-  by maintainers to improve the shipped pack;
+- **`baselines/decomp`:** maintainer-confirmed STS2 `0.107.1` decompiled research used to
+  locate candidate public commands, lifecycle flow, enums, Hover Tip consumers, and host
+  behavior; promoted facts still require the pinned identity checks above;
 - **image tool research:** acquisition is optional and source-independent; deterministic
   normalization and verified consumers matter more than the image backend.
 
@@ -385,9 +654,9 @@ current same-version product-depth reference under the narrower rules above. The
 tutorial checkout is an active semantics baseline, but remains maintainer-only. None of
 these checkouts may be used to scaffold, author, build, repair, or run a generated Mod.
 
-Claude-specific baseline repositories may remain locally for historical comparison, but
-the product and publish flow now target Codex. They are not required to build or install
-`0.6.0`.
+CCGS remains retained M7 workflow research but is maintainer-only and is not required to
+build or install `0.7.0`. Other Claude-specific baselines may remain for historical
+comparison; the product and publish flow target Codex.
 
 ## Decision Rules
 
@@ -402,3 +671,9 @@ the product and publish flow now target Codex. They are not required to build or
 6. Do not make a paid network call or switch image backends without explicit user choice.
 7. Keep runtime sessions inside the shipped pack. Live decompilation and baseline research
    are maintainer work, not steps in `$modmaker`.
+8. Answer pinned facts from checked references, recommend observed conventions with their
+   trade-offs, and reserve user questions for creative decisions or meaningful departures.
+9. A broader design vision does not widen the current runtime boundary; only supported
+   operations enter `SPEC.md`.
+10. Do not claim design quality with words such as "fun" or "balanced" without an
+    observable player behavior, explicit relationship, formula, or playtest hypothesis.

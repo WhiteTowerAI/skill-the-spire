@@ -1,16 +1,18 @@
-# Recipe: Custom Monster + Encounter (one vertical slice)
+# Recipe: Custom Monsters and Encounters
 
-> A grounded pattern for a fought enemy in STS2. **Monster and encounter are one unit** —
-> a monster is meaningless until an encounter spawns it, so author both together and prove
-> the whole slice through `CombatEnemy`. A monster that only registers proves too little.
+> A grounded pattern for fought enemies in STS2. Monsters and Encounters are separate
+> registered nodes joined by explicit roster edges. Author the selected reachable graph
+> together and prove only the concrete Encounter variants selected by the current SPEC through
+> `CombatEnemy`. A Monster that only registers proves too little.
 
-## Why they are inseparable
+## Reachability graph
 
-The player never touches a `MonsterModel` directly. The reachable host is the **encounter**:
-the map/room enters an encounter, the encounter generates its monsters, the monsters take
-turns. So the recipe pairs exactly one `ModEncounterTemplate` with the
-`ModMonsterTemplate`(s) it spawns, registers both through one RitsuLib content pack, and
-proves them in a real combat where the monster acts.
+The player never touches a `MonsterModel` directly. The reachable host is an **Encounter**:
+the map/room enters an Encounter, the Encounter generates its roster, and those Monsters take
+turns. One Monster may be reused by several Encounters, and one Encounter may spawn multiple
+or repeated Monster models. Register every selected node exactly once, list every canonical
+model that can appear in `AllPossibleMonsters`, and keep the current actual roster a nonempty
+subset. Registration without at least one grounded placement/roster edge is not reachability.
 
 ## Registration (one explicit RitsuLib content pack)
 
@@ -25,8 +27,10 @@ proves them in a real combat where the monster acts.
 ```csharp
 RitsuLibFramework.CreateContentPack(MainFile.ModId)
     .Power<<CustomBuff>>()              // only when the monster owns this dependency
-    .Monster<<Name>>()
-    .ActEncounter<Glory, <Name>Encounter>()
+    .Monster<<MonsterA>>()
+    .Monster<<MonsterB>>()
+    .ActEncounter<Glory, <EncounterA>>()
+    .GlobalEncounter<<EncounterB>>()
     .Apply();
 ```
 
@@ -47,6 +51,38 @@ RitsuLibFramework.CreateContentPack(MainFile.ModId)
 - `protected override IReadOnlyList<(MonsterModel, string?)> GenerateMonsters()` — the actual
   spawn list: `ModelDb.Monster<T>().ToMutable()` paired with a slot name (`null` slot is valid
   for a minimal single-monster encounter — no custom encounter scene required).
+
+## Optional shared capability routes
+
+Keep attacks and other move behavior in the move graph. For a separable passive/state bundle on
+the Monster, read `reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
+response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Monster
+or typed capability and keep combat-scope owner/source guards, neutral behavior, and cleanup.
+
+## SPEC `hook participation`: a passive rule that is not a move
+
+A move is the monster acting on its turn. When SPEC declares `hook participation`, the engine is
+instead asking the monster for a number or a decision while resolving someone else's event — so
+"attacks against this creature deal 25% less damage" is participation, not a move and not a Power.
+Read `reference/model-hook-participation.md`.
+
+A Monster reaches the combat-scope set only. Its own body is `Creature`, **not** `Owner`: there is
+no owning Player, so a subject guard compares against `Creature` directly.
+
+```csharp
+public override decimal ModifyDamageMultiplicative(
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+{
+    if (target != Creature) return 1m;            // SPEC `subject`: damage I receive
+    if (!props.IsPoweredAttack()) return 1m;      // SPEC `condition`
+    return 0.75m;
+}
+```
+
+Keep it out of the move state machine. A participation rule has no intent, no move id, and no
+bestiary title, and adding a move to represent it makes the intent UI advertise something the
+monster never performs.
 
 ## Move state machine
 
@@ -87,13 +123,17 @@ Every visible effect therefore needs both the matching intent and a real Cmd in 
 | multi-attack | `new MultiAttackIntent(damage, repeats)` | `DamageCmd.Attack(damage).WithHitCount(repeats).FromMonster(this).Execute(null)` |
 | attack + effect | list both intents, e.g. `SingleAttackIntent` + `DebuffIntent` | await the attack, then await the Power/block/buff Cmd in the declared order |
 
+The table projects move callbacks onto `reference/effect-primitives.md`; that shared reference
+owns the command contracts. This recipe owns Monster intent parity, state-machine ordering,
+`Creature`/`targets`, and the `.FromMonster(this).Execute(null)` distinction.
+
 Use the monster's mutable `Creature`, not a canonical model. For a player-targeted Power,
 the `targets` passed to the move are the player creatures. `ValueProp.Move` is the vanilla
 monster block convention. A custom Power follows `recipes/power.md` (including all three
 `powers.json` keys and no `[Pool]`). Attachment alone does not prove a buff: Tier 2 must
 observe its downstream effect, such as a later powered attack changing by its `Amount`.
 
-### Explicit cycles and conditional branches
+### Explicit cycles, conditional branches, and fixed-weight random branches
 
 This complete state-machine shape covers a deterministic cycle with both sides of a
 half-health branch. Replace names/numbers from SPEC; do not add a branch the design did not
@@ -131,8 +171,24 @@ protected override MonsterMoveStateMachine GenerateMoveStateMachine()
 `ConditionalBranchState` evaluates its `AddState` predicates in order and selects the first
 true state. Make the cases exhaustive; overlapping predicates silently make later cases
 unreachable, while a gap throws `No valid next state found.` A `FollowUpState` cycle is the
-deterministic order contract. Random branches are a different design and must not be
-substituted for a declared cycle.
+deterministic order contract.
+
+When SPEC explicitly selects a random branch, use `RandomBranchState` with positive fixed
+weights and declared successors. The state machine supplies its run `Rng`; do not call
+`System.Random`, capture mutable weight delegates, or derive weights from prompt-authored code:
+
+```csharp
+var random = new RandomBranchState("RANDOM_BRANCH");
+random.AddBranch(guard, MoveRepeatType.CanRepeatForever, 2f);
+random.AddBranch(pressure, MoveRepeatType.CanRepeatForever, 1f);
+guard.FollowUpState = random;
+pressure.FollowUpState = random;
+return new MonsterMoveStateMachine(
+    new MonsterState[] { random, guard, pressure }, random);
+```
+
+This admits only declared fixed weights. It does not claim that any probability distribution
+was observed in-game; a future Verify stage exercises only the selected branch outcomes.
 
 Copyable move bodies for that machine:
 
@@ -224,8 +280,8 @@ public sealed class <Name> : ModMonsterTemplate
     public static string ModVisualPath =>
         $"{MainFile.ResPath}/images/monsters/<slug>.png";
 
-    public override int MinInitialHp => <hp>;
-    public override int MaxInitialHp => <hp>;
+    public override int MinInitialHp => <min-hp>;
+    public override int MaxInitialHp => <max-hp>;
     public override MonsterAssetProfile AssetProfile => new(FallbackVisualPath);
     public override bool HasDeathSfx => false;
 
@@ -270,9 +326,10 @@ public sealed class <Name>Encounter : ModEncounterTemplate
 
 ## Localization
 
-Two JSON loc tables (the `AdditionalFiles` glob in the csproj already picks up any new
-`localization/eng/*.json`). Keys are flat, prefixed, and derived by the same rule as every
-other type (`Id.Entry = "<MOD>_<CATEGORY>_<TYPE>"`):
+Two JSON loc tables in each required language (the `AdditionalFiles` glob in the csproj
+already picks up `localization/<lang>/*.json`). The `eng` and `zhs` tables use identical flat,
+prefixed keys derived by the same rule as every other type
+(`Id.Entry = "<MOD>_<CATEGORY>_<TYPE>"`):
 
 - `monsters.json`: `<MOD>_MONSTER_<TYPE>.name` — **one key**.
 - `encounters.json`: `<MOD>_ENCOUNTER_<TYPE>.title` + `.loss` — **two keys**.
@@ -329,7 +386,7 @@ This contract is deliberately static. Attack/hurt/death/cast triggers do not ani
 death uses the game's non-Spine fade, and `HasDeathSfx => false` avoids a nonexistent
 custom-id death event. There is no separate phobia body, so phobia mode retains the same
 static texture. Spine skeleton/atlas/animation, animated move previews, and distinct phobia
-skins are later extensions, not R4 gates.
+skins are later extensions, not current gates.
 
 ## Type + Scenario proof (`CombatEnemy`)
 
@@ -362,7 +419,8 @@ See `reference/selftest-harness.md` § CombatEnemy for the driver shape.
 - [ ] Monster: `ModMonsterTemplate`; `MinInitialHp`/`MaxInitialHp`/`GenerateMoveStateMachine`
 - [ ] Encounter: `ModEncounterTemplate`; explicit `RoomType.Monster`; `IsValidForAct`/
       `AllPossibleMonsters`/`GenerateMonsters`
-- [ ] One `.Monster<T>()` plus one `.ActEncounter<TAct,T>()` or `.GlobalEncounter<T>()`
+- [ ] Every selected Monster and Encounter registered once; actual rosters are nonempty subsets
+      of `AllPossibleMonsters`, including intentional repeated Monster entries
 - [ ] Static visual checks `images/monsters/<slug>.png` in `TryCreateCreatureVisuals()` and uses
       `RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>` only when it exists
 - [ ] `MonsterAssetProfile` always names `creature_visuals/fallback`; missing PNG produces no

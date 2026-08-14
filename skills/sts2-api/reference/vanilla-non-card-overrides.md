@@ -1,14 +1,14 @@
 # Existing vanilla non-Card data and behavior overrides
 
-Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. M6.7.5
-is pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. It covers existing Relic, Potion, Power,
+Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. This route
+is pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. It covers existing Relic, Potion, Power,
 Orb, Enchantment, Affliction, Monster, Encounter, and ordinary Event data or behavior
 while preserving the original model type, `ModelId`, save identity, ownership, assets, and
 availability.
 
 The checked catalog promotes package `m6.7.5-non-card-data-behavior`. Its assembly identity
 is the one in `vanilla-overrides.md`; the catalog contains 1624 models and 4165 reviewed
-Adapter fingerprints. Of those Adapters, 4141 ground target-specific M6.7.5 methods and
+Adapter fingerprints. Of those Adapters, 4141 ground target-specific non-Card methods and
 four ground shared stream/flow boundaries. Every operation is `multiplayer: singleplayer`.
 A prompt selects a
 semantic route and exact model only. It never supplies a method name, patch body, private
@@ -30,8 +30,8 @@ field, reflection expression, Publicizer request, or IL.
 | Encounter body | `behavior.encounter.monsters` | fixed Adapter `replace` | actual and all-possible monster rosters |
 | ordinary Event body | `behavior.event.options` | fixed Adapter `replace` | complete initial options and Mod-owned pages |
 
-Visuals remain separate M6.7.2 operations. Availability remains M6.7.4. Existing Ancient
-options remain M6.7.3. M6.7.5 ordinary Event replacement rejects every `content_kind:
+Visuals, availability, and existing-Ancient options each remain their own separate
+operations, owned by their own references. Ordinary Event replacement here rejects every `content_kind:
 ancient` target.
 
 ## Public owner-hook composition
@@ -64,14 +64,13 @@ behavior.monster.owner-hooks
 Register each generated capability and attach it to the exact vanilla type through default
 capabilities. Use one capability per semantic rule, or one per group with the same order,
 because `OwnerHookOrder` is the ordering unit. Negative orders run before the vanilla
-owner; zero and positive orders run after it. Registration is the same public lifecycle as
-M6.7.1:
+owner; zero and positive orders run after it. Registration is the same public lifecycle the Card routes use:
 
 ```csharp
 var content = RitsuLibFramework.GetContentRegistry(MainFile.ModId);
 content.RegisterModelCapability<AkabekoTurnRule>();
 content.ConfigureDefaultModelCapabilities<Akabeko>(
-    "m675-relic-akabeko-turn-rule",
+    "override-relic-akabeko-turn-rule",
     (_, capabilities) => capabilities.Add<AkabekoTurnRule>());
 ```
 
@@ -137,10 +136,10 @@ hook signature carries or can deterministically resolve its subject. Missing con
 authoring error, not `false` by accident.
 
 Effects are the fixed command vocabulary: attack, block, heal, lose HP, apply a known
-Power, draw, gain Energy/Gold/Stars, Scry, or generate a known Card into Draw/Hand/Discard/
+Power, draw, gain Energy/Gold/Stars, or generate a known Card into Draw/Hand/Discard/
 Exhaust. Targets are `owner`, `all_enemies`, `random_enemy`, or a real creature carried by
 the hook as `event_target`, as permitted by that command. Amounts are nonnegative literals
-or a cataloged owner DynamicVar. M6.7.5 does not promote undeclared capability variables.
+or a cataloged owner DynamicVar. Undeclared capability variables are not promoted.
 Await every Cmd in an asynchronous callback and preserve the selected rule order.
 
 ### Complete owner-hook replacement
@@ -243,8 +242,8 @@ should_refill_merchant_entry, should_stop_combat_from_ending,
 should_take_extra_turn
 ```
 
-Use the exact method signature from the pinned compile package for the selected semantic
-id. Do not infer overloads from another STS2 version.
+Use the exact method signature from the scaffold-pinned local Compat assembly for the selected
+semantic id. Do not infer overloads from another STS2 version.
 
 ## Intrinsic data routes
 
@@ -260,7 +259,7 @@ Adapter fingerprint, the cataloged current property in `expected_baseline.proper
 | `data.potion.usage` | set `AnyTime/Automatic/CombatOnly` |
 | `data.power.allow-negative` | set boolean |
 | `data.power.type` | set `Buff/Debuff` |
-| `data.power.scales-in-multiplayer` | set boolean; still singleplayer in M6.7.5 |
+| `data.power.scales-in-multiplayer` | set boolean; still singleplayer |
 | `data.power.stack-type` | set `Counter/None/Single` |
 | `data.enchantment.stackable` | set boolean |
 | `data.affliction.can-afflict-unplayable` | set boolean |
@@ -304,7 +303,7 @@ async helper and suppresses the original exactly once. For value-returning bodie
 complete result. Dispatch by exact target `ModelId`; inherited methods are consolidated.
 Do not run a Task fire-and-forget from a synchronous target.
 
-Pinned Affliction `AfterApplied()` and `BeforeRemoved()` return `void`. M6.7.5 can suppress
+Pinned Affliction `AfterApplied()` and `BeforeRemoved()` return `void`. A complete lifecycle replacement can suppress
 their original bodies as part of a complete lifecycle replacement, but their generated
 effect lists must remain empty. `OnPlay` is asynchronous and supports the full effect list.
 This is a confirmed smallest lifecycle limitation, not a reason to narrow Affliction owner
@@ -331,7 +330,7 @@ an invalid split roster. Duplicate model/slot pairs are rejected.
 ### Ordinary Event body
 
 Ordinary Event replacement is complete initial options plus Mod-owned reachable pages. It
-reuses the checked M6.7.3 fixed condition, cost, typed hover/relic presentation, effect,
+reuses the checked existing-Ancient fixed condition, cost, typed hover/relic presentation, effect,
 selector, reward, and page vocabulary, but uses `<MOD_ID>_EVENT_*` keys and never an
 Ancient target. The operation-level condition decides whether replacement is active; false
 preserves the complete vanilla initial body.
@@ -345,8 +344,8 @@ and at least one finish path.
 
 Every option prefix requires `.title` and `.description`; every page description key is a
 complete entry. Put all of them in every shipped
-`<ModName>/localization/<lang>/events.json`, including required `eng`. Build preflight
-rejects missing files, keys, or empty values. M6.7.2 Event assets remain separate resource
+`<ModName>/localization/<lang>/events.json`, including required `eng` and `zhs`. Build preflight
+rejects missing files, keys, or empty values. Event assets remain separate resource
 operations and contain no behavior scripts.
 
 ## Conflicts and boundaries
@@ -363,7 +362,6 @@ operations and contain no behavior scripts.
 - A missing focused compile or real-host proof is missing verification, not an unsupported
   public hook and not a pass.
 
-During the M6.7 batch window, run focused manifest/catalog/localization tests and at most a
-representative compile-only check. Defer real-host lifecycle, intent/option presentation,
-save/load, multiplayer, full regression, payload synchronization, result consolidation,
-and cleanup to the consolidated M6.7 close.
+A focused manifest/catalog/localization test and a representative compile establish the
+manifest and the build, nothing more. Real-host lifecycle, intent/option presentation,
+save/load, multiplayer, and cleanup are proved only by observing them in a real host.

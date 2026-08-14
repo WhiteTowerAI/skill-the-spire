@@ -1,8 +1,8 @@
 {
   "schema": "openmod.sts2.vanilla-catalog/v2",
   "host_version": "0.107.1",
-  "framework_version": "0.5.4",
-  "profile": "ritsulib-0.5.4-sts2-0.107.1",
+  "framework_version": "0.5.11",
+  "profile": "ritsulib-0.5.11-sts2-0.107.1",
   "localization_languages": [
     "deu",
     "eng",
@@ -164685,5 +164685,5 @@
     "m6.7.4-availability",
     "m6.7.5-non-card-data-behavior"
   ],
-  "catalog_sha256": "705ac47e9dc3ca111033c8734aff342da41fecfdf8590cea59601f57e865e546"
+  "catalog_sha256": "78c3f607d8ff618c7361bdbc3cfc87956bceb72f2f003f645d87d2bdd4d690cf"
 }

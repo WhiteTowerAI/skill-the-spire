@@ -1,15 +1,84 @@
-# Interview — one short intake round
+# Interview - resolve only the open design decisions
 
-Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
-**asking as little as possible**. The user is a non-programmer; keep it plain.
+Goal: turn the routed request into enough certainty to write or revise `DESIGN.md`, then
+lower its current slice into `SPEC.md`,
+**asking as little as possible**. Read `route.md` first and carry its settled decisions,
+defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
 
 ## Rules
 
-- **One round only.** Ask only what's genuinely ambiguous. Everything else gets a
-  sensible default (state the default, don't ask).
+- **Follow the selected route.** Fast asks no question when complete and at most one compact
+  round otherwise. Co-design resolves the smallest high-impact decision with materially
+  different choices and trade-offs. Revision asks only about the requested delta.
+- **Ask only material questions.** Everything else gets a sensible default that is stated
+  later, not presented as another decision.
+- **Preserve settled decisions.** Anything already fixed by the prompt or project artifacts is
+  not a question.
 - **No jargon.** Say "when does it happen?" not "which combat hook?". Never ask
   about classes, namespaces, or APIs.
-- **Batch the questions.** Ask all needed clarifications together, not one by one.
+- **Keep the interaction proportional.** Batch up to three independent short questions;
+  keep dependent co-design decisions incremental.
+- **Do not ask workflow questions.** Ask about the intended player result only when the user's
+  words permit two materially different implementations.
+- **Expose real conflicts.** Contradictory or unsupported requirements pause before SPEC;
+  use `route.md`'s constrained resolution and explicit-acceptance rules.
+- **Ground Character proposals first.** For a Character or Character/content-set request,
+  load `../sts2-api/design/character-foundation.md` before creative questions.
+  Recommend an exact native-shaped starter deck before asking for deck details, and label
+  pinned facts, observed conventions, and creative decisions distinctly.
+- **Plan only when routed.** Load only the mechanic, content-set, and balance references
+  named by `route.md`. An exact narrow Card keeps the fast path and does not receive a
+  general design review merely because it has numbers.
+- **Check cross-surface consistency only when needed.** For multiple intentional expressive
+  surfaces, explicit theme/narrative/presentation work, or an identity-changing revision,
+  compare the selected mechanics, names, text, and visuals against the accepted decisions.
+  Name an exact conflict and ask only when resolving it is a creative choice.
+
+## Compact planning pass
+
+Run this pass only when `route.md` selected one or more planning references. Resolve
+the highest-impact open design decision first, then use accepted choices and safe defaults
+to complete only the relevant parts of the capsule below.
+
+- **Mechanic:** preserve one player fantasy, the competing actions/timings and state that
+  favors each, the trigger-to-payoff/reset loop, risk/reward, singleplayer pressure or
+  opportunity cost, exact edge rules, and independent tuning knobs. Compare plausible
+  repeated lines in unfavorable, ordinary, and favorable states, including ignoring the
+  mechanic.
+- **Content set:** assign real proposed content nodes the smallest useful roles across
+  Foundation, access, payoff, consistency, defense, scaling, bridge/off-ramp, and release
+  valve. Record directed source-to-dependent relationships; flag isolated nodes, circular
+  prerequisites, coverage gaps, unsupported edges, and an archetype that receives easier
+  access, safer setup, and a higher ceiling at once.
+- **Balance/economy:** name the output unit, deterministic formula, variables, timing,
+  assumptions, constraints, comparison basis, every source and sink, opportunity cost,
+  low/working/high sensitivity, and the evidence status. Default to a generous working
+  hypothesis that is modestly stronger in its intended state, but repair any value that
+  erases choices, bypasses setup/cost, trivializes ordinary opposition, or becomes
+  deterministic, self-funding, or unbounded. Never invent a fixed power percentage.
+
+Ask only about an unresolved choice whose answers change player behavior or the current
+supported implementation. Offer two or three structures rather than number-only variants
+when the mechanic itself is unclear. A missing measurement, trigger rate, formula input, or
+human play result stays an open hypothesis.
+
+This pass produces a compact planning capsule, not a durable artifact. The following
+`design.md` stage records the accepted intent and scope without re-asking settled decisions.
+
+## Compact consistency pass
+
+Run this pass only when multiple intentional surfaces or a related revision make it useful.
+Inspect selected mechanics, naming, localization, visuals, Event text, and Character identity
+against accepted decisions. Do not force the same word, palette, or imagery everywhere.
+
+If two surfaces contradict behavior, drift one gameplay term, break the accepted identity,
+leak deferred/unsupported scope, or present flavor/build evidence as gameplay proof, name
+both sides and the player-facing consequence. Offer the smallest resolution and pause
+before DESIGN/SPEC until the user decides. Preserve an accepted contrast as deliberate
+tension rather than repeatedly "fixing" it.
+
+For revision, inspect only artifacts that can depend on the changed decision. Carry a plain
+keep/change/reverify summary forward; do not create a queue or edit every downstream file.
 
 ## What to resolve (only if unclear from the sentence)
 
@@ -21,6 +90,14 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      that spawns it — always one unit; you never build a lone monster).
    - **A story/choice room on the map** where the player picks an option and gets a
      consequence → **event / World Node**.
+   - **A complete playable chapter** with its own map, encounter/event pools, backgrounds,
+     Rest Site, chest, and music → **act**. Registration and run entry are separate decisions.
+   - **A new Ancient encounter** with its own identity, dialogue, choices, and map/history
+     presentation → **ancient**. Editing a vanilla Ancient's choices is the separate existing-
+     Ancient override route.
+   - **A claimable option on the native rewards screen** with its own icon/text, refusal or
+     cancellation, effect, and pending-save reconstruction → **reward**. An immediate public Cmd
+     outcome that never becomes a pending choice remains part of its source owner instead.
    - **A new selectable hero** with their own starting deck/relic and card identity →
      **character**. Supported composition includes a named nonnegative combat resource with
      an explicit payoff/live counter and a bounded ordered semantic record of card plays
@@ -29,12 +106,17 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      top-panel icon, static combat/rest/merchant bodies, five-layer full energy, and compact
      resource icon. Locked selection and map marker remain grounded gaps with explicit
      fallbacks.
-   - **A named place where Cards are stored, moved, inspected, or shown separately** is a
-     **custom card pile**. The Custom Card Piles Package supports combat/run lifetime,
-     headless/top-bar/bottom-left/bottom-right/ExtraHand presentation, public pile screens,
-     and explicit Card movement.
-   - **Current authoring recipes: relic, potion, card, custom card piles, enemy encounter,
-     event, bounded character composition, and promoted existing-model overrides.** If the
+    - **A named place where Cards are stored, moved, inspected, or shown separately** is a
+      **card pile**. The Custom Card Piles Package supports combat/run lifetime,
+      headless/top-bar/bottom-left/bottom-right/ExtraHand presentation, public pile screens,
+      and explicit Card movement.
+    - **A Mod-owned top-bar workflow, notification, runtime hotkey, local screen/window, searchable
+      catalog, or fixed public UI attachment** is **runtime UI**. Keep its local interaction,
+      focus, close, refresh, and registration lifetime together under one coordinator. Do not
+      reinterpret it as Settings, Progression, post-run Badge, Telemetry, Multiplayer, or Update
+      Check UI.
+   - **Current authoring recipes include all named surfaces above, including reward and card
+     pile, plus promoted existing-model overrides.** If the
      request edits an existing vanilla model, resolve it through
      `reference/vanilla-overrides.md`. A requested visual surface in the 44-provider matrix
      continues through `reference/vanilla-visual-overrides.md`. Non-asset operations for an
@@ -48,19 +130,39 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      unpromoted package and stop. Offer a closest **new** element only as a separate user
      choice, never as an automatic substitution.
    - **Fail closed on vanilla Card base-description replacement.** If the user asks to
-     replace, remove, or hide the original description body, explain that RitsuLib `0.5.4`
+     replace, remove, or hide the original description body, explain that RitsuLib `0.5.11`
      exposes only before/after description fragments and pause before writing SPEC or
      scaffolding. Never reinterpret the request as appended text. Continue only after the
      user explicitly accepts a before/after composition; confirmed numbers or a request not
      to repeat questions does not authorize that downgrade.
 2. **Trigger / usage / how it's played:**
-   - **Custom Card Piles Package**: infer every stated pile and ask only for player-visible
+   - **Reward**: capture what creates/offers it, native blocking offer versus combat-end insertion,
+     exact claim effect, final refusal/cancel condition, description/icon/order, content-seen
+     behavior, and all payload facts needed to reconstruct the same pending choice. For linked
+     rewards capture choose-one/take-all, child order, and failure behavior. Do not ask for JSON or
+     dynamic-enum APIs and do not add deferred Multiplayer synchronization.
+   - **Act**: capture its chapter slot and exactly one singleplayer entry policy: force,
+     uniform pool with the existing chapter, or weighted pool with an explicit existing-
+     chapter weight. Every eligibility predicate excludes multiplayer. Capture map length,
+     point counts, nonempty weak/regular/elite/Boss sets, Events, Ancients, and presentation.
+   - **New Ancient**: capture Shared versus exact Act scope, `IsValidForAct` meaning in game
+     terms, every possible and initially visible option, page/finish flow, supplied-event-RNG
+     choices, first-visit/exact-Character/ANY dialogue, and presentation. Do not route it as
+     a normal Event or an existing-Ancient override.
+    - **Card Pile / Custom Card Piles Package**: infer every stated pile and ask only for player-visible
      ambiguity: does it reset each fight or persist for the run; is it hidden, a top-bar/
      bottom-corner button, or visible as extra Cards; what exact action moves Cards in and
      out; and may visible Cards be played normally? When placement, pile-screen tools,
      sorting, hotkeys, hover behavior, or visual callbacks are requested, record the
      requested behavior in game terms. Do not ask for enum names, delegates, or framework
-     APIs; ask for exact coordinates only when the user requested an exact custom layout.
+      APIs; ask for exact coordinates only when the user requested an exact custom layout.
+    - **Runtime UI**: capture the workflow entry points and local outcome first. For selected
+      top-bar, Toast, hotkey, Capstone, floating-window, Catalog, search-expansion, node-attachment,
+      and shell-token pieces, record only player-visible content/actions plus their creation,
+      replacement, refresh, focus/back/close, and cleanup behavior. Ask for fixed window geometry
+      or attachment insertion only when the request depends on it. Keep the Capstone local-only,
+      every per-frame provider null-player safe, every disposable handle owned, and shell styling
+      confined to this Mod's controls. Do not add a deferred-family integration.
    - **Existing vanilla Ancient**: resolve the exact Ancient first, then determine whether
      the Mod appends choices or replaces the complete initial choice list. For every choice,
      capture when it is visible, when it is locked, its one fixed Gold/HP/Max HP/no cost,
@@ -113,10 +215,6 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      infer bounded vanilla rich text and capture only the exact phrase plus plain-language
      color intent. Never ask for or preserve raw BBCode. Use the per-surface allowlist;
      SmartFormat owns Card upgrade highlighting, and titles remain plain.
-     If a Card looks at the top X cards of the draw pile and discards any number, record
-     the amount and upgrade delta as **Scry** semantics. The supported helper is
-     singleplayer-only; preserve multiplayer/replay requests as an explicit gap rather
-     than asking the user about APIs or inventing a fallback.
      If a displayed Card number is calculated from live state, capture one named formula,
      every input it reads, an integer minimum/maximum, its base and upgraded behavior, and
      whether it is plain, damage, Block, Energy icons, Star icons, a raw typed buff/debuff
@@ -139,14 +237,13 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
     most one top-left badge with at most 6 visible characters. This is supplemental UI, not
     a replacement for the main counter. Never collect raw BBCode, arbitrary strings,
     custom rectangles, or a bottom-right label.
-   - **Enemy encounter**: an enemy is fought inside its encounter, so treat them as one
-     unit. Resolve only what genuinely shapes the fight: the monster's **HP**, whether it
-     is alone or in a group, and each move's visible warning, exact effect, and what comes
-     next. If there are several moves, record the fixed order or the plain-language
-     condition (for example, "below half health, heal instead"). Ask one sequence question
-     only when the order/condition is genuinely unclear; default to the stated order in a
-     repeating cycle. Don't ask about scenes, animations, intent class names, or APIs —
-     those are the recipe's job.
+   - **Enemy encounter**: resolve Monsters and Encounters as separate content nodes joined
+     by explicit roster edges. A Monster may be reused, and an Encounter may contain
+     multiple or repeated Monster models. Capture each Monster's positive HP value/range,
+     visible warning/effect per move, and deterministic, conditional, or explicitly
+     requested fixed-weight random successor. Default to the stated repeating order; never
+     invent randomness. Ask one sequence/roster question only when it changes the fight.
+     Don't ask about scenes, intent class names, RNG objects, or APIs — those are the recipe's job.
      If the user asks for auxiliary information on one monster intent, recognize the
      supported Extra Badges Package but report that Intent authoring is not implemented in
      the current pack. Do not rewrite a separate debuff as an attack badge, and keep an
@@ -161,11 +258,11 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
      complete encounter spec by itself.
      One mutable Event instance supports at most one special combat. A one-option event is
      valid for the fast path. Ask which acts only if the user cares; default is all acts.
-     If the request says an earlier choice/card should guarantee a later special Event,
-     capture one custom Quest Card token, one custom target Event, the exact target act,
-     and the target option that completes the token. Offer the supported default: carrying
-     the token forces the next entered Unknown MapPoint in that act. Do not broaden this
-     into an arbitrary chain or promise multiplayer/save behavior.
+     If the request says an earlier choice/Card should guarantee later special Events,
+     capture a bounded mapping: custom Quest token, nonempty act set, globally ordered
+     priority, finite unique custom-Event sequence, fail-closed conflict, and exact terminal
+     consumption option. Offer the supported one-step default. Do not invent a loop,
+     vanilla target, fixed map node, multiplayer behavior, or observed save claim.
      If the user explicitly asks for Event VFX, offer either the bounded generated
      `portrait_halo` or the curated built-in `trial_noble` profile and capture which normal
      pages use it; default is no VFX. Do not ask about localization key builders, room nodes, anchors, or
@@ -181,14 +278,24 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
       value used by the consequence. When an option actually grants a known Card or relic,
       infer its matching native acquisition presentation; this is separate from the typed
       pre-choice Hover Tip. If the user asks for an impact/jolt on a successful option,
-      offer the single `weak_short` screen-shake profile. Do not ask for strengths,
-      durations, scene paths, or player preference values. Speech/thought bubbles are
+       offer `weak_short` or the heavier `strong_normal` profile and explain the visible
+       intensity difference. Do not collect arbitrary strengths, durations, scene paths,
+       or player preference values. Speech/thought bubbles are
       future outlook only.
-   - **Character**: resolve the character's identity/theme, starting HP,
-     exact starter deck counts, starter relic, and one starter card/relic mechanic that
-     a grounded public game/framework API can prove in combat. Default to standard 3 energy and placeholder
-     visuals. If it names a custom resource, capture its gain sources, spenders/payoff,
-     floor, combat reset, and counter text. If it describes an ordered card-play record,
+   - **Character**: resolve the character's identity/theme, starting HP, starter relic, and
+     one starter card/relic mechanic that a grounded public game/framework API can prove in
+     combat. Use the loaded Character Foundation grammar to recommend the exact Card names,
+     counts, base effects, upgrades, and total before asking the user for deck details. If
+     the core mechanic is materially unclear, ask about that one decision first, then make
+     the complete deck proposal; never ask the user to name ten Cards from a blank form.
+     Starting HP, Gold, MaxEnergy, base Orb slots, typed pools, and starter Card/Relic/Potion
+     multisets are explicit current decisions. Use the native inventory as recommendations,
+     not forced defaults, and preserve an explicit
+     implementable departure after explaining its onboarding, Strike/Defend-tag
+     compatibility, and early-balance consequences. If it names secondary resources,
+     capture every stable id, min/default/max, combat/run persistence, turn-start policy,
+     gain sources, Card payment uses, shortfall/replacement policy, post-commit payoff, and
+     selected counter/Card UI consumers. If it describes an ordered card-play record,
      capture semantic values, normal source destination, order, capacity/overflow, compile
      trigger, deterministic formula, and output. If physical played Cards must remain in a
      custom zone, preserve that as an explicit unsupported gap.
@@ -275,44 +382,54 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 - **Target** (card): damage → one enemy (`AnyEnemy`); block/self-buff → `Self`. Only
   ask if genuinely unclear.
 - **Upgrade** (card): improve the main number (more damage/block/stacks). State it.
-- **Scry** (only when requested): inspect the top X Draw cards, choose zero through X to
-  discard, preserve the order of all unselected cards, and await the choice. Singleplayer
-  only; no global modifier/completion hooks.
-- **Owned Rest Site option** (only when requested on a Relic): singleplayer only; distinguish
+- **Rest Site option** (standalone or requested on a Card, Relic, or Modifier): singleplayer only; distinguish
   when it is absent from when it is visible but gray; default to once per Rest Site,
   normal leave behavior, checked native Heal-icon fallback, and free cost unless the idea
   names a fixed Gold price. Ask only for an unresolved repeatability or stay/leave choice.
-  Card/Modifier owners, arbitrary costs, post-payment choices, and same-site repeat are
-  unsupported in this slice.
+  A Card owner requires exactly one matching deck instance. A Modifier owner requires that exact
+  selected run Modifier. Arbitrary costs, post-payment choices, and same-site repeat remain
+  unsupported.
+- **Runtime UI**: local-only; one owning coordinator; pure null-player-safe top-bar providers;
+  text-input/dev-console hotkey suppression; controller focus/back behavior; deterministic local
+  search; explicit close/disposal; and Mod-scoped shell tokens. Do not silently add a custom icon,
+  saved geometry, search provider, node attachment, or any deferred-family UI when the request does
+  not need it.
 - **Name**: derive a short, flavorful name from the concept; confirm in the SPEC summary.
 - **Acts** (event): all acts unless the user specifies a setting.
 - **Event VFX**: none unless explicitly requested; then use only `portrait_halo` or
   `trial_noble` on named normal-layout pages.
 - **Event acquisition presentation**: native whenever a successful option adds a known
   Card to the Deck or obtains a known relic; never a second grant.
-- **Event screen shake**: none unless explicitly requested; then one `weak_short` call on
-  the named successful option, inheriting the player's preference.
+- **Event screen shake**: none unless explicitly requested; then one `weak_short` or
+  `strong_normal` call on the named successful option, inheriting the player's preference.
 - **Event text effects**: none unless explicitly requested or clearly described; then use
   only the bounded vanilla rich-text vocabulary on named page/option description phrases.
-- **Forced Event follow-up**: none unless explicitly described; then one custom Quest Card
-  forces one custom target Event from an Unknown MapPoint in one specified act, and one
-  named target option consumes the token.
-- **Character Foundation**: 70 HP, standard 3 energy, a 10-card Basic starter deck,
-  one Starter relic, valid character-scoped card/relic/potion pools, and template/built-in
-  placeholder visuals. Derive starter effects from the user's stated theme.
+- **Forced Event follow-up**: none unless explicitly described; default to one custom Quest
+  Card forcing one custom Event from the next Unknown MapPoint in one act. When the request
+  needs more, use only a finite prioritized mapping/sequence with exact terminal consumption.
+- **Character Foundation**: 70 HP, 99 Gold, 3 MaxEnergy, zero base Orb slots, one Starter
+  relic, no starter Potions, and valid character-scoped pools are native-shaped creative
+  starting points, not mandatory output values. Record the exact current selections.
+  Unless the idea supports another native analogy, propose an exact 10-Card Basic deck of
+  4 Character-specific Strike, 4 Character-specific Defend, and 2 low-complexity identity
+  Cards that teach setup/payoff. Preserve the pinned Strike/Defend names, values, upgrades,
+  and tags by default. This is an observed native-shaped recommendation, not a universal
+  `4/4/2` or ten-Card rule. Derive the teaching Cards and Starter relic from the stated
+  theme, state the complete proposal at confirmation, and accept deliberate implementable
+  departures after recording their consequences.
 - **Character Ancient dialogue** (only when requested): Character first-visit group plus a
   repeat group from visit 2; preserve the native global first-visit-ever introduction. A
   complete Architect group remains mandatory for every Character; default its start
   attackers to None and end attackers to Architect when the user does not specify them.
-- **Character resource** (only when requested): combat lifetime, starts at 0, nonnegative
-  integer, all-or-nothing spend, fixed 220x32 icon+text counter with text-only fallback,
-  offset from native Energy, and no alternative-energy payment.
+- **Secondary resources** (only when requested): one or more bounded nonnegative resources;
+  default to combat persistence, zero start, no turn-start change, required fixed payment,
+  and a built-in combat counter/Card line only when visible. Never reinterpret native Energy.
 - **Ordered semantic buffer** (only when requested): combat lifetime, normal Play ->
   Discard source lifecycle, finite capacity, reject overflow without mutation, preserve
   semantic insertion order, show compact state, and create one deterministic real output
   Card. Retained-card zone UI is unsupported.
-- **Monster move order**: moves repeat in the order stated. Do not invent random choice;
-  add a conditional branch only when the concept names a condition or the user confirms it.
+- **Monster move order**: moves repeat in the order stated. Add a conditional or fixed-weight
+  random branch only when the concept names it or the user confirms it; never invent random choice.
 - **State lifetime**: "every N turns" on a relic continues across combats in the current
   run; "on turn N of each combat" uses that combat's turn number. Turn-local/once-per-
   combat wording resets at the boundary it names. Ask one carry-over question only when
@@ -330,7 +447,34 @@ Goal: turn the user's one sentence into enough certainty to write `SPEC.md`,
 
 ## Output
 
-A compact intake you carry into `spec.md`. For a **relic**:
+A compact intake you carry into `spec.md`. Prefix every intake with:
+
+```text
+path: fast | co-design | revision | resume
+intent: <one player-facing sentence>
+settled: <choices preserved from the request and project artifacts>
+defaults: <inferred values to state in the confirmation>
+native grammar: none | <loaded native grammar and pinned profile>
+planning references: none | <loaded mechanic/content-set/balance references>
+revision delta: none | <keep/change/reverify summary>
+current scope: <requested now>
+not now: none | <placeholder, deferred, unsupported, or explicitly excluded work>
+consistency conflicts: none | <exact conflicting decisions or surfaces awaiting resolution>
+player fantasy: none | <repeated action -> intended feeling>
+core decision: none | <line A versus line B; state that favors each>
+loop: none | <input -> visible state -> choice -> feedback/payoff -> reset>
+risk/reward: none | <commitment, information, agency, payoff>
+counterplay/pressure: none | <player-facing constraint or opportunity cost>
+rules/edge cases: none | <accepted exact rules and boundaries>
+content roles: none | <real content nodes and selected roles>
+interaction graph: none | <directed source -> dependent relationships and gaps>
+formula/economy: none | <formula contract, sources/sinks, assumptions, sensitivity>
+tuning knobs: none | <independent values and the behavior each changes>
+dominant-strategy check: none | <lines compared, concern, mitigation or none>
+open hypotheses: none | <unproven claim and evidence needed>
+```
+
+For a **relic**:
 
 ```
 element: relic
@@ -341,6 +485,7 @@ effect: <plain-language, with numbers>
 state: none | event=<what advances>; threshold=<N>; lifetime=turn|combat|run;
   reset=<exact boundary>; persistence=field|AttachedState|SavedAttachedState
 owned Rest Site option: none | title=<title>; description=<description>;
+  owner=relic; owner multiplicity=exactly one;
   eligibility=<absence rule>; repeatability=once per Rest Site|once per run;
   enabled=<rule>; cost=free|<N> Gold; outcome=<deterministic exact operations>;
   after success=leave|keep remaining options; icon=fallback|generate;
@@ -368,7 +513,9 @@ For a **card** (cost/type/target + upgrade instead of trigger):
 element: card
 name: <proposed>
 rarity: Common
-cost: 1
+energy cost: fixed 1 | X
+Star cost: none | fixed <N> | X
+cost upgrade: same | Energy <delta> | Stars <delta>
 type: Attack | Skill | Power
 target: one enemy | all enemies | self
 effect: <plain-language, with numbers>
@@ -376,6 +523,13 @@ upgrade: <what improves, e.g. "damage 6 -> 9">
 calculated values: none | <name; role; one formula; inputs; integer min/max; base/upgrade;
   before-play or after-payment-and-move evaluation>
 variable tooltips: none | <value name -> title; description; optional custom icon>
+owned Rest Site option: none | title=<title>; description=<description>;
+  owner=card; owner multiplicity=exactly one in the owner's deck;
+  state handle=host visit removal|saved owner bool;
+  eligibility=<absence rule>; repeatability=once per Rest Site|once per run;
+  enabled=<rule>; cost=free|<N> Gold; outcome=<deterministic preflightable operations>;
+  after success=leave|keep remaining options; icon=fallback|generate;
+  multiplayer=singleplayer only
 art: placeholder | generate: <subject/style, if the user asked for custom art>
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only; no credentials/credits)
 ```
@@ -397,19 +551,17 @@ advanced target:
 If this produces `consumer: potion` plus `mode: many`, stop and offer the two supported
 alternatives above. Do not silently weaken the zero-target behavior.
 
-For an **enemy encounter** (monster + the encounter that spawns it, one unit):
+For an **enemy encounter graph**:
 
 ```
-element: enemy encounter
-monster name: <proposed>
-encounter name: <proposed, or "<Monster> Encounter">
-hp: <int>
-moves:
-  - id: <plain name>; warning: <attack|buff|debuff|defend|heal or combination>;
-    effect: <exact effects and numbers>; next: <next move id>
-condition: none | <plain condition> -> <move id>; otherwise -> <move id>
-loop: <move id> -> <move id> -> ...
-group: single | <describe the group>
+element: enemy encounter graph
+monsters:
+  - id/name: <stable id / proposed name>; hp: <positive min..max>
+    moves: <visible intent/effect states>
+    branches: deterministic | conditional <guards> | random <positive fixed weights>
+encounters:
+  - id/name: <stable id / proposed name>; roster: [<Monster ids, repetitions allowed>]
+    all possible: [<registered Monster ids>]; placement: <grounded act/global route>
 art: placeholder | generate: <one full creature in a neutral combat-ready pose>
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 art boundary: one static 360x360 body shared by combat+bestiary; no animation/phobia variant
@@ -430,11 +582,12 @@ page portraits: none | <PAGE_KEY>: <replacement scene>  (only when explicitly re
 art source: runtime-imagegen | vofy | byo-http | local-image  (generate only)
 event VFX: none | portrait_halo on <page keys>; <color/mood> |
   trial_noble on <page keys>
-acquisition presentation: none | native Card <name> to Deck | native relic <name>
-screen shake: none | weak_short on option <name>
+acquisition presentation: none | ordered [native Card <name> to Deck | native relic <name>]
+screen shake: none | weak_short | strong_normal on option <name>
 event text effects: none | vanilla; <PAGE/OPTION_KEY>: "<exact phrase>" -> <emphasis/color/jitter/sine>
-forced follow-up: none | quest token <name>; target Event <name>; target act <exact act>;
-  completion option <name>; trigger next entered Unknown MapPoint in that act
+forced follow-up mappings: none | [id=<id>; token=<name>; acts=[...]; priority=<int>;
+  sequence=[<unique custom Events>]; consumption=target success|sequence complete;
+  completion option=<name>; conflict=fail closed; save claim=game-unobserved]
 art boundary: normal initial plus explicit page portraits; no custom phobia/custom-layout assets;
   VFX boundary: code-native portrait_halo or curated built-in trial_noble, no arbitrary VFX;
   text boundary: descriptions only, bounded vanilla tags, plain titles
@@ -456,10 +609,10 @@ options:
     next <stay|page PAGE_ID|finish>
 pages:
   - id: <PAGE_ID>; description: <text>; options: <same option shape>
-visual composition: none | <exact M6.7.2 Ancient/Event visual surfaces>
+visual composition: none | <exact Ancient/Event visual surfaces>
 preserve: original Ancient model, room, opening dialogue, save identity, allowance gate,
   and native finish/choice-history lifecycle
-boundary: singleplayer; no new Ancient, global dialogue replacement, line audio,
+boundary: singleplayer; no new Ancient through this override route, global dialogue replacement, line audio,
   randomized outcome rewrite, special combat, or direct merchant/rest/treasure transition
 ```
 
@@ -469,15 +622,108 @@ default cannot alter the user's concept. A replacement must describe the complet
 choice list and at least one reachable finish path; never silently preserve unspecified
 vanilla choices inside a replacement.
 
+For an **act**:
+
+```
+element: act
+name: <English and Simplified Chinese title>
+slot: 0 | 1 | 2
+entry: force priority <int> | uniform with existing chapter | weighted
+eligibility: singleplayer and <plain condition>
+weights: none | existing chapter <positive number>; <candidate> <positive number>
+map: rooms <positive int>; Unknown/Rest counts <exact values or supplied-map-RNG formulas>
+encounters: weak [nonempty]; regular [nonempty]; elite [nonempty]; Boss [nonempty]
+Boss discovery order: [exact registered identities]
+events: [exact ordinary Events]
+ancients: [exact Shared/Act-scoped relations]
+unlock: available under the selected entry rule; no new Progression integration
+presentation: colors; music/banks/ambience; background/layers; map textures;
+  Rest Site scene; exact chest resource/skins/SFX
+scenario: real singleplayer act transition, every room family, save/load, headed map/UI/audio
+boundary: `AllowInRandomActList=false`; no Multiplayer entry integration
+```
+
+For a **new Ancient**:
+
+```
+element: ancient
+name/epithet: <English and Simplified Chinese text>
+placement: shared | acts [exact identities]
+valid acts: <accepted rule and one rejected act>
+options: [all stable ids, visibility/enabled/cost/typed tips, ordered outcomes, next page|finish]
+initial options: <exact subset/order or supplied-event-RNG rule>
+dialogue: first-visit-ever; exact Character groups; ANY fallback; visit/repeat;
+  speaker/text/non-terminal prompt/optional line SFX; optional ANY blacklist
+presentation: dialogue color; portrait/background/VFX; map/history icon pairs;
+  optional procedural stage; ambient BGM; exact fallbacks
+scenario: real Ancient MapNode, every branch/history state, save/load, headed dialogue/UI/audio
+boundary: no deferred-family integration; do not lower as ordinary Event or vanilla override
+```
+
+For a **reward**:
+
+```
+element: reward
+identity: <stable Mod-local stem>
+grant context: <owner/trigger> -> blocking custom offer | current combat end
+text/icon/order: <English and Simplified Chinese description>; <checked icon or fallback>; <order>
+claim: when <final condition>; effects <ordered deterministic public outcomes>; false keeps pending
+persistence: none | payload <version and complete reconstruction facts/default/migration>
+linked set: none | choose one | take all; children <ordered rewards>; failure behavior <exact>
+scenario: real reward screen claim/refusal/continue, pending combat-room save/load, headed UI/input
+boundary: singleplayer; no deferred-family integration; reconstruction never grants the outcome
+```
+
+For a **card pile**:
+
+```
+element: card pile
+identity/scope: <stable local stem>; combat only | run persistent
+lifecycle: capacity/duplicates; empty/full; combat/run/save/restore/end behavior
+presentation: headless | top bar | bottom left | bottom right | ExtraHand;
+  preset+offset | custom position+pivot; icon; title/description/empty text; visibility/hover/hotkeys
+open/view: default | capstone; vanilla | deck-like | explicit inspect/upgrade/sort/style
+movement: <trigger/source/exact live Card/destination/top|bottom/precheck/result pile>
+ExtraHand: none | visibility/layout/scale/glow/manual play/callbacks
+scenario: matching real combat/run host, movement/persistence, headed/controller UI matrix
+boundary: no shadow state, direct pile mutation, native-Hand patch, or deferred-family integration
+```
+
+For **runtime UI**:
+
+```
+element: runtime UI
+workflow/owner: <stable local identity>; <owning coordinator>; <create/cleanup host and timing>
+entry points: none | top bar <icon/fallback, hover, click, visibility/open/count>;
+  hotkeys <bindings, suppression, handled input, disposal>
+feedback: none | Toast <level, bilingual body/title, duration/persistent, progress/update/close>
+surface: none | local Capstone <content/focus/back/replace/close> | floating window
+  <title/content, fixed|movable|resizable, geometry bounds, viewport constraint, content ownership>
+catalog/search: none | <list|grid, inline|drawer, stable items, fixed filters, localized states,
+  selection/actions/refresh>; expansions <locale, bounded deterministic forms, invalidation/disposal>
+attachment/theme: none | <stable public parent, child factory/scene, duplicate/setup/order/cleanup>;
+  <Mod-scoped token branch and local consumers>
+scenario: real top bar/input/Toast/screen/window/Catalog/attachment plus headed mouse/controller/layout
+boundary: local `NetScreenType.None`; no deferred-family UI or integration; no private/internal host
+```
+
 For a **character**:
 
 ```
 element: character
 name: <display name>
-starting HP: <int, default 70>
-energy per turn: 3 (current grounded Foundation value)
-starter deck: <exact card names and counts, total 10>
-starter relic: <name + one grounded public effect>
+starting HP: <positive int; native-shaped starting point 70>
+starting Gold: <nonnegative int; native-shaped starting point 99>
+MaxEnergy: <positive int; native-shaped starting point 3>
+base Orb slots: <nonnegative int; native-shaped starting point 0>
+native grammar: design/character-foundation.md @ STS2 0.107.1
+pinned facts used: <exact native identities/values used in the proposal>
+observed convention: <native shape used as the recommendation>
+starter deck: <exact creative Card names, counts, base effects, upgrades, and total>
+starter deck rationale: <how the teaching Cards and Starter relic introduce the mechanic>
+deliberate departure: none | <departure; onboarding; compatibility; balance consequences>
+starter relics: [<name x count + grounded public effect>]
+starter Potions: [<name x count>] | none
 pools: character-scoped card/relic/potion pools with at least one concrete member each;
   if Shop/merchant is selected, at least 2 non-Basic Attacks, 2 Skills, and 1 Power
 scenario: RunStart + CombatPlayer
@@ -512,5 +758,7 @@ resource: <name>; gain <sources/amounts>; spend <cost/payoff>; floor 0; reset co
 buffer: <name>; values <semantic values>; source destination Discard; order <rule>; capacity <N>; overflow reject; compile <trigger/formula/output>
 ```
 
-Do not write files here — `spec.md` does that. If nothing was ambiguous, skip
-straight to `spec.md` with the inferred intake.
+Do not write files here - `design.md` writes the durable intent, decisions, and scope, and
+`spec.md` lowers the current slice. If fast routing found nothing material to ask, skip straight to `design.md`
+with the inferred intake. If this is a revision, preserve every unrelated design decision,
+runtime/localization identifier, and existing SPEC operation outside the confirmed delta.

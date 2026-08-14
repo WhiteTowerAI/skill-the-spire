@@ -7,7 +7,8 @@
 > upgrades, SmartFormat descriptions) — **read that first.** The skill fills only the
 > **effect logic**; `ModCardTemplate`, content-pack registration, localization, and
 > `CardAssetProfile` are adapter-owned.
-> When SPEC declares calculated values, Energy/Star icon counts, typed computed Power
+> When SPEC declares a native Star cost or upgrade, use the exact cost lifecycle in
+> `Native Energy and Star costs` below. When SPEC declares calculated values, Energy/Star icon counts, typed computed Power
 > amounts, or variable tooltips, also read `reference/card-computed-values.md`.
 > When SPEC declares a filtered live-creature target, also read
 > `reference/advanced-targeting.md`; it owns registration, one/many execution,
@@ -32,6 +33,8 @@ consumable (potion). Phrasings: "a card that…", "an attack that…", "a skill 
 gives…", "a power that…", "costs 1 energy and…". Cards fire their effect in `OnPlay`
 when the player plays them, and their numbers can **scale** (Strength, upgrades) — so
 they use `DynamicVar`s + SmartFormat, not the literal amounts relics/potions get away with.
+Energy and Stars are independent native Card payments. A Card may have fixed or X Energy
+and no/fixed/X Stars, except that simultaneous Energy-X and Star-X remains blocked.
 
 The bounded forced-follow-up Quest token is the one exception to this normal play-from-
 hand classification. It is an unplayable dependency of an Event composition; route it to
@@ -102,6 +105,10 @@ namespace <ModName>.Cards;
 
 public sealed class <CardName> : ModCardTemplate
 {
+    // Optional native Star payment selected by SPEC:
+    // public override int CanonicalStarCost => 2;
+    // public override bool HasStarCostX => true; // use instead of CanonicalStarCost for Star-X
+
     // Numbers that scale (upgrades/Strength). Pick the vars the effect needs:
     protected override IEnumerable<DynamicVar> CanonicalVars => new DynamicVar[]
     {
@@ -143,6 +150,37 @@ public sealed class <CardName> : ModCardTemplate
 | `rarity` | `CardRarity` = `Basic, Common, Uncommon, Rare, …` | droppable default `Common`; `Basic` is for starter cards. |
 | `target` | `TargetType` (shared with potions) | one enemy → **`AnyEnemy`**; all enemies → `AllEnemies`; a self/no-selection effect (block, gain Strength) → **`Self`**. |
 
+## Native Energy and Star costs
+
+The constructor's first argument is the native Energy cost: a nonnegative integer for a
+fixed cost or `-1` for Energy-X. For Energy-X, also emit
+`protected override bool HasEnergyCostX => true`. Do not encode an X cost as a large integer
+or a DynamicVar.
+
+Star cost is independent:
+
+```csharp
+public override int CanonicalStarCost => 2;       // fixed Stars; omit for none
+// OR:
+public override bool HasStarCostX => true;        // Star-X; do not also set a fixed Star cost
+
+protected override void OnUpgrade()
+{
+    UpgradeStarCostBy(-1);                        // fixed Star cost only
+}
+```
+
+Use `UpgradeStarCostBy` only for a fixed Star cost; the host throws when it is called on
+Star-X. Energy upgrades continue through `EnergyCost.UpgradeBy(...)`. Keep both on the
+native `CardModel` lifecycle so playability, native cost UI, payment, auto-play, cloning,
+and replay see the same declarations. Never create a parallel Star amount/store or spend
+Stars manually inside `OnPlay` to imitate a Card cost.
+
+Reject simultaneous Energy-X and Star-X. Other new Energy/Star combinations are
+framework-expressible and authorable but game-unobserved; a future generated Mod verifies
+only the combination its SPEC selects. Payment rejection must leave both resources, Card
+state, and effect state unchanged.
+
 An advanced target does not lower to a vanilla enum. Use the stable registered value from
 `reference/advanced-targeting.md`. A single-target Card keeps `cardPlay.Target`; a
 multi-target Card overrides `IsPlayable` for the empty group and calls `GetTargets()`
@@ -151,6 +189,20 @@ inside `OnPlay`. Never cache the target list from selection time.
 > ⚠️ Card `Self` vs potion `AnyPlayer`: a **card** that targets the player uses
 > `TargetType.Self` (no target selection) — `DefendIronclad`/`Inflame` do. Potions use
 > `AnyPlayer` instead. Don't copy a potion's target type onto a card.
+
+## Optional shared capability and Card-lifecycle routes
+
+Keep the normal play body below for a Card whose effect happens simply because it is played.
+When SPEC instead selects a separable attached behavior/state bundle, read
+`reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
+`reference/lifecycle-state-rng.md`; for per-hit attack, healing, Energy/Stars-gain response, or
+maximum hand size, read `reference/shared-effect-hooks.md`; and for before/after `OnPlay`,
+suppression, free-play duration, transforms, carry-over, or type text, read
+`reference/card-play-lifecycle.md`.
+
+Those references own registration, callbacks, order, neutral returns, cleanup, and SelfTest. Do
+not copy them into `OnPlay`, refund a free play manually, or use process registration for a
+Card-owned rule.
 
 ## Trigger
 
@@ -162,106 +214,50 @@ like a relic — all the card's effect goes in `OnPlay`. (Rare extras exist:
 `OnTurnEndInHand` for "if this is in your hand at end of turn…", `IsPlayable` to gate
 playability — reach for them only if SPEC demands.)
 
-## Effect building blocks (confirmed APIs — pick the block(s) matching SPEC)
+## SPEC `hook participation`: a rule that holds without being played
 
-All `Cmd`s are `static async Task` — `await` every one. Read static scaling numbers from
-their normal `DynamicVars`; read calculated values through the matching `Compute*Value`
-extension. Never execute a calculated effect from `BaseValue` or display-only
-`PreviewValue`.
+`OnPlay` is the Card's effect. A SPEC `hook participation` block is a rule the Card contributes
+while it is merely *present* — the engine asks it for a number or a decision while resolving
+something else, and playing the Card is not involved. Read
+`reference/model-hook-participation.md`.
 
-### Attack — deal damage (`CardType.Attack`, `TargetType.AnyEnemy`)
-
-`DamageCmd.Attack(...)` returns a **fluent builder** (`AttackCommand`) — chain the
-attacker, target, and fx, then `.Execute(choiceContext)`:
+One reachability rule matters more here than on any other surface. `CardModel` receives combat
+hooks only while the Card is in a combat pile:
 
 ```csharp
-ArgumentNullException.ThrowIfNull(cardPlay.Target, "cardPlay.Target");
-await DamageCmd.Attack(base.DynamicVars.Damage.BaseValue)
-    .FromCard(this)                        // attacker = this card's owner; enables Strength etc.
-    .Targeting(cardPlay.Target)            // the single chosen enemy
-    .WithHitFx("vfx/vfx_attack_slash")     // hit vfx (+ optional sfx args); slash is the generic one
-    .Execute(choiceContext);
+public override bool ShouldReceiveCombatHooks => Pile?.IsCombatPile ?? false;   // pinned engine
 ```
 
-Builder methods you may need (all return the builder, keep chaining):
-- `.TargetingAllOpponents(combatState)` — hit every enemy (`TargetType.AllEnemies`).
-  Get `combatState` from `base.Owner.PlayerCombatState!`.
-- `.TargetingRandomOpponents(combatState)` — random target(s).
-- `.WithHitCount(n)` — multi-hit (Twin Strike = 2). `n` can be a `DynamicVar` value.
-- `.Unpowered()` — do NOT scale with Strength (rare; for fixed-damage attacks).
+A deck Card always receives run-scope hooks, so a "while this is in your deck" rule works from the
+deck. But a combat-scope declaration on a Card that is not in a pile compiles, ships, and never
+fires. Check the hook's `authorable_surfaces` and scope in the catalog before writing it, and put
+the rule on a relic or a Power instead when it must hold for all of combat regardless of pile.
 
-### Block — gain block (`CardType.Skill`, `TargetType.Self`)
+`Owner` is a `Player`; guard against `Owner.Creature` and `Owner.Osty` where the Osty can be the
+subject. An **Enchantment** attached to this Card inherits the same pile-dependent reachability,
+and it must use its five `Enchant*` replacements for damage, block, and play count — see
+`recipes/enchantment.md`.
 
-Set `GainsBlock => true` (the engine uses it for previews/tags) and use the
-**`cardPlay` overload** of `GainBlock` (different from the potion's 3-arg overload):
+## Ordinary effect sequence
 
-```csharp
-public override bool GainsBlock => true;
-// ...in OnPlay:
-await CreatureCmd.GainBlock(base.Owner.Creature, base.DynamicVars.Block, cardPlay);
-```
+Read `reference/effect-primitives.md` for every ordinary command in `effects.sequence`. This Card
+surface supplies `choiceContext`, `base.Owner`, `base.Owner.Creature`, `this`, the current
+`cardPlay`, and (after the required null-check) `cardPlay.Target`. Preserve that exact Card
+provenance and await commands in SPEC order. A Card cannot invent a target or another Player.
 
-### Power — apply a buff/debuff (`CardType.Power` for self-buffs, or on any card)
-
-Use a vanilla power if one fits (`StrengthPower`, `DexterityPower`, `VulnerablePower`,
-`WeakPower`, `PoisonPower`…). `cardSource` is `this`:
-
-```csharp
-// self-buff (Inflame — gain Strength; TargetType.Self):
-await PowerCmd.Apply<StrengthPower>(choiceContext, base.Owner.Creature,
-    base.DynamicVars["StrengthPower"].BaseValue, base.Owner.Creature, this);
-
-// debuff on the target enemy (needs TargetType.AnyEnemy + a null-check):
-await PowerCmd.Apply<VulnerablePower>(choiceContext, cardPlay.Target,
-    base.DynamicVars["VulnerablePower"].BaseValue, base.Owner.Creature, this);
-```
-
-If no vanilla power matches the request ("at end of turn deal 3 to all"), author a
-**custom power** first (`recipes/power.md`), then `PowerCmd.Apply<YourPower>(...)` here.
-
-`Apply<T>` is the gain/application path. If the card **consumes** a custom nonnegative
-Counter ("lose/consume up to N stacks"), do not pass a negative amount to `Apply<T>`.
-Use `recipes/power.md`'s amount-domain pattern: `GetPower<T>()`, clamp the spend to the
-existing amount, then `PowerCmd.ModifyAmount` that instance.
-
-### Scry - inspect top X, discard any number (`CardType.Skill`, `TargetType.Self`)
-
-Read `reference/scry-helper.md` and emit its generated-Mod-local `OpenModScry` helper.
-Declare `new DynamicVar("Scry", X)` and await it from `OnPlay`:
-
-```csharp
-Result = await OpenModScry.Execute(
-    choiceContext, Owner, DynamicVars["Scry"].IntValue);
-```
-
-Do not inline a second selector/pile implementation, add BaseLib, or dispatch a global
-Scry hook. The current contract is singleplayer-only and returns requested/seen/discarded
-Cards for local composition. Its focused proof covers zero/empty/short/full Draw, visible
-UI and await behavior, stable order, normal source result pile, and exact discard
-history/hooks.
-
-### Combine — attack THEN debuff (Bash pattern)
-
-Declare both vars, run the attack, then apply the power on the same target:
-
-```csharp
-ArgumentNullException.ThrowIfNull(cardPlay.Target, "cardPlay.Target");
-await DamageCmd.Attack(base.DynamicVars.Damage.BaseValue).FromCard(this)
-    .Targeting(cardPlay.Target).WithHitFx("vfx/vfx_attack_blunt").Execute(choiceContext);
-await PowerCmd.Apply<VulnerablePower>(choiceContext, cardPlay.Target,
-    base.DynamicVars["VulnerablePower"].BaseValue, base.Owner.Creature, this);
-```
-
-> For any effect not covered here (draw, energy, card generation), follow
-> `grounding.md`: check the rest of the pack (`reference/mechanics.md`, snapshots,
-> `errors.md`) for the Cmd. If it's genuinely not in the pack, report a pack gap —
-> **do not guess a Cmd name** (the maintainer grounds new Cmds offline).
+Read static scaling numbers from their normal `DynamicVars`; read calculated values through the
+matching `Compute*Value` extension. Never execute a calculated effect from `BaseValue` or the
+display-only `PreviewValue`. Keep `GainsBlock => true` for a Card that gains Block and use
+`WithHitCount(n)` rather than an outer loop for a multi-hit attack. If no vanilla Power matches
+the request, author the custom identity through `recipes/power.md`; the shared primitive reference
+then owns applying, changing, or removing it.
 
 ### Calculated values, icon counts, and variable tooltips
 
 Read `reference/card-computed-values.md` and preserve its complete contract. In short:
 
-- generate one pure bounded calculation shared by base/upgrade preview and execution;
+- for each declared value, generate one pure bounded calculation shared by base/upgrade
+  preview and execution, with a unique name on that Card;
 - select `ComputedDamage`/`ComputedBlock` when normal combat modifiers apply, plain
   `Computed` only when they intentionally do not, and the typed Energy/Stars/Power helper
   for those roles;
@@ -290,6 +286,8 @@ Cards declare their static numbers in `CanonicalVars` and read them via typed ac
 protected override void OnUpgrade()
 {
     base.DynamicVars.Damage.UpgradeValueBy(3m);
+    // base.EnergyCost.UpgradeBy(-1);  // when SPEC lowers a fixed Energy-cost upgrade
+    // UpgradeStarCostBy(-1);         // when SPEC lowers a fixed Star-cost upgrade
     // base.DynamicVars["VulnerablePower"].UpgradeValueBy(1m);   // bump each var the upgrade changes
 }
 ```
@@ -308,8 +306,9 @@ Use `{X:showIfUpgraded()}` for text that should appear only on the upgraded card
 
 ## Localization (ships in the .pck)
 
-Table is **`cards`**. Add to `<ModName>/localization/eng/cards.json`. Keys are flat and
-use the exact RitsuLib public entry (`MOD_CARD_TYPENAME`):
+Table is **`cards`**. Add the same keys to
+`<ModName>/localization/<lang>/cards.json` for both `eng` and `zhs`. Keys are flat and use
+the exact RitsuLib public entry (`MOD_CARD_TYPENAME`):
 
 ```json
 {
@@ -325,7 +324,7 @@ JSON.** No `.flavor` for cards (relics only).
 
 Calculated icon variables use the pinned `{EnergyGain:energyIcons()}` and
 `{StarGain:starIcons()}` tokens. A declared variable tooltip adds flat `.title` and
-`.description` entries to `localization/eng/static_hover_tips.json`; see
+`.description` entries to both required languages' `static_hover_tips.json`; see
 `reference/card-computed-values.md` for the deterministic entry stem and null-icon
 fallback.
 
@@ -360,6 +359,10 @@ content-pack Card registration. Do not create a second id rule.
 - [ ] Class is `public sealed` and extends `ModCardTemplate`.
 - [ ] Exactly one `.Card<TPool,TCard>()` registration exists in `MainFile.Content.cs`.
 - [ ] Constructor passes `cost, CardType, CardRarity, TargetType` to `base(...)`.
+- [ ] Energy and Star cost kinds/amounts match SPEC; fixed Star uses
+      `CanonicalStarCost`, Star-X uses `HasStarCostX`, and both X kinds are never combined.
+- [ ] Cost upgrades use `EnergyCost.UpgradeBy` / `UpgradeStarCostBy`; no manual Star store
+      or `OnPlay` payment substitutes for native payment.
 - [ ] `TargetType` matches the effect: `AnyEnemy` (targeted attack), `Self` (block /
       self-buff — NOT `AnyPlayer`, that's potions), `AllEnemies` (room).
 - [ ] An advanced target follows `reference/advanced-targeting.md`: one stable
@@ -378,13 +381,11 @@ content-pack Card registration. Do not create a second id rule.
 - [ ] `cards.json` has `<MOD>_CARD_<TYPE>.{title,description}` — flat public-entry keys,
       table `cards`; description uses `{Damage:diff()}` etc. so upgrades render.
 - [ ] All `Cmd`s `await`ed.
-- [ ] Scry, when selected, uses the one attributed `OpenModScry` helper; preserves Draw
-      order/history/hooks; and keeps its explicit singleplayer boundary.
 - [ ] `[T2MOD-SELFTEST]` diagnostic marker logged in `OnPlay`; load marker in MainFile;
       `SelfTest` independently asserts post-state.
 - [ ] A Quest Card is emitted only for the bounded forced-follow-up contract: cost `-1`,
-      Quest rarity/type, unplayable, no upgrades, one act/target, and unchanged hook inputs
-      outside that act.
+      Quest rarity/type, unplayable, no upgrades, one finite prioritized act-set/sequence
+      mapping, exact terminal consumption, and unchanged hook inputs outside that mapping.
 
 ## Full worked examples (verified vanilla, copy-adapt)
 
@@ -460,13 +461,11 @@ public sealed class Bulk : ModCardTemplate
 
 1. Build with `tools/build.py`; it packs the generated resource tree and deploys the
    Mod's own `.dll`, `.json`, and `.pck`. A no-art card loads with a placeholder
-   portrait — expected in M4, not a failure. If load *errors*, that's a repair signal.
+   portrait — expected, not a failure. If load *errors*, that's a repair signal.
 2. Run `verify.md`: Tier 1 checks the load marker; automated Tier 2 spawns/plays the card,
    asserts its concrete state delta, and greps the structured `state proof:` line.
    A calculated-value Card uses the focused behavior/presentation matrix in
    `reference/card-computed-values.md`.
-   A Scry Card instead uses the single focused visible-selector matrix in
-   `reference/scry-helper.md` and its `R6 scry helper complete ... observed=all` marker.
 3. Manual fallback only: dev console (backtick) → **`card <MOD>_CARD_<TYPE>`** → play it in
    combat and directly confirm the expected state change. The `played:` marker is diagnostic,
    not sufficient proof.

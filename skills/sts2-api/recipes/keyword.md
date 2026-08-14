@@ -44,10 +44,15 @@ For combat-time mutation, resolve the minted value once and use
 `card.AddModKeyword(value)` / `card.RemoveModKeyword(value)`. Do not generate a custom
 enum field or side-loaded keyword state.
 
+The Keyword itself never selects `reference/model-capabilities.md`,
+`reference/shared-effect-hooks.md`, or lifecycle state. When the described rule needs one of those
+routes, the actual Card, Power, or other model recipe owns and implements it.
+
 ## Behavior and localization
 
 Keep behavior in the host Card/Power/helper and gate it from the same keyword value when
-the rule is conditional. Ship `localization/eng/card_keywords.json`:
+the rule is conditional. Ship matching `localization/eng/card_keywords.json` and
+`localization/zhs/card_keywords.json`:
 
 ```json
 {

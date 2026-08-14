@@ -1,4 +1,4 @@
-# Build - compile and deploy the pinned RitsuLib Mod
+# Build - compile and deploy the local-runtime RitsuLib Mod
 
 Goal: validate the selected framework profile, build the Mod, and deploy only its own
 artifacts to the stable host.
@@ -11,67 +11,83 @@ python ${GAME_TOOLS_DIR}/build.py --project-dir <project path from MEMORY.md> --
 
 Before MSBuild, the tool verifies:
 
-- project package `STS2.RitsuLib.Compat.0.107.1` is exactly `0.5.4`;
+- the generated project has no framework `PackageReference`, uses the bundled
+  `Godot.NET.Sdk 4.5.1`, and references local STS2/RitsuLib assemblies;
 - no BaseLib/Alchyr dependency appears in the project or manifest;
-- the manifest depends only on `STS2-RitsuLib >= 0.5.4` and targets host `0.107.1`;
+- the manifest keeps the authoring API floor `STS2-RitsuLib >= 0.5.11` and targets host
+  `0.107.1` even when the scaffold-pinned local compile runtime is newer;
 - `has_pck` is `true` exactly when the authored Mod resource tree is non-empty;
+- when localization tables exist, require both `eng` and `zhs` directories with
+  identical table names, keys, and SmartFormat tokens plus nonempty localized values;
 - the installed host's `release_info.json` is stable `0.107.1`;
-- `mods/STS2-RitsuLib` contains the matching direct compat runtime or a variant-pack
-  `lib/0.107.1/STS2-RitsuLib.dll` with matching marker and manifest hash;
+- the game `mods/STS2-RitsuLib` directory or official Steam Workshop item `3747602295`
+  contains the scaffold-pinned local RitsuLib version with a matching direct compat runtime
+  or `lib/0.107.1/STS2-RitsuLib.dll` variant, marker, and manifest hash;
 - any generated Character `ancients.json` uses the pinned vanilla target catalog,
   contiguous dialogue/line structure, valid visit/repeat/Architect metadata, matching
-  Character entries, and identical keys across shipped languages.
+  Character entries, and identical keys across `eng` and `zhs`;
 - when present, `openmod/vanilla-overrides.json` has the pinned host/profile/catalog
   digest, matching Mod id, grounded baselines/routes, no same-Mod conflict, and only
-  operations promoted by the current catalog. M6.7.1 accepts the exact public Card routes
-  in `reference/vanilla-card-overrides.md`; M6.7.2 accepts the 44 exact visual routes and
-  validates their required/optional Mod-local resources through
-  `reference/vanilla-visual-overrides.md`; M6.7.3 accepts exact existing-Ancient option
-  append/replacement/page-flow routes in `reference/vanilla-ancient-overrides.md`, including
-  exact Adapter/dependency fingerprints and complete per-language `events.json` keys.
-  M6.7.4 accepts the exact epoch and Card/Relic/Potion pool routes in
-  `reference/vanilla-availability-overrides.md`, including complete pool baselines,
-  Relic/Potion override dependencies, and ordered primary-pool checks. Every other nonempty
-  route still fails closed.
+  operations the current catalog promotes. Each override family is accepted by its own
+  reference, and every route outside them fails closed:
+  - `reference/vanilla-card-overrides.md` — exact public Card routes;
+  - `reference/vanilla-visual-overrides.md` — the 44 exact visual routes, plus their
+    required/optional Mod-local resources;
+  - `reference/vanilla-ancient-overrides.md` — existing-Ancient option append/replacement
+    and page-flow routes, exact Adapter/dependency fingerprints, and complete per-language
+    `events.json` keys;
+  - `reference/vanilla-availability-overrides.md` — epoch and Card/Relic/Potion pool routes,
+    complete pool baselines, Relic/Potion override dependencies, and ordered primary-pool
+    checks;
+  - `reference/vanilla-non-card-overrides.md` — non-Card data and behavior routes, including
+    owner-hook streams and checked lifecycle replacements.
 
-After the build it checks the NuGet lock resolved the exact compat package, copies the
-Mod's DLL/manifest/PDB through the generated MSBuild target, packs
+The skill supplies the small `Godot.NET.Sdk 4.5.1` import files. `GodotSharp`,
+`System.IO.Hashing`, STS2, Harmony, and RitsuLib resolve from the checked local game/runtime
+installation. Build never downloads a framework package and never substitutes a newer local
+RitsuLib version for the one scaffold recorded; an explicit runtime-profile migration is
+required after a runtime upgrade.
+
+After the build it rejects a restore that reintroduced a framework package, copies the Mod's
+DLL/manifest/PDB through the generated MSBuild target, packs
 `<project-dir>/<ModName>/` when resources exist, and rejects a generated directory that
 contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
-For a new scaffold it also requires the deployed override manifest and compares its bytes
-with the source document that passed preflight. Legacy projects without a source override
-manifest remain valid.
+It also keeps the deployed Mod free of any loose `.json` other than `mod_manifest.json`: the
+game parses every `.json` under a Mod directory, at any depth, as a Mod manifest and logs a
+load error for each one without an `id`. `openmod/vanilla-overrides.json` is a build-time
+input that stays in the project directory; a copy left by an older build is deleted, and any
+other deployed non-manifest `.json` fails the build. Authored JSON belongs inside the `.pck`.
+Legacy projects with one `<ModName>.json`, or without a source override manifest, remain valid;
+a project containing both manifest names fails before MSBuild.
 
-`--runtime-dir <path>` may point at an explicitly selected runtime folder or release zip.
-`--skip-runtime-check` is a compile-only escape hatch and can never satisfy Tier 1.
+`--runtime-dir <path>` may point at an explicitly selected installed runtime folder. A release
+zip can be inspected separately but cannot be used to compile until it is installed.
 
 ## Expect
 
 - build summary: `0 warnings, 0 errors`;
-- profile lines report `frameworkVersion=0.5.4`, `host=0.107.1`, and `compat=0.107.1`;
-- `mods/<ModName>/` contains `<ModName>.dll`, `<ModName>.json`, optional PDB, and a PCK
+- profile lines report the exact scaffold-pinned compile version, exact `host=0.107.1`, and
+  exact `compat=0.107.1`;
+- `mods/<ModName>/` contains `<ModName>.dll`, `mod_manifest.json`, optional PDB, and a PCK
   only when the Mod owns resources;
-- RitsuLib remains in its separate `mods/STS2-RitsuLib/` folder.
+- RitsuLib remains separate in the game `mods/` directory or its official Workshop item.
 
-## Failure classes
+## On failure
 
-- `required compile asset ... Do not use the default beta-facing package` means the
-  project selected a floating/main package. Restore the pinned compat reference.
-- `host ... required stable 0.107.1` means the installed game branch is wrong. Stop; do
-  not compile against another host.
-- `no matching 0.107.1 RitsuLib variant` means the runtime asset is missing/wrong. Install
-  the compat zip or verified variant pack; do not fall back to a root beta DLL.
-- `[ancient-dialogue]` or an Ancient localization detail in the profile failure means the
-  generated flat table is structurally unsafe. Fix the reported semantic group/key; do not
-  bypass the preflight or enable the debug missing-Architect fallback.
-- `[vanilla-overrides]` with an Ancient target/route/page/localization/fingerprint detail
-  means the M6.7.3 manifest, generated flow, or `events.json` drifted. Fix the named
-  semantic operation or generated source; never relax the catalog or swap in a guessed
-  patch target.
-- `manifest has_pck must be ...` means authored localization/art/scenes and the manifest
-  disagree. Set the boolean to match the resource tree before rebuilding.
-- ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
+Read `${STS2_API_SKILL_DIR}/errors.md` § Build And Profile and match the exact signature
+before changing anything. It carries the cause and fix for every profile, manifest, pack,
+Ancient-dialogue, and vanilla-override failure this stage can emit.
+
+Before applying a fix, follow `repair.md` from the observed signature. A compiler or grounded
+package-path correction normally fixes the project directly, but a proposed fix that changes
+the accepted operation returns to DESIGN and SPEC for user acceptance.
+
+Two rules that decide *where* the fix goes, and are not in the catalog:
+
+- A `RitsuLib profile FAILED` / `RitsuLib restore FAILED` contract error is fixed in the
+  local runtime, bundled SDK, manifest, host, or runtime profile chosen at `scaffold.md`.
+  Never enter a C# repair loop for one.
+- Ordinary `CS*`/`MSB*` diagnostics go to `repair.md`, keyed by exact code and symbol.
 
 On success, mark `build` done in `PLAN.md`, record the resolved Mods path and profile in
-`MEMORY.md`, and continue to `verify.md`. If `--skip-runtime-check` was used, record that
-the runtime profile was not checked.
+`MEMORY.md`, and continue to `verify.md`.

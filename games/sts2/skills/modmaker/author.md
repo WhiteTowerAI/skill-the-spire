@@ -5,6 +5,28 @@ fill only the effect logic, add localization, and inject the shared diagnostics.
 Registration, model templates, localization-key derivation, and asset profiles come
 from the adapter rather than the user-facing SPEC.
 
+Before writing source, validate selected support routes and raw model-hook reachability:
+
+```powershell
+python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
+```
+
+Emit only current operations written in the human-readable SPEC. Every emitted content
+registration, behavior/data operation, selected presentation, and placeholder must follow its
+stated recipe/reference. Never emit deferred, out-of-scope, or unresolved-gap intent, and never
+add an unrequested convenience feature.
+
+If authoring reveals that the selected route cannot produce the accepted complete operation,
+stop before a workaround and follow `repair.md` from the observed failure. A local lowering
+omission may be corrected directly; a different visible result returns to DESIGN and SPEC for
+acceptance; an absent or broken shared route blocks consumer authoring.
+
+On revision, update only the confirmed delta and its direct consumers: behavior, localization,
+Event text, visual prompts/resources, Character identity, generated source, and SelfTest.
+Preserve stable runtime/localization identifiers unless the user changes identity. Re-run only
+affected PLAN stages and the nearest proportional host/check; do not schedule a full acceptance
+unless the user or active project plan explicitly selects it.
+
 Read `semantic-contract.md` first, then read the selected framework reference
 (`sts2-api/reference/ritsulib-adapter.md` for the current target). RitsuLib-specific
 snippets live in that reference and the surface recipe it routes to; do not copy a
@@ -45,59 +67,98 @@ second framework branch into this file.
   declares a card enchantment, read `recipes/enchantment.md`, author
   `ModEnchantmentTemplate`, register it through `.Enchantment<T>()`, and attach it through
   `CardCmd.Enchant<T>`; never substitute an unrelated run-level Modifier. If SPEC declares
+  a combat Card Affliction, read `recipes/affliction.md`, register one
+  `ModAfflictionTemplate` through `.Affliction<T>()`, and apply/clear it only through
+  `CardCmd.Afflict<T>` / `AfflictAndPreview<T>` / `ClearAffliction`. If SPEC declares a selected
+  run Modifier, read `recipes/modifier.md`, register exactly one good/bad polarity and its selected
+  sort/exclusivity contract, and keep new-run and load behavior distinct. If SPEC declares a
+  Global Effect, read `recipes/global-effect.md`, register `HookedSingletonModel` through
+  `.Singleton<T>()`, select exactly Run or Combat, and attach mutable state to the concrete scope.
+  If SPEC declares an independent Rest Site action, read `recipes/rest-site.md` plus
+  `reference/rest-site-options.md` and select its standalone/Card/Relic/Modifier owner. If SPEC declares
+  a complete Act, read `recipes/act.md`, implement every required `ModActTemplate` gameplay
+  member, register it through `.Act<T>()`, and select exactly one force/uniform/weighted
+  singleplayer entry policy. Registration alone is not reachability. If SPEC declares a new
+  Ancient, read `recipes/ancient.md`, implement `ModAncientEventTemplate`, and register it
+  exactly once through `.SharedAncient<T>()` or `.ActAncient<TAct,T>()`; do not lower it as an
+  ordinary Event or as an existing-Ancient override. If SPEC declares a custom Reward, read
+  `recipes/reward.md`, register its Mod-owned dynamic type once, implement `ModCustomReward`, and
+  keep payload reconstruction separate from awaited `OnSelect()` effects. If SPEC declares
   a custom orb, read `recipes/orb.md`, author `ModOrbTemplate`, register it through
   `.Orb<T>()`, and make the real host channel it via
   `OrbCmd.Channel<T>`; preserve separate passive and evoke observations, and keep the
   recipe's checked icon plus explicit Spine-scene/channel-SFX fallbacks. For an **enemy
-  encounter** (`element: enemy encounter`), read `recipes/monster.md` and author BOTH the
-  RitsuLib `ModMonsterTemplate` and `ModEncounterTemplate` it spawns as one slice. Register
-  both exactly once through the scaffold's content pack, with an explicit encounter
-  `RoomType`. Implement SPEC's compact move contract with `MoveState`, explicit `FollowUpState`,
-  and `ConditionalBranchState` only where declared. Use the recipe's grounded intent/effect
+  encounter graph** (`element: enemy encounter`), read `recipes/monster.md`. Author every
+  selected `ModMonsterTemplate` and `ModEncounterTemplate` as a separate registered node,
+  then lower the exact roster edges; register each identity once with an explicit encounter
+  `RoomType`. Implement SPEC's move contract with `MoveState`, explicit `FollowUpState`,
+  `ConditionalBranchState`, and the supplied move-machine RNG for selected positive-weight
+  random branches only. Use the recipe's grounded intent/effect
   patterns for buff/Power, debuff, block/heal, multi-hit, and composite actions. Monster
   attacks use `.FromMonster(this).Execute(null)` (**never** `.Targeting()`), and the
-  diagnostic trigger marker goes on the enemy's move; do not model the pair as two
-  `elements` + an interaction. Keep the recipe's checked static-body factory plus explicit
+  diagnostic trigger marker goes on the enemy's move. Keep the recipe's checked static-body
+  factory plus explicit
   fallback scene; animation is outside this pass. For an **event / World Node** (`element: event`),
   read `recipes/event.md`: author one `ModEventTemplate`, flat nested `events.json`,
   explicit `EventOption` keys, public-Cmd consequences, and explicit page/finish flow;
   register it once with `.SharedEvent<T>()` or `.ActEvent<TAct,T>()` and add no `[Pool]` or
   manual `AddEvent`.
+  If SPEC declares **`hook participation`** on any surface, also read
+  `reference/model-hook-participation.md` before writing the override. It owns the three
+  declaration shapes, the per-surface owner property, and the guard-value-neutral body. Write the
+  neutral return on every path outside the guard and read a rules-text number back from
+  `DynamicVars` rather than repeating a literal. An Enchantment uses its five `Enchant*`
+  replacements for damage, block, and play count; the general hooks are wrong there. Never
+  contribute a Rest Site option through the raw hook — use `reference/rest-site-options.md`.
   Also read `reference/event-outcomes.md` when SPEC includes selections, rewards,
   conditional pages, or special combat; read `reference/event-vfx.md` when it selects
   `portrait_halo`; read `reference/event-text-effects.md` when descriptions select bounded
   vanilla text effects; read `reference/event-option-presentation.md` when enabled options
   select typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings; read
-  `reference/event-native-presentation.md` when options select native Card/relic
-  acquisition presentation, `weak_short` screen shake, or built-in `trial_noble` VFX; read
-  `reference/forced-followup-event.md` when SPEC selects its Quest Card -> target Event
-  composition. For a
+  `reference/event-native-presentation.md` when options select ordered native Card/relic
+  acquisitions, `weak_short`/`strong_normal` screen shake, or built-in `trial_noble` VFX;
+  read `reference/forced-followup-event.md` when SPEC selects any finite prioritized Quest
+  Card mapping or sequence. For a
   **Character Foundation** (`element: character`), read
   `recipes/character.md`: use `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>` and
-  the three `TypeList*PoolModel` bases, fill exact starters/HP/Gold/loc, and register the
-  Character plus starters/members once through the content pack.
+  the three `TypeList*PoolModel` bases, fill exact HP/Gold/MaxEnergy/Orb slots, starters,
+  typed pools, and localization, and register the Character plus starters/members once
+  through the content pack.
   If SPEC selects any Character art profile or richer resource/buffer presentation, also
   read `reference/character-presentation.md` and obey its per-consumer promotion/fallback
   boundary. If SPEC selects native Ancient/Architect dialogue, read
   `reference/ancient-dialogue.md` and use only its localization route.
-  If SPEC selects a character resource, read `reference/character-resource.md`; if it
+  If SPEC selects one or more secondary resources, read `reference/character-resource.md`; if it
   selects a bounded ordered semantic buffer/dynamic output, read
   `reference/ordered-card-buffer.md`.
-  For every **custom card pile**, read `reference/card-piles.md`. Register all piles in
+  For every **card pile**, read `recipes/card-pile.md` and `reference/card-piles.md`. Register all piles in
   the same deferred content pack, lower every documented scope/style/anchor/open/view/
   visibility/hotkey/ExtraHand consumer selected by SPEC, and use awaited native pile Cmds
   for every movement. The Package route is not limited to ExtraHand or to previously
   exercised UI presets.
+  For a **runtime UI** workflow, read `recipes/runtime-ui.md` and
+  `reference/lifecycle-state-rng.md`. Keep selected top-bar, Toast, runtime-hotkey, local Capstone,
+  Catalog/floating-window, search-expansion, fixed public node-attachment, and Mod-scoped shell-token
+  pieces under one coordinator. Register at the recipe's required host phase, use only
+  `NetScreenType.None`, keep per-frame/search callbacks within their purity and bounded-work
+  contracts, and dispose every retained handle and owned node/content at the declared lifetime.
+  Do not emit Settings, Progression, post-run Badge, Telemetry, Multiplayer, Update Check, or a
+  connection to one of those deferred families.
   A selected resource UI uses RitsuLib's public `RegisterCombatUi` route from
-  `reference/character-resource.md`. If another capability has no documented public
-  game/framework seam, report a pack gap. Do not invent alternative-energy patches,
-  C/D access, assembly-wide `PatchAll`, or `OpenMod.Runtime`.
+  `reference/character-resource.md`. A capability with no documented public game/framework
+  route is a pack authoring gap; the specific substitutes to refuse here are alternative-energy patches,
+  C/D access, assembly-wide `PatchAll`, and `OpenMod.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
-  building blocks, and the loc-key derivation rule. Do **not** guess API names — if
-  the effect needs a Cmd not in the recipe, follow `grounding.md` — at runtime that
-  means the rest of the pack (`reference/mechanics.md`, `build-constraints.md`,
-  snapshots, `errors.md`), and if it's genuinely not there, report a pack gap. Never
-  invent a Cmd name — that's the #1 way the repair loop burns its attempts.
+  building blocks, and the loc-key derivation rule. When SPEC has an ordered
+  `effects.sequence` containing an ordinary player-visible effect, read
+  `reference/effect-primitives.md` once. Take exact command lowering and required inputs from
+  that reference, take callback/context/owner/source/target bindings from the selected surface
+  page, and emit each awaited call in SPEC order. If the callback lacks a required input, stop
+  and name that input plus the applicable specialized route; do not use live grounding or invent
+  a substitute for a maintained primitive. For a different family the selected recipe lacks,
+  follow `grounding.md` through the rest of the shipped pack (`reference/mechanics.md`,
+  `build-constraints.md`, snapshots, `errors.md`). An invented Cmd is the #1 way the repair loop
+  burns its attempts.
 - If a Card SPEC selects non-`none` **hand emphasis**, read
   `reference/card-hand-emphasis.md`. Preserve every ordered rule, lower a lone gold/red
   rule through its native channel, or lower all competing/custom rules through one typed
@@ -112,14 +173,14 @@ second framework branch into this file.
   Mod-local target registration, use only its implemented consumer/mode matrix, and stop
   authoring for the limited `potion + many`; do not generate a lifecycle patch or
   restore a consumed Potion.
-- If SPEC has a non-`none` **state** block, also read
-  `reference/stateful-mechanics.md` before writing the hook. Implement its event,
-  threshold/phase, lifetime, reset, persistence, UI meaning, and proof as one contract;
-  never infer lifetime from the C# field that happens to be easiest.
-- If a Relic SPEC has an **owned Rest Site option**, read
-  `reference/rest-site-options.md` before writing either class. Keep its current
-  Relic/singleplayer/free-or-fixed-Gold boundary and stop for a Card/Modifier owner,
-  post-payment choice, arbitrary transaction, same-site repeat, or multiplayer request.
+- If SPEC selects **bounded state**, also read `reference/stateful-mechanics.md`.
+  Emit only the selected bounded schemas, exact owners/listeners, transitions, reset,
+  persistence, visibility, consumers, and outputs; never infer lifetime or a transition from
+  the C# field or hook that happens to be easiest.
+- For every standalone/Card/Relic/Modifier **Rest Site option**, read `recipes/rest-site.md` and
+  `reference/rest-site-options.md` before writing owner/option classes. Keep its
+  singleplayer/free-or-fixed-Gold boundary and stop for a post-payment choice, arbitrary
+  transaction, same-site repeat, or multiplayer request.
 - Make every generated `.cs` file namespace-complete on its own. Copy the `using` required
   by every symbol into the file that uses it; never rely on a different snippet, file, or
   non-global import. In particular, `RegisterPatch<T>()` requires
@@ -190,16 +251,18 @@ second framework branch into this file.
 - Lower `stay` directly. Lower `page` and `finish` only through the two fixed fingerprinted
   `SetEventState` and `Done` UnsafeAccessor helpers in the reference. `Done()` owns native
   choice history; never substitute `StartPreFinished()` or hand-edit Ancient state.
-- Put every option `.title`/`.description` and page description in every shipped language's
+- Put every option `.title`/`.description` and page description in both required languages'
   `<ModName>/localization/<lang>/events.json`. Do not put these behavior keys in
   `ancients.json`, which remains the custom-Character dialogue table.
 - Emit one exact checked manifest operation per target route. Multiple appends may compose;
   one same-target replacement conflicts with every append/replacement in this Mod. Selected
-  M6.7.2 Ancient/Event visuals remain separate manifest operations and contain no scripts.
+  Ancient/Event visual overrides remain separate manifest operations and contain no scripts.
 - Preserve the vanilla Ancient class, ModelId, room, opening dialogue, save identity,
-  allowance gate, ambient audio, and native finish lifecycle. Stop for a new Ancient,
-  global dialogue replacement, random/RNG rewrite, special combat, direct room transition,
-  multiplayer, or any prompt-derived private/patch route.
+  allowance gate, ambient audio, and native finish lifecycle. A request for a new Ancient
+  routes separately through `recipes/ancient.md`; it is never implemented by changing this
+  override package. Stop this override route for global dialogue replacement, random/RNG
+  rewrite, special combat, direct room transition, multiplayer, or any prompt-derived
+  private/patch route.
 
 **Existing vanilla availability** — add `<ModName>Code/VanillaOverrides/AvailabilityOverrides.cs`
 and follow `reference/vanilla-availability-overrides.md` exactly:
@@ -249,222 +312,26 @@ and follow `reference/vanilla-availability-overrides.md` exactly:
   complete semantic body in `openmod/vanilla-overrides.json`. Stop one unsupported operation
   explicitly instead of hiding raw Harmony/reflection/IL in an otherwise valid file.
 
-**Relic** — add `<ModName>Code/Relics/<RelicName>.cs`. Use the recipe skeleton, then:
+**Relic** — see `surfaces/relic.md` § Author the element class.
 
-- Set `Rarity` from SPEC.
-- Extend `ModRelicTemplate` and add exactly one `.Relic<TPool,TRelic>()` step to
-  `MainFile.Content.cs`. The content-pack pool generic is the availability contract.
-- Override the hook matching SPEC's trigger (recipe's "Trigger hooks" table). For
-  combat-start: `AfterSideTurnStart` + `participants.Contains(Owner.Creature)` +
-  `Owner.PlayerCombatState!.TurnNumber <= 1` guards.
-- Fill **only** the effect block with the confirmed Cmds/RNG from the recipe. `await`
-  every Cmd. Use `Rng`, never `System.Random`. Call `Flash()` when it visibly triggers.
-- For stateful relics, follow `reference/stateful-mechanics.md`: run-lifetime progress is
-  a `SavedAttachedState<SpecificRelic, int/bool>` whose name includes the Mod id and is
-  never cleared at combat end; combat-local fixed/periodic turns read
-  `PlayerCombatState.TurnNumber`. Any visible mutation calls
-  `InvokeDisplayAmountChanged()` after updating the attached value.
-- For a Relic-owned Rest Site action, author one separate `ModRestSiteOptionTemplate` and
-  contribute it through the owner's `TryModifyRestSiteOptions`. Separate `ShouldOffer`
-  from `CanPay`, reject duplicate `OptionId`, share `CanPay` between `IsEnabled` and the
-  first line of `OnSelect`, and mutate repeatability only after the awaited deterministic
-  outcome. Resolve missing custom art to the native Heal option image explicitly.
-- For extra badges, implement `IRelicExtraIconAmountLabelSpecsProvider`; return only active
-  bounded specs in SPEC order, never exceeding three distinct safe corners, and add
-  `IRelicExtraIconAmountLabelsChangeSource` only when the label state changes without
-  `InvokeDisplayAmountChanged()`.
+**Potion** — see `surfaces/potion.md` § Author the element class.
 
-**Potion** — add `<ModName>Code/Potions/<PotionName>.cs` and extend
-`ModPotionTemplate`:
+**Card** — see `surfaces/card.md` § Author the element class.
 
-- Override the three abstract props: `Rarity`, `Usage` (`CombatOnly`/`AnyTime`),
-  `TargetType` (self-buff = `AnyPlayer`, not `Self`; one enemy = `AnyEnemy`).
-- For an advanced `mode: one` target, use the registered value and the single-Potion
-  route from `reference/advanced-targeting.md`. `mode: many` is unsupported on the pinned
-  profile and must stop authoring.
-- Add exactly one `.Potion<SharedPotionPool,TPotion>()` step to `MainFile.Content.cs`.
-  Use another pool only when SPEC makes the Potion character-specific; do not add a pool
-  attribute or a per-Mod Potion base.
-- Fill **only** the `OnUse` effect block with confirmed Cmds (`CreatureCmd.Damage/
-  GainBlock/Heal`, `PowerCmd.Apply<T>`, `PlayerCmd.*`), using `ValueProp.Unpowered`
-  for damage/block. `await` every Cmd; call `AssertValidForTargetedPotion(target)` first.
-- Put an optional loose PNG in `PotionAssetProfile`; omit the override for the checked
-  placeholder fallback.
+**Custom power** — see `surfaces/power.md` § Author the element class.
 
-**Card** — add `<ModName>Code/Cards/<CardName>.cs` and extend `ModCardTemplate`:
+**Custom keyword** — see `surfaces/keyword.md` § Author the element class.
 
-- Pass `cost, CardType, CardRarity, TargetType` to `base(...)`. A card that targets the
-  player uses `TargetType.Self` (NOT `AnyPlayer` — that's potions).
-- For an advanced target, pass the registered value from
-  `reference/advanced-targeting.md`. A single Card uses `cardPlay.Target`; a multi Card
-  gates zero candidates through `IsPlayable`, executes once with `null`, and resolves the
-  live creature list with `GetTargets()` inside `OnPlay`.
-- Add exactly one `.Card<TPool,TCard>()` step to `MainFile.Content.cs`; use
-  `ColorlessCardPool` unless SPEC selects a character pool. Do not add a pool attribute.
-- Declare static scaling numbers in `CanonicalVars`
-  (`DamageVar`/`BlockVar`/`PowerVar<T>`), never literals; bump them in `OnUpgrade()`.
-  For a SPEC calculated value, instead follow `reference/card-computed-values.md`: emit
-  one pure bounded helper, select the matching computed variable role, account for upgrade
-  preview and play-transition timing, and execute through the matching `Compute*Value`
-  extension. `PreviewValue` remains display-only and `BaseValue` is not a computed result.
-- Fill **only** the `OnPlay` effect block with the recipe's confirmed Cmds
-  (`DamageCmd.Attack(...).FromCard(this).Targeting(...).Execute(...)`, `CreatureCmd.GainBlock`
-  with the `cardPlay` overload, `PowerCmd.Apply<T>`). Null-check `cardPlay.Target` on a
-  targeted card. `await` every Cmd. If a custom power is needed, author it first
-  (`recipes/power.md`) and register it once through `.Power<T>()`.
-- If SPEC selects Scry, read `reference/scry-helper.md`, emit its attributed
-  `<ModName>Code/Helpers/OpenModScry.cs`, and await `OpenModScry.Execute` from `OnPlay`
-  using the real `PlayerChoiceContext`, `Owner`, and a scaling `DynamicVar("Scry", X)`.
-  Do not add BaseLib, a global hook/service, or a multiplayer fallback.
-- For hand emphasis, keep one native gold/red rule on the Card or append one typed ordered
-  ruleset to the existing content-pack builder. Generate fixed colors with
-  `RefreshEveryFrame: false`; stop if the condition can change without a normal combat-state
-  refresh.
+**Card enchantment** — see `surfaces/enchantment.md` § Author the element class.
 
-**Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend
-`ModPowerTemplate`:
+**Custom orb** — see `surfaces/orb.md` § Author the element class.
 
-- Add exactly one `.Power<TPower>()` step to `MainFile.Content.cs`; do not rely on
-  reflection discovery or add a pool attribute.
-- Declare `Type`, `StackType`, and the SPEC amount domain. Clamp caller-owned changes and
-  use `PowerCmd.ModifyAmount` to consume an existing nonnegative Counter.
-- Emit `.title`, `.description`, and `.smartDescription` under the exact normalized public
-  entry. Use `PowerAssetProfile` only for checked icon paths.
-- For extra badges, implement `IPowerExtraIconAmountLabelSpecsProvider`; return only active
-  bounded specs, never exceeding one `TopLeft` label, and add
-  `IPowerExtraIconAmountLabelsChangeSource` only when the label state changes without
-  `InvokeDisplayAmountChanged()`.
+**Enemy encounter graph** — see `surfaces/monster.md` § Author the element classes. Emit
+the selected Monster and Encounter nodes plus exact roster edges, with no `[Pool]` on either.
 
-**Custom keyword** — register it once with
-`.CardKeywordOwnedByLocNamespace(...)`, keep `iconPath: null`, and attach the minted native
-`CardKeyword` through `CanonicalKeywords` or the runtime add/remove helpers. The keyword
-owns vocabulary and tooltip text only; implement its named behavior in the host.
+**Event / World Node** — see `surfaces/event.md` § Author the element class.
 
-**Card enchantment** — extend `ModEnchantmentTemplate`, register it once through
-`.Enchantment<T>()`, and attach it with `CardCmd.Enchant<T>`. Keep amount, host restriction,
-and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
-`EnchantmentAssetProfile`; placeholder mode omits it.
-
-**Custom orb** - add `<ModName>Code/Orbs/<OrbName>.cs` from `recipes/orb.md` and extend
-`ModOrbTemplate`:
-
-- Add exactly one `.Orb<TOrb>()` step to `MainFile.Content.cs`. Implement channel,
-  passive, and evoke as separate behavior contracts through a real Card/relic/power host.
-- Generated art is one 100x100 icon shared by the smart tooltip and trigger flash. Use the
-  checked `OrbAssetProfile` Frost fallback when it is absent.
-- Override the protected `ChannelSfx` with the verified Frost event. The icon is not the
-  persistent combat body; `ContentAssetProfiles.Orb("frost_orb")` retains the Frost Spine
-  scene until custom animation is separately proven.
-
-**Enemy encounter** — author two classes as one slice (see `recipes/monster.md`), no
-`[Pool]` on either:
-
-- `<ModName>Code/Monsters/<Name>.cs` extends `ModMonsterTemplate`: set `MinInitialHp`/
-  `MaxInitialHp` (equal for deterministic HP), then translate every SPEC move to one
-  `MoveState` whose intent list matches every visible effect. Link deterministic order with
-  explicit `.FollowUpState`; for a declared condition, add one `ConditionalBranchState`
-  with exhaustive ordered predicates and include it in the machine's state list. A
-  self-buff/custom Power uses `PowerCmd.Apply<T>` on `Creature`; a player debuff applies to
-  `targets`; block/heal use `CreatureCmd.GainBlock/Heal`; multi-hit uses matching
-  `MultiAttackIntent(N, R)` + `.WithHitCount(R)`; a composite move lists and awaits every
-  effect in order. Every attack ends with `.FromMonster(this).Execute(null)` — **never
-  `.Targeting()`** (that is the card pattern and it hangs the enemy turn).
-- Declare `ModVisualPath` at `images/monsters/<slug>.png`; existence-check it in
-  `TryCreateCreatureVisuals()` and call
-  `RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>` only when present. Keep
-  `MonsterAssetProfile` on `creature_visuals/fallback` for the missing-file branch, and set
-  `HasDeathSfx => false`. Never put the PNG in the profile's scene path.
-- If the monster needs a custom buff/debuff, author its power from `recipes/power.md` and
-  include all three `powers.json` keys. A buff is not proven by attachment alone: SPEC and
-  Tier 2 must observe its downstream effect on a later move.
-- `<ModName>Code/Encounters/<Name>Encounter.cs` extends `ModEncounterTemplate`, overrides
-  `RoomType => RoomType.Monster`, `IsValidForAct`, and `AllPossibleMonsters`
-  (`ModelDb.Monster<T>()`), and `GenerateMonsters()` (`ModelDb.Monster<T>().ToMutable()` +
-  slot, `null` slot ok). Add one `.Monster<T>()` plus one `.ActEncounter<TAct,T>()` or
-  `.GlobalEncounter<T>()` to `RegisterContent()`; do not add a second registration path.
-
-**Event / World Node** — create `<ModName>Code/Events/` and add `<Name>.cs` from
-`recipes/event.md`:
-
-- Extend `ModEventTemplate`; no `[Pool]`, constructor/manual registration, or second content
-  pack. Use `.SharedEvent<T>()` for all-act placement or `.ActEvent<TAct,T>()` when scoped.
-- For a forced follow-up, also author the one unplayable Quest Card exactly from
-  `reference/forced-followup-event.md`: Quest type/rarity, cost `-1`, no upgrades, and the
-  two public hook overrides guarded by the exact act. The target Event returns false from
-  `IsAllowed`; do not place it in the ordinary Event pool. The source grant rejects a
-  duplicate, and the named target option completes/removes all matching tokens.
-- Ship flat `events.json` keys for the normalized Event entry, `INITIAL`, every explicit
-  option key, and every result page. Use `InitialOptionKey`/`ModOptionKey`; callback method
-  names do not mint localization keys.
-- `GenerateInitialOptions()` returns the authored options. Each method uses the confirmed
-  public Cmd/selection/reward vocabulary against `Owner`, awaits blocking overlays, logs
-  the observed state delta, then follows SPEC with `SetEventFinished`, `SetEventState`, or
-  one special-combat transition.
-- If any option enters combat, author its monster + encounter dependency from
-  `recipes/monster.md`, set `IsShared => true`, and call
-  `EnterCombatWithoutExitingEvent<TEncounter>(extraRewards, shouldResumeAfterCombat)`.
-  A resumable branch overrides `Resume(AbstractRoom)` and restores its exact named page;
-  a terminal branch proceeds to the map. Never emit a second combat from the same mutable
-  Event instance or a direct merchant/rest/treasure room transition.
-- Fill `EventAssetProfile.InitialPortraitPath` with the recipe's existence check: use the generated
-  `images/events/<event-slug>.png` when present, otherwise the verified vanilla
-  `this_or_that.png` fallback, and filter the missing convention-derived path from
-  `GetAssetPaths`. For every explicitly requested page portrait, check
-  `images/events/<event-slug>_<page-key-lower>.png` and call `NEventRoom.SetPortrait`
-  immediately before the page transition; when absent, retain the current portrait. Clean
-  owned portrait child nodes before a switch.
-- When SPEC selects `portrait_halo`, emit the exact bounded helper from
-  `reference/event-vfx.md`, attach page profiles through `OnRoomEnter`/the portrait host,
-  honor Instant/Fast mode, and explicitly `QueueFreeSafely` every owned named root before
-  page, portrait, combat, or finish transitions. Do not promote RitsuLib's arbitrary custom
-  VFX/layout routes. Custom phobia
-  art, arbitrary VFX, custom layouts, and Ancient background assets remain unsupported.
-- When SPEC selects vanilla Event text effects, apply only the exact bounded tags from
-  `reference/event-text-effects.md` around the named phrases in `events.json` page/option
-  descriptions. Keep titles plain; emit no helper node or cleanup code.
-- When an enabled option selects typed Hover Tips, pass the exact grounded
-  `HoverTipFactory` values through `EventOption`; do not emit a locked-option workaround. For
-  relic-backed presentation, use `CreateModRelicOption<T>` for native title/description/metadata and
-  keep semantic acquisition in a separate awaited `RelicCmd.Obtain<T>`. Preserve the
-  normal-layout relic image as a presentation gap rather than generating an Ancient Event.
-- When a choice pays HP or Max HP, apply `ThatDoesDamage` or `ThatDecreasesMaxHp` to the
-  generated option using the exact decimal cost used by its Cmd. The helper is warning-only,
-  and its exact-cost boundary is inclusive; never substitute differently rounded values or
-  warning-colored text.
-- When a choice acquires a Card, await one `CardPileCmd.Add` and pass that exact successful
-  result to `CardCmd.PreviewCardPileAdd`; when it acquires a relic, emit exactly one awaited
-  `RelicCmd.Obtain<T>`. Do not create duplicate models or custom preview holders.
-- When SPEC selects `weak_short`, call `NGame.Instance?.ScreenShake(ShakeStrength.Weak,
-  ShakeDuration.Short)` once after the named successful consequence and before its page
-  transition. Never read or replace the player's multiplier.
-- When SPEC selects `trial_noble`, emit the exact preloaded scene/portrait-host helper from
-  `reference/event-native-presentation.md`, keep its vanilla `(292,68)` placement and
-  inherited process mode, and `QueueFreeSafely` the owned named root before transitions.
-
-**Character Foundation** - use the pinned scaffold and `recipes/character.md`:
-
-- Fill `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>` with every required public
-  abstract member. Extend the three public `TypeList*PoolModel` bases.
-- Register the Character, exact Basic starters, Starter relic, every concrete pool member,
-  and every supporting Power once through one content pack. Do not instantiate the
-  character, add pool attributes, or add a second registration path.
-- If Shop/static merchant is selected, author enough unlocked non-Basic cards to provide
-  at least two Attacks, two Skills, and one Power after filters; the native merchant fills
-  those exact slots and otherwise throws before its UI appears.
-- Add all 14 normalized `characters.json` values and a complete repeating Architect
-  dialogue. When SPEC selects other Ancient targets or richer Architect groups, lower the
-  semantic blocks through `reference/ancient-dialogue.md`; do not author an injection patch.
-- Keep `CharacterAssetProfile` partial fallback semantics; selected Character static
-  profiles fill only the matching fields after headed proof. When combat cues are selected,
-  read `reference/character-combat-cues.md` and emit only its private combat-owned
-  Idle/Attack/Hit/Dead state machine; never fill profile-global `VisualCues`. A
-  Foundation-only SPEC emits no patch infrastructure. A resource SPEC
-  registers one `SecondaryResourceDefinition`, uses `SecondaryResourceCmd` for amount and
-  all-or-nothing payment, and mounts the fixed control through public `RegisterCombatUi`.
-  An ordered-buffer SPEC uses `AttachedState<PlayerCombatState,TState>`, native source-card
-  result piles, visible state text, and one configured output card. Never emit a retained-
-  card `CustomPile` without a separately grounded UI lifecycle. Keep proof-only observers
-  and assertions out of generated gameplay.
+**Character Foundation** — see `surfaces/character.md` § Author the element class.
 
 **Counter Power amount-domain gate (applies to every source element)** — before writing
 any custom Counter mutation, read that Power's `amount domain` from SPEC. The default
@@ -492,7 +359,7 @@ tier-1 verify silently finds nothing. Use the shared envelope from
 `semantic-contract.md`:
 
 ```csharp
-Logger.Info("[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
+Logger.Info($"[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion={Const.Version} host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
 Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 
@@ -522,53 +389,22 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    room entry is scenario-specific. Keep it in the **same namespace as `MainFile.cs`**
    (`<ModName>.<ModName>Code`) so it reaches `MainFile.Logger`.
 2. Fill **exactly one** source DRIVER body based on the source element's real type:
-   **relic** → `BeforeCombat` (grant it, its `AfterSideTurnStart` fires on its own);
-   **card** → `InCombat` (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`);
-   **potion** → `InCombat` (`TryToProcure` → `EnqueueManualUse`);
+   Each surface owns its driver body in `surfaces/<element>.md` § Self-test driver body:
+   **relic**, **card**, **potion**, **enemy encounter**, **event**, and **character**. A
+   **power**, **keyword**, or **enchantment** has no scenario of its own and adds its
+   assertions to its host Card's run; an **orb** is driven through its channel host.
+   The shared declarations below apply across those drivers.
    **advanced target** → keep the same real Card/Potion driver, then use
    `reference/advanced-targeting.md` to assert exact affected creature IDs, payment or
    Potion retention on cancellation, normal Card result pile, zero/one/multiple legal
    candidates, and queued target invalidation. Headed mouse/controller/reticle checks stay
    separate from the structured state proof.
-   **enemy encounter** → the **`CombatEnemy`** variant: enter the custom encounter via
-   `ModelDb.Encounter<TEncounter>().ToMutable()` + `EnterRoomDebug`, confirm the monster in
-   `Enemies` (`e.Monster is TMonster`), and use the reference page's multi-turn helper. Before
-   each `PlayerCmd.EndTurn` assert `NextMove.Id` plus its intent types/repeat count; afterward
-   require the player's `TurnNumber` to advance, assert the matching
-   `MonsterPerformedMoveEntry`, and inspect `CreatureAttackedEntry.DamageResults` plus the
-   exact player/monster HP, Block, and Power states. Force every conditional outcome through
-   its real state condition. Do NOT apply `PlatingPower` in this scenario (enemy hits must
-   remain observable).
-   **event** → the **`MapNode`** variant: enter the canonical custom event with
-   `EnterRoomDebug(RoomType.Event, MapPointType.Unknown, ModelDb.Event<T>())`, wait for its
-   real `NEventOptionButton`, read formatted nested loc, and drive every independent SPEC
-   outcome family through real UI. Await card/reward overlays; identify the special
-   encounter; prove the named `Resume` page or direct map branch; assert one combat per
-   Event instance. For `portrait_halo`, assert movement/static Fast Mode behavior, visible
-   headed pages, and explicit cleanup across page/combat transitions. For bounded rich
-   text, assert the real `%EventDescription` host, installed effects, exact tagged
-   localization, and a second page replacing the first page's tagged text.
-   For native acquisition, `weak_short`, or `trial_noble`, use the combined headed proof
-   from `reference/event-native-presentation.md`: exact Card/relic deltas, real preview and
-   relic-inventory consumers, preference-aware shake movement/return, settled Event text,
-   exact built-in scene host/position/process mode, and complete preview/VFX cleanup.
-   For a bounded forced follow-up, use that reference's variant instead of direct canonical
-   entry: prove no-token and wrong-act pass-through, force both hooks in the target act,
-   enter one real Unknown MapPoint, click the target option, and prove token consumption
-   plus restored hook outputs in the same headed run.
-   **character** → the **`RunStart` + `CombatPlayer`** variant: locate the real custom
-   character button by normalized icon resource path, click it and Confirm, wait for
-   `NRun.GlobalUi`, assert runtime HP/pools/starter multisets, enter combat, then assert
-   designed `MaxEnergy` and the starter mechanic's independent state delta. When selected,
-   also enter real RestSite/Shop hosts and assert background/rest/merchant/full-energy
-   resources through `CharacterAssetProfile`. Never select the first unlocked vanilla
-   character or require the historical static-merchant patch.
-   **character resource** → use `reference/character-resource.md`: in combat 1 drive real
-   assert the public `RegisterCombatUi` attachment and `SecondaryResourceCmd` amount, then
-   drive real gain and spender cards, affordable/unaffordable cases, successful/rejected
-   payoff, floor, and live counter refresh. Assert the 220x32 control at offset 160 is
-   disjoint from native Energy, then enter combat 2 and assert distinct zero state plus
-   reset counter. Finish with `resource UI complete ... observed=all`.
+   **secondary resources** → use `reference/character-resource.md`: derive checks only for
+   the definitions, persistence/turn-start policies, Card uses, shortfall behavior, committed
+   payoffs, and UI consumers selected by SPEC. Drive affordable/unaffordable and rejected
+   cases for each selected payment role, assert authoritative ledger results and resource
+   bounds, and inspect non-overlap for each selected visible consumer. Add a second combat or
+   run-save boundary only when that selected lifecycle requires it.
    **ordered semantic buffer/dynamic output** → use `reference/ordered-card-buffer.md`: drive
    real source cards through their native result piles, assert attached-state order/capacity/
    non-destructive overflow and visible state, compile/clear the ordered snapshot, assert
@@ -588,28 +424,30 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    run-lifetime `SavedAttachedState` additionally round-trips through
    `SavedProperties.From`/`Fill`; a run cadence must enter a second combat rather than
    mutating the attached value directly to simulate carry-over.
-   A **Scry card** selects the focused `CombatPlayer` variant in
-   `reference/scry-helper.md`: cover zero/empty/short with an automated selector, then
-   play the real Card and prove the visible `NSimpleCardSelectScreen`, pending play task,
-   selected/unselected order, normal source result pile, discard history, and one known
-   `AfterCardDiscarded` effect. Keep the whole matrix in one headed run and retain the
-   singleplayer assertion.
-   A **calculated-value Card** uses the focused matrix in
-   `reference/card-computed-values.md`: cover Damage/Block modifiers, zero and changing
-   Energy/Star icon counts, raw versus amount-given typed Power, base/upgrade display, and
-   the real hand-Card tooltip. Structured post-state proves behavior; headed observation
-   separately proves text, icon reflow, and tooltip presentation.
-   A **Relic-owned Rest Site option** uses the focused real-host matrix in
+   A **calculated-value Card** selects its focused matrix in
+   `surfaces/card.md` § Self-test driver body.
+   A **standalone/Card/Relic/Modifier Rest Site option** uses the focused real-host matrix in
    `reference/rest-site-options.md`: absent owner, insufficient-Gold gray state,
    render-then-remove-Gold failed selection with zero deltas, exact successful
    Gold/Max-HP/history deltas, rebuilt list without duplication, declared stay/leave,
    second-visit repeatability, controller focus, custom icon, and missing-icon native
-   fallback. Keep the run explicitly singleplayer.
-   A **custom card pile** selects the matching host matrix in
+   fallback. Keep the run explicitly singleplayer; for a Card owner also assert exactly one
+   matching deck instance and the same concrete owner/state handle.
+   A **Reward** selects the real native-screen matrix in `surfaces/reward.md`: failed claim with
+   no mutation, successful awaited effect, correct offer/insertion, pending save/load
+   reconstruction, linked-set semantics when selected, localization, and headed input/UI. Do not
+   call reconstruction or serialization behavior proof.
+    A **card pile** selects the matching host matrix in
    `reference/card-piles.md`. Prove the generated Mod's selected scopes, UI styles,
    anchors, open/view/hotkey behavior, explicit Card movements, localization, and
    ExtraHand interactions. Do not require one proof per documented public consumer merely
-   to preserve Package support; verify every behavior the generated SPEC actually uses.
+    to preserve Package support; verify every behavior the generated SPEC actually uses.
+    A **runtime UI** workflow follows `surfaces/runtime-ui.md`: drive the real top bar and input
+    router, the selected Toast/Capstone/window/Catalog hosts, search invalidation/disposal, and the
+    exact stable node attachment. Assert open/selected/count/visibility, input suppression, item/
+    filter/action state, content ownership, replacement/close, and cleanup for only the selected
+    variants. Keep mouse/controller focus, layout, animation, drag/resize, and theme appearance in
+    the separate headed review; constructed nodes and direct callback calls are not host proof.
 3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
    post-state, then call the shared `StateProof(...)`. Its structured
    `[T2MOD-SELFTEST] <ModName> state proof:` line must include the selected framework,
@@ -630,6 +468,12 @@ user launch never arms it — no menu driving, fully inert. It ships dormant ins
 
 ## 3. Write localization
 
+For every player-facing string, author both
+`<ModName>/localization/eng/` and `<ModName>/localization/zhs/` from the exact bilingual
+SPEC text. The directory trees, table names, keys, and SmartFormat tokens are identical;
+only the localized prose differs. Do not satisfy the Chinese table by copying its English
+value unchanged.
+
 When display `text effects` is `vanilla`, apply semantic `text spans` only after the plain
 description and SmartFormat placeholders are correct. Validate every tag against
 `reference/content-text-effects.md`, keep tags balanced, do not wrap `:diff()` values in
@@ -645,7 +489,8 @@ RitsuLib's registered population patch and emit no Harmony/reflection injection.
 **event**, write the normalized title/page/option/result keys
 to `events.json`; `InitialOptionKey` and `ModOptionKey` must match those explicit segments.
 
-For the JSON-backed types, add entries to `<ModName>/localization/eng/<table>.json` — **`relics.json`** for a
+For the JSON-backed types, add the same keys to
+`<ModName>/localization/<lang>/<table>.json` for both `eng` and `zhs` — **`relics.json`** for a
 relic, **`potions.json`** for a potion, **`cards.json`** for a card, **`powers.json`**
 for a custom power, **`monsters.json`** + **`encounters.json`** for an enemy encounter,
 **`events.json`** for an Event, and **`characters.json`** + **`ancients.json`** for a
@@ -673,7 +518,7 @@ produced by the RitsuLib adapter. Not nested JSON — a flat `Dictionary<string,
 An owned Rest Site option adds its stable namespaced `.title` and `.description` keys to
 the same `relics.json`; these are separate from the owner Relic's three model keys.
 When a calculated Card value declares a tooltip, also add its resolved `.title` and
-`.description` keys to `localization/eng/static_hover_tips.json`; omit the icon argument
+`.description` keys to each required language's `static_hover_tips.json`; omit the icon argument
 for the native null-icon fallback.
 
 ## 4. Art (per SPEC's art plan — placeholder or generate)
@@ -705,10 +550,16 @@ For an **enemy encounter**, the recipe checks `images/monsters/<slug>.png` and r
 `null` from `TryCreateCreatureVisuals()` when absent, so the explicit
 `MonsterAssetProfile` fallback scene loads without a missing-resource error. Skip to §5.
 For a **character**, leave optional `CharacterAssetProfile` rows unset so RitsuLib resolves
-the placeholder/native fallback. The combat override returns `null` when its checked PNG
-is absent, so RitsuLib resumes that resolved profile fallback without a missing-resource
-load. Placeholder mode emits no Character asset or combat cue set. The static combat body
-remains the cue fallback; Cast, Spine, and unpromoted consumers are not supported.
+the explicitly selected Ironclad placeholder/native fallback. Set
+`PlaceholderCharacterId => "ironclad"`: the full combat counter resolves
+`ironclad_energy_counter.tscn`; an absent large Card Energy icon resolves through
+`EnergyIconHelper.GetPath("ironclad")` (`energy_ironclad.tres`); and an absent rich-text
+Energy icon resolves `res://images/packed/sprite_fonts/ironclad_energy_icon.png`. Never
+derive an Energy fallback such as `energy_red` from the Character theme. The combat override
+returns `null` when its checked PNG is absent, so RitsuLib resumes that resolved profile
+fallback without a missing-resource load. Placeholder mode emits no Character asset or
+combat cue set. The static combat body remains the cue fallback; Cast, Spine, and
+unpromoted consumers are not supported.
 For an **existing vanilla visual override**, placeholder is valid only when its manifest
 resource is optional: emit the checked provider, let the missing resource return `null`,
 and preserve that vanilla surface. A required visual operation cannot use placeholder;
@@ -794,7 +645,7 @@ map marker remain explicit gaps.
   contact-sheet, and metadata review output. A failed or incomplete bundle leaves existing
   runtime cues unchanged. Runtime support is combat-only and all-or-nothing.
 
-1. **Build the prompt (three segments — see `art-contract.md`).** For card and the M5.5
+1. **Build the prompt (three segments — see `art-contract.md`).** For card and the
    `relic`/`power`/`potion` icon specs,
    use ① the fixed STS2 style
    descriptor (verbatim, incl. the "reference images = STYLE ONLY, don't reuse their
@@ -839,11 +690,14 @@ factory has no per-Character footprint style. Instead, existence-check the PNG i
 `TryCreateCreatureVisuals()` and call RitsuLib's public resource factory with the reviewed
 `VisualNodeStyle` scale/position; return `null` when absent so the resolved profile fallback
 continues normally. Emit minimal raw scenes for background/rest/merchant and the five-layer
-energy counter. The icon wrapper layers `icon_outline.png` behind `icon.png`; set
+energy counter. Its missing scene resolves through `PlaceholderCharacterId => "ironclad"`,
+never through the theme palette. The icon wrapper layers `icon_outline.png` behind `icon.png`; set
 `Ui.IconTexturePath`, `Ui.IconOutlineTexturePath`, and `Ui.IconPath` to the main PNG,
 outline PNG, and wrapper scene respectively. Return `energy_large.png` from
 `BigEnergyIconPath` and `energy_text.png` from `TextEnergyIconPath`, checking each resource
-independently before returning it.
+independently before returning it. Their checked fallbacks are
+`EnergyIconHelper.GetPath("ironclad")` and
+`res://images/packed/sprite_fonts/ironclad_energy_icon.png`, respectively.
 Locked/map consumers remain explicit gaps with inherited profile fallbacks.
 
 The character prompt must describe one original subject in the STS2 painterly style-only
@@ -888,7 +742,9 @@ frame, mount no playback node and use `combat.png`, then the resolved profile fa
 **Character-wide theme contract.** Emit one Character-local theme class and copy every
 explicit value from SPEC into it: `NameColor`, `EnergyLabelOutlineColor`,
 `DeckEntryCardColor`, `EnergyOutlineColor`, the card-frame target RGB/brightness, both
-Energy-icon paths, and the shared icon palette/motif. The Character and card-pool models
+Energy-icon paths, and the shared icon palette/motif. Keep one stable Mod-owned
+`EnergyColorName` prefix for all three pools; it is a lookup key, not a palette name. The
+Character and card-pool models
 must delegate to that class instead of repeating literals. Use RitsuLib's public
 `MaterialUtils.CreateReplaceHueShaderMaterial` once and return the cached material from
 `TypeListCardPoolModel.PoolFrameMaterial`; do not ship a custom shader or generate a card
@@ -1030,5 +886,5 @@ Record in `MEMORY.md`: the class name, the hook used, the exact loc keys written
 any Cmd choices, the state lifetime/reset/persistence (when present), which DRIVER body
 the harness uses, and the **art outcome**
 (placeholder, or generated `<slug>.png`/`big/<slug>.png` — and if generate was chosen
-but fell back to placeholder, why). Mark `author` and `art` done in `PLAN.md`. Then go
+but fell back to placeholder, why). Mark `author and SelfTest` done in `PLAN.md`. Then go
 to `build.md`.

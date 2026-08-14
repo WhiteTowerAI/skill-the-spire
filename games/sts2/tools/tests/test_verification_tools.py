@@ -43,7 +43,7 @@ class GrepLogTests(unittest.TestCase):
         return [
             "RUNNING MODDED",
             f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.5.11 host=0.107.1 compat=0.107.1",
         ]
 
     def test_tier2_pass_requires_state_proof_and_done(self) -> None:
@@ -104,6 +104,24 @@ class GrepLogTests(unittest.TestCase):
         ])
         self.assertEqual(1, code)
         self.assertIn("profile is missing or mismatched", output)
+
+    def test_tier1_accepts_newer_compatible_runtime_version(self) -> None:
+        code, output = self.run_grep([
+            "RUNNING MODDED",
+            f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
+            "framework=RitsuLib frameworkVersion=0.5.12 host=0.107.1 compat=0.107.1",
+        ])
+        self.assertEqual(0, code)
+        self.assertIn("Framework profile   : MATCH", output)
+
+    def test_tier1_rejects_runtime_older_than_minimum(self) -> None:
+        code, output = self.run_grep([
+            "RUNNING MODDED",
+            f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
+            "framework=RitsuLib frameworkVersion=0.5.10 host=0.107.1 compat=0.107.1",
+        ])
+        self.assertEqual(1, code)
+        self.assertIn("frameworkVersion>=0.5.11", output)
 
     def test_mod_named_exception_fails(self) -> None:
         code, output = self.run_grep(
@@ -193,10 +211,10 @@ class GrepLogTests(unittest.TestCase):
         code, output = self.run_grep(
             [
                 f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-                "framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1",
+                "framework=RitsuLib frameworkVersion=0.5.11 host=0.107.1 compat=0.107.1",
                 "[ERROR] failure from the previous appended run",
                 f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-                "framework=RitsuLib frameworkVersion=0.5.4 host=0.107.1 compat=0.107.1",
+                "framework=RitsuLib frameworkVersion=0.5.11 host=0.107.1 compat=0.107.1",
             ]
         )
         self.assertEqual(0, code)
@@ -209,6 +227,21 @@ class GrepLogTests(unittest.TestCase):
 
 
 class LaunchOutcomeTests(unittest.TestCase):
+    def test_steam_appid_is_written_beside_the_platform_executable(self) -> None:
+        game = Path("steamapps") / "common" / "Slay the Spire 2"
+        self.assertEqual(
+            game / "steam_appid.txt",
+            launch.steam_appid_path(game, "win32"),
+        )
+        self.assertEqual(
+            game
+            / "SlayTheSpire2.app"
+            / "Contents"
+            / "MacOS"
+            / "steam_appid.txt",
+            launch.steam_appid_path(game, "darwin"),
+        )
+
     def test_done_is_success(self) -> None:
         self.assertEqual(0, launch.self_test_exit_code("done"))
 

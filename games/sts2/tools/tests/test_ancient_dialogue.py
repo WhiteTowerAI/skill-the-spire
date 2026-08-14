@@ -187,6 +187,20 @@ class AncientDialogueTests(unittest.TestCase):
                 validate_project_ancient_dialogue(Path(tmp), "NoDialogue"),
             )
 
+    def test_project_ancient_dialogue_requires_english_and_chinese(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            localization = root / "Proof" / "localization" / "eng"
+            localization.mkdir(parents=True)
+            (localization / "characters.json").write_text(
+                json.dumps({f"{CHARACTER}.title": "Wayfinder"}), encoding="utf-8"
+            )
+            (localization / "ancients.json").write_text(
+                json.dumps(complete_table()), encoding="utf-8"
+            )
+            with self.assertRaisesRegex(AncientDialogueValidationError, "missing zhs"):
+                validate_project_ancient_dialogue(root, "Proof")
+
     def test_project_character_requires_ancients_in_each_language(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

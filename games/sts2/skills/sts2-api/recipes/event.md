@@ -10,7 +10,7 @@ existing vanilla Ancient's initial options or subsequent pages, resolve it throu
 subclass/register a second Ancient or copy this new-content lifecycle over the native one.
 For a fresh unlock gate on an exact ordinary vanilla Event or shared `EVENT.DARV`, use
 `reference/vanilla-availability-overrides.md`. That route requires one pinned epoch and
-singleplayer scope; act-owned Ancients and permanent Event disable remain outside M6.7.4.
+singleplayer scope; act-owned Ancients and permanent Event disable remain outside the availability routes.
 
 For the full option-result vocabulary (blocking card selections, custom rewards,
 conditional pages, and resumable/terminal special combat), also read
@@ -18,8 +18,9 @@ conditional pages, and resumable/terminal special combat), also read
 `portrait_halo` profile, read `reference/event-vfx.md`. When page or option descriptions
 use styled/animated vanilla text, read `reference/event-text-effects.md`. When enabled
 options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings, read
-`reference/event-option-presentation.md`. When a custom Quest Card should force this Event
-in one specified act, read `reference/forced-followup-event.md`. When an option selects
+  `reference/event-option-presentation.md`. When custom Quest Cards declare a finite
+  prioritized mapping or sequence that can force this Event in selected acts, read
+  `reference/forced-followup-event.md`. When an option selects
 native Card/relic acquisition presentation, the bounded one-shot screen shake, or the
 curated built-in `trial_noble` VFX, read `reference/event-native-presentation.md`.
 
@@ -137,6 +138,15 @@ This path needs no C# helper or cleanup code; page changes replace the host labe
 
 Ship `events.json` in the resource PCK; a DLL-only rebuild does not update it.
 
+## Optional lifecycle, state, and RNG route
+
+For lifecycle observation beyond the normal option callback, state owned outside the mutable Event
+model, included persistence, or gameplay-random choice, read `reference/lifecycle-state-rng.md`.
+Use the host-supplied RNG when available and otherwise one stable Mod stream at the authoritative
+resolution point. The reference owns subscription disposal, state/save/profile rules, migrations,
+neutral rejected/preview behavior, and hosted proof. It does not authorize Progression, Settings,
+Telemetry, or Multiplayer behavior.
+
 ## Options and state transitions
 
 - `GenerateInitialOptions()` returns the options shown on the initial page.
@@ -183,14 +193,15 @@ red localization text as a substitute.
 When a known Card is added to the deck, pass the exact awaited `CardPileCmd.Add` result to
 `CardCmd.PreviewCardPileAdd`; do not grant or preview a second Card. A relic acquisition
 uses exactly one awaited `RelicCmd.Obtain<T>` call, which already owns the inventory
-animation. A named option may additionally select the one preference-respecting
-`weak_short` screen shake. See `reference/event-native-presentation.md` for exact ordering,
+animation. A named option may additionally select one preference-respecting allowlisted
+`weak_short` or `strong_normal` screen shake. See `reference/event-native-presentation.md` for exact ordering,
 allowed values, and the combined headed proof.
 
 `Owner` is null on the canonical model and non-null only after the mutable event enters a
 run. Read it inside option methods / lifecycle hooks, never from the canonical instance.
-Use game `Cmd`s for consequences (`PlayerCmd.GainGold`, card/relic/potion Cmds, creature
-Cmds); do not mutate run fields directly.
+Use `reference/effect-primitives.md` for ordinary consequences and do not mutate run fields
+directly. `reference/event-outcomes.md` continues to own selection/reward/special-combat
+transactions and Event-specific presentation around those primitives.
 
 This fast-path recipe shows one immediate effect. `reference/event-outcomes.md` is the
 authoritative contract for composed effects, selection/reward overlays, locked options,

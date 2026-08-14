@@ -1,7 +1,7 @@
 # Existing vanilla availability overrides
 
-Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. M6.7.4
-is pinned to STS2 `0.107.1` and RitsuLib `0.5.4`. It changes fresh unlock filtering or
+Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. This route
+is pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. It changes fresh unlock filtering or
 Card/Relic/Potion pool membership while preserving the existing model type, `ModelId`,
 save identity, and already-created instances.
 
@@ -81,7 +81,7 @@ Do not call `SetEpochRequirementsIgnoredForMod`; vanilla types have no generated
 to which that bypass should apply.
 
 Do not substitute the public `RequireAllCardsInPool`, `RequireAllRelicsInPool`, or
-`RequireAllPotionsInPool` content-pack helpers. Their pinned `0.5.4` implementation reads
+`RequireAllPotionsInPool` content-pack helpers. Their pinned `0.5.11` implementation reads
 `ModContentRegistry.GetRegisteredModelsInPool(context.ModId, poolType)`, so it intentionally
 sees only types registered to the current Mod. Making a vanilla type visible there would
 require the forbidden ownership-changing content registration. Whole-vanilla-pool gating
@@ -247,8 +247,8 @@ Do not infer primary from manifest order.
 
 ## Verification boundary
 
-During the M6.7 batch window, run focused manifest/catalog/document-route tests only. The
-representative C# compile, cache timing, unlock UI, fresh rewards, seeded order/RNG,
-duplicate absence, existing-save survival, and singleplayer real-host behavior remain
-unrun until consolidated M6.7 closure. Pool membership does not prove source weighting,
-and an automated manifest pass is not headed availability proof.
+A focused manifest/catalog/document-route test establishes the manifest, nothing more. Cache
+timing, unlock UI, fresh rewards, seeded order/RNG, duplicate absence, existing-save
+survival, and singleplayer real-host behavior are proved only by observing them in a real
+run. Pool membership does not prove source weighting, and an automated manifest pass is not
+headed availability proof.

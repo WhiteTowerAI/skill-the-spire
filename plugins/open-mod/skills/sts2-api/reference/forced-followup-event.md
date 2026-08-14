@@ -1,25 +1,37 @@
 # Bounded Forced Follow-up Event
 
-Use this contract when carrying one custom Quest Card should force one custom Event during
-one specified act, in the style of a delayed story follow-up. It is a public-hook pattern;
-it does not require Harmony, a vanilla-content edit, or a custom map node.
+Use this contract when carrying a custom Quest Card should force one finite custom Event
+sequence during a declared set of acts, in the style of a delayed story follow-up. One Mod
+may declare a bounded ordered mapping list. It is a public-hook pattern; it does not require
+Harmony, a vanilla-content edit, or a custom map node. The historical headed proof observed
+one token, one act, and one target; generalized mappings and sequences remain game-unobserved.
+
 
 ## Supported boundary
 
 - single-player runs only;
-- one custom Quest Card token and one custom target Event;
-- one exact `IRunState.CurrentActIndex` selected in SPEC;
-- while the token is in the deck, entering an Unknown MapPoint in that act forces its room
-  roll to `RoomType.Event` and replaces the next Event pull with the target Event;
-- the target Event is excluded from ordinary random Event pools;
-- one named target option completes and removes the token, restoring normal room/Event
-  selection.
+- zero or more mapping records, each owned by one custom Quest Card token;
+- one nonempty duplicate-free set of exact `IRunState.CurrentActIndex` values per mapping;
+- one globally unique integer priority and `fail_closed` conflict policy per mapping;
+- while a matching token is in its owner's deck, entering an Unknown MapPoint in a selected
+  act forces its room roll to `RoomType.Event` and replaces the next Event pull with the
+  mapping's current sequence Event;
+- every sequence Event is custom, unique inside that sequence, finite, and excluded from
+  ordinary random Event pools;
+- the token stores a bounded saved sequence index; exactly the declared successful terminal
+  option advances it or completes/removes the token, restoring normal selection.
 
-This does not support arbitrary Event chains, vanilla Events/cards, multiple target acts,
-multiplayer ownership, duplicate-token reward semantics, fixed-node ordering guarantees,
-save-roundtrip claims, or deterministic composition with another mod that rewrites the
-same hooks. A generated source should grant at most one token. The target completion path
-removes every matching token defensively so the forcing hooks cannot remain active.
+This does not support arbitrary Event graphs, loops, repeated sequence ids, vanilla
+Events/cards, multiplayer ownership, duplicate-token reward semantics, fixed-node ordering
+guarantees, save-roundtrip claims, or deterministic composition with another Mod that
+rewrites the same hooks. A generated source grants at most one instance of each token. If
+zero or multiple instances, an invalid index, or an external forced target conflicts, the
+mapping fails closed instead of choosing or repairing silently.
+
+`on_target_success` is valid only for a one-Event sequence and consumes at that Event.
+`on_sequence_complete` consumes only at the final sequence Event. No other option advances
+or consumes the token. The final completion path removes every matching token defensively
+so the forcing hooks cannot remain active after a violated duplicate invariant.
 
 The Quest Card's acquisition preview is not implicit in this contract. If the same option
 should show native acquisition presentation, compose the exact add-result contract from
@@ -39,6 +51,19 @@ Vanilla `LanternKey` uses both overrides in act index `2`. The unavailable vanil
 `WarHistorianRepy` model returns false from `IsAllowed`; the custom target uses the same
 pool-exclusion principle while the Quest Card hook selects it explicitly.
 
+## Mapping and priority
+
+At each hook call, collect mappings whose exact token condition, owner, act set, and saved
+index are valid. No match returns the hook input unchanged. More than one match is resolved
+only by the declared globally unique priority order. Before replacement, fail closed if the
+incoming Event is already one of this Mod's forced sequence Events other than the selected
+mapping's current target; this preserves a prior listener's choice rather than composing an
+unreviewed cross-Mod chain. Never mutate the input room set or cache a mutable Event.
+
+The two hooks repeat the same pure selection helper. `ModifyUnknownMapPointRoomTypes`
+returns a new `{ RoomType.Event }` set only when exactly one ordered selection succeeds;
+`ModifyNextEvent` returns the canonical current sequence Event for that same selection.
+
 ## Quest Card token
 
 The token is registered like any custom Card but is not a normal playable Card:
@@ -53,7 +78,10 @@ using STS2RitsuLib.Scaffolding.Content;
 
 public sealed class <QuestToken> : ModCardTemplate
 {
-    public const int TargetActIndex = <zero-based act index>;
+    private static readonly int[] TargetActIndices = [<zero-based act indices>];
+    private static readonly ModelId[] Sequence = [<ordered custom Event ids>];
+    private static readonly SavedAttachedState<<QuestToken>, int> ProgressState =
+        new($"{MainFile.ModId}_forced_event_progress", () => 0);
 
     public <QuestToken>()
         : base(-1, CardType.Quest, CardRarity.Quest, TargetType.Self) { }
@@ -66,7 +94,7 @@ public sealed class <QuestToken> : ModCardTemplate
     public override IReadOnlySet<RoomType> ModifyUnknownMapPointRoomTypes(
         IReadOnlySet<RoomType> roomTypes)
     {
-        if (Owner?.RunState.CurrentActIndex != TargetActIndex)
+        if (!ForcedEventMappings.Selects(this, TargetActIndices, ProgressState[this]))
             return roomTypes;
 
         return new HashSet<RoomType> { RoomType.Event };
@@ -74,10 +102,16 @@ public sealed class <QuestToken> : ModCardTemplate
 
     public override EventModel ModifyNextEvent(EventModel currentEvent)
     {
-        if (Owner?.RunState.CurrentActIndex != TargetActIndex)
+        if (!ForcedEventMappings.Selects(this, TargetActIndices, ProgressState[this]))
             return currentEvent;
 
-        return ModelDb.Event<<TargetEvent>>();
+        return ModelDb.GetById<EventModel>(Sequence[ProgressState[this]]);
+    }
+
+    internal void AdvanceOrComplete(Player owner, ModelId completedEvent)
+    {
+        <assert owner, exact current event, bounds, and declared consumption>;
+        <advance saved index or CompleteQuest plus remove all matching tokens>;
     }
 }
 ```
@@ -86,9 +120,10 @@ Register the token exactly once through
 `.Card<ColorlessCardPool, <QuestToken>>()`; do not add a pool attribute or a second
 registration path.
 
-Return the original hook input unchanged outside the target act. Do not cache `Owner`, the
-run state, or the target mutable Event. The canonical target from `ModelDb.Event<T>()` is
-the correct replacement value.
+Return the original hook input unchanged outside the mapping's acts and whenever selection
+fails closed. Do not cache `Owner`, run state, or a mutable Event. Resolve the canonical
+current target from its registered `ModelId` on every replacement. The saved index is
+bounded to `0..sequence.Count-1` and belongs to the concrete token instance.
 
 If a supported Event option grants the token, create it from that option's mutable owner
 and add it to the real deck through the existing outcome vocabulary:
@@ -106,10 +141,10 @@ The duplicate guard is part of the bounded generated shape. Do not use `skipVisu
 in gameplay code; that flag is acceptable only in the verification setup, where Card
 acquisition presentation is deliberately not under test.
 
-## Forced target Event
+## Forced sequence Events
 
-Author the target with the normal Event recipe, plus these exclusions and completion
-rules:
+Author every sequence Event with the normal Event recipe, plus these exclusions and
+completion rules:
 
 The target file needs `System`, `System.Linq`, `System.Threading.Tasks`,
 `MegaCrit.Sts2.Core.Commands`, `MegaCrit.Sts2.Core.Runs`,
@@ -128,38 +163,38 @@ public sealed class <TargetEvent> : ModEventTemplate
     {
         var owner = Owner ?? throw new InvalidOperationException("Event has no owner");
         var tokens = owner.Deck.Cards.OfType<<QuestToken>>().ToList();
-        if (tokens.Count == 0)
+        if (tokens.Count != 1)
             throw new InvalidOperationException(
-                "Forced Event entered without its quest token");
+                "Forced Event requires exactly one matching quest token");
 
-        foreach (var token in tokens)
-            PlayerCmd.CompleteQuest(token);
-        await CardPileCmd.RemoveFromDeck(tokens);
+        tokens[0].AdvanceOrComplete(owner, Id);
 
-        SetEventFinished(PageDescription("<RESULT_KEY>"));
+        SetEventFinished(PageDescription("<RESULT_KEY_OR_NEXT_STEP_KEY>"));
     }
 }
 ```
 
-`IsAllowed(...) => false` is intentional: natural Event selection must never surface the
-target before the token condition. Register the canonical model once with
-`.SharedEvent<<TargetEvent>>()`, but do not add ordinary eligibility, patch the Event pool,
-or return a mutable Event instance from `ModifyNextEvent`.
+`IsAllowed(...) => false` is intentional: natural Event selection must never surface a
+sequence Event before the token condition. Register every canonical model exactly once with
+`.SharedEvent<T>()`, but do not add ordinary eligibility, patch the Event pool, or return a
+mutable Event instance from `ModifyNextEvent`.
 
 ## Verification contract
 
-Extend one `MapNode` run; do not create separate headed runs for each guard:
+Future generated Mods verify only their selected mapping and sequence, in one `MapNode` run
+when the scenario is reachable. Do not create one proof matrix per mapping family:
 
 1. after the normal run/map startup gate, call both `Hook` aggregators without the token
    and require the original room set and Event object;
 2. create one token through the run and add it to `PileType.Deck` with
    `skipVisuals: true` as proof setup only;
 3. call both hooks in the wrong act and require unchanged inputs;
-4. enter the specified act, then require `{ RoomType.Event }` and the canonical target;
-5. enter one real Unknown MapPoint with `EnterMapPointInternal`, wait for the target
-   `EventRoom`, and capture the settled headed state;
-6. click the real completion `NEventOptionButton`, require token count `1 -> 0`, and call
-   both hooks again to prove normal selection is restored;
+4. enter one selected act, then require `{ RoomType.Event }` and the canonical current
+   sequence Event; where two mappings can match, assert the declared priority winner;
+5. enter one real Unknown MapPoint with `EnterMapPointInternal`, wait for that `EventRoom`,
+   and capture the settled headed state;
+6. click the exact successful option and assert index advance or terminal token count
+   `1 -> 0`; at terminal, call both hooks again to prove normal selection is restored;
 7. emit one structured marker containing all guards, then `selftest done`.
 
 Use the standard startup gate from `reference/selftest-harness.md` before

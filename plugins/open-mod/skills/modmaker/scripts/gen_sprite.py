@@ -133,6 +133,7 @@ SPECS: dict[str, dict] = {
     "monster":    {"sub_path": "monsters",             "extra_sub_paths": [],             "size": (360, 360),  "verified": True,  "fit": "contain", "chroma": True},
     "rest_site_option": {"sub_path": "rest_site_options", "extra_sub_paths": [],          "size": (256, 169),  "verified": True,  "fit": "cover",   "chroma": False},
 }
+CHARACTER_SPEC_NAMES = frozenset(CHARACTER_ART_BUNDLE.sprite_specs())
 SPECS.update(CHARACTER_ART_BUNDLE.sprite_specs())
 CUE_SPECS = set(CHARACTER_ART_BUNDLE.cue_specs)
 ALL_SPECS = set(SPECS) | CUE_SPECS
@@ -856,6 +857,197 @@ def cmd_import(args: argparse.Namespace) -> int:
     return 0
 
 
+# --- the art contract as data (M8.0 change 2) ---
+#
+# SPECS and CHARACTER_ART_BUNDLE above stay the ONLY definition. This section projects them
+# into a queryable catalog so a reader does not have to execute Python or trust a prose
+# table. `export-contract` writes it; test_art_contract_catalog.py asserts the committed
+# file still equals what the code holds, so a code change with no re-export fails.
+ART_CONTRACT_SCHEMA = "openmod.sts2.art-contract/v1"
+ART_CONTRACT_RELATIVE_PATH = Path(
+    "reference/catalogs/art-contract-sts2-0.107.1.json"
+)
+
+
+def _canonical_json(value) -> bytes:
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+
+
+def art_contract_digest(catalog: dict) -> str:
+    import copy
+    import hashlib
+
+    payload = copy.deepcopy(catalog)
+    payload.pop("catalog_sha256", None)
+    return hashlib.sha256(_canonical_json(payload)).hexdigest()
+
+
+def _footprint_entry(footprint) -> dict | None:
+    if footprint is None:
+        return None
+    entry = {
+        "host": footprint.host,
+        "content_box": list(footprint.content_box),
+        "alpha_content": footprint.alpha_content,
+    }
+    if footprint.baseline_y is not None:
+        entry["baseline_y"] = footprint.baseline_y
+    if footprint.minimum_fill != (0.0, 0.0):
+        entry["minimum_fill"] = list(footprint.minimum_fill)
+    if footprint.visual_scale is not None:
+        entry["visual_scale"] = footprint.visual_scale
+    if footprint.visual_position is not None:
+        entry["visual_position"] = list(footprint.visual_position)
+    return entry
+
+
+def build_art_contract_catalog() -> dict:
+    """Project the code-owned art contract into a catalog document."""
+    content_specs = []
+    for name, info in SPECS.items():
+        if name in CHARACTER_SPEC_NAMES:
+            continue
+        content_specs.append({
+            "spec": name,
+            "sub_path": info["sub_path"],
+            "extra_sub_paths": list(info["extra_sub_paths"]),
+            "size": list(info["size"]) if info["size"] else None,
+            "fit": info["fit"],
+            "chroma": info["chroma"],
+            "verified": info["verified"],
+        })
+
+    character_slots = []
+    for slot in CHARACTER_ART_BUNDLE.slots:
+        entry = {
+            "name": slot.name,
+            "spec": slot.spec,
+            "output_path": slot.output_path,
+            "size": list(slot.size),
+            "alpha": slot.alpha,
+            "required": slot.required,
+            "fallback": slot.fallback,
+            "consumer": slot.consumer,
+            "reference_family": slot.reference_family,
+            "fit": slot.fit,
+            "verified": slot.verified,
+            "reference_role": slot.reference_role,
+            "asset_origin": slot.asset_origin,
+            "generation_calls": slot.generation_calls,
+        }
+        if slot.template_path is not None:
+            entry["template_path"] = slot.template_path
+        footprint = _footprint_entry(slot.visible_footprint)
+        if footprint is not None:
+            entry["visible_footprint"] = footprint
+        character_slots.append(entry)
+
+    catalog: dict = {
+        "schema": ART_CONTRACT_SCHEMA,
+        "host_version": "0.107.1",
+        "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
+        "source": {
+            # Name the modules, not a repo path: this catalog ships inside both payloads,
+            # where the tools live beside the skills rather than at the maintainer layout.
+            "definition": "gen_sprite.py SPECS and character_art.py CHARACTER_ART_BUNDLE",
+            "projection": "python gen_sprite.py export-contract",
+            "note": "The code is the source of truth. This file is a generated projection; "
+                    "never hand-edit it and never treat it as a second definition.",
+        },
+        "path_root": "res://<ModName>/images/<sub_path>/<slug>.png",
+        "content_specs": content_specs,
+        "character_slots": character_slots,
+        "character_identity_slot": CHARACTER_ART_BUNDLE.identity_slot,
+    }
+
+    cues = CHARACTER_ART_BUNDLE.combat_cues
+    if cues is not None:
+        catalog["character_cues"] = {
+            # Named columns/rows plus explicit pixel geometry: a bare "NxM" grid string is
+            # ambiguous and the two orders disagreed across this repo before M8.0 change 2.
+            "actions": [
+                {
+                    "name": action.name,
+                    "state_name": action.state_name,
+                    "source_spec": action.source_spec,
+                    "columns": action.columns,
+                    "rows": action.rows,
+                    "sheet_px": [action.columns * 512, action.rows * 512],
+                    "frame_count": action.frame_count,
+                    "frame_duration_ms": action.frame_duration_ms,
+                    "loop": action.loop,
+                    "terminal": action.terminal,
+                    "output_dir": action.output_dir,
+                    "generation_calls": action.generation_calls,
+                }
+                for action in cues.actions
+            ],
+            "frame_size": list(cues.frame_size),
+            "content_box": list(cues.content_box),
+            "baseline_y": cues.baseline_y,
+            "reference_family": cues.reference_family,
+            "fallback_slot": cues.fallback_slot,
+            "consumer": cues.consumer,
+            "visual_scale": cues.visual_scale,
+            "visual_position": list(cues.visual_position),
+            "bounds_position": list(cues.bounds_position),
+            "bounds_size": list(cues.bounds_size),
+            "intent_position": list(cues.intent_position),
+            "center_position": list(cues.center_position),
+            "orb_position": list(cues.orb_position),
+            "talk_position": list(cues.talk_position),
+            "total_frames": sum(a.frame_count for a in cues.actions),
+            "generation_calls": cues.generation_calls,
+        }
+
+    catalog["catalog_sha256"] = art_contract_digest(catalog)
+    return catalog
+
+
+def default_art_contract_path() -> Path:
+    """Resolve the catalog path from either the repo layout or a published payload."""
+    here = Path(__file__).resolve()
+    candidates = (
+        # repo: games/sts2/tools/ -> games/sts2/skills/sts2-api/
+        here.parent.parent / "skills" / "sts2-api" / ART_CONTRACT_RELATIVE_PATH,
+        # payload: skills/modmaker/scripts/ -> skills/sts2-api/
+        here.parents[2] / "sts2-api" / ART_CONTRACT_RELATIVE_PATH,
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return candidates[0]
+
+
+def cmd_export_contract(args: argparse.Namespace) -> int:
+    catalog = build_art_contract_catalog()
+    destination = Path(args.output) if args.output else default_art_contract_path()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    rendered = json.dumps(catalog, ensure_ascii=False, indent=2) + "\n"
+    if args.check:
+        if not destination.is_file():
+            print(f"[gen_sprite] missing art contract catalog: {destination}")
+            return 1
+        if destination.read_text(encoding="utf-8") != rendered:
+            print(
+                f"[gen_sprite] {destination} is stale; re-run "
+                f"`gen_sprite.py export-contract`"
+            )
+            return 1
+        print(f"[gen_sprite] art contract catalog is current: {destination}")
+        return 0
+    destination.write_text(rendered, encoding="utf-8")
+    print(
+        f"[gen_sprite] wrote {len(catalog['content_specs'])} content specs, "
+        f"{len(catalog['character_slots'])} Character slots, and "
+        f"{len(catalog.get('character_cues', {}).get('actions', []))} cue actions"
+    )
+    print(str(destination))
+    return 0
+
+
 def cmd_list_specs(_args: argparse.Namespace) -> int:
     print("spec        sub-path (under images/)      size         fit      chroma")
     print("----        -------------------------      ----         ---      ------")
@@ -866,10 +1058,14 @@ def cmd_list_specs(_args: argparse.Namespace) -> int:
         print(f'{name:<11} {info["sub_path"]:<30} {size:<12} {info["fit"]:<8} {chroma}{star}')
     for spec in CHARACTER_ART_BUNDLE.cue_specs:
         action = CHARACTER_ART_BUNDLE.cue_action(spec)
-        layout = f"{action.rows}x{action.columns} sheet"
+        # Print the sheet the same width-first way every other row prints its size, and name
+        # the axes. A bare "NxM" grid is ambiguous, and printing it rows-first contradicted
+        # both this tool's own WxH convention and every prose copy of the cue table.
+        sheet = f"{action.columns * 512}x{action.rows * 512}"
+        layout = f"{action.columns} cols x {action.rows} rows"
         print(
             f"{spec:<11} {'art-sources/character-cues':<30} "
-            f"{layout:<12} {'grid':<8} on"
+            f"{sheet:<12} {'grid':<8} on   {layout}"
         )
     if any(not info["verified"] for info in SPECS.values()):
         print("\n* contract is source-grounded but still requires headed in-game proof.")
@@ -921,6 +1117,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     ls = sub.add_parser("list-specs", help="Print the sprite contract (path+size per spec).")
     ls.set_defaults(func=cmd_list_specs)
+
+    ec = sub.add_parser(
+        "export-contract",
+        help="Project the code-owned art contract into its JSON catalog.",
+    )
+    ec.add_argument("--output", help="destination path (default: the sts2-api catalog)")
+    ec.add_argument(
+        "--check",
+        action="store_true",
+        help="exit nonzero if the committed catalog is stale instead of rewriting it",
+    )
+    ec.set_defaults(func=cmd_export_contract)
     return parser
 
 
