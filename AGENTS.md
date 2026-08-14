@@ -11,9 +11,9 @@ working game Mod. Slay the Spire 2 (STS2) is the first supported game. Read
 
 ## Current Status
 
-`0.7.0` is the unreleased RitsuLib-only development baseline for STS2 stable `0.107.1` and
-RitsuLib `0.5.11`. The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, and M8.5 are closed.
-Their exact evidence and exceptions remain in `documents/history/`.
+`0.7.0` is the complete RitsuLib-only public-release candidate for STS2 stable `0.107.1` and
+RitsuLib `0.5.11`. The BaseLib migration, M6.5-M6.7, M7, and M8 are closed. Their exact historical
+evidence remains in `documents/history/`.
 
 M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
 its authoritative source and both payload forms were implemented and its result record completed.
@@ -39,10 +39,13 @@ families, twelve excluded/specialized groups, truthful surface bindings, and lit
 boundaries. Its durable record is
 `documents/history/M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md`.
 
-M8.6 is the final clean installed whole-skill acceptance. M8.7, M8.8, and M8.9 are closed, so its
-Package prerequisite is satisfied, but M8.6 has not been selected and still has no request, host,
-or execution contract. Do not start it automatically. Do not install a payload, launch the game,
-create an acceptance Mod, commit, push, or publish without explicit instruction.
+M8.6 Clean Installed Whole-Skill Acceptance and M8 closed by explicit human-lead confirmation on
+2026-08-14. The same decision confirms the remaining M8.2 and M8.5 completion items are done; none
+remains an active proof debt, exception, prerequisite, or development gap. The controlling closeout
+record is `documents/history/M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md`. There is no
+active M8 Package. Do not invent one or treat Future Outlook as unfinished M8 work. Do not install
+a payload, launch the game, create an acceptance Mod, commit, push, or publish without explicit
+instruction.
 
 ## Current Workflow
 

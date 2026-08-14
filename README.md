@@ -119,8 +119,9 @@ gameplay result.
 
 ## Development Status
 
-The BaseLib migration, M6.5-M6.7, M7, M8.0-M8.3, M8.5, and M8.7-M8.9 are closed; completed
-evidence and literal exceptions are indexed under `documents/history/`.
+The BaseLib migration, M6.5-M6.7, M7, and M8 are closed. `0.7.0` is the complete RitsuLib-only
+public-release candidate for STS2 `0.107.1` and RitsuLib `0.5.11`. Completed records are indexed
+under `documents/history/`.
 
 M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
 its source, both payload forms, and result record completed. M8.8 Surface Effect Composability closed
@@ -138,8 +139,10 @@ plus truthful surface bindings; the generated payloads passed repeatability, par
 repository static validation. No generated Mod was built or installed, and no game, Tier 1,
 Tier 2, headed, save/load, multiplayer, cross-platform runtime, or gameplay proof ran.
 
-M8.6 final installed acceptance is now eligible but remains unselected until the human lead names
-its request, host, and execution contract.
+M8.6 Clean Installed Whole-Skill Acceptance and the M8 milestone closed by explicit human-lead
+confirmation on 2026-08-14. The same final decision confirms the remaining M8.2 and M8.5 items are
+complete. There is no open M8 Package or development gap; Future Outlook is optional new scope, not
+release debt. See `documents/history/M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md`.
 
 ## For Contributors
 

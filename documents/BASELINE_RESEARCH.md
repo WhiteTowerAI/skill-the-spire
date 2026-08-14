@@ -595,12 +595,10 @@ reporting. Delete duplicate schemas, ledgers, IDs, and status synchronization.
 
 M8.0 skill structure restructuring, M8.1 literal deliverable contract, M8.2 exact semantic
 capability conformance, M8.3 semantic continuity/backtracking, and M8.5 cross-platform installed
-workflow are closed. M8.5 closed by explicit human-lead decision on 2026-08-12 without ever
-receiving an execution contract and with unresolved exceptions: its manifest and
-executable-adjacent path repairs have static/Windows compile evidence, but macOS installed
-reproduction and launcher-owned process-tree cleanup are unimplemented and unproved. This closure
-changes no runtime capability row and did not itself authorize or prove later M8.7/M8.8/M8.6 work.
-Its bounded record is `documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 source
+workflow are complete. The M8.5 checkpoint record preserves what was known when it first closed on
+2026-08-12. The human lead later confirmed on 2026-08-14 that the remaining M8.2 and M8.5 items are
+done; they are not current development gaps. The point-in-time record remains
+`documents/history/M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md`. M8.7 source
 development is implemented and committed: its nine selected families retain complete owner
 guidance, lowering, hard boundaries, proof matrices, and literal game-unobserved labels. Both
 committed payload trees include M8.7 after explicit human-lead authorization on 2026-08-13. The
@@ -610,8 +608,9 @@ removes only machine-management wrappers around those capabilities, not the capa
 completed its full `0.5.11` inventory, confirmed WP1-WP5 implementation, WP8 source/static closeout,
 and authorized plugin/portable payload delivery. The human lead accepted its result and closed it
 on 2026-08-13; newly generalized shapes remain game-unobserved. Its retired prior contract is not
-executable under the current profile. M8.6 still waits for an explicitly selected request/host
-contract. Current status and gates live in the active implementation plan.
+executable under the current profile. M8.6 and M8 closed by explicit human-lead confirmation on
+2026-08-14. `documents/history/M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md` is the
+controlling milestone-status record; no M8 development gap remains open.
 
 No generic Watcher discovery is promoted from the copied project alone. Exact API, lifecycle,
 platform, and payload conclusions still require pinned source and proportionate maintained

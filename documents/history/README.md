@@ -66,7 +66,9 @@ numbers.
   closed 2026-08-10.
 - `M83_SEMANTIC_CONTINUITY_RESULTS.md` — semantic continuity and backtracking, closed 2026-08-11.
 - `M85_CROSS_PLATFORM_WORKFLOW_RESULTS.md` - cross-platform installed workflow, closed by
-  explicit human-lead decision with unresolved exceptions on 2026-08-12.
+  explicit human-lead decision on 2026-08-12; later completion status is recorded by M8.6 closeout.
+- `M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md` - clean installed whole-skill acceptance
+  and final M8 closure, confirmed by the human lead on 2026-08-14.
 - `M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md` - product boundary generalization, closed by
   explicit human-lead acceptance on 2026-08-14; newly generalized variants remain game-unobserved.
 - `M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md` - surface effect composability generalization,
@@ -75,7 +77,7 @@ numbers.
 - `M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md` - ordinary effect primitive coverage,
   closed by explicit human-lead acceptance on 2026-08-14 without real-game observation.
 
-M8 is the active milestone; M8.0-M8.3, M8.5, and M8.7-M8.9 are closed. Unlike most
+M8 is closed; M8.0-M8.3 and M8.5-M8.9 are complete. Unlike most
 records here, the M8.0 result points at a file that is still active instruction rather than
 archived evidence: `../../games/sts2/tests/m80-surface-cross-check.md` must be read before
 treating any surface page as validated, since nine of its ten surfaces have never been piloted.
@@ -84,14 +86,12 @@ Its three deferred mismatches were resolved by M8.2.
 The M8.1 record is the one to read before assuming a claim block is optional: it states what the
 contract checks, and equally what a green validator does not establish.
 
-The M8.2 record is the one to read before trusting a hook route. It carries two things a later
-session will need: the reachability rule that decides which surfaces a hook can reach at all, and
-an explicit exception — both of its real-host proofs were deferred to M8.6, so every route it added
-is implemented and has never been observed firing in a game.
+The M8.2 record is the one to read before trusting a hook route. It records the reachability rule
+that decides which surfaces a hook can reach at all and the evidence boundary at its own checkpoint.
+Its then-deferred completion items were later confirmed complete in the M8.6/M8 closeout.
 
-The M8.5 record is a closure-with-exceptions record, not cross-platform proof. No execution
-contract was drafted, no macOS installed workflow ran, and launcher-owned process-tree cleanup
-remains unimplemented. M8.6 remains unselected.
+The M8.5 record is a literal point-in-time record of its original closure. Its then-open completion
+items were later confirmed complete in the M8.6/M8 closeout and are no longer current project gaps.
 
 The M8.8 record separates public-framework expressibility, open-mod authorability, and actual game
 observation. Its newly generalized WP1-WP5 shapes have source, compile-probe, test, and synchronized
@@ -100,6 +100,10 @@ payload evidence but no generated-Mod Build, Tier 1, Tier 2, headed, or gameplay
 The M8.9 record owns the nine admitted shared ordinary-effect families, twelve explicit
 specialized/excluded groups, generated payload delivery facts, and the unchanged boundary that no
 generated-Mod Build, install, Tier 1, Tier 2, headed, or gameplay observation ran.
+
+The M8.6 record is the controlling milestone-status decision: M8.6, the remaining M8.2/M8.5 items,
+and M8 as a whole are complete. Earlier files remain literal historical snapshots, while Future
+Outlook is optional new scope rather than M8 debt.
 
 ## Research And Retired Evidence
 
