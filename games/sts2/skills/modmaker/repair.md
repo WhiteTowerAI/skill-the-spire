@@ -20,7 +20,7 @@ Mod without rebuilding it.
 ## Bounded loop
 
 1. Capture the exact failure signature and current stage in `MEMORY.md`.
-2. Read the matching section of `${STS2_API_SKILL_DIR}/errors.md`, or form one narrow hypothesis
+2. Read the matching section of `${STS2API_SKILL_DIR}/errors.md`, or form one narrow hypothesis
    from the actual failing layer when no entry matches.
 3. Make one focused fix.
 4. Re-run the earliest meaningful check: preflight for a route/reachability change, Build for

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify STS2 load and state-proof markers in the current godot.log.
 
-R2 verify step (modmaker's verify.md). Reads the CURRENT godot.log in full. STS2
+Verification helper for modmaker's verify.md. Reads the CURRENT godot.log in full. STS2
 archives the previous log (renaming it to godot<timestamp>.log) and starts a fresh
 godot.log on every launch, so the current file already contains exactly one run --
 no byte-offset slicing is needed, and offsets from a prior file are meaningless
@@ -17,8 +17,8 @@ Override with --log-path. Only the Windows path is verified on the dev box; the
 mac/Linux defaults follow Godot's standard user-data dirs (best-effort).
 
 Usage:
-  python grep_log.py --mod-name CanaryCard
-  python grep_log.py --mod-name CanaryCard --tier2-pattern "damage.*6"
+  python grep_log.py --mod-name ExampleMod
+  python grep_log.py --mod-name ExampleMod --tier2-pattern "damage.*6"
 """
 from __future__ import annotations
 

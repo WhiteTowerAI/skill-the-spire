@@ -19,7 +19,7 @@ class PayloadLayoutTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "skills"
         self.scripts = self.root / "modmaker" / "scripts"
-        self.api = self.root / "sts2-api"
+        self.api = self.root / "sts2api"
         (self.api / "reference" / "catalogs").mkdir(parents=True)
         (self.api / "recipes").mkdir(parents=True)
         self.scripts.mkdir(parents=True)
@@ -27,17 +27,17 @@ class PayloadLayoutTests(unittest.TestCase):
         shutil.copy(TOOLS_DIR / "capability_preflight.py", self.scripts)
         shutil.copy(
             SOURCE_SKILLS
-            / "sts2-api"
+            / "sts2api"
             / "reference"
             / "catalogs"
             / "model-hooks-sts2-0.107.1.json",
             self.api / "reference" / "catalogs",
         )
         shutil.copy(
-            SOURCE_SKILLS / "sts2-api" / "reference" / "model-hook-participation.md",
+            SOURCE_SKILLS / "sts2api" / "reference" / "model-hook-participation.md",
             self.api / "reference",
         )
-        shutil.copy(SOURCE_SKILLS / "sts2-api" / "recipes" / "card.md", self.api / "recipes")
+        shutil.copy(SOURCE_SKILLS / "sts2api" / "recipes" / "card.md", self.api / "recipes")
 
     def tearDown(self) -> None:
         self.temp.cleanup()

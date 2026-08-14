@@ -28,7 +28,7 @@ affected PLAN stages and the nearest proportional host/check; do not schedule a 
 unless the user or active project plan explicitly selects it.
 
 Read `semantic-contract.md` first, then read the selected framework reference
-(`sts2-api/reference/ritsulib-adapter.md` for the current target). RitsuLib-specific
+(`sts2api/reference/ritsulib-adapter.md` for the current target). RitsuLib-specific
 snippets live in that reference and the surface recipe it routes to; do not copy a
 second framework branch into this file.
 
@@ -50,7 +50,7 @@ second framework branch into this file.
   If the SPEC requests vanilla Card base-description replacement, removal, or hiding, stop:
   do not convert it to description fragments or author code until the user explicitly
   accepts before/after composition and the SPEC records `compose`.
-- Query the **sts2-api** skill for the recipe matching SPEC's **element**:
+- Query the **sts2api** skill for the recipe matching SPEC's **element**:
   `recipes/relic.md` for a relic, `recipes/potion.md` for a potion, `recipes/card.md`
   for a card. For a **card or power**, also read `reference/mechanics.md` first
   (DynamicVars, SmartFormat descriptions, shared enums). For a Card whose SPEC has
@@ -134,7 +134,7 @@ second framework branch into this file.
   For every **card pile**, read `recipes/card-pile.md` and `reference/card-piles.md`. Register all piles in
   the same deferred content pack, lower every documented scope/style/anchor/open/view/
   visibility/hotkey/ExtraHand consumer selected by SPEC, and use awaited native pile Cmds
-  for every movement. The Package route is not limited to ExtraHand or to previously
+  for every movement. The API route is not limited to ExtraHand or to previously
   exercised UI presets.
   For a **runtime UI** workflow, read `recipes/runtime-ui.md` and
   `reference/lifecycle-state-rng.md`. Keep selected top-bar, Toast, runtime-hotkey, local Capstone,
@@ -147,7 +147,7 @@ second framework branch into this file.
   A selected resource UI uses RitsuLib's public `RegisterCombatUi` route from
   `reference/character-resource.md`. A capability with no documented public game/framework
   route is a pack authoring gap; the specific substitutes to refuse here are alternative-energy patches,
-  C/D access, assembly-wide `PatchAll`, and `OpenMod.Runtime`.
+  C/D access, assembly-wide `PatchAll`, and `SkillTheSpire.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. When SPEC has an ordered
   `effects.sequence` containing an ordinary player-visible effect, read
@@ -227,7 +227,7 @@ second framework branch into this file.
 - Owner draw/discard/exhaust composition guards the exact owner instance. Do not implement
   transform carry-over; a transformed Card with a different identity must not inherit the
   old target's override.
-- Write every accepted operation to `openmod/vanilla-overrides.json` with the exact checked
+- Write every accepted operation to `skillthespire/vanilla-overrides.json` with the exact checked
   baseline and public route. Keep the manifest, class, and localization behavior in sync.
 - If one requested operation is outside the promoted table, stop that operation explicitly;
   do not hide a patch, reflection expression, or raw method name inside otherwise valid C#.
@@ -239,7 +239,7 @@ second framework branch into this file.
 - For `append`, register one `ModAncientOptionRule` per manifest operation before ModelDb
   freezes. Its factory may return multiple options in manifest order after applying each
   `visible_when`; use the public priority and duplicate-text policy literally.
-- For `replace`, install the Package's one fixed fingerprinted postfix through RitsuLib's
+- For `replace`, install the route's one fixed fingerprinted postfix through RitsuLib's
   patcher. Dispatch only by exact catalog type, let the original wrapper retain its
   `_generatedOptions` list, mutate that same list, preserve the native blocked Proceed
   state, and run before RitsuLib's append postfix. Do not generate any other patch shape.
@@ -260,7 +260,7 @@ second framework branch into this file.
 - Preserve the vanilla Ancient class, ModelId, room, opening dialogue, save identity,
   allowance gate, ambient audio, and native finish lifecycle. A request for a new Ancient
   routes separately through `recipes/ancient.md`; it is never implemented by changing this
-  override package. Stop this override route for global dialogue replacement, random/RNG
+  override route. Stop this route for global dialogue replacement, random/RNG
   rewrite, special combat, direct room transition, multiplayer, or any prompt-derived
   private/patch route.
 
@@ -285,7 +285,7 @@ and follow `reference/vanilla-availability-overrides.md` exactly:
   private caches or invent a reward-weight hook.
 - Emit the exact source baseline, route fingerprint/dependencies, action, source/destination,
   `existing_instances: preserve`, `expected_primary_pool_model_id`, and singleplayer scope
-  in `openmod/vanilla-overrides.json`. Stop for debug pools, wrong pool category, duplicate
+  in `skillthespire/vanilla-overrides.json`. Stop for debug pools, wrong pool category, duplicate
   add, missing source, final-pool removal, weighting, multiplayer, or prompt-derived patch
   code.
 
@@ -309,7 +309,7 @@ and follow `reference/vanilla-availability-overrides.md` exactly:
   machines, keep Encounter actual/all-possible rosters identical, and keep ordinary Event
   options/pages under the required `<MOD_ID>_EVENT_*` localization namespace.
 - Emit each operation, exact baseline, fingerprint/dependencies, singleplayer scope, and
-  complete semantic body in `openmod/vanilla-overrides.json`. Stop one unsupported operation
+  complete semantic body in `skillthespire/vanilla-overrides.json`. Stop one unsupported operation
   explicitly instead of hiding raw Harmony/reflection/IL in an otherwise valid file.
 
 **Relic** — see `surfaces/relic.md` § Author the element class.
@@ -359,7 +359,7 @@ tier-1 verify silently finds nothing. Use the shared envelope from
 `semantic-contract.md`:
 
 ```csharp
-Logger.Info($"[OPENMOD-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion={Const.Version} host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
+Logger.Info($"[SKILLTHESPIRE-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion={Const.Version} host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
 Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
 ```
 
@@ -381,7 +381,7 @@ the next step independently asserts post-state and emits the only accepted proof
 ## 2.5 Emit the tier-2 self-test harness
 
 This is what makes tier-2 automatic — the effect fires and is grepped with **no human at
-the keyboard, no dev-console typing**. Query the **sts2-api** skill for
+the keyboard, no dev-console typing**. Query the **sts2api** skill for
 `reference/selftest-harness.md` and follow it. In short:
 
 1. Emit `<ModName>Code/SelfTest.cs` from that page. The arg gate, menu→run navigation,
@@ -441,7 +441,7 @@ the keyboard, no dev-console typing**. Query the **sts2-api** skill for
    `reference/card-piles.md`. Prove the generated Mod's selected scopes, UI styles,
    anchors, open/view/hotkey behavior, explicit Card movements, localization, and
    ExtraHand interactions. Do not require one proof per documented public consumer merely
-    to preserve Package support; verify every behavior the generated SPEC actually uses.
+    to preserve API support; verify every behavior the generated SPEC actually uses.
     A **runtime UI** workflow follows `surfaces/runtime-ui.md`: drive the real top bar and input
     router, the selected Toast/Capstone/window/Catalog hosts, search invalidation/disposal, and the
     exact stable node attachment. Assert open/selected/count/visibility, input suppression, item/
@@ -559,7 +559,7 @@ derive an Energy fallback such as `energy_red` from the Character theme. The com
 returns `null` when its checked PNG is absent, so RitsuLib resumes that resolved profile
 fallback without a missing-resource load. Placeholder mode emits no Character asset or
 combat cue set. The static combat body remains the cue fallback; Cast, Spine, and
-unpromoted consumers are not supported.
+unlisted consumers are not supported.
 For an **existing vanilla visual override**, placeholder is valid only when its manifest
 resource is optional: emit the checked provider, let the missing resource return `null`,
 and preserve that vanilla surface. A required visual operation cannot use placeholder;
@@ -567,7 +567,7 @@ stop and obtain the accepted resource before build.
 
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
-Supported sprite specs (see `sts2-api` → `reference/art-contract.md` and
+Supported sprite specs (see `sts2api` → `reference/art-contract.md` and
 `reference/character-presentation.md` and `reference/character-combat-cues.md` for the full
 contracts). For an existing vanilla texture override, select a matching established spec
 by consumer role, normalize into the manifest's Mod-local path, and preserve every
@@ -779,7 +779,7 @@ exact 256x256/24x24 textures, and both real consumers before it emits the theme 
    remove it with a runtime-specific helper because `gen_sprite.py import --chroma` owns
    that deterministic step. When the native tool supports reference images, randomly choose
    up to three type-matched files from
-   `../sts2-api/reference/art-samples/<spec>/`, make them visible using the
+   `../sts2api/reference/art-samples/<spec>/`, make them visible using the
    runtime's normal local-image viewing mechanism, and label them STYLE REFERENCE ONLY. If reference inputs
    are unavailable, use the fixed text style descriptor alone.
 
@@ -821,7 +821,7 @@ exact 256x256/24x24 textures, and both real consumers before it emits the theme 
      --spec <card|relic|power|potion|enchantment|orb|monster|event|rest_site_option|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --model <chosen-model> \
      [--aspect-ratio <confirmed-ratio>] [--resolution <confirmed-resolution>] \
-     [--reference ../sts2-api/reference/art-samples] \
+     [--reference ../sts2api/reference/art-samples] \
      [--identity-reference <normalized-charui/select.png>] --yes
    ```
    `--yes` means the user approved this exact prompt/model/one-image spend. The tool reruns
@@ -835,7 +835,7 @@ exact 256x256/24x24 textures, and both real consumers before it emits the theme 
    python ../modmaker/scripts/gen_sprite.py generate \
      --spec <card|relic|power|potion|enchantment|orb|monster|event|rest_site_option|character_select|character_background|character_icon|character_combat|character_rest|character_merchant|character_energy|character_energy_large|character_energy_text> --slug <slug> --prompt "<the prompt>" \
      --out <work dir>/<ModName>/images --config <path to art-backend.json> \
-     --reference ../sts2-api/reference/art-samples
+     --reference ../sts2api/reference/art-samples
    ```
    `--reference` passes the shipped STS2 style samples (Layer 2 few-shot) — keep it on, and
    point it at the **root** `art-samples` dir (as shown). The tool auto-picks the matching

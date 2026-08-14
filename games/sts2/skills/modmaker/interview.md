@@ -23,7 +23,7 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
 - **Expose real conflicts.** Contradictory or unsupported requirements pause before SPEC;
   use `route.md`'s constrained resolution and explicit-acceptance rules.
 - **Ground Character proposals first.** For a Character or Character/content-set request,
-  load `${STS2_API_SKILL_DIR}/design/character-foundation.md` before creative questions.
+  load `${STS2API_SKILL_DIR}/design/character-foundation.md` before creative questions.
   Recommend an exact native-shaped starter deck before asking for deck details, and label
   pinned facts, observed conventions, and creative decisions distinctly.
 - **Plan only when routed.** Load only the mechanic, content-set, and balance references
@@ -107,7 +107,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      resource icon. Locked selection and map marker remain grounded gaps with explicit
      fallbacks.
     - **A named place where Cards are stored, moved, inspected, or shown separately** is a
-      **card pile**. The Custom Card Piles Package supports combat/run lifetime,
+      **card pile**. The Custom Card Piles API supports combat/run lifetime,
       headless/top-bar/bottom-left/bottom-right/ExtraHand presentation, public pile screens,
       and explicit Card movement.
     - **A Mod-owned top-bar workflow, notification, runtime hotkey, local screen/window, searchable
@@ -127,7 +127,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      `reference/vanilla-availability-overrides.md`. Existing Relic/Potion/Power/Orb/
      Enchantment/Affliction/Monster/Encounter/ordinary Event data and behavior continue
      through `reference/vanilla-non-card-overrides.md`; other operations report the
-     unpromoted package and stop. Offer a closest **new** element only as a separate user
+     unlisted route and stop. Offer a closest **new** element only as a separate user
      choice, never as an automatic substitution.
    - **Fail closed on vanilla Card base-description replacement.** If the user asks to
      replace, remove, or hide the original description body, explain that RitsuLib `0.5.11`
@@ -149,7 +149,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      terms, every possible and initially visible option, page/finish flow, supplied-event-RNG
      choices, first-visit/exact-Character/ANY dialogue, and presentation. Do not route it as
      a normal Event or an existing-Ancient override.
-    - **Card Pile / Custom Card Piles Package**: infer every stated pile and ask only for player-visible
+    - **Card Pile / Custom Card Piles API**: infer every stated pile and ask only for player-visible
      ambiguity: does it reset each fight or persist for the run; is it hidden, a top-bar/
      bottom-corner button, or visible as extra Cards; what exact action moves Cards in and
      out; and may visible Cards be played normally? When placement, pile-screen tools,
@@ -245,7 +245,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      invent randomness. Ask one sequence/roster question only when it changes the fight.
      Don't ask about scenes, intent class names, RNG objects, or APIs — those are the recipe's job.
      If the user asks for auxiliary information on one monster intent, recognize the
-     supported Extra Badges Package but report that Intent authoring is not implemented in
+     supported Extra Badges API but report that Intent authoring is not implemented in
      the current pack. Do not rewrite a separate debuff as an attack badge, and keep an
      ordinary repeated identical attack as the native multi-attack intent.
    - **Event / World Node**: resolve the event's opening situation, the option(s) the
@@ -332,7 +332,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
       it. The same identity, costume, camera, apparent scale, pivot, and baseline remain
       locked across all four sheets, and adjacent cells use small in-between pose changes
       because the sequences play quickly. The established
-     static specs and all nine Character output specs are live-verified. M6.7.2 may reuse a
+     static specs and all nine Character output specs are live-verified. A vanilla texture override may reuse a
      matching static spec for a vanilla texture override, but its Material, PackedScene,
      Spine-resource, and background-directory routes require an existing local authored
      resource rather than an image call. Orb support is
@@ -443,7 +443,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
   generation prefers a callable host-native image tool, then can use an already-
   authenticated Vofy CLI or a BYO HTTP backend; an existing local image uses the same
   deterministic import path. If no selected route is available, keep the placeholder.
-- **Author**: reuse the project's configured author, else "OpenMod".
+- **Author**: reuse the project's configured author, else "SkillTheSpire".
 
 ## Output
 

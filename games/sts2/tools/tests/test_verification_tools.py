@@ -25,7 +25,7 @@ grep_log = load_module("open_mod_grep_log", TOOLS_DIR / "grep_log.py")
 
 
 class GrepLogTests(unittest.TestCase):
-    mod = "CanaryCard"
+    mod = "ExampleMod"
 
     def run_grep(self, lines: list[str], pattern: str | None = None) -> tuple[int, str]:
         with tempfile.TemporaryDirectory() as tmp:
@@ -251,7 +251,7 @@ class LaunchOutcomeTests(unittest.TestCase):
                 self.assertEqual(1, launch.self_test_exit_code(outcome))
 
     def test_stale_terminal_marker_is_outside_current_launch_boundary(self) -> None:
-        mod = "CanaryCard"
+        mod = "ExampleMod"
         stale = "\n".join([
             f"[T2MOD-SELFTEST] {mod} loaded ok",
             f"[T2MOD-SELFTEST] {mod} selftest done",
@@ -262,7 +262,7 @@ class LaunchOutcomeTests(unittest.TestCase):
         )
 
     def test_terminal_requires_new_load_marker(self) -> None:
-        mod = "CanaryCard"
+        mod = "ExampleMod"
         baseline = f"[T2MOD-SELFTEST] {mod} selftest done"
         appended_terminal = baseline + f"\n[T2MOD-SELFTEST] {mod} selftest done"
         current = launch.log_since_launch(baseline, appended_terminal)
@@ -285,7 +285,7 @@ class LaunchOutcomeTests(unittest.TestCase):
         ))
 
     def test_failed_marker_dominates_done_in_current_launch(self) -> None:
-        mod = "CanaryCard"
+        mod = "ExampleMod"
         current = "\n".join([
             f"[T2MOD-SELFTEST] {mod} loaded ok",
             f"[T2MOD-SELFTEST] {mod} selftest done",

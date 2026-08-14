@@ -24,8 +24,8 @@ not restate the other file's half — a diagnostic in two homes drifts.
 ## Localization key derivation (the #1 silent failure)
 
 - Model `Id.Entry` is `MOD_CATEGORY_TYPENAME`, with each segment normalized to
-  uppercase snake case. `RitsuCardProof` + `Jolt` becomes
-  `RITSU_CARD_PROOF_CARD_JOLT`.
+  uppercase snake case. `ExampleMod` + `Jolt` becomes
+  `EXAMPLE_MOD_CARD_JOLT`.
 - Surface localization keys are flat strings using that exact public entry. Power and Orb
   CLR suffixes remain part of the type name; keyword entries use `MOD_KEYWORD_STEM`.
 - Get this wrong → the relic shows the raw key or blank text, with no error.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""M6.7 version-grounding, target resolution, and override-manifest contracts."""
+"""Version-grounded target resolution and vanilla override manifest contracts."""
 from __future__ import annotations
 
 import argparse
@@ -17,17 +17,17 @@ from localization_contract import REQUIRED_LANGUAGES
 from ritsu_profile import PROFILE
 
 
-CATALOG_SCHEMA = "openmod.sts2.vanilla-catalog/v2"
-RUNTIME_SCHEMA = "openmod.sts2.vanilla-runtime-catalog/v2"
-ASSEMBLY_SCHEMA = "openmod.sts2.vanilla-assembly-catalog/v1"
-MANIFEST_SCHEMA = "openmod.sts2.vanilla-overrides/v1"
+CATALOG_SCHEMA = "skillthespire.sts2.vanilla-catalog/v2"
+RUNTIME_SCHEMA = "skillthespire.sts2.vanilla-runtime-catalog/v2"
+ASSEMBLY_SCHEMA = "skillthespire.sts2.vanilla-assembly-catalog/v1"
+MANIFEST_SCHEMA = "skillthespire.sts2.vanilla-overrides/v1"
 CATALOG_RELATIVE_PATH = Path("reference/vanilla-overrides/catalogs/sts2-0.107.1.json")
-MANIFEST_RELATIVE_PATH = Path("openmod/vanilla-overrides.json")
-PUBLIC_CARD_OVERRIDE_PACKAGE = "m6.7.1-public-card-overrides"
-PUBLIC_VISUAL_OVERRIDE_PACKAGE = "m6.7.2-public-visual-overrides"
-ANCIENT_OVERRIDE_PACKAGE = "m6.7.3-existing-ancient-overrides"
-AVAILABILITY_OVERRIDE_PACKAGE = "m6.7.4-availability"
-NON_CARD_OVERRIDE_PACKAGE = "m6.7.5-non-card-data-behavior"
+MANIFEST_RELATIVE_PATH = Path("skillthespire/vanilla-overrides.json")
+PUBLIC_CARD_OVERRIDE_FAMILY = "public-card-overrides"
+PUBLIC_VISUAL_OVERRIDE_FAMILY = "public-visual-overrides"
+ANCIENT_OVERRIDE_FAMILY = "existing-ancient-overrides"
+AVAILABILITY_OVERRIDE_FAMILY = "availability-overrides"
+NON_CARD_OVERRIDE_FAMILY = "non-card-data-behavior"
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _MOD_ID_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -961,8 +961,8 @@ def catalog_digest(catalog: dict[str, Any]) -> str:
 def default_catalog_path() -> Path:
     here = Path(__file__).resolve()
     candidates = (
-        here.parent.parent / "skills" / "sts2-api" / CATALOG_RELATIVE_PATH,
-        here.parents[2] / "sts2-api" / CATALOG_RELATIVE_PATH,
+        here.parent.parent / "skills" / "sts2api" / CATALOG_RELATIVE_PATH,
+        here.parents[2] / "sts2api" / CATALOG_RELATIVE_PATH,
     )
     for candidate in candidates:
         if candidate.is_file():
@@ -1104,7 +1104,7 @@ def validate_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
             "localization_languages",
             "models",
             "adapters",
-            "promoted_operation_packages",
+            "authorable_route_families",
         },
         "catalog",
     )
@@ -1273,9 +1273,9 @@ def validate_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
                 f"adapter {adapter_id} body_shape values must be nonnegative integers"
             )
 
-    promoted = catalog.get("promoted_operation_packages")
-    if not isinstance(promoted, list) or not all(isinstance(item, str) for item in promoted):
-        raise VanillaOverrideError("catalog promoted_operation_packages must be strings")
+    authorable = catalog.get("authorable_route_families")
+    if not isinstance(authorable, list) or not all(isinstance(item, str) for item in authorable):
+        raise VanillaOverrideError("catalog authorable_route_families must be strings")
     return catalog
 
 
@@ -1423,7 +1423,7 @@ def merge_catalogs(runtime: dict[str, Any], assembly: dict[str, Any]) -> dict[st
             copy.deepcopy(assembly.get("adapters", [])),
             key=lambda adapter: adapter.get("id", "") if isinstance(adapter, dict) else "",
         ),
-        "promoted_operation_packages": [],
+        "authorable_route_families": [],
     }
     merged["catalog_sha256"] = catalog_digest(merged)
     return validate_catalog(merged)
@@ -3518,7 +3518,7 @@ def _validate_operation(
             f"operation {operation_id} route dependencies are not valid for {route_id}"
         )
     if route_class == "probe":
-        raise VanillaOverrideError(f"operation {operation_id} still selects an unpromoted probe route")
+        raise VanillaOverrideError(f"operation {operation_id} still selects an unlisted probe route")
     non_card_route = (
         route_id in _NON_CARD_OWNER_HOOK_ROUTES
         or route_id in _NON_CARD_DATA_ROUTES
@@ -3771,7 +3771,7 @@ def validate_override_manifest(
     catalog: dict[str, Any],
     *,
     expected_mod_id: str | None = None,
-    allow_unpromoted_operations: bool = False,
+    allow_unlisted_operations: bool = False,
 ) -> str:
     validate_catalog(catalog)
     _require_exact_keys(
@@ -3794,30 +3794,30 @@ def validate_override_manifest(
     operations = manifest.get("operations")
     if not isinstance(operations, list):
         raise VanillaOverrideError("override manifest operations must be a list")
-    if operations and not allow_unpromoted_operations:
-        promoted = set(catalog["promoted_operation_packages"])
+    if operations and not allow_unlisted_operations:
+        authorable = set(catalog["authorable_route_families"])
         for operation in operations:
             route = operation.get("route") if isinstance(operation, dict) else None
             route_id = route.get("id") if isinstance(route, dict) else None
             if route_id in _CARD_PUBLIC_ROUTES:
-                if PUBLIC_CARD_OVERRIDE_PACKAGE not in promoted:
+                if PUBLIC_CARD_OVERRIDE_FAMILY not in authorable:
                     raise VanillaOverrideError(
-                        f"public route {route_id} requires promoted package "
-                        f"{PUBLIC_CARD_OVERRIDE_PACKAGE}"
+                        f"public route {route_id} requires authorable route family "
+                        f"{PUBLIC_CARD_OVERRIDE_FAMILY}"
                     )
                 continue
             if route_id in PUBLIC_VISUAL_ROUTES:
-                if PUBLIC_VISUAL_OVERRIDE_PACKAGE not in promoted:
+                if PUBLIC_VISUAL_OVERRIDE_FAMILY not in authorable:
                     raise VanillaOverrideError(
-                        f"public route {route_id} requires promoted package "
-                        f"{PUBLIC_VISUAL_OVERRIDE_PACKAGE}"
+                        f"public route {route_id} requires authorable route family "
+                        f"{PUBLIC_VISUAL_OVERRIDE_FAMILY}"
                     )
                 continue
             if route_id in ANCIENT_ROUTES:
-                if ANCIENT_OVERRIDE_PACKAGE not in promoted:
+                if ANCIENT_OVERRIDE_FAMILY not in authorable:
                     raise VanillaOverrideError(
-                        f"Ancient route {route_id} requires promoted package "
-                        f"{ANCIENT_OVERRIDE_PACKAGE}"
+                        f"Ancient route {route_id} requires authorable route family "
+                        f"{ANCIENT_OVERRIDE_FAMILY}"
                     )
                 continue
             if (
@@ -3825,10 +3825,10 @@ def validate_override_manifest(
                 or route_id in AVAILABILITY_PUBLIC_POOL_ROUTES
                 or route_id in AVAILABILITY_ADAPTER_ROUTES
             ):
-                if AVAILABILITY_OVERRIDE_PACKAGE not in promoted:
+                if AVAILABILITY_OVERRIDE_FAMILY not in authorable:
                     raise VanillaOverrideError(
-                        f"Availability route {route_id} requires promoted package "
-                        f"{AVAILABILITY_OVERRIDE_PACKAGE}"
+                        f"Availability route {route_id} requires authorable route family "
+                        f"{AVAILABILITY_OVERRIDE_FAMILY}"
                     )
                 continue
             if (
@@ -3836,14 +3836,14 @@ def validate_override_manifest(
                 or route_id in _NON_CARD_DATA_ROUTES
                 or route_id in _NON_CARD_LIFECYCLE_ROUTES
             ):
-                if NON_CARD_OVERRIDE_PACKAGE not in promoted:
+                if NON_CARD_OVERRIDE_FAMILY not in authorable:
                     raise VanillaOverrideError(
-                        f"non-Card route {route_id} requires promoted package "
-                        f"{NON_CARD_OVERRIDE_PACKAGE}"
+                        f"non-Card route {route_id} requires authorable route family "
+                        f"{NON_CARD_OVERRIDE_FAMILY}"
                     )
                 continue
             raise VanillaOverrideError(
-                f"operation route {route_id!r} has no promoted operation package"
+                f"operation route {route_id!r} has no authorable route family"
             )
     operation_ids: set[str] = set()
     models = {model["id"]: model for model in catalog["models"]}
@@ -4050,7 +4050,7 @@ def _main_validate(args: argparse.Namespace) -> None:
         _read_object(Path(args.manifest)),
         catalog,
         expected_mod_id=args.mod_name,
-        allow_unpromoted_operations=args.allow_unpromoted_operations,
+        allow_unlisted_operations=args.allow_unlisted_operations,
     )
     print(f"[vanilla-overrides] OK: {summary}")
 
@@ -4077,7 +4077,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     validate.add_argument("--manifest", required=True)
     validate.add_argument("--catalog")
     validate.add_argument("--mod-name")
-    validate.add_argument("--allow-unpromoted-operations", action="store_true")
+    validate.add_argument("--allow-unlisted-operations", action="store_true")
     validate.set_defaults(handler=_main_validate)
 
     args = parser.parse_args(list(argv) if argv is not None else None)

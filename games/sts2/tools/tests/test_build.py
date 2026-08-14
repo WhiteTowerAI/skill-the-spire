@@ -27,46 +27,46 @@ class BuildTests(unittest.TestCase):
     def test_resource_manifest_must_match_authored_assets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            manifest = root / "Canary.json"
+            manifest = root / "ExampleMod.json"
             manifest.write_text(json.dumps({"has_pck": False}), encoding="utf-8")
 
             self.assertEqual(
                 "has_pck=false",
-                build.validate_resource_manifest(root, "Canary"),
+                build.validate_resource_manifest(root, "ExampleMod"),
             )
 
-            assets = root / "Canary"
+            assets = root / "ExampleMod"
             assets.mkdir()
             (assets / "localization.json").write_text("{}\n", encoding="utf-8")
             with self.assertRaisesRegex(build.RitsuProfileError, "has_pck must be true"):
-                build.validate_resource_manifest(root, "Canary")
+                build.validate_resource_manifest(root, "ExampleMod")
 
             manifest.write_text(json.dumps({"has_pck": True}), encoding="utf-8")
             self.assertEqual(
                 "has_pck=true",
-                build.validate_resource_manifest(root, "Canary"),
+                build.validate_resource_manifest(root, "ExampleMod"),
             )
 
             (assets / "localization.json").unlink()
             with self.assertRaisesRegex(build.RitsuProfileError, "has_pck must be false"):
-                build.validate_resource_manifest(root, "Canary")
+                build.validate_resource_manifest(root, "ExampleMod")
 
     def test_resource_pack_is_only_selected_when_assets_exist(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            assets = root / "Canary"
-            mods = root / "mods" / "Canary"
+            assets = root / "ExampleMod"
+            mods = root / "mods" / "ExampleMod"
             assets.mkdir()
             mods.mkdir(parents=True)
 
             with mock.patch.object(build, "pack_assets") as pack, mock.patch("builtins.print"):
-                self.assertFalse(build.pack_project_assets(root, "Canary", mods))
+                self.assertFalse(build.pack_project_assets(root, "ExampleMod", mods))
                 pack.assert_not_called()
 
                 (assets / "localization.json").write_text("{}\n", encoding="utf-8")
-                self.assertTrue(build.pack_project_assets(root, "Canary", mods))
+                self.assertTrue(build.pack_project_assets(root, "ExampleMod", mods))
                 pack.assert_called_once_with(
-                    assets, "Canary", mods / "Canary.pck"
+                    assets, "ExampleMod", mods / "ExampleMod.pck"
                 )
 
     def test_main_stops_before_msbuild_when_ancient_dialogue_is_invalid(self) -> None:

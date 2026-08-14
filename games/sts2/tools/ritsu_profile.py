@@ -217,7 +217,7 @@ def validate_project_contract(project_dir: Path, mod_name: str | None = None) ->
         )
     sdk_dir = (
         project_dir
-        / "openmod"
+        / "skillthespire"
         / "sdk"
         / f"Godot.NET.Sdk.{PROFILE.godot_sdk_version}"
         / "Sdk"

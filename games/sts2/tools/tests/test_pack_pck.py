@@ -47,7 +47,7 @@ class PackPckTests(unittest.TestCase):
     def test_pack_preserves_raw_scene_and_imports_png(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            assets = root / "Canary"
+            assets = root / "ExampleMod"
             scene = assets / "scenes" / "background.tscn"
             image = assets / "images" / "background.png"
             scene.parent.mkdir(parents=True)
@@ -55,45 +55,45 @@ class PackPckTests(unittest.TestCase):
             scene_text = '[gd_scene format=3]\n\n[node name="Bg" type="Control"]\n'
             scene.write_text(scene_text, encoding="utf-8")
             Image.new("RGBA", (8, 6), (20, 40, 60, 255)).save(image)
-            output = root / "Canary.pck"
+            output = root / "ExampleMod.pck"
 
-            pack_pck.pack_assets(assets, "Canary", output)
+            pack_pck.pack_assets(assets, "ExampleMod", output)
             engine, entries = read_entries(output)
 
             self.assertEqual((4, 5, 1), engine)
             self.assertEqual(
                 scene.read_bytes(),
-                entries["Canary/scenes/background.tscn"],
+                entries["ExampleMod/scenes/background.tscn"],
             )
-            import_path = "Canary/images/background.png.import"
+            import_path = "ExampleMod/images/background.png.import"
             self.assertIn(import_path, entries)
             import_text = entries[import_path].decode("utf-8")
-            self.assertIn('source_file="res://Canary/images/background.png"', import_text)
+            self.assertIn('source_file="res://ExampleMod/images/background.png"', import_text)
             ctex_path = next(path for path in entries if path.endswith(".ctex"))
             self.assertTrue(entries[ctex_path].startswith(b"GST2"))
 
     def test_pack_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            assets = root / "Canary"
+            assets = root / "ExampleMod"
             assets.mkdir()
             (assets / "scene.tscn").write_text("[gd_scene format=3]\n", encoding="utf-8")
             first = root / "first.pck"
             second = root / "second.pck"
 
-            pack_pck.pack_assets(assets, "Canary", first)
-            pack_pck.pack_assets(assets, "Canary", second)
+            pack_pck.pack_assets(assets, "ExampleMod", first)
+            pack_pck.pack_assets(assets, "ExampleMod", second)
 
             self.assertEqual(first.read_bytes(), second.read_bytes())
 
     def test_shader_and_script_sources_remain_blocked(self) -> None:
         for suffix in sorted(pack_pck.UNSUPPORTED_SUFFIXES):
             with self.subTest(suffix=suffix), tempfile.TemporaryDirectory() as tmp:
-                assets = Path(tmp) / "Canary"
+                assets = Path(tmp) / "ExampleMod"
                 assets.mkdir()
                 (assets / f"unsupported{suffix}").write_text("source", encoding="utf-8")
                 with self.assertRaisesRegex(pack_pck.PackError, "remain unsupported"):
-                    pack_pck.pack_assets(assets, "Canary", Path(tmp) / "out.pck")
+                    pack_pck.pack_assets(assets, "ExampleMod", Path(tmp) / "out.pck")
 
 
 if __name__ == "__main__":

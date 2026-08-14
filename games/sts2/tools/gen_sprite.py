@@ -62,28 +62,27 @@ except ImportError:
 # all → generate/import refuses without an explicit --size (grounding doctrine: don't
 # guess a size as if measured). "verified" = the size + all icon paths have been confirmed
 # correct IN-GAME (a live run), not merely source-known. card/relic/power are live-verified:
-# card 1000×760 (2026-07-08); relic + power 256×256 (2026-07-08, canary-relic "Bauble" +
-# canary-power "Smolder" — bar/status icon, big detail-popup, and power's apply/expire
-# notification all render correctly). potion 256×256 also live-verified (2026-07-08,
-# canary-potion "Fizz") — RitsuLib's PotionAssetProfile accepts a loose PNG (no
+# card 1000×760 (2026-07-08); relic + power 256×256 (2026-07-08 — bar/status icon,
+# big detail-popup, and power apply/expire notification all render correctly). potion
+# 256×256 is also live-verified (2026-07-08) — RitsuLib's PotionAssetProfile accepts a loose PNG (no
 # .tres atlas needed); potion has ONE image texture (no big/), drawn tilted ~45° right.
 # Every normal-event portrait slot is a 3440x1613 loose PNG. The initial slot reaches
 # EventModel.CreateInitialPortrait through CustomEventModel.CustomInitialPortraitPath;
 # authored later-page slots reach the same TextureRect through NEventRoom.SetPortrait.
 # The initial contract was live-verified on 2026-07-17, and the reused MapNode run verified
 # a second page slot plus missing-phobia fallback and portrait-child cleanup on 2026-07-20.
-# enchantment is one 64x64 loose icon. The 2026-07-17 CanaryEnchantment headed run
+# enchantment is one 64x64 loose icon. A 2026-07-17 headed run
 # observed the same custom resource in both the real NCard enchantment tab and the card's
 # hover tooltip, then preserved the attached enchantment's Block behavior.
 # orb art has two independent contracts. This spec owns only the loose 100x100 icon used
-# by the hover tooltip and NOrb flash particles. CanaryOrb live-verified both consumers on
+# by the hover tooltip and NOrb flash particles. A hosted run verified both consumers on
 # 2026-07-17. The persistent combat body is a separate Spine scene and is never emitted by
 # this raster normalizer.
 # monster is a static-body profile, not an animation contract. RitsuLib renders the loose
 # texture one-to-one through RitsuGodotNodeFactories, so the normalized pixel dimensions
-# also define the combat/bestiary footprint. RitsuMonsterProof live-verified the 360x360
+# also define the combat/bestiary footprint. A hosted Monster proof verified the 360x360
 # texture in both consumers with generated bounds/intent nodes on 2026-07-22.
-# rest_site_option is one opaque 256x169 button image. M66RestSiteProof live-verified the
+# rest_site_option is one opaque 256x169 button image. A hosted headed run verified the
 # custom framing and native Heal fallback in real NRestSiteButton consumers on 2026-07-30.
 # fit: "cover"   = fill the whole rect, crop overflow (a full-bleed illustration the
 #                  game frames itself, e.g. a card portrait). Opaque.
@@ -168,7 +167,7 @@ def cue_sheet_size(spec: str, override: tuple[int, int] | None) -> tuple[int, in
 
 
 # --- normalize primitives (magenta chroma-key adapted from agent-sprite-forge,
-#     reference/baselines; M6 cut-outs also remove disconnected model debris) ---
+#     reference/baselines; foreground cut-outs also remove disconnected model debris) ---
 
 def chroma_key_magenta(img: "Image.Image", threshold: int = 100) -> "Image.Image":
     """Make near-#FF00FF pixels transparent. Single pass over RGBA data."""
@@ -857,13 +856,13 @@ def cmd_import(args: argparse.Namespace) -> int:
     return 0
 
 
-# --- the art contract as data (M8.0 change 2) ---
+# --- the art contract as data ---
 #
 # SPECS and CHARACTER_ART_BUNDLE above stay the ONLY definition. This section projects them
 # into a queryable catalog so a reader does not have to execute Python or trust a prose
 # table. `export-contract` writes it; test_art_contract_catalog.py asserts the committed
 # file still equals what the code holds, so a code change with no re-export fails.
-ART_CONTRACT_SCHEMA = "openmod.sts2.art-contract/v1"
+ART_CONTRACT_SCHEMA = "skillthespire.sts2.art-contract/v1"
 ART_CONTRACT_RELATIVE_PATH = Path(
     "reference/catalogs/art-contract-sts2-0.107.1.json"
 )
@@ -966,7 +965,7 @@ def build_art_contract_catalog() -> dict:
     if cues is not None:
         catalog["character_cues"] = {
             # Named columns/rows plus explicit pixel geometry: a bare "NxM" grid string is
-            # ambiguous and the two orders disagreed across this repo before M8.0 change 2.
+            # ambiguous and the two orders previously disagreed across this repo.
             "actions": [
                 {
                     "name": action.name,
@@ -1010,10 +1009,10 @@ def default_art_contract_path() -> Path:
     """Resolve the catalog path from either the repo layout or a published payload."""
     here = Path(__file__).resolve()
     candidates = (
-        # repo: games/sts2/tools/ -> games/sts2/skills/sts2-api/
-        here.parent.parent / "skills" / "sts2-api" / ART_CONTRACT_RELATIVE_PATH,
-        # payload: skills/modmaker/scripts/ -> skills/sts2-api/
-        here.parents[2] / "sts2-api" / ART_CONTRACT_RELATIVE_PATH,
+        # repo: games/sts2/tools/ -> games/sts2/skills/sts2api/
+        here.parent.parent / "skills" / "sts2api" / ART_CONTRACT_RELATIVE_PATH,
+        # payload: skills/modmaker/scripts/ -> skills/sts2api/
+        here.parents[2] / "sts2api" / ART_CONTRACT_RELATIVE_PATH,
     )
     for candidate in candidates:
         if candidate.is_file():
@@ -1092,7 +1091,7 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--config", help="art-backend.json (else $GEN_SPRITE_CONFIG)")
     g.add_argument("--size", type=parse_size, help="override WxH (required for unverified specs)")
     g.add_argument("--reference", help="few-shot STS2 style references: a dir (e.g. the "
-                   "sts2-api art-samples/) or comma-separated image files. Sent to the "
+                   "sts2api art-samples/) or comma-separated image files. Sent to the "
                    "backend's /images/edits endpoint so output matches the game style. "
                    "Requires a backend that accepts reference images (e.g. gpt-image "
                    "edits or Gemini/nano-banana). Omit → plain text-to-image.")
@@ -1122,7 +1121,7 @@ def build_parser() -> argparse.ArgumentParser:
         "export-contract",
         help="Project the code-owned art contract into its JSON catalog.",
     )
-    ec.add_argument("--output", help="destination path (default: the sts2-api catalog)")
+    ec.add_argument("--output", help="destination path (default: the sts2api catalog)")
     ec.add_argument(
         "--check",
         action="store_true",

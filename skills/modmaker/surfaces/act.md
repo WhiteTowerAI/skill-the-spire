@@ -26,7 +26,7 @@ Settle and write:
 - a real act-transition SelfTest that reaches map, weak/regular/elite/Boss combat, Event, Ancient,
   chest, and Rest Site consumers without treating registration as entry proof.
 
-All M8.8 Act entry predicates must reject `ctx.IsMultiplayer`. Keep
+All authored Act entry predicates must reject `ctx.IsMultiplayer`. Keep
 `AllowInRandomActList == false`: organic vanilla random-list opt-in has no singleplayer predicate
 and would create a deferred Multiplayer interaction. Use the explicit force/uniform/weighted
 entry routes instead.

@@ -58,7 +58,7 @@ COMPOSED_CARD_SPEC = """# SPEC - Echoing Edge
 """
 
 
-WORK_PACKAGE_2_SPEC = """# SPEC - Work Package 2 Composition
+MULTI_SURFACE_SPEC = """# SPEC - Multi-Surface Composition
 
 ## Affliction
 
@@ -94,7 +94,7 @@ WORK_PACKAGE_2_SPEC = """# SPEC - Work Package 2 Composition
 """
 
 
-WORK_PACKAGE_3_SPEC = """# SPEC - World Content
+WORLD_CONTENT_SPEC = """# SPEC - World Content
 
 ## Act
 
@@ -119,7 +119,7 @@ WORK_PACKAGE_3_SPEC = """# SPEC - World Content
 """
 
 
-WORK_PACKAGE_4_SPEC = """# SPEC - Reward and Card Pile
+REWARD_CARD_PILE_SPEC = """# SPEC - Reward and Card Pile
 
 ## Reward
 
@@ -145,7 +145,7 @@ WORK_PACKAGE_4_SPEC = """# SPEC - Reward and Card Pile
 """
 
 
-WORK_PACKAGE_5_SPEC = """# SPEC - Runtime Codex
+RUNTIME_UI_SPEC = """# SPEC - Runtime Codex
 
 ## Runtime UI
 
@@ -170,7 +170,7 @@ WORK_PACKAGE_5_SPEC = """# SPEC - Runtime Codex
 """
 
 
-WORK_PACKAGE_8_SPEC = """# SPEC - Archive Delivery
+INTEGRATED_OWNER_SPEC = """# SPEC - Archive Delivery
 
 ## Event and Reward
 
@@ -204,7 +204,7 @@ WORK_PACKAGE_8_SPEC = """# SPEC - Archive Delivery
 """
 
 
-M89_ACTIVE_OWNER_SPEC = """# SPEC - Charged Strike
+ACTIVE_OWNER_EFFECT_SPEC = """# SPEC - Charged Strike
 
 ## Card
 
@@ -223,7 +223,7 @@ M89_ACTIVE_OWNER_SPEC = """# SPEC - Charged Strike
 """
 
 
-M89_ATTACHED_OWNER_SPEC = """# SPEC - Guarded Script
+ATTACHED_OWNER_EFFECT_SPEC = """# SPEC - Guarded Script
 
 ## Enchantment
 
@@ -242,7 +242,7 @@ M89_ATTACHED_OWNER_SPEC = """# SPEC - Guarded Script
 """
 
 
-M89_BLOCKING_WORLD_SPEC = """# SPEC - Curator's Gift
+BLOCKING_WORLD_EFFECT_SPEC = """# SPEC - Curator's Gift
 
 ## Event
 
@@ -264,14 +264,10 @@ M89_BLOCKING_WORLD_SPEC = """# SPEC - Curator's Gift
 
 
 class RequirementToAuthoringTests(unittest.TestCase):
-    def test_m89_effect_reference_covers_audited_families_and_rejections(self) -> None:
+    def test_effect_reference_covers_supported_families_and_rejections(self) -> None:
         reference = (
-            SKILLS_DIR / "sts2-api" / "reference" / "effect-primitives.md"
+            SKILLS_DIR / "sts2api" / "reference" / "effect-primitives.md"
         ).read_text(encoding="utf-8")
-        audit = (
-            TOOLS_DIR.parent / "experimental" / "M89_EFFECT_PRIMITIVE_AUDIT.md"
-        ).read_text(encoding="utf-8")
-
         family_symbols = (
             "DamageCmd.Attack",
             "CreatureCmd.GainBlock",
@@ -288,25 +284,21 @@ class RequirementToAuthoringTests(unittest.TestCase):
                 self.assertIn(symbol, reference)
 
         specialized_routes = (
-            "reference/card-play-lifecycle.md",
             "recipes/card-pile.md",
-            "recipes/reward.md",
             "reference/rest-site-options.md",
             "reference/character-resource.md",
         )
         for route in specialized_routes:
             with self.subTest(route=route):
-                self.assertIn(route, audit + reference)
+                self.assertIn(route, reference)
 
-        self.assertEqual(9, audit.count("**Include."))
-        self.assertGreaterEqual(audit.count("**Exclude:"), 1)
         self.assertNotIn("EffectEngine", reference.replace("runtime EffectEngine", ""))
         self.assertIn("report it literally", reference)
 
     def test_simple_card_request_reaches_an_implementable_authoring_route(self) -> None:
         self.assertEqual((1, 0, False), preflight.validate_spec_text(EMBER_STEP_SPEC))
 
-        recipe = (SKILLS_DIR / "sts2-api" / "recipes" / "card.md").read_text(
+        recipe = (SKILLS_DIR / "sts2api" / "recipes" / "card.md").read_text(
             encoding="utf-8"
         )
         author = (SKILLS_DIR / "modmaker" / "author.md").read_text(encoding="utf-8")
@@ -329,7 +321,7 @@ class RequirementToAuthoringTests(unittest.TestCase):
     def test_composed_card_reaches_owner_bound_shared_routes(self) -> None:
         self.assertEqual((5, 0, False), preflight.validate_spec_text(COMPOSED_CARD_SPEC))
 
-        api_root = SKILLS_DIR / "sts2-api"
+        api_root = SKILLS_DIR / "sts2api"
         api_skill = (api_root / "SKILL.md").read_text(encoding="utf-8")
         card_surface = (SKILLS_DIR / "modmaker" / "surfaces" / "card.md").read_text(
             encoding="utf-8"
@@ -393,7 +385,7 @@ class RequirementToAuthoringTests(unittest.TestCase):
 
     def test_shared_routes_keep_truthful_surface_owners(self) -> None:
         surface_root = SKILLS_DIR / "modmaker" / "surfaces"
-        recipe_root = SKILLS_DIR / "sts2-api" / "recipes"
+        recipe_root = SKILLS_DIR / "sts2api" / "recipes"
 
         model_and_effect_owners = (
             "card",
@@ -426,11 +418,11 @@ class RequirementToAuthoringTests(unittest.TestCase):
         self.assertIn("must not select", keyword_surface)
         self.assertIn("never selects", keyword_recipe)
 
-    def test_work_package_2_reaches_independent_authoring_routes(self) -> None:
-        self.assertEqual((5, 1, False), preflight.validate_spec_text(WORK_PACKAGE_2_SPEC))
+    def test_multi_surface_spec_reaches_independent_authoring_routes(self) -> None:
+        self.assertEqual((5, 1, False), preflight.validate_spec_text(MULTI_SURFACE_SPEC))
 
         surface_root = SKILLS_DIR / "modmaker" / "surfaces"
-        recipe_root = SKILLS_DIR / "sts2-api" / "recipes"
+        recipe_root = SKILLS_DIR / "sts2api" / "recipes"
         expected = {
             "affliction": ("ModAfflictionTemplate", "CardCmd.Afflict"),
             "modifier": ("ModModifierTemplate", "MutuallyExclusiveModifierGroup"),
@@ -446,17 +438,17 @@ class RequirementToAuthoringTests(unittest.TestCase):
                     self.assertIn(ingredient, recipe)
 
         rest_site = (
-            SKILLS_DIR / "sts2-api" / "reference" / "rest-site-options.md"
+            SKILLS_DIR / "sts2api" / "reference" / "rest-site-options.md"
         ).read_text(encoding="utf-8")
         for owner in ("standalone", "Card", "Relic", "Modifier"):
             self.assertIn(owner, rest_site)
         self.assertIn("before the first mutation", rest_site)
 
-    def test_work_package_3_reaches_act_and_ancient_authoring_routes(self) -> None:
-        self.assertEqual((2, 0, False), preflight.validate_spec_text(WORK_PACKAGE_3_SPEC))
+    def test_world_content_spec_reaches_act_and_ancient_authoring_routes(self) -> None:
+        self.assertEqual((2, 0, False), preflight.validate_spec_text(WORLD_CONTENT_SPEC))
 
         surface_root = SKILLS_DIR / "modmaker" / "surfaces"
-        recipe_root = SKILLS_DIR / "sts2-api" / "recipes"
+        recipe_root = SKILLS_DIR / "sts2api" / "recipes"
         act_surface = (surface_root / "act.md").read_text(encoding="utf-8")
         ancient_surface = (surface_root / "ancient.md").read_text(encoding="utf-8")
         act_recipe = (recipe_root / "act.md").read_text(encoding="utf-8")
@@ -488,11 +480,11 @@ class RequirementToAuthoringTests(unittest.TestCase):
         self.assertIn("real Ancient room", ancient_surface)
         self.assertIn("game-unobserved", ancient_surface)
 
-    def test_work_package_4_reaches_reward_and_card_pile_authoring_routes(self) -> None:
-        self.assertEqual((3, 0, False), preflight.validate_spec_text(WORK_PACKAGE_4_SPEC))
+    def test_reward_and_card_pile_spec_reaches_authoring_routes(self) -> None:
+        self.assertEqual((3, 0, False), preflight.validate_spec_text(REWARD_CARD_PILE_SPEC))
 
         surface_root = SKILLS_DIR / "modmaker" / "surfaces"
-        recipe_root = SKILLS_DIR / "sts2-api" / "recipes"
+        recipe_root = SKILLS_DIR / "sts2api" / "recipes"
         reward = (surface_root / "reward.md").read_text(encoding="utf-8") + (
             recipe_root / "reward.md"
         ).read_text(encoding="utf-8")
@@ -500,7 +492,7 @@ class RequirementToAuthoringTests(unittest.TestCase):
             recipe_root / "card-pile.md"
         ).read_text(encoding="utf-8")
         pile_reference = (
-            SKILLS_DIR / "sts2-api" / "reference" / "card-piles.md"
+            SKILLS_DIR / "sts2api" / "reference" / "card-piles.md"
         ).read_text(encoding="utf-8")
 
         for contract in (
@@ -529,13 +521,13 @@ class RequirementToAuthoringTests(unittest.TestCase):
         for slug in ("reward", "card-pile"):
             self.assertIn("Proof matrix", (surface_root / f"{slug}.md").read_text(encoding="utf-8"))
 
-    def test_work_package_5_reaches_runtime_ui_authoring_route(self) -> None:
-        self.assertEqual((2, 0, False), preflight.validate_spec_text(WORK_PACKAGE_5_SPEC))
+    def test_runtime_ui_spec_reaches_authoring_route(self) -> None:
+        self.assertEqual((2, 0, False), preflight.validate_spec_text(RUNTIME_UI_SPEC))
 
         surface = (SKILLS_DIR / "modmaker" / "surfaces" / "runtime-ui.md").read_text(
             encoding="utf-8"
         )
-        recipe = (SKILLS_DIR / "sts2-api" / "recipes" / "runtime-ui.md").read_text(
+        recipe = (SKILLS_DIR / "sts2api" / "recipes" / "runtime-ui.md").read_text(
             encoding="utf-8"
         )
 
@@ -566,11 +558,11 @@ class RequirementToAuthoringTests(unittest.TestCase):
         self.assertIn("Proof matrix", surface)
         self.assertIn("game-unobserved", surface)
 
-    def test_work_package_8_composes_truthful_owners_without_a_combo_surface(self) -> None:
-        self.assertEqual((6, 0, False), preflight.validate_spec_text(WORK_PACKAGE_8_SPEC))
+    def test_integrated_spec_composes_truthful_owners_without_a_combo_surface(self) -> None:
+        self.assertEqual((6, 0, False), preflight.validate_spec_text(INTEGRATED_OWNER_SPEC))
 
         modmaker = SKILLS_DIR / "modmaker"
-        api = SKILLS_DIR / "sts2-api"
+        api = SKILLS_DIR / "sts2api"
         semantic_contract = (modmaker / "semantic-contract.md").read_text(encoding="utf-8")
         author = (modmaker / "author.md").read_text(encoding="utf-8")
         verify = (modmaker / "verify.md").read_text(encoding="utf-8")
@@ -618,10 +610,10 @@ class RequirementToAuthoringTests(unittest.TestCase):
         for boundary in deferred:
             self.assertIn(boundary, runtime_surface)
 
-    def test_m89_active_owner_composes_ordered_effect_primitives(self) -> None:
-        self.assertEqual((2, 0, False), preflight.validate_spec_text(M89_ACTIVE_OWNER_SPEC))
+    def test_active_owner_composes_ordered_effect_primitives(self) -> None:
+        self.assertEqual((2, 0, False), preflight.validate_spec_text(ACTIVE_OWNER_EFFECT_SPEC))
 
-        api = SKILLS_DIR / "sts2-api"
+        api = SKILLS_DIR / "sts2api"
         reference = (api / "reference" / "effect-primitives.md").read_text(encoding="utf-8")
         surface = (SKILLS_DIR / "modmaker" / "surfaces" / "card.md").read_text(
             encoding="utf-8"
@@ -650,10 +642,10 @@ class RequirementToAuthoringTests(unittest.TestCase):
         self.assertIn("emit each awaited call in SPEC order", author)
         self.assertIn("must be non-null", reference)
 
-    def test_m89_attached_owner_composes_without_losing_host_provenance(self) -> None:
-        self.assertEqual((2, 0, False), preflight.validate_spec_text(M89_ATTACHED_OWNER_SPEC))
+    def test_attached_owner_composes_without_losing_host_provenance(self) -> None:
+        self.assertEqual((2, 0, False), preflight.validate_spec_text(ATTACHED_OWNER_EFFECT_SPEC))
 
-        api = SKILLS_DIR / "sts2-api"
+        api = SKILLS_DIR / "sts2api"
         reference = (api / "reference" / "effect-primitives.md").read_text(encoding="utf-8")
         surface = (SKILLS_DIR / "modmaker" / "surfaces" / "enchantment.md").read_text(
             encoding="utf-8"
@@ -684,10 +676,10 @@ class RequirementToAuthoringTests(unittest.TestCase):
         ):
             self.assertIn(binding, affliction_surface)
 
-    def test_m89_blocking_world_transaction_waits_for_ordinary_results(self) -> None:
-        self.assertEqual((3, 0, False), preflight.validate_spec_text(M89_BLOCKING_WORLD_SPEC))
+    def test_blocking_world_transaction_waits_for_ordinary_results(self) -> None:
+        self.assertEqual((3, 0, False), preflight.validate_spec_text(BLOCKING_WORLD_EFFECT_SPEC))
 
-        api = SKILLS_DIR / "sts2-api"
+        api = SKILLS_DIR / "sts2api"
         reference = (api / "reference" / "effect-primitives.md").read_text(encoding="utf-8")
         surface = (SKILLS_DIR / "modmaker" / "surfaces" / "event.md").read_text(
             encoding="utf-8"

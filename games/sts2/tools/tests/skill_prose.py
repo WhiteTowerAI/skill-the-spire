@@ -10,7 +10,7 @@ from pathlib import Path
 
 SKILLS_DIR = Path(__file__).resolve().parents[2] / "skills"
 MODMAKER_DIR = SKILLS_DIR / "modmaker"
-STS2_API_DIR = SKILLS_DIR / "sts2-api"
+STS2API_DIR = SKILLS_DIR / "sts2api"
 SURFACES_DIR = MODMAKER_DIR / "surfaces"
 
 # A stage's corpus = its own page + every surface page it delegates to.

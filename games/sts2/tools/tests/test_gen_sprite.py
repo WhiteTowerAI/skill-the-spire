@@ -50,7 +50,7 @@ class GenSpriteTests(unittest.TestCase):
         self.assertEqual(255, cleaned.getpixel((50, 50))[3])
 
     def test_shipped_m6_reference_pools_match_supported_profiles(self) -> None:
-        root = TOOLS_DIR.parent / "skills" / "sts2-api" / "reference" / "art-samples"
+        root = TOOLS_DIR.parent / "skills" / "sts2api" / "reference" / "art-samples"
         expected = {
             "enchantment": (20, (64, 64)),
             "orb": (5, (100, 100)),
@@ -532,7 +532,7 @@ class GenSpriteTests(unittest.TestCase):
                     "--spec",
                     "monster",
                     "--slug",
-                    "canary_sentinel",
+                    "example_monster",
                     "--input",
                     str(source),
                     "--out",
@@ -545,7 +545,7 @@ class GenSpriteTests(unittest.TestCase):
             )
 
             self.assertEqual(0, result.returncode, result.stderr)
-            destination = out / "monsters" / "canary_sentinel.png"
+            destination = out / "monsters" / "example_monster.png"
             self.assertTrue(destination.is_file())
             with Image.open(destination) as image:
                 self.assertEqual((360, 360), image.size)

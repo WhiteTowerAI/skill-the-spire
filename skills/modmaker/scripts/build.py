@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a local-runtime STS2/RitsuLib Mod into the game's mods/ folder.
 
-Validates the open-mod RitsuLib profile before MSBuild, then verifies the resolved local
+Validates the skill-the-spire RitsuLib profile before MSBuild, then verifies the resolved local
 assembly and deployed artifacts. Framework assemblies are supplied by the game/runtime
 installation or bundled build SDK and are never copied into the generated Mod.
 
@@ -12,8 +12,8 @@ unchanged; only the STS2 install/mods location differs, and that is resolved by 
 csproj's Sts2PathDiscovery.props rather than here.
 
 Usage:
-  python build.py --project-dir D:/26summer_intern/canary-card
-  python build.py --project-dir <dir> --mod-name CanaryCard
+  python build.py --project-dir D:/mods/example-mod
+  python build.py --project-dir <dir> --mod-name ExampleMod
 """
 from __future__ import annotations
 
@@ -144,11 +144,11 @@ def validate_resource_manifest(project_dir: Path, mod_name: str) -> str:
 # depth and parses EVERY `.json` it finds as a Mod manifest, logging a load error for each
 # one that has no `id`. A deployed Mod therefore contains exactly one loose `.json`: its own
 # manifest. Localization and other authored JSON ship inside the `.pck`, never loose.
-STALE_DEPLOYED_SIDECARS = (Path("openmod/vanilla-overrides.json"),)
+STALE_DEPLOYED_SIDECARS = (Path("skillthespire/vanilla-overrides.json"),)
 
 
 def prune_stale_deployed_sidecars(mods_dir: Path) -> list[str]:
-    """Remove non-manifest `.json` files earlier open-mod builds deployed by mistake."""
+    """Remove non-manifest `.json` files earlier skill-the-spire builds deployed by mistake."""
     removed: list[str] = []
     for relative in STALE_DEPLOYED_SIDECARS:
         stale = mods_dir / relative

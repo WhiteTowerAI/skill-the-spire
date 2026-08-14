@@ -1,0 +1,77 @@
+{
+  "schema": "skillthespire.sts2.character-foundation/v1",
+  "host_version": "0.107.1",
+  "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
+  "source": {
+    "assembly_name": "sts2",
+    "assembly_sha256": "a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52",
+    "assembly_mvid": "97f10687-c306-4798-ab75-8b9f23f34dfb",
+    "inspection": "Direct inspection of the five CharacterModel types in the pinned assembly; baselines/spire-codex is corroborating research only."
+  },
+  "characters": [
+    {
+      "id": "IRONCLAD",
+      "model_type": "MegaCrit.Sts2.Core.Models.Characters.Ironclad",
+      "starting_hp": 80,
+      "starting_gold": 99,
+      "starting_deck": [
+        { "card_type": "StrikeIronclad", "count": 5 },
+        { "card_type": "DefendIronclad", "count": 4 },
+        { "card_type": "Bash", "count": 1 }
+      ],
+      "starting_relic": "BurningBlood"
+    },
+    {
+      "id": "SILENT",
+      "model_type": "MegaCrit.Sts2.Core.Models.Characters.Silent",
+      "starting_hp": 70,
+      "starting_gold": 99,
+      "starting_deck": [
+        { "card_type": "StrikeSilent", "count": 5 },
+        { "card_type": "DefendSilent", "count": 5 },
+        { "card_type": "Neutralize", "count": 1 },
+        { "card_type": "Survivor", "count": 1 }
+      ],
+      "starting_relic": "RingOfTheSnake"
+    },
+    {
+      "id": "DEFECT",
+      "model_type": "MegaCrit.Sts2.Core.Models.Characters.Defect",
+      "starting_hp": 75,
+      "starting_gold": 99,
+      "starting_deck": [
+        { "card_type": "StrikeDefect", "count": 4 },
+        { "card_type": "DefendDefect", "count": 4 },
+        { "card_type": "Zap", "count": 1 },
+        { "card_type": "Dualcast", "count": 1 }
+      ],
+      "starting_relic": "CrackedCore"
+    },
+    {
+      "id": "NECROBINDER",
+      "model_type": "MegaCrit.Sts2.Core.Models.Characters.Necrobinder",
+      "starting_hp": 66,
+      "starting_gold": 99,
+      "starting_deck": [
+        { "card_type": "StrikeNecrobinder", "count": 4 },
+        { "card_type": "DefendNecrobinder", "count": 4 },
+        { "card_type": "Bodyguard", "count": 1 },
+        { "card_type": "Unleash", "count": 1 }
+      ],
+      "starting_relic": "BoundPhylactery"
+    },
+    {
+      "id": "REGENT",
+      "model_type": "MegaCrit.Sts2.Core.Models.Characters.Regent",
+      "starting_hp": 75,
+      "starting_gold": 99,
+      "starting_deck": [
+        { "card_type": "StrikeRegent", "count": 4 },
+        { "card_type": "DefendRegent", "count": 4 },
+        { "card_type": "FallingStar", "count": 1 },
+        { "card_type": "Venerate", "count": 1 }
+      ],
+      "starting_relic": "DivineRight"
+    }
+  ]
+}

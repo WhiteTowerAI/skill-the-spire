@@ -70,4 +70,4 @@ style unrelated game/framework controls as product behavior.
    response to the active shell-theme snapshot.
 
 Compilation, direct callback invocation, registry lookup, or a constructed Godot node is not UI or
-input observation. This M8.8 Runtime UI route remains game-unobserved until its real hosts run.
+input observation. This Runtime UI route remains game-unobserved until its real hosts run.

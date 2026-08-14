@@ -35,7 +35,7 @@ real STS2 host. Contracts guide authoring; Build and host autotests establish re
 
 ## Supported product boundary
 
-The exact inventory and limitations live in the shipped surfaces and `sts2-api` references.
+The exact inventory and limitations live in the shipped surfaces and `sts2api` references.
 Current authoring includes:
 
 - Card, Relic, Potion, Power, Keyword, Enchantment, and Orb content;
@@ -43,7 +43,7 @@ Current authoring includes:
 - combat Card Afflictions, selectable good/bad run Modifiers, explicit Run/Combat Global
   Effects, and independently owned Rest Site actions;
 - custom native-screen Rewards with deterministic save reconstruction, and independently owned
-  Custom Card Piles across the complete documented Package;
+  Custom Card Piles across the complete documented API;
 - local Mod-owned Runtime UI workflows using selected top-bar, Toast, runtime-hotkey, local
   Capstone, Catalog, floating-window, search-expansion, fixed node-attachment, and shell-token APIs;
 - computed Card Damage/Block/Energy/Star/Power values under one preview/execution formula;
@@ -57,11 +57,11 @@ Current authoring includes:
 - grounded vanilla Card, visual, Ancient, availability, and non-Card overrides; and
 - cataloged model-hook participation on only the custom surfaces the host dispatches to.
 
-The nine generalized M8.7 families remain authorable through their owner pages: secondary
+The nine generalized families remain authorable through their owner pages: secondary
 resources; Monster/Encounter composition and HP; Character starting fields; Card/Relic Rest
 Site options; computed Card values; bounded state; forced Event mappings; Card Star costs; and
 Event acquisition/shake profiles. Their newly generalized variants remain game-unobserved until
-a real current run proves them. Do not narrow a documented Package merely because one consumer
+a real current run proves them. Do not narrow a documented feature family merely because one consumer
 lacks focused proof.
 
 Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, and new integrations
@@ -95,11 +95,11 @@ Read each file from `${MODMAKER_SKILL_DIR}/` only when its stage begins:
 | `verify.md` | Tier 1, Tier 2, headed review, and direct final report |
 | `repair.md` | Bounded repair from compiler/log/state evidence |
 
-Query `${STS2_API_SKILL_DIR}` narrowly when a concrete API, recipe, capability, error, art, or
+Query `${STS2API_SKILL_DIR}` narrowly when a concrete API, recipe, capability, error, art, or
 SelfTest answer is needed. Do not load the full API pack.
 
 For a playable Character or Character content set, load
-`${STS2_API_SKILL_DIR}/design/character-foundation.md` before creative questions. It supplies
+`${STS2API_SKILL_DIR}/design/character-foundation.md` before creative questions. It supplies
 the pinned starter inventory and native-shaped defaults; it does not constrain other surfaces.
 
 ## Pipeline

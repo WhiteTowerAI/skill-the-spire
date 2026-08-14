@@ -3,7 +3,7 @@
   Launch STS2 headless-of-Steam for load verification, wait, then close it.
 
 .DESCRIPTION
-  R2 launch step (modmaker's verify.md). Ensures steam_appid.txt (=2868840) exists in
+  Launch helper for modmaker's verify.md. Ensures steam_appid.txt (=2868840) exists in
   the game dir so SlayTheSpire2.exe runs without Steam, launches the game, waits, then
   stops the process. Does NOT assert anything itself — pair with grep_log.ps1 to check
   for the [T2MOD-SELFTEST] marker.
@@ -37,7 +37,7 @@
 
 .EXAMPLE
   pwsh tools/launch.ps1                                  # tier-1: launch, wait 25s, close
-  pwsh tools/launch.ps1 -SelfTest -ModName CanaryCard    # tier-2: self-drive, poll for marker
+  pwsh tools/launch.ps1 -SelfTest -ModName ExampleMod    # tier-2: self-drive, poll for marker
 #>
 [CmdletBinding()]
 param(

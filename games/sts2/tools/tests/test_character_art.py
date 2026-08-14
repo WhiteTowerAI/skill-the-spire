@@ -11,8 +11,8 @@ from PIL import Image, ImageDraw
 
 TOOLS_DIR = Path(__file__).resolve().parents[1]
 STS2_DIR = TOOLS_DIR.parent
-ART_SAMPLES = STS2_DIR / "skills" / "sts2-api" / "reference" / "art-samples"
-CHARACTER_RECIPE = STS2_DIR / "skills" / "sts2-api" / "recipes" / "character.md"
+ART_SAMPLES = STS2_DIR / "skills" / "sts2api" / "reference" / "art-samples"
+CHARACTER_RECIPE = STS2_DIR / "skills" / "sts2api" / "recipes" / "character.md"
 MODMAKER_AUTHOR = STS2_DIR / "skills" / "modmaker" / "author.md"
 sys.path.insert(0, str(TOOLS_DIR))
 from character_art import (  # noqa: E402

@@ -32,7 +32,7 @@ current product capabilities, including:
 - combat Card Afflictions, selectable run Modifiers, scoped Global Effects, and independent Rest
   Site actions;
 - custom Rewards with native claim/refusal and pending-save reconstruction, and independent Card
-  Piles across the complete documented public Package;
+  Piles across the complete documented public API;
 - local Mod-owned Runtime UI workflows using selected top-bar, Toast, runtime-hotkey, Capstone,
   Catalog, floating-window, search-expansion, fixed node-attachment, and shell-token routes;
 - Monster move graphs and Encounter rosters;

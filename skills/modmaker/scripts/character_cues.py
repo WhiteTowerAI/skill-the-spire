@@ -432,7 +432,7 @@ def process_bundle(
 
     normalized, frame_metadata, global_scale, ratios = normalize_frames(extracted)
     metadata = {
-        "contract": "open-mod-character-cues/v1",
+        "contract": "skill-the-spire-character-cues/v1",
         "processor_source": "agent-sprite-forge techniques, adapted under MIT",
         "frame_size": list(FRAME_SIZE),
         "content_box": list(CONTENT_BOX),
@@ -469,8 +469,8 @@ def process_bundle(
     charui_root = images_root / "charui"
     charui_root.mkdir(parents=True, exist_ok=True)
     review_dir.parent.mkdir(parents=True, exist_ok=True)
-    stage_root = Path(tempfile.mkdtemp(prefix="open-mod-cues-", dir=charui_root))
-    stage_review = Path(tempfile.mkdtemp(prefix="open-mod-cue-review-", dir=review_dir.parent))
+    stage_root = Path(tempfile.mkdtemp(prefix="skill-the-spire-cues-", dir=charui_root))
+    stage_review = Path(tempfile.mkdtemp(prefix="skill-the-spire-cue-review-", dir=review_dir.parent))
     try:
         for action, frames in normalized.items():
             action_dir = stage_root / action

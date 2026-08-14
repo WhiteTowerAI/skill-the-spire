@@ -55,7 +55,7 @@ Tier 1 has three distinct failure modes, and they are not interchangeable: a **f
 marker** missing or mismatched is a profile/scaffold problem, a **load marker NOT FOUND while
 `RUNNING MODDED` = YES** means the Mod loaded but emitted no marker, and a **fresh
 error/exception block** means registration or runtime threw. Match the exact signature in
-`${STS2_API_SKILL_DIR}/errors.md` § Verification and § Registration And Localization for the
+`${STS2API_SKILL_DIR}/errors.md` § Verification and § Registration And Localization for the
 cause and fix; do not guess one.
 
 A code/csproj fix only reaches the game through a fresh build, so repair **rebuilds
@@ -92,7 +92,7 @@ expected/observed vocabulary:
 `"custom card piles complete.*observed=all"`, or
 `"runtime UI complete.*observed=all"`. A Reward run follows `surfaces/reward.md` and proves
 claim/refusal, the selected presentation route, and pending-save reconstruction. A custom-pile run follows
-`reference/card-piles.md` and proves the consumers selected by SPEC; Package support does
+`reference/card-piles.md` and proves the consumers selected by SPEC; API support does
 not require a separate run for every documented public consumer. The verifier ignores all
   ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
   requires the exact load marker and `selftest done`.
@@ -104,7 +104,7 @@ run actually proves it.
 
 > **Isolation before any `--self-test` run:** `--t2selftest` arms **every** loaded harness
 > mod, so park all non-target harness mods first (move them out of `mods/`), leaving only the
-> one under test. This includes **Overclock** and every `Canary*` — a stray second harness
+> one under test. A stray second harness
 > collides on the main menu (`ObjectDisposedException: NMainMenu`) and fails the run.
 
 - `launch.py --self-test` passes `--t2selftest` (which arms the harness — a normal launch
@@ -145,7 +145,7 @@ run actually proves it.
   dialogue, choice-history, and cleanup behavior. Existing-Ancient override proof is separate.
 - For a Reward, follow `surfaces/reward.md`: registration, direct serialization, or a direct method
   surrogate does not prove the native screen, claim/refusal, insertion, linked set, or reload.
-- For a Card Pile, follow `surfaces/card-pile.md` and the complete Package reference; static type
+- For a Card Pile, follow `surfaces/card-pile.md` and the complete API reference; static type
   lookup does not prove movement, persistence, UI, manual play, or cleanup.
 - For Runtime UI, follow `surfaces/runtime-ui.md`: compilation, registry lookup, direct callbacks,
   or constructed Godot nodes do not prove the real top bar, input router, Toast host, Capstone,
@@ -270,7 +270,7 @@ unverified; do not infer it from a resource path, `.pck` build, or primary view.
   feasible, report **tier-1 only** honestly.
 
 This tells you *which* failure you have. For the cause and fix of each, match the signature in
-`${STS2_API_SKILL_DIR}/errors.md` § Verification, and § Behavior for a state proof that
+`${STS2API_SKILL_DIR}/errors.md` § Verification, and § Behavior for a state proof that
 reports a wrong observed value.
 
 ### Manual fallback (only if the harness reported FAILED / timed out)
@@ -301,7 +301,7 @@ python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "<stat
 ```
 
 If the console won't open or `add` says "Unable to create", match
-`${STS2_API_SKILL_DIR}/errors.md` § Verification. The automated PASS still requires a structured harness state proof. A manual
+`${STS2API_SKILL_DIR}/errors.md` § Verification. The automated PASS still requires a structured harness state proof. A manual
 fallback may be reported as **manually observed** only when the user confirms the concrete
 state change; otherwise report tier-1 only.
 

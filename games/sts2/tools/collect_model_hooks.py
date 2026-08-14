@@ -2,9 +2,9 @@
 """Maintainer-only extractor for the pinned `AbstractModel` scalar/decision hook surface.
 
 Why this exists. A generated Mod can override a `public virtual` hook that the pinned host
-never dispatches to that kind of model: it compiles, ships, and silently never fires. That is
-the M7.6 Wrath failure shape — an identity-critical behavior absent while every local stage
-passes — so the authoring surface has to know *which* hooks a given surface can actually
+never dispatches to that kind of model: it compiles, ships, and silently never fires. An
+identity-critical behavior can therefore be absent while every local stage passes, so the
+authoring surface has to know *which* hooks a given surface can actually
 receive, not merely which ones exist.
 
 `AbstractModel` declares them all in one place, but reachability is decided elsewhere, by
@@ -37,7 +37,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
-SCHEMA = "openmod.sts2.model-hooks/v1"
+SCHEMA = "skillthespire.sts2.model-hooks/v1"
 HOST_VERSION = "0.107.1"
 CATALOG_RELATIVE_PATH = Path("reference/catalogs/model-hooks-sts2-0.107.1.json")
 
@@ -594,7 +594,7 @@ def build_catalog() -> dict:
 
 
 def default_catalog_path() -> Path:
-    return TOOLS_DIR.parent / "skills" / "sts2-api" / CATALOG_RELATIVE_PATH
+    return TOOLS_DIR.parent / "skills" / "sts2api" / CATALOG_RELATIVE_PATH
 
 
 def cmd_extract(args: argparse.Namespace) -> int:

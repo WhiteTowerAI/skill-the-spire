@@ -470,8 +470,8 @@ class CharacterArtBundle:
         """Locate source assets in both the repository and generated payload layouts."""
         module = Path(__file__).resolve()
         candidates = (
-            module.parents[1] / "skills" / "sts2-api" / "reference" / "energy_template",
-            module.parents[2] / "sts2-api" / "reference" / "energy_template",
+            module.parents[1] / "skills" / "sts2api" / "reference" / "energy_template",
+            module.parents[2] / "sts2api" / "reference" / "energy_template",
         )
         return tuple(dict.fromkeys(candidates))
 

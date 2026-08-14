@@ -4,12 +4,12 @@ using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-const string Schema = "openmod.sts2.vanilla-assembly-catalog/v1";
+const string Schema = "skillthespire.sts2.vanilla-assembly-catalog/v1";
 
 if (args.Length != 4)
 {
     Console.Error.WriteLine(
-        "usage: OpenMod.Sts2.AssemblyCatalog <sts2.dll> <adapter-targets.json> <profile> <output.json>");
+        "usage: SkillTheSpire.Sts2.AssemblyCatalog <sts2.dll> <adapter-targets.json> <profile> <output.json>");
     return 2;
 }
 
@@ -79,8 +79,8 @@ static AdapterTargets ReadTargets(string path)
 {
     var document = JsonSerializer.Deserialize<AdapterTargets>(File.ReadAllText(path), JsonOptions())
         ?? throw new InvalidDataException("adapter-targets root is empty");
-    if (document.Schema != "openmod.sts2.adapter-targets/v1")
-        throw new InvalidDataException("adapter-targets schema is not openmod.sts2.adapter-targets/v1");
+    if (document.Schema != "skillthespire.sts2.adapter-targets/v1")
+        throw new InvalidDataException("adapter-targets schema is not skillthespire.sts2.adapter-targets/v1");
     var duplicate = document.Targets.GroupBy(target => target.Id, StringComparer.Ordinal)
         .FirstOrDefault(group => group.Count() > 1);
     if (duplicate != null)
