@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Produce a custom STS2 sprite at the exact path + size the game expects.
 
-Two sources, one normalizer (PROJECT.md §7.1 — placeholder-vs-generate is decided
+Two sources, one normalizer: placeholder-vs-generate is decided
 upstream; this tool only runs when the user chose a custom sprite):
 
   generate  — BYO backend. Reads a provider-agnostic config ({base_url, api_key, model,

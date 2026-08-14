@@ -1045,6 +1045,6 @@ Optional keys: `chat_url` (override the endpoint), `chat_extra` (merge extra JSO
 the request body, e.g. a provider's `modalities` knob), `request_size`, `timeout`.
 
 We bundle or default to **no** provider — the user points this at whatever endpoint
-(cloud or local) they want (PROJECT.md §7.1: BYO backend). A missing/invalid config makes
+(cloud or local) they want; the backend remains user-provided. A missing/invalid config makes
 `generate` fail with a clear message and a non-zero exit, and the caller falls back to the
 placeholder.
