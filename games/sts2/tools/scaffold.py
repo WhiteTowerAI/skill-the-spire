@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the minimal open-mod-owned STS2/RitsuLib consumer scaffold."""
+"""Generate the minimal skill-the-spire-owned STS2/RitsuLib consumer scaffold."""
 from __future__ import annotations
 
 import argparse
@@ -57,7 +57,7 @@ def _bundled_godot_sdk_root() -> Path:
 
 def _copy_bundled_godot_sdk(project_dir: Path) -> None:
     source = _bundled_godot_sdk_root()
-    target = project_dir / "openmod" / "sdk" / f"Godot.NET.Sdk.{GODOT_SDK_VERSION}"
+    target = project_dir / "skillthespire" / "sdk" / f"Godot.NET.Sdk.{GODOT_SDK_VERSION}"
     shutil.copytree(source, target)
 
 
@@ -91,7 +91,7 @@ def generate(
     if not re.fullmatch(r"[0-9A-Fa-f]{64}", compile_profile.assembly_sha256):
         raise ValueError("compile runtime SHA-256 must be a 64-character hexadecimal digest")
 
-    sdk_root = f"openmod\\sdk\\Godot.NET.Sdk.{GODOT_SDK_VERSION}\\Sdk"
+    sdk_root = f"skillthespire\\sdk\\Godot.NET.Sdk.{GODOT_SDK_VERSION}\\Sdk"
 
     csproj = f'''<Project>
   <Import Project="{sdk_root}\\Sdk.props" />
@@ -122,7 +122,7 @@ def generate(
   </ItemGroup>
   <ItemGroup>
     <None Include="mod_manifest.json" />
-    <None Include="openmod\\vanilla-overrides.json" Condition="Exists('openmod\\vanilla-overrides.json')" />
+    <None Include="skillthespire\\vanilla-overrides.json" Condition="Exists('skillthespire\\vanilla-overrides.json')" />
     <None Include="Directory.Build.props" />
     <None Include="Sts2PathDiscovery.props" />
   </ItemGroup>
@@ -135,7 +135,7 @@ def generate(
     <Error Condition="!Exists('$(Sts2DataDir)\\System.IO.Hashing.dll')" Text="The local STS2 data directory is missing System.IO.Hashing.dll." />
     <Error Condition="'$(RitsuLibCompileAssemblyPath)' == '' or !Exists('$(RitsuLibCompileAssemblyPath)')" Text="The checked local RitsuLib {compile_profile.version} Compat DLL was not resolved by build.py." />
   </Target>
-  <Target Name="CopyOpenModArtifacts" AfterTargets="Build">
+  <Target Name="CopySkillTheSpireArtifacts" AfterTargets="Build">
     <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\\mod_manifest.json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
@@ -210,7 +210,7 @@ public static partial class MainFile
         "id": mod_name,
         "name": mod_name,
         "author": author,
-        "description": "Empty open-mod RitsuLib consumer scaffold",
+        "description": "Empty skill-the-spire RitsuLib consumer scaffold",
         "version": "0.0.0",
         "min_game_version": PROFILE.host_version,
         "has_pck": False,
@@ -235,7 +235,7 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Generate a minimal STS2/RitsuLib consumer project")
     parser.add_argument("--project-dir", required=True)
     parser.add_argument("--mod-name", required=True)
-    parser.add_argument("--author", default="OpenMod")
+    parser.add_argument("--author", default="SkillTheSpire")
     parser.add_argument("--game-dir", default=None, help="STS2 install directory")
     parser.add_argument(
         "--runtime-dir",

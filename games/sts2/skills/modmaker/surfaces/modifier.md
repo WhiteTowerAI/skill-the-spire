@@ -63,5 +63,5 @@ Use the real custom-run/daily selection host and the resulting run:
 6. assert no effect in a run where the Modifier is absent. Headed review owns list layout, color,
    icon framing, controller selection, and Neow presentation.
 
-The registration/lifecycle compile probe is framework evidence only. No custom Modifier is yet
-game-observed by M8.8.
+The registration/lifecycle compile evidence is framework evidence only. No custom Modifier is yet
+game-observed.

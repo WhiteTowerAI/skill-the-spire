@@ -60,7 +60,7 @@ class CharacterCueProcessorTests(unittest.TestCase):
             review = root / "review"
             metadata = process_bundle(self._sources(root), images, review)
 
-            self.assertEqual("open-mod-character-cues/v1", metadata["contract"])
+            self.assertEqual("skill-the-spire-character-cues/v1", metadata["contract"])
             self.assertEqual(18, sum(
                 len(action["frames"]) for action in metadata["actions"].values()
             ))

@@ -1,14 +1,14 @@
 {
-  "name": "open-mod",
+  "name": "skill-the-spire",
   "interface": {
-    "displayName": "Open Mod"
+    "displayName": "Skill the Spire"
   },
   "plugins": [
     {
-      "name": "open-mod",
+      "name": "skill-the-spire",
       "source": {
         "source": "local",
-        "path": "./plugins/open-mod"
+        "path": "./plugins/skill-the-spire"
       },
       "policy": {
         "installation": "AVAILABLE",

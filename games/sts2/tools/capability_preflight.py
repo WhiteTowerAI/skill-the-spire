@@ -26,7 +26,7 @@ from pathlib import Path
 
 HOOK_CATALOG_NAME = "model-hooks-sts2-0.107.1.json"
 CAPABILITY_DECLARATION_RE = re.compile(
-    r"<!--\s*openmod-capabilities:\s*(.*?)\s*-->", re.DOTALL
+    r"<!--\s*skillthespire-capabilities:\s*(.*?)\s*-->", re.DOTALL
 )
 SUPPORT_RE = re.compile(r"^\s*-\s*Support\s*:\s*`?(?P<route>[^`\s]+)`?\s*$", re.I)
 HOOK_RE = re.compile(r"^\s*-\s*Hook\s*:\s*(?P<body>.+?)\s*$", re.I)
@@ -53,16 +53,16 @@ def _tools_dir() -> Path:
 
 
 def api_root() -> Path:
-    """Resolve sts2-api in the repository or in either published payload layout."""
+    """Resolve sts2api in the repository or in either published payload layout."""
     here = _tools_dir()
     candidates = (
-        here.parent / "skills" / "sts2-api",
-        here.parents[1] / "sts2-api",
+        here.parent / "skills" / "sts2api",
+        here.parents[1] / "sts2api",
     )
     for candidate in candidates:
         if (candidate / "reference").is_dir() and (candidate / "recipes").is_dir():
             return candidate
-    raise CapabilityPreflightError("cannot locate the shipped sts2-api root")
+    raise CapabilityPreflightError("cannot locate the shipped sts2api root")
 
 
 def hook_catalog_path() -> Path:

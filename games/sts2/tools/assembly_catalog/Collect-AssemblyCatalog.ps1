@@ -6,7 +6,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Schema = 'openmod.sts2.vanilla-assembly-catalog/v1'
+$Schema = 'skillthespire.sts2.vanilla-assembly-catalog/v1'
 
 function Get-Sha256Hex([byte[]]$Bytes) {
     $sha = [Security.Cryptography.SHA256]::Create()
@@ -81,8 +81,8 @@ foreach ($dependency in @('System.Memory.dll', 'System.Collections.Immutable.dll
 }
 
 $targetsDocument = [IO.File]::ReadAllText($targetsFullPath, [Text.Encoding]::UTF8) | ConvertFrom-Json
-if ($targetsDocument.schema -ne 'openmod.sts2.adapter-targets/v1') {
-    throw 'adapter-targets schema is not openmod.sts2.adapter-targets/v1'
+if ($targetsDocument.schema -ne 'skillthespire.sts2.adapter-targets/v1') {
+    throw 'adapter-targets schema is not skillthespire.sts2.adapter-targets/v1'
 }
 $duplicateTarget = $targetsDocument.targets | Group-Object id | Where-Object Count -gt 1 | Select-Object -First 1
 if ($null -ne $duplicateTarget) {

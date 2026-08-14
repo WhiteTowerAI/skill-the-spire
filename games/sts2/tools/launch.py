@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Launch STS2 out-of-Steam for load verification, wait, then close it.
 
-R2 launch step (modmaker's verify.md). Ensures steam_appid.txt (=2868840) exists in
+Launch helper for modmaker's verify.md. Ensures steam_appid.txt (=2868840) exists in
 the game dir so the game runs without Steam, launches it, waits, then stops the
 process. Pair with grep_log.py to verify the resulting state-proof marker.
 
@@ -22,7 +22,7 @@ macOS/Linux Steam roots and Godot user-data dir are best-effort -- override with
 
 Usage:
   python launch.py                                        # tier-1: launch, wait, close
-  python launch.py --self-test --mod-name CanaryCard      # tier-2: self-drive, poll
+  python launch.py --self-test --mod-name ExampleMod      # tier-2: self-drive, poll
 """
 from __future__ import annotations
 

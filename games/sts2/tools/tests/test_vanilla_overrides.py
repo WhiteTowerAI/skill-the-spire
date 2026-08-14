@@ -160,8 +160,8 @@ def manifest_with(catalog: dict, operations: list[dict]) -> dict:
     return manifest
 
 
-def promote_card_package(catalog: dict) -> dict:
-    catalog["promoted_operation_packages"] = [overrides.PUBLIC_CARD_OVERRIDE_PACKAGE]
+def enable_card_family(catalog: dict) -> dict:
+    catalog["authorable_route_families"] = [overrides.PUBLIC_CARD_OVERRIDE_FAMILY]
     catalog["catalog_sha256"] = overrides.catalog_digest(catalog)
     return catalog
 
@@ -193,10 +193,10 @@ def make_visual_catalog() -> dict:
     return overrides.merge_catalogs(runtime, assembly)
 
 
-def promote_visual_package(catalog: dict) -> dict:
-    packages = set(catalog["promoted_operation_packages"])
-    packages.add(overrides.PUBLIC_VISUAL_OVERRIDE_PACKAGE)
-    catalog["promoted_operation_packages"] = sorted(packages)
+def enable_visual_family(catalog: dict) -> dict:
+    families = set(catalog["authorable_route_families"])
+    families.add(overrides.PUBLIC_VISUAL_OVERRIDE_FAMILY)
+    catalog["authorable_route_families"] = sorted(families)
     catalog["catalog_sha256"] = overrides.catalog_digest(catalog)
     return catalog
 
@@ -348,7 +348,7 @@ def make_ancient_catalog() -> dict:
         )
 
     catalog = overrides.merge_catalogs(runtime, assembly)
-    catalog["promoted_operation_packages"] = [overrides.ANCIENT_OVERRIDE_PACKAGE]
+    catalog["authorable_route_families"] = [overrides.ANCIENT_OVERRIDE_FAMILY]
     catalog["catalog_sha256"] = overrides.catalog_digest(catalog)
     return catalog
 
@@ -495,7 +495,7 @@ def make_availability_catalog() -> dict:
         )
 
     catalog = overrides.merge_catalogs(runtime, assembly)
-    catalog["promoted_operation_packages"] = [overrides.AVAILABILITY_OVERRIDE_PACKAGE]
+    catalog["authorable_route_families"] = [overrides.AVAILABILITY_OVERRIDE_FAMILY]
     catalog["catalog_sha256"] = overrides.catalog_digest(catalog)
     return catalog
 
@@ -764,10 +764,10 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
                 assembly_path,
                 output_path,
                 [
-                    overrides.ANCIENT_OVERRIDE_PACKAGE,
-                    overrides.PUBLIC_CARD_OVERRIDE_PACKAGE,
-                    overrides.ANCIENT_OVERRIDE_PACKAGE,
-                    overrides.PUBLIC_VISUAL_OVERRIDE_PACKAGE,
+                    overrides.ANCIENT_OVERRIDE_FAMILY,
+                    overrides.PUBLIC_CARD_OVERRIDE_FAMILY,
+                    overrides.ANCIENT_OVERRIDE_FAMILY,
+                    overrides.PUBLIC_VISUAL_OVERRIDE_FAMILY,
                 ],
             )
 
@@ -775,12 +775,12 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
             self.assertEqual(
                 sorted(
                     {
-                        overrides.PUBLIC_CARD_OVERRIDE_PACKAGE,
-                        overrides.PUBLIC_VISUAL_OVERRIDE_PACKAGE,
-                        overrides.ANCIENT_OVERRIDE_PACKAGE,
+                        overrides.PUBLIC_CARD_OVERRIDE_FAMILY,
+                        overrides.PUBLIC_VISUAL_OVERRIDE_FAMILY,
+                        overrides.ANCIENT_OVERRIDE_FAMILY,
                     }
                 ),
-                catalog["promoted_operation_packages"],
+                catalog["authorable_route_families"],
             )
             self.assertEqual(catalog["catalog_sha256"], overrides.catalog_digest(catalog))
 
@@ -800,7 +800,7 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
             document = json.loads(first.read_text(encoding="utf-8"))
             targets = document["targets"]
             non_card = [target for target in targets if target["id"].startswith("non-card.")]
-            self.assertEqual("openmod.sts2.adapter-targets/v1", document["schema"])
+            self.assertEqual("skillthespire.sts2.adapter-targets/v1", document["schema"])
             self.assertEqual(4165, len(targets))
             self.assertEqual(4145, len(non_card))
             self.assertEqual(
@@ -837,7 +837,7 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         self.assertEqual(3883, catalog["assembly"]["model_namespace_type_count"])
         self.assertEqual(LOCALIZATION_LANGUAGES, catalog["localization_languages"])
         self.assertEqual(
-            "78c3f607d8ff618c7361bdbc3cfc87956bceb72f2f003f645d87d2bdd4d690cf",
+            "dcff6f57669c120b0bf1531c5e7d6b6b8e8b6b66eb085771dae297296c7b563c",
             catalog["catalog_sha256"],
         )
         adapter_hashes = {
@@ -850,13 +850,13 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         )
         self.assertEqual(
             [
-                overrides.PUBLIC_CARD_OVERRIDE_PACKAGE,
-                overrides.PUBLIC_VISUAL_OVERRIDE_PACKAGE,
-                overrides.ANCIENT_OVERRIDE_PACKAGE,
-                overrides.AVAILABILITY_OVERRIDE_PACKAGE,
-                overrides.NON_CARD_OVERRIDE_PACKAGE,
+                overrides.PUBLIC_CARD_OVERRIDE_FAMILY,
+                overrides.PUBLIC_VISUAL_OVERRIDE_FAMILY,
+                overrides.ANCIENT_OVERRIDE_FAMILY,
+                overrides.AVAILABILITY_OVERRIDE_FAMILY,
+                overrides.NON_CARD_OVERRIDE_FAMILY,
             ],
-            catalog["promoted_operation_packages"],
+            catalog["authorable_route_families"],
         )
         self.assertEqual(57, len(overrides.VANILLA_EPOCH_IDS))
         self.assertEqual(
@@ -945,10 +945,10 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         self.assertIn("operations=0", summary)
 
         nonempty = manifest_with(catalog, [make_operation(0, "card.rarity")])
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires promoted package"):
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires authorable route family"):
             overrides.validate_override_manifest(nonempty, catalog)
 
-        promoted = promote_card_package(catalog)
+        promoted = enable_card_family(catalog)
         nonempty = manifest_with(promoted, [make_operation(0, "card.rarity")])
         summary = overrides.validate_override_manifest(nonempty, promoted)
         self.assertIn("operations=1", summary)
@@ -971,7 +971,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [operation]),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
 
     def test_unknown_target_and_duplicate_operation_ids_fail(self) -> None:
@@ -981,7 +981,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [unknown]),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
 
         duplicate = [make_operation(0, "card.same"), make_operation(1, "card.same")]
@@ -989,7 +989,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(
                 manifest_with(catalog, duplicate),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
 
     def test_exclusive_sets_conflict_but_ordered_cost_changes_compose(self) -> None:
@@ -1002,7 +1002,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(
                 manifest_with(catalog, conflicting),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
 
         def cost_operation(index: int, operation_id: str, adjustment: str, value: int) -> dict:
@@ -1026,7 +1026,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         summary = overrides.validate_override_manifest(
             manifest_with(catalog, deltas),
             catalog,
-            allow_unpromoted_operations=True,
+            allow_unlisted_operations=True,
         )
         self.assertIn("operations=2", summary)
 
@@ -1039,7 +1039,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(
                 manifest_with(catalog, set_then_delta),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             ),
         )
 
@@ -1051,11 +1051,11 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(
                 manifest_with(catalog, delta_then_set),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
 
-    def test_public_card_package_accepts_the_grounded_contributor_surface(self) -> None:
-        catalog = promote_card_package(make_catalog())
+    def test_public_card_family_accepts_the_grounded_contributor_surface(self) -> None:
+        catalog = enable_card_family(make_catalog())
         card = next(model for model in catalog["models"] if model["id"] == "CARD.LOST_WISP")
 
         def operation(
@@ -1572,13 +1572,13 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires a RELIC target"):
             overrides.validate_override_manifest(manifest_with(catalog, [wrong_category]), catalog)
 
-        unpromoted = copy.deepcopy(catalog)
-        unpromoted["promoted_operation_packages"].remove(overrides.NON_CARD_OVERRIDE_PACKAGE)
-        unpromoted["catalog_sha256"] = overrides.catalog_digest(unpromoted)
-        unpromoted_operation = copy.deepcopy(operation)
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires promoted package"):
+        unlisted = copy.deepcopy(catalog)
+        unlisted["authorable_route_families"].remove(overrides.NON_CARD_OVERRIDE_FAMILY)
+        unlisted["catalog_sha256"] = overrides.catalog_digest(unlisted)
+        unlisted_operation = copy.deepcopy(operation)
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires authorable route family"):
             overrides.validate_override_manifest(
-                manifest_with(unpromoted, [unpromoted_operation]), unpromoted
+                manifest_with(unlisted, [unlisted_operation]), unlisted
             )
 
     def test_availability_public_epoch_route_covers_grounded_vanilla_hosts(self) -> None:
@@ -1594,13 +1594,13 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(manifest_with(catalog, operations), catalog),
         )
 
-        unpromoted = copy.deepcopy(catalog)
-        unpromoted["promoted_operation_packages"] = []
-        unpromoted["catalog_sha256"] = overrides.catalog_digest(unpromoted)
-        operation = make_availability_epoch_operation(unpromoted, "CARD.LOST_WISP")
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires promoted package"):
+        unlisted = copy.deepcopy(catalog)
+        unlisted["authorable_route_families"] = []
+        unlisted["catalog_sha256"] = overrides.catalog_digest(unlisted)
+        operation = make_availability_epoch_operation(unlisted, "CARD.LOST_WISP")
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires authorable route family"):
             overrides.validate_override_manifest(
-                manifest_with(unpromoted, [operation]), unpromoted
+                manifest_with(unlisted, [operation]), unlisted
             )
 
         act_ancient = make_availability_epoch_operation(catalog, "EVENT.NEOW")
@@ -1807,7 +1807,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                     )
 
     def test_public_visual_package_accepts_all_44_registry_routes(self) -> None:
-        catalog = promote_visual_package(make_visual_catalog())
+        catalog = enable_visual_family(make_visual_catalog())
 
         self.assertEqual(44, len(overrides.PUBLIC_VISUAL_ROUTES))
         for route_id in overrides.PUBLIC_VISUAL_ROUTES:
@@ -1821,10 +1821,10 @@ class VanillaOverrideManifestTests(unittest.TestCase):
     def test_public_visual_routes_require_the_package_target_kind_and_visual_mode(self) -> None:
         catalog = make_visual_catalog()
         operation = make_visual_operation(catalog, "visual.relic.icon-path")
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires promoted package"):
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires authorable route family"):
             overrides.validate_override_manifest(manifest_with(catalog, [operation]), catalog)
 
-        catalog = promote_visual_package(catalog)
+        catalog = enable_visual_family(catalog)
         card = next(model for model in catalog["models"] if model["category"] == "CARD")
         wrong_category = copy.deepcopy(operation)
         wrong_category["target_model_id"] = card["id"]
@@ -1859,7 +1859,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             )
 
     def test_public_visual_resource_paths_fail_closed(self) -> None:
-        catalog = promote_visual_package(make_visual_catalog())
+        catalog = enable_visual_family(make_visual_catalog())
         cases = []
 
         wrong_prefix = make_visual_operation(catalog, "visual.relic.icon-path")
@@ -1898,7 +1898,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                     )
 
     def test_alternative_visual_providers_for_one_surface_conflict(self) -> None:
-        catalog = promote_visual_package(make_visual_catalog())
+        catalog = enable_visual_family(make_visual_catalog())
         cases = [
             ("visual.relic.icon-path", "visual.relic.icon-texture"),
             ("visual.event.background-scene-path", "visual.event.background-scene"),
@@ -1914,7 +1914,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                     )
 
     def test_project_visual_resources_enforce_required_optional_directory_and_list(self) -> None:
-        catalog = promote_visual_package(make_visual_catalog())
+        catalog = enable_visual_family(make_visual_catalog())
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             catalog_path = root / "catalog.json"
@@ -1997,7 +1997,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             )
 
     def test_public_card_routes_reject_non_card_targets_and_forbidden_semantics(self) -> None:
-        catalog = promote_card_package(make_catalog())
+        catalog = enable_card_family(make_catalog())
         non_card = make_operation(0, "relic.rarity", target="RELIC.LOST_WISP")
         non_card["expected_baseline"] = {
             "category": "RELIC",
@@ -2009,11 +2009,11 @@ class VanillaOverrideManifestTests(unittest.TestCase):
 
         canonical_var = make_operation(0, "card.canonical-var")
         canonical_var["route"]["id"] = "card.canonical.dynamic-var"
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "no promoted operation package"):
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "no authorable route family"):
             overrides.validate_override_manifest(manifest_with(catalog, [canonical_var]), catalog)
 
     def test_public_card_base_description_replacement_fails_closed(self) -> None:
-        catalog = promote_card_package(make_catalog())
+        catalog = enable_card_family(make_catalog())
         card = next(model for model in catalog["models"] if model["id"] == "CARD.LOST_WISP")
         replacement = make_operation(
             0,
@@ -2045,7 +2045,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(manifest_with(catalog, [replacement]), catalog)
 
     def test_public_card_behavior_rejects_recursive_or_unbound_semantics(self) -> None:
-        catalog = promote_card_package(make_catalog())
+        catalog = enable_card_family(make_catalog())
         card_type = "MegaCrit.Sts2.Core.Models.Cards.LostWisp"
 
         playability = {
@@ -2425,11 +2425,11 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             "card.probe",
             route={"class": "probe", "id": "candidate.route", "fingerprint": None},
         )
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "unpromoted probe"):
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "unlisted probe"):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [probe]),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
 
         catalog["adapters"] = [
@@ -2459,14 +2459,14 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [adapter]),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
         adapter["route"]["fingerprint"] = "c" * 64
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "unknown adapter operation"):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [adapter]),
                 catalog,
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
 
         dangerous = make_operation(0, "card.dangerous")
@@ -2475,14 +2475,14 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(
                 manifest_with(make_catalog(), [dangerous]),
                 make_catalog(),
-                allow_unpromoted_operations=True,
+                allow_unlisted_operations=True,
             )
 
 
 class VanillaOverridePipelineTests(unittest.TestCase):
-    def test_authoring_docs_route_all_promoted_packages(self) -> None:
+    def test_authoring_docs_route_all_authorable_families(self) -> None:
         sts2_root = TOOLS_DIR.parent
-        api_skill = (sts2_root / "skills" / "sts2-api" / "SKILL.md").read_text(
+        api_skill = (sts2_root / "skills" / "sts2api" / "SKILL.md").read_text(
             encoding="utf-8"
         )
         author = (sts2_root / "skills" / "modmaker" / "author.md").read_text(
@@ -2499,15 +2499,15 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         ):
             with self.subTest(reference=reference):
                 self.assertTrue(
-                    (sts2_root / "skills" / "sts2-api" / "reference" / reference).is_file()
+                    (sts2_root / "skills" / "sts2api" / "reference" / reference).is_file()
                 )
                 self.assertIn(reference, api_skill)
 
         for path in (
             sts2_root / "skills" / "modmaker" / "build.md",
             sts2_root / "skills" / "modmaker" / "scaffold.md",
-            sts2_root / "skills" / "sts2-api" / "recipes" / "event.md",
-            sts2_root / "skills" / "sts2-api" / "reference" / "ritsulib-adapter.md",
+            sts2_root / "skills" / "sts2api" / "recipes" / "event.md",
+            sts2_root / "skills" / "sts2api" / "reference" / "ritsulib-adapter.md",
         ):
             self.assertIn(
                 "vanilla-ancient-overrides.md",
@@ -2517,12 +2517,12 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         for path in (
             sts2_root / "skills" / "modmaker" / "build.md",
             sts2_root / "skills" / "modmaker" / "scaffold.md",
-            sts2_root / "skills" / "sts2-api" / "recipes" / "card.md",
-            sts2_root / "skills" / "sts2-api" / "recipes" / "character.md",
-            sts2_root / "skills" / "sts2-api" / "recipes" / "event.md",
-            sts2_root / "skills" / "sts2-api" / "recipes" / "relic.md",
-            sts2_root / "skills" / "sts2-api" / "recipes" / "potion.md",
-            sts2_root / "skills" / "sts2-api" / "reference" / "ritsulib-adapter.md",
+            sts2_root / "skills" / "sts2api" / "recipes" / "card.md",
+            sts2_root / "skills" / "sts2api" / "recipes" / "character.md",
+            sts2_root / "skills" / "sts2api" / "recipes" / "event.md",
+            sts2_root / "skills" / "sts2api" / "recipes" / "relic.md",
+            sts2_root / "skills" / "sts2api" / "recipes" / "potion.md",
+            sts2_root / "skills" / "sts2api" / "reference" / "ritsulib-adapter.md",
         ):
             self.assertIn(
                 "vanilla-availability-overrides.md",
@@ -2531,25 +2531,25 @@ class VanillaOverridePipelineTests(unittest.TestCase):
             )
 
         card_recipe = (
-            sts2_root / "skills" / "sts2-api" / "recipes" / "card.md"
+            sts2_root / "skills" / "sts2api" / "recipes" / "card.md"
         ).read_text(encoding="utf-8")
         self.assertIn("vanilla-overrides.md", card_recipe)
         self.assertIn("vanilla-card-overrides.md", card_recipe)
 
         card_reference = (
-            sts2_root / "skills" / "sts2-api" / "reference" / "vanilla-card-overrides.md"
+            sts2_root / "skills" / "sts2api" / "reference" / "vanilla-card-overrides.md"
         ).read_text(encoding="utf-8")
         for route_id in overrides._CARD_PUBLIC_ROUTES:
             self.assertIn(route_id, card_reference)
 
         visual_reference = (
-            sts2_root / "skills" / "sts2-api" / "reference" / "vanilla-visual-overrides.md"
+            sts2_root / "skills" / "sts2api" / "reference" / "vanilla-visual-overrides.md"
         ).read_text(encoding="utf-8")
         for route_id in overrides.PUBLIC_VISUAL_ROUTES:
             self.assertIn(route_id, visual_reference)
 
         ancient_reference = (
-            sts2_root / "skills" / "sts2-api" / "reference" / "vanilla-ancient-overrides.md"
+            sts2_root / "skills" / "sts2api" / "reference" / "vanilla-ancient-overrides.md"
         ).read_text(encoding="utf-8")
         for route_id in overrides.ANCIENT_ROUTES:
             self.assertIn(route_id, ancient_reference)
@@ -2559,7 +2559,7 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         availability_reference = (
             sts2_root
             / "skills"
-            / "sts2-api"
+            / "sts2api"
             / "reference"
             / "vanilla-availability-overrides.md"
         ).read_text(encoding="utf-8")
@@ -2575,7 +2575,7 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         non_card_reference = (
             sts2_root
             / "skills"
-            / "sts2-api"
+            / "sts2api"
             / "reference"
             / "vanilla-non-card-overrides.md"
         ).read_text(encoding="utf-8")
@@ -2598,7 +2598,7 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         reference = (
             sts2_root
             / "skills"
-            / "sts2-api"
+            / "sts2api"
             / "reference"
             / "vanilla-card-overrides.md"
         ).read_text(encoding="utf-8")
@@ -2624,10 +2624,10 @@ class VanillaOverridePipelineTests(unittest.TestCase):
     def test_reference_only_symbols_have_local_imports(self) -> None:
         sts2_root = TOOLS_DIR.parent
         ancient_reference = (
-            sts2_root / "skills" / "sts2-api" / "reference" / "vanilla-ancient-overrides.md"
+            sts2_root / "skills" / "sts2api" / "reference" / "vanilla-ancient-overrides.md"
         ).read_text(encoding="utf-8")
         event_outcomes = (
-            sts2_root / "skills" / "sts2-api" / "reference" / "event-outcomes.md"
+            sts2_root / "skills" / "sts2api" / "reference" / "event-outcomes.md"
         ).read_text(encoding="utf-8")
         author = (sts2_root / "skills" / "modmaker" / "author.md").read_text(
             encoding="utf-8"
@@ -2712,7 +2712,7 @@ public static partial class MainFile
             scaffold.generate(
                 project,
                 "ReferenceCompile",
-                "OpenMod",
+                "SkillTheSpire",
                 compile_profile=compile_profile,
             )
             (project / "ReferenceCompileCode" / "ReferenceImports.cs").write_text(
@@ -2749,14 +2749,14 @@ public static partial class MainFile
     def test_scaffold_emits_a_valid_pinned_noop_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "outer"
-            scaffold.generate(project, "Proof", "OpenMod")
+            scaffold.generate(project, "Proof", "SkillTheSpire")
 
             manifest_path = project / overrides.MANIFEST_RELATIVE_PATH
             self.assertTrue(manifest_path.is_file())
             csproj = (project / "Proof.csproj").read_text()
-            self.assertIn("<None Include=\"openmod\\vanilla-overrides.json\"", csproj)
+            self.assertIn("<None Include=\"skillthespire\\vanilla-overrides.json\"", csproj)
             # It is a build-time input, so it must never be copied into mods/<ModName>/.
-            self.assertNotIn("DestinationFolder=\"$(ModsPath)$(MSBuildProjectName)\\openmod\"", csproj)
+            self.assertNotIn("DestinationFolder=\"$(ModsPath)$(MSBuildProjectName)\\skillthespire\"", csproj)
             summary = overrides.validate_project_override_manifest(project, "Proof")
             self.assertIn("operations=0", summary)
 

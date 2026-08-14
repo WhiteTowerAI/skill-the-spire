@@ -1,247 +1,132 @@
 # AGENTS.md
 
-Repository guidance for coding agents working in open-mod.
+Repository guidance for coding agents working on Skill the Spire.
 
-## Project
+## Product
 
-open-mod is a free, open-source Codex plugin that turns a non-programmer's description into a
-working game Mod. Slay the Spire 2 (STS2) is the first supported game. Read
-`documents/IMPLEMENTATION_PLAN.md` before substantive work. Completed evidence under
-`documents/history/` is immutable history, not current instruction.
+Skill the Spire is a free Codex plugin that turns a non-programmer's description into a working
+game Mod. Slay the Spire 2 is the first supported game. Version `0.1.0` targets STS2 stable
+`0.107.1` and the RitsuLib `0.5.11` authoring/API baseline.
 
-## Current Status
+The plugin ID, marketplace ID, and repository slug are `skill-the-spire`. The shipped skills are
+`modmaker` and `sts2api`. Use normal SemVer for later releases.
 
-`0.7.0` is the complete RitsuLib-only public-release candidate for STS2 stable `0.107.1` and
-RitsuLib `0.5.11`. The BaseLib migration, M6.5-M6.7, M7, and M8 are closed. Their exact historical
-evidence remains in `documents/history/`.
-
-M8.7 Product Boundary Generalization closed by explicit human-lead acceptance on 2026-08-14 after
-its authoritative source and both payload forms were implemented and its result record completed.
-Preserve its nine generalized product families and their independent `framework-expressible`,
-`open-mod-authorable`, and `game-observed` facts. Do not reimplement or narrow them. Its durable
-record is `documents/history/M87_PRODUCT_BOUNDARY_GENERALIZATION_RESULTS.md`.
-
-M8.8 Surface Effect Composability Generalization closed by explicit human-lead acceptance on
-2026-08-13 after its inventory, WP1-WP5 implementation, WP8 source/static closeout, and authorized
-plugin/portable payload delivery completed. Its result and literal verification boundaries are in
-`documents/history/M88_SURFACE_EFFECT_COMPOSABILITY_RESULTS.md`. Progression, post-run Badge,
-Settings, Telemetry, Multiplayer, Update Check, WP6 asset/scene/animation/audio/shared-presentation
-expansion, WP7 named typed interoperability, and new interactions with those deferred groups remain
-Future Outlook. Preserve all asset, presentation, audio, and interoperability routes that already
-existed before or were implemented in WP1-WP5; do not retract or reimplement them. This does not
-narrow M8.7's existing availability routes or the unrelated Power/Relic/Intent Extra Badges
-feature. `documents/IMPLEMENTATION_PLAN.md` owns the exact closed scope and boundaries.
-
-M8.9 Ordinary Effect Primitive Coverage closed by explicit human-lead acceptance on 2026-08-14
-after its authoritative-source/static stage, separately authorized plugin/portable payload
-delivery, and durable result record completed. Preserve its nine admitted ordinary-result
-families, twelve excluded/specialized groups, truthful surface bindings, and literal evidence
-boundaries. Its durable record is
-`documents/history/M89_ORDINARY_EFFECT_PRIMITIVE_COVERAGE_RESULTS.md`.
-
-M8.6 Clean Installed Whole-Skill Acceptance and M8 closed by explicit human-lead confirmation on
-2026-08-14. The same decision confirms the remaining M8.2 and M8.5 completion items are done; none
-remains an active proof debt, exception, prerequisite, or development gap. The controlling closeout
-record is `documents/history/M86_CLEAN_INSTALLED_WHOLE_SKILL_ACCEPTANCE_RESULTS.md`. There is no
-active M8 Package. Do not invent one or treat Future Outlook as unfinished M8 work. Do not install
-a payload, launch the game, create an acceptance Mod, commit, push, or publish without explicit
-instruction.
-
-## Current Workflow
-
-The generated-project workflow is deliberately small:
+## Workflow
 
 ```text
-human idea
-  -> concise DESIGN.md
-  -> implementable SPEC.md
-  -> capability_preflight.py
-  -> scaffold
-  -> author + SelfTest
-  -> build
-  -> Tier 1
-  -> Tier 2 / SelfTest
-  -> headed human review when needed
-  -> direct report from actual results
+idea -> DESIGN.md -> SPEC.md -> capability_preflight.py -> scaffold and author
+     -> Build -> Tier 1 -> Tier 2 / SelfTest -> headed review when needed
+     -> direct report from actual results
 ```
 
-`DESIGN.md` records only human intent, confirmed decisions, current scope, and explicit `Not Now`
-items. It does not contain machine-readable coherence, deliverable, impact, settlement, or repair
-management contracts, and it does not require management IDs.
+`DESIGN.md` records intent, accepted decisions, current scope, and explicit `Not Now` items.
+`SPEC.md` is the implementation work order: exact content, behavior, values, state, bilingual
+text, presentation, selected support routes, and autotest scenarios. `PLAN.md` is a plain stage
+checklist. `MEMORY.md` stores technical facts, commands/results, and repair attempts.
 
-`SPEC.md` is the single implementation work order. Write concrete content, trigger, target,
-conditions, values, order, state/lifetime, player-facing text and presentation, selected support
-routes, and exact autotest scenarios. Keep simple Mods simple. Do not duplicate DESIGN or maintain
-parallel scope, evidence, or surface ledgers.
-
-The `## Implementation` section selects shipped routes and, only for raw model-hook participation,
-declares the hook selection:
-
-```markdown
-- Support: `recipes/card.md`
-- Hook: modify_damage_multiplicative | surface: power | shape: value | route: reference/model-hook-participation.md
-```
-
-Run exactly one pre-Author checker:
+Run one pre-Author checker:
 
 ```powershell
 python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
 ```
 
-It checks only facts that are mechanically exact, invisible to C# Build, and capable of producing
-unsupported or silently ineffective code:
-
-- each selected recipe/reference file exists in the shipped support pack;
-- each selected hook exists in the pinned model-hook catalog;
-- the cited route declares that hook;
-- the declaration shape matches the catalog;
-- route-owned hooks use their owning route; and
-- the selected surface is in the dispatcher's authorable listener set for that hook.
-
-Do not expand this preflight into Markdown/schema validation, ordinary field completeness, C# API
-type checking, manifest/resource/localization validation, runtime lifecycle proof, visual review,
-or evidence accounting. Recipes and references guide authoring; Scaffold/Build own static project
-checks; real-host SelfTest owns behavior; people own visual, controller, animation, and subjective
-judgment.
-
-Existing projects may keep old metadata. Ignore it and resume from the current human-readable
-meaning. Do not force a migration. A revised current operation adopts the small current format.
-
-`PLAN.md` is a plain stage checklist. `MEMORY.md` records technical discoveries, stable IDs/keys,
-commands/results, and repair attempts. Do not mirror DESIGN/SPEC state across files. On failure,
-identify the observed difference, fix the artifact that owns it, clear any no-longer-valid stage
-result, and rerun the nearest affected check. A different player-visible result returns to DESIGN
-and SPEC for acceptance; a missing or broken shared route blocks consumer authoring until repaired
-or narrowed.
+It checks selected route existence and raw model-hook identity, shape, ownership, and surface
+reachability. Do not turn it into a general Markdown, C#, manifest, localization, runtime, visual,
+or evidence validator.
 
 ## Source Ownership
 
-Authoritative source lives under `games/sts2/`:
+- `games/sts2/skills/modmaker/`: routing and generation stages.
+- `games/sts2/skills/sts2api/`: design references, recipes, API contracts, catalogs, and errors.
+- `games/sts2/tools/`: scaffold, build, pack, launch, log, profile, localization, art, catalog,
+  and preflight tools.
+- `games/sts2/tests/`: current capability and verification guidance.
+- `scripts/publish/`: publisher helpers and plugin metadata.
 
-- `games/sts2/skills/modmaker/` owns routing and the generation stages;
-- `games/sts2/skills/sts2-api/` owns lazy design references, recipes, API contracts, and errors;
-- `games/sts2/tools/` owns scaffold, build, launch, log, art, and the thin preflight;
-- `games/sts2/tests/` owns the current capability graph and verification guidance; and
-- `games/sts2/experimental/` is repository-only research excluded from payloads.
+`plugins/skill-the-spire/` and top-level `skills/` are generated payloads. Never hand-edit them.
+After authoritative source validation, regenerate them with:
 
-`plugins/open-mod/` and top-level `skills/` are generated payloads. Never hand-edit them. After
-authoritative source validation and explicit delivery authorization, regenerate them through
-`publish.sh --plugin` and `publish.sh --portable`, then check repeatability, parity, and payload
-layout.
+```powershell
+& 'D:\Git\bin\bash.exe' './publish.sh' '--plugin' '--force'
+& 'D:\Git\bin\bash.exe' './publish.sh' '--portable' '--force'
+```
 
-## Dependency Contract
+Run each mode twice when proving determinism. The publisher owns payload layout, rendered path
+tokens, plugin metadata, and generated notices.
 
-- Generated Mods target STS2 `0.107.1` and the `STS2.RitsuLib.Compat.0.107.1` API baseline at
-  RitsuLib `0.5.11`.
-- Each scaffold pins the validated local Compat DLL version and hash it compiles against. Runtime
-  manifests depend only on `STS2-RitsuLib >= 0.5.11` while generated code stays inside the
-  `0.5.11` authoring/API baseline.
-- Runtime discovery accepts a validated game-local install or official Steam Workshop item
-  `3747602295`, with exact host/compat identity checks.
-- Generated projects have no framework `PackageReference`. The scaffold supplies bundled
-  Godot.NET SDK imports and Build resolves game/runtime assemblies locally.
-- Generated Mods must not reference, package, or depend on BaseLib. Do not restore Alchyr/BaseLib
-  snippets.
-- `baselines/STS2-RitsuLib` is maintainer research, not generated-project input.
-- `baselines/decomp` is maintainer-only research. Never copy, compile, package, or ship decompiled
-  code; private implementation does not establish a supported route.
-- Official tutorials establish intended Package semantics. Exact APIs and lifecycle behavior come
-  from the pinned RitsuLib `0.5.11` source/API and Compat metadata.
+## Runtime Contract
+
+- Generated Mods target STS2 `0.107.1` and RitsuLib Compat `0.5.11`.
+- Runtime manifests require only `STS2-RitsuLib >= 0.5.11` while generated code stays inside that
+  API baseline.
+- Runtime discovery accepts a validated game-local install or official Workshop item
+  `3747602295`, with exact host/Compat identity checks.
+- Generated projects have no framework `PackageReference` and no BaseLib dependency.
+- Maintainer research and decompiled code are never generated-project inputs and are never copied,
+  compiled, packaged, or shipped.
+- Generated code may use pinned public STS2/RitsuLib APIs, ordinary C#/BCL, Mod-owned helpers and
+  state, and maintained fixed Adapters. Never generate prompt-derived Harmony, reflection,
+  Publicizer, or IL.
 
 ## Supported Boundary
 
-The authoritative inventory is `games/sts2/tests/content-capability-graph.md`. Preserve its product
-capabilities when simplifying workflow. Missing proof means unobserved, not automatically
-unsupported; a confirmed public/API/lifecycle problem is recorded as the smallest exact
-limitation.
+`games/sts2/tests/content-capability-graph.md` is authoritative. Keep these facts distinct:
 
-Generated code may use the pinned public STS2/RitsuLib APIs, ordinary C#/BCL, Mod-owned helpers and
-state, and already maintained fixed Adapters. Never generate prompt-derived Harmony, reflection,
-Publicizer, or IL. A requested operation with no maintained public/fixed route blocks rather than
-receiving a consumer-local approximation.
+- `framework-expressible`: the pinned public/fixed API can express the operation;
+- `skill-the-spire-authorable`: shipped recipes/references cover implementation and proof; and
+- `game-observed`: the exact shape ran successfully in the real host.
 
-M8.7's generalized families remain authorable with their documented hard boundaries:
-
-- secondary resources and bounded payment/UI;
-- Monster move graphs, Encounter composition, and HP ranges;
-- Character starting fields;
-- Card- or Relic-owned Rest Site options;
-- multiple computed Card values;
-- reusable bounded state;
-- bounded forced Event mappings;
-- new-Card Star costs; and
-- bounded Event acquisition/shake profiles.
-
-Newly generalized variants remain game-unobserved until their exact real-host cases run. Do not
-relabel source/static evidence as game proof.
+Missing runtime proof means unobserved, not automatically unsupported. A confirmed public/API or
+lifecycle problem is recorded as the smallest exact limitation. A missing or broken maintained
+route blocks consumer authoring until repaired or narrowed.
 
 ## Localization And Art
 
 Mods without localization tables remain language-neutral. Once any table exists, generated Mods
-require both `eng` and `zhs`, identical table/key sets, identical SmartFormat token multisets, and
-nonempty values. DESIGN and SPEC own the exact bilingual text. Build checks the static contract;
-Tier 2 switches through both languages, resolves real consumers, and restores the original
-language. Translation quality is human-owned.
+require `eng` and `zhs`, identical table/key sets, identical SmartFormat token multisets, and
+nonempty values. Build checks the static contract; Tier 2 resolves both languages in real
+consumers and restores the original language. Translation quality is human-owned.
 
-Art normalization facts live in `gen_sprite.SPECS`, `character_art.CHARACTER_ART_BUNDLE`, and their
-generated `art-contract-sts2-0.107.1.json` projection. Never hand-edit that catalog. Generated art
-must pass through `gen_sprite.py import`; runtime wiring belongs to the selected RitsuLib asset
-profile or exact visual provider. Placeholder is the default unless the user chooses a callable
-image route. Do not silently select a paid backend.
+Art normalization facts live in `gen_sprite.SPECS`, `character_art.CHARACTER_ART_BUNDLE`, and the
+generated art catalog. Never hand-edit that catalog. Generated art passes through
+`gen_sprite.py import`; placeholder is the default unless the user selects a callable image route.
+Do not silently select a paid backend.
 
 ## Verification
 
-Verification reports what actually ran:
+- Build proves compilation, packaging, manifests, resources, localization shape, and deployable
+  static artifacts under the pinned profile.
+- Tier 1 proves the exact load marker, framework/host/Compat identity, and no fresh error block.
+- Tier 2 runs the arg-gated `SelfTest.cs` in real STS2, drives the selected scenario, waits for
+  queued behavior, asserts exact structured post-state, and requires `selftest done`.
+- `played`, `fired`, and `used` logs are diagnostics only.
+- Headed review owns images, UI, mouse/controller interaction, animation, audio, and subjective
+  judgment.
 
-- Build proves the project compiles/packages under the pinned static contract.
-- Tier 1 proves the exact load marker, framework/host/compat identity, and no fresh error block.
-- Tier 2 runs the arg-gated `SelfTest.cs` in the real STS2 host, drives the selected scenario, waits
-  for queued behavior, asserts exact structured post-state, and requires `selftest done`.
-- `played`/`fired`/`used` logs are diagnostics only. They never establish a Tier 2 pass.
-- Headed review owns images, UI, mouse/controller interaction, animation, and subjective quality.
-- The final report directly names Build, Tier 1, Tier 2, and headed results. An unrun check is
-  reported as unrun; it is never hidden behind a completion ledger.
-
-Keep verification proportional. Use the nearest maintained host (`CombatPlayer`, `CombatEnemy`,
-`MapNode`, real Rest Site, or `RunStart`/Character). Use a fresh natural-language acceptance Mod
-only when the active plan or human lead explicitly selects a full-pipeline gate. Run one armed
-harness Mod at a time and preserve unrelated user Mods.
-
-Historical results keep their literal versions and evidence boundaries. In particular, older
-`0.5.4` proof does not become `0.5.11` runtime evidence, and static/payload checks do not become
-macOS, Tier 1, Tier 2, or gameplay proof.
+Report only checks that actually ran. Source/static/payload results are not Tier 1, Tier 2,
+cross-platform, headed, or gameplay proof.
 
 ## Tests
 
-Keep tests that protect actual product behavior and artifacts: scaffold/build/profile/manifest,
-localization, art, catalogs, packaging, payload layout, capability existence and hook reachability,
-vanilla routes, load/log verification tools, and modest requirement-to-authoring scenarios.
+Keep tests that protect supported authoring routes, generated artifacts, static build boundaries,
+or real verification mechanisms. Remove tests that only enforce prose, headings, milestone
+wording, management schemas, or historical evidence.
 
-Do not recreate tests that only enforce prose, heading names, management schemas, bidirectional ID
-ledgers, repair state, milestone wording, or evidence tables. A test should protect a supported
-authoring route, generated artifact, static build boundary, or real verification mechanism.
-
-Use UTF-8 explicitly for multilingual validators:
+Use UTF-8 explicitly:
 
 ```powershell
 $env:PYTHONUTF8='1'
 python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
-python -m compileall -q games/sts2/tools scripts/publish plugins/open-mod/skills skills
+python -m compileall -q games/sts2/tools scripts/publish
 git diff --check
 ```
 
+Validate `plugins/skill-the-spire/` with the plugin validator and validate both generated skill
+roots with the skill validator before release. Do not run `compileall` inside generated payload
+trees; it creates cache files that invalidate payload parity.
+
 ## Git And Scope
 
-Check `git status` before editing. Preserve unrelated dirty/untracked work. Stage only explicit
-intended paths when asked to commit. A planned milestone is not authorization to execute it, and
-closing one Package does not start another. Never reset, clean, commit, push, publish, install, or
-launch without the corresponding instruction.
-
-## Active Documents
-
-- `documents/PROJECT.md`: current product and architecture.
-- `documents/IMPLEMENTATION_PLAN.md`: active Package gates and work authorization.
-- `documents/BASELINE_RESEARCH.md`: current dependency/research basis.
-- `games/sts2/tests/content-capability-graph.md`: exact supported/limited/unsupported inventory.
-- `games/sts2/tests/README.md`: current test and real-host verification ownership.
-- `documents/history/README.md`: index of completed evidence only.
+Check `git status` before editing. Preserve unrelated dirty/untracked work. Stage only intended
+paths. Never reset, clean, rewrite history, squash, commit, push, install, launch, tag, release, or
+change repository visibility without explicit authorization.

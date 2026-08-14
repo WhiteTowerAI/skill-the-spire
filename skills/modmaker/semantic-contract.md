@@ -52,7 +52,7 @@ identity. An ordinary operation needs no invented capability ID.
 ## Surface and capability ownership
 
 Read the selected page under `surfaces/` for its exact SPEC fields, authoring route, proof
-matrix, known limitations, and manual fallback. Use targeted `sts2-api` references for the
+matrix, known limitations, and manual fallback. Use targeted `sts2api` references for the
 selected operation. In particular:
 
 - Card, Relic, Potion, Power, Orb, Enchantment, Monster/Encounter, Event, Character, Keyword,
@@ -72,9 +72,9 @@ For a multi-surface request, preserve each truthful owner and list every selecte
 the implementation and SelfTest assertions by the real dependency flow; do not invent a combo
 surface, collapse one owner's lifecycle into another, or use a deferred family as coordination.
 
-The M8.7 generalized variants remain supported. Write their full human-readable fields from the
-owner page, including routes and hard boundaries; do not recreate `open-mod-surface-data` or
-`open-mod-surface-contract` JSON. Existing v1/v2/v3 projects may retain old blocks as ignored
+The generalized variants remain supported. Write their full human-readable fields from the
+owner page, including routes and hard boundaries; do not recreate `skill-the-spire-surface-data` or
+`skill-the-spire-surface-contract` JSON. Existing v1/v2/v3 projects may retain old blocks as ignored
 legacy text and resume without migration.
 
 ## Pinned implementation boundary

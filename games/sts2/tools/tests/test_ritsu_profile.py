@@ -30,7 +30,7 @@ class RitsuProfileTests(unittest.TestCase):
     def test_outer_directory_must_differ_from_mod_name(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(ValueError, "outer project directory"):
-                generate(Path(tmp) / "EmptyRitsu", "EmptyRitsu", "OpenMod")
+                generate(Path(tmp) / "EmptyRitsu", "EmptyRitsu", "SkillTheSpire")
 
     def test_scaffold_uses_bundled_sdk_and_pinned_local_assemblies(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -44,7 +44,7 @@ class RitsuProfileTests(unittest.TestCase):
             generate(
                 project,
                 "EmptyRitsu",
-                "OpenMod",
+                "SkillTheSpire",
                 compile_profile=compile_profile,
             )
             summary = validate_project_contract(project, "EmptyRitsu")
@@ -88,7 +88,7 @@ class RitsuProfileTests(unittest.TestCase):
                 self.assertIn(f'<Reference Include="{reference}"', csproj)
             sdk = (
                 project
-                / "openmod"
+                / "skillthespire"
                 / "sdk"
                 / f"Godot.NET.Sdk.{PROFILE.godot_sdk_version}"
                 / "Sdk"
@@ -111,18 +111,18 @@ class RitsuProfileTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
             canonical = project / "mod_manifest.json"
-            legacy = project / "Canary.json"
+            legacy = project / "ExampleMod.json"
 
             canonical.write_text("{}\n", encoding="utf-8")
-            self.assertEqual(canonical, find_manifest(project, "Canary"))
+            self.assertEqual(canonical, find_manifest(project, "ExampleMod"))
 
             canonical.unlink()
             legacy.write_text("{}\n", encoding="utf-8")
-            self.assertEqual(legacy, find_manifest(project, "Canary"))
+            self.assertEqual(legacy, find_manifest(project, "ExampleMod"))
 
             canonical.write_text("{}\n", encoding="utf-8")
             with self.assertRaisesRegex(RitsuProfileError, "both canonical and legacy"):
-                find_manifest(project, "Canary")
+                find_manifest(project, "ExampleMod")
 
     def test_local_mods_dir_is_adjacent_to_the_platform_executable(self) -> None:
         game = Path("steamapps") / "common" / "Slay the Spire 2"
@@ -136,7 +136,7 @@ class RitsuProfileTests(unittest.TestCase):
     def test_generated_project_rejects_any_package_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "empty-outer"
-            generate(project, "EmptyRitsu", "OpenMod")
+            generate(project, "EmptyRitsu", "SkillTheSpire")
             csproj = project / "EmptyRitsu.csproj"
             text = csproj.read_text(encoding="utf-8").replace(
                 "</Project>",

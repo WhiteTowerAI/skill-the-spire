@@ -138,7 +138,7 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
 Do not add a manual registration line or invent a nonstandard energy override. If
 `advanced mechanic` is not `none`, also record the capability-module envelope in `spec.md`.
 Author it only when the named semantic capability has its own recipe in the shipped pack;
-Package support alone does not provide missing runtime instructions. The current implemented
+API support alone does not provide missing runtime instructions. The current implemented
 public framework routes are exactly `reference/character-resource.md` and
 `reference/ordered-card-buffer.md`. If neither can express the mechanic, mark it unsupported
 and report a pack gap.

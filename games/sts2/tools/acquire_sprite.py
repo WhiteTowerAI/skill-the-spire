@@ -52,7 +52,7 @@ def command_prefix(command: str) -> list[str]:
     if not resolved:
         raise AcquisitionError(
             "Vofy CLI was not found. Install and authenticate it yourself, then run "
-            "`vofy status`; open-mod will never install it or launch `vofy login`.",
+            "`vofy status`; skill-the-spire will never install it or launch `vofy login`.",
             2,
         )
     return [resolved]
@@ -240,7 +240,7 @@ def cmd_create(args: argparse.Namespace) -> int:
     prefix = command_prefix(args.vofy_command)
     preflight(prefix, args.model, args.preflight_timeout)
 
-    with tempfile.TemporaryDirectory(prefix="open-mod-vofy-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="skill-the-spire-vofy-") as tmp:
         download_dir = Path(tmp)
         command = [
             *prefix,
@@ -275,7 +275,7 @@ def cmd_create(args: argparse.Namespace) -> int:
             raise AcquisitionError(
                 "Vofy completed but the isolated download directory contained "
                 f"{len(downloaded)} images; expected exactly 1. Nothing was imported and "
-                "open-mod will not submit another paid task automatically.",
+                "skill-the-spire will not submit another paid task automatically.",
                 6,
             )
         try:

@@ -5,7 +5,7 @@ presents exact Card instances outside the vanilla piles. Card Pile owns its comb
 registration, persistence, screen/control/ExtraHand presentation, movement rules, and cleanup.
 
 Do not reduce this surface to the previously exercised ExtraHand case. RitsuLib `0.5.11` exposes
-the complete documented Package through `reference/card-piles.md`.
+the complete documented API through `reference/card-piles.md`.
 
 ## DESIGN and SPEC vocabulary
 
@@ -26,7 +26,7 @@ Settle and write every selected pile's:
 
 ## Authoring route
 
-- Read `recipes/card-pile.md`, then the complete `reference/card-piles.md` Package.
+- Read `recipes/card-pile.md`, then the complete `reference/card-piles.md` API.
 - Read `recipes/card.md` for Card creation/play semantics and `reference/card-play-lifecycle.md`
   when manual play must compose with owner play hooks or result-pile rules.
 - Use only awaited native `CardPileCmd` movement. Do not mutate pile collections, clone a Card to

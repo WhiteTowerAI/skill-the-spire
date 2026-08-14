@@ -26,7 +26,7 @@ Before MSBuild, the tool verifies:
 - any generated Character `ancients.json` uses the pinned vanilla target catalog,
   contiguous dialogue/line structure, valid visit/repeat/Architect metadata, matching
   Character entries, and identical keys across `eng` and `zhs`;
-- when present, `openmod/vanilla-overrides.json` has the pinned host/profile/catalog
+- when present, `skillthespire/vanilla-overrides.json` has the pinned host/profile/catalog
   digest, matching Mod id, grounded baselines/routes, no same-Mod conflict, and only
   operations the current catalog promotes. Each override family is accepted by its own
   reference, and every route outside them fails closed:
@@ -54,7 +54,7 @@ DLL/manifest/PDB through the generated MSBuild target, packs
 contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
 It also keeps the deployed Mod free of any loose `.json` other than `mod_manifest.json`: the
 game parses every `.json` under a Mod directory, at any depth, as a Mod manifest and logs a
-load error for each one without an `id`. `openmod/vanilla-overrides.json` is a build-time
+load error for each one without an `id`. `skillthespire/vanilla-overrides.json` is a build-time
 input that stays in the project directory; a copy left by an older build is deleted, and any
 other deployed non-manifest `.json` fails the build. Authored JSON belongs inside the `.pck`.
 Legacy projects with one `<ModName>.json`, or without a source override manifest, remain valid;
@@ -74,7 +74,7 @@ zip can be inspected separately but cannot be used to compile until it is instal
 
 ## On failure
 
-Read `../sts2-api/errors.md` § Build And Profile and match the exact signature
+Read `../sts2api/errors.md` § Build And Profile and match the exact signature
 before changing anything. It carries the cause and fix for every profile, manifest, pack,
 Ancient-dialogue, and vanilla-override failure this stage can emit.
 

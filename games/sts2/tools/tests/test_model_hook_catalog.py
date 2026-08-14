@@ -1,11 +1,10 @@
 """The pinned model-hook surface as data, and the invariants the catalog must hold.
 
-M8.2 needs the authoring surface to know which scalar/decision hooks a given generated
+The authoring surface must know which scalar/decision hooks a given generated
 element can actually *receive*. That is not the same question as which hooks exist: `Hook`
 dispatches through iterators whose listener sets differ, and the run-scope set carries no
 Powers, Orbs, or Monsters. A hook overridden outside its dispatching set compiles, ships,
-and never fires -- the exact shape of the M7.6 Wrath failure, so getting it wrong would add
-instances of the bug M8.2 exists to prevent.
+and never fires. These tests prevent that silent behavior gap.
 
 `reference/catalogs/model-hooks-sts2-0.107.1.json` is a generated projection of the pinned
 `0.107.1` decompile, written by `collect_model_hooks.py`. Unlike the art contract, the source
@@ -30,11 +29,11 @@ from pathlib import Path
 TOOLS_DIR = Path(__file__).resolve().parents[1]
 COLLECTOR = TOOLS_DIR / "collect_model_hooks.py"
 REPO_ROOT = TOOLS_DIR.parents[2]
-STS2_API_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "sts2-api"
+STS2API_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "sts2api"
 CATALOG_PATH = (
-    STS2_API_DIR / "reference" / "catalogs" / "model-hooks-sts2-0.107.1.json"
+    STS2API_DIR / "reference" / "catalogs" / "model-hooks-sts2-0.107.1.json"
 )
-NON_CARD_PATH = STS2_API_DIR / "reference" / "vanilla-non-card-overrides.md"
+NON_CARD_PATH = STS2API_DIR / "reference" / "vanilla-non-card-overrides.md"
 DECOMP_ROOT = REPO_ROOT / "baselines" / "decomp" / "sts2_full"
 
 sys.path.insert(0, str(TOOLS_DIR))
@@ -263,7 +262,7 @@ class ModelHookCatalogTests(unittest.TestCase):
                 self.assertIn(hook, self.hooks)
                 self.assertEqual(route, self.hooks[hook]["owned_by_route"])
                 self.assertTrue(
-                    (STS2_API_DIR / route).is_file(),
+                    (STS2API_DIR / route).is_file(),
                     f"{hook} names route {route}, which does not exist",
                 )
 

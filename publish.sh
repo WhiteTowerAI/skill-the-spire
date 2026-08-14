@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Publish the open-mod STS2 skill source into a runtime-specific layout.
+# Publish the Skill the Spire STS2 skill source into a runtime-specific layout.
 #
 # Turns the source under games/sts2/skills/ (which uses ${VAR} placeholders)
 # into a ready-to-load Codex or portable Agent Skills tree.
@@ -12,7 +12,7 @@
 #
 # Three shapes:
 #   --agent codex  : the DEV flow. Renders into <out>/.agents/skills/ (git-ignored).
-#   --plugin       : the Codex SHIP flow. Renders into plugins/open-mod/skills/
+#   --plugin       : the Codex SHIP flow. Renders into plugins/skill-the-spire/skills/
 #                    (COMMITTED), including tools in the modmaker skill's scripts/ folder.
 #   --portable     : the CROSS-AGENT ship flow. Renders into the repo's top-level skills/
 #                    (COMMITTED) — the layout skills.sh (`npx skills add`) auto-discovers and
@@ -89,12 +89,15 @@ fi
 AGENT_NAME="Codex"
 
 if [ "$PLUGIN" -eq 1 ]; then
-    SKILLS_DIR_REL="plugins/open-mod/skills"
+    PAYLOAD_ROOT_REL="plugins/skill-the-spire"
+    SKILLS_DIR_REL="plugins/skill-the-spire/skills"
 elif [ "$PORTABLE" -eq 1 ]; then
+    PAYLOAD_ROOT_REL="skills"
     SKILLS_DIR_REL="skills"
 else
     case "$AGENT" in
         codex)
+            PAYLOAD_ROOT_REL=".agents/skills"
             SKILLS_DIR_REL=".agents/skills"
             ;;
         *)
@@ -105,7 +108,7 @@ fi
 
 TOOLS_DIR_REL="$SKILLS_DIR_REL/modmaker/scripts"
 MODMAKER_SKILL_DIR="."
-STS2_API_SKILL_DIR="../sts2-api"
+STS2API_SKILL_DIR="../sts2api"
 GAME_TOOLS_DIR="../modmaker/scripts"
 
 # Default target: this repo root.
@@ -115,36 +118,37 @@ fi
 TARGET="$(cd "$OUT" 2>/dev/null && pwd || (mkdir -p "$OUT" && cd "$OUT" && pwd))"
 
 SKILLS_DIR_ABS="$TARGET/$SKILLS_DIR_REL"
+PAYLOAD_ROOT_ABS="$TARGET/$PAYLOAD_ROOT_REL"
+
+if [ "$FORCE" -eq 1 ] && [ -d "$PAYLOAD_ROOT_ABS" ]; then
+    echo "Force: cleaning $PAYLOAD_ROOT_ABS"
+    rm -rf "${PAYLOAD_ROOT_ABS:?}"
+fi
 
 # Stage into a temp dir, render placeholders, then sync into place.
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-mkdir -p "$TMP/modmaker" "$TMP/sts2-api"
+mkdir -p "$TMP/modmaker" "$TMP/sts2api"
 cp -R "$SRC/modmaker/." "$TMP/modmaker/"
-cp -R "$SRC/sts2-api/." "$TMP/sts2-api/"
+cp -R "$SRC/sts2api/." "$TMP/sts2api/"
 
 $PYTHON "$HELPERS/render_dir.py" "$TMP" \
     "AGENT_NAME=$AGENT_NAME" \
     "MODMAKER_SKILL_DIR=$MODMAKER_SKILL_DIR" \
-    "STS2_API_SKILL_DIR=$STS2_API_SKILL_DIR" \
+    "STS2API_SKILL_DIR=$STS2API_SKILL_DIR" \
     "GAME_TOOLS_DIR=$GAME_TOOLS_DIR"
 
-if [ "$FORCE" -eq 1 ] && [ -d "$SKILLS_DIR_ABS" ]; then
-    echo "Force: cleaning $SKILLS_DIR_ABS"
-    rm -rf "${SKILLS_DIR_ABS:?}/modmaker" "${SKILLS_DIR_ABS:?}/sts2-api"
-fi
-
-mkdir -p "$SKILLS_DIR_ABS/modmaker" "$SKILLS_DIR_ABS/sts2-api"
+mkdir -p "$SKILLS_DIR_ABS/modmaker" "$SKILLS_DIR_ABS/sts2api"
 # rsync if available (clean deletes), else cp -R.
 if command -v rsync >/dev/null 2>&1; then
     rsync -a --delete "$TMP/modmaker/" "$SKILLS_DIR_ABS/modmaker/"
-    rsync -a --delete "$TMP/sts2-api/" "$SKILLS_DIR_ABS/sts2-api/"
+    rsync -a --delete "$TMP/sts2api/" "$SKILLS_DIR_ABS/sts2api/"
 else
-    rm -rf "${SKILLS_DIR_ABS:?}/modmaker" "${SKILLS_DIR_ABS:?}/sts2-api"
-    mkdir -p "$SKILLS_DIR_ABS/modmaker" "$SKILLS_DIR_ABS/sts2-api"
+    rm -rf "${SKILLS_DIR_ABS:?}/modmaker" "${SKILLS_DIR_ABS:?}/sts2api"
+    mkdir -p "$SKILLS_DIR_ABS/modmaker" "$SKILLS_DIR_ABS/sts2api"
     cp -R "$TMP/modmaker/." "$SKILLS_DIR_ABS/modmaker/"
-    cp -R "$TMP/sts2-api/." "$SKILLS_DIR_ABS/sts2-api/"
+    cp -R "$TMP/sts2api/." "$SKILLS_DIR_ABS/sts2api/"
 fi
 
 # Bundle the cross-platform Python tools inside the modmaker skill for every mode.
@@ -161,18 +165,26 @@ for t in "$REPO_ROOT"/games/sts2/tools/*.py; do
     cp "$t" "$TOOLS_DIR_ABS/"
 done
 
+if [ "$PLUGIN" -eq 1 ]; then
+    mkdir -p "$PAYLOAD_ROOT_ABS/.codex-plugin"
+    cp "$HELPERS/plugin.json" "$PAYLOAD_ROOT_ABS/.codex-plugin/plugin.json"
+    cp "$HELPERS/plugin-generated.md" "$PAYLOAD_ROOT_ABS/GENERATED.md"
+elif [ "$PORTABLE" -eq 1 ]; then
+    cp "$HELPERS/portable-generated.md" "$PAYLOAD_ROOT_ABS/GENERATED.md"
+fi
+
 echo "Published STS2 skill for $AGENT_NAME -> $SKILLS_DIR_ABS"
 echo "  modmaker:  $(count_files "$SKILLS_DIR_ABS/modmaker") files"
-echo "  sts2-api:  $(count_files "$SKILLS_DIR_ABS/sts2-api") files"
+echo "  sts2api:  $(count_files "$SKILLS_DIR_ABS/sts2api") files"
 if [ "$PLUGIN" -eq 1 ]; then
     echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in skills/modmaker/scripts/)"
     echo "Committed Codex plugin payload ready. Test locally with:"
     echo "  codex plugin marketplace add $REPO_ROOT"
-    echo "  codex plugin add open-mod@open-mod"
+    echo "  codex plugin add skill-the-spire@skill-the-spire"
 elif [ "$PORTABLE" -eq 1 ]; then
     echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in skills/modmaker/scripts/)"
     echo "Committed cross-agent payload ready. Install into any agent with:"
-    echo "  npx skills add WhiteTowerAI/open-mod"
+    echo "  npx skills add WhiteTowerAI/skill-the-spire"
 else
     echo "Start a new Codex thread, then invoke \$modmaker."
 fi

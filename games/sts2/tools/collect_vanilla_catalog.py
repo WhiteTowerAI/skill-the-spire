@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Maintainer workflow for the M6.7.0 runtime and assembly catalog collectors."""
+"""Maintainer workflow for the vanilla runtime and assembly catalog collectors."""
 from __future__ import annotations
 
 import argparse
@@ -19,13 +19,13 @@ from vanilla_overrides import (
 
 
 TOOLS_DIR = Path(__file__).resolve().parent
-RUNTIME_TEMPLATE = TOOLS_DIR / "templates" / "m67_runtime_catalog_collector.cs.tmpl"
-ASSEMBLY_PROJECT = TOOLS_DIR / "assembly_catalog" / "OpenMod.Sts2.AssemblyCatalog.csproj"
+RUNTIME_TEMPLATE = TOOLS_DIR / "templates" / "vanilla_runtime_catalog_collector.cs.tmpl"
+ASSEMBLY_PROJECT = TOOLS_DIR / "assembly_catalog" / "SkillTheSpire.Sts2.AssemblyCatalog.csproj"
 POWERSHELL_ASSEMBLY_COLLECTOR = TOOLS_DIR / "assembly_catalog" / "Collect-AssemblyCatalog.ps1"
 DEFAULT_TARGETS = (
     TOOLS_DIR.parent
     / "skills"
-    / "sts2-api"
+    / "sts2api"
     / "reference"
     / "vanilla-overrides"
     / "adapter-targets-0.107.1.json"
@@ -178,7 +178,7 @@ def generate_non_card_adapter_targets(catalog_path: Path, output: Path) -> None:
     _write(
         output,
         json.dumps(
-            {"schema": "openmod.sts2.adapter-targets/v1", "targets": targets},
+            {"schema": "skillthespire.sts2.adapter-targets/v1", "targets": targets},
             indent=2,
         )
         + "\n",
@@ -200,7 +200,7 @@ def create_runtime_collector(project_dir: Path, mod_name: str, author: str) -> N
     _write(project_dir / f"{mod_name}Code" / "RuntimeCatalogCollector.cs", source)
     manifest_path = project_dir / "mod_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest["description"] = "open-mod M6.7.0 no-op vanilla runtime catalog collector"
+    manifest["description"] = "Skill the Spire no-op vanilla runtime catalog collector"
     manifest["affects_gameplay"] = False
     _write(manifest_path, json.dumps(manifest, indent=2) + "\n")
 
@@ -256,12 +256,12 @@ def merge(
     runtime_path: Path,
     assembly_path: Path,
     output: Path,
-    promoted_packages: list[str] | None = None,
+    authorable_families: list[str] | None = None,
 ) -> None:
     runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
     assembly = json.loads(assembly_path.read_text(encoding="utf-8"))
     catalog = merge_catalogs(runtime, assembly)
-    catalog["promoted_operation_packages"] = sorted(set(promoted_packages or []))
+    catalog["authorable_route_families"] = sorted(set(authorable_families or []))
     catalog["catalog_sha256"] = catalog_digest(catalog)
     validate_catalog(catalog)
     _write(output, json.dumps(catalog, ensure_ascii=False, indent=2) + "\n")
@@ -275,12 +275,12 @@ def refresh_adapters(
     catalog_path: Path,
     assembly_path: Path,
     output: Path,
-    promoted_packages: list[str] | None = None,
+    authorable_families: list[str] | None = None,
 ) -> None:
     current = json.loads(catalog_path.read_text(encoding="utf-8"))
     validate_catalog(current)
     runtime = {
-        "schema": "openmod.sts2.vanilla-runtime-catalog/v2",
+        "schema": "skillthespire.sts2.vanilla-runtime-catalog/v2",
         "host_version": current["host_version"],
         "profile": current["profile"],
         "assembly_sha256": current["assembly"]["sha256"],
@@ -303,8 +303,8 @@ def refresh_adapters(
     }
     assembly = json.loads(assembly_path.read_text(encoding="utf-8"))
     refreshed = merge_catalogs(runtime, assembly)
-    refreshed["promoted_operation_packages"] = sorted(
-        set(current["promoted_operation_packages"]) | set(promoted_packages or [])
+    refreshed["authorable_route_families"] = sorted(
+        set(current["authorable_route_families"]) | set(authorable_families or [])
     )
     refreshed["catalog_sha256"] = catalog_digest(refreshed)
     validate_catalog(refreshed)
@@ -321,8 +321,8 @@ def main(argv: list[str] | None = None) -> int:
 
     runtime = subparsers.add_parser("create-runtime-project")
     runtime.add_argument("--project-dir", required=True)
-    runtime.add_argument("--mod-name", default="OpenModM67Catalog")
-    runtime.add_argument("--author", default="OpenMod")
+    runtime.add_argument("--mod-name", default="SkillTheSpireVanillaCatalog")
+    runtime.add_argument("--author", default="SkillTheSpire")
 
     assembly = subparsers.add_parser("collect-assembly")
     assembly.add_argument("--assembly", required=True)
@@ -338,7 +338,7 @@ def main(argv: list[str] | None = None) -> int:
     merge_parser.add_argument("--runtime", required=True)
     merge_parser.add_argument("--assembly", required=True)
     merge_parser.add_argument("--output", required=True)
-    merge_parser.add_argument("--promote-package", action="append", default=[])
+    merge_parser.add_argument("--authorable-family", action="append", default=[])
 
     target_parser = subparsers.add_parser("generate-adapter-targets")
     target_parser.add_argument("--catalog", required=True)
@@ -348,7 +348,7 @@ def main(argv: list[str] | None = None) -> int:
     refresh_parser.add_argument("--catalog", required=True)
     refresh_parser.add_argument("--assembly", required=True)
     refresh_parser.add_argument("--output", required=True)
-    refresh_parser.add_argument("--promote-package", action="append", default=[])
+    refresh_parser.add_argument("--authorable-family", action="append", default=[])
 
     args = parser.parse_args(argv)
     try:
@@ -366,14 +366,14 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.catalog),
                 Path(args.assembly),
                 Path(args.output),
-                args.promote_package,
+                args.authorable_family,
             )
         else:
             merge(
                 Path(args.runtime),
                 Path(args.assembly),
                 Path(args.output),
-                args.promote_package,
+                args.authorable_family,
             )
     except (OSError, ValueError, json.JSONDecodeError, VanillaOverrideError) as exc:
         print(f"[catalog] FAILED: {exc}", file=sys.stderr)

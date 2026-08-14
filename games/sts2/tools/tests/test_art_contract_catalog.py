@@ -1,6 +1,6 @@
 """The art contract as data, and the prose views that must agree with it.
 
-M8.0 change 2 extracts data into queryable form. The art contract's exact values live in
+The art contract's exact values live in queryable code:
 code -- `gen_sprite.SPECS` and `character_art.CHARACTER_ART_BUNDLE` -- because `fit`,
 `chroma`, and the visible footprints are behavior, not documentation. The catalog at
 `reference/catalogs/art-contract-sts2-0.107.1.json` is a generated projection of that code,
@@ -18,7 +18,7 @@ Before this, `art-contract.md` asked a human to "keep them in sync" and nothing 
 That instruction had already failed once: the cue grid was written columns-first in four
 prose copies and printed rows-first by `list-specs`, which for the only non-square sheet
 (`Dead`) named a 3-wide x 2-tall sheet when the geometry is 2 wide x 3 tall. Recorded as
-mismatch 12 in `games/sts2/tests/m80-surface-cross-check.md`.
+drift between the generated catalog and its authoritative code.
 
 What these tests do not establish: that any size is correct in-game. Sizes are grounded by
 the headed runs recorded in `art-contract.md`; this file only holds the copies together.
@@ -36,11 +36,11 @@ from pathlib import Path
 TOOLS_DIR = Path(__file__).resolve().parents[1]
 GEN_SPRITE = TOOLS_DIR / "gen_sprite.py"
 REPO_ROOT = TOOLS_DIR.parents[2]
-STS2_API_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "sts2-api"
-CATALOG_PATH = STS2_API_DIR / "reference" / "catalogs" / "art-contract-sts2-0.107.1.json"
-ART_CONTRACT_PATH = STS2_API_DIR / "reference" / "art-contract.md"
-PRESENTATION_PATH = STS2_API_DIR / "reference" / "character-presentation.md"
-CUES_PATH = STS2_API_DIR / "reference" / "character-combat-cues.md"
+STS2API_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "sts2api"
+CATALOG_PATH = STS2API_DIR / "reference" / "catalogs" / "art-contract-sts2-0.107.1.json"
+ART_CONTRACT_PATH = STS2API_DIR / "reference" / "art-contract.md"
+PRESENTATION_PATH = STS2API_DIR / "reference" / "character-presentation.md"
+CUES_PATH = STS2API_DIR / "reference" / "character-combat-cues.md"
 
 sys.path.insert(0, str(TOOLS_DIR))
 import gen_sprite  # noqa: E402
@@ -82,7 +82,7 @@ class ArtContractCatalogTests(unittest.TestCase):
 
     def test_catalog_declares_its_generated_projection_status(self) -> None:
         """The catalog must say it is generated, so nobody hand-edits it into a rival source."""
-        self.assertEqual("openmod.sts2.art-contract/v1", self.catalog["schema"])
+        self.assertEqual("skillthespire.sts2.art-contract/v1", self.catalog["schema"])
         self.assertEqual("0.107.1", self.catalog["host_version"])
         source = self.catalog["source"]
         self.assertIn("gen_sprite.py", source["definition"])
@@ -135,7 +135,7 @@ class ArtContractCatalogTests(unittest.TestCase):
                 # `orb_layer_5.png`; the endpoints are asserted, the interior is prose.
                 continue
             if name == "map_marker.png":
-                # The unpromoted marker keeps its native/shared fallback; the page names the
+                # The unlisted marker keeps its native/shared fallback; the page names the
                 # spec and size but deliberately does not advertise a filename to author.
                 continue
             with self.subTest(slot=slot["name"]):

@@ -94,7 +94,7 @@ interfaces, predicates, `Color` objects, raw markup, rectangles, or invalidation
 in SPEC. Relics use at most three distinct safe corners; Powers use at most one top-left
 label because their preset label bands overlap in crowded rows. Every extra badge supplements
 the native Power main amount instead of replacing it. Intent belongs to the public Extra
-Badges Package and remains supported there, but it has no generated SPEC block because no
+Badges API and remains supported there, but it has no generated SPEC block because no
 authoring recipe exists for it yet.
 
 ## Shared capability routes
