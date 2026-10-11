@@ -36,6 +36,12 @@ If the workflow uses shell tokens, namespace them under the Mod and let only the
 them. Respond to the published snapshot through `OnApply`; never change the active global theme or
 style unrelated game/framework controls as product behavior.
 
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+use glossary names exactly in both languages, keep buttons, titles, and Toast lines short and
+plain, and add rich-text tags only to Hover Tip descriptions, which render them natively.
+
 ## Authoring route
 
 - Read `recipes/runtime-ui.md` and `reference/lifecycle-state-rng.md`.

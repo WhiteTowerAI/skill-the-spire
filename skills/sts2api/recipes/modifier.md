@@ -58,11 +58,15 @@ Use matching `eng`/`zhs` `modifiers.json` entries:
 
 ```json
 {
-  "<MOD>-<MODIFIER>.title": "<title>",
-  "<MOD>-<MODIFIER>.description": "<description>",
+  "<MOD>-<MODIFIER>.title": "<plain title>",
+  "<MOD>-<MODIFIER>.description": "Start each combat with [blue]3[/blue] [gold]Vulnerable[/gold].",
   "<MOD>-<MODIFIER>.additionalRestSiteHealText": "<optional heal text>"
 }
 ```
+
+Follow the Modifier row of `reference/vanilla-text-style.md`: plain title, `[blue]` numbers,
+`[gold]` glossary terms, `[red]` only for a harsh downside, and the glossary's Chinese terms
+(`每场战斗开始时获得[blue]3[/blue]层[gold]易伤[/gold]。`).
 
 Use the optional heal-text key only with a selected Rest Site Heal hook. Custom icon code returns
 a `ModifierAssetProfile` pointing to an existing packed texture. With no custom path, the native

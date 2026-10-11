@@ -144,15 +144,24 @@ user launch never arms it — no menu driving, fully inert. It ships dormant ins
 
 For every player-facing string, author both
 `<ModName>/localization/eng/` and `<ModName>/localization/zhs/` from the exact bilingual
-SPEC text. The directory trees, table names, keys, and SmartFormat tokens are identical;
-only the localized prose differs. Do not satisfy the Chinese table by copying its English
-value unchanged.
+SPEC text. The directory trees, table names, and keys are identical, and both languages
+reference the same SmartFormat variables and the same `:diff()`/`energyIcons()`/`starIcons()`
+values; grammar formatters such as English `{Cards:plural:card|cards}` may be dropped in
+Chinese, as vanilla does. Do not satisfy the Chinese table by copying its English value
+unchanged.
 
-When display `text effects` is `vanilla`, apply semantic `text spans` only after the plain
-description and SmartFormat placeholders are correct. Validate every tag against
-`reference/content-text-effects.md`, keep tags balanced, do not wrap `:diff()` values in
-another color, and never copy user-supplied raw markup. Titles, flavor, and selection
-prompts stay plain.
+**Every string follows `reference/vanilla-text-style.md`.** It is the default, not an
+option: look up each game term in `reference/catalogs/text-glossary-sts2-0.107.1.json` and
+use its exact `eng`/`zhs` name and color; give each surface its vanilla number color and line
+breaks (Card `:diff()` numbers uncolored and one effect per line; relic/potion/power/event
+numbers `[blue]`, heals `[green]`, Event costs `[red]`); write Chinese with full-width
+punctuation, no spaces, and the vanilla measure word; keep titles plain. Declare
+`AdditionalHoverTips` for every Power, keyword, Orb, or Card a description names.
+
+Only when SPEC selects `extra emphasis` (or Event `extra atmosphere`), apply those spans after
+the default text is correct. Validate every tag against `reference/content-text-effects.md`
+or `reference/event-text-effects.md`, keep tags balanced, do not wrap `:diff()` values in
+another color, and never copy user-supplied raw markup.
 
 For a **character**, write the 14 normalized flat keys to `characters.json` and the
 complete `THE_ARCHITECT.talk.<CHAR_ID>` dialogue to `ancients.json`, as listed in

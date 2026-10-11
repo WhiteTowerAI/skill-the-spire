@@ -117,8 +117,9 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      filtered single target is supported; a filtered many-target Potion is a pinned-profile gap,
      so offer a filtered single-target Potion or a filtered many-target Card instead.
    - **Card:** resolve cost, type, and target only when ambiguous. For a filtered target, ask
-     only the missing game rule. For colored words, capture the exact phrase and plain color
-     intent, never raw BBCode. For a calculated number, capture one formula, its inputs, an
+     only the missing game rule. Vanilla text coloring is automatic
+     (`reference/vanilla-text-style.md`); never ask about it. Only when the user asks for extra
+     colored words, capture the exact phrase and plain color intent, never raw BBCode. For a calculated number, capture one formula, its inputs, an
      integer range, and base/upgrade behavior; when playing the Card changes an input, ask:
      "Should this count the state before this card spends its energy and leaves your hand, or
      just after?" For hand highlights or Relic/Power extra badges, capture meaning, condition,
@@ -199,7 +200,9 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
   Card to the Deck or obtains a known relic; never a second grant.
 - **Event screen shake**: none unless explicitly requested; then one `weak_short` or
   `strong_normal` call on the named successful option, inheriting the player's preference.
-- **Event text effects**: none unless explicitly requested or clearly described; then use
+- **Text style**: vanilla, always (`reference/vanilla-text-style.md`): glossary terms and
+  colors, per-surface numbers and line breaks, native Chinese. Not a question.
+- **Event extra atmosphere**: none unless explicitly requested or clearly described; then use
   only the bounded vanilla rich-text vocabulary on named page/option description phrases.
 - **Forced Event follow-up**: none unless explicitly described; default to one custom Quest
   Card forcing one custom Event from the next Unknown MapPoint in one act. When the request

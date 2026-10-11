@@ -36,12 +36,14 @@ example `ExampleMod` + `EmberDraft` becomes
 ## Skeleton
 
 ```csharp
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Potions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using STS2RitsuLib.Scaffolding.Content;
 
@@ -53,6 +55,10 @@ public sealed class <PotionName> : ModPotionTemplate
     public override PotionUsage Usage => PotionUsage.CombatOnly;
     public override TargetType TargetType => TargetType.AnyEnemy;
 
+    // The displayed number: the description shows it as [blue]{Damage}[/blue].
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        new DynamicVar[] { new DamageVar(4m, ValueProp.Unpowered) };
+
     public override PotionAssetProfile AssetProfile => new(
         ImagePath: "res://<ModName>/images/potions/<slug>.png");
 
@@ -60,11 +66,12 @@ public sealed class <PotionName> : ModPotionTemplate
         PlayerChoiceContext choiceContext, Creature? target)
     {
         AssertValidForTargetedPotion(target);
+        DamageVar damage = DynamicVars.Damage;
         await CreatureCmd.Damage(
-            choiceContext, target, 4m, ValueProp.Unpowered,
+            choiceContext, target, damage.BaseValue, damage.Props,
             Owner.Creature, null);
         MainFile.Logger.Info(
-            "[T2MOD-SELFTEST] <ModName> <PotionName> used: damage=4");
+            $"[T2MOD-SELFTEST] <ModName> <PotionName> used: damage={damage.BaseValue}");
     }
 }
 ```
@@ -119,11 +126,22 @@ public-entry keys:
 ```json
 {
   "<MOD>_POTION_<TYPE>.title": "Display Name",
-  "<MOD>_POTION_<TYPE>.description": "Deal 4 damage."
+  "<MOD>_POTION_<TYPE>.description": "Deal [blue]{Damage}[/blue] damage."
 }
 ```
 
-Add `.selectionScreenPrompt` only when the Potion opens a selector.
+```json
+{
+  "<MOD>_POTION_<TYPE>.title": "显示名称",
+  "<MOD>_POTION_<TYPE>.description": "造成[blue]{Damage}[/blue]点伤害。"
+}
+```
+
+Add `.selectionScreenPrompt` only when the Potion opens a selector. Write the description in
+the Potion row of `reference/vanilla-text-style.md`: displayed numbers in `[blue]` from
+`CanonicalVars`, heals in `[green]`, glossary terms in `[gold]`
+(`Apply [blue]{WeakPower}[/blue] [gold]Weak[/gold].` / `给予[blue]{WeakPower}[/blue]层[gold]虚弱[/gold]。`),
+and a tip in `AdditionalHoverTips` for each Power, keyword, Card, or Orb it names.
 
 ## Verification
 

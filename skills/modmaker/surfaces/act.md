@@ -32,6 +32,12 @@ All authored Act entry predicates must reject `ctx.IsMultiplayer`. Keep
 and would create a deferred Multiplayer interaction. Use the explicit force/uniform/weighted
 entry routes instead.
 
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+the Act title stays plain Title Case. Its Encounters, Events, and Ancients follow their own
+surface rows.
+
 ## Authoring route
 
 - Read `recipes/act.md` for the `ModActTemplate` members, `.Act<T>()`, entry policies, content

@@ -41,7 +41,8 @@ explicit and one recipe can emit the selected graph. This does not force a one-t
   - fields: monster `name`, one `moves.<MOVE_ID>.title` per declared move; encounter
     `title` and `loss`
   - table intent: monsters + encounters
-  - formatting: plain
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`): names and move titles
+    plain Title Case; encounter `loss` names the foe as `[gold]{encounter}[/gold]`
 - **effects**:
   - trigger: encounter move
   - target: <per move>

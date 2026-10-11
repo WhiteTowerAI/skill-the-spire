@@ -88,10 +88,24 @@ Add the same entries to `<ModName>/localization/<lang>/relics.json` for both `en
 ```json
 {
   "<MOD>_RELIC_<TYPE>.title": "Display Name",
-  "<MOD>_RELIC_<TYPE>.description": "What the relic does, shown on hover.",
-  "<MOD>_RELIC_<TYPE>.flavor": "Flavor text."
+  "<MOD>_RELIC_<TYPE>.description": "At the start of each combat, gain [blue]{Block}[/blue] [gold]Block[/gold].",
+  "<MOD>_RELIC_<TYPE>.flavor": "It has weathered every storm."
 }
 ```
+
+```json
+{
+  "<MOD>_RELIC_<TYPE>.title": "显示名称",
+  "<MOD>_RELIC_<TYPE>.description": "每场战斗开始时，获得[blue]{Block}[/blue]点[gold]格挡[/gold]。",
+  "<MOD>_RELIC_<TYPE>.flavor": "它经受住了每一场风暴。"
+}
+```
+
+Write the description in the Relic row of `reference/vanilla-text-style.md`: displayed numbers
+in `[blue]` (declared in `CanonicalVars`, see the surface page § Displayed values), heals in
+`[green]`, glossary terms in `[gold]`, Curses in `[red]`, Enchantment names in `[purple]`.
+Title and flavor stay plain. Declare a tip in `AdditionalHoverTips` for every Power, keyword,
+Card, or Orb the description names.
 
 Register it exactly once in `MainFile.Content.cs`; the pool generic is its availability
 contract:
@@ -102,9 +116,10 @@ RitsuLibFramework.CreateContentPack(ModId)
     .Apply();
 ```
 
-If SPEC selects vanilla text effects, read `reference/content-text-effects.md`. Relic
-descriptions may author balanced `blue`, `gold`, `green`, `purple`, and `red` spans; the
-standard relic Hover Tip renders that same description. Keep title and flavor plain.
+Only when SPEC selects `extra emphasis` beyond the default style, read
+`reference/content-text-effects.md`. Relic descriptions may author balanced `blue`, `gold`,
+`green`, `purple`, and `red` spans; the standard relic Hover Tip renders that same
+description. Keep title and flavor plain.
 
 ## The ID / loc-key derivation rule
 
@@ -319,10 +334,11 @@ public sealed class GamblersCoin : ModRelicTemplate
 ```json
 {
   "GAMBLERS_COIN_RELIC_GAMBLERS_COIN.title": "Gambler's Coin",
-  "GAMBLERS_COIN_RELIC_GAMBLERS_COIN.description": "At the start of each combat, flip a coin. Heads: double your Energy. Tails: lose all your Energy.",
+  "GAMBLERS_COIN_RELIC_GAMBLERS_COIN.description": "At the start of each combat, flip a coin. Heads: double your [gold]Energy[/gold]. Tails: lose all your [gold]Energy[/gold].",
   "GAMBLERS_COIN_RELIC_GAMBLERS_COIN.flavor": "Heads I win. Tails you lose."
 }
 ```
+`zhs` description: `"每场战斗开始时，抛一枚硬币。正面：你的[gold]能量[/gold]翻倍。反面：失去所有[gold]能量[/gold]。"`
 
 ## Verify (tier-1 + tier-2)
 

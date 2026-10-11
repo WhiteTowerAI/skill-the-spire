@@ -24,7 +24,11 @@ real STS2 host. Contracts guide authoring; Build and host autotests establish re
 - Preserve settled user decisions and unrelated project artifacts. A player-visible substitute
   needs explicit acceptance.
 - Every player-facing localization table has matching `eng` and `zhs` tables/keys, nonempty
-  values, and equal SmartFormat token multisets. A Mod with no localization tables is neutral.
+  values, the same SmartFormat variables, and the same `:diff()`/`energyIcons()`/`starIcons()`
+  values. A Mod with no localization tables is neutral.
+- Every player-facing string reads like the game: `../sts2api/reference/vanilla-text-style.md`
+  owns glossary terms, colors, number presentation, line breaks, Chinese style, and hover tips
+  on every surface. It is the default, never an optional effect.
 - Never edit an installed skill payload from a generated project. Maintainers edit source under
   `games/sts2/` and publish it.
 - Report only actual evidence. Build is not load, load is not behavior, trigger logs are not a

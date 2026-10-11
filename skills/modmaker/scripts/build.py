@@ -45,6 +45,7 @@ from ritsu_profile import (
     validate_restore_assets,
     validate_runtime_asset,
 )
+from text_style import TextStyleError, validate_project_text_style
 from vanilla_overrides import VanillaOverrideError, validate_project_override_manifest
 
 DIAG_RE = re.compile(r"error|warning|错误|警告|CS\d|MSB\d", re.IGNORECASE)
@@ -183,6 +184,21 @@ def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path
     validate_no_phantom_manifests(mods_dir, deployed_manifest)
 
 
+def report_text_style(project_dir: Path, mod_name: str) -> None:
+    """Fail on broken rich-text markup; list vanilla-style drift without failing the Build."""
+    summary, warnings = validate_project_text_style(project_dir, mod_name)
+    if not warnings:
+        print(f"[build] text style OK: {summary}")
+        return
+    style_log = project_dir / ".text-style.log"
+    style_log.write_text("\n".join(warnings) + "\n", encoding="utf-8")
+    print(f"[build] text style WARNING: {summary}; fix each line in {style_log}")
+    # Warnings quote Chinese text; a legacy console code page must not crash the Build.
+    sys.stdout.reconfigure(errors="backslashreplace")
+    for warning in warnings[:5]:
+        print(f"  {warning}")
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description="Build an STS2 content mod into mods/")
     ap.add_argument("--project-dir", required=True,
@@ -212,6 +228,7 @@ def main(argv: list[str]) -> int:
         print(f"[build] resource manifest OK: {resource_summary}")
         localization_summary = validate_project_localization(project_dir, mod_name)
         print(f"[build] localization OK: {localization_summary}")
+        report_text_style(project_dir, mod_name)
         dialogue_summary = validate_project_ancient_dialogue(project_dir, mod_name)
         print(f"[build] Ancient dialogue OK: {dialogue_summary}")
         override_summary = validate_project_override_manifest(project_dir, mod_name)
@@ -243,6 +260,7 @@ def main(argv: list[str]) -> int:
         AncientDialogueValidationError,
         LocalizationContractError,
         RitsuProfileError,
+        TextStyleError,
         VanillaOverrideError,
     ) as exc:
         print(f"[build] RitsuLib profile FAILED: {exc}", file=sys.stderr)

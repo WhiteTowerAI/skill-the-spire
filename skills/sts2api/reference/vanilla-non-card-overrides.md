@@ -346,7 +346,8 @@ Every option prefix requires `.title` and `.description`; every page description
 complete entry. Put all of them in every shipped
 `<ModName>/localization/<lang>/events.json`, including required `eng` and `zhs`. Build preflight
 rejects missing files, keys, or empty values. Event assets remain separate resource
-operations and contain no behavior scripts.
+operations and contain no behavior scripts. Option and page text follows the Event rows of
+`reference/vanilla-text-style.md`, matching the vanilla Event it changes.
 
 ## Conflicts and boundaries
 

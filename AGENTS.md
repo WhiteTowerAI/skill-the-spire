@@ -94,9 +94,17 @@ defect to repair.
 ## Localization And Art
 
 Mods without localization tables remain language-neutral. Once any table exists, generated Mods
-require `eng` and `zhs`, identical table/key sets, identical SmartFormat token multisets, and
-nonempty values. Build checks the static contract; Tier 2 resolves both languages in real
-consumers and restores the original language. Translation quality is human-owned.
+require `eng` and `zhs`, identical table/key sets, the same SmartFormat variables and
+`:diff()`/`energyIcons()`/`starIcons()` values (grammar formatters such as `plural` may differ
+per language, as in vanilla Chinese), and nonempty values. Build checks the static contract;
+Tier 2 resolves both languages in real consumers and restores the original language.
+
+Player-facing text follows the pinned vanilla style in
+`games/sts2/skills/sts2api/reference/vanilla-text-style.md`: glossary terms and highlight
+colors, per-surface number presentation and line breaks, and native Chinese punctuation and
+measure words. The glossary `text-glossary-sts2-0.107.1.json` is generated from the installed
+game by `collect_text_glossary.py`; never hand-edit it. Build fails on broken rich-text markup
+and reports style drift as warnings. Translation quality beyond that is human-owned.
 
 Art normalization facts live in `gen_sprite.SPECS`, `character_art.CHARACTER_ART_BUNDLE`, and the
 generated art catalog. Never hand-edit that catalog. Generated art passes through

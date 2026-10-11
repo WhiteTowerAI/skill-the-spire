@@ -86,7 +86,8 @@ An individual Card implements `ICustomTypeTextCard`; a model/capability affectin
 containing `{Type}` wraps the previously selected type text. A modifier without `{Type}` replaces
 the base selection; later replacements win, then wrappers apply in order around that result.
 
-Use bilingual localization with matching SmartFormat tokens. Type text is presentation, not a
+Use bilingual localization with matching SmartFormat variables, in the plain title style of
+`reference/vanilla-text-style.md`. Type text is presentation, not a
 behavioral Card tag: register any actual tag/keyword separately. Process-wide
 `RegisterCardTypeTextModifier` belongs only to a Global Effect with a truthful guard.
 

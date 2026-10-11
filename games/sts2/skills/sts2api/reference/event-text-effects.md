@@ -1,7 +1,12 @@
-# Normal Event Rich Text
+# Normal Event Extra Atmosphere
 
-Normal/default-layout Events may use the same bounded rich-text vocabulary as vanilla
-Event descriptions. This is host-native presentation: localization supplies balanced
+Every Event page and option already follows the default style of
+`reference/vanilla-text-style.md`: option costs `[red]`, gains `[green]`, counts `[blue]`,
+glossary terms `[gold]`, and second-person narrative pages. That needs no request.
+
+This page covers only the **extra atmosphere** a user asks for beyond that default, such as a
+shaking or glowing phrase. Normal/default-layout Events may use the same bounded rich-text
+vocabulary as vanilla Event descriptions. This is host-native presentation: localization supplies balanced
 BBCode tags and the existing `MegaRichTextLabel` parses and animates them. Generated mods
 do not create a VFX node, Tween, Shader, font, or scene for this feature.
 
@@ -51,8 +56,7 @@ and do not promise that every vanilla effect responds identically to the setting
 SPEC records only the intended spans, not literal source markup:
 
 ```text
-event text effects: vanilla
-text spans:
+extra atmosphere:
   INITIAL: "golden sign" -> jitter + gold
   FOLLOWED: "darkness breathes" -> sine + purple
 ```

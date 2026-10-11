@@ -62,7 +62,9 @@ matching `ComputeDynamicValue`, `ComputeEnergyValue`, `ComputeStarsValue`, or
 STS2 descriptions are **SmartFormat templates**, not plain strings. A placeholder
 `{Name}` is replaced at display time with the model's DynamicVar (or an auto-injected
 variable), so the hover text always shows the *current* value — after upgrades,
-Strength, etc. This is why you write `"Deal {Damage} damage."`, not `"Deal 6 damage."`.
+Strength, etc. This is why a Card writes `"Deal {Damage:diff()} damage."`, not
+`"Deal 6 damage."`. Where each surface colors its numbers, highlights terms, and breaks lines
+is owned by `reference/vanilla-text-style.md`.
 
 **Auto-injected variables** (available in every description without declaring them):
 - `{Amount}` — a power's current stack count (powers only; `PowerModel` adds it).
@@ -84,8 +86,10 @@ precise token/args before relying on one you haven't seen used:**
 | `{X:showIfUpgraded()}` | ShowIfUpgraded | Emits text only on the upgraded card. |
 | `{X:abs()}` | AbsoluteValue | Absolute value (for powers that store a signed amount). |
 
-> Rule of thumb: a **card damage/block number → `{Damage:diff()}`** so upgrades show
-> green. A **power stack count → `{Amount}`** (plain; it's already the live value).
+> Rule of thumb: a **card damage/block number → `{Damage:diff()}`**, uncolored, so upgrades
+> show green. A **power stack count → `[blue]{Amount}[/blue]`** in `.smartDescription`, as
+> every vanilla Power does; relic, potion, enchantment, and event numbers are `[blue]` too.
+> English plural words use `{Cards:plural:card|cards}`; Chinese omits plural branches.
 > When unsure which formatter a vanilla element uses, grep its loc entry (content) via
 > `grounding.md`, or read its class for the `CanonicalVars` name.
 

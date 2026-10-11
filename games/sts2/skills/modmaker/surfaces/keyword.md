@@ -12,10 +12,11 @@ element block**. Declare it inside its host Card's SPEC fields:
 ```markdown
   - keywords: <keyword name> — <the shared rule the tooltip states>
     behavior owner: <the host element that implements it>
+    placement: before description | after description | none (numbered keyword line)
 ```
 
 The host Card's `localization` section records exact English and Simplified Chinese keyword
-title/description text. The stable entry and any SmartFormat tokens are identical between
+title/description text. The stable entry and the SmartFormat variables are identical between
 languages.
 
 That the keyword carries no behavior is the reason for this shape, and also the thing its
@@ -39,6 +40,45 @@ text automatically and vanilla `Impervious` carries none of it in its own descri
 
 The keyword's own `.description` states the shared rule for the tooltip. The host card's
 description states only what that specific card does.
+
+### Placement follows the vanilla order
+
+The pinned `CardKeywordOrder` puts `Ethereal`, `Sly`, `Retain`, `Innate`, and `Unplayable`
+**before** the description, and `Exhaust` and `Eternal` **after** it. Choose by the same
+meaning:
+
+- `BeforeCardDescription` for a rule about whether or when the card is in hand or playable
+  (start in hand, stay in hand, leave hand, cannot be played);
+- `AfterCardDescription` for a rule about what happens to the card after it is played or
+  where it lives in the deck (removed, returns, cannot be removed).
+
+RitsuLib inserts Mod lines above the vanilla "before" group and below the vanilla "after"
+group, and orders several Mod keywords by keyword id. Record the choice in SPEC.
+
+### A keyword that carries a number is not a card keyword line
+
+A native card keyword has no amount: the composed line is only `Title.`. When the rule
+needs a per-card number ("Resonant 3"), follow vanilla `Forge` instead: register the keyword
+with `ModKeywordCardDescriptionPlacement.None`, keep it in the card's keyword set for its
+tooltip, declare the number as a card `DynamicVar`, and write the line yourself as the
+card's first or last description line: `[gold]Resonant[/gold] {Resonant:diff()}.` /
+`[gold]共鸣[/gold]{Resonant:diff()}。`. When the number is a stack that changes during combat,
+it is a Power, not a keyword: use `surfaces/power.md`.
+
+### Naming a keyword elsewhere
+
+Any other string that names the keyword (another Card that grants it, a Relic, a Power)
+writes the exact title in `[gold]` and declares its tip:
+`.. new[] { HostCard.KeywordId }.ToHoverTips()` in `AdditionalHoverTips`
+(`reference/vanilla-text-style.md` § Hover tips for named terms).
+
+### Keyword text style
+
+The title is one or two Title Case words in English and the matching Chinese term; it never
+reuses a vanilla keyword or Power name from the glossary. The `.description` is one or two
+plain sentences that highlight other glossary terms in `[gold]`, like vanilla:
+`If this card is discarded from your [gold]Hand[/gold] before the end of your turn, play it
+for free.`
 
 ## Author the element class
 
@@ -69,7 +109,8 @@ A keyword has no scenario of its own. Use its host Card's `InCombat` driver
   a numeric fallback key. An unresolved keyword renders as a generated numeric loc key, which
   no behavior assertion would catch.
 - Assert the composed card text contains the keyword title exactly **once**, so a
-  hand-written duplicate is caught rather than shipped.
+  hand-written duplicate is caught rather than shipped, and that it sits on the declared side
+  of the description.
 - **Assert the named behavior in the host.** The keyword itself carries no behavior, so a
   registration-and-tooltip proof passes for a keyword whose rule was never implemented —
   the player reads a rule the game does not follow. Drive the host and assert the concrete

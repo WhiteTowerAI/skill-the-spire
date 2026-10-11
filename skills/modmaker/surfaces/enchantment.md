@@ -16,7 +16,7 @@ inside its host Card's SPEC fields:
 ```
 
 The host Card's `localization` section records exact English and Simplified Chinese
-title/description/optional `extraCardText`. The stable entry and any SmartFormat tokens are
+title/description/optional `extraCardText`. The stable entry and the SmartFormat variables are
 identical between languages.
 
 `host restriction` is a required line, not commentary: it is the enchantment's identity and
@@ -93,6 +93,14 @@ So the enchantment owns two distinct strings and the host card owns neither of t
 **Do not write either string into the host card's own description.** The recipe's example
 values are deliberately near-duplicates of each other; that is a localization shape, not a
 license to write the same sentence a third time on the card.
+
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+the title stays plain; `.description` and `.extraCardText` show `[blue]` numbers and
+`[gold]` glossary terms. Any other string that names the Enchantment wraps the name in
+`[purple]`, as vanilla does (`[gold]Enchant[/gold] it with [purple]Instinct[/purple].`), and
+declares `HoverTipFactory.FromEnchantment<T>()` in its `AdditionalHoverTips`.
 
 ## Author the element class
 

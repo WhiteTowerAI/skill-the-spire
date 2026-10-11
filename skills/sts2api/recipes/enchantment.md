@@ -115,10 +115,21 @@ Ship matching `localization/eng/enchantments.json` and
 ```json
 {
   "<MOD>_ENCHANTMENT_<TYPE>.title": "Display Name",
-  "<MOD>_ENCHANTMENT_<TYPE>.description": "When played, gain {Amount} Block.",
-  "<MOD>_ENCHANTMENT_<TYPE>.extraCardText": "Gain {Amount} Block."
+  "<MOD>_ENCHANTMENT_<TYPE>.description": "Increases [gold]Block[/gold] gained from this card by [blue]{Amount}[/blue].",
+  "<MOD>_ENCHANTMENT_<TYPE>.extraCardText": "Gain [blue]{Amount}[/blue] additional [gold]Block[/gold]."
 }
 ```
+
+```json
+{
+  "<MOD>_ENCHANTMENT_<TYPE>.title": "显示名称",
+  "<MOD>_ENCHANTMENT_<TYPE>.description": "这张牌获得的[gold]格挡[/gold]值增加[blue]{Amount}[/blue]点。",
+  "<MOD>_ENCHANTMENT_<TYPE>.extraCardText": "额外获得[blue]{Amount}[/blue]点[gold]格挡[/gold]。"
+}
+```
+
+Both strings follow the Enchantment row of `reference/vanilla-text-style.md`. Any other text
+that names this Enchantment writes it in `[purple]`.
 
 Emit `.extraCardText` only when `HasExtraCardText` is true.
 

@@ -76,9 +76,28 @@ switching to an old template.
 ### `localization FAILED` with a language/table/key/token detail
 
 - **Cause:** one of required `eng`/`zhs` is absent, the language trees contain different
-  tables or keys, a value is empty, or a translation changed a SmartFormat token.
+  tables or keys, a value is empty, or a translation dropped or renamed a SmartFormat variable
+  or a `:diff()`/`energyIcons()`/`starIcons()` value.
 - **Fix:** regenerate both language tables from SPEC's bilingual text, preserving exact table
-  names, keys, and token multisets. Do not copy English prose into `zhs` or weaken the validator.
+  names, keys, every variable, and every live-value token. Grammar formatters may differ:
+  Chinese drops English `{X:plural:...}` branches. Do not copy English prose into `zhs` or
+  weaken the validator.
+
+### `[build] RitsuLib profile FAILED` with a `text style` / tag detail
+
+- **Cause:** a localized value uses a tag vanilla never authors (`[color=...]`, `[wave]`), a tag
+  parameter, or unbalanced/mis-nested tags. The game would show raw markup.
+- **Fix:** use only the surface's vanilla tags from `reference/vanilla-text-style.md`, close
+  each tag in reverse order, and keep tags out of titles.
+
+### `[build] text style WARNING`
+
+- **Cause:** a string drifts from vanilla style: an unhighlighted glossary term, an uncolored
+  non-Card number, a colored Card `:diff()` number, several Card effects on one line, a Power
+  `.description` that shows `{Amount}`, or Western punctuation/spaces in Chinese.
+- **Fix:** read `<project>/.text-style.log`, correct each string in both languages per
+  `reference/vanilla-text-style.md`, and rebuild. The Build still succeeds; record any
+  deliberate exception in `MEMORY.md`.
 
 ### `[vanilla-overrides]` with a target/route/page/localization/fingerprint detail
 

@@ -12,7 +12,12 @@ from typing import Any
 
 
 REQUIRED_LANGUAGES = ("eng", "zhs")
-SMART_FORMAT_RE = re.compile(r"\{[^{}\r\n]+\}")
+# Every SmartFormat variable reference, including ones nested inside plural/cond branches.
+SMART_FORMAT_VARIABLE_RE = re.compile(r"\{(\w+)(?::(\w+))?")
+# Formatters that render a live number or icon. Both languages must show the same ones.
+# Grammar formatters (plural, cond, show, choose) are language-specific: vanilla Chinese
+# drops English plural branches and writes its own words inside conditional branches.
+VALUE_FORMATTERS = frozenset({"diff", "energyIcons", "starIcons"})
 
 
 class LocalizationContractError(ValueError):
@@ -66,8 +71,13 @@ def _language_tables(localization_root: Path) -> dict[str, dict[str, Path]]:
     return languages
 
 
-def _smart_format_tokens(value: str) -> Counter[str]:
-    return Counter(SMART_FORMAT_RE.findall(value))
+def _smart_format_signature(value: str) -> tuple[frozenset[str], Counter[tuple[str, str]]]:
+    """The variables a string references, plus its live-value tokens."""
+    references = [(name, formatter or "") for name, formatter in SMART_FORMAT_VARIABLE_RE.findall(value)]
+    return (
+        frozenset(name for name, _ in references),
+        Counter(reference for reference in references if reference[1] in VALUE_FORMATTERS),
+    )
 
 
 def validate_project_localization(project_dir: Path, mod_name: str) -> str:
@@ -121,13 +131,15 @@ def validate_project_localization(project_dir: Path, mod_name: str) -> str:
             token_mismatches = sorted(
                 key
                 for key in reference_keys
-                if _smart_format_tokens(translated[key])
-                != _smart_format_tokens(reference[key])
+                if _smart_format_signature(translated[key])
+                != _smart_format_signature(reference[key])
             )
             if token_mismatches:
                 raise LocalizationContractError(
                     f"{language}/{table_name}: SmartFormat tokens differ from "
-                    f"{reference_language}: {', '.join(token_mismatches)}"
+                    f"{reference_language} (each language must reference the same variables "
+                    f"and the same :diff()/energyIcons()/starIcons() values): "
+                    f"{', '.join(token_mismatches)}"
                 )
 
     return (

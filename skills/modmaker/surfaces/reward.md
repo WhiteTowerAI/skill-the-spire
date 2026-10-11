@@ -26,6 +26,12 @@ The selection outcome and reconstructed payload must describe the same determini
 Multiplayer synchronization or host-authoritative side effects are deferred; do not add them
 through this surface.
 
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+the reward description is one short sentence with `[blue]` counts and `[gold]` glossary terms
+and named Card/Relic/Potion names.
+
 ## Authoring route
 
 - Read `recipes/reward.md` for `ModRewardRegistry`, `ModCustomReward`, typed payload persistence,

@@ -43,11 +43,42 @@ class LocalizationContractTests(unittest.TestCase):
                 root,
                 "zhs",
                 "cards.json",
-                {"PROOF_CARD.title": "打击", "PROOF_CARD.description": "造成 {Damage:diff()} 点伤害。"},
+                {"PROOF_CARD.title": "打击", "PROOF_CARD.description": "造成{Damage:diff()}点伤害。"},
             )
             summary = validate_project_localization(root, "Proof")
             self.assertIn("required=eng,zhs", summary)
             self.assertIn("tables=1", summary)
+
+    def test_language_grammar_formatters_may_differ(self) -> None:
+        # Vanilla Chinese drops English plural branches and words its own conditionals.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_table(
+                root,
+                "eng",
+                "cards.json",
+                {
+                    "PROOF_CARD.description": "Draw {Cards:diff()} {Cards:plural:card|cards}.\n"
+                    "[gold]Exhaust[/gold] 1 card{IfUpgraded:show:| at random}."
+                },
+            )
+            self.write_table(
+                root,
+                "zhs",
+                "cards.json",
+                {"PROOF_CARD.description": "抽{Cards:diff()}张牌。\n{IfUpgraded:show:| 随机}[gold]消耗[/gold]1张牌。"},
+            )
+            self.assertIn("keys=1", validate_project_localization(root, "Proof"))
+
+    def test_missing_variable_fails_even_inside_grammar_branch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_table(
+                root, "eng", "powers.json", {"P.smartDescription": "Gain [blue]{Amount}[/blue] {Amount:plural:card|cards}."}
+            )
+            self.write_table(root, "zhs", "powers.json", {"P.smartDescription": "获得一些牌。"})
+            with self.assertRaisesRegex(LocalizationContractError, "SmartFormat tokens differ"):
+                validate_project_localization(root, "Proof")
 
     def test_missing_required_language_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

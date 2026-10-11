@@ -31,8 +31,8 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
   - languages: [eng, zhs]
   - fields: title=<shown name>; description=<hover text>; optional selectionScreenPrompt
     (only if the effect prompts a choice)
-  - formatting: dynamic value placeholders; plain | bounded vanilla rich text
-  - text spans: <description phrase -> blue/gold/green; selection prompt stays plain>
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`); dynamic value placeholders
+  - extra emphasis: none | <description phrase -> color the default style would not apply>
   - displayed values: none | <value name -> declared scaling name; literal or placeholder>
 - **effects**:
   - trigger: use
@@ -51,7 +51,7 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
     live-verified — same as relic/power; see `reference/art-contract.md`)
   - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
   - native presentation: standard potion belt/tooltip display
-  - keyword tips: none | <native or mod keyword named in the description>
+  - hover tips: none | <each keyword, Power, Card, or Orb named in the description>
 - **fallback**:
   - missing asset: checked template potion icon
   - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
@@ -109,8 +109,9 @@ term with nothing to hover.
 
 ## Author the element class
 
-Read `recipes/potion.md` for the skeleton and usage/target rules, and
-`reference/content-text-effects.md` when `text spans` are selected.
+Read `recipes/potion.md` for the skeleton and usage/target rules,
+`reference/vanilla-text-style.md` for every string, and `reference/content-text-effects.md`
+when `extra emphasis` is selected.
 
 **Potion** — add `<ModName>Code/Potions/<PotionName>.cs` and extend `ModPotionTemplate`:
 

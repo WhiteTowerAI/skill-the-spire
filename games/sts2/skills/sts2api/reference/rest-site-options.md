@@ -249,9 +249,19 @@ table and key:
 ```json
 {
   "<MOD>_REST_SITE_<OPTION>.title": "Reforge",
-  "<MOD>_REST_SITE_<OPTION>.description": "Spend {Gold} Gold. Gain {MaxHp} Max HP."
+  "<MOD>_REST_SITE_<OPTION>.description": "Spend [blue]{Gold}[/blue] [gold]Gold[/gold]. Gain [green]{MaxHp}[/green] Max HP."
 }
 ```
+
+```json
+{
+  "<MOD>_REST_SITE_<OPTION>.title": "重铸",
+  "<MOD>_REST_SITE_<OPTION>.description": "花费[blue]{Gold}[/blue][gold]金币[/gold]。获得[green]{MaxHp}[/green]点最大生命值。"
+}
+```
+
+The button title stays plain; the description follows the Rest Site row of
+`reference/vanilla-text-style.md`.
 
 The optional raster role is `rest_site_option`. It writes one opaque
 `images/rest_site_options/<slug>.png` at `256x169`. Two pinned-version product references

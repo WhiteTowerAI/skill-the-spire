@@ -12,8 +12,10 @@ where applicable:
 - name, logical identity, surface, pool/availability, owner, and relationships;
 - trigger, target, conditions, ordered effects, values, upgrades, and calculation timing;
 - state owner, transitions, bounds, lifetime, reset, persistence, visibility, and consumers;
-- exact English and Simplified Chinese text, localization table/key intent, and formatting
-  variables;
+- exact English and Simplified Chinese text, already written in the vanilla style of
+  `reference/vanilla-text-style.md` (glossary terms, colors, line breaks, Chinese
+  punctuation and measure words), localization table/key intent, formatting variables, and
+  the hover tips each description needs;
 - art/presentation choice, real consumer, and fallback;
 - maintained recipe/reference routes in `## Implementation`; and
 - real-host autotest scenarios in `## Autotest`.

@@ -38,8 +38,9 @@ Shared proof machinery stays in `verify.md`.
 - **localization**:
   - languages: [eng, zhs]
   - fields: title=<shown name>; description=<hover text>; optional selection prompt
-  - formatting: dynamic value placeholders; plain | bounded vanilla rich text
-  - text spans: <description phrase -> semantic color intent>
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`); dynamic value placeholders
+  - extra emphasis: none | <description phrase -> color the default style would not apply>
+  - hover tips: none | <each Power, keyword, Orb, or Card the description names>
   - variable tooltips: none | <value name -> localized title; description; optional icon>
   - engine-composed text: none | <each native keyword, mod keyword, or enchantment
     `extraCardText` the engine appends to this card's rendered description>
@@ -134,8 +135,8 @@ Do not substitute another Player/Creature or turn a missing target into an all-e
 
 ## Author the element class
 
-Read `reference/mechanics.md` and `recipes/card.md` first, and `reference/content-text-effects.md`
-when `text spans` are selected.
+Read `reference/mechanics.md`, `recipes/card.md`, and `reference/vanilla-text-style.md` first,
+and `reference/content-text-effects.md` only when `extra emphasis` is selected.
 
 **Card** — add `<ModName>Code/Cards/<CardName>.cs` and extend `ModCardTemplate`:
 
