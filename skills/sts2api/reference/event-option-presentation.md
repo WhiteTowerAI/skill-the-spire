@@ -78,10 +78,3 @@ Reuse `MapNode` in one headed run:
    exact-lethal Max HP options; inspect `RedFlash` alpha and capture both states;
 4. drive a real enabled option to its Gold/page consequence and require the strict
    `state proof:` marker, `selftest done`, and no fresh error block.
-
-The 2026-07-23 RitsuLib-only `MapNode` proof repeated the established presentation
-contract in the same run as Event core/outcomes: enabled typed tips rendered Card preview,
-Relic, Potion, and Power descriptions; locked tips remained hidden; normal relic-backed
-metadata rendered without a normal-layout image; and HP/Max HP independently produced
-safe/exact-lethal native warning states. The full suite reached `selftest done` with no
-fresh error.

@@ -191,7 +191,7 @@ selected.
 The focused body is in `reference/selftest-harness.md` § relic: grant the relic in
 `BeforeCombat` before `EnterRoomDebug`, then assert SPEC state in `InCombat`.
 
-A Relic selecting the historical cadence profile uses that reference's multi-combat variant.
+A Relic whose cadence crosses combats uses that reference's multi-combat variant.
 Other bounded-state profiles derive only their selected transition/reset/persistence checks.
 
 ## Proof matrix

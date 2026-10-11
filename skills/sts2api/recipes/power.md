@@ -1,8 +1,6 @@
 # Recipe: Power
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The hosted
-> Card run explicitly registered a `Counter` Power, applied it at amount 2,
-> changed the live instance to 3, and resolved its localization in a RitsuLib-only run.
+> A custom Power under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile.
 > When SPEC declares supplemental corner values, also read
 > `reference/extra-corner-labels.md`; it owns provider, bounds, refresh/removal, and headed
 > consumer proof.
@@ -19,7 +17,7 @@ RitsuLibFramework.CreateContentPack(ModId)
     .Apply();
 ```
 
-Do not add `[Pool]` and do not rely on historical reflection auto-discovery. RitsuLib
+Do not add `[Pool]` and do not rely on reflection auto-discovery. RitsuLib
 derives `MOD_POWER_TYPENAME`; a CLR class named `ChargePower` in `ExampleMod` therefore becomes
 `EXAMPLE_MOD_POWER_CHARGE_POWER`, including the `Power` suffix.
 
@@ -161,8 +159,7 @@ always emits all three keys.
 
 The nearest `CombatPlayer` suite must resolve the model from `ModelDb.AllPowers`, check
 title and entry, apply it through `PowerCmd.Apply<T>`, mutate the live instance through
-the intended path, and assert final state. The hosted proof observed the registered
-`ChargePower` entry, title `Charge`, `Counter`, and `2 -> 3`.
+the intended path, and assert final state.
 
 For extra badges, also assert zero/one provider output, exact `TopLeft` corner and text, the
 selected invalidation path, removal, and unchanged native `Amount`. The real

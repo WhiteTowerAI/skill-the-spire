@@ -2,7 +2,7 @@
 
 This is the one lazy framework-specific reference for the active target. Read it
 after a semantic SPEC is complete and only for the selected surface. Do not copy this
-mapping into every recipe and do not reintroduce a second historical-framework branch.
+mapping into every recipe and do not add a second framework branch.
 
 ## Pinned profile
 
@@ -56,34 +56,34 @@ unselected modules.
 
 | Semantic surface | RitsuLib public registration/template | Asset profile | Current boundary |
 |---|---|---|---|
-| Card | content-pack card registration; `ModCardTemplate` | `CardAssetProfile` | generated; hosted Tier 2 |
-| Relic | content-pack relic registration; `ModRelicTemplate` | `RelicAssetProfile` | generated; hosted Tier 2 |
-| Potion | content-pack potion registration; `ModPotionTemplate` | `PotionAssetProfile` | generated; hosted Tier 2 |
-| Power | content-pack power registration; `ModPowerTemplate` | `PowerAssetProfile` | generated; hosted Tier 2 |
-| Keyword | keyword registry/manifest entry | text-only tooltip fallback | generated; hosted Tier 2 |
-| Enchantment | enchantment registration; `ModEnchantmentTemplate` | `EnchantmentAssetProfile` | generated; hosted Tier 2 |
-| Orb | orb registration; `ModOrbTemplate` | `OrbAssetProfile` | generated; hosted Tier 2 |
-| Monster | monster registration; `ModMonsterTemplate` | `MonsterAssetProfile` | generated; combat/bestiary proof |
-| Encounter | act/global encounter registration; `ModEncounterTemplate` | `EncounterAssetProfile` | generated; real room proof |
-| Event | shared/act event registration; `ModEventTemplate` | `EventAssetProfile` | generated; `MapNode` behavior/presentation proof |
-| Act | `.Act<T>()` plus one explicit force/uniform/weighted entry policy; `ModActTemplate` | `ActAssetProfile` with checked chest override | authorable singleplayer route; entry/rooms/presentation game-unobserved |
-| Ancient | exactly one of `.SharedAncient<T>()` / `.ActAncient<TAct,T>()`; `ModAncientEventTemplate` | `EventAssetProfile` + `AncientEventPresentationAssetProfile` | authorable; native room/dialogue/presentation game-unobserved |
-| Character | character/starter registration; `ModCharacterTemplate<...>` | `CharacterAssetProfile` | generated; selection/combat/RestSite/Shop proof |
-| Character combat cues | `SetupCustomCombatAnimationStateMachine` + private `VisualCueSet` | all-or-nothing static combat fallback | generated; Idle/Attack/Hit/Dead + cleanup proof |
-| Bounded state | exact eligible owner plus `AttachedState`/`SavedAttachedState` and declared listener hooks | selected hidden/native/bounded UI consumer | authorable; historical Relic cadence observed, generalized combinations game-unobserved |
-| Standalone/Card/Relic/Modifier Rest Site option | truthful owner `TryModifyRestSiteOptions` + `ModRestSiteOptionTemplate` | `RestSiteOptionAssetProfile` with explicit native fallback | authorable; Relic route observed, standalone/Card/Modifier game-unobserved |
-| Affliction | `.Affliction<T>()` + `ModAfflictionTemplate`; apply/clear through `CardCmd` | `AfflictionAssetProfile` | authorable; new surface game-unobserved |
-| Modifier | `.GoodModifier<T>()` / `.BadModifier<T>()` + `ModModifierTemplate`; optional exclusivity | `ModifierAssetProfile` | authorable; new surface game-unobserved |
-| Global Effect | `.Singleton<T>()` + `HookedSingletonModel(HookType.Run|Combat)` | selected visible consumer only | authorable; new surface game-unobserved |
-| Reward | `ModRewardRegistry.For(modId).RegisterOwned(...)` + `ModCustomReward` | native reward screen or `CombatRoom.AddExtraReward` | authorable; claim/refusal/save reconstruction game-unobserved |
-| Secondary resources | `ModSecondaryResourceRegistry`, payment planner/commit ledger, and `SecondaryResourceCmd` | selected built-in counter row/Card line or checked attachment | authorable; historical single combat resource observed, generalized policies game-unobserved |
-| Ordered semantic buffer | `AttachedState<PlayerCombatState,TState>` + native Card lifecycle | composed live counter text | generated; order/overflow/output/reset Tier 2 |
-| Combat UI attachment | `RegisterCombatUi` + `ModNodeAttachmentRegistry` | 220x32 icon+text control at offset 160 | generated; public attachment + geometry proof |
+| Card | content-pack card registration; `ModCardTemplate` | `CardAssetProfile` | generated |
+| Relic | content-pack relic registration; `ModRelicTemplate` | `RelicAssetProfile` | generated |
+| Potion | content-pack potion registration; `ModPotionTemplate` | `PotionAssetProfile` | generated |
+| Power | content-pack power registration; `ModPowerTemplate` | `PowerAssetProfile` | generated |
+| Keyword | keyword registry/manifest entry | text-only tooltip fallback | generated |
+| Enchantment | enchantment registration; `ModEnchantmentTemplate` | `EnchantmentAssetProfile` | generated |
+| Orb | orb registration; `ModOrbTemplate` | `OrbAssetProfile` | generated |
+| Monster | monster registration; `ModMonsterTemplate` | `MonsterAssetProfile` | generated |
+| Encounter | act/global encounter registration; `ModEncounterTemplate` | `EncounterAssetProfile` | generated |
+| Event | shared/act event registration; `ModEventTemplate` | `EventAssetProfile` | generated |
+| Act | `.Act<T>()` plus one explicit force/uniform/weighted entry policy; `ModActTemplate` | `ActAssetProfile` with checked chest override | authorable singleplayer route |
+| Ancient | exactly one of `.SharedAncient<T>()` / `.ActAncient<TAct,T>()`; `ModAncientEventTemplate` | `EventAssetProfile` + `AncientEventPresentationAssetProfile` | authorable |
+| Character | character/starter registration; `ModCharacterTemplate<...>` | `CharacterAssetProfile` | generated |
+| Character combat cues | `SetupCustomCombatAnimationStateMachine` + private `VisualCueSet` | all-or-nothing static combat fallback | generated |
+| Bounded state | exact eligible owner plus `AttachedState`/`SavedAttachedState` and declared listener hooks | selected hidden/native/bounded UI consumer | authorable |
+| Standalone/Card/Relic/Modifier Rest Site option | truthful owner `TryModifyRestSiteOptions` + `ModRestSiteOptionTemplate` | `RestSiteOptionAssetProfile` with explicit native fallback | authorable |
+| Affliction | `.Affliction<T>()` + `ModAfflictionTemplate`; apply/clear through `CardCmd` | `AfflictionAssetProfile` | authorable |
+| Modifier | `.GoodModifier<T>()` / `.BadModifier<T>()` + `ModModifierTemplate`; optional exclusivity | `ModifierAssetProfile` | authorable |
+| Global Effect | `.Singleton<T>()` + `HookedSingletonModel(HookType.Run|Combat)` | selected visible consumer only | authorable |
+| Reward | `ModRewardRegistry.For(modId).RegisterOwned(...)` + `ModCustomReward` | native reward screen or `CombatRoom.AddExtraReward` | authorable |
+| Secondary resources | `ModSecondaryResourceRegistry`, payment planner/commit ledger, and `SecondaryResourceCmd` | selected built-in counter row/Card line or checked attachment | authorable |
+| Ordered semantic buffer | `AttachedState<PlayerCombatState,TState>` + native Card lifecycle | composed live counter text | generated |
+| Combat UI attachment | `RegisterCombatUi` + `ModNodeAttachmentRegistry` | 220x32 icon+text control at offset 160 | generated |
 | Advanced creature targeting | Mod-scoped custom `TargetType` registration + Card/Potion target extensions | native selection/reticles | generated for Card one/many and Potion one; multi Potion has a known lifecycle limitation |
-| Card Hand Glow | `ShouldGlowGoldInternal` / `ShouldGlowRedInternal`; `CardHandOutline<TCard>(ModCardHandOutlineRules<TCard>)` | native hand outline | generated with ordered fixed-color rules; headed host result remains literal |
-| Extra Badges | Power/Relic/Intent extra-label providers and change sources with `ExtraIconAmountLabelSpec` | native Power/Relic/Intent corners | Relic: up to three safe corners; Power: one top-left label because preset bands overlap in crowded rows; Intent supported but not scheduled |
+| Card Hand Glow | `ShouldGlowGoldInternal` / `ShouldGlowRedInternal`; `CardHandOutline<TCard>(ModCardHandOutlineRules<TCard>)` | native hand outline | generated with ordered fixed-color rules |
+| Extra Badges | Power/Relic/Intent extra-label providers and change sources with `ExtraIconAmountLabelSpec` | native Power/Relic/Intent corners | Relic: up to three safe corners; Power: one top-left label because preset bands overlap in crowded rows; Intent has no maintained route |
 | Custom Card Piles | `.CardPileOwned(...)` + `ModCardPileSpec` + native `CardPileCmd` | headless, top-bar, bottom-corner, ExtraHand, and pile-screen consumers | complete documented API; selected behavior uses `reference/card-piles.md` |
-| Runtime UI | `ModTopBarButtonRegistry`, `RitsuToastService`, `RuntimeHotkeyService`, `ModScreenService`, `RitsuCatalogBrowser`, `RitsuFloatingWindow`, `RitsuSearchExpansionRegistry`, `ModNodeAttachmentRegistry`, and `RitsuShellThemeRuntime` | selected local Mod-owned controls on stable public hosts | authorable local workflow; real UI/input/layout game-unobserved; deferred-family integration prohibited |
+| Runtime UI | `ModTopBarButtonRegistry`, `RitsuToastService`, `RuntimeHotkeyService`, `ModScreenService`, `RitsuCatalogBrowser`, `RitsuFloatingWindow`, `RitsuSearchExpansionRegistry`, `ModNodeAttachmentRegistry`, and `RitsuShellThemeRuntime` | selected local Mod-owned controls on stable public hosts | authorable local workflow; deferred-family integration prohibited |
 | Existing vanilla Card behavior | vanilla catalog/resolver + one registered default `CardCapability` per target | preserve vanilla identity and untouched consumers | `reference/vanilla-card-overrides.md`; public route family authorable |
 | Existing vanilla visual surface | vanilla catalog/resolver + exact-type provider in the public Card-material/external-asset registries | checked Mod-local resource with vanilla fallback | `reference/vanilla-visual-overrides.md`; complete 44-provider family supported |
 | Existing vanilla Ancient options | public `AncientOption<TAncient>` append or one fixed fingerprinted retained-list replacement Adapter; fixed `SetEventState`/`Done` flow access | native Ancient room, Mod-local pages, choice history, and optional composed visuals | `reference/vanilla-ancient-overrides.md`; append/replacement routes supported |
@@ -148,7 +148,7 @@ public static partial class MainFile
 }
 ```
 
-Do not add a historical pool attribute. The content-pack generic pool argument is the
+Do not add a pool attribute. The content-pack generic pool argument is the
 single registration/availability source. Put explicit Mod art paths in `CardAssetProfile`;
 leave it empty for the template/base-game fallback.
 
@@ -177,14 +177,6 @@ relic-owned cadence in `RunSavedDataStore`; reserve that store for state natural
 the run/player. Combat-local cadence continues to read
 `Owner.PlayerCombatState.TurnNumber` and does not allocate attached saved state.
 
-The hosted state proof advanced real player turns in two combats, restored progress `2`
-and `used=true` through `SavedProperties.From`/`Fill`, crossed the run cadence on combat 2
-turn 1 without repeating the bool one-shot, and proved a separate turn-2 combat-local
-effect reset to turn 1. It reached `selftest done`,
-strict Tier 2, and no fresh error with the historical framework absent. See
-`stateful-mechanics.md` for the
-generated shape and proof contract.
-
 For an optional standalone/Card/Relic/Modifier Rest Site action, keep normal content-pack
 registration and add the public host hook described in `rest-site-options.md`. The owner contributes one
 `ModRestSiteOptionTemplate` only when it is eligible, rejects an existing stable
@@ -200,8 +192,7 @@ custom `OptionId` has no usable implicit vanilla icon. A Card owner requires exa
 matching deck instance and retains that concrete owner/state handle. Standalone ownership uses a
 Run `HookedSingletonModel` with state attached to the actual Player/run; Modifier ownership uses
 the selected mutable run Modifier. Post-payment choices, rollback transactions, same-site repeat,
-and multiplayer are not adapter routes. The historical focused native Rest Site matrix observed
-the Relic route; standalone, Card, and Modifier ownership remain game-unobserved.
+and multiplayer are not adapter routes.
 
 ### Potion, Power, Keyword, Enchantment, and Orb
 
@@ -217,7 +208,7 @@ entry. The surface recipe owns effect details, while this adapter owns the frame
 | Enchantment | `.Enchantment<TEnchantment>()` | `MOD_ENCHANTMENT_TYPENAME`; checked 64x64 `EnchantmentAssetProfile` or fallback | `Guarded` attaches at `5` and changes Block `7 -> 12` |
 | Orb | `.Orb<TOrb>()` | `MOD_ORB_TYPENAME`; 100x100 icon profile plus explicit Frost body/SFX fallback | `ShelterOrb` channels, passively blocks `2`, evokes `5`, and is removed |
 
-Do not add a historical pool attribute, custom historical model bases, reflection
+Do not add a pool attribute, custom model bases, reflection
 auto-discovery, or a second registration path. Keyword behavior stays in its host
 Card/Power; the keyword itself owns
 only the native vocabulary and localized tooltip. An Orb icon never promotes its persistent
@@ -235,13 +226,6 @@ Cards resolve through `CardModelTargetingExtensions.GetTargets`; Potions expose 
 `PotionModelTargetingExtensions.GetTargets`. The pinned adapter supports Card one/many and
 Potion one. It rejects `potion + many` because the host does not recheck an empty group
 before removing a queued Potion. Do not add a generated patch or remove-then-restore path.
-
-The focused targeting host passed the human lead's zero-, single-, and
-multi-candidate mouse/controller matrix. Current-run logs recorded exact single Card/Potion
-Block deltas and two multi Card resolutions over creature IDs `1,2`, with matching Tier 1
-and no fresh target-Mod error. No automated `selftest done` ran, and queued-target
-invalidation was not exercised; preserve those as verification exceptions rather than a
-strict Tier 2 pass.
 
 ### Monster and Encounter
 
@@ -262,14 +246,7 @@ declares `RoomType` explicitly. Static art uses `MonsterAssetProfile` for the ch
 `creature_visuals/fallback` scene and overrides `TryCreateCreatureVisuals()` to call
 `RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>(texture)` only after the
 loose 360x360 PNG exists. This one factory path feeds both combat and the default bestiary.
-Do not add historical constructor registration, pool attributes, or a second visual path.
-
-The hosted Monster proof registered a custom Power, Monster, and global encounter through one
-content pack. A RitsuLib-only headed run traversed both sides of its
-two-cycle move vocabulary, rendered the same static body in combat and a real bestiary,
-reached `selftest done`, and passed strict Tier 2 with no fresh error.
-That one-to-one deterministic fixture remains its literal observation; reused Monsters,
-multi/repeated rosters, HP ranges, and random branches are authorable but game-unobserved.
+Do not add constructor registration, pool attributes, or a second visual path.
 
 ### Event
 
@@ -291,11 +268,7 @@ initial portrait/fallback. Filter the convention-derived missing portrait from
 `GetAssetPaths` when the profile selects a differently named loose PNG. Later pages may
 switch one checked texture through the public `NEventRoom` host.
 
-The 2026-07-23 RitsuLib-only Event run registered all proof Events through one content pack
-and drove core Cmd/pages, typed option/lethal presentation, native acquisition/shake/VFX,
-selection/reward/special-combat outcomes, `portrait_halo`, rich text, and the bounded forced
-follow-up in one `MapNode` suite. It reached `selftest done` and strict Tier 2 with no fresh
-error. This does not promote arbitrary RitsuLib Event layout/VFX APIs or Ancient layouts.
+Arbitrary RitsuLib Event layout/VFX APIs and Ancient layouts are not promoted by this route.
 
 ### Act and Ancient
 
@@ -336,7 +309,7 @@ RitsuLibFramework.CreateContentPack(ModId)
 
 The model extends `ModCharacterTemplate<TCardPool,TRelicPool,TPotionPool>`; the pools extend
 `TypeListCardPoolModel`, `TypeListRelicPoolModel`, and `TypeListPotionPoolModel`. There is
-no constructor auto-registration, pool attribute, or historical character template. Before
+no constructor auto-registration, pool attribute, or character template from another framework. Before
 Shop proof, register at least two eligible non-Basic Attacks, two Skills, and one Power.
 
 `CharacterAssetProfile` owns the promoted static fallback and scene paths. Leave
@@ -402,7 +375,7 @@ with `SecondaryResourceUiRuntime.UpdateCombatUi`. The generated control is fixed
 contains an optional checked 24x24 icon plus a minimum 188x32 Label, and retains identical
 live text when the icon is missing.
 
-The historical custom Character control places one 220x32 control at `(160,0)`. A generated
+The custom Character control places one 220x32 control at `(160,0)`. A generated
 check derives every selected consumer's stable geometry and asserts that visible controls do
 not intersect the native 128x128 energy counter or one another. Do not emit a Harmony
 postfix or separate patch module for this public RitsuLib route.

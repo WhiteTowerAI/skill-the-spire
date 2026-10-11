@@ -20,8 +20,8 @@ title/description/optional `extraCardText`. The stable entry and any SmartFormat
 identical between languages.
 
 `host restriction` is a required line, not commentary: it is the enchantment's identity and
-the thing its proof must exercise — see § Proof matrix. Reviewed and accepted on 2026-08-07:
-enchantment and keyword stay host-scoped, while `orb` received its own envelope.
+the thing its proof must exercise — see § Proof matrix. Enchantment and keyword stay host-scoped;
+`orb` has its own envelope.
 
 Hook participation is declared the same way — nested under the host Card's `enchantment:` block,
 using the form in `reference/model-hook-participation.md`:

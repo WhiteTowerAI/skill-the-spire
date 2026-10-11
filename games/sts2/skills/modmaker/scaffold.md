@@ -13,7 +13,7 @@ host: STS2 stable 0.107.1
 ```
 
 The default `STS2.RitsuLib` package follows the newest beta-facing game API and is a hard
-failure here. Never restore BaseLib, a historical template, prompt-derived patches, or an
+failure here. Never add BaseLib, a template copied from another project, prompt-derived patches, or an
 unvalidated packer fallback.
 
 ## 1. Toolchain and location

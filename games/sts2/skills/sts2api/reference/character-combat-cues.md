@@ -1,8 +1,7 @@
 # Character combat cues
 
-> Implemented on STS2 `0.107.1` / RitsuLib `0.4.67` by the 2026-07-27
-> Meridian focused proof. This is a bounded non-Spine frame-sequence contract, not a
-> general Character animation pipeline.
+> A bounded non-Spine frame-sequence contract on STS2 `0.107.1`, not a general Character
+> animation pipeline.
 
 Use this page with `recipes/character.md`, `reference/character-presentation.md`, and
 `reference/art-contract.md` when a Character SPEC selects combat cues.

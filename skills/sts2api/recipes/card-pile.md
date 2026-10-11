@@ -37,6 +37,5 @@ upgrade preview, visibility, hover, hotkeys, flight positions, and ExtraHand lay
 all authorable when selected. Missing old examples or focused game proof does not narrow them.
 
 Follow `surfaces/card-pile.md` and the detailed reference for SelfTest and headed/controller proof.
-Static compile and the historical `0.5.4` ExtraHand observations do not establish new `0.5.11`
-variants as game-observed. Do not add deferred Settings, Multiplayer, Telemetry, Update Check,
+Static compile does not establish any pile variant as game-observed. Do not add deferred Settings, Multiplayer, Telemetry, Update Check,
 Progression, or Badge integrations through a pile control.

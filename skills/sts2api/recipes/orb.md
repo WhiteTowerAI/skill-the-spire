@@ -1,8 +1,6 @@
 # Recipe: Custom Orb
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The hosted proof registered
-> `ShelterOrb`, channeled it on a zero-slot Ironclad, proved passive and evoke Block,
-> and verified removal in a RitsuLib-only run.
+> A custom Orb under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile.
 
 ## Contract and registration
 
@@ -15,7 +13,7 @@ RitsuLibFramework.CreateContentPack(ModId)
     .Apply();
 ```
 
-Use `ModOrbTemplate`; do not add `[Pool]` or rely on historical constructor discovery.
+Use `ModOrbTemplate`; do not add `[Pool]` or rely on constructor discovery.
 RitsuLib derives `MOD_ORB_TYPENAME`, so `ShelterOrb` in `ExampleMod` becomes
 `EXAMPLE_MOD_ORB_SHELTER_ORB`.
 
@@ -116,8 +114,7 @@ public entry:
 ## Verification
 
 The nearest `CombatPlayer` suite must assert queue capacity/presence after channel, the
-passive post-state, evoke post-state, and removal. The hosted proof observed capacity 1,
-channel count 1, Block `0 -> 2 -> 7`, remaining 0, and title `Shelter Orb`.
+passive post-state, evoke post-state, and removal.
 
 Visible icon support additionally needs the real smart tooltip and trigger flash. The
 persistent body must remain labeled as the Frost fallback until a compatible custom Spine

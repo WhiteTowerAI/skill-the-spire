@@ -126,8 +126,8 @@ sequence, visible text, selected safe corners, refresh source, removal condition
 unchanged native main amount. Provider data alone is not a presentation proof; exact
 live-node observation or headed review owns readability, overlap, and cleanup.
 
-When the human lead reserves headed review, build and deploy the focused proof but do not
-launch the game. Give the lead the exact console setup and observation matrix. Record the
+When the user reserves headed review, build and deploy the focused proof but do not
+launch the game. Give the user the exact console setup and observation matrix. Record the
 reported visible result separately, and keep unrun structured checks as exceptions rather
 than converting manual observation into strict Tier 2.
 
@@ -322,7 +322,7 @@ with a scenario that owns the live mutable relic, advances real player turns, fi
 the first combat through the public combat flow, and enters a second combat. Add
 `using MegaCrit.Sts2.Core.Saves.Runs;` for the save round trip.
 
-Shared helpers (live-proven on 2026-07-15):
+Shared helpers:
 
 ```csharp
 private static async Task EnterMinimalCombat(CancellationToken ct)
@@ -856,24 +856,13 @@ Adapt move ids, numbers, Power types, and branch setup to SPEC. The important in
 - drive every advertised branch through its real predicate and traverse enough turns to
   demonstrate the explicit cycle.
 
-> **RitsuLib hosted proof (2026-07-22):** the consumer registered a custom Power, Monster,
-> and global encounter through one content pack using
-> `ModPowerTemplate`, `ModMonsterTemplate`, and `ModEncounterTemplate`. A headed
-> RitsuLib-only run observed Power `2 -> 4`, attack/debuff `5/2 -> 7/2`, two-hit totals
-> `8 -> 12`, healthy Block `+5`, wounded HP/Block `+3/+4`, both branch exits, and the
-> complete two-cycle marker. The same checked 360x360 PNG rendered with 396x396 bounds and
-> intent `(0,-466)` in combat and the default bestiary. It reached `selftest done`, passed
-> strict Tier 2, and had no fresh error.
+> The `PlayerCmd.EndTurn` gate matches `CombatRoomHandler`'s AutoSlay loop: after the enemy
+> turn, control returns to the player at `Phase == Play`. The monster's attack must use
+> `DamageCmd.Attack(n).FromMonster(this).Execute(null)`; the card `.Targeting(target)` chain
+> hangs the enemy turn and the second gate times out (`selftest FAILED: player play phase not
+> resumed after enemy turn`). Needs `using MegaCrit.Sts2.Core.Map;` for `MapPointType`.
 
-> **Live-proven (tier-2 PASS):** the `PlayerCmd.EndTurn` gate is the same
-> as `CombatRoomHandler`'s AutoSlay loop — after the enemy turn, control returns to the
-> player at `Phase == Play`. The one bug this surfaced: the monster's attack must use
-> `DamageCmd.Attack(n).FromMonster(this).Execute(null)`. Using the card `.Targeting(target)`
-> chain hangs the enemy turn and the second gate times out (`selftest FAILED: player play
-> phase not resumed after enemy turn`). `recipes/monster.md` documents this.
-> Needs `using MegaCrit.Sts2.Core.Map;` for `MapPointType`.
-
-## The `RunStart` + `CombatPlayer` scenario (Character Foundation, RitsuLib live 2026-07-23)
+## The `RunStart` + `CombatPlayer` scenario (Character Foundation)
 
 A character is not proven by `ModelDb` registration alone. The harness must select its
 real UI button, start a run as it, assert the starter ecosystem, then enter combat and
@@ -969,11 +958,11 @@ static textures.
 
 For every generated Character, load the expected identity, HP, Gold, pools, starters,
 supporting models, relics, Energy behavior, and selected presentation profiles from the
-current `SPEC.md`. Do not embed a historical proof Mod's values or terminal marker in the
+current `SPEC.md`. Do not embed an example Mod's values or terminal marker in the
 generated harness. Emit the Foundation/static marker only after the SPEC-derived automatic
 assertions and selected headed observations pass.
 
-## Advanced `CombatPlayer` capabilities (RitsuLib live 2026-07-23)
+## Advanced `CombatPlayer` capabilities
 
 The Character Foundation checks still run for a generated character, but they do not
 replace each selected capability's own invariant. Read the capability page and add its
@@ -1001,8 +990,8 @@ StateProof(true, "resource UI complete expected=all observed=all");
 ```
 
 Derive the resource name, amounts, payment, payoff, and reset expectations from the current
-`SPEC.md`; the UI dimensions and non-intersection contract remain fixed. Do not reuse a
-historical acceptance Mod's state sequence.
+`SPEC.md`; the UI dimensions and non-intersection contract remain fixed. Do not reuse an
+example Mod's state sequence.
 
 ### Ordered semantic buffer/dynamic output
 
@@ -1030,7 +1019,7 @@ Derive source/output identities, ordered values, capacity, generated-history cou
 payment, payoff, reset state, and the composed terminal summary from the current `SPEC.md`.
 Retained-card custom piles are not covered by this supported path.
 
-## The `MapNode` scenario (event / World Node - RitsuLib live 2026-07-23)
+## The `MapNode` scenario (event / World Node)
 
 An event is not proven by registration alone. The harness must enter its real `EventRoom`,
 wait for the nested event UI, click an actual `NEventOptionButton`, and observe the option's
@@ -1175,24 +1164,6 @@ public shake target until it moves and returns when the preference is nonzero, o
 still at preference index zero. Finish only after the Card preview and owned VFX are gone
 and the result page is readable. One marker may cover all selected profiles.
 
-> **Live-proven (strict Tier-2 PASS, 2026-07-21):** one
-> 35-second headed run observed `cardDelta=1 relicDelta=1`, preference index `2` with
-> movement and return, exact `trial_noble` scene/host/position/process mode, Card-preview
-> and VFX cleanup, three settled screenshots, `selftest done`, and no fresh error.
-
-> **Live-proven (strict tier-2 PASS, 2026-07-20):** one hosted run drove
-> page Cmd, upgrade selection, resumable custom combat, custom Gold reward, terminal custom
-> combat from a fresh Event instance, and VFX cleanup. The structured proof reported
-> `expected=pageCmd+cardSelection+resumableCombat+customReward+terminalCombat+vfxCleanup`
-> with the identical observed value, `resumes=1/0`, `selftest done`, and no fresh error.
-> Headed screenshots showed the initial/page/resumed portrait halos and the actual special
-> combat after its room fade.
-
-> **Hosted verification (RitsuLib `0.4.67`, strict Tier-2 PASS, 2026-07-23):** one combined headed
-> run repeated core pages/Cmds, option/lethal/native presentation, outcomes, rich text,
-> portrait-halo lifecycle, and forced follow-up against stable `0.107.1`. It reached every
-> structured family marker, `selftest done`, and no fresh error.
-
 ### Bounded forced follow-up Event variant
 
 When SPEC selects `reference/forced-followup-event.md`, replace direct canonical Event
@@ -1215,11 +1186,6 @@ run and one structured marker. Required additional namespaces are
 `MegaCrit.Sts2.Core.Hooks`, `MegaCrit.Sts2.Core.Models.Events`, and the Quest Card/target
 Event types.
 
-> **Live-proven (strict Tier-2 PASS, 2026-07-23):** the combined RitsuLib Event run
-> reported `noToken=True wrongAct=True roomForced=True eventForced=True entered=true
-> seals=1->0 restored=True`, reached `selftest done`, and had no fresh error. The screenshot
-> showed the real `Sealed Archive` room and `Break the seal` option.
-
 ## Relic-owned Rest Site option focused host
 
 Use `reference/rest-site-options.md` for the supported contract. This proof is not a
@@ -1233,7 +1199,7 @@ use flag, current option IDs, and current map-history Rest Site choices. After s
 emit one structured line only when all expected deltas match:
 
 ```text
-[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.4.67 host=0.107.1 compat=0.107.1 expected=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden observed=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden
+[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.5.11 host=0.107.1 compat=0.107.1 expected=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden observed=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden
 ```
 
 The required matrix is:
@@ -1251,19 +1217,9 @@ The required matrix is:
 8. the custom-icon and missing-icon builds both preload without a fresh error.
 
 Button color, localization, image framing, hover, and controller focus are headed
-observations. A model-generated list cannot prove them. When the human lead reserves this
+observations. A model-generated list cannot prove them. When the user reserves this
 headed run, do not launch the game automatically; provide the exact console route and keep
 an unrun strict `selftest done` as an explicit verification exception.
-
-## Deferred: the headless / menu-skip path (design seam, not built)
-
-The fragile part is `NavigateToRunAsync` (scene-tree paths shift across versions). The
-game's own **menu-skip** sequence removes it entirely — `NSceneBootstrapper.StartNewRun`
-does `RunState.CreateForNewRun(...)` → `RunManager.Instance.SetUpNewSingleplayer(runState,
-false, null)` → `Launch()` → `EnterRoomDebug(...)`, no UI at all. When headless is taken
-up, swap `NavigateToRunAsync` for that; the rest of the harness is
-unchanged. Not built now — it touches `_game.RootSceneContainer`/`SetActInternal`, which
-need their own mod-reachability grounding first.
 
 ## Checklist
 

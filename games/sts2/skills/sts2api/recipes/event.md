@@ -219,19 +219,14 @@ selected slot with `gen_sprite.py --spec event`; every art or localization chang
 a `.pck` rebuild. The concrete Event uses `EventAssetProfile.InitialPortraitPath` and
 filters the missing convention-derived path from `GetAssetPaths` as shown above.
 
-Placeholder remains the silent default: when the mod PNG is absent, return the live-proven
+Placeholder remains the silent default: when the mod PNG is absent, return the verified
 `res://images/events/this_or_that.png`. Do not return the missing custom path or rely on the
 game to recover from its load error.
 
-A 2026-07-17 hosted proof entered the real event room, observed the displayed
-`%Portrait.Texture.ResourcePath` at the mod path and logical size 3440×1613, captured a
-headed screenshot with the option UI over the custom portrait, clicked the option, and
-passed strict Tier 2 with no fresh error block.
-
-The 2026-07-20 extension kept that same room and click, then replaced the portrait with a
-second mod PNG on the result page. The replacement path and 3440×1613 size were asserted,
-the headed screenshot showed the new image, attached initial-page VFX had been removed,
-and the same strict Tier 2 proof remained green. Use this bounded page-switch pattern:
+Proof for a custom portrait asserts that the displayed `%Portrait.Texture.ResourcePath` is the
+Mod path at logical size 3440×1613, with a headed screenshot of the option UI over it. A
+later-page switch asserts the replacement path and size the same way, plus removal of any
+initial-page VFX. Use this bounded page-switch pattern:
 
 The same date's acquisition acceptance submitted one approved `seedream-5.0-lite`
 `21:9`/`2K` request with three randomly selected Event references. Its inspected wide
@@ -322,13 +317,6 @@ family marker. Any Event VFX claim additionally follows its owning reference and
 headed screenshots plus explicit owned-node cleanup assertions. Native acquisition,
 screen-shake, or `trial_noble` claims use the combined proof in
 `reference/event-native-presentation.md`.
-
-Hosted verification (2026-07-23): one RitsuLib-only `MapNode` run registered every Event once,
-rendered the normal initial/later portrait and nested localization, drove core Cmd/page,
-option/lethal, native acquisition/shake/`trial_noble`, outcome/resume/terminal combat,
-`portrait_halo`, rich text, and the forced follow-up. Its final marker was
-`forcedFollowUp noToken=True wrongAct=True roomForced=True eventForced=True entered=true
-seals=1->0 restored=True`; the suite reached `selftest done` with no fresh error.
 
 ## Manual fallback
 

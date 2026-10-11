@@ -89,5 +89,5 @@ The headed observation must cover:
 - hover, drag, hand entry, and hand exit cleanup;
 - unobstructed cost, art, rules text, rarity, selection, and native playable feedback.
 
-If headed observation is delegated to the human lead, record their exact observation and
+If headed observation is delegated to the user, record their exact observation and
 keep every unrun automated or Tier 2 check as an exception rather than a pass.

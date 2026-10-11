@@ -48,7 +48,7 @@ consumers in that feature family supported. A missing shipped recipe means only 
 maintained route exists; ground a Mod-local route under `grounding.md` § Mod-local Routes and
 never guess a symbol.
 
-RitsuLib is the only active adapter. Do not select a historical dependency, copy another
+RitsuLib is the only active adapter. Do not add BaseLib or another framework dependency, copy another
 scaffold, or infer a runtime dependency from a recipe name.
 
 When the request edits an existing vanilla model, read

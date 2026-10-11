@@ -10,7 +10,7 @@ decompile code, or use a private or internal member.
 |---|---|
 | spire-codex / curated snapshots | what vanilla content exists, does, and resembles |
 | pinned official RitsuLib tutorial distillations | player-facing purpose and documented feature-family membership |
-| STS2 + RitsuLib source/decompile | exact C# commands, hooks, enums, templates, registries, and hosts |
+| pinned STS2 + RitsuLib signatures (distilled by maintainers into recipes and catalogs; at runtime, public metadata only) | exact C# commands, hooks, enums, templates, registries, and hosts |
 | skill-the-spire profile/recipes/tests/live runs | what the generator implements and what was observed |
 
 These are complementary. Official tutorial semantics plus public members in the pinned
@@ -51,24 +51,3 @@ accepted operation:
 Stop and report the operation as unsupported only when it needs a private API, runtime patching,
 or decompilation, or when it has no lifecycle the real host can verify. Offer a supported
 alternative only with the user's explicit acceptance, because the player-visible result changes.
-
-## Maintainer Research
-
-Maintainers may improve the pack offline:
-
-1. Use existing snapshots first.
-2. Read the pinned official tutorial baseline for product semantics and feature-family
-   membership. Its repository targets `public-beta`, so do not use it as stable-version
-   signature authority.
-3. Query a local spire-codex data dump or its attributed API for content facts.
-4. Inspect the pinned STS2 `0.107.1` and RitsuLib `0.5.11` code for exact signatures.
-5. Confirm build/load rules in `scaffold.py`, `ritsu_profile.py`, package metadata, and a
-   focused hosted proof.
-6. Add the complete documented API inventory and narrow known limitations to the
-   capability graph. Add the smallest reusable semantic/API result to a shipped
-   recipe/reference/error entry with its version and verification facts.
-
-`baselines/BaseLib-StS2` and `baselines/downfall` are historical research only and are not
-authoring or runtime sources for `0.1.0`. The official tutorial checkout is an active
-maintainer semantics baseline but is likewise unavailable at runtime; only its reviewed
-distillations belong in this shipped pack.

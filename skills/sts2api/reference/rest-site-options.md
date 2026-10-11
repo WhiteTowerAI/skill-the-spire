@@ -1,9 +1,7 @@
 # Native Rest Site options
 
 This page owns the bounded route for a standalone Rest Site action or for a generated Card,
-Relic, or selected Modifier to add an action to the native Rest Site. The historical headed
-proof observed the Relic-owned profile only; standalone, Card, and Modifier ownership are
-framework-expressible and authorable here but remain game-unobserved.
+Relic, or selected Modifier to add an action to the native Rest Site.
 The route is grounded against STS2 `0.107.1` and RitsuLib `0.5.11`.
 
 
@@ -296,5 +294,5 @@ uses a public Gold command after the button renders; if a human-led acceptance o
 literal stale-button transition, record it as an exception instead of claiming it ran.
 
 Tier 1 still requires the exact load marker and no fresh error block. Tier 2 requires a
-structured post-state proof plus `selftest done`; when the human lead performs the hosted
+structured post-state proof plus `selftest done`; when the user performs the hosted
 matrix instead, record the unrun strict harness as an explicit exception, never a pass.

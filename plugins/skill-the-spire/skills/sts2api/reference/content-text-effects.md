@@ -59,10 +59,3 @@ Reuse `CombatPlayer`. One headed run may cover all consumers:
 3. capture the settled Card and tips together, then play the source Card and preserve its
    existing state proof;
 4. require the strict state-proof marker, `selftest done`, and no fresh error block.
-
-Live proof (2026-07-20): the real hand Card rendered authored
-`gold`/`purple` spans and its auto-positioned `Resonant` text; an upgraded typed Card
-preview rendered SmartFormat's green difference plus `gold`/`purple`; typed relic,
-potion, power, and keyword tips rendered their per-surface colors in `NHoverTipSet`.
-The same run preserved Block `0 -> 7`, saved headed evidence, passed strict Tier 2, and
-had no fresh error.

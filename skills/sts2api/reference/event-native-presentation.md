@@ -149,12 +149,3 @@ Reuse one headed `MapNode` run for every selected contract:
    must move and return to its original position; index zero must produce no movement;
 5. assert exact deck/relic deltas, a readable result page, and no owned built-in VFX node;
 6. emit one structured marker, `selftest done`, and no fresh error block.
-
-A 2026-07-21 hosted run completed this combined proof in 35 seconds.
-It observed Card/Relic deltas `1/1`, shake preference index `2` with movement and return,
-the exact Trial scene/path/position/inherited process mode, settled initial/acquisition/
-result screenshots, preview/VFX cleanup, strict Tier 2, and no fresh error.
-
-The 2026-07-23 RitsuLib-only Event run repeated these native consumers inside the
-combined `MapNode` suite and again reached strict Tier 2, `selftest done`, and no fresh
-error. The earlier run remains regression history rather than the active framework proof.

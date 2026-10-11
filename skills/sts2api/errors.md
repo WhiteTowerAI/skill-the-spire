@@ -169,8 +169,8 @@ switching to an old template.
 - **Localize a character resource by symptom:** a missing amount or reset points at the
   registered `SecondaryResourceDefinition` id or its persistence policy; a changed amount with
   stale UI points at `RegisterCombatUi` visibility/update or a missing explicit refresh after
-  buffer-only mutation. Never add a duplicate integer and never restore the historical UI
-  postfix.
+  buffer-only mutation. Never add a duplicate integer and never add a UI
+  postfix patch.
 
 ### Ordered buffer has stale Card views or leaks across combat
 

@@ -7,7 +7,7 @@ page at the `spec.md`, `author.md`, and `verify.md` stages when SPEC declares an
 An orb has three separate behaviors and no trigger of its own — every one of them runs
 through a host Card, relic, or Power. That is why it gets a full SPEC field set while keyword and
 enchantment do not: an orb is real content with its own identity and its own slot lifecycle,
-merely without a self-contained trigger. Envelope added 2026-08-07 by human-lead decision.
+merely without a self-contained trigger.
 
 ## SPEC fields
 

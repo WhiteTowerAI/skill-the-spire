@@ -5,9 +5,8 @@ the isolated mechanic and final generated-Character composition. The buffer stor
 values in combat-attached state while source cards use STS2's normal Play -> Discard
 lifecycle.
 
-This page does not support retaining played card instances in a `CustomPile`. The retired
-model-only implementation missed overlapping/stale card views in real player use and is
-historical evidence only.
+This page does not support retaining played card instances in a `CustomPile`. A model-only
+implementation misses overlapping/stale card views in real player use.
 
 ## Semantic contract
 
@@ -109,7 +108,7 @@ Store the snapshot and configured `DynamicVars` on the mutable output Card. Do n
 a model type at runtime or encode the result only in UI/log text.
 
 The output formula, semantic values, bounds, and payoff come only from the current `SPEC.md`.
-Do not reuse a historical acceptance Mod's route vocabulary or numeric formula as a default.
+Do not reuse an example Mod's route vocabulary or numeric formula as a default.
 
 ## Player-visible state
 
@@ -139,7 +138,7 @@ Reuse the owning `CombatPlayer` or Character suite and assert:
 The maintained harness derives source/output identities, semantic order, capacity, formula,
 resource cost, payoff, and terminal summary from the current `SPEC.md`. It reaches
 `selftest done` only after every configured invariant above passes with the declared
-RitsuLib runtime dependency; historical proof values and markers are not reusable.
+RitsuLib runtime dependency.
 
 ## Unsupported extensions
 

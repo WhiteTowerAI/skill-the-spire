@@ -19,8 +19,8 @@ title/description text. The stable entry and any SmartFormat tokens are identica
 languages.
 
 That the keyword carries no behavior is the reason for this shape, and also the thing its
-proof must not assume — see § Proof matrix. This was reviewed and accepted on 2026-08-07:
-keyword and enchantment stay host-scoped, while `orb` received its own envelope.
+proof must not assume — see § Proof matrix. Keyword and enchantment stay host-scoped;
+`orb` has its own envelope.
 
 The Keyword must not select `reference/model-capabilities.md`,
 `reference/shared-effect-hooks.md`, or lifecycle state as its own implementation. If its named

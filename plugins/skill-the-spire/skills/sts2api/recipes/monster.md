@@ -22,7 +22,7 @@ subset. Registration without at least one grounded placement/roster edge is not 
   with `.ActEncounter<TAct,TEncounter>()` for one act or `.GlobalEncounter<TEncounter>()`
   for every act. `IsValidForAct` remains the runtime filter for global registrations.
 - Put every step in the scaffold's single `RegisterContent()` content pack. Do not add a
-  historical pool attribute, constructor auto-registration, or a second registry call.
+  pool attribute, constructor auto-registration, or a second registry call.
 
 ```csharp
 RitsuLibFramework.CreateContentPack(MainFile.ModId)
@@ -249,7 +249,7 @@ private async Task Peck(IReadOnlyList<Creature> targets)
 
     // WRONG — .Targeting() is the CARD pattern (DamageCmd.Attack(...).FromCard(this).Targeting(...)).
     // On a monster it HANGS mid-move: the enemy turn never completes and the player's turn
-    // never resumes ("play phase not resumed after enemy turn"). Live-confirmed 2026-07-10.
+    // never resumes ("play phase not resumed after enemy turn").
 }
 ```
 
@@ -376,11 +376,8 @@ loader resumes and uses `FallbackVisualPath` without probing a missing custom-id
 Do **not** leave the profile path null as the fallback strategy.
 
 The same `MonsterModel.CreateVisuals()` path feeds combat and the default bestiary layout,
-so both reuse this one PNG. The hosted Monster proof rendered the custom 360x360 texture in both
-real consumers on 2026-07-22 using only RitsuLib. The generated factory layout was 396x396, with intent at
-`(0,-466)` above the body; headed screenshots showed correct floor alignment and no crop.
-Strict `CombatEnemy` Tier 2 also preserved the full two-cycle move behavior with no fresh
-error block.
+so both reuse this one PNG. The generated factory layout is 396x396 with the intent anchor at
+`(0,-466)` above the body; headed review checks floor alignment and no crop in both consumers.
 
 This contract is deliberately static. Attack/hurt/death/cast triggers do not animate;
 death uses the game's non-Spine fade, and `HasDeathSfx => false` avoids a nonexistent
@@ -404,13 +401,6 @@ skins are later extensions, not current gates.
      `CreatureAttackedEntry.DamageResults`, not only total HP loss
    - force each conditional outcome by changing its real input state, then observe the
      selected move; never call the move body or `ForceCurrentState` as proof
-
-The 2026-07-22 RitsuLib-only Monster run is the current hosted proof. It
-registered the Power, Monster, and global Encounter through one content pack, then
-live-proved custom self Power `2 -> 4` with later attack scaling, Weak `2`, two-hit history,
-healthy Block `+5`, wounded HP/Block `+3/+4`, both conditional outcomes, and a complete
-explicit cycle. It also rendered the same static body in combat and the default bestiary,
-reached `selftest done`, and passed strict Tier 2 with no fresh error.
 
 See `reference/selftest-harness.md` § CombatEnemy for the driver shape.
 

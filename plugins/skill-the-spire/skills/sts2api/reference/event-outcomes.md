@@ -1,7 +1,6 @@
 # Event Outcome Vocabulary
 
-Grounded against STS2 0.107.1 by inventorying all 68 vanilla `EventModel` classes and
-re-verified in the 2026-07-23 RitsuLib-only `MapNode` run. This page extends
+Grounded against STS2 0.107.1 by inventorying all 68 vanilla `EventModel` classes. This page extends
 `recipes/event.md`; it does not change event registration, localization, or portrait rules.
 
 ## Supported outcome families

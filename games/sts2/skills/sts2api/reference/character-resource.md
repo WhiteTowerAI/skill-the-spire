@@ -1,9 +1,6 @@
 # Character resource - RitsuLib combat state, payment, and live counter
 
-Status: **authorable with RitsuLib on STS2 0.107.1**. The historical focused proof observed
-one combat-persistent, zero-default resource with a custom combat counter. The source contract
-below also admits bounded variants; multiple resources, run persistence, other turn-start policies,
-named play uses, and built-in row/Card consumers remain game-unobserved.
+Status: **authorable with RitsuLib on STS2 0.107.1**.
 
 Use this capability when Cards or other character-owned effects gain and spend one or more
 named nonnegative resources. It is a selected Character capability, not a new content type
@@ -149,7 +146,7 @@ counters and `NSecondaryResourceCardCostUi.Create(...)` / `CreateForUse(...)` fo
 declared Card payment line. Register them through `RegisterCombatUi` / `RegisterCardUi` and
 bind only the declared definitions or use ids. Use a custom combat attachment only when the
 SPEC selects additional bounded mechanic text that the built-in row cannot render. Do not
-emit the historical Harmony `NCombatUi.Activate` postfix or a separate patch module.
+emit a Harmony `NCombatUi.Activate` postfix or a separate patch module.
 
 The update callback must use the context's local player and `VisibleDefinitions`, keep the
 control hidden when this resource is not visible, and render the current resource plus any
@@ -211,7 +208,7 @@ or save round trip only when that selected policy needs it. Assert:
 The maintained harness derives the resource name, gain/spend amounts, payoff, and expected
 counter states from the current `SPEC.md`. It reaches `selftest done` only after the exact
 configured values, rejected-payment invariants, disjoint UI, and distinct combat-2 reset
-state pass; no historical proof constants or markers are reusable defaults.
+state pass.
 
 ## Unsupported extensions
 
