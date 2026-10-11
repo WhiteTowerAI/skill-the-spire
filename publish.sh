@@ -11,8 +11,10 @@
 # Two shapes:
 #   (default)      : the SHIP flow. Renders into the repo's top-level skills/ (COMMITTED).
 #                    This one tree serves every distribution: `npx skills add` discovers it,
-#                    and the Codex (.codex-plugin/) and Claude Code (.claude-plugin/) plugin
-#                    manifests at the repo root both point at it. Tools are bundled inside
+#                    and it is the plugin root for Codex and Claude Code, which get their
+#                    manifests copied from scripts/publish/ into skills/.codex-plugin/ and
+#                    skills/.claude-plugin/. Only skills/ lands in a user's plugin cache.
+#                    The repo-root marketplaces point at ./skills. Tools are bundled inside
 #                    skills/modmaker/scripts/ and referenced by RELATIVE path (the Agent Skills
 #                    spec convention). The bundled tools are Python (.py), so they run on
 #                    Windows/macOS/Linux.
@@ -28,7 +30,7 @@ OUT=""
 FORCE=0
 
 usage() {
-    sed -n '1,19p' "$0" >&2
+    sed -n '1,21p' "$0" >&2
 }
 
 # Pick a working Python 3. On Windows the bare `python3` on PATH is often the
@@ -144,6 +146,10 @@ echo "  modmaker:  $(count_files "$SKILLS_DIR_ABS/modmaker") files"
 echo "  sts2api:  $(count_files "$SKILLS_DIR_ABS/sts2api") files"
 echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in modmaker/scripts/)"
 if [ -z "$AGENT" ]; then
+    # skills/ is also the plugin root for both agents, so their manifests live inside it.
+    mkdir -p "$SKILLS_DIR_ABS/.codex-plugin" "$SKILLS_DIR_ABS/.claude-plugin"
+    cp "$HELPERS/codex-plugin.json" "$SKILLS_DIR_ABS/.codex-plugin/plugin.json"
+    cp "$HELPERS/claude-plugin.json" "$SKILLS_DIR_ABS/.claude-plugin/plugin.json"
     cp "$HELPERS/generated.md" "$SKILLS_DIR_ABS/GENERATED.md"
     echo "Committed skills payload ready. Install with any of:"
     echo "  codex plugin marketplace add $REPO_ROOT && codex plugin add skill-the-spire@skill-the-spire"

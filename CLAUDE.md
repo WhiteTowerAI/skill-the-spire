@@ -9,10 +9,11 @@ below. This file only adds what is specific to running Claude Code here. When th
 ## Ship Targets
 
 Development and local testing now happen in Claude Code on this machine. The product ships a
-Codex plugin (`.codex-plugin/`, `.agents/plugins/marketplace.json`) and a Claude Code plugin
-(`.claude-plugin/`), both rooted at the repository and both loading the one generated top-level
-`skills/`, which `npx skills add` also installs. Never fork the skill text per agent or edit the
-generated payload. Keep both plugins working.
+Codex plugin (marketplace `.agents/plugins/marketplace.json`) and a Claude Code plugin
+(marketplace `.claude-plugin/marketplace.json`). Both plugins are rooted at the one generated
+top-level `skills/`, which `npx skills add` also installs; their `plugin.json` sources live in
+`scripts/publish/`. Never fork the skill text per agent or edit the generated payload. Keep both
+plugins working.
 
 ## Shell On This Repo
 

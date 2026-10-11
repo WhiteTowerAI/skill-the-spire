@@ -7,9 +7,10 @@
   "plugins": [
     {
       "name": "skill-the-spire",
-      "source": "./",
+      "source": "./skills",
       "description": "Turn a plain-language idea into a built and verified Slay the Spire 2 mod.",
       "category": "development"
     }
-  ]
+  ],
+  "description": "Skill the Spire: build and verify Slay the Spire 2 mods from plain-language ideas."
 }

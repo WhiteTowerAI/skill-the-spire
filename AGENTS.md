@@ -42,13 +42,15 @@ or evidence validator.
 - `games/sts2/tools/`: scaffold, build, pack, launch, log, profile, localization, art, catalog,
   and preflight tools.
 - `games/sts2/tests/`: current capability and verification guidance.
-- `scripts/publish/`: publisher helpers and the generated notice.
-- `.codex-plugin/`, `.claude-plugin/`, `.agents/plugins/`: hand-maintained plugin and marketplace
-  manifests. The repository root is the plugin root for both Codex and Claude Code, and both load
-  top-level `skills/`. Keep the `version` in both `plugin.json` files equal.
+- `scripts/publish/`: publisher helpers, the generated notice, and the Codex and Claude Code
+  `plugin.json` sources. Keep the `version` in both equal.
+- `.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`: hand-maintained
+  marketplace manifests. Both point at `./skills`.
 
-Top-level `skills/` is the one generated payload, shared by both plugins and `npx skills add`.
-Never hand-edit it. After authoritative source validation, regenerate it with:
+Top-level `skills/` is the one generated payload and the plugin root for both Codex and Claude
+Code; the publisher copies their `plugin.json` files into `skills/.codex-plugin/` and
+`skills/.claude-plugin/`. `npx skills add` installs the same tree. Never hand-edit it. After
+authoritative source validation, regenerate it with:
 
 ```powershell
 & 'D:\Git\bin\bash.exe' './publish.sh' '--force'
@@ -133,7 +135,7 @@ Before release, install the plugin from this checkout on the maintainer's machin
 skill once: in Claude Code with `claude plugin marketplace add <repo>` and
 `claude plugin install skill-the-spire@skill-the-spire`, then `/modmaker`. Also install it in Codex
 with `codex plugin marketplace add <repo>` and `codex plugin add skill-the-spire@skill-the-spire`,
-then `$modmaker`, when `.codex-plugin/` or `.agents/plugins/` changed. Do not leave `__pycache__`
+then `$modmaker`, when `scripts/publish/codex-plugin.json` or `.agents/plugins/` changed. Do not leave `__pycache__`
 or other build output inside `skills/`; it invalidates payload parity.
 
 ## Git
