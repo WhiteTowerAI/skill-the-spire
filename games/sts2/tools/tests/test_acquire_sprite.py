@@ -44,7 +44,9 @@ if args[:2] == ["image", "create"]:
     if mode == "task_failure":
         sys.exit(6)
     if mode == "timeout":
-        time.sleep(2)
+        # The call is already recorded; hang until the caller's timeout kills us.
+        time.sleep(120)
+        sys.exit(0)
     output = Path(args[args.index("--download-to") + 1])
     output.mkdir(parents=True, exist_ok=True)
     if mode == "invalid_image":
@@ -182,9 +184,11 @@ class AcquireSpriteTests(unittest.TestCase):
                 self.assertFalse(self.record.exists())
 
     def test_task_failure_timeout_and_ambiguous_downloads_do_not_retry(self) -> None:
+        # The timeout must outlast the fake's interpreter startup so its create call is
+        # recorded before the kill; the fake then hangs far longer than the deadline.
         cases = (
             ("task_failure", [], "image generation failed"),
-            ("timeout", ["--generation-timeout", "0.05"], "Do not submit it again"),
+            ("timeout", ["--generation-timeout", "3"], "Do not submit it again"),
             ("zero", [], "contained 0 images"),
             ("multiple", [], "contained 2 images"),
         )
