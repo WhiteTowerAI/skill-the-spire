@@ -125,8 +125,27 @@ Validate `plugins/skill-the-spire/` with the plugin validator and validate both 
 roots with the skill validator before release. Do not run `compileall` inside generated payload
 trees; it creates cache files that invalidate payload parity.
 
-## Git And Scope
+## Git
+
+`main` holds released, reviewed work. Do not develop on `main` and never commit to it directly;
+changes reach `main` only by merging a reviewed PR.
+
+- Prefer small PRs focused on one feature, one bug fix, one chore, or one refactor.
+- Use branches:
+  - `feat/<short-name>`
+  - `fix/<short-name>`
+  - `chore/<short-name>`
+  - `refactor/<short-name>`
+  - `docs/<short-name>`
+- Use Conventional Commit style for PR titles:
+  - `feat(editor): add marquee selection`
+  - `fix(runtime): handle missing tween state`
+  - `docs(agents): update collaboration rules`
+- PR descriptions must include:
+  - What changed
+  - Why it changed
+  - How it was checked: only checks that actually ran, per the Verification section above
 
 Check `git status` before editing. Preserve unrelated dirty/untracked work. Stage only intended
-paths. Never reset, clean, rewrite history, squash, commit, push, install, launch, tag, release, or
-change repository visibility without explicit authorization.
+paths. Never reset, clean, rewrite history, force-push, merge into `main`, install, launch, tag,
+release, or change repository visibility without explicit authorization.
