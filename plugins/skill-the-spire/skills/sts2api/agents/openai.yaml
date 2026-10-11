@@ -1,7 +1,0 @@
-interface:
-  display_name: "STS2 API Lookup"
-  short_description: "Look up grounded STS2 modding recipes and fixes"
-  default_prompt: "Use $sts2api to answer this concrete Slay the Spire 2 modding question."
-
-policy:
-  allow_implicit_invocation: false
