@@ -14,5 +14,9 @@
     "modding",
     "ritsulib",
     "game-development"
+  ],
+  "skills": [
+    "./modmaker",
+    "./sts2api"
   ]
 }

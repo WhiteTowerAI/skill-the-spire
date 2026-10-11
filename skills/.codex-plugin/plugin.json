@@ -1,0 +1,39 @@
+{
+  "name": "skill-the-spire",
+  "version": "0.2.0",
+  "description": "Turn a plain-language idea into a built and verified Slay the Spire 2 mod.",
+  "author": {
+    "name": "WhiteTowerAI",
+    "url": "https://github.com/WhiteTowerAI"
+  },
+  "homepage": "https://github.com/WhiteTowerAI/skill-the-spire",
+  "repository": "https://github.com/WhiteTowerAI/skill-the-spire",
+  "license": "MIT",
+  "keywords": [
+    "slay-the-spire-2",
+    "modding",
+    "ritsulib",
+    "game-development"
+  ],
+  "skills": [
+    "./modmaker",
+    "./sts2api"
+  ],
+  "interface": {
+    "displayName": "Skill the Spire",
+    "shortDescription": "Build and verify STS2 mods from plain-language ideas.",
+    "longDescription": "Skill the Spire designs, authors, builds, and verifies Slay the Spire 2 mods against a pinned RitsuLib profile.",
+    "developerName": "WhiteTowerAI",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Local tools"
+    ],
+    "websiteURL": "https://github.com/WhiteTowerAI/skill-the-spire",
+    "defaultPrompt": [
+      "Use $modmaker to build an STS2 relic from my idea.",
+      "Use $modmaker to create and verify an STS2 character mod."
+    ]
+  }
+}

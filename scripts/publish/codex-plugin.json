@@ -15,7 +15,10 @@
     "ritsulib",
     "game-development"
   ],
-  "skills": "./skills/",
+  "skills": [
+    "./modmaker",
+    "./sts2api"
+  ],
   "interface": {
     "displayName": "Skill the Spire",
     "shortDescription": "Build and verify STS2 mods from plain-language ideas.",
