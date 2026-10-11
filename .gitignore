@@ -12,7 +12,7 @@ __pycache__/
 .vscode/
 .tmp/
 
-# Tool scratch output (build.ps1 writes full dotnet output here to keep the
+# Tool scratch output (build.py writes full dotnet output here to keep the
 # console quiet). Regenerated each build.
 .build.log
 
