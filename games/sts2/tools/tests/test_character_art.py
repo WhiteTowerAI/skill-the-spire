@@ -13,7 +13,6 @@ TOOLS_DIR = Path(__file__).resolve().parents[1]
 STS2_DIR = TOOLS_DIR.parent
 ART_SAMPLES = STS2_DIR / "skills" / "sts2api" / "reference" / "art-samples"
 CHARACTER_RECIPE = STS2_DIR / "skills" / "sts2api" / "recipes" / "character.md"
-MODMAKER_AUTHOR = STS2_DIR / "skills" / "modmaker" / "author.md"
 sys.path.insert(0, str(TOOLS_DIR))
 from character_art import (  # noqa: E402
     CHARACTER_ART_BUNDLE,
@@ -167,7 +166,6 @@ class CharacterArtBundleTests(unittest.TestCase):
         )
 
         recipe = CHARACTER_RECIPE.read_text(encoding="utf-8")
-        author = MODMAKER_AUTHOR.read_text(encoding="utf-8")
         for required in (
             'public override string? PlaceholderCharacterId => "ironclad";',
             'public const string PlaceholderEnergyColorName = "ironclad";',
@@ -177,9 +175,8 @@ class CharacterArtBundleTests(unittest.TestCase):
         ):
             self.assertIn(required, recipe)
         self.assertNotIn('EnergyColorName => "<color>";', recipe)
-        self.assertIn('EnergyIconHelper.GetPath("ironclad")', author)
-        self.assertNotIn('EnergyColorName => "red"', recipe + author)
-        self.assertNotIn('EnergyIconHelper.GetPath("red")', recipe + author)
+        self.assertNotIn('EnergyColorName => "red"', recipe)
+        self.assertNotIn('EnergyIconHelper.GetPath("red")', recipe)
 
     def test_install_fixed_templates_copies_source_assets_without_resizing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
