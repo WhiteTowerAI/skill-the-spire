@@ -9,7 +9,7 @@ against the new one. Tier 1 requires the exact mod load marker. Tier 2 additiona
 requires a structured state-proof marker and a successful harness terminal marker;
 ordinary hook/preview logs and ``selftest done`` can never prove behavior.
 
-Cross-platform port of grep_log.ps1. The log path defaults per-OS:
+The log path defaults per-OS:
   Windows : %APPDATA%\\SlayTheSpire2\\logs\\godot.log
   macOS   : ~/Library/Application Support/SlayTheSpire2/logs/godot.log
   Linux   : ~/.local/share/SlayTheSpire2/logs/godot.log
