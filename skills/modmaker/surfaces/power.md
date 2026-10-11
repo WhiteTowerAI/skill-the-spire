@@ -122,6 +122,10 @@ value hook modifies its return value and cannot run an awaited effect sequence.
 
 ## Author the element class
 
+Read `reference/mechanics.md` and `recipes/power.md` first, `reference/content-text-effects.md`
+when `text spans` are selected, and `reference/extra-corner-labels.md` when an extra badge is
+selected.
+
 **Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend `ModPowerTemplate`:
 
 - Add exactly one `.Power<TPower>()` step to `MainFile.Content.cs`; do not rely on
