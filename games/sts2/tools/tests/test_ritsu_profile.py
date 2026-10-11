@@ -107,22 +107,22 @@ class RitsuProfileTests(unittest.TestCase):
             self.assertIn("RitsuLibFramework.CreateLogger(ModId)", main)
             self.assertIn('CompileFrameworkVersion = "0.5.12"', main)
 
-    def test_manifest_name_is_canonical_and_legacy_is_unambiguous(self) -> None:
+    def test_manifest_must_use_the_canonical_name(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp)
-            canonical = project / "mod_manifest.json"
-            legacy = project / "ExampleMod.json"
+            manifest = project / "mod_manifest.json"
+            old_name = project / "ExampleMod.json"
 
-            canonical.write_text("{}\n", encoding="utf-8")
-            self.assertEqual(canonical, find_manifest(project, "ExampleMod"))
-
-            canonical.unlink()
-            legacy.write_text("{}\n", encoding="utf-8")
-            self.assertEqual(legacy, find_manifest(project, "ExampleMod"))
-
-            canonical.write_text("{}\n", encoding="utf-8")
-            with self.assertRaisesRegex(RitsuProfileError, "both canonical and legacy"):
+            with self.assertRaisesRegex(RitsuProfileError, "missing manifest"):
                 find_manifest(project, "ExampleMod")
+
+            old_name.write_text("{}\n", encoding="utf-8")
+            with self.assertRaisesRegex(RitsuProfileError, "rename it to mod_manifest.json"):
+                find_manifest(project, "ExampleMod")
+
+            old_name.unlink()
+            manifest.write_text("{}\n", encoding="utf-8")
+            self.assertEqual(manifest, find_manifest(project, "ExampleMod"))
 
     def test_local_mods_dir_is_adjacent_to_the_platform_executable(self) -> None:
         game = Path("steamapps") / "common" / "Slay the Spire 2"

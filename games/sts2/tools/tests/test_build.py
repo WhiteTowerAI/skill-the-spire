@@ -27,7 +27,7 @@ class BuildTests(unittest.TestCase):
     def test_resource_manifest_must_match_authored_assets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            manifest = root / "ExampleMod.json"
+            manifest = root / "mod_manifest.json"
             manifest.write_text(json.dumps({"has_pck": False}), encoding="utf-8")
 
             self.assertEqual(

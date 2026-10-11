@@ -76,9 +76,7 @@ the implementation and SelfTest assertions by the real dependency flow; do not i
 surface, collapse one owner's lifecycle into another, or use a deferred family as coordination.
 
 The generalized variants remain supported. Write their full human-readable fields from the
-owner page, including routes and hard boundaries; do not recreate `skill-the-spire-surface-data` or
-`skill-the-spire-surface-contract` JSON. Existing v1/v2/v3 projects may retain old blocks as ignored
-legacy text and resume without migration.
+owner page, including routes and hard boundaries, as ordinary Markdown.
 
 ## Pinned implementation boundary
 

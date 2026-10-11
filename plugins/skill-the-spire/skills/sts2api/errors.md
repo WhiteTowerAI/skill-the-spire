@@ -49,8 +49,8 @@ switching to an old template.
   `.json` under a Mod directory at any depth as a manifest and logs a load error for each one
   without an `id`.
 - **Fix:** keep authored JSON inside the `.pck` and build-time inputs in the project
-  directory. `build.py` prunes a copy left by an older build; any other deployed
-  non-manifest `.json` fails the build.
+  directory. Any deployed non-manifest `.json` fails the build; delete it from the
+  deployed Mod directory and rebuild.
 
 ### `[ancient-dialogue]` or an Ancient localization detail in a profile failure
 

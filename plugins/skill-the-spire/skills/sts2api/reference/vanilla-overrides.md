@@ -109,9 +109,8 @@ Every new scaffold contains `skillthespire/vanilla-overrides.json`:
 the project directory and is never deployed into `mods/<ModName>/`: the game parses every
 `.json` under a deployed Mod directory as a Mod manifest and logs a load error for each one
 without an `id`. The generated C# carries the accepted operations at runtime, so the
-deployed Mod needs only its own `mod_manifest.json`. `build.py` deletes a copy left by an older
-build and fails on any other deployed non-manifest `.json`. Legacy projects without a manifest
-remain buildable and are reported as non-override projects.
+deployed Mod needs only its own `mod_manifest.json`. `build.py` fails on any
+deployed non-manifest `.json`. A project without this file builds with no vanilla overrides.
 
 Every authorable operation carries `order`, stable `operation_id`, resolved
 `target_model_id`, semantic `mode`, affected `surface`, selected route, expected catalog

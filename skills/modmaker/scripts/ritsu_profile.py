@@ -139,21 +139,16 @@ def resolve_runtime_asset(
 
 
 def find_manifest(project_dir: Path, mod_name: str) -> Path:
-    canonical = project_dir / "mod_manifest.json"
-    legacy = project_dir / f"{mod_name}.json"
-    if canonical.is_file() and legacy.is_file():
+    manifest = project_dir / "mod_manifest.json"
+    if manifest.is_file():
+        return manifest
+    old_name = project_dir / f"{mod_name}.json"
+    if old_name.is_file():
         raise RitsuProfileError(
-            "project contains both canonical and legacy Mod manifests "
-            f"({canonical.name}, {legacy.name}); keep exactly one"
+            f"{old_name.name} uses the pre-release manifest name; rename it to "
+            f"mod_manifest.json in {project_dir}"
         )
-    if canonical.is_file():
-        return canonical
-    if legacy.is_file():
-        return legacy
-    raise RitsuProfileError(
-        f"missing manifest: expected mod_manifest.json (or legacy {mod_name}.json) "
-        f"in {project_dir}"
-    )
+    raise RitsuProfileError(f"missing manifest: expected mod_manifest.json in {project_dir}")
 
 
 def _xml_text(element: ET.Element) -> str:

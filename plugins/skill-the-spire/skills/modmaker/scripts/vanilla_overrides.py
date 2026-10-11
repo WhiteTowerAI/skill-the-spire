@@ -4002,7 +4002,7 @@ def validate_project_override_manifest(
 ) -> str:
     manifest_path = project_dir / MANIFEST_RELATIVE_PATH
     if not manifest_path.is_file():
-        return "not present (legacy/non-override project)"
+        return "not present (no vanilla overrides)"
     catalog = load_catalog(catalog_path)
     manifest = _read_object(manifest_path)
     summary = validate_override_manifest(manifest, catalog, expected_mod_id=mod_name)

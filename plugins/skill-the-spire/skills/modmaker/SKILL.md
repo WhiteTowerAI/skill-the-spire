@@ -115,7 +115,7 @@ human idea
 ```
 
 1. **State and route.** Read `DESIGN.md`, `SPEC.md`, `PLAN.md`, and `MEMORY.md` when present.
-   Old JSON metadata is ignored. Resume the first incomplete stage if the user requested no
+   Resume the first incomplete stage if the user requested no
    change; use revision for a requested change.
 2. **Interview.** Ask only questions whose answers materially change behavior, scope, state,
    supported operations, or proof. The exact-content fast path asks zero questions when complete.
@@ -157,9 +157,6 @@ player-visible design change or missing shared capability.
 - `SPEC.md`: exact implementation, maintained routes, and required autotest scenarios.
 - `PLAN.md`: a simple stage checklist only.
 - `MEMORY.md`: technical discoveries, resolved IDs/keys, commands/results, and repair attempts.
-
-Existing projects may retain old management metadata. Ignore it and do not force migration.
-Continue from the human-readable meaning unless the user asks to revise that work.
 
 ## Core commands
 

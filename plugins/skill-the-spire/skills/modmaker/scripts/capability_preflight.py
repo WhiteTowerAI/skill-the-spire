@@ -11,8 +11,8 @@ declaration lines anywhere in the document:
 
 This tool deliberately does not validate Markdown structure, ordinary fields, business rules,
 localization, manifests, lifecycle behavior, evidence, or project status. Build and real-host
-verification own those checks. A SPEC with no Support or Hook declarations is treated as an
-unchanged legacy SPEC and skipped.
+verification own those checks. A SPEC with no Support or Hook declarations, such as one made
+only of Mod-local routes, has nothing for this tool to check and is skipped.
 """
 from __future__ import annotations
 
@@ -210,12 +210,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--spec", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
-        routes, hooks, legacy = validate_spec_file(args.spec)
+        routes, hooks, skipped = validate_spec_file(args.spec)
     except (CapabilityPreflightError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(f"[capability-preflight] failed: {exc}", file=sys.stderr)
         return 2
-    if legacy:
-        print("[capability-preflight] skipped: unchanged legacy SPEC has no Support or Hook declarations")
+    if skipped:
+        print("[capability-preflight] skipped: SPEC declares no Support or Hook lines")
     else:
         print(f"[capability-preflight] ok support_routes={routes} hooks={hooks}")
     return 0

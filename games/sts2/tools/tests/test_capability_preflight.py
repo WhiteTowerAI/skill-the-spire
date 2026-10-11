@@ -119,7 +119,7 @@ class CapabilityPreflightTests(unittest.TestCase):
             preflight.validate_spec_text(text)
         self.assertIn("does not declare", str(caught.exception))
 
-    def test_legacy_spec_is_skipped_without_rewrite(self) -> None:
+    def test_spec_without_declarations_is_skipped(self) -> None:
         self.assertEqual((0, 0, True), preflight.validate_spec_text("# Old SPEC\n\n- card: x\n"))
 
     def test_cli_runs_against_payload_layout_shape(self) -> None:
