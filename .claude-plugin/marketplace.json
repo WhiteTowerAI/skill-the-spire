@@ -1,0 +1,15 @@
+{
+  "name": "skill-the-spire",
+  "owner": {
+    "name": "WhiteTowerAI",
+    "url": "https://github.com/WhiteTowerAI"
+  },
+  "plugins": [
+    {
+      "name": "skill-the-spire",
+      "source": "./",
+      "description": "Turn a plain-language idea into a built and verified Slay the Spire 2 mod.",
+      "category": "development"
+    }
+  ]
+}

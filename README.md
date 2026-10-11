@@ -4,7 +4,7 @@
 
 ## English
 
-Skill the Spire is a free Codex plugin that turns a plain-language idea into a Slay the
+Skill the Spire is a free Codex and Claude Code plugin that turns a plain-language idea into a Slay the
 Spire 2 mod: it helps settle the design, writes the implementation, builds the project, and
 reports the verification that actually ran.
 
@@ -17,7 +17,7 @@ authoring/API baseline. The first public release, `0.1.0`, was built for RitsuLi
 - RitsuLib `>= 0.6.7` with its `0.107.1` Compat variant. The official Workshop item is
   `3747602295`; a manual install must keep the whole folder, not only the root DLL.
 - .NET SDK 9 and Python 3.
-- Codex with plugin support, or another agent that supports portable Agent Skills.
+- Codex or Claude Code with plugin support, or another agent that supports Agent Skills.
 
 Generated projects resolve the checked local game and RitsuLib assemblies. They do not use a
 framework `PackageReference` and do not depend on BaseLib.
@@ -31,18 +31,28 @@ codex plugin add skill-the-spire@skill-the-spire
 
 Start a new Codex task after installation so the `modmaker` and `sts2api` skills are loaded.
 
+### Install The Claude Code Plugin
+
+```text
+claude plugin marketplace add WhiteTowerAI/skill-the-spire
+claude plugin install skill-the-spire@skill-the-spire
+```
+
+Start a new Claude Code session after installation so the skills are loaded.
+
 ### Install Portable Skills
 
 ```text
 npx skills add WhiteTowerAI/skill-the-spire
 ```
 
-The portable distribution contains the same two skills and bundled Python tools as the Codex
-plugin.
+Both plugins and the portable install load the same top-level `skills/` folder: the same two
+skills and bundled Python tools.
 
 ### Quick Start
 
-Invoke `$modmaker`, then describe the mod in ordinary language:
+Invoke `$modmaker` in Codex or `/modmaker` in Claude Code, then describe the mod in ordinary
+language:
 
 > Create a relic that gives 5 Block at the start of every third turn.
 
@@ -121,7 +131,7 @@ other attributed material retain their original ownership and terms.
 
 ## 简体中文
 
-Skill the Spire 是一个免费的 Codex 插件。用户只需用自然语言描述创意，它就能协助确定
+Skill the Spire 是一个免费的 Codex 和 Claude Code 插件。用户只需用自然语言描述创意，它就能协助确定
 设计、编写《杀戮尖塔 2》Mod、构建项目，并如实报告实际完成的验证。
 
 `0.2.0` 生成的 Mod 面向《杀戮尖塔 2》`0.107.1`，并使用 RitsuLib `0.6.7` 的创作/API
@@ -133,7 +143,7 @@ Skill the Spire 是一个免费的 Codex 插件。用户只需用自然语言描
 - 带 `0.107.1` Compat 变体的 RitsuLib `>= 0.6.7`。官方创意工坊条目为
   `3747602295`；手动安装时须保留整个文件夹，不能只复制根目录 DLL。
 - .NET SDK 9 和 Python 3。
-- 支持插件的 Codex，或支持 portable Agent Skills 的其他 Agent。
+- 支持插件的 Codex 或 Claude Code，或支持 Agent Skills 的其他 Agent。
 
 生成项目会读取经过检查的本地游戏与 RitsuLib 程序集，不使用框架
 `PackageReference`，也不依赖 BaseLib。
@@ -147,17 +157,26 @@ codex plugin add skill-the-spire@skill-the-spire
 
 安装后请新建 Codex 任务，使 `modmaker` 和 `sts2api` 两个 skill 被加载。
 
+### 安装 Claude Code 插件
+
+```text
+claude plugin marketplace add WhiteTowerAI/skill-the-spire
+claude plugin install skill-the-spire@skill-the-spire
+```
+
+安装后请新建 Claude Code 会话，使两个 skill 被加载。
+
 ### 安装 Portable Skills
 
 ```text
 npx skills add WhiteTowerAI/skill-the-spire
 ```
 
-Portable 版本包含与 Codex 插件相同的两个 skill 和 Python 工具。
+两个插件和 Portable 安装读取的都是仓库顶层同一个 `skills/` 文件夹，包含相同的两个 skill 和 Python 工具。
 
 ### 快速开始
 
-调用 `$modmaker`，然后直接描述 Mod：
+在 Codex 中调用 `$modmaker`，或在 Claude Code 中调用 `/modmaker`，然后直接描述 Mod：
 
 > 制作一个遗物：每三个回合开始时获得 5 点格挡。
 

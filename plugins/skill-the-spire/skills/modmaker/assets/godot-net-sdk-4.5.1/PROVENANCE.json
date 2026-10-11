@@ -1,8 +1,0 @@
-{
-  "package": "Godot.NET.Sdk",
-  "version": "4.5.1",
-  "license": "MIT",
-  "source": "https://www.nuget.org/packages/Godot.NET.Sdk/4.5.1",
-  "package_sha256": "007bb90ee96bc99b26f7294f3a18b0615e9d689a7819a57394759ca5dd505975",
-  "included_path": "Sdk/"
-}

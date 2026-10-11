@@ -13,7 +13,6 @@
       "Bash(python games/sts2/tools/capability_preflight.py:*)"
     ],
     "deny": [
-      "Edit(./plugins/skill-the-spire/**)",
       "Read(**/art-backend.json)"
     ]
   }

@@ -8,17 +8,15 @@ below. This file only adds what is specific to running Claude Code here. When th
 
 ## Ship Targets
 
-Development and local testing now happen in Claude Code on this machine. The product ships both a
-Codex plugin and a Claude Code plugin, plus the portable Agent Skills under `skills/`. As of
-`0.2.0` only the Codex plugin (`plugins/skill-the-spire/.codex-plugin/`,
-`.agents/plugins/marketplace.json`) and the portable skills exist. The Claude Code plugin is planned
-but not yet scheduled; start it only when the user asks. When it is built, add it through `publish.sh` and `scripts/publish/` so both plugins render
-from the same `games/sts2/skills/` source. Never fork the skill text by hand or edit a generated
-payload. Keep the Codex plugin working while adding it.
+Development and local testing now happen in Claude Code on this machine. The product ships a
+Codex plugin (`.codex-plugin/`, `.agents/plugins/marketplace.json`) and a Claude Code plugin
+(`.claude-plugin/`), both rooted at the repository and both loading the one generated top-level
+`skills/`, which `npx skills add` also installs. Never fork the skill text per agent or edit the
+generated payload. Keep both plugins working.
 
 ## Shell On This Repo
 
-- The Bash tool runs Git Bash, so `publish.sh` runs directly: `bash ./publish.sh --plugin --force`.
+- The Bash tool runs Git Bash, so `publish.sh` runs directly: `bash ./publish.sh --force`.
   The `& 'D:\Git\bin\bash.exe' ...` form in `AGENTS.md` is for the PowerShell tool.
 - Run the `AGENTS.md` test commands in the PowerShell tool as written. From Git Bash, use
   `PYTHONUTF8=1 python -m unittest ...` instead of `$env:PYTHONUTF8='1'`.
