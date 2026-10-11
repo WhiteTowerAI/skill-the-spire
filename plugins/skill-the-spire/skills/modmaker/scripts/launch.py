@@ -13,7 +13,7 @@ Two modes:
     terminal marker ([T2MOD-SELFTEST] <ModName> selftest done | selftest FAILED),
     bounded by --wait-seconds. Requires --mod-name.
 
-Cross-platform port of launch.ps1. The game dir is auto-detected by probing the local
+The game dir is auto-detected by probing the local
 Steam libraries (registry/standard roots -> libraryfolders.vdf -> appmanifest_2868840),
 so a game installed on any drive/library is found without a hardcoded path. Executable
 name and log path default per-OS. Only the Windows path is verified on the dev box; the
