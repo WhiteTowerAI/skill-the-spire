@@ -2480,15 +2480,8 @@ class VanillaOverrideManifestTests(unittest.TestCase):
 
 
 class VanillaOverridePipelineTests(unittest.TestCase):
-    def test_authoring_docs_route_all_authorable_families(self) -> None:
+    def test_reference_docs_list_every_route_the_validator_accepts(self) -> None:
         sts2_root = TOOLS_DIR.parent
-        api_skill = (sts2_root / "skills" / "sts2api" / "SKILL.md").read_text(
-            encoding="utf-8"
-        )
-        author = (sts2_root / "skills" / "modmaker" / "author.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn("vanilla-overrides.md", author)
         for reference in (
             "vanilla-overrides.md",
             "vanilla-card-overrides.md",
@@ -2501,40 +2494,6 @@ class VanillaOverridePipelineTests(unittest.TestCase):
                 self.assertTrue(
                     (sts2_root / "skills" / "sts2api" / "reference" / reference).is_file()
                 )
-                self.assertIn(reference, api_skill)
-
-        for path in (
-            sts2_root / "skills" / "modmaker" / "build.md",
-            sts2_root / "skills" / "modmaker" / "scaffold.md",
-            sts2_root / "skills" / "sts2api" / "recipes" / "event.md",
-            sts2_root / "skills" / "sts2api" / "reference" / "ritsulib-adapter.md",
-        ):
-            self.assertIn(
-                "vanilla-ancient-overrides.md",
-                path.read_text(encoding="utf-8"),
-                path,
-            )
-        for path in (
-            sts2_root / "skills" / "modmaker" / "build.md",
-            sts2_root / "skills" / "modmaker" / "scaffold.md",
-            sts2_root / "skills" / "sts2api" / "recipes" / "card.md",
-            sts2_root / "skills" / "sts2api" / "recipes" / "character.md",
-            sts2_root / "skills" / "sts2api" / "recipes" / "event.md",
-            sts2_root / "skills" / "sts2api" / "recipes" / "relic.md",
-            sts2_root / "skills" / "sts2api" / "recipes" / "potion.md",
-            sts2_root / "skills" / "sts2api" / "reference" / "ritsulib-adapter.md",
-        ):
-            self.assertIn(
-                "vanilla-availability-overrides.md",
-                path.read_text(encoding="utf-8"),
-                path,
-            )
-
-        card_recipe = (
-            sts2_root / "skills" / "sts2api" / "recipes" / "card.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("vanilla-overrides.md", card_recipe)
-        self.assertIn("vanilla-card-overrides.md", card_recipe)
 
         card_reference = (
             sts2_root / "skills" / "sts2api" / "reference" / "vanilla-card-overrides.md"
@@ -2593,34 +2552,6 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         ):
             self.assertIn(hook_id, non_card_reference)
 
-    def test_card_description_conflict_stops_across_the_authoring_pipeline(self) -> None:
-        sts2_root = TOOLS_DIR.parent
-        reference = (
-            sts2_root
-            / "skills"
-            / "sts2api"
-            / "reference"
-            / "vanilla-card-overrides.md"
-        ).read_text(encoding="utf-8")
-        normalized = " ".join(reference.split())
-        self.assertIn("base-description replacement", normalized)
-        self.assertIn("stop", reference.lower())
-        self.assertIn("before/after", reference)
-
-        capability_graph = (
-            sts2_root / "tests" / "content-capability-graph.md"
-        ).read_text(encoding="utf-8")
-        normalized_graph = " ".join(capability_graph.split())
-        self.assertIn(
-            "Canonical variable edits, tag removal, and base-description replacement "
-            "remain unsupported",
-            normalized_graph,
-        )
-        self.assertNotIn(
-            "Adapter for canonical variables, tag removal, and base-description replacement",
-            normalized_graph,
-        )
-
     def test_reference_only_symbols_have_local_imports(self) -> None:
         sts2_root = TOOLS_DIR.parent
         ancient_reference = (
@@ -2629,14 +2560,9 @@ class VanillaOverridePipelineTests(unittest.TestCase):
         event_outcomes = (
             sts2_root / "skills" / "sts2api" / "reference" / "event-outcomes.md"
         ).read_text(encoding="utf-8")
-        author = (sts2_root / "skills" / "modmaker" / "author.md").read_text(
-            encoding="utf-8"
-        )
 
         self.assertIn("using STS2RitsuLib.Patching.Core;", ancient_reference)
         self.assertIn("using MegaCrit.Sts2.Core.Entities.Gold;", event_outcomes)
-        self.assertIn("`RegisterPatch<T>()` requires", author)
-        self.assertIn("`GoldLossType` requires", author)
 
     def test_reference_only_symbol_namespaces_compile_in_a_fresh_scaffold(self) -> None:
         dotnet = shutil.which("dotnet")

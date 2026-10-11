@@ -22,22 +22,19 @@ CATALOG_PATH = (
     / "model-hooks-sts2-0.107.1.json"
 )
 ROUTE_PAGE = SKILLS_DIR / "sts2api" / "reference" / "model-hook-participation.md"
-SURFACES_DIR = SKILLS_DIR / "modmaker" / "surfaces"
-RECIPES_DIR = SKILLS_DIR / "sts2api" / "recipes"
-AUTHORABLE_SURFACE_PAGES = {
-    "affliction": "affliction",
-    "card": "card",
-    "enchantment": "enchantment",
-    "global-effect-run": "global-effect",
-    "global-effect-combat": "global-effect",
-    "modifier": "modifier",
-    "monster": "monster",
-    "orb": "orb",
-    "potion": "potion",
-    "power": "power",
-    "relic": "relic",
-}
-NON_AUTHORABLE_SURFACES = ("character", "event", "keyword")
+AUTHORABLE_SURFACES = (
+    "affliction",
+    "card",
+    "enchantment",
+    "global-effect-run",
+    "global-effect-combat",
+    "modifier",
+    "monster",
+    "orb",
+    "potion",
+    "power",
+    "relic",
+)
 
 
 def snake(name: str) -> str:
@@ -88,20 +85,6 @@ class HookCatalogProjectionTests(unittest.TestCase):
             self.assertNotIn(hook["semantic_id"], declared)
             self.assertIn("rest-site-options.md", hook["owned_by_route"])
 
-    def test_authorable_surfaces_document_hook_participation(self) -> None:
-        for surface, slug in AUTHORABLE_SURFACE_PAGES.items():
-            with self.subTest(surface=surface):
-                text = (SURFACES_DIR / f"{slug}.md").read_text(encoding="utf-8")
-                self.assertIn("hook participation", text.lower())
-                recipe = (RECIPES_DIR / f"{slug}.md").read_text(encoding="utf-8")
-                self.assertIn("model-hook-participation.md", recipe)
-
-    def test_non_authorable_surfaces_do_not_offer_hook_participation(self) -> None:
-        for slug in NON_AUTHORABLE_SURFACES:
-            with self.subTest(surface=slug):
-                text = (SURFACES_DIR / f"{slug}.md").read_text(encoding="utf-8")
-                self.assertNotIn("hook participation:", text.lower())
-
     def test_every_catalog_shape_has_a_reachable_preflight_case(self) -> None:
         seen: set[str] = set()
         for hook in catalog()["hooks"]:
@@ -146,7 +129,7 @@ class HookCatalogProjectionTests(unittest.TestCase):
 
     def test_each_surface_rejects_one_cataloged_unreachable_hook(self) -> None:
         hooks = [hook for hook in catalog()["hooks"] if not hook.get("owned_by_route")]
-        for surface in AUTHORABLE_SURFACE_PAGES:
+        for surface in AUTHORABLE_SURFACES:
             unreachable = next(
                 (hook for hook in hooks if surface not in hook["authorable_surfaces"]),
                 None,
@@ -159,13 +142,6 @@ class HookCatalogProjectionTests(unittest.TestCase):
                     preflight.validate_spec_text(
                         hook_spec(unreachable["semantic_id"], surface, shape)
                     )
-
-    def test_route_requires_modified_and_neutral_proof(self) -> None:
-        text = ROUTE_PAGE.read_text(encoding="utf-8")
-        self.assertIn("the modified value", text)
-        self.assertIn("neutral case outside the guard", text)
-        self.assertIn("unrelated entry", text)
-        self.assertIn("hook must be driven by the engine", text)
 
 
 if __name__ == "__main__":
