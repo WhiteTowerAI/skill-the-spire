@@ -633,8 +633,9 @@ custom-anchor, pile-screen, hotkey, and ExtraHand mouse/controller presentation.
 
 For manual ExtraHand play, the structured post-state records payment, source restoration on
 cancel, successful normal result pile, callback counts, and the next remaining Card's
-ability to enter the same native play flow. Official `0.5.11` owns the temporary Hand bridge;
-the generated proof must not inspect private native fields or patch the lifecycle. End with
+ability to enter the same native play flow. RitsuLib owns that play bridge, and the Card
+stays in its ExtraHand pile until the play resolves. The generated proof must not inspect
+private native fields or patch the lifecycle. End with
 the ordinary structured `state proof` and `selftest done` markers when strict Tier 2 is run.
 
 ## The `CombatEnemy` scenario (monster + encounter; one- and multi-move live)
@@ -1199,7 +1200,7 @@ use flag, current option IDs, and current map-history Rest Site choices. After s
 emit one structured line only when all expected deltas match:
 
 ```text
-[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.5.11 host=0.107.1 compat=0.107.1 expected=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden observed=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden
+[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1 expected=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden observed=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden
 ```
 
 The required matrix is:

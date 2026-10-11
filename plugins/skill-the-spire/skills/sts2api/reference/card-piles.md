@@ -1,7 +1,7 @@
 # Reference: custom Card Piles
 
 This page owns custom Card Piles authoring for STS2 `0.107.1` with official RitsuLib
-`0.5.11`. The official Custom Card Piles tutorial establishes the feature family. Every documented
+`0.6.7`. The official Custom Card Piles tutorial establishes the feature family. Every documented
 public consumer present in the pinned profile is supported; a missing focused proof is a
 verification fact, not a reason to shrink the API boundary.
 
@@ -71,7 +71,7 @@ existing shared global ID. Normal generated content uses Mod-owned IDs.
 `AllPiles`/combat-pile behavior, and discards it with that combat.
 
 `ModCardPileScope.RunPersistent` attaches the pile to `Player`, includes it in
-`Player.Piles`, persists across combats, and is serialized by RitsuLib `0.5.11` run-save
+`Player.Piles`, persists across combats, and is serialized by RitsuLib `0.6.7` run-save
 data. Save/load, existing-save behavior, and run-end cleanup are verification obligations
 for a generated Mod that actually uses this scope; they are not separate support gates.
 
@@ -168,14 +168,27 @@ native holders. `ModCardPileExtraHandSpec` supports all documented public settin
 - layout direction `Horizontal`, `Vertical`, or `VanillaHand`;
 - spacing, resting Card scale, and hover scale;
 - playable glow on/off;
-- manual play on/off;
+- manual play on/off (`AllowCardPlay`);
+- optional base-game Hand semantics through `Behaviors`: `ApplyHandTurnEndRules` (end-of-turn
+  in-Hand and Ethereal processing), `FlushWithHand` (end-of-turn retain/discard flush), both
+  as `FullHand`, or the default `None`;
+- disabled presentation: `DisabledOffset`, `DisabledModulate`, and
+  `DisabledTransitionDuration` (defaults match the base-game Hand);
 - a deterministic `LayoutResolver` returning `ModExtraHandCardTransform`;
 - `OnCardVisualCreated` and `OnCardArrived` callbacks using the public Card/holder context.
 
-With manual play enabled, official RitsuLib `0.5.11` temporarily moves the exact Card into
-the backend native Hand, reparents its holder, and enters `NPlayerHand.StartCardPlay`.
-Cancellation restores the source pile/index; success uses normal payment, hooks, targeting,
-and result-pile processing. Generated Mods do not reproduce or patch this coordinator.
+ExtraHand Cards never count toward the base-game maximum Hand size or draw capacity, under any
+`Behaviors` combination. Without `FlushWithHand` they stay in the pile at end of turn; a SPEC
+that wants them discarded or retained like Hand Cards selects that behavior explicitly.
+
+With manual play enabled, official RitsuLib keeps the Card model in its ExtraHand pile
+throughout targeting and queuing. Only the holder node joins the native play flow
+(`NPlayerHand.StartCardPlay`), and the vanilla manual-play checks treat the pile as
+Hand-compatible inside that path, so Hand-sensitive costs and validation still apply.
+Play-enabled Cards participate in the core playable-Card checks. Cancellation or a
+multiplayer rollback returns the same Card node to its source pile; success uses normal
+payment, hooks, targeting, and result-pile processing. Generated Mods do not reproduce or
+patch this coordinator.
 
 Idle ExtraHand holders remain outside `NPlayerHand.ActiveHolders`, so vanilla numbered
 shortcuts remain owned by the native Hand. Layout and callbacks may use the public context

@@ -1,8 +1,8 @@
 {
   "schema": "skillthespire.sts2.vanilla-catalog/v2",
   "host_version": "0.107.1",
-  "framework_version": "0.5.11",
-  "profile": "ritsulib-0.5.11-sts2-0.107.1",
+  "framework_version": "0.6.7",
+  "profile": "ritsulib-0.6.7-sts2-0.107.1",
   "localization_languages": [
     "deu",
     "eng",
@@ -164678,7 +164678,7 @@
       }
     }
   ],
-  "catalog_sha256": "dcff6f57669c120b0bf1531c5e7d6b6b8e8b6b66eb085771dae297296c7b563c",
+  "catalog_sha256": "c56bbcf3ac07f06e8644b43e536f6180c20b3d318f742ef7945a73eeb1f6791f",
   "authorable_route_families": [
     "public-card-overrides",
     "public-visual-overrides",

@@ -2,7 +2,7 @@
 
 Use this reference when a Relic or custom Power SPEC selects supplemental player-readable
 values. The labels supplement the native main amount; they never replace it. This route is
-pinned to STS2 `0.107.1` and RitsuLib `0.5.11` and uses the public Extra Badges API.
+pinned to STS2 `0.107.1` and RitsuLib `0.6.7` and uses the public Extra Badges API.
 
 ## Generated bounds
 

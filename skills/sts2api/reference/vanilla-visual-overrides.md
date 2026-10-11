@@ -1,7 +1,7 @@
 # Public visual overrides for existing vanilla models
 
 Use this reference after `vanilla-overrides.md` resolves an exact target whose request is
-visual. These routes are pinned to STS2 `0.107.1` and RitsuLib `0.5.11` and cover all 44 public
+visual. These routes are pinned to STS2 `0.107.1` and RitsuLib `0.6.7` and cover all 44 public
 providers in `ExternalCardMaterialOverrideRegistry` and `ExternalAssetOverrideRegistry`;
 the number of headed examples does not narrow this feature family.
 

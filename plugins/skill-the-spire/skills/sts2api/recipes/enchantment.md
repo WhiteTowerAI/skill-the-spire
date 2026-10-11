@@ -1,6 +1,6 @@
 # Recipe: Card Enchantment
 
-> A persistent Card modification under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile.
+> A persistent Card modification under the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile.
 
 ## Contract and registration
 

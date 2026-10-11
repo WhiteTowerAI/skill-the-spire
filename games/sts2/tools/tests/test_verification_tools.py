@@ -43,7 +43,7 @@ class GrepLogTests(unittest.TestCase):
         return [
             "RUNNING MODDED",
             f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.5.11 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1",
         ]
 
     def test_tier2_pass_requires_state_proof_and_done(self) -> None:
@@ -109,7 +109,7 @@ class GrepLogTests(unittest.TestCase):
         code, output = self.run_grep([
             "RUNNING MODDED",
             f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.5.12 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.6.8 host=0.107.1 compat=0.107.1",
         ])
         self.assertEqual(0, code)
         self.assertIn("Framework profile   : MATCH", output)
@@ -118,10 +118,10 @@ class GrepLogTests(unittest.TestCase):
         code, output = self.run_grep([
             "RUNNING MODDED",
             f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.5.10 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.6.6 host=0.107.1 compat=0.107.1",
         ])
         self.assertEqual(1, code)
-        self.assertIn("frameworkVersion>=0.5.11", output)
+        self.assertIn("frameworkVersion>=0.6.7", output)
 
     def test_mod_named_exception_fails(self) -> None:
         code, output = self.run_grep(
@@ -211,10 +211,10 @@ class GrepLogTests(unittest.TestCase):
         code, output = self.run_grep(
             [
                 f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-                "framework=RitsuLib frameworkVersion=0.5.11 host=0.107.1 compat=0.107.1",
+                "framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1",
                 "[ERROR] failure from the previous appended run",
                 f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-                "framework=RitsuLib frameworkVersion=0.5.11 host=0.107.1 compat=0.107.1",
+                "framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1",
             ]
         )
         self.assertEqual(0, code)

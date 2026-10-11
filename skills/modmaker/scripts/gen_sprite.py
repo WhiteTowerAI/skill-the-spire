@@ -47,6 +47,7 @@ from pathlib import Path
 
 from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
 from character_cues import remove_magenta
+from ritsu_profile import PROFILE
 
 try:
     from PIL import Image, ImageFilter, ImageOps
@@ -946,7 +947,7 @@ def build_art_contract_catalog() -> dict:
     catalog: dict = {
         "schema": ART_CONTRACT_SCHEMA,
         "host_version": "0.107.1",
-        "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
+        "framework_profile": PROFILE.profile_id,
         "source": {
             # Name the modules, not a repo path: this catalog ships inside both payloads,
             # where the tools live beside the skills rather than at the maintainer layout.

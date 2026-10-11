@@ -4,7 +4,7 @@ Use this surface for an independently registered place that stores, moves, inspe
 presents exact Card instances outside the vanilla piles. Card Pile owns its combat/run lifetime,
 registration, persistence, screen/control/ExtraHand presentation, movement rules, and cleanup.
 
-Do not reduce this surface to the previously exercised ExtraHand case. RitsuLib `0.5.11` exposes
+Do not reduce this surface to the previously exercised ExtraHand case. RitsuLib `0.6.7` exposes
 the complete documented API through `reference/card-piles.md`.
 
 ## DESIGN and SPEC vocabulary
@@ -49,4 +49,4 @@ Follow the selected matrix in `reference/card-piles.md`:
    animations, and controller behavior.
 
 Static registration and pile lookup are not UI, movement, persistence, or gameplay proof. Newly
-selected `0.5.11` variants remain game-unobserved until their exact real hosts run.
+selected `0.6.7` variants remain game-unobserved until their exact real hosts run.

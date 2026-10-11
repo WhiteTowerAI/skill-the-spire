@@ -8,22 +8,32 @@ mapping into every recipe and do not add a second framework branch.
 
 ```text
 framework: RitsuLib
-framework version: 0.5.11
+framework version: 0.6.7
 host: STS2 stable 0.107.1
 compat target: 0.107.1
-profile id: ritsulib-0.5.11-sts2-0.107.1
+profile id: ritsulib-0.6.7-sts2-0.107.1
 ```
 
-The compat package or variant must resolve `lib/0.107.1/STS2-RitsuLib.dll` and the
-matching compat marker/hash. A default beta-facing package is a hard failure, not a
-fallback. `scaffold.py`, `ritsu_profile.py`, and
-`build.py`; surface recipes consume that profile and never regenerate dependency logic.
+Since 0.6.0 RitsuLib ships as modules: the root `STS2-RitsuLib.dll` is a loader, the
+per-host `STS2-RitsuLib` and `STS2-RitsuLib.Runtime` modules live in `compat/<host>/`, and the
+host-independent `STS2-RitsuLib.Shared`, `.Ui`, and `.Settings` modules live in `shared/`.
+The runtime must provide a `compat/0.107.1/` variant whose modules match the schema-2
+`ritsulib-variants.manifest` hashes. A default beta-facing package is a hard failure, not a
+fallback. `scaffold.py`, `ritsu_profile.py`, and `build.py` own that profile; surface
+recipes consume it and never regenerate dependency logic.
+
+Public types keep their `STS2RitsuLib.*` namespaces across the split, so generated `using`
+directives do not change. Code that enumerates types from a single RitsuLib assembly must
+account for the separate modules.
 
 Framework identity uses public or standard runtime metadata:
 
-- framework version: public `STS2RitsuLib.Const.Version`;
+- framework version: the loaded Runtime module's assembly version,
+  `typeof(STS2RitsuLib.RitsuLibFramework).Assembly.GetName().Version`. Do not use
+  `Const.Version`: it is a `const`, so the compiler inlines the compile-time value;
 - actual loaded compat target: `AssemblyMetadataAttribute` key `Sts2ApiCompat` on
-  `typeof(STS2RitsuLib.Const).Assembly`;
+  `typeof(STS2RitsuLib.RitsuLibFramework).Assembly`. The shared modules carry a fixed value
+  that does not identify the selected variant;
 - host version: the build/launch profile validates the installed game's
   `release_info.json` before packaging or launch.
 
@@ -109,9 +119,8 @@ child contract. Follow `recipes/reward.md`; Multiplayer integration remains defe
 When SPEC declares any custom pile, read `recipes/card-pile.md` and `reference/card-piles.md` and lower the complete
 selected API surface through `.CardPileOwned(...)`. That reference owns combat/run
 lifetime, every public style and anchor, icon/hover/open/view/visibility/hotkey behavior,
-native movement, localization, and ExtraHand presentation/manual play/callbacks. Official
-RitsuLib `0.5.11` owns its internal native-Hand bridge; generated Mods emit no lifecycle
-patch. API support is not limited by which consumers appeared in the focused proof.
+native movement, localization, and ExtraHand presentation/manual play/Hand behaviors/callbacks.
+RitsuLib owns its internal native play bridge; generated Mods emit no lifecycle patch. API support is not limited by which consumers appeared in the focused proof.
 
 ### Runtime UI
 
@@ -274,8 +283,8 @@ Arbitrary RitsuLib Event layout/VFX APIs and Ancient layouts are not promoted by
 
 An Act uses `.Act<T>()` for model registration and exactly one separate singleplayer entry
 policy from `recipes/act.md`. Force, uniform, and weighted routes reject multiplayer in every
-candidate predicate. A weighted route declares the existing chapter's baseline explicitly;
-the uniform route includes it automatically. Keep `AllowInRandomActList` false because that
+candidate predicate. Uniform and weighted routes both include the existing chapter at fixed
+weight 1; a force pool replaces the slot with one of its weighted candidates. Keep `AllowInRandomActList` false because that
 organic route has no singleplayer predicate. The generated `ModActTemplate` must supply all
 required gameplay members and nonempty weak, regular, elite, and Boss pools. Use a checked
 `ActAssetProfile`; a vanilla-folder helper still needs an exact numbered chest-resource override.
@@ -441,7 +450,7 @@ an empty queued group before consumption.
 For each generated mod, record this small implementation-only block in `MEMORY.md`:
 
 ```markdown
-- framework profile: ritsulib-0.5.11-sts2-0.107.1
+- framework profile: ritsulib-0.6.7-sts2-0.107.1
 - adapter: <surface>/<contract-version>
 - registration route: <shared/act/standalone/host-owned>
 - asset profile: <profile or fallback>

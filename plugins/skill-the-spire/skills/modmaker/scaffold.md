@@ -6,8 +6,8 @@ single pinned RitsuLib adapter path.
 ## Authoring profile
 
 ```text
-authoring profile: ritsulib-0.5.11-sts2-0.107.1
-compile runtime: the checked local RitsuLib version (>= 0.5.11)
+authoring profile: ritsulib-0.6.7-sts2-0.107.1
+compile runtime: the checked local RitsuLib version (>= 0.6.7)
 runtime Mod id: STS2-RitsuLib
 host: STS2 stable 0.107.1
 ```
@@ -40,12 +40,14 @@ and never overwrites an existing project.
 The project contains:
 
 - `<ModName>.csproj` with the bundled `Godot.NET.Sdk 4.5.1`, local game assembly references,
-  `Sts2ApiCompat=0.107.1`, and a pinned local RitsuLib version/assembly hash;
+  `Sts2ApiCompat=0.107.1`, references to all five RitsuLib modules (`STS2-RitsuLib` and
+  `STS2-RitsuLib.Runtime` from `compat/0.107.1/`, plus `STS2-RitsuLib.Shared`, `.Ui`, and
+  `.Settings` from `shared/`), and a pinned local RitsuLib version and assembly-set digest;
 - `skillthespire/sdk/Godot.NET.Sdk.4.5.1/`, copied from the skill asset and used only as a build
   input;
 - `RitsuLibAutoCopy=false` and an empty `RitsuLibDeployDir`, so the consumer never bundles
   the framework DLL;
-- `mod_manifest.json` with only `STS2-RitsuLib >= 0.5.11` and
+- `mod_manifest.json` with only `STS2-RitsuLib >= 0.6.7` and
   `min_game_version=0.107.1`,
   `has_dll=true`, and `has_pck=false` for the empty scaffold;
 - `Sts2PathDiscovery.props` plus optional `local.props` support; local Mods resolve beside
@@ -55,21 +57,39 @@ The project contains:
   `operations` array; authoring may fill it only through an authorable route family. It is
   a build-time input only — it stays in the project directory and is never deployed into
   `mods/<ModName>/`, because the game reads every `.json` there as a Mod manifest;
-- `<ModName>Code/MainFile.cs`, whose exact load marker records public RitsuLib version
-  metadata and the actual loaded `Sts2ApiCompat` assembly metadata.
+- `<ModName>Code/MainFile.cs`, whose exact load marker records the loaded RitsuLib Runtime
+  module's version and `Sts2ApiCompat` assembly metadata.
 
 RitsuLib remains a separate runtime Mod. Reuse the official Steam Workshop item
 `3747602295` when it is already installed; `build.py` checks the game `mods/` directory
 first and then that item in the Steam library that owns STS2. Only install the matching
-compat zip or verified variant pack when neither source exists. Never copy
-`STS2-RitsuLib.dll` into `<ModName>`.
+compat zip or verified variant pack when neither source exists, and install the complete
+folder: since RitsuLib 0.6.0 the root `STS2-RitsuLib.dll` is only a loader, and the
+`compat/`, `shared/`, and `assets.zip` entries beside it are required. Never copy any RitsuLib
+file into `<ModName>`.
 
-The local runtime Compat DLL is the reproducible compile input for this project. The project
-records its framework version and SHA-256 but never writes a machine-specific absolute path.
-The manifest keeps the `0.5.11` player floor because authoring remains inside the `0.5.11` API
-baseline even when the local compile runtime is newer. If the installed runtime changes after
-scaffold, `build.py` stops and requires an explicit runtime-profile migration; it never silently
-changes either recorded identity or the player's minimum dependency.
+The local runtime's compat and shared modules are the reproducible compile input for this
+project. The project records the framework version and one digest over those five module
+hashes, never a machine-specific absolute path. The manifest keeps the `0.6.7` player floor
+because authoring remains inside the `0.6.7` API baseline even when the local compile runtime
+is newer.
+
+If the installed runtime changes after scaffold (the Workshop item updates on its own),
+`build.py` stops instead of silently compiling against different assemblies. Review the
+RitsuLib release notes for the versions in between, then re-pin the existing project:
+
+```powershell
+python ../modmaker/scripts/scaffold.py `
+  --project-dir <existing-project-directory> `
+  --mod-name <ModName> `
+  --game-dir <STS2-install-directory> `
+  --repin-runtime
+```
+
+Re-pinning rewrites only `RitsuLibCompileVersion`, `RitsuLibCompileAssemblySetSha256`, and
+`MainFile.CompileFrameworkVersion`. It never changes the profile, authored sources, or the
+player's minimum dependency. Build, Tier 1, and Tier 2 then run again before the Mod is
+reported as working on the new runtime.
 
 The Mod manifest is always named `mod_manifest.json`; `build.py` rejects any other name.
 

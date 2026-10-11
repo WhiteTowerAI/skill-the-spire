@@ -1,7 +1,7 @@
 {
   "schema": "skillthespire.sts2.model-hooks/v1",
   "host_version": "0.107.1",
-  "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
+  "framework_profile": "ritsulib-0.6.7-sts2-0.107.1",
   "source": {
     "definition": "pinned STS2 0.107.1 decompile: Core/Models/AbstractModel.cs declarations, Core/Hooks/Hook.cs dispatchers, Core/Models/** vanilla overrides",
     "projection": "python collect_model_hooks.py extract",
@@ -3112,5 +3112,5 @@
       "out_parameter": "out decimal modifiedCost"
     }
   ],
-  "catalog_sha256": "dea3bd0167e8f0c730b9d177d1333e98a2f85ac13c427fa0d2e20bbb6edcb3ba"
+  "catalog_sha256": "5e04b69006bc49a6a0d5f082da7a34989047386ea63003b9a259dd5c7cfeb56a"
 }

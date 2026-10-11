@@ -8,14 +8,14 @@ Skill the Spire is a free Codex plugin that turns a plain-language idea into a S
 Spire 2 mod: it helps settle the design, writes the implementation, builds the project, and
 reports the verification that actually ran.
 
-Version `0.1.0` is the first public release. Generated mods target Slay the Spire 2
-`0.107.1` and the RitsuLib `0.5.11` authoring/API baseline.
+Version `0.2.0` generates mods for Slay the Spire 2 `0.107.1` and the RitsuLib `0.6.7`
+authoring/API baseline. The first public release, `0.1.0`, was built for RitsuLib `0.5.11`.
 
 ### Requirements
 
 - Slay the Spire 2 stable `0.107.1`, installed through Steam.
-- RitsuLib `>= 0.5.11` with its `0.107.1` Compat variant. The official Workshop item is
-  `3747602295`.
+- RitsuLib `>= 0.6.7` with its `0.107.1` Compat variant. The official Workshop item is
+  `3747602295`; a manual install must keep the whole folder, not only the root DLL.
 - .NET SDK 9 and Python 3.
 - Codex with plugin support, or another agent that supports portable Agent Skills.
 
@@ -96,10 +96,10 @@ directly; `played`, `fired`, and `used` logs are diagnostics only.
 
 ### Known Boundaries
 
-- The target is pinned to STS2 `0.107.1` and the RitsuLib `0.5.11` API baseline.
+- The target is pinned to STS2 `0.107.1` and the RitsuLib `0.6.7` API baseline.
 - Many supported shapes still require their own generated-mod Build and real-host verification.
 - Multiplayer, Settings, Telemetry, Update Check, broad custom scene/material/audio systems, and
-  one-click Workshop publishing are not general authoring surfaces in `0.1.0`.
+  one-click Workshop publishing are not general authoring surfaces in `0.2.0`.
 - Generated code does not invent prompt-derived Harmony, reflection, Publicizer, or IL. When no
   maintained route covers a request, the skill implements it from public game and RitsuLib APIs
   and reports it as working only after Build, Tier 1, and Tier 2 pass. Requests that need private
@@ -124,14 +124,14 @@ other attributed material retain their original ownership and terms.
 Skill the Spire 是一个免费的 Codex 插件。用户只需用自然语言描述创意，它就能协助确定
 设计、编写《杀戮尖塔 2》Mod、构建项目，并如实报告实际完成的验证。
 
-`0.1.0` 是第一个正式公开版本。生成的 Mod 面向《杀戮尖塔 2》`0.107.1`，并使用
-RitsuLib `0.5.11` 的创作/API 基线。
+`0.2.0` 生成的 Mod 面向《杀戮尖塔 2》`0.107.1`，并使用 RitsuLib `0.6.7` 的创作/API
+基线。第一个正式公开版本 `0.1.0` 基于 RitsuLib `0.5.11`。
 
 ### 环境要求
 
 - 通过 Steam 安装的《杀戮尖塔 2》稳定版 `0.107.1`。
-- 带 `0.107.1` Compat 变体的 RitsuLib `>= 0.5.11`。官方创意工坊条目为
-  `3747602295`。
+- 带 `0.107.1` Compat 变体的 RitsuLib `>= 0.6.7`。官方创意工坊条目为
+  `3747602295`；手动安装时须保留整个文件夹，不能只复制根目录 DLL。
 - .NET SDK 9 和 Python 3。
 - 支持插件的 Codex，或支持 portable Agent Skills 的其他 Agent。
 
@@ -207,9 +207,9 @@ Skill the Spire 支持新卡牌、遗物、药水、能力、关键词、附魔�
 
 ### 已知边界
 
-- 目标固定为 STS2 `0.107.1` 和 RitsuLib `0.5.11` API 基线。
+- 目标固定为 STS2 `0.107.1` 和 RitsuLib `0.6.7` API 基线。
 - 许多已支持形态仍需要对应生成 Mod 的 Build 和真机验证。
-- `0.1.0` 不把多人、设置、遥测、更新检查、广义自定义场景/材质/音频系统或一键发布到
+- `0.2.0` 不把多人、设置、遥测、更新检查、广义自定义场景/材质/音频系统或一键发布到
   创意工坊作为通用创作能力。
 - 生成代码不会临时发明 Harmony、反射、Publicizer 或 IL 路径。没有维护中的现成路径时，
   skill 会基于游戏和 RitsuLib 的公开 API 自行实现，并且只有在 Build、Tier 1、Tier 2 都通过

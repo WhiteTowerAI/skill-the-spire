@@ -10,7 +10,7 @@ below. This file only adds what is specific to running Claude Code here. When th
 
 Development and local testing now happen in Claude Code on this machine. The product ships both a
 Codex plugin and a Claude Code plugin, plus the portable Agent Skills under `skills/`. As of
-`0.1.0` only the Codex plugin (`plugins/skill-the-spire/.codex-plugin/`,
+`0.2.0` only the Codex plugin (`plugins/skill-the-spire/.codex-plugin/`,
 `.agents/plugins/marketplace.json`) and the portable skills exist. The Claude Code plugin is planned
 but not yet scheduled; start it only when the user asks. When it is built, add it through `publish.sh` and `scripts/publish/` so both plugins render
 from the same `games/sts2/skills/` source. Never fork the skill text by hand or edit a generated

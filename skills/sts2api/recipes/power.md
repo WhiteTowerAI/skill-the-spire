@@ -1,6 +1,6 @@
 # Recipe: Power
 
-> A custom Power under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile.
+> A custom Power under the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile.
 > When SPEC declares supplemental corner values, also read
 > `reference/extra-corner-labels.md`; it owns provider, bounds, refresh/removal, and headed
 > consumer proof.

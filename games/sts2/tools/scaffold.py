@@ -18,6 +18,7 @@ from ritsu_profile import (
     resolve_runtime_asset,
     resolve_runtime_compile_profile,
     validate_host_version,
+    validate_project_contract,
 )
 from vanilla_overrides import write_empty_project_manifest
 
@@ -83,13 +84,23 @@ def generate(
 
     # Programmatic maintainer fixtures may omit a host. The shipped CLI always resolves and
     # pins a real local runtime before calling generate().
-    compile_profile = compile_profile or RuntimeCompileProfile(
-        PROFILE.framework_version,
-        Path("<unresolved>"),
-        UNRESOLVED_COMPILE_HASH,
+    compile_version = compile_profile.version if compile_profile else PROFILE.framework_version
+    compile_digest = (
+        compile_profile.assembly_set_sha256 if compile_profile else UNRESOLVED_COMPILE_HASH
     )
-    if not re.fullmatch(r"[0-9A-Fa-f]{64}", compile_profile.assembly_sha256):
-        raise ValueError("compile runtime SHA-256 must be a 64-character hexadecimal digest")
+    ritsu_assemblies = [
+        (name, "$(RitsuLibRuntimeRoot)\\" + relative.replace("/", "\\"), relative)
+        for name, relative in PROFILE.assembly_relative_paths()
+    ]
+    ritsu_references = "\n".join(
+        f'    <Reference Include="{name}" HintPath="{hint}" Private="false" />'
+        for name, hint, _ in ritsu_assemblies
+    )
+    ritsu_reference_checks = "\n".join(
+        f"    <Error Condition=\"!Exists('{hint}')\" "
+        f'Text="The checked local RitsuLib runtime is missing {relative}." />'
+        for _, hint, relative in ritsu_assemblies
+    )
 
     sdk_root = f"skillthespire\\sdk\\Godot.NET.Sdk.{GODOT_SDK_VERSION}\\Sdk"
 
@@ -102,8 +113,8 @@ def generate(
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Sts2ApiCompat>{PROFILE.host_version}</Sts2ApiCompat>
     <RitsuLibProfile>{PROFILE.profile_id}</RitsuLibProfile>
-    <RitsuLibCompileVersion>{compile_profile.version}</RitsuLibCompileVersion>
-    <RitsuLibCompileAssemblySha256>{compile_profile.assembly_sha256.lower()}</RitsuLibCompileAssemblySha256>
+    <RitsuLibCompileVersion>{compile_version}</RitsuLibCompileVersion>
+    <RitsuLibCompileAssemblySetSha256>{compile_digest}</RitsuLibCompileAssemblySetSha256>
     <RitsuLibAutoCopy>false</RitsuLibAutoCopy>
     <RitsuLibDeployDir></RitsuLibDeployDir>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
@@ -118,7 +129,7 @@ def generate(
     <Reference Include="0Harmony" HintPath="$(Sts2DataDir)\\0Harmony.dll" Private="false" />
     <Reference Include="GodotSharp" HintPath="$(Sts2DataDir)\\GodotSharp.dll" Private="false" />
     <Reference Include="System.IO.Hashing" HintPath="$(Sts2DataDir)\\System.IO.Hashing.dll" Private="false" />
-    <Reference Include="STS2-RitsuLib" HintPath="$(RitsuLibCompileAssemblyPath)" Private="false" />
+{ritsu_references}
   </ItemGroup>
   <ItemGroup>
     <None Include="mod_manifest.json" />
@@ -133,7 +144,8 @@ def generate(
     <Error Condition="!Exists('$(Sts2DataDir)\\0Harmony.dll')" Text="The local STS2 data directory is missing 0Harmony.dll." />
     <Error Condition="!Exists('$(Sts2DataDir)\\GodotSharp.dll')" Text="The local STS2 data directory is missing GodotSharp.dll." />
     <Error Condition="!Exists('$(Sts2DataDir)\\System.IO.Hashing.dll')" Text="The local STS2 data directory is missing System.IO.Hashing.dll." />
-    <Error Condition="'$(RitsuLibCompileAssemblyPath)' == '' or !Exists('$(RitsuLibCompileAssemblyPath)')" Text="The checked local RitsuLib {compile_profile.version} Compat DLL was not resolved by build.py." />
+    <Error Condition="'$(RitsuLibRuntimeRoot)' == ''" Text="The checked local RitsuLib {compile_version} runtime folder was not resolved by build.py." />
+{ritsu_reference_checks}
   </Target>
   <Target Name="CopySkillTheSpireArtifacts" AfterTargets="Build">
     <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)" />
@@ -190,17 +202,20 @@ namespace {mod_name};
 public static partial class MainFile
 {{
     public const string ModId = "{mod_name}";
-    public const string CompileFrameworkVersion = "{compile_profile.version}";
+    public const string CompileFrameworkVersion = "{compile_version}";
     public static MegaCrit.Sts2.Core.Logging.Logger Logger {{ get; }} =
         RitsuLibFramework.CreateLogger(ModId);
 
     public static void Initialize()
     {{
         RegisterContent();
-        var frameworkAssembly = typeof(Const).Assembly;
+        // The per-host Runtime module reports the loaded version and compat target. RitsuLib's
+        // Const version string is a compile-time constant and would only echo the compile runtime.
+        var frameworkAssembly = typeof(RitsuLibFramework).Assembly;
+        var frameworkVersion = frameworkAssembly.GetName().Version?.ToString(3) ?? "<missing>";
         var compat = frameworkAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(attribute => attribute.Key == "Sts2ApiCompat")?.Value ?? "<missing>";
-        Logger.Info($"[T2MOD-SELFTEST] {{ModId}} loaded ok framework=RitsuLib frameworkVersion={{Const.Version}} compileFrameworkVersion={{CompileFrameworkVersion}} host={PROFILE.host_version} compat={{compat}}");
+        Logger.Info($"[T2MOD-SELFTEST] {{ModId}} loaded ok framework=RitsuLib frameworkVersion={{frameworkVersion}} compileFrameworkVersion={{CompileFrameworkVersion}} host={PROFILE.host_version} compat={{compat}}");
     }}
 
     static partial void RegisterContent();
@@ -215,7 +230,7 @@ public static partial class MainFile
         "min_game_version": PROFILE.host_version,
         "has_pck": False,
         "has_dll": True,
-        # The authoring contract targets the 0.5.11 public API floor. The local compile
+        # The authoring contract targets the pinned public API floor. The local compile
         # version is recorded in the project for reproducibility but must not raise the
         # player runtime minimum when the Mod uses only that baseline API.
         "dependencies": [{"id": PROFILE.runtime_mod_id, "min_version": PROFILE.framework_version}],
@@ -231,6 +246,47 @@ public static partial class MainFile
         write_empty_project_manifest(project_dir, mod_name)
 
 
+_COMPILE_VERSION_RE = re.compile(r"<RitsuLibCompileVersion>[^<]*</RitsuLibCompileVersion>")
+_COMPILE_DIGEST_RE = re.compile(
+    r"<RitsuLibCompileAssemblySetSha256>[^<]*</RitsuLibCompileAssemblySetSha256>"
+)
+_MAINFILE_VERSION_RE = re.compile(r'(CompileFrameworkVersion = ")[^"]*(";)')
+
+
+def repin_runtime(project_dir: Path, mod_name: str, compile_profile: RuntimeCompileProfile) -> str:
+    """Point an existing project at a newer checked local runtime under the same profile.
+
+    Only the recorded compile identity changes. The player-facing manifest floor, the
+    profile, and every authored source stay as they are.
+    """
+    validate_project_contract(project_dir, mod_name)
+    csproj = project_dir / f"{mod_name}.csproj"
+    mainfile = project_dir / f"{mod_name}Code" / "MainFile.cs"
+    csproj_text = csproj.read_text(encoding="utf-8")
+    main_text = mainfile.read_text(encoding="utf-8")
+    if len(_COMPILE_VERSION_RE.findall(csproj_text)) != 1 or len(
+        _COMPILE_DIGEST_RE.findall(csproj_text)
+    ) != 1:
+        raise ValueError(f"{csproj.name} does not hold exactly one compile runtime pin")
+    if len(_MAINFILE_VERSION_RE.findall(main_text)) != 1:
+        raise ValueError(f"{mainfile} does not hold exactly one CompileFrameworkVersion")
+    csproj_text = _COMPILE_VERSION_RE.sub(
+        f"<RitsuLibCompileVersion>{compile_profile.version}</RitsuLibCompileVersion>", csproj_text
+    )
+    csproj_text = _COMPILE_DIGEST_RE.sub(
+        "<RitsuLibCompileAssemblySetSha256>"
+        f"{compile_profile.assembly_set_sha256}</RitsuLibCompileAssemblySetSha256>",
+        csproj_text,
+    )
+    main_text = _MAINFILE_VERSION_RE.sub(
+        lambda match: f"{match.group(1)}{compile_profile.version}{match.group(2)}", main_text
+    )
+    _write(csproj, csproj_text)
+    _write(mainfile, main_text)
+    validate_project_contract(project_dir, mod_name)
+    return compile_profile.version
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Generate a minimal STS2/RitsuLib consumer project")
     parser.add_argument("--project-dir", required=True)
@@ -242,6 +298,12 @@ def main(argv: list[str]) -> int:
         default=None,
         help="Installed RitsuLib directory. Defaults to game-local mods, then official Workshop.",
     )
+    parser.add_argument(
+        "--repin-runtime",
+        action="store_true",
+        help="Re-pin an existing project to the currently installed RitsuLib runtime instead "
+        "of generating a new one.",
+    )
     args = parser.parse_args(argv)
     try:
         game_dir = Path(args.game_dir) if args.game_dir else default_game_dir()
@@ -252,17 +314,21 @@ def main(argv: list[str]) -> int:
             Path(args.runtime_dir) if args.runtime_dir else None,
         )
         compile_profile = resolve_runtime_compile_profile(runtime.path)
-        generate(
-            Path(args.project_dir),
-            args.mod_name,
-            args.author,
-            compile_profile=compile_profile,
-        )
+        if args.repin_runtime:
+            repin_runtime(Path(args.project_dir), args.mod_name, compile_profile)
+        else:
+            generate(
+                Path(args.project_dir),
+                args.mod_name,
+                args.author,
+                compile_profile=compile_profile,
+            )
     except (OSError, RitsuProfileError, ValueError) as exc:
         print(f"[scaffold] FAILED: {exc}", file=sys.stderr)
         return 2
+    action = "re-pinned" if args.repin_runtime else "generated"
     print(
-        f"[scaffold] generated {PROFILE.profile_id}, local runtime {compile_profile.version} "
+        f"[scaffold] {action} {PROFILE.profile_id}, local runtime {compile_profile.version} "
         f"-> {Path(args.project_dir).resolve()}"
     )
     return 0

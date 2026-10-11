@@ -1,7 +1,7 @@
 # Existing vanilla availability overrides
 
 Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. This route
-is pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. It changes fresh unlock filtering or
+is pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. It changes fresh unlock filtering or
 Card/Relic/Potion pool membership while preserving the existing model type, `ModelId`,
 save identity, and already-created instances.
 
@@ -81,7 +81,7 @@ Do not call `SetEpochRequirementsIgnoredForMod`; vanilla types have no generated
 to which that bypass should apply.
 
 Do not substitute the public `RequireAllCardsInPool`, `RequireAllRelicsInPool`, or
-`RequireAllPotionsInPool` content-pack helpers. Their pinned `0.5.11` implementation reads
+`RequireAllPotionsInPool` content-pack helpers. Their pinned `0.6.7` implementation reads
 `ModContentRegistry.GetRegisteredModelsInPool(context.ModId, poolType)`, so it intentionally
 sees only types registered to the current Mod. Making a vanilla type visible there would
 require the forbidden ownership-changing content registration. Whole-vanilla-pool gating

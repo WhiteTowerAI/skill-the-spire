@@ -36,6 +36,8 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from ritsu_profile import PROFILE
+
 
 SCHEMA = "skillthespire.sts2.model-hooks/v1"
 HOST_VERSION = "0.107.1"
@@ -545,7 +547,7 @@ def build_catalog() -> dict:
     catalog = {
         "schema": SCHEMA,
         "host_version": HOST_VERSION,
-        "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
+        "framework_profile": PROFILE.profile_id,
         "source": {
             "definition": (
                 "pinned STS2 0.107.1 decompile: Core/Models/AbstractModel.cs declarations, "

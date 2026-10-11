@@ -7,7 +7,7 @@ route and never overrides the supported capability graph.
 ## Evidence boundary
 
 This slice is pinned to STS2 `0.107.1` and the
-`ritsulib-0.5.11-sts2-0.107.1` profile. Exact starter inventories come from direct
+`ritsulib-0.6.7-sts2-0.107.1` profile. Exact starter inventories come from direct
 inspection of the five Character types in the pinned `sts2.dll` and are recorded in
 `design/catalogs/character-foundation-sts2-0.107.1.json`. Exact Card identities,
 localized titles, costs, tags, and values come from

@@ -24,6 +24,21 @@ class BuildTests(unittest.TestCase):
             )
             self.assertEqual(env, run.call_args.kwargs["env"])
 
+    def test_deployed_mod_rejects_any_ritsulib_module(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "project"
+            mods = Path(tmp) / "mods" / "Proof"
+            project.mkdir()
+            mods.mkdir(parents=True)
+            (project / "mod_manifest.json").write_text("{}\n", encoding="utf-8")
+            (mods / "mod_manifest.json").write_text("{}\n", encoding="utf-8")
+            (mods / "Proof.dll").write_bytes(b"MZ")
+            build.validate_deployed_artifacts(project, "Proof", mods)
+
+            (mods / "STS2-RitsuLib.Shared.dll").write_bytes(b"MZ")
+            with self.assertRaisesRegex(build.RitsuProfileError, "framework payload"):
+                build.validate_deployed_artifacts(project, "Proof", mods)
+
     def test_resource_manifest_must_match_authored_assets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

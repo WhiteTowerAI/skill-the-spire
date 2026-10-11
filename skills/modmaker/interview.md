@@ -102,7 +102,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
    A change to an existing vanilla model starts at `reference/vanilla-overrides.md`, which
    routes to the Card, visual, Ancient, availability, or non-Card override reference. Offer a
    closest **new** element only as a separate user choice, never as an automatic substitution.
-   **Fail closed on vanilla Card base-description replacement:** RitsuLib `0.5.11` exposes only
+   **Fail closed on vanilla Card base-description replacement:** RitsuLib `0.6.7` exposes only
    before/after description fragments. Explain that and pause before SPEC; continue only after
    the user explicitly accepts a before/after composition.
 

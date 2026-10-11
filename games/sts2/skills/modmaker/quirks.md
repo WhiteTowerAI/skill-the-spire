@@ -1,7 +1,7 @@
 # Known Quirks — STS2 / RitsuLib gotchas
 
 Non-obvious behaviors that silently break STS2 mods. Read before writing any C#.
-Confirmed against STS2 `0.107.1` and the RitsuLib `0.5.11` source/API profile. Hosted proof
+Confirmed against STS2 `0.107.1` and the RitsuLib `0.6.7` source/API profile. Hosted proof
 records may come from earlier compatible RitsuLib versions and retain their literal version.
 
 This file and `errors.md` split by *when you need them*, and the split is load-bearing: this

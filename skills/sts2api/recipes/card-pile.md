@@ -27,7 +27,7 @@ Resolve its qualified ID and dynamic type through `ModContentRegistry.GetQualifi
 `ModCardPileRegistry.GetPileType`. Move the exact live Card with awaited `CardPileCmd`; reject
 capacity, duplicate, or semantic failures before movement. Run-persistent piles use RitsuLib's
 save/restore route; do not serialize a second shadow list. ExtraHand manual play uses RitsuLib's
-native-Hand coordinator; do not reproduce or patch it.
+native play coordinator; do not reproduce or patch it.
 
 ## Completeness boundary
 
