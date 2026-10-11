@@ -109,6 +109,9 @@ term with nothing to hover.
 
 ## Author the element class
 
+Read `recipes/potion.md` for the skeleton and usage/target rules, and
+`reference/content-text-effects.md` when `text spans` are selected.
+
 **Potion** — add `<ModName>Code/Potions/<PotionName>.cs` and extend `ModPotionTemplate`:
 
 - Override the three abstract props: `Rarity`, `Usage` (`CombatOnly`/`AnyTime`),

@@ -134,6 +134,9 @@ Do not substitute another Player/Creature or turn a missing target into an all-e
 
 ## Author the element class
 
+Read `reference/mechanics.md` and `recipes/card.md` first, and `reference/content-text-effects.md`
+when `text spans` are selected.
+
 **Card** — add `<ModName>Code/Cards/<CardName>.cs` and extend `ModCardTemplate`:
 
 - Pass `cost, CardType, CardRarity, TargetType` to `base(...)`. A card that targets the

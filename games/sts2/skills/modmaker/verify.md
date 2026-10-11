@@ -118,143 +118,28 @@ run actually proves it.
   all present, with no `FAILED` or fresh-run error blocks → `[PASS] Tier-2 verified`.
   Multiline/global errors after this mod's load marker fail even when the mod name appears
   only in stack context (or not at all).
-- For a stateful effect, one matching proof line is not the whole scenario contract. The
-  harness must assert `N-1`, threshold, and reset/carry-over before it emits `selftest done`;
-  run-save state also asserts a real save/fill round trip. Use the multi-combat
-  variant in `reference/selftest-harness.md`.
-- For a multi-move enemy, one HP delta is likewise insufficient. See `surfaces/monster.md`
-  § Proof matrix.
-- For a Character Foundation, see `surfaces/character.md` § Proof matrix. Its opening
-  paragraph is the gate the final proof must clear before it is valid.
-- For selected secondary resources, see `reference/character-resource.md` and derive only the
-  declared resource/use/UI/lifecycle cases. For an ordered semantic buffer/dynamic output,
-  see `surfaces/character.md` § Proof matrix.
-- For advanced Card/Potion targeting, follow `reference/advanced-targeting.md`: require
-  the source-aware single Card, single Potion, and player-aware multi Card as distinct real
-  consumers. Assert zero/one/multiple candidates, exact affected creature IDs and deltas,
-  queued invalidation, unchanged rejected payment/Potion state, and normal Card result
-  pile. `potion + many` remains a known lifecycle limitation.
-- For a standalone/Card/Relic/Modifier Rest Site option, follow
-  `reference/rest-site-options.md` and the matching owner surface. Only the historical Relic route
-  is observed; every other ownership shape remains game-unobserved until that exact route runs.
-- For Affliction, Modifier, or Global Effect, follow its surface proof matrix. Registration,
-  direct method calls, or a model lookup do not prove attachment, selection, or dispatcher delivery.
-- For an Act, follow `surfaces/act.md`: only a real singleplayer transition through the selected
-  force/pool policy proves entry, and the run must reach every required room/content family.
-- For a new Ancient, follow `surfaces/ancient.md`: only the real Ancient room proves option,
-  dialogue, choice-history, and cleanup behavior. Existing-Ancient override proof is separate.
-- For a Reward, follow `surfaces/reward.md`: registration, direct serialization, or a direct method
-  surrogate does not prove the native screen, claim/refusal, insertion, linked set, or reload.
-- For a Card Pile, follow `surfaces/card-pile.md` and the complete API reference; static type
-  lookup does not prove movement, persistence, UI, manual play, or cleanup.
-- For Runtime UI, follow `surfaces/runtime-ui.md`: compilation, registry lookup, direct callbacks,
-  or constructed Godot nodes do not prove the real top bar, input router, Toast host, Capstone,
-  window, Catalog, attachment, focus, controller, layout, or cleanup behavior. Keep structured
-  host state separate from headed visual/input judgment.
-- For an Event, see `surfaces/event.md` § Proof matrix.
+- For every selected surface and capability, follow the surface page § Proof matrix and the
+  selected reference's proof section; derive only the cases SPEC selected. Registration, direct
+  method calls, model lookups, serialization, constructed Godot nodes, or a successful Build
+  never prove behavior.
 
-### Advanced-target headed acceptance
+### Headed review
 
-The structured state proof does not establish selection UI. In the same focused
-`CombatPlayer` fixture, the reviewer uses the dev console to grant each proof Card/Potion,
-then checks the exact matrix from `reference/advanced-targeting.md`: mouse and controller
-can select only legal single targets, cancel returns normally, zero legal targets cannot
-commit the action, multi-target reticles appear only on the resolved creatures, and no
-reticle remains after resolution. This is a manually observed result.
+Structured state does not prove images, layout, mouse/controller input, animation, audio, or
+subjective feel. When SPEC selects one of those, run the headed checks in the owning reference
+(for example `advanced-targeting.md`, `card-hand-emphasis.md`, `extra-corner-labels.md`,
+`rest-site-options.md`, `art-contract.md`, `character-presentation.md`,
+`character-combat-cues.md`, `ancient-dialogue.md`, `event-vfx.md`,
+`event-native-presentation.md`, or `forced-followup-event.md`).
 
-### Gameplay-readability headed acceptance
+Custom art stays unverified until the real headed game visibly shows it, not the fallback, in
+every consumer `art-contract.md` lists for that spec. Never infer it from a resource path, a
+`.pck` build, or a primary view alone; report behavior Tier 2 separately when a secondary view
+cannot be reached.
 
-For Card hand emphasis, see `surfaces/card.md` § Gameplay-readability headed acceptance.
-
-For Relic/Power extra labels, read `reference/extra-corner-labels.md`. Obtain the real hosts
-and drive Power zero/one plus Relic zero/one/bounded-multiple, plain/rich text, state
-refresh, removal, host cleanup, and combat-transition cleanup. Inspect crowded Relic and
-Power rows at common aspect ratios; the native main counter, icon, tooltip, and neighboring
-labels must remain unobstructed.
-
-When the human lead reserves this review, do not launch the game or take screenshots.
-Build/deploy the focused proof and provide exact console commands plus the matrix above.
-Record the lead's reported observations separately; any unrun Tier 1 or structured
-Tier 2 gate remains an explicit exception.
-
-### Rest Site option headed acceptance
-
-Do not launch this check automatically when the human lead has reserved headed review.
-Build and deploy the focused proof, then provide the exact dev-console route from
-`reference/rest-site-options.md`. The reviewer checks native localization, custom and
-fallback icon framing, gray state, mouse click, controller focus loop, native-option
-coexistence, failed-payment retention, successful list rebuild, and the declared second
-visit. Record the reported matrix separately from Tier 1 and strict Tier 2; an unrun
-structured harness remains an exception, never a pass.
-
-On the pinned host, `gold -N` is not a removal command: negative values are ignored. Use
-normal Shop spending before entering the Rest Site to establish the visible low-Gold state.
-A literal render-then-lower-Gold stale-button check needs a narrow proof driver that calls a
-public Gold command; if the human-led route omits it, record that omission explicitly.
-
-### Custom-art headed acceptance
-
-Tier 2 proves behavior, not custom art. When `SPEC.md` selected `generate`, keep the art
-claim separate until the real headed game visibly excludes the fallback in every independent
-consumer named by `reference/art-contract.md`. Record a screenshot or an equivalent node
-assertion plus visual inspection. In particular:
-
-- relic: exact 256x256 main/derived-outline pair in one real `NRelic`, plus the clicked
-  detail popup using the explicit big path;
-- power: status icon and big apply/expire notification;
-- enchantment: card tab and hover tooltip;
-- orb icon: smart tooltip and trigger flash (the Frost combat body remains fallback);
-- monster: static body in combat with unobscured intent/floor alignment, then the same
-  custom body in bestiary with title/move list and no crop;
-- event: the normal initial portrait behind the real option UI, then every selected
-  later-page portrait after its real option transition; missing optional page art must
-  visibly retain the current portrait. When `portrait_halo` is selected, also capture every
-  configured page after its UI fade, observe motion (or static Instant-mode behavior), and
-  prove the prior named root is freed across page/portrait/combat/finish transitions. A
-  near-black room-transition frame is not evidence.
-- forced follow-up Event: one settled target Event room reached through the real Unknown
-  MapPoint path. The title/description/completion option must be visibly usable; direct
-  `event <ID>` entry skips the forcing behavior and is not acceptance evidence.
-- native Event presentation: capture the settled `trial_noble` page, the real Card
-  acquisition preview with the acquired relic visible in the top bar, and the settled
-  result page. Assert preference-aware shake movement/return and preview/VFX cleanup in the
-  same `MapNode` run; a model delta without the native consumers is insufficient.
-- rest-site option: one real `NRestSiteButton` must show the packed 256x169 custom image
-  without crop/distortion, and a missing-art build must show the resolved native Heal icon
-  without missing-resource or UI errors. The dimensions and fallback consumer are verified;
-  each generated image still needs its own framing review.
-- character static presentation: the real character-select button/background, top-panel
-  icon, and static combat body must visibly use the normalized custom resources. Assert the
-  exact 132x195 portrait, 1920x1200 background, normal and outlined 88x88 top-panel
-  textures under one `NTopBarPortrait`, and 512x512 non-Spine
-  combat body in their real hosts. Full energy asserts one native counter with five 256x256
-  custom layers and its live number label. For the Character theme, automatically assert all
-  four exact color values, frame shader target/brightness, distinct existing icon paths,
-  the 256x256 large icon in a real hand card's `NCard.%EnergyIcon`, and the 24x24 path in a
-  real `EnergyIconsFormatter` card-description result. Enter real RestSite and Shop hosts and assert their
-  512x512 static bodies; the RitsuLib route requires no merchant prefix. Capture one settled
-  screenshot for selection, combat/top-panel/energy, RestSite, and Shop. Locked selection
-  and map marker require their own visible-host evidence. Do not infer any consumer from a
-  path or successful build. Read `reference/character-presentation.md`.
-- character combat cues: in real combat, observe Idle loop, Attack and damage-triggered Hit
-  one-shots returning to Idle, Dead reaching and holding frame 6, stable body/UI anchors,
-  and playback cleanup between combats. The harness asserts every 512x512 frame and shared
-  geometry. Separately omit one frame and require the static 512x512 combat body with no
-  playback node or surviving-frame flash. Read `reference/character-combat-cues.md`.
-- Character Ancient dialogue: first parse every selected catalog target through the actual
-  RitsuLib localization route and assert group count, line order/speaker, visit/repeat,
-  prompts, and Architect attackers. Enter one ordinary target through `ancient <ID>` and
-  enter Architect only through the final-act production `EnterNextAct()` path. In the
-  ordinary scene confirm the native name banner/background, Character and Ancient
-  icon/bubble direction/color, readable text/prompts, mouse/controller progression, and
-  restoration of the untouched native options after the last line. In Architect confirm
-  Character speech color, configured start/end attackers, every selected
-  `GetArchitectAttackVfx()` path, Proceed, and clean run completion. A fresh profile's
-  global first-visit-ever line correctly wins before Character dialogue. Normal Event rich
-  text, `event THE_ARCHITECT`, debug fallback, or a successful build is not a substitute.
-
-If a secondary view cannot be reached, report behavior Tier 2 separately and label the art
-unverified; do not infer it from a resource path, `.pck` build, or primary view.
+When the user performs the headed review, build and deploy the focused proof, give them the
+exact dev-console commands and the check matrix, and record their reported observations
+separately. An unrun Tier 1 or Tier 2 check remains an explicit exception, never a pass.
 
 **Read the harness's terminal marker first — it tells you which failure you have:**
 

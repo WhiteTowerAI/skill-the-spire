@@ -152,6 +152,10 @@ hover.
 
 ## Author the element class
 
+Read `recipes/relic.md` for the skeleton and trigger hooks, `reference/content-text-effects.md`
+when `text spans` are selected, and `reference/extra-corner-labels.md` when extra badges are
+selected.
+
 **Relic** — add `<ModName>Code/Relics/<RelicName>.cs`. Use the recipe skeleton, then:
 
 - Set `Rarity` from SPEC.
