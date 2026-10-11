@@ -1,6 +1,6 @@
 # Recipe: Relic
 
-> A copy-adaptable RitsuLib pattern for a single STS2 relic under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile. The skill fills
+> A copy-adaptable RitsuLib pattern for a single STS2 relic under the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile. The skill fills
 > only the effect logic; `ModRelicTemplate`, content-pack registration, localization, and
 > `RelicAssetProfile` are adapter-owned.
 >

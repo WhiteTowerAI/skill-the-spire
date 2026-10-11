@@ -1,6 +1,6 @@
 # Recipe: Custom Card Keyword
 
-> Under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile, RitsuLib mints a deterministic `CardKeyword` value and stores it in the
+> Under the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile, RitsuLib mints a deterministic `CardKeyword` value and stores it in the
 > game's native Card keyword set.
 
 ## Contract

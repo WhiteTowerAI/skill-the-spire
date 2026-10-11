@@ -13,9 +13,10 @@ make a run enter that Act. Every Act SPEC must also select exactly one supported
 Settle and write:
 
 - slot/index: first, second, or third chapter (`0`, `1`, or `2`);
-- entry policy: force, uniform pool with the existing chapter, or weighted pool;
-- eligibility, force priority, and tie behavior; for weighted entry, every candidate weight and
-  an explicit existing-chapter baseline weight;
+- entry policy: force (one Act or a weighted candidate set), uniform pool with the existing
+  chapter, or weighted pool with the existing chapter;
+- eligibility, force priority, and tie behavior; for weighted entry, every candidate weight
+  relative to the existing chapter's fixed weight 1;
 - map length and exact Unknown/Rest counts or deterministic formulas using the supplied map RNG;
 - nonempty weak, regular, elite, and Boss Encounter sets, Boss discovery order, ordinary Events,
   and Shared/Act-scoped Ancient relations;

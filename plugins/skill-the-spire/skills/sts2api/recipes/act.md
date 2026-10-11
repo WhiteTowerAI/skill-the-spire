@@ -26,16 +26,29 @@ Uniform selection includes the existing chapter automatically:
     <slot>, static ctx => !ctx.IsMultiplayer && <condition>)
 ```
 
-Weighted selection has no implicit existing-chapter baseline. Declare the pool first, then its
-baseline and candidates; non-finite or nonpositive weights are ignored:
+Weighted selection also includes the existing chapter, at fixed weight 1; only candidate weights
+are configurable. Express "the existing chapter is twice as likely" as candidate weight `0.5`.
+Declare the pool first, then its candidates; non-finite or nonpositive weights are ignored:
 
 ```csharp
 .ActEnterWeightedPool(<slot>)
-.ActEnterWeightedPoolBaseline(<slot>, static ctx => <positive double>)
 .ActEnterWeightedPoolCandidate<<ActName>>(
     <slot>,
     static ctx => !ctx.IsMultiplayer && <condition>,
     static ctx => <positive double>)
+```
+
+A Mod declares one mode per slot; another Mod's uniform and weighted contributions to the same
+slot coexist with it. To replace the slot with one of several Acts and never keep the existing
+chapter, use a force rule over a weighted candidate set:
+
+```csharp
+.ActEnterForcePool(
+    slotIndex: <slot>,
+    priority: <integer>,
+    eligibility: static ctx => !ctx.IsMultiplayer && <condition>,
+    (typeof(<ActA>), <positive double>),
+    (typeof(<ActB>), <positive double>))
 ```
 
 Higher force priority wins; equal priority uses earlier registration. The resolver supplies

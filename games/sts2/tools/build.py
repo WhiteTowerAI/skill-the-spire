@@ -168,6 +168,10 @@ def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path
         raise RitsuProfileError(f"deployed Mod is missing: {', '.join(missing)}")
     forbidden = (
         mods_dir / PROFILE.runtime_dll,
+        *(
+            mods_dir / f"{name}.dll"
+            for name in (*PROFILE.compat_assemblies, *PROFILE.shared_assemblies)
+        ),
         mods_dir / "BaseLib.dll",
         mods_dir / "BaseLib.pck",
     )
@@ -253,7 +257,7 @@ def main(argv: list[str]) -> int:
         "Release",
         "-p:RestoreIgnoreFailedSources=true",
         "-p:NuGetAudit=false",
-        f"-p:RitsuLibCompileAssemblyPath={compile_runtime.assembly_path}",
+        f"-p:RitsuLibRuntimeRoot={compile_runtime.root.resolve().as_posix()}",
     ]
     res = subprocess.run(
         build_command,

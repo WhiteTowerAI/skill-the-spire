@@ -1,6 +1,6 @@
 # Shared effect hooks - attack hits, healing, resources, and hand size
 
-Status: **authorable with RitsuLib 0.5.11 on STS2 0.107.1**. The public listener contracts and
+Status: **authorable with RitsuLib 0.6.7 on STS2 0.107.1**. The public listener contracts and
 their owner-capability dispatch compile against the pinned Compat assembly. New combinations are
 game-unobserved until their exact host scenario runs.
 

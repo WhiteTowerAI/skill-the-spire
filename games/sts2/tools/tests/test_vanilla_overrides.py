@@ -828,7 +828,7 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         catalog = overrides.load_catalog()
 
         self.assertEqual("0.107.1", catalog["host_version"])
-        self.assertEqual("0.5.11", catalog["framework_version"])
+        self.assertEqual("0.6.7", catalog["framework_version"])
         self.assertEqual(
             "a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52",
             catalog["assembly"]["sha256"],
@@ -837,7 +837,7 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         self.assertEqual(3883, catalog["assembly"]["model_namespace_type_count"])
         self.assertEqual(LOCALIZATION_LANGUAGES, catalog["localization_languages"])
         self.assertEqual(
-            "dcff6f57669c120b0bf1531c5e7d6b6b8e8b6b66eb085771dae297296c7b563c",
+            "c56bbcf3ac07f06e8644b43e536f6180c20b3d318f742ef7945a73eeb1f6791f",
             catalog["catalog_sha256"],
         )
         adapter_hashes = {
@@ -2656,7 +2656,7 @@ public static partial class MainFile
                     f"-p:Sts2Dir={host}",
                     f"-p:Sts2DataDir={data_dir}",
                     f"-p:ModsPath={mods_path.as_posix()}/",
-                    f"-p:RitsuLibCompileAssemblyPath={compile_profile.assembly_path}",
+                    f"-p:RitsuLibRuntimeRoot={compile_profile.root.resolve().as_posix()}",
                     "-p:RestoreIgnoreFailedSources=true",
                 ],
                 capture_output=True,

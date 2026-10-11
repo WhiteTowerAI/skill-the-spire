@@ -2,7 +2,7 @@
 
 This page owns the bounded route for a standalone Rest Site action or for a generated Card,
 Relic, or selected Modifier to add an action to the native Rest Site.
-The route is grounded against STS2 `0.107.1` and RitsuLib `0.5.11`.
+The route is grounded against STS2 `0.107.1` and RitsuLib `0.6.7`.
 
 
 ## Supported contract

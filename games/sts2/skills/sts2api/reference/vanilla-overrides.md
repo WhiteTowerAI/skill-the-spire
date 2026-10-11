@@ -27,8 +27,8 @@ The checked catalog is
 
 ```text
 host: 0.107.1
-framework: RitsuLib 0.5.11
-profile: ritsulib-0.5.11-sts2-0.107.1
+framework: RitsuLib 0.6.7
+profile: ritsulib-0.6.7-sts2-0.107.1
 sts2.dll SHA-256: a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52
 assembly MVID: 97f10687-c306-4798-ab75-8b9f23f34dfb
 runtime vanilla models: 1624
@@ -36,7 +36,7 @@ model-namespace metadata types: 3883
 models with stable title localization sources: 1580
 models with English and Simplified Chinese titles: 1537 each
 catalog languages: deu, eng, esp, fra, ita, jpn, kor, pol, ptb, rus, spa, tha, tur, zhs
-catalog SHA-256: dcff6f57669c120b0bf1531c5e7d6b6b8e8b6b66eb085771dae297296c7b563c
+catalog SHA-256: c56bbcf3ac07f06e8644b43e536f6180c20b3d318f742ef7945a73eeb1f6791f
 adapter targets: 20
 authorable route families: public-card-overrides,
   public-visual-overrides, existing-ancient-overrides,
@@ -98,9 +98,9 @@ Every new scaffold contains `skillthespire/vanilla-overrides.json`:
 {
   "schema": "skillthespire.sts2.vanilla-overrides/v1",
   "mod_id": "ExampleMod",
-  "profile": "ritsulib-0.5.11-sts2-0.107.1",
+  "profile": "ritsulib-0.6.7-sts2-0.107.1",
   "host_version": "0.107.1",
-  "catalog_sha256": "dcff6f57669c120b0bf1531c5e7d6b6b8e8b6b66eb085771dae297296c7b563c",
+  "catalog_sha256": "c56bbcf3ac07f06e8644b43e536f6180c20b3d318f742ef7945a73eeb1f6791f",
   "operations": []
 }
 ```

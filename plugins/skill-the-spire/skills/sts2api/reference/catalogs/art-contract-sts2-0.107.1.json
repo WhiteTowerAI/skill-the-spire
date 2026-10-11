@@ -1,7 +1,7 @@
 {
   "schema": "skillthespire.sts2.art-contract/v1",
   "host_version": "0.107.1",
-  "framework_profile": "ritsulib-0.5.11-sts2-0.107.1",
+  "framework_profile": "ritsulib-0.6.7-sts2-0.107.1",
   "source": {
     "definition": "gen_sprite.py SPECS and character_art.py CHARACTER_ART_BUNDLE",
     "projection": "python gen_sprite.py export-contract",
@@ -580,5 +580,5 @@
     "total_frames": 18,
     "generation_calls": 4
   },
-  "catalog_sha256": "36ee7383b24c8fef27ee0703f76468d5af6b2163fd6a952717b1fd1c559546e2"
+  "catalog_sha256": "6ebeff42f1dc241d16a9b138b932c0a008ef40630b6a44a3bd2405cbb8d2b01a"
 }

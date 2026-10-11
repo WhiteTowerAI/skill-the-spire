@@ -1,6 +1,6 @@
 # Model capabilities - attachable model-owned behavior
 
-Status: **authorable with RitsuLib 0.5.11 on STS2 0.107.1**. The public registration,
+Status: **authorable with RitsuLib 0.6.7 on STS2 0.107.1**. The public registration,
 default-attachment, typed owner/state, collection, clone, and owner-hook routes compile against the
 pinned Compat assembly. These generalized shapes remain game-unobserved until their exact real-host
 scenario runs.

@@ -1,6 +1,6 @@
 # Recipe: Character Foundation
 
-> For the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile. This recipe covers exactly-once registration,
+> For the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile. This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
 > the nine promoted static presentation profiles, and the bounded non-Spine
 > Idle/Attack/Hit/Dead combat cues. Selected resource/buffer/UI

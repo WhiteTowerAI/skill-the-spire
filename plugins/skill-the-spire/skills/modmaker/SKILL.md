@@ -13,9 +13,9 @@ real STS2 host. Contracts guide authoring; Build and host autotests establish re
 
 ## Non-negotiable boundaries
 
-- Target STS2 stable `0.107.1` and the RitsuLib Compat `0.5.11` authoring/API baseline.
-  Scaffold pins the checked local Compat DLL; runtime manifests require only
-  `STS2-RitsuLib >= 0.5.11`.
+- Target STS2 stable `0.107.1` and the RitsuLib `0.6.7` authoring/API baseline.
+  Scaffold pins the checked local compat and shared modules; runtime manifests require only
+  `STS2-RitsuLib >= 0.6.7`.
 - Prefer maintained public RitsuLib routes and reviewed Adapters in this pack. When none
   covers an accepted operation, implement it as a Mod-local route from pinned public APIs
   under `../sts2api/grounding.md` § Mod-local Routes, and verify it with Build,

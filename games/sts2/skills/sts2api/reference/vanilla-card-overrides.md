@@ -1,7 +1,7 @@
 # Public overrides for existing vanilla Cards
 
 Use this reference after `vanilla-overrides.md` resolves an exact `CARD.*` target. This route
-is pinned to STS2 `0.107.1` and RitsuLib `0.5.11`. It changes existing Card instances by
+is pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. It changes existing Card instances by
 attaching a registered default `CardCapability`; it does not register a second Card,
 mutate `ModelDb`, or generate Harmony, reflection, Publicizer, or IL.
 
@@ -46,7 +46,7 @@ read an existing owner variable in an effect. A newly declared variable belongs 
 capability, not to the vanilla Card's canonical `DynamicVars` collection.
 
 **Fail-closed intent rule:** replacing, removing, or hiding the original description body
-is a base-description replacement, not composition. RitsuLib `0.5.11` exposes no public
+is a base-description replacement, not composition. RitsuLib `0.6.7` exposes no public
 replacement placement for `ICardDescriptionContributor`. Tell the user that limitation and
 stop; never turn the request into a before/after fragment automatically. Only an explicit
 user choice to keep the original body and add text authorizes `compose`. Finalized values or

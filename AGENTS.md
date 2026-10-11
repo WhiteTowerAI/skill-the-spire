@@ -5,8 +5,9 @@ Repository guidance for coding agents working on Skill the Spire.
 ## Product
 
 Skill the Spire is a free Codex plugin that turns a non-programmer's description into a working
-game Mod. Slay the Spire 2 is the first supported game. Version `0.1.0` targets STS2 stable
-`0.107.1` and the RitsuLib `0.5.11` authoring/API baseline.
+game Mod. Slay the Spire 2 is the first supported game. Version `0.2.0` targets STS2 stable
+`0.107.1` and the RitsuLib `0.6.7` authoring/API baseline; `0.1.0` targeted RitsuLib
+`0.5.11`.
 
 The plugin ID, marketplace ID, and repository slug are `skill-the-spire`. The shipped skills are
 `modmaker` and `sts2api`. Use normal SemVer for later releases.
@@ -56,8 +57,9 @@ tokens, plugin metadata, and generated notices.
 
 ## Runtime Contract
 
-- Generated Mods target STS2 `0.107.1` and RitsuLib Compat `0.5.11`.
-- Runtime manifests require only `STS2-RitsuLib >= 0.5.11` while generated code stays inside that
+- Generated Mods target STS2 `0.107.1` and RitsuLib `0.6.7`, compiling against its
+  `compat/0.107.1/` and `shared/` modules.
+- Runtime manifests require only `STS2-RitsuLib >= 0.6.7` while generated code stays inside that
   API baseline.
 - Runtime discovery accepts a validated game-local install or official Workshop item
   `3747602295`, with exact host/Compat identity checks.

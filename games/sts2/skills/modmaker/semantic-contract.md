@@ -80,9 +80,9 @@ owner page, including routes and hard boundaries, as ordinary Markdown.
 
 ## Pinned implementation boundary
 
-Generated Mods target STS2 stable `0.107.1` and the RitsuLib Compat `0.5.11` authoring/API
-baseline. Scaffold pins the checked local Compat DLL used to compile; the runtime manifest floor
-remains `STS2-RitsuLib >= 0.5.11`. Generate only public RitsuLib routes or fixed reviewed
+Generated Mods target STS2 stable `0.107.1` and the RitsuLib `0.6.7` authoring/API baseline.
+Scaffold pins the checked local compat and shared modules used to compile; the runtime manifest
+floor remains `STS2-RitsuLib >= 0.6.7`. Generate only public RitsuLib routes or fixed reviewed
 Adapters already documented by the pack. Never derive Harmony, reflection, Publicizer, or IL
 from the prompt.
 

@@ -1,6 +1,6 @@
 # Recipe: Card
 
-> A copy-adaptable RitsuLib pattern for a single STS2 card under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile. Cards
+> A copy-adaptable RitsuLib pattern for a single STS2 card under the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile. Cards
 > lean harder on `reference/mechanics.md` than relics/potions do (scaling numbers,
 > upgrades, SmartFormat descriptions) — **read that first.** The skill fills only the
 > **effect logic**; `ModCardTemplate`, content-pack registration, localization, and

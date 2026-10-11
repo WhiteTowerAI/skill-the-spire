@@ -48,7 +48,7 @@ proof. Close every persistent/owned tracked Toast on cancellation and owner clea
 ## Runtime hotkey
 
 The pinned signature takes `RuntimeHotkeyOptions`; the old guide's direct `id:` and `title:` named
-arguments do not compile against `0.5.11`.
+arguments do not compile against `0.6.7`.
 
 ```csharp
 IRuntimeHotkeyHandle handle = RuntimeHotkeyService.Register(

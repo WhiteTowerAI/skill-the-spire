@@ -8,20 +8,33 @@ switching to an old template.
 
 ### Generated project is missing a local compile asset
 
-- **Cause:** the bundled Godot SDK files, one local game DLL, or the scaffold-pinned
-  RitsuLib Compat DLL is missing; the project may also have reintroduced a framework
-  `PackageReference`.
+- **Cause:** the bundled Godot SDK files, one local game DLL, or one of the five
+  scaffold-pinned RitsuLib modules under `compat/0.107.1/` or `shared/` is missing; the
+  project may also have reintroduced a framework `PackageReference`.
 - **Fix:** regenerate with `scaffold.py`, restore the checked local host/runtime install,
   and retain `Sts2ApiCompat`, `RitsuLibAutoCopy=false`, local assembly references, and the
   single runtime manifest dependency. Do not add a NuGet framework package as a repair.
 
-### Runtime asset does not contain the `0.107.1` compat DLL/marker
+### Runtime asset does not contain the `0.107.1` compat variant
 
-- **Cause:** RitsuLib is missing, another host variant was installed, or its variant
-  manifest/hash does not match.
-- **Fix:** install RitsuLib `>=0.5.11` with `lib/0.107.1/STS2-RitsuLib.dll`, then scaffold or
-  explicitly migrate the project runtime profile. A release zip must be installed before it
-  can compile a Mod.
+- **Cause:** RitsuLib is missing or older than 0.6.0 (variant manifest schema is not 2),
+  another host variant was installed, only the root loader DLL was copied, or a module hash
+  does not match `ritsulib-variants.manifest`.
+- **Fix:** install the complete RitsuLib `>=0.6.7` folder with `compat/0.107.1/`, `shared/`,
+  and `assets.zip`, preferably by subscribing to Workshop item `3747602295`. A release zip
+  must be installed before it can compile a Mod.
+
+### `local RitsuLib runtime ... differs from this project's pinned compile profile`
+
+- **Cause:** the installed RitsuLib changed after scaffold, usually a Workshop auto-update.
+- **Fix:** read the RitsuLib release notes between the two versions, then run
+  `scaffold.py --repin-runtime` on the existing project (see `modmaker/scaffold.md`) and rerun
+  Build, Tier 1, and Tier 2. Do not edit the pin by hand.
+
+### `this project was scaffolded for the single-DLL RitsuLib runtime before 0.6.0`
+
+- **Cause:** the project predates the RitsuLib 0.6 module split and references one DLL.
+- **Fix:** scaffold a new project and move the authored sources, resources, and SPEC across.
 
 ### Host version is not `0.107.1`
 

@@ -14,15 +14,17 @@ Before MSBuild, the tool verifies:
 - the generated project has no framework `PackageReference`, uses the bundled
   `Godot.NET.Sdk 4.5.1`, and references local STS2/RitsuLib assemblies;
 - no BaseLib/Alchyr dependency appears in the project or manifest;
-- the manifest keeps the authoring API floor `STS2-RitsuLib >= 0.5.11` and targets host
+- the manifest keeps the authoring API floor `STS2-RitsuLib >= 0.6.7` and targets host
   `0.107.1` even when the scaffold-pinned local compile runtime is newer;
 - `has_pck` is `true` exactly when the authored Mod resource tree is non-empty;
 - when localization tables exist, require both `eng` and `zhs` directories with
   identical table names, keys, and SmartFormat tokens plus nonempty localized values;
 - the installed host's `release_info.json` is stable `0.107.1`;
 - the game `mods/STS2-RitsuLib` directory or official Steam Workshop item `3747602295`
-  contains the scaffold-pinned local RitsuLib version with a matching direct compat runtime
-  or `lib/0.107.1/STS2-RitsuLib.dll` variant, marker, and manifest hash;
+  is a complete RitsuLib 0.6 runtime folder: loader `STS2-RitsuLib.dll`, schema-2
+  `ritsulib-variants.manifest`, a `compat/0.107.1/` variant with its marker, and the
+  `shared/` modules, with every module hash matching the manifest and the whole compile
+  assembly set matching the scaffold pin;
 - any generated Character `ancients.json` uses the pinned vanilla target catalog,
   contiguous dialogue/line structure, valid visit/repeat/Architect metadata, matching
   Character entries, and identical keys across `eng` and `zhs`;
@@ -45,8 +47,8 @@ Before MSBuild, the tool verifies:
 The skill supplies the small `Godot.NET.Sdk 4.5.1` import files. `GodotSharp`,
 `System.IO.Hashing`, STS2, Harmony, and RitsuLib resolve from the checked local game/runtime
 installation. Build never downloads a framework package and never substitutes a newer local
-RitsuLib version for the one scaffold recorded; an explicit runtime-profile migration is
-required after a runtime upgrade.
+RitsuLib version for the one scaffold recorded. After a Workshop update, re-pin explicitly
+with `scaffold.py --repin-runtime` (see `scaffold.md`).
 
 After the build it rejects a restore that reintroduced a framework package, copies the Mod's
 DLL/manifest/PDB through the generated MSBuild target, packs

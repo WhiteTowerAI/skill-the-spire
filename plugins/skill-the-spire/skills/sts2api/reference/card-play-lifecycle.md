@@ -1,6 +1,6 @@
 # Card play lifecycle - before/after play, free play, transforms, and type text
 
-Status: **authorable with RitsuLib 0.5.11 on STS2 0.107.1**. The public Card play, free-play,
+Status: **authorable with RitsuLib 0.6.7 on STS2 0.107.1**. The public Card play, free-play,
 transform, carry-over, and type-text routes compile against the pinned Compat assembly. New
 generated combinations remain game-unobserved until their exact real-host scenario runs.
 
