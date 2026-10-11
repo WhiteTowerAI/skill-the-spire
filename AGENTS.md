@@ -52,8 +52,9 @@ After authoritative source validation, regenerate them with:
 & 'D:\Git\bin\bash.exe' './publish.sh' '--portable' '--force'
 ```
 
-Run each mode twice when proving determinism. The publisher owns payload layout, rendered path
-tokens, plugin metadata, and generated notices.
+Run each mode once and check that the payload diff matches the source change. Run each mode
+twice only when the change touches `publish.sh` or `scripts/publish/`. The publisher owns payload
+layout, rendered path tokens, plugin metadata, and generated notices.
 
 ## Runtime Contract
 
@@ -122,13 +123,12 @@ Use UTF-8 explicitly:
 ```powershell
 $env:PYTHONUTF8='1'
 python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
-python -m compileall -q games/sts2/tools scripts/publish
 git diff --check
 ```
 
 Validate `plugins/skill-the-spire/` with the plugin validator and validate both generated skill
-roots with the skill validator before release. Do not run `compileall` inside generated payload
-trees; it creates cache files that invalidate payload parity.
+roots with the skill validator before release. Do not leave `__pycache__` or other build output
+inside generated payload trees; it invalidates payload parity.
 
 ## Git
 

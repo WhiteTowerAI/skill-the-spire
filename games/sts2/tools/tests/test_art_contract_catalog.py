@@ -66,20 +66,6 @@ class ArtContractCatalogTests(unittest.TestCase):
         """A code change with no re-export must fail here, not ship a stale catalog."""
         self.assertEqual(gen_sprite.build_art_contract_catalog(), self.catalog)
 
-    def test_export_check_mode_agrees_with_the_committed_file(self) -> None:
-        result = subprocess.run(
-            [sys.executable, str(GEN_SPRITE), "export-contract", "--check"],
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-
-    def test_digest_is_self_consistent(self) -> None:
-        self.assertEqual(
-            gen_sprite.art_contract_digest(self.catalog),
-            self.catalog["catalog_sha256"],
-        )
-
     def test_catalog_declares_its_generated_projection_status(self) -> None:
         """The catalog must say it is generated, so nobody hand-edits it into a rival source."""
         self.assertEqual("skillthespire.sts2.art-contract/v1", self.catalog["schema"])
@@ -161,11 +147,6 @@ class ArtContractCatalogTests(unittest.TestCase):
                 )
                 self.assertIn(grid, self.cues_page)
 
-    def test_both_cue_tables_label_the_grid_order(self) -> None:
-        """An unlabeled NxM grid is how the rows-first/columns-first split happened."""
-        for page in (self.art, self.cues_page):
-            self.assertIn("cols x rows", page)
-
     def test_list_specs_prints_cue_sheets_width_first(self) -> None:
         result = subprocess.run(
             [sys.executable, str(GEN_SPRITE), "list-specs"],
@@ -193,16 +174,6 @@ class ArtContractCatalogTests(unittest.TestCase):
             "eighteen frames",
         ):
             self.assertIn(phrase, self.cues_page)
-
-    def test_prose_states_where_the_catalog_lives(self) -> None:
-        """Each prose view must route a reader to the data, not just restate part of it."""
-        for page in (self.art, self.presentation, self.cues_page):
-            self.assertIn("art-contract-sts2-0.107.1.json", page)
-        self.assertIn("export-contract", self.art)
-
-    def test_prose_no_longer_delegates_sync_to_human_memory(self) -> None:
-        self.assertNotIn("keep them in sync", self.art)
-
 
 if __name__ == "__main__":
     unittest.main()

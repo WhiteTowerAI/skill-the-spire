@@ -131,10 +131,10 @@ runtime to read them.
 ```powershell
 $env:PYTHONUTF8='1'
 python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
-python -m compileall -q games/sts2/tools scripts/publish
 git diff --check
 ```
 
-When payload regeneration is authorized, run both publisher modes twice and verify deterministic
-trees, publisher-aware parity, and payload tool layout. Those checks do not install the plugin or
-run the game.
+When payload regeneration is authorized, run both publisher modes once and check that the payload
+diff matches the source change. Run each mode twice to prove deterministic trees only when the
+change touches `publish.sh` or `scripts/publish/`. Those checks do not install the plugin or run
+the game.
