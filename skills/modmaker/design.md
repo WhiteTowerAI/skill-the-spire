@@ -44,8 +44,7 @@ implementation can be grounded, record it as a Mod-local public-API implementati
 to SPEC. Stop only when public grounding fails or the implementation requires prohibited
 techniques.
 
-Existing projects may keep old DESIGN metadata. Read the human meaning, ignore the old blocks,
-and do not rewrite an unchanged project merely to match this format. A project with SPEC but no
+A project with SPEC but no
 DESIGN may resume from its existing artifacts; create a compact DESIGN only when the user asks
 for a design change or the current intent cannot otherwise be recovered.
 

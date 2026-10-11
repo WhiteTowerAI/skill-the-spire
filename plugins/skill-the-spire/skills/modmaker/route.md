@@ -2,8 +2,7 @@
 
 Read project state before asking questions. `DESIGN.md` holds accepted intent and scope,
 `SPEC.md` is the current implementation work order, `PLAN.md` is only a stage checklist, and
-`MEMORY.md` holds technical discoveries and attempt history. Old machine-readable metadata in
-any of these files is inert legacy text: do not validate, migrate, or recreate it.
+`MEMORY.md` holds technical discoveries and attempt history.
 
 Choose the smallest useful path and state it briefly:
 

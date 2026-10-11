@@ -71,9 +71,7 @@ baseline even when the local compile runtime is newer. If the installed runtime 
 scaffold, `build.py` stops and requires an explicit runtime-profile migration; it never silently
 changes either recorded identity or the player's minimum dependency.
 
-New projects use the canonical `mod_manifest.json` name. A project created by an older
-skill-the-spire scaffold may retain its single `<ModName>.json`; `build.py` accepts that legacy form
-but fails when both names exist, because choosing one silently would make deployment ambiguous.
+The Mod manifest is always named `mod_manifest.json`; `build.py` rejects any other name.
 
 When authoring adds localization, images, or scenes, place them under
 `<project-dir>/<ModName>/` and set `has_pck=true`. `build.py` packs that resource tree with
@@ -86,8 +84,7 @@ visual operations in `vanilla-visual-overrides.md` and/or the existing-Ancient
 option/branch operations in `vanilla-ancient-overrides.md` and/or availability
 operations in `vanilla-availability-overrides.md`; leave it empty for new content
 and unlisted operations. Put every selected visual resource under
-`<project-dir>/<ModName>/` and keep its required/optional flag literal. Legacy projects may
-remain without this file.
+`<project-dir>/<ModName>/` and keep its required/optional flag literal.
 
 ## 3. Record state
 

@@ -144,26 +144,6 @@ def validate_resource_manifest(project_dir: Path, mod_name: str) -> str:
 # depth and parses EVERY `.json` it finds as a Mod manifest, logging a load error for each
 # one that has no `id`. A deployed Mod therefore contains exactly one loose `.json`: its own
 # manifest. Localization and other authored JSON ship inside the `.pck`, never loose.
-STALE_DEPLOYED_SIDECARS = (Path("skillthespire/vanilla-overrides.json"),)
-
-
-def prune_stale_deployed_sidecars(mods_dir: Path) -> list[str]:
-    """Remove non-manifest `.json` files earlier skill-the-spire builds deployed by mistake."""
-    removed: list[str] = []
-    for relative in STALE_DEPLOYED_SIDECARS:
-        stale = mods_dir / relative
-        if not stale.is_file():
-            continue
-        stale.unlink()
-        removed.append(relative.as_posix())
-        parent = stale.parent
-        if parent != mods_dir and not any(parent.iterdir()):
-            parent.rmdir()
-    if removed:
-        print(f"[build] removed stale deployed sidecar(s): {', '.join(removed)}")
-    return removed
-
-
 def validate_no_phantom_manifests(mods_dir: Path, deployed_manifest: Path) -> None:
     """Fail when the deployed tree holds a `.json` the game would misread as a manifest."""
     phantoms = sorted(
@@ -196,7 +176,6 @@ def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path
         raise RitsuProfileError(
             f"generated Mod directory contains a framework payload: {', '.join(present)}"
         )
-    prune_stale_deployed_sidecars(mods_dir)
     validate_no_phantom_manifests(mods_dir, deployed_manifest)
 
 

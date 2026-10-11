@@ -39,7 +39,6 @@ observed, which is not something the contract holds.
 | rest body, 512x512 | `Scenes.RestSiteAnimPath` | `NRestSiteCharacter` | visible raw-scene consumer |
 | merchant body, 512x512 | `Scenes.MerchantAnimPath` | `NMerchantCharacter` | visible raw-scene consumer |
 | full energy, five 256x256 layers | `Scenes.EnergyCounterPath` | one native `NEnergyCounter` | all five layers visible |
-| legacy shared energy, 24x24 | both pool icon getters | real hand `NCard.EnergyIcon` | superseded by the promoted split route |
 | large energy, 256x256 | pool `BigEnergyIconPath` | `EnergyIconHelper.GetPath` -> real hand `NCard.%EnergyIcon` | visible and headed-review-proven |
 | text energy, 24x24 | pool `TextEnergyIconPath` | `EnergyIconsFormatter` rich-text image | visible and headed-review-proven |
 

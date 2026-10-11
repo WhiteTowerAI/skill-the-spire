@@ -2686,11 +2686,11 @@ public static partial class MainFile
             summary = overrides.validate_project_override_manifest(project, "Proof")
             self.assertIn("operations=0", summary)
 
-    def test_legacy_projects_remain_valid_without_an_override_manifest(self) -> None:
+    def test_projects_without_an_override_manifest_have_no_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             self.assertIn(
-                "legacy/non-override",
-                overrides.validate_project_override_manifest(Path(tmp), "Legacy"),
+                "no vanilla overrides",
+                overrides.validate_project_override_manifest(Path(tmp), "Proof"),
             )
 
     def test_build_stops_before_msbuild_on_an_invalid_override_manifest(self) -> None:
@@ -2728,8 +2728,8 @@ public static partial class MainFile
         source_override = project / overrides.MANIFEST_RELATIVE_PATH
         source_override.parent.mkdir(parents=True)
         deployed.mkdir(parents=True)
-        (project / "Proof.json").write_text("{}\n", encoding="utf-8")
-        (deployed / "Proof.json").write_text("{}\n", encoding="utf-8")
+        (project / "mod_manifest.json").write_text("{}\n", encoding="utf-8")
+        (deployed / "mod_manifest.json").write_text("{}\n", encoding="utf-8")
         (deployed / "Proof.dll").write_bytes(b"proof")
         source_override.write_text('{"source": true}\n', encoding="utf-8")
         return project, deployed
@@ -2743,20 +2743,6 @@ public static partial class MainFile
 
             self.assertTrue((project / overrides.MANIFEST_RELATIVE_PATH).is_file())
             self.assertFalse((deployed / overrides.MANIFEST_RELATIVE_PATH).exists())
-
-    def test_build_prunes_a_stale_deployed_override_sidecar(self) -> None:
-        """An existing project deployed by an older build self-heals on the next build."""
-        with tempfile.TemporaryDirectory() as tmp:
-            project, deployed = self._deployed_proof_tree(Path(tmp))
-            stale = deployed / overrides.MANIFEST_RELATIVE_PATH
-            stale.parent.mkdir(parents=True)
-            stale.write_text('{"source": true}\n', encoding="utf-8")
-
-            build.validate_deployed_artifacts(project, "Proof", deployed)
-
-            self.assertFalse(stale.exists())
-            self.assertFalse(stale.parent.exists())
-            self.assertTrue((deployed / "Proof.json").is_file())
 
     def test_any_other_deployed_json_fails_the_build(self) -> None:
         """One rule, not one exception: only the Mod's own manifest may be loose JSON."""

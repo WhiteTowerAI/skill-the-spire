@@ -165,7 +165,3 @@ Create or update a plain `PLAN.md` checklist:
 
 `MEMORY.md` records technical discoveries, chosen IDs/keys, actual commands/results, and repair
 attempts. Do not duplicate DESIGN or SPEC state there.
-
-Existing projects may retain old metadata. Ignore it and resume from the human-readable current
-meaning. Do not force migration unless the user requests a revision; a revised operation adopts
-this format only for the affected current work.
