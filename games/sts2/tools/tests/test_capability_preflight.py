@@ -33,6 +33,17 @@ class CapabilityPreflightTests(unittest.TestCase):
             preflight.validate_spec_text(spec("- Support: recipes/not-real.md"))
         self.assertIn("does not exist", str(caught.exception))
 
+    def test_mod_local_route_line_is_ignored_beside_maintained_routes(self) -> None:
+        self.assertEqual(
+            (1, 0, False),
+            preflight.validate_spec_text(
+                spec(
+                    "- Support: recipes/card.md",
+                    "- Mod-local: example operation - ExampleOwner.ExampleMember",
+                )
+            ),
+        )
+
     def test_markdown_anchor_is_not_a_preflight_contract(self) -> None:
         with self.assertRaises(preflight.CapabilityPreflightError) as caught:
             preflight.validate_spec_text(spec("- Support: recipes/card.md#some-heading"))

@@ -4,9 +4,10 @@ Everything the pipeline needs for one Card, in one place: the SPEC fields it mus
 declare, the element class the author writes, and the proof its verification owes. Read
 this page at the `spec.md`, `author.md`, and `verify.md` stages when `surface: card`.
 
-Shared declarations that several surfaces use — advanced targeting, stateful mechanics,
-interaction contracts, the art plan — stay in `spec.md`. Shared proof machinery stays in
-`verify.md`.
+Shared declarations live in their own references: advanced targeting in
+`reference/advanced-targeting.md`, bounded state in `reference/stateful-mechanics.md`, hook
+participation in `reference/model-hook-participation.md`, and art in `reference/art-contract.md`.
+Shared proof machinery stays in `verify.md`.
 
 
 ## SPEC fields
@@ -45,7 +46,7 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
 - **effects**:
   - trigger: play
   - target: one enemy | all enemies | self
-  - advanced target: none | use the shared declaration below
+  - advanced target: none | see `reference/advanced-targeting.md`
   - native costs:
     - energy: fixed <nonnegative integer> | X
       upgrade: same | fixed delta <integer>
@@ -61,14 +62,14 @@ interaction contracts, the art plan — stay in `spec.md`. Shared proof machiner
       applied typed Power>; formula <one deterministic expression>; inputs <complete list>;
       domain <integer [min,max]>; upgrade <same | exact change>; evaluation <before play |
       after normal payment and move>
-- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+- **hook participation**: none | one or more; see `reference/model-hook-participation.md`
   - A Card reaches the widest set (66 of 68), but **which** it reaches depends on where it is:
     a deck Card always receives run-scope hooks, and it receives combat-scope hooks only while
     it sits in a combat pile. So a rule meant to hold all combat long must not live on a Card
     that leaves the piles. `Owner` is a `Player`; guard against `Owner.Creature` and
     `Owner.Osty` where an Osty can act. This is separate from `effects`: participation applies
     while the Card is held or in the deck, not when it is played.
-- **state**: none | see the stateful-mechanic contract below
+- **state**: none | see `reference/stateful-mechanics.md`
 - **owned Rest Site option**: none | one
   - owner: card
   - owner multiplicity: exactly one in the owner's deck

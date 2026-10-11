@@ -306,7 +306,8 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      groups also record start/end attackers as None, Player, Architect, or Both. Explain
      that the native global first-visit introduction wins on a never-visited profile.
      Ask only for missing semantics and offer the verified defaults below. Any other
-     Harmony/Publicizer seam stays an explicit pack gap; do not silently flatten it.
+     request that needs a Harmony/Publicizer seam is unsupported; say so and do not silently
+     flatten it.
 3. **Effect**: what exactly happens, in game terms (energy, damage, block, draw,
    heal, a power/status). Get numbers if they matter ("double", "gain 2", "20 damage").
    For a card, also ask what **upgrading** it should improve if not obvious (default:

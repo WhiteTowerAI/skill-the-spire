@@ -26,8 +26,8 @@ SPEC must record:
 | output | one real mutable card added with `AddGeneratedCardToCombat` |
 | scenario | destinations, order, overflow, UI, output/history/effect, and combat reset |
 
-If the user wants physical played cards to remain on screen, report a pack gap. A retained
-zone needs its own grounded container, stable layout, animation, inspection, and cleanup.
+If the user wants physical played cards to remain on screen, that is outside this route. Retained
+played-Card zones are a known unsupported area; report that instead of approximating it here.
 Do not improvise it with `Vector2.Zero`, hidden card views, or `skipVisuals: true`.
 
 ## Combat-attached semantic state
@@ -149,4 +149,5 @@ RitsuLib runtime dependency; historical proof values and markers are not reusabl
 - custom draw lifecycle or hand replacement;
 - cross-player or shared multiplayer buffers.
 
-Preserve these as explicit pack gaps until a real player-facing implementation is grounded.
+These are outside this route; do not stretch it to approximate them. Retained Card zones are a
+known unsupported area; other requests follow `grounding.md` § Mod-local Routes.

@@ -77,8 +77,11 @@ tokens, plugin metadata, and generated notices.
 - `game-observed`: the exact shape ran successfully in the real host.
 
 Missing runtime proof means unobserved, not automatically unsupported. A confirmed public/API or
-lifecycle problem is recorded as the smallest exact limitation. A missing or broken maintained
-route blocks consumer authoring until repaired or narrowed.
+lifecycle problem is recorded as the smallest exact limitation. A missing maintained route does
+not block authoring: the generated Mod implements the operation as a Mod-local route from pinned
+public APIs (`sts2api/grounding.md` § Mod-local Routes) and must pass Build, Tier 1, Tier 2, and
+any needed headed review before it is reported as working. A broken maintained route is a pack
+defect to repair.
 
 ## Localization And Art
 

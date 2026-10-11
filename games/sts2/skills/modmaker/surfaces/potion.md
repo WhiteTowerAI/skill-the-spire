@@ -4,8 +4,9 @@ Everything the pipeline needs for one Potion, in one place: the SPEC fields it m
 declare, the element class the author writes, and the proof its verification owes. Read
 this page at the `spec.md`, `author.md`, and `verify.md` stages when `surface: potion`.
 
-Shared declarations that several surfaces use — advanced targeting, interaction contracts,
-the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
+Shared declarations live in their own references: advanced targeting in
+`reference/advanced-targeting.md`, hook participation in `reference/model-hook-participation.md`,
+and art in `reference/art-contract.md`. Shared proof machinery stays in `verify.md`.
 
 ## SPEC fields
 
@@ -37,10 +38,10 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
   - trigger: use
   - usage: CombatOnly | AnyTime | Automatic
   - target: self | one enemy | all enemies
-  - advanced target: none | use the shared declaration in `spec.md`
+  - advanced target: none | see `reference/advanced-targeting.md`
   - sequence: <precise game-terms effect with exact numbers>
   - scaling: <named values and bounds, or none>
-- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+- **hook participation**: none | one or more; see `reference/model-hook-participation.md`
   - A Potion in the belt reaches the same wide set as a Relic (66 of 68), run-scope and
     combat-scope, and it participates while held — not only when used. `Owner` is a `Player`, so
     a subject guard compares against `Owner.Creature` and `Owner.Osty` where an Osty can act.

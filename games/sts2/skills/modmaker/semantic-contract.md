@@ -44,7 +44,10 @@ shape, and the single maintained route:
 - Hook: modify_damage_multiplicative | surface: power | shape: value | route: reference/model-hook-participation.md
 ```
 
-The thin preflight checks only that each route exists and that each Hook is cataloged, declared
+An operation with no maintained route adds one `- Mod-local: <operation> - <public
+Owner.Member list>` line, grounded under `${STS2API_SKILL_DIR}/grounding.md` § Mod-local Routes.
+
+The thin preflight ignores `Mod-local` lines and checks only that each route exists and that each Hook is cataloged, declared
 by its route, uses the catalog shape, is not owned by another route, and can reach the selected
 surface. Do not add Markdown anchors: headings are documentation navigation, not capability
 identity. An ordinary operation needs no invented capability ID.

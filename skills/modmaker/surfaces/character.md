@@ -111,7 +111,7 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
       independent state delta
     - every pool card whose mechanic SPEC describes behaviorally is played and asserted
   - boundary cases: Shop-pool card slot fill; art consumer assertions when profiles are selected
-- **advanced mechanic**: none | <selected verified capability or explicit pack gap>
+- **advanced mechanic**: none | <maintained route or Mod-local route>
 - **Ancient dialogue**: none | one block per cataloged vanilla target
   - target: <natural-language Ancient name; adapter resolves the pinned entry>
   - groups:
@@ -135,13 +135,10 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   zero-based visit metadata from the semantic groups, and framework diagnostic record
 ```
 
-Do not add a manual registration line or invent a nonstandard energy override. If
-`advanced mechanic` is not `none`, also record the capability-module envelope in `spec.md`.
-Author it only when the named semantic capability has its own recipe in the shipped pack;
-API support alone does not provide missing runtime instructions. The current implemented
-public framework routes are exactly `reference/character-resource.md` and
-`reference/ordered-card-buffer.md`. If neither can express the mechanic, mark it unsupported
-and report a pack gap.
+Do not add a manual registration line or invent a nonstandard energy override. The maintained
+routes for an `advanced mechanic` are `reference/character-resource.md` and
+`reference/ordered-card-buffer.md`. If neither can express the mechanic, implement it as a
+Mod-local route under `../sts2api/grounding.md` § Mod-local Routes.
 
 ## Character capability and state routes
 

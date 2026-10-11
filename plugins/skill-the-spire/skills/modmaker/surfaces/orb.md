@@ -40,7 +40,7 @@ and its three behaviors are separate `effects` entries rather than one sequence.
   - evoke: <what it does when evoked, with numbers>
   - scaling: passive value <declared scaling name and value>; evoke value <declared
     scaling name and value>
-- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+- **hook participation**: none | one or more; see `reference/model-hook-participation.md`
   - An Orb in the queue receives combat-scope hooks only (45 of 68); run-scope hooks never
     reach it. `Owner` is a `Player`, so a subject guard compares against `Owner.Creature`.
     Participation is separate from the three behaviors above: it applies while the Orb is

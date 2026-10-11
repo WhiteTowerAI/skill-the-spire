@@ -4,8 +4,9 @@ Everything the pipeline needs for one Relic, in one place: the SPEC fields it mu
 declare, the element class the author writes, and the proof its verification owes. Read
 this page at the `spec.md`, `author.md`, and `verify.md` stages when `surface: relic`.
 
-Shared declarations that several surfaces use — stateful mechanics, interaction contracts,
-the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
+Shared declarations live in their own references: bounded state in
+`reference/stateful-mechanics.md`, hook participation in `reference/model-hook-participation.md`,
+and art in `reference/art-contract.md`. Shared proof machinery stays in `verify.md`.
 
 ## SPEC fields
 
@@ -35,11 +36,11 @@ the art plan — stay in `spec.md`. Shared proof machinery stays in `verify.md`.
   - target: owner
   - sequence: <ordered game-term effect with exact values>
   - scaling: <named values and bounds, or none>
-- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+- **hook participation**: none | one or more; see `reference/model-hook-participation.md`
   - A Relic reaches the widest set (66 of 68): both run-scope and combat-scope. `Owner` is a
     `Player`, so a subject guard compares against `Owner.Creature` **and** `Owner.Osty` where
     an Osty can act. Rest Site contribution is not declared here — see § SPEC fields above.
-- **state**: none | see the stateful-mechanic contract below
+- **state**: none | see `reference/stateful-mechanics.md`
 - **presentation**:
   - assets: relic icon; placeholder | generate
   - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)

@@ -222,4 +222,5 @@ state pass; no historical proof constants or markers are reusable defaults.
 - remote-player or multiplayer resource UI;
 - a private patch fallback when the public attachment is unavailable.
 
-Preserve these as explicit pack gaps; do not silently approximate them.
+These are outside this route; do not stretch it to approximate them. A request for one follows
+`grounding.md` § Mod-local Routes, and the private patch fallback stays unsupported.

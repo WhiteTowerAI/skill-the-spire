@@ -243,7 +243,7 @@ var combatState = Owner.PlayerCombatState!;     // Energy, MaxEnergy, TurnNumber
 ```
 
 For an effect family outside the shared reference, query the rest of the pack rather than an
-invented catalog. If the exact route is still absent, follow `grounding.md` and report a pack gap.
+invented catalog. If the exact route is still absent, follow `grounding.md` § Mod-local Routes.
 
 **Always** call `Flash()` when the relic visibly triggers, and log a diagnostic marker.
 The automated harness uses it to localize the trigger, but independently asserted state is
