@@ -63,8 +63,9 @@ side/Card events to the declared listener and state owner. For a side hook, requ
 - **visible output:** refresh exactly one selected existing consumer after every mutation.
 
 Lower only the allowlisted transition hooks in the owner contract. A request needing an
-arbitrary graph, timer, delegate, custom collection, or hook outside this vocabulary is a
-missing capability and blocks consumer authoring.
+arbitrary graph, timer, delegate, custom collection, or hook outside this vocabulary is outside
+this route; do not stretch it. Implement that state as a Mod-local route under `grounding.md`
+§ Mod-local Routes.
 
 ## Saved model-owned run state
 

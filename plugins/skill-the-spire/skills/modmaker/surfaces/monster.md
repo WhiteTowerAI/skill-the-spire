@@ -55,7 +55,7 @@ explicit and one recipe can emit the selected graph. This does not force a one-t
     <random branch with positive fixed weight and successor per target>
   - loop: <deterministic move/branch cycle; every move and branch has a reachable successor>
   - scaling: <named values and bounds, or none>
-- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+- **hook participation**: none | one or more; see `reference/model-hook-participation.md`
   - A Monster receives combat-scope hooks only (45 of 68); run-scope hooks never reach it. Its
     own Creature is `Creature`, not `Owner` — there is no owning Player. This is how a monster
     gets a passive rule that is not a move and not a Power: "attacks against this creature deal

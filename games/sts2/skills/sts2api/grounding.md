@@ -1,8 +1,8 @@
 # Grounding rules
 
-If the shipped pack lacks the signature, inspect public metadata from the checked local
-assemblies. Record the exact owner, signature, lifecycle, await behavior, limitations, and
-verification status. Do not inspect or decompile source.
+Every symbol a generated Mod uses must be grounded before it is written: an exact public owner,
+signature, lifecycle, and await behavior from one of the sources below. Never guess a name,
+decompile code, or use a private or internal member.
 
 ## Four Sources
 
@@ -22,12 +22,35 @@ Record a concrete failure as the smallest known limitation.
 
 ## Runtime Lookup Order
 
-1. Read the selected surface recipe.
-2. Read only the referenced mechanics, state, presentation, art, or self-test page.
+1. Read the selected surface page and recipe.
+2. Read only the referenced mechanics, state, presentation, art, or self-test page, and the
+   shipped catalogs under `reference/catalogs/` when they cover the symbol.
 3. Check `errors.md` for an exact failure signature.
-4. If the answer is absent, stop and identify what is missing. A supported surface with no
-   recipe needs maintainer authoring work; an ungrounded symbol needs API research. Do not
-   try a fourth guessed symbol or restore a historical framework path.
+4. If no maintained route covers the operation, implement it as a Mod-local route below.
+
+## Mod-local Routes
+
+A missing recipe is an authoring gap, not a stop condition. When no maintained route covers an
+accepted operation:
+
+1. Ground the exact public types and members in the pinned local assemblies the scaffold
+   references (STS2, GodotSharp, RitsuLib). Use only public metadata: type and member names,
+   signatures, and documentation. The compiler is the final check on every signature.
+2. Write the smallest Mod-owned implementation that uses only those public members, ordinary
+   C#/BCL, and Mod-owned state. Never use Harmony, reflection, Publicizer, IL, or runtime
+   patching.
+3. Record it in the SPEC `## Implementation` section as
+   `- Mod-local: <operation> - <public Owner.Member list>`. The capability preflight ignores
+   this line; keep `Support:` lines for the parts that do have maintained routes.
+4. Record the grounded signatures in `MEMORY.md`.
+5. Verify it in full: Build, Tier 1, and a Tier 2 SelfTest scenario that drives it through the
+   real host and asserts its exact post-state, plus headed review when it has visible UI, input,
+   or presentation. Until every required check passes, report it as unverified, not working.
+6. Name every Mod-local route in the final report.
+
+Stop and report the operation as unsupported only when it needs a private API, runtime patching,
+or decompilation, or when it has no lifecycle the real host can verify. Offer a supported
+alternative only with the user's explicit acceptance, because the player-visible result changes.
 
 ## Maintainer Research
 

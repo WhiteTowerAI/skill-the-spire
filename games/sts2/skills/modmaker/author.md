@@ -19,7 +19,8 @@ add an unrequested convenience feature.
 If authoring reveals that the selected route cannot produce the accepted complete operation,
 stop before a workaround and follow `repair.md` from the observed failure. A local lowering
 omission may be corrected directly; a different visible result returns to DESIGN and SPEC for
-acceptance; an absent or broken shared route blocks consumer authoring.
+acceptance; an absent or broken shared route continues as a Mod-local route under
+`${STS2API_SKILL_DIR}/grounding.md` § Mod-local Routes.
 
 On revision, update only the confirmed delta and its direct consumers: behavior, localization,
 Event text, visual prompts/resources, Character identity, generated source, and SelfTest.
@@ -145,9 +146,9 @@ second framework branch into this file.
   Do not emit Settings, Progression, post-run Badge, Telemetry, Multiplayer, Update Check, or a
   connection to one of those deferred families.
   A selected resource UI uses RitsuLib's public `RegisterCombatUi` route from
-  `reference/character-resource.md`. A capability with no documented public game/framework
-  route is a pack authoring gap; the specific substitutes to refuse here are alternative-energy patches,
-  C/D access, assembly-wide `PatchAll`, and `SkillTheSpire.Runtime`.
+  `reference/character-resource.md`. A capability with no maintained route follows
+  `grounding.md` § Mod-local Routes; never substitute alternative-energy patches, C/D access,
+  assembly-wide `PatchAll`, or `SkillTheSpire.Runtime`.
   Pull the skeleton, the trigger/usage rules, the effect
   building blocks, and the loc-key derivation rule. When SPEC has an ordered
   `effects.sequence` containing an ordinary player-visible effect, read

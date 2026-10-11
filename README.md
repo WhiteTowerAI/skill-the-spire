@@ -100,8 +100,10 @@ directly; `played`, `fired`, and `used` logs are diagnostics only.
 - Many supported shapes still require their own generated-mod Build and real-host verification.
 - Multiplayer, Settings, Telemetry, Update Check, broad custom scene/material/audio systems, and
   one-click Workshop publishing are not general authoring surfaces in `0.1.0`.
-- Generated code does not invent prompt-derived Harmony, reflection, Publicizer, or IL. A missing
-  maintained public/fixed route blocks authoring instead of receiving a silent approximation.
+- Generated code does not invent prompt-derived Harmony, reflection, Publicizer, or IL. When no
+  maintained route covers a request, the skill implements it from public game and RitsuLib APIs
+  and reports it as working only after Build, Tier 1, and Tier 2 pass. Requests that need private
+  APIs or runtime patching are reported as unsupported.
 - Included STS2 art samples remain Mega Crit property and are reference-only; see their bundled
   `ATTRIBUTION.md`.
 
@@ -209,8 +211,9 @@ Skill the Spire 支持新卡牌、遗物、药水、能力、关键词、附魔�
 - 许多已支持形态仍需要对应生成 Mod 的 Build 和真机验证。
 - `0.1.0` 不把多人、设置、遥测、更新检查、广义自定义场景/材质/音频系统或一键发布到
   创意工坊作为通用创作能力。
-- 生成代码不会临时发明 Harmony、反射、Publicizer 或 IL 路径。缺少维护中的公开/固定
-  路径时会停止创作，而不是静默近似。
+- 生成代码不会临时发明 Harmony、反射、Publicizer 或 IL 路径。没有维护中的现成路径时，
+  skill 会基于游戏和 RitsuLib 的公开 API 自行实现，并且只有在 Build、Tier 1、Tier 2 都通过
+  后才报告为可用。需要私有 API 或运行时补丁的需求会如实报告为不支持。
 - 随附的 STS2 美术样本仅作参考，版权仍归 Mega Crit；详见同目录
   `ATTRIBUTION.md`。
 

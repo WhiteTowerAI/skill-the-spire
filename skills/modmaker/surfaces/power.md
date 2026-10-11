@@ -38,7 +38,7 @@ for the whole SPEC by the host.
   - target: owner | the creature the owner affects
   - sequence: <precise hook/passive behavior with exact numbers>
   - scaling: <named values and bounds, or none>
-- **hook participation**: none | one or more; see § Hook participation in `spec.md`
+- **hook participation**: none | one or more; see `reference/model-hook-participation.md`
   - Power receives combat-scope hooks only (45 of 68). Run-scope hooks never reach a Power:
     the override compiles and never fires. `Owner` is a `Creature` directly.
 - **state**:

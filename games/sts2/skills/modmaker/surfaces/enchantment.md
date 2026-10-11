@@ -24,7 +24,7 @@ the thing its proof must exercise — see § Proof matrix. Reviewed and accepted
 enchantment and keyword stay host-scoped, while `orb` received its own envelope.
 
 Hook participation is declared the same way — nested under the host Card's `enchantment:` block,
-using the shared form in `spec.md` § Hook participation:
+using the form in `reference/model-hook-participation.md`:
 
 ```markdown
     hook participation: none | one or more

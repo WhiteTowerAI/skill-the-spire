@@ -173,5 +173,5 @@ proof. In particular, a run-persistent relic counter uses RitsuLib
 
 When this file lacks a specific value or formatter, follow `grounding.md`: at runtime
 that means the rest of the pack (recipes, `build-constraints.md`, snapshots,
-`errors.md`); if it's genuinely not in the pack, report a pack gap rather than
-guessing. Never a third guess.
+`errors.md`); if it's genuinely not in the pack, follow `grounding.md` § Mod-local
+Routes rather than guessing.

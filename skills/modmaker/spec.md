@@ -44,9 +44,10 @@ current product capabilities, including:
 - grounded vanilla Card, visual, Ancient, availability, and non-Card overrides; and
 - cataloged model-hook participation only on surfaces in its dispatch listener set.
 
-For the exact current boundary, use `games/sts2/tests/content-capability-graph.md` in source or
-the matching shipped references. A missing recipe/reference is a pack authoring gap. A prompt is
-never authority to invent an API route.
+For the exact current boundary, use the selected surface pages and `sts2api` references. When no
+maintained route covers an operation, ground it as a Mod-local route under
+`../sts2api/grounding.md` § Mod-local Routes and record it as a `- Mod-local:` line in
+`## Implementation`. A prompt is never authority to invent an ungrounded API.
 
 ## Implementation
 
@@ -57,6 +58,12 @@ List every selected maintained route exactly once. Example:
 
 - Support: `recipes/card.md`
 - Support: `reference/card-computed-values.md`
+```
+
+An operation with no maintained route adds one `Mod-local` line naming its grounded public members:
+
+```markdown
+- Mod-local: <operation> - <public Owner.Member list>
 ```
 
 For raw model-hook participation, add one line per capability. Global Effect uses the exact

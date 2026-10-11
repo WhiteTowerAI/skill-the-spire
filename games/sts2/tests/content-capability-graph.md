@@ -3,12 +3,13 @@
 This graph defines the active Skill the Spire `0.1.0` RitsuLib-only support boundary. A documented
 public RitsuLib feature family is supported when its API exists in the pinned profile and the
 shipped pack owns a truthful authoring route. Confirmed problems are recorded as the smallest known
-limitation; missing public routes are unsupported.
+limitation. Operations outside this graph may still be authored as Mod-local routes from pinned
+public APIs (`sts2api/grounding.md` § Mod-local Routes); they stay unverified until Tier 2 passes.
 
 Framework expression, shipped authoring guidance, Build, real-host behavior, and headed
 presentation are separate facts. A source or static check never makes an unrun shape
-game-observed. A missing or broken maintained public/fixed route blocks generation until repaired
-or narrowed instead of receiving a per-Mod approximation.
+game-observed. A broken maintained route is a pack defect to repair; a generated Mod may use a
+grounded Mod-local route meanwhile, never an ungrounded approximation or private patch.
 
 The workflow retains adaptive fast/co-design/revision routing, direct resume, Character-native
 grammar, mechanic/content/balance planning, concise DESIGN intent/scope, and proportional human

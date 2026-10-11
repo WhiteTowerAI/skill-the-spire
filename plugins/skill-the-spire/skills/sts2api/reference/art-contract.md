@@ -58,7 +58,7 @@
 
 Custom keywords do not belong in the image contract below. Their presentation is localized
 card text plus a RitsuLib/native hover tooltip whose icon is intentionally null. The headed
-The headed keyword proof covers both text consumers; do not add a keyword image, asset path, or
+keyword proof covers both text consumers; do not add a keyword image, asset path, or
 `gen_sprite.py` spec.
 
 ## Path root
@@ -175,9 +175,7 @@ alpha pixel to opaque, expands that mask with an 8-pixel square max filter
 reserves the same 8-pixel inset on the fitted dimension before deriving the outline, so
 the expansion stays inside the unchanged 256x256 canvas. The main and big files remain
 identical to each other and no acquisition call is made. RitsuLib checks the custom path and
-retains the template outline fallback when it is absent. `power` has no outline. This
-The Character presentation route passed exact path/texture assertions under a real `NRelic` and the maintainer's
-headed review in the 2026-07-27 Meridian proof.
+retains the template outline fallback when it is absent. `power` has no outline.
 
 Ancient-rarity full art (606×852) is intentionally **out of scope** — we don't make
 Ancient cards.

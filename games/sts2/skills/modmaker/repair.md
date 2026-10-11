@@ -14,8 +14,10 @@ Mod without rebuilding it.
   changing the intended result.
 - If the fix would change player-visible behavior, text, scope, or presentation, stop and obtain
   acceptance; update DESIGN and SPEC before code.
-- If a maintained route is absent or contradicted by runtime evidence, stop consumer-local
-  authoring. Record the pack gap; do not approximate it with ungrounded patches.
+- If a maintained route is absent, or runtime evidence contradicts it, implement the operation
+  as a Mod-local route under `${STS2API_SKILL_DIR}/grounding.md` § Mod-local Routes and record
+  the contradicted route in `MEMORY.md` as a pack defect. Never approximate it with ungrounded
+  symbols or patches.
 
 ## Bounded loop
 

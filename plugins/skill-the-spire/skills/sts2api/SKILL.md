@@ -44,9 +44,9 @@ registration/template and asset profile, and owns the framework/version diagnost
 record. Only then load the surface recipe or reference needed for the request.
 
 Official tutorial semantics plus public members in the pinned profile make all documented
-consumers in that feature family supported. A missing shipped recipe means only that the
-authoring route is not implemented here; report that plainly and never guess the absent
-implementation.
+consumers in that feature family supported. A missing shipped recipe means only that no
+maintained route exists; ground a Mod-local route under `grounding.md` § Mod-local Routes and
+never guess a symbol.
 
 RitsuLib is the only active adapter. Do not select a historical dependency, copy another
 scaffold, or infer a runtime dependency from a recipe name.
@@ -126,8 +126,8 @@ explicitly accepted composition instead.
    semantic card-play buffer with deterministic dynamic output**, read
    `../sts2api/reference/ordered-card-buffer.md`. Both use the public RitsuLib
    Secondary Resource/node-attachment APIs and follow the promoted generated-Character
-   contracts. If a requested capability has no documented public game/RitsuLib
-   seam, report a pack gap; do not invent a patch target or `SkillTheSpire.Runtime`.
+   contracts. If a requested capability has no maintained route, follow
+   `grounding.md` § Mod-local Routes; do not invent a patch target or `SkillTheSpire.Runtime`.
    Cards/powers/keywords/enchantments/orbs also read
    `../sts2api/reference/mechanics.md` first (scaling numbers, SmartFormat
    descriptions, shared enums). When Card/relic/potion/power descriptions select bounded
@@ -262,7 +262,7 @@ explicitly accepted composition instead.
 | `reference/selftest-harness.md` | The tier-2 self-test harness: arg-gated menu→run navigation plus hosted scenario drivers (`CombatPlayer`, `CombatEnemy`, `MapNode`, Character Foundation `RunStart`), independent post-state assertions, structured state-proof markers, and multi-element observations. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Authoring the tier-2 harness (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and nine promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | Type-matched real STS2 reference pools for card/relic/power/potion/enchantment/orb/monster/event (© Mega Crit, reference-only — see ATTRIBUTION.md); tools select the matching family and randomly sample three distinct images | Passed as the root `--reference` in the art step; never mix families |
-| `grounding.md` | Where facts come from (official semantics→feature purpose, content→spire-codex, C# signatures→pinned source, implementation/proof→skill-the-spire) + the runtime-vs-maintainer split: at runtime you read only the pack; a genuine recipe miss is reported, not researched live | An answer the recipe lacks |
+| `grounding.md` | Where facts come from, the runtime lookup order, and the Mod-local route procedure for an operation no maintained route covers: ground public signatures, implement with public APIs only, verify through Tier 2 | An answer the recipe lacks |
 | `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |
 | `errors.md` | Error signature → cause → fix catalog; append-only | Build or load failure; repair loop |
 
@@ -281,8 +281,8 @@ do not author an operation outside a listed authorable route family.
   reading a recipe. Registration, template bases, concrete ids, localization keys, and
   asset paths are adapter output; do not place them in the semantic contract.
 - **Support rule:** a documented feature family with public members in the pinned profile is
-  supported. A missing recipe or unrun check does not make it unsupported; report the exact
-  authoring or verification gap.
+  supported. A missing recipe or unrun check does not make it unsupported; implement a
+  Mod-local route and report any check that did not run.
 - **Custom Card Piles:** route the complete documented API through
   `recipes/card-pile.md` and `reference/card-piles.md`; preserve exact Card identity and awaited movement, and let the
   generated SPEC select any public scope/style/anchor/view/ExtraHand consumer.
@@ -351,5 +351,5 @@ do not author an operation outside a listed authorable route family.
 - **Don't guess an API** — first use `reference/effect-primitives.md` for its maintained ordinary
   effects. For a different family the selected recipe lacks, check the rest of the pack
   (`reference/mechanics.md`, `reference/build-constraints.md`, snapshots, `errors.md`) per
-  `grounding.md`. If it is genuinely not in the pack, report a pack gap rather than digging or
-  guessing.
+  `grounding.md`. If it is genuinely not in the pack, follow `grounding.md` § Mod-local Routes
+  rather than guessing.
