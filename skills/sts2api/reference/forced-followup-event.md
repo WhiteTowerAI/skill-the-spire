@@ -3,8 +3,7 @@
 Use this contract when carrying a custom Quest Card should force one finite custom Event
 sequence during a declared set of acts, in the style of a delayed story follow-up. One Mod
 may declare a bounded ordered mapping list. It is a public-hook pattern; it does not require
-Harmony, a vanilla-content edit, or a custom map node. The historical headed proof observed
-one token, one act, and one target; generalized mappings and sequences remain game-unobserved.
+Harmony, a vanilla-content edit, or a custom map node.
 
 
 ## Supported boundary
@@ -203,12 +202,9 @@ The proof must enter through `MapPointType.Unknown`, not debug-enter the target 
 Event directly, because the room-type and Event-replacement hooks are the behavior under
 test.
 
-Live proof (2026-07-23, STS2 `0.107.1` / RitsuLib `0.4.67`): the combined Event headed
-run rendered `Sealed Archive`, its description, and its real `Break the seal` option
-through an Unknown MapPoint. Strict Tier 2 reported:
+A passing run reports a structured line of this shape:
 
 ```text
 forcedFollowUp noToken=True wrongAct=True roomForced=True eventForced=True entered=true seals=1->0 restored=True
 selftest done
-Fresh-run errors: none
 ```

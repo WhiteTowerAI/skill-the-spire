@@ -1,8 +1,6 @@
 # Recipe: Potion
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The hosted
-> Card run registered `EmberDraft` through the public content pack,
-> procured it, used it on a real enemy, and proved exact damage in a RitsuLib-only run.
+> A single Potion under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile.
 
 ## Contract
 
@@ -137,6 +135,5 @@ The `CombatPlayer` harness must:
 4. assert the concrete post-state and emit one `state proof:` marker;
 5. reach `selftest done` with no fresh error.
 
-The hosted proof observed the registered `EmberDraft` entry, title `Ember Draft`, and enemy HP
-`27 -> 23`. A missing custom atlas sprite warning is expected in placeholder mode; a
+A missing custom atlas sprite warning is expected in placeholder mode; a
 fresh error is not.

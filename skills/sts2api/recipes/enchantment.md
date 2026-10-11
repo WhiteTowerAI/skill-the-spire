@@ -1,8 +1,6 @@
 # Recipe: Card Enchantment
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. The hosted proof registered
-> `Guarded`, attached it to a real Card at amount 5, and observed its `OnPlay` Block
-> consequence in a RitsuLib-only run.
+> A persistent Card modification under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile.
 
 ## Contract and registration
 
@@ -127,8 +125,7 @@ Emit `.extraCardText` only when `HasExtraCardText` is true.
 ## Verification
 
 The `CombatPlayer` proof must independently check registration/localization, attachment
-and amount, then drive the host Card and assert the changed outcome. The hosted proof observed
-the registered `Guarded` entry, amount 5, and Block `7 -> 12`.
+and amount, then drive the host Card and assert the changed outcome.
 
 Custom icon support still requires a headed render in both the Card tab and hover tooltip;
 a path getter alone does not promote visual support.

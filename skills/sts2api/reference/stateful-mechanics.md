@@ -1,9 +1,6 @@
 # Stateful mechanics - counters, phases, and persistence
 
-Status: **authorable with RitsuLib on STS2 0.107.1**. The historical hosted proof observed
-custom-Relic run cadence with saved `int`/`bool` state and native combat turn timing. The source
-contract covers the bounded scalar/transition shapes below; newly
-admitted owner, schema, and consumer combinations remain game-unobserved.
+Status: **authorable with RitsuLib on STS2 0.107.1**.
 
 Use this page whenever an effect remembers progress, limits uses, compares turns, or
 changes behavior after a prior event. State is part of the mechanic, not an implementation
@@ -220,11 +217,3 @@ boundary, each visible consumer refresh, and every selected output. Add a second
 for a combat boundary or cross-combat carry-over. Add `SavedProperties.From/Fill` only for a
 run-save owner. A threshold profile additionally checks `N - 1`, trigger, and wrap/consume;
 do not impose that matrix on an unrelated flag, phase, or previous-turn declaration.
-
-The historical serialization round trip and two-combat hosted proof remain independent facts.
-The hosted state proof observed progress `0 -> 1 -> 2` and `used=false -> true`,
-`SavedProperties.From/Fill` restoring `2/true`, a distinct second `PlayerCombatState`,
-second-combat progress `2 -> 0` with exactly one Energy gain `3 -> 4` while the bool
-one-shot stayed used, and the native combat-local turn/block boundary
-`turn 2 / Block 3 -> turn 1 / Block 0`. It reached `selftest done`, strict Tier 2, and no
-fresh error with only the declared RitsuLib runtime dependency.

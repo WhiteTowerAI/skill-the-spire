@@ -1,8 +1,7 @@
 # Recipe: Custom Card Keyword
 
-> Known-good on STS2 `0.107.1` with RitsuLib `0.4.67` compat. RitsuLib mints a
-> deterministic `CardKeyword` value and stores it in the game's native Card keyword set;
-> the hosted proof checked membership, localization, and the named Card behavior.
+> Under the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile, RitsuLib mints a deterministic `CardKeyword` value and stores it in the
+> game's native Card keyword set.
 
 ## Contract
 
@@ -73,7 +72,4 @@ Prove all three layers in the nearest real Card scenario:
 3. the host's named state change occurs.
 
 For full presentation support, also render the auto-positioned text and hover tip on the
-real hand Card and assert the icon is null. The hosted functional proof observed the
-registered `Resonant` entry, title `Resonant`, membership true, and Jolt's exact
-6 damage. Historical visible evidence remains regression input until re-run under
-RitsuLib.
+real hand Card and assert the icon is null.

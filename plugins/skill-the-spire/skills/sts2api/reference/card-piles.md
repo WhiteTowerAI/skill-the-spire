@@ -213,11 +213,6 @@ the selected UI and lifecycle:
 - ExtraHand mouse/controller focus, cancellation, payment, consecutive play, result piles,
   numbered-shortcut isolation, callbacks, and layout at requested aspect ratios.
 
-The 2026-08-02 official `0.5.4` focused run established the repaired mouse cancellation,
-native-Hand shortcut isolation, and three consecutive ExtraHand plays without a consumer
-patch. Its absent structured `selftest done` remains a strict Tier 2 exception accepted by
-the human lead; that exception does not narrow this API-level support declaration.
-
 ## Boundaries
 
 The API creates new Mod-owned piles. It does not by itself replace vanilla piles,

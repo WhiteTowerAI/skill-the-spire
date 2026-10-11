@@ -2,18 +2,9 @@
 
 Status: **implemented for nine static profiles, deterministic top-icon/generated-
 Relic outlines, the bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and
-Character dialogue in native Ancient/Architect scenes on STS2 `0.107.1` / RitsuLib
-`0.4.67`**.
-The focused RitsuLib-only headed proof established selection
-portrait/background, top-panel icon, non-Spine combat/rest/merchant bodies, five-layer
-energy, and the original compact shared card-energy icon. Locked selection and map marker
-remain unverified. The 2026-07-27 Meridian
-proof additionally pins selection/combat visible footprint without changing the 132x195 or
-512x512 pixel contracts and proves the card/UI theme, split Energy-icon consumers, and the
-deterministic top-icon/generated-Relic outline route. The outline proof combined exact
-real-host resource/property/node assertions with the maintainer's headed review. A focused
-Meridian cue proof then established all four combat sequences, cleanup, shared geometry,
-and one-missing-disables-all static fallback.
+Character dialogue in native Ancient/Architect scenes on STS2 `0.107.1`**.
+
+Locked selection and map marker remain unverified consumers.
 
 Use this page with `recipes/character.md` and `reference/art-contract.md`; also read
 `reference/character-combat-cues.md` when cues are selected. Treat every consumer
@@ -103,17 +94,16 @@ RitsuLib resumes the resolved profile fallback. A present hosted node must repor
 
 The normalized combat alpha is contained by `(26,26)-(486,486)` with exclusive bottom
 baseline `486`; empty alpha, any canvas-edge contact, bounds outside that box, and a wrong
-baseline are contract failures. With the style above, the Meridian proof observed screen
-bounds `(326.4,372)-(632.8,740)` inside the `1920x1080` viewport and clear of top/bottom UI,
-the enemy lane, and the turn banner. Selection retains 132x195 pixels while fitting the
-entire opaque source composition inside `(6,8)-(126,187)`; the real button remained inside
-the viewport, and settled same-window Ironclad/Meridian comparison showed no additional
-zoom, UI occlusion, or host clipping.
+baseline are contract failures. Headed review checks that the combat body stays inside the
+`1920x1080` viewport, clear of top/bottom UI, the enemy lane, and the turn banner. Selection
+retains 132x195 pixels while fitting the entire opaque source composition inside
+`(6,8)-(126,187)`; headed review checks that the real button stays inside the viewport with
+no extra zoom, UI occlusion, or host clipping.
 
 Missing/unused rows resolve against the explicitly selected base-game Ironclad profile. For
 Energy this means `ironclad_energy_counter.tscn`; it must not be derived from the Character
 theme or an `EnergyColorName` such as `red`. Do not invent a second getter path or patch. In
-particular, the RitsuLib Shop route does not need the historical
+particular, the RitsuLib Shop route does not need an
 `NMerchantCharacter._Ready()` prefix.
 
 ## Combat cue composition
@@ -245,8 +235,7 @@ The focused verification contract asserts the four exact `Color` values, the mat
 256x256/24x24 resources, a visible large-icon TextureRect under a real `NCard`, and the
 small path embedded in a real formatted card description. Headed review then checks that
 the named color consumers, frame, large icon, and inline icon are legible and visually
-coherent rather than merely present. The 2026-07-27 Meridian headed review passed all
-seven visible checks; generated Mods retain the automatic node/property assertions.
+coherent rather than merely present.
 
 ## Ancient boundary
 

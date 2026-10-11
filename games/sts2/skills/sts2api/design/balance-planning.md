@@ -16,7 +16,7 @@ Separate the basis for every claim:
 Never invent a missing formula, native benchmark, probability, tolerance band, or playtest
 result. Compilation and static reasoning do not prove balance or enjoyment.
 
-skill-the-spire uses a deliberate **Mod-forward power bias** selected by the human lead: when the
+skill-the-spire uses a deliberate **Mod-forward power bias** chosen for this product: when the
 user gives no contrary direction, prefer a working value that is clearly rewarding and
 modestly stronger than the closest relevant native comparison in its intended state. This
 is a creative product preference, not an STS2 fact and not a fixed percentage.

@@ -89,7 +89,7 @@ Source-verified against the decompile after a live in-game run (do not re-derive
   different card layout / UI slot — `NCard.cs` switches on `Rarity == CardRarity.Ancient`).
   **We only make normal cards, so we only ever produce 1000×760.** Putting a 606×852
   (portrait-shaped) image there feeds a vertical picture into a landscape slot → it looks
-  distorted in-game (the M5.5 "违和" bug, fixed 2026-07-08).
+  distorted in-game.
 
 | spec | file(s) written (under `images/`) | size | notes |
 |------|-----------------------------------|------|-------|
@@ -105,9 +105,7 @@ Source-verified against the decompile after a live in-game run (do not re-derive
 
 **A relic and a power each need TWO files; every other invocation writes ONE
 (`gen_sprite.py` handles the count automatically). An event may invoke the same spec once
-per selected portrait slot.** Relic/power/potion were confirmed live
-by Bauble, Smolder, and Fizz on 2026-07-08; enchantment by Guarded and the orb icon by
-Shelter on 2026-07-17; the monster combat/bestiary body by a hosted Monster run on 2026-07-17.
+per selected portrait slot.**
 Relic/power read the icon from two separate loose-PNG getters — writing only the first
 leaves the other on the placeholder:
 - **relic**: `relics/<slug>.png` = the relic-bar icon; `relics/big/<slug>.png` = the
@@ -147,21 +145,17 @@ family from Godot `.tres` sprite-atlases (`atlases/relic_atlas.sprites/…`, `po
 decompile). But the icon getters accept a plain `Texture2D` path, so a loose PNG works too:
 for **relic/power/potion**, RitsuLib's asset profiles accept explicit loose PNG paths with
 an existence-checked fallback. Either way a mod just drops a 256×256 PNG in — no atlas.
-**This overturned an earlier belief that potion needed a `.tres` emitter** — it does not
-(live-verified 2026-07-08). The only reason vanilla potions *appear* to require an atlas is
+A potion needs no `.tres` emitter. The only reason vanilla potions *appear* to require an atlas is
 that the default (un-overridden) getter points at the atlas path, which a mod doesn't ship.
 Enchantment and Orb profiles likewise accept a loose PNG directly; omit the profile to keep
 the checked fallback.
 
 **Sizes.** All 324 vanilla relic + 271 power + 63 potion icons extracted from the game are a
-uniform **256×256**; live runs confirmed that size + all icon paths render correctly,
-so relic/power/potion are all `verified: True`. `card` is 1000×760, also live-verified
-(2026-07-08). Normal enchantment icons are 64×64 and live-verified in both consumers
-(2026-07-17). Normal orb icons are 100×100 and live-verified in the smart tooltip and
-trigger flash (2026-07-17); this does not verify a custom combat scene. Static monsters use
-an skill-the-spire **360×360 profile**: unlike the atlas-backed icons, this is a chosen consistent
-render footprint rather than an engine-mandated source size. RitsuLib renders it one-to-one;
-the headed combat and bestiary proof verified the resulting 396×396 bounds.
+uniform **256×256**. A normal card portrait is 1000×760, a normal enchantment icon 64×64, and
+a normal orb icon 100×100; the orb size does not cover a custom combat scene. Static monsters
+use a skill-the-spire **360×360 profile**: unlike the atlas-backed icons, this is a chosen
+consistent render footprint rather than an engine-mandated source size. RitsuLib renders it
+one-to-one into 396×396 bounds.
 
 **A power subclass must extend `ModPowerTemplate` directly.** Its `PowerAssetProfile`
 controls the loose-PNG paths. A direct game-model subclass bypasses the adapter and leaves
@@ -213,17 +207,8 @@ request: cells are read left-to-right, then top-to-bottom, and each cell is 512x
 | `character_cue_hit` | 2x2 | 1024x1024 | `cues/hit/00.png` .. `03.png` | 80 ms, one shot |
 | `character_cue_dead` | 2x3 | 1024x1536 | `cues/dead/00.png` .. `05.png` | 140 ms, terminal |
 
-The focused RitsuLib-only Character run re-proved `character_select`, `character_background`,
-`character_icon`, `character_combat`, `character_rest`, `character_merchant`,
-`character_energy`, and `character_energy_text`. Real selection, CombatPlayer, RestSite,
-and Shop hosts rendered the exact PNGs; one native energy counter exposed five 256x256
-layers and the real hand Card rendered the separate 24x24 icon. Strict Tier 2 and
-no-fresh-error checks passed. Locked selection and map marker remain unlisted because
-resource existence is not visual proof for those consumers.
-
-The 2026-07-27 Meridian proof separately established the split consumers: a real
-hand `NCard` rendered the 256x256 large icon, and a formatted Card description rendered
-the distinct 24x24 text icon. The maintainer's headed review passed both consumers.
+Locked selection and map marker are not in the supported list: resource existence is not
+visual proof for those consumers.
 
 `character_select` uses safe `contain` composition with chroma off; its full opaque source
 is preserved inside `(6,8)-(126,187)` on the unchanged 132x195 canvas.
@@ -260,14 +245,13 @@ and the generated `CharacterAssetProfile` resolve the same files.
 the same opaque-white 3% max-filter rule as Relics, which resolves to a 3-pixel expansion
 on the 88x88 canvas; main normalization reserves the same 3-pixel inset. `Ui.IconOutlineTexturePath` points to it, while `Ui.IconPath` points
 to the raw icon scene that layers the outline behind the main texture in the supported
-top-panel host. The Meridian proof passed the exact model/resource/node assertions and the
-maintainer's headed review for this outline route.
+top-panel host.
 
 The contract splits `energy_large.png` into a 256x256 pool Energy icon while retaining
 `energy_text.png` as the 24x24 rich-text icon. They are separate required bundle rows,
 paths, normalization specs, and real consumers; neither path may stand in for the other.
 
-The source directory `reference/energy_template/` contains the four lead-supplied,
+The source directory `reference/energy_template/` contains four bundled,
 transparent `256x256` PNGs `layer_2.png` through `layer_5.png`. They are fixed assets,
 not generation targets: `character_energy` layer 1 has one Character-specific generation
 call, while layers 2-5 have zero generation calls and are copied byte-for-byte to
@@ -319,10 +303,7 @@ exists, then pass its `Texture2D` plus
 `RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>` factory. Return `null` when
 the PNG is absent so RitsuLib resumes the resolved profile fallback. Normalize visible
 alpha inside `(26,26)-(486,486)` with exclusive baseline `486`; empty alpha, canvas-edge
-contact, overflow, an undersized subject, or a different baseline fails validation. The
-2026-07-27 Meridian host proof observed exact alpha `(64,26)-(447,486)`, screen bounds
-`(326.4,372)-(632.8,740)` in a `1920x1080` viewport, and no overlap with top/bottom UI,
-enemy lane, or turn banner. Static
+contact, overflow, an undersized subject, or a different baseline fails validation. Static
 rest-site and merchant wrappers are each one `Sprite2D` root. The real
 `NMerchantCharacter` rendered the merchant wrapper without a versioned prefix. Every
 wrapper keeps a checked profile fallback
@@ -464,10 +445,7 @@ the template keeps the checked game fallback. Do not return a missing mod path d
 This is one shared texture, not two outputs. `NCard.UpdateEnchantmentVisuals` assigns
 `EnchantmentModel.Icon` to `%Enchantment/Icon` for hand, grid, reward, and inspect-style
 card nodes; `CardModel.HoverTips` adds `EnchantmentModel.HoverTips`, whose `HoverTip` uses
-the same `Icon`. A 2026-07-17 headed run observed the custom resource
-path and 64×64 size in the real hand-card tab and hover tooltip, captured both together,
-preserved the attached `Guarded` behavior (Block `0 -> 5`), and passed strict Tier 2 with
-no fresh error block. Nonstandard special-case 160×150 vanilla icons do not change this
+the same `Icon`. Nonstandard special-case 160×150 vanilla icons do not change this
 normal generated profile.
 
 ## The orb icon contract
@@ -485,14 +463,11 @@ protected override string ChannelSfx =>
 ```
 
 `OrbModel.Icon` feeds both the smart `HoverTip(orb, ...)` and the `CpuParticles2D` at
-`NOrb/%Flash`. A 2026-07-17 headed run observed the same custom resource path
-and 100×100 size in both nodes, triggered the particle, captured the real orb and tooltip
-together, preserved passive/evoke Block `0 -> 2 -> 7`, and passed strict Tier 2 with no
-fresh error block.
+`NOrb/%Flash`.
 
 The combat body remains explicitly separate. `gen_sprite.py --spec orb` emits no scene,
-atlas, skeleton, animation, or audio. The hosted proof verifies the Frost scene fallback and
-channel event, not that a custom icon becomes the body. Keep both fallbacks; a custom Spine
+atlas, skeleton, animation, or audio. Proof covers the Frost scene fallback and
+channel event, not a custom icon becoming the body. Keep both fallbacks; a custom Spine
 body belongs to the later animation expansion and does not block current static support.
 
 ## The static monster-body contract
@@ -536,12 +511,9 @@ original scene loader resumes at `FallbackVisualPath` without first logging a mi
 custom-id scene. `HasDeathSfx => false` avoids the default nonexistent custom-id death
 audio event while the non-Spine death fade remains available.
 
-Combat and bestiary are independent visible consumers of the same getter. The 2026-07-22
-A RitsuLib-only headed Monster run asserted the same custom resource path, 360×360 size,
-non-Spine body, 396×396 bounds, and intent position in the real combat `NCreature` and a
-real `NBestiary` default layout; it captured both and passed strict Tier 2 with no fresh
-error block. The combat screenshot showed correct floor/health-bar alignment and an
-unobscured intent; the bestiary screenshot showed the title, move list, and uncropped body.
+Combat and bestiary are independent visible consumers of the same getter. Headed review
+checks floor/health-bar alignment and an unobscured intent in combat, and the title, move
+list, and uncropped body in the bestiary.
 
 This does not support attack/hurt/death/cast animation, Spine skeleton/atlas data, animated
 bestiary move previews, or a separate phobia body. Those are later animation/variant
@@ -554,13 +526,7 @@ An implemented normal event has an initial portrait at
 `images/events/<event-slug>.png` and may have additional page portraits at
 `images/events/<event-slug>_<page-key-lower>.png`. Every slot is independently normalized
 with `--spec event` to **3440×1613**, opaque `cover` fit, and chroma-key off. Eleven current
-normal/phobia portrait samples in the pinned game pack use that logical size. The
-A 2026-07-17 headed run proved the initial mod path in the real `MapNode` host.
-The 2026-07-20 extension reused the same room and option click to switch to a second mod
-portrait after the consequence: both textures reported 3440×1613, the result screenshot
-showed the replacement, Gold changed by 25, and strict Tier 2 passed with no fresh error.
-The 2026-07-23 RitsuLib-only combined Event run re-proved both portrait consumers, every
-selected Event family, `selftest done`, and no fresh error.
+normal/phobia portrait samples in the pinned game pack use that logical size.
 
 Use an explicit checked `EventAssetProfile` fallback in every generated Event. Also remove
 the convention-derived missing path from preloading when the profile uses a different name:
@@ -920,35 +886,13 @@ Adjusting a prompt is far cheaper than editing code, so this loop is the natural
 iterate. For a multi-card mod, segments ①③ + the references are shared across all cards,
 so cross-card style stays consistent even though each card's ② differs.
 
-## Reference-driven generation acceptance
+## Cut-out cleanup
 
-On 2026-07-17, `seedream-5.0-lite` generated one approved `1:1`/`2K` preview for each new
-reference-backed family: Emberbound enchantment, Verdant Pulse orb, and Cinder Pilgrim
-monster. Each request used three type-matched real-game images. Headed visual inspection
-confirmed the dedicated styles remained distinct: a compact flat enchantment emblem, a
-layered painted orb core, and a softly modeled full-body monster with no borrowed reference
-objects. All normalized outputs had the exact target size, RGBA mode, and transparent
-corners.
-
-The orb source also provided a useful negative case: the model textured its requested
-magenta background with dark fragments. Color keying alone kept those fragments and shrank
-the orb. The bounded cut-out cleanup retains the centered subject cluster, removes
-disconnected debris, and performs the final `contain` fit; the already-paid source then
-passed locally without regeneration. This acceptance proves reference delivery, prompt
-shaping, and deterministic normalization. It does not replace the existing headed
-combat/tooltip/bestiary consumer proofs.
-
-On 2026-07-20, one separately approved `seedream-5.0-lite` Event request used the curated
-Event pool and randomly selected `this_or_that.png`, `drowning_beacon.png`, and
-`doors_of_light_and_dark.png`. The `21:9`/`2K` source preserved the requested left-third
-focal subject and dark center-right UI area without text or borrowed reference objects.
-It normalized to the exact opaque 3440×1613 profile, packed into the test Mod, and
-rendered behind the real Event option UI. The same headed run changed Gold by 25, switched
-to the later-page portrait, removed the initial portrait VFX, and passed strict Tier 2 with
-no fresh error. This closes reference-prompt acquisition for the normal Event portrait
-profile; it does not promote custom layouts, phobia art, Ancient backgrounds, or general
-VFX generation. The later Event outcome/VFX acceptance separately promoted the bounded
-code-native halo without adding a raster asset type.
+An image model may texture the requested magenta background with dark fragments. Color
+keying alone keeps those fragments and shrinks the subject. The cut-out cleanup in
+`gen_sprite.py import` retains the centered subject cluster, removes disconnected debris, and
+then performs the final `contain` fit, so such a source can pass without a paid
+regeneration.
 
 ## Using the tool
 

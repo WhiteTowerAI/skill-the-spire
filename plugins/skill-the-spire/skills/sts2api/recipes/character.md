@@ -1,7 +1,6 @@
 # Recipe: Character Foundation
 
-> Live-proven on STS2 stable `0.107.1` with RitsuLib `0.4.67` by focused Character
-> Foundation and presentation proofs. This recipe covers exactly-once registration,
+> For the pinned STS2 `0.107.1` / RitsuLib `0.5.11` profile. This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
 > the nine promoted static presentation profiles, and the bounded non-Spine
 > Idle/Attack/Hit/Dead combat cues. Selected resource/buffer/UI
@@ -59,7 +58,7 @@ authored Ancient Card for Darv's unchanged Dusty Tome option:
 starter, or continue when the Character design has no approved Ancient Card.
 
 The character extends the typed RitsuLib template. Fill every public abstract
-member explicitly; do not infer historical getter names:
+member explicitly; do not infer getter names from other templates:
 
 ```csharp
 using Godot;
@@ -276,8 +275,8 @@ Locked selection and map marker paths may retain checked assets, but they are no
 pipeline-promoted until their real consumers are visibly proved. RitsuLib's resolved
 profile keeps the explicitly selected Ironclad placeholder/native fallback for missing
 fields. Do not
-add the historical static-merchant prefix: the Shop proof rendered a real
-`NMerchantCharacter` directly from the RitsuLib scene profile.
+add a static-merchant prefix patch: the RitsuLib scene profile renders a real
+`NMerchantCharacter` directly.
 
 Leave `Scenes.VisualsPath` unset for the generated combat body so the resolved profile
 retains its checked missing-file fallback. When `images/charui/combat.png` exists, load it
@@ -348,13 +347,9 @@ backgrounds/layouts, options/rewards, line audio, and multiplayer remain unsuppo
 
 For every generated Character, derive the selected model identity, HP, Gold, pool members,
 starter deck/relic multiset, supporting models, MaxEnergy, and terminal state summary from
-the current `SPEC.md`. Do not copy exact values or log markers from a historical acceptance
-Mod. The 2026-07-27 Meridian proof added the split large/text Energy
-consumers and bounded card/UI theme; the maintainer's headed review passed all seven
-visible checks, while generated Mods retain the automatic node/property assertions.
-The 2026-07-27 Meridian cue proof separately passed the complete four-action route,
-playback cleanup, strict Tier 2, and the one-missing-disables-all static fallback; the human
-lead accepted both headed checkpoints.
+the current `SPEC.md`. Do not copy exact values or log markers from an example Mod. Generated
+Mods keep the automatic node/property assertions for Energy icons, theme, and combat cues;
+their visible appearance remains a headed review.
 
 ## Checklist
 

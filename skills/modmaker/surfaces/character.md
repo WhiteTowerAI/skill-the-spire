@@ -177,8 +177,8 @@ not been verified until that card has been played.
 - If Shop/static merchant is selected, author enough unlocked non-Basic cards to provide
   at least two Attacks, two Skills, and one Power after filters; the native merchant fills
   those exact slots and otherwise throws before its UI appears. Author each one through
-  `surfaces/card.md`, not as a bare pool entry. Do not require the historical
-  static-merchant patch.
+  `surfaces/card.md`, not as a bare pool entry. Do not add a static-merchant
+  patch; the RitsuLib Shop profile needs none.
 - Add all 14 normalized `characters.json` values and a complete repeating Architect
   dialogue. When SPEC selects other Ancient targets or richer Architect groups, lower the
   semantic blocks through `reference/ancient-dialogue.md`; do not author an injection patch.

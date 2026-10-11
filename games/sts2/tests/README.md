@@ -106,6 +106,26 @@ lifecycle, state, input, or presentation risk.
 - **Headed review:** only concrete observations actually reported by a person.
 - **Not included:** relevant accepted `Not Now` items or placeholders.
 
+## Maintainer Research
+
+Maintainers improve the shipped pack offline:
+
+1. Use existing snapshots first.
+2. Read the pinned official tutorial baseline for product semantics and feature-family
+   membership. Its repository targets `public-beta`, so do not use it as stable-version
+   signature authority.
+3. Query a local spire-codex data dump or its attributed API for content facts.
+4. Inspect the pinned STS2 `0.107.1` and RitsuLib `0.5.11` code for exact signatures.
+5. Confirm build/load rules in `scaffold.py`, `ritsu_profile.py`, package metadata, and a
+   focused hosted proof.
+6. Add the complete documented API inventory and narrow known limitations to the
+   capability graph. Add the smallest reusable semantic/API result to a shipped
+   recipe/reference/error entry with its version and verification facts.
+
+The official tutorial checkout and other `baselines/` research are maintainer inputs only; only
+their reviewed distillations belong in the shipped pack, and shipped files never tell a user's
+runtime to read them.
+
 ## Developer Commands
 
 ```powershell

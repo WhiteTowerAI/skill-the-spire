@@ -14,8 +14,8 @@ decision* while resolving something else. "When my turn starts, gain 3 Block" is
 the engine simply consults every listener while computing the number.
 
 That distinction is why this route exists. A behavior of the second kind, written as prose in
-an effect sequence, has historically been generated as an empty method — the pipeline recorded
-the requirement, an operation passed, and the multiplier was never there. Declare it as hook
+an effect sequence, is easily generated as an empty method: the requirement is recorded, an
+operation passes, and the multiplier never exists. Declare it as hook
 participation and the number, the guard, and the neutral case each become checkable.
 
 ## The catalog decides what your surface may declare
