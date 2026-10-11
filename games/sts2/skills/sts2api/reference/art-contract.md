@@ -16,14 +16,14 @@
 > and that every spec in the catalog has a row, so the two cannot drift apart. Do not
 > hand-edit the catalog, and do not re-derive a size by eye.
 >
-> **How the placeholder mechanism works (read this first).** The scaffolded card/relic/
-> power bases resolve each sprite path with a `ResourceLoader.Exists(path)` check and, if
-> the file is absent, **fall back to a template default** (`card.png`, `relic.png`, …).
-> So "use a placeholder" = *do nothing* — the fallback fires and the mod loads on the
-> default art. "Generate/import a custom sprite" = drop the correctly-named PNG at the
-> path below and rebuild the `.pck`. That is the entire operation; there is no
-> registration step. Verified against a scaffolded mod's
-> `<ModName>Code/Extensions/StringExtensions.cs`.
+> **How the placeholder mechanism works (read this first).** A RitsuLib content template
+> shows custom art only through its explicit asset profile: `CardAssetProfile`,
+> `RelicAssetProfile`, `PotionAssetProfile`, `PowerAssetProfile`, and so on. RitsuLib checks
+> each profile path and keeps the template or base-game fallback when the file is absent or
+> the profile field is empty. So "use a placeholder" = *omit the profile override*. "Generate/
+> import a custom sprite" = write the correctly-named PNG at the path below, **and** point the
+> model's profile at that same `res://<ModName>/…` path (the surface recipe shows the
+> override), then rebuild the `.pck`. A PNG that no profile names never reaches the game.
 > Normal events and enchantments have no scaffolded base helper. A concrete event must
 > check its mod path and return the verified vanilla portrait when absent. A concrete
 > enchantment must check its mod path and return `null` when absent so the original getter
@@ -69,10 +69,11 @@ Every path resolves under the mod's own resource root:
 res://<ModName>/images/<sub-path>/<slug>.png
 ```
 
-- `<ModName>` — the mod name (== `MainFile.ResPath`'s tail).
-- `<slug>` — `Id.Entry.RemovePrefix().ToLowerInvariant()` (the same lowercased,
-  prefix-stripped id used for the loc keys). A card with id `FIREBOLT-FIREBOLT` →
-  slug `firebolt` → `firebolt.png`.
+- `<ModName>` — the Mod name; `build.py` packs `<project>/<ModName>/` under exactly this
+  `res://<ModName>/` prefix.
+- `<slug>` — the element's lowercase snake-case logical id from SPEC, for example
+  `quick_jab` for the Card class `QuickJab` → `quick_jab.png`. RitsuLib does not derive it:
+  write the same literal path in the PNG location and in the model's asset profile.
 - The image only reaches the game **through the `.pck`**, so any art change needs a
   `.pck` rebuild (PckPacker / `build.py`) — a plain `dotnet build` of code alone won't
   pick it up. (Same rule as localization; see `build-constraints.md`.)
@@ -491,7 +492,7 @@ using STS2RitsuLib.Scaffolding.Godot;
 public static string FallbackVisualPath =>
     SceneHelper.GetScenePath("creature_visuals/fallback");
 public static string ModVisualPath =>
-    $"{MainFile.ResPath}/images/monsters/<slug>.png";
+    "res://<ModName>/images/monsters/<slug>.png";
 
 public override MonsterAssetProfile AssetProfile => new(FallbackVisualPath);
 public override bool HasDeathSfx => false;
@@ -535,7 +536,7 @@ the convention-derived missing path from preloading when the profile uses a diff
 public const string FallbackPortraitPath = "res://images/events/this_or_that.png";
 
 public static string ModPortraitPath =>
-    $"{MainFile.ResPath}/images/events/<slug>.png";
+    "res://<ModName>/images/events/<slug>.png";
 
 private string DefaultInitialPortraitPath =>
     $"res://images/events/{Id.Entry.ToLowerInvariant()}.png";

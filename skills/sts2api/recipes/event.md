@@ -66,7 +66,7 @@ public sealed class <Name> : ModEventTemplate
 {
     public const string FallbackPortraitPath = "res://images/events/this_or_that.png";
     public static string ModPortraitPath =>
-        $"{MainFile.ResPath}/images/events/<slug>.png";
+        "res://<ModName>/images/events/<slug>.png";
 
     private string DefaultInitialPortraitPath =>
         $"res://images/events/{Id.Entry.ToLowerInvariant()}.png";
@@ -260,7 +260,7 @@ path for normal Event portraits; it does not extend the deferred scene/VFX surfa
 
 ```csharp
 public static string ResultPortraitPath =>
-    $"{MainFile.ResPath}/images/events/<event-slug>_<page-key-lower>.png";
+    "res://<ModName>/images/events/<event-slug>_<page-key-lower>.png";
 
 private void ShowResultPortraitIfPresent()
 {

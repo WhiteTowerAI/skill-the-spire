@@ -129,6 +129,11 @@ copy of the exact epoch id for the override filters. For `disabled`, filter that
 model unconditionally. Every other model passes through unchanged.
 
 ```csharp
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.RelicPools;
+using MegaCrit.Sts2.Core.Unlocks;
+using STS2RitsuLib.Patching.Models;
+
 internal sealed class VanillaRelicEpochGatePatch : IPatchMethod
 {
     public static string PatchId => "skillthespire_relic_epoch_gate";

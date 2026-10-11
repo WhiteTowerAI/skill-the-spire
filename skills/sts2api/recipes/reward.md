@@ -53,6 +53,12 @@ Derive from `ModCustomReward(Player)`. The base supplies `RewardsSetIndex == 9`,
 icon loading, and save-data creation. Implement the dynamic type, claim, and seen-state behavior:
 
 ```csharp
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Rewards;
+using MegaCrit.Sts2.Core.Saves.Runs;
+using STS2RitsuLib.Combat.Rewards;
+
 internal sealed class InsightReward(Player player, int amount) : ModCustomReward(player)
 {
     internal int Amount { get; } = amount;

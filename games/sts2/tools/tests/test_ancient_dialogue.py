@@ -227,5 +227,74 @@ class AncientDialogueTests(unittest.TestCase):
                 validate_project_ancient_dialogue(root, "Proof")
 
 
+MOD_ANCIENT = "PROOF_EVENT_SAGE"
+
+
+def mod_ancient_table() -> dict[str, str]:
+    """The shape recipes/ancient.md tells a new Ancient to ship in ancients.json."""
+    return {
+        f"{MOD_ANCIENT}.title": "Sage",
+        f"{MOD_ANCIENT}.epithet": "The Patient",
+        f"{MOD_ANCIENT}.pages.INITIAL.description": "A sage waits.",
+        f"{MOD_ANCIENT}.pages.INITIAL.options.LEAVE.title": "Leave",
+        f"{MOD_ANCIENT}.pages.INITIAL.options.LEAVE.description": "Walk away.",
+        f"{MOD_ANCIENT}.pages.DONE.description": "The sage nods.",
+        f"{MOD_ANCIENT}.talk.firstVisitEver.0-0.ancient": "You came.",
+        f"{MOD_ANCIENT}.talk.firstVisitEver.0-0.next": "Listen",
+        f"{MOD_ANCIENT}.talk.firstVisitEver.0-1.ancient": "Choose.",
+        f"{MOD_ANCIENT}.talk.firstVisitEver.0-1.ancient.sfx": "event:/sfx/sage",
+        f"{MOD_ANCIENT}.talk.ANY.0-0.ancient": "Again.",
+    }
+
+
+class ModAncientTests(unittest.TestCase):
+    def write(self, root: Path, table: dict[str, str], characters: bool = False) -> None:
+        for language in ("eng", "zhs"):
+            localization = root / "Proof" / "localization" / language
+            localization.mkdir(parents=True, exist_ok=True)
+            (localization / "ancients.json").write_text(json.dumps(table), encoding="utf-8")
+            if characters:
+                (localization / "characters.json").write_text(
+                    json.dumps({f"{CHARACTER}.title": "Wayfinder"}), encoding="utf-8"
+                )
+
+    def test_new_ancient_without_character_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(Path(tmp), mod_ancient_table())
+            self.assertIn("1 Mod Ancient(s)", validate_project_ancient_dialogue(Path(tmp), "Proof"))
+
+    def test_new_ancient_beside_character_dialogue_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(Path(tmp), {**complete_table(), **mod_ancient_table()}, characters=True)
+            summary = validate_project_ancient_dialogue(Path(tmp), "Proof")
+            self.assertIn("1 Character(s)", summary)
+            self.assertIn("1 Mod Ancient(s)", summary)
+
+    def test_new_ancient_structure_is_checked(self) -> None:
+        cases = {
+            "requires .epithet": lambda t: t.pop(f"{MOD_ANCIENT}.epithet"),
+            "requires .title and .description": lambda t: t.pop(
+                f"{MOD_ANCIENT}.pages.INITIAL.options.LEAVE.description"
+            ),
+            "terminal line must not have a .next": lambda t: t.update(
+                {f"{MOD_ANCIENT}.talk.ANY.0-0.next": "Continue"}
+            ),
+            "unsupported ancients.json key": lambda t: t.update({f"{MOD_ANCIENT}.flavor": "x"}),
+        }
+        for message, mutate in cases.items():
+            table = mod_ancient_table()
+            mutate(table)
+            with self.subTest(message=message), tempfile.TemporaryDirectory() as tmp:
+                self.write(Path(tmp), table)
+                with self.assertRaisesRegex(AncientDialogueValidationError, message):
+                    validate_project_ancient_dialogue(Path(tmp), "Proof")
+
+    def test_character_dialogue_on_vanilla_ancient_still_needs_characters_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(Path(tmp), {**complete_table(), **mod_ancient_table()})
+            with self.assertRaisesRegex(AncientDialogueValidationError, "characters.json"):
+                validate_project_ancient_dialogue(Path(tmp), "Proof")
+
+
 if __name__ == "__main__":
     unittest.main()

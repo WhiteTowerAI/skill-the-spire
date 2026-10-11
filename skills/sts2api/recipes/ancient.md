@@ -70,10 +70,13 @@ format genuinely cannot express the requested structure. Ship matching `eng` and
   "<ENTRY>.pages.DONE.description": "<finished text>",
   "<ENTRY>.talk.firstVisitEver.0-0.ancient": "<line>",
   "<ENTRY>.talk.firstVisitEver.0-0.next": "<prompt>",
-  "<ENTRY>.talk.ANY.0-0.ancient": "<line>",
-  "<ENTRY>.talk.ANY.0-0.next": "<prompt>"
+  "<ENTRY>.talk.firstVisitEver.0-1.ancient": "<last line>",
+  "<ENTRY>.talk.ANY.0-0.ancient": "<line>"
 }
 ```
+
+`.next` is the button that advances to the following line, so only a non-terminal line has
+one; vanilla never puts `.next` on a dialogue's last line, and Build rejects it.
 
 Title and epithet stay plain. Page and option descriptions follow the Event rows of
 `reference/vanilla-text-style.md` (`Lose [red]{HpLoss}[/red] HP. Obtain [gold]{Relic}[/gold].`);

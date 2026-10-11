@@ -431,6 +431,13 @@ content-pack Card registration. Do not create a second id rule.
 
 **Single-target attack — `StrikeIronclad` shape (Attack, AnyEnemy):**
 ```csharp
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.ValueProps;
+using STS2RitsuLib.Scaffolding.Content;
+
 public sealed class QuickJab : ModCardTemplate
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>
@@ -454,6 +461,14 @@ public sealed class QuickJab : ModCardTemplate
 
 **Self block — `DefendIronclad` shape (Skill, Self):**
 ```csharp
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.ValueProps;
+using STS2RitsuLib.Scaffolding.Content;
+
 public sealed class Brace : ModCardTemplate
 {
     public override bool GainsBlock => true;
@@ -474,6 +489,14 @@ public sealed class Brace : ModCardTemplate
 
 **Gain a power — `Inflame` shape (Power, Self):**
 ```csharp
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models.Powers;
+using STS2RitsuLib.Scaffolding.Content;
+
 public sealed class Bulk : ModCardTemplate
 {
     protected override IEnumerable<DynamicVar> CanonicalVars =>

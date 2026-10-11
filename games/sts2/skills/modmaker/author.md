@@ -114,7 +114,7 @@ keyboard. Follow `${STS2API_SKILL_DIR}/reference/selftest-harness.md`:
 1. Emit `<ModName>Code/SelfTest.cs` from that page. The arg gate, menu-to-run navigation,
    timeout, catch, terminal markers, and ship-safety are shared; the hosted room entry is
    scenario-specific. Keep it in the **same namespace as `MainFile.cs`**
-   (`<ModName>.<ModName>Code`) so it reaches `MainFile.Logger`.
+   (`<ModName>`; the scaffold writes `namespace <ModName>;`) so it reaches `MainFile.Logger`.
 2. Fill **exactly one** source driver body from the source element's surface page
    § Self-test driver body. A **power**, **keyword**, or **enchantment** adds its assertions to
    its host Card's run; an **orb** is driven through its channel host. For a multi-element SPEC,

@@ -24,6 +24,10 @@ RitsuLibFramework.CreateContentPack(ModId)
 ```
 
 ```csharp
+using MegaCrit.Sts2.Core.Entities.Players;
+using STS2RitsuLib.Models;
+using STS2RitsuLib.Utils;
+
 public sealed class <OptionOwner> : HookedSingletonModel
 {
     private static readonly AttachedState<Player, bool> KeepRemainingOnce = new();

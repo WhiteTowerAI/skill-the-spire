@@ -164,11 +164,15 @@ private Task ChallengeGuardian()
     return Task.CompletedTask;
 }
 
+// How many times the engine resumed this instance; the SelfTest asserts it.
+public int ResumeCount { get; private set; }
+
 public override Task Resume(AbstractRoom exitedRoom)
 {
     if (exitedRoom is not CombatRoom { Encounter: MyEncounter })
         throw new InvalidOperationException($"Unexpected room resumed into event: {exitedRoom}");
 
+    ResumeCount++;
     SetEventState(
         PageDescription("RETURNED"),
         new[]
