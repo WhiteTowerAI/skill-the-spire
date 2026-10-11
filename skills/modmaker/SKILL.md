@@ -2,8 +2,8 @@
 name: modmaker
 description: |
   Build a working Slay the Spire 2 mod from a one-sentence natural-language
-  description. Use when the user wants Codex to create, generate, or
-  build an STS2 mod end to end: design, author, build, and verify it in-game.
+  description. Use when the user wants to create, generate, or build an STS2
+  mod end to end: design, author, build, and verify it in-game.
 ---
 
 # STS2 Mod Maker

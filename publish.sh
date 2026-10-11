@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
-# Publish the Skill the Spire STS2 skill source into a runtime-specific layout.
+# Publish the Skill the Spire STS2 skill source into the committed skills/ payload.
 #
 # Turns the source under games/sts2/skills/ (which uses ${VAR} placeholders)
-# into a ready-to-load Codex or portable Agent Skills tree.
+# into a ready-to-load Agent Skills tree.
 #
 # Usage:
-#   ./publish.sh --agent codex [--out <target_dir>] [--force]
-#   ./publish.sh --agent codex                # defaults --out to this repo root
-#   ./publish.sh --plugin [--force]           # render the committed Codex plugin payload
-#   ./publish.sh --portable [--force]         # render the committed cross-agent payload (skills.sh)
+#   ./publish.sh [--force]                    # render the committed top-level skills/
+#   ./publish.sh --agent codex [--out <dir>]  # render a local Codex dev copy
 #
-# Three shapes:
+# Two shapes:
+#   (default)      : the SHIP flow. Renders into the repo's top-level skills/ (COMMITTED).
+#                    This one tree serves every distribution: `npx skills add` discovers it,
+#                    and the Codex (.codex-plugin/) and Claude Code (.claude-plugin/) plugin
+#                    manifests at the repo root both point at it. Tools are bundled inside
+#                    skills/modmaker/scripts/ and referenced by RELATIVE path (the Agent Skills
+#                    spec convention). The bundled tools are Python (.py), so they run on
+#                    Windows/macOS/Linux.
 #   --agent codex  : the DEV flow. Renders into <out>/.agents/skills/ (git-ignored).
-#   --plugin       : the Codex SHIP flow. Renders into plugins/skill-the-spire/skills/
-#                    (COMMITTED), including tools in the modmaker skill's scripts/ folder.
-#   --portable     : the CROSS-AGENT ship flow. Renders into the repo's top-level skills/
-#                    (COMMITTED) — the layout skills.sh (`npx skills add`) auto-discovers and
-#                    installs into Codex / Cursor / OpenClaw / etc. Tools are bundled inside
-#                    skills/modmaker/scripts/ and referenced by RELATIVE path (the AgentSkills
-#                    spec convention).
-#                    The bundled tools are Python (.py), so they run on Windows/macOS/Linux.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -29,11 +26,9 @@ SRC="$REPO_ROOT/games/sts2/skills"
 AGENT=""
 OUT=""
 FORCE=0
-PLUGIN=0
-PORTABLE=0
 
 usage() {
-    sed -n '1,32p' "$0" >&2
+    sed -n '1,19p' "$0" >&2
 }
 
 # Pick a working Python 3. On Windows the bare `python3` on PATH is often the
@@ -58,8 +53,6 @@ while [ $# -gt 0 ]; do
         --agent)    AGENT="${2:-}"; shift 2 ;;
         --out)      OUT="${2:-}";   shift 2 ;;
         --force)    FORCE=1;        shift   ;;
-        --plugin)   PLUGIN=1;       shift   ;;
-        --portable) PORTABLE=1;     shift   ;;
         -h|--help) usage; exit 0 ;;
         -*) echo "error: unknown option $1" >&2; usage; exit 1 ;;
         *)
@@ -77,34 +70,17 @@ PYTHON="$(find_python)" || {
     exit 1
 }
 
-MODE_COUNT=$((PLUGIN + PORTABLE))
-[ -n "$AGENT" ] && MODE_COUNT=$((MODE_COUNT + 1))
-if [ "$MODE_COUNT" -gt 1 ]; then
-    echo "error: use exactly one of --agent, --plugin, --portable." >&2
-    usage; exit 1
-fi
-
-# The source description names the runtime, while all installed paths stay relative to
-# the current skill so Codex can relocate/cache the plugin safely.
-AGENT_NAME="Codex"
-
-if [ "$PLUGIN" -eq 1 ]; then
-    PAYLOAD_ROOT_REL="plugins/skill-the-spire"
-    SKILLS_DIR_REL="plugins/skill-the-spire/skills"
-elif [ "$PORTABLE" -eq 1 ]; then
-    PAYLOAD_ROOT_REL="skills"
-    SKILLS_DIR_REL="skills"
-else
-    case "$AGENT" in
-        codex)
-            PAYLOAD_ROOT_REL=".agents/skills"
-            SKILLS_DIR_REL=".agents/skills"
-            ;;
-        *)
-            echo "error: pass --plugin (Codex ship), --portable (cross-agent ship), or --agent codex (dev)." >&2
-            usage; exit 1 ;;
-    esac
-fi
+case "$AGENT" in
+    "")
+        SKILLS_DIR_REL="skills"
+        ;;
+    codex)
+        SKILLS_DIR_REL=".agents/skills"
+        ;;
+    *)
+        echo "error: --agent accepts only codex; omit it to render the committed skills/." >&2
+        usage; exit 1 ;;
+esac
 
 TOOLS_DIR_REL="$SKILLS_DIR_REL/modmaker/scripts"
 MODMAKER_SKILL_DIR="."
@@ -118,11 +94,10 @@ fi
 TARGET="$(cd "$OUT" 2>/dev/null && pwd || (mkdir -p "$OUT" && cd "$OUT" && pwd))"
 
 SKILLS_DIR_ABS="$TARGET/$SKILLS_DIR_REL"
-PAYLOAD_ROOT_ABS="$TARGET/$PAYLOAD_ROOT_REL"
 
-if [ "$FORCE" -eq 1 ] && [ -d "$PAYLOAD_ROOT_ABS" ]; then
-    echo "Force: cleaning $PAYLOAD_ROOT_ABS"
-    rm -rf "${PAYLOAD_ROOT_ABS:?}"
+if [ "$FORCE" -eq 1 ] && [ -d "$SKILLS_DIR_ABS" ]; then
+    echo "Force: cleaning $SKILLS_DIR_ABS"
+    rm -rf "${SKILLS_DIR_ABS:?}"
 fi
 
 # Stage into a temp dir, render placeholders, then sync into place.
@@ -134,7 +109,6 @@ cp -R "$SRC/modmaker/." "$TMP/modmaker/"
 cp -R "$SRC/sts2api/." "$TMP/sts2api/"
 
 $PYTHON "$HELPERS/render_dir.py" "$TMP" \
-    "AGENT_NAME=$AGENT_NAME" \
     "MODMAKER_SKILL_DIR=$MODMAKER_SKILL_DIR" \
     "STS2API_SKILL_DIR=$STS2API_SKILL_DIR" \
     "GAME_TOOLS_DIR=$GAME_TOOLS_DIR"
@@ -165,25 +139,15 @@ for t in "$REPO_ROOT"/games/sts2/tools/*.py; do
     cp "$t" "$TOOLS_DIR_ABS/"
 done
 
-if [ "$PLUGIN" -eq 1 ]; then
-    mkdir -p "$PAYLOAD_ROOT_ABS/.codex-plugin"
-    cp "$HELPERS/plugin.json" "$PAYLOAD_ROOT_ABS/.codex-plugin/plugin.json"
-    cp "$HELPERS/plugin-generated.md" "$PAYLOAD_ROOT_ABS/GENERATED.md"
-elif [ "$PORTABLE" -eq 1 ]; then
-    cp "$HELPERS/portable-generated.md" "$PAYLOAD_ROOT_ABS/GENERATED.md"
-fi
-
-echo "Published STS2 skill for $AGENT_NAME -> $SKILLS_DIR_ABS"
+echo "Published STS2 skills -> $SKILLS_DIR_ABS"
 echo "  modmaker:  $(count_files "$SKILLS_DIR_ABS/modmaker") files"
 echo "  sts2api:  $(count_files "$SKILLS_DIR_ABS/sts2api") files"
-if [ "$PLUGIN" -eq 1 ]; then
-    echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in skills/modmaker/scripts/)"
-    echo "Committed Codex plugin payload ready. Test locally with:"
-    echo "  codex plugin marketplace add $REPO_ROOT"
-    echo "  codex plugin add skill-the-spire@skill-the-spire"
-elif [ "$PORTABLE" -eq 1 ]; then
-    echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in skills/modmaker/scripts/)"
-    echo "Committed cross-agent payload ready. Install into any agent with:"
+echo "  tools:     $(count_files "$TOOLS_DIR_ABS") files (in modmaker/scripts/)"
+if [ -z "$AGENT" ]; then
+    cp "$HELPERS/generated.md" "$SKILLS_DIR_ABS/GENERATED.md"
+    echo "Committed skills payload ready. Install with any of:"
+    echo "  codex plugin marketplace add $REPO_ROOT && codex plugin add skill-the-spire@skill-the-spire"
+    echo "  claude plugin marketplace add $REPO_ROOT && claude plugin install skill-the-spire@skill-the-spire"
     echo "  npx skills add WhiteTowerAI/skill-the-spire"
 else
     echo "Start a new Codex thread, then invoke \$modmaker."

@@ -4,7 +4,7 @@ Repository guidance for coding agents working on Skill the Spire.
 
 ## Product
 
-Skill the Spire is a free Codex plugin that turns a non-programmer's description into a working
+Skill the Spire is a free Codex and Claude Code plugin that turns a non-programmer's description into a working
 game Mod. Slay the Spire 2 is the first supported game. Version `0.2.0` targets STS2 stable
 `0.107.1` and the RitsuLib `0.6.7` authoring/API baseline; `0.1.0` targeted RitsuLib
 `0.5.11`.
@@ -42,19 +42,22 @@ or evidence validator.
 - `games/sts2/tools/`: scaffold, build, pack, launch, log, profile, localization, art, catalog,
   and preflight tools.
 - `games/sts2/tests/`: current capability and verification guidance.
-- `scripts/publish/`: publisher helpers and plugin metadata.
+- `scripts/publish/`: publisher helpers and the generated notice.
+- `.codex-plugin/`, `.claude-plugin/`, `.agents/plugins/`: hand-maintained plugin and marketplace
+  manifests. The repository root is the plugin root for both Codex and Claude Code, and both load
+  top-level `skills/`. Keep the `version` in both `plugin.json` files equal.
 
-`plugins/skill-the-spire/` and top-level `skills/` are generated payloads. Never hand-edit them.
-After authoritative source validation, regenerate them with:
+Top-level `skills/` is the one generated payload, shared by both plugins and `npx skills add`.
+Never hand-edit it. After authoritative source validation, regenerate it with:
 
 ```powershell
-& 'D:\Git\bin\bash.exe' './publish.sh' '--plugin' '--force'
-& 'D:\Git\bin\bash.exe' './publish.sh' '--portable' '--force'
+& 'D:\Git\bin\bash.exe' './publish.sh' '--force'
 ```
 
-Run each mode once and check that the payload diff matches the source change. Run each mode
-twice only when the change touches `publish.sh` or `scripts/publish/`. The publisher owns payload
-layout, rendered path tokens, plugin metadata, and generated notices.
+Run it once and check that the payload diff matches the source change. Run it twice only when the
+change touches `publish.sh` or `scripts/publish/`. The publisher owns payload layout, rendered
+path tokens, and the generated notice. Skill text is shared by every agent, so keep it
+agent-neutral.
 
 ## Runtime Contract
 
@@ -126,10 +129,12 @@ python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
 git diff --check
 ```
 
-Before release, install the plugin from this checkout on the maintainer's machine with
-`codex plugin marketplace add <repo>` and `codex plugin add skill-the-spire@skill-the-spire`, then
-invoke `$modmaker` once. Do not leave `__pycache__` or other build output inside generated payload
-trees; it invalidates payload parity.
+Before release, install the plugin from this checkout on the maintainer's machine and invoke the
+skill once: in Claude Code with `claude plugin marketplace add <repo>` and
+`claude plugin install skill-the-spire@skill-the-spire`, then `/modmaker`. Also install it in Codex
+with `codex plugin marketplace add <repo>` and `codex plugin add skill-the-spire@skill-the-spire`,
+then `$modmaker`, when `.codex-plugin/` or `.agents/plugins/` changed. Do not leave `__pycache__`
+or other build output inside `skills/`; it invalidates payload parity.
 
 ## Git
 

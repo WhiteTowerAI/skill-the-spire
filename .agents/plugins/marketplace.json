@@ -7,8 +7,8 @@
     {
       "name": "skill-the-spire",
       "source": {
-        "source": "local",
-        "path": "./plugins/skill-the-spire"
+        "source": "url",
+        "url": "./"
       },
       "policy": {
         "installation": "AVAILABLE",
