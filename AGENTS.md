@@ -126,9 +126,10 @@ python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
 git diff --check
 ```
 
-Validate `plugins/skill-the-spire/` with the plugin validator and validate both generated skill
-roots with the skill validator before release. Do not leave `__pycache__` or other build output
-inside generated payload trees; it invalidates payload parity.
+Before release, install the plugin from this checkout on the maintainer's machine with
+`codex plugin marketplace add <repo>` and `codex plugin add skill-the-spire@skill-the-spire`, then
+invoke `$modmaker` once. Do not leave `__pycache__` or other build output inside generated payload
+trees; it invalidates payload parity.
 
 ## Git
 
