@@ -14,7 +14,6 @@
     ],
     "deny": [
       "Edit(./plugins/skill-the-spire/**)",
-      "Edit(./skills/**)",
       "Read(**/art-backend.json)"
     ]
   }
