@@ -250,6 +250,19 @@ build until the user supplies it.
 Whether placeholder or generated, the `.pck` build (`build.md`) is what makes the art reach the
 game; a code-only `dotnet build` won't (same rule as localization).
 
+## 4.5 Trace each Autotest scenario before Build
+
+A failed Tier 2 costs a full game launch. Before Build, walk every `## Autotest` scenario
+through the code you just wrote, in your head, and write nothing down:
+
+- the driver reaches the source the scenario names and triggers it the way the SPEC says;
+- the effect code produces exactly the expected post-state values, after upgrades and the
+  calculation timing the SPEC states;
+- every neutral, rejection, reset, or edge case in the scenario takes the branch it expects; and
+- the `state proof:` line is emitted only after its assertions pass.
+
+Fix any mismatch now. This trace is not a check result and is never reported as one.
+
 ## 5. Update state
 
 Record in `MEMORY.md`: the class name, the hook used, the exact loc keys written,
