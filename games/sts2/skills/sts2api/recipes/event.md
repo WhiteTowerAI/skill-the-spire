@@ -15,8 +15,9 @@ singleplayer scope; act-owned Ancients and permanent Event disable remain outsid
 For the full option-result vocabulary (blocking card selections, custom rewards,
 conditional pages, and resumable/terminal special combat), also read
 `reference/event-outcomes.md`. When SPEC selects the bounded normal-layout
-`portrait_halo` profile, read `reference/event-vfx.md`. When page or option descriptions
-use styled/animated vanilla text, read `reference/event-text-effects.md`. When enabled
+`portrait_halo` profile, read `reference/event-vfx.md`. Every page and option string
+follows `reference/vanilla-text-style.md`; when SPEC selects `extra atmosphere`, also read
+`reference/event-text-effects.md`. When enabled
 options use typed Hover Tips, relic-backed presentation, or exact HP/Max HP warnings, read
   `reference/event-option-presentation.md`. When custom Quest Cards declare a finite
   prioritized mapping or sequence that can force this Event in selected acts, read
@@ -126,12 +127,35 @@ shape. RitsuLib's normalized entry is `<MOD>_EVENT_<TYPE>`:
 explicit upper-snake option name identical to the JSON segment; method names do not mint
 localization keys automatically.
 
-### Bounded rich text
+### Text style and rich text
 
 Normal Event page descriptions and option descriptions are rendered by the game's existing
-`MegaRichTextLabel`. They may use the vanilla-observed bounded tags from
-`reference/event-text-effects.md`: `b`; `aqua`, `blue`, `gold`, `green`, `orange`,
-`purple`, `red`; and the short motion tags `jitter` and `sine`.
+`MegaRichTextLabel`. By default they follow the Event rows of
+`reference/vanilla-text-style.md`:
+
+```json
+{
+  "<EVENT>.pages.INITIAL.description": "A cracked shrine hums in the dark.\n\nSomething [gold]glitters[/gold] beneath the altar.",
+  "<EVENT>.pages.INITIAL.options.PRAY.title": "Pray",
+  "<EVENT>.pages.INITIAL.options.PRAY.description": "Lose [red]{HpLoss}[/red] HP. [gold]Upgrade[/gold] a random card.",
+  "<EVENT>.pages.INITIAL.options.REST.description": "Heal [green]{Heal}[/green] HP."
+}
+```
+
+```json
+{
+  "<EVENT>.pages.INITIAL.description": "一座破裂的神龛在黑暗中嗡嗡作响。\n\n祭坛下有什么东西在[gold]闪烁[/gold]。",
+  "<EVENT>.pages.INITIAL.options.PRAY.title": "祈祷",
+  "<EVENT>.pages.INITIAL.options.PRAY.description": "失去[red]{HpLoss}[/red]点生命。随机[gold]升级[/gold]一张牌。",
+  "<EVENT>.pages.INITIAL.options.REST.description": "回复[green]{Heal}[/green]点生命。"
+}
+```
+
+Option descriptions color costs `[red]`, heals and gains `[green]`, counts `[blue]`, and
+glossary terms plus obtained Relic/Card names `[gold]`. Pages are second-person narrative
+with paragraphs separated by `\n\n`. Extra atmosphere beyond this may use the
+vanilla-observed bounded tags from `reference/event-text-effects.md`: `b`; `aqua`, `blue`,
+`gold`, `green`, `orange`, `purple`, `red`; and the short motion tags `jitter` and `sine`.
 
 Keep titles plain, balance/nest every tag, and do not emit arbitrary BBCode or parameters.
 This path needs no C# helper or cleanup code; page changes replace the host label's text.
@@ -354,8 +378,10 @@ and directly confirm the run-state consequence; the option marker is diagnostic 
       `res://images/events/this_or_that.png`, and filters the missing derived path
 - [ ] every selected initial/page portrait is an opaque `3440×1613`
       `images/events/<slot-slug>.png`; absent page art retains the current portrait
-- [ ] Event/page option titles are plain; description rich text uses only balanced bounded
-      tags from `reference/event-text-effects.md`
+- [ ] Event/page option titles are plain; descriptions follow the Event rows of
+      `reference/vanilla-text-style.md` (red costs, green gains, blue counts, gold terms) and
+      any extra atmosphere uses only balanced bounded tags from
+      `reference/event-text-effects.md`
 - [ ] blocking selection/reward Cmds are awaited before changing Event state
 - [ ] every room-changing Event is shared; each mutable Event instance enters at most one
       special combat; `shouldResumeAfterCombat` matches the authored post-combat branch

@@ -247,7 +247,11 @@ upgrade level rather than subtracting from an unknown state.
 Capability localization lives in the normal Mod resource tree. Use stable capability-entry
 keys such as `<MOD>_MODEL_CAPABILITY_<TYPE>.extraDescription` in the selected table. Supply
 required `eng` and `zhs` plus every additional language named by the accepted SPEC, and
-preserve SmartFormat variables.
+preserve SmartFormat variables. Write every fragment, title, and type text in the Card row of
+`reference/vanilla-text-style.md` so it blends with the vanilla body it joins: glossary terms
+in `[gold]` with their exact `eng`/`zhs` names, uncolored `:diff()` numbers, one effect per
+line, and Chinese full-width punctuation. A fragment that names a Power, keyword, or Card also
+adds its tip through `card.hover-tips`.
 Changing a gameplay effect and its player-facing text is one operation plan, even though
 the manifest records separate ordered surfaces.
 

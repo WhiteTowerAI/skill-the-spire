@@ -24,6 +24,12 @@ it. Members of an exclusivity group must be at least two distinct concrete Modif
 overlapping registered groups merge. Do not invent a setup-screen host or register one type as
 both good and bad.
 
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+the title stays plain; the description shows `[blue]` numbers, `[gold]` glossary terms, and
+`[red]` only for a harsh downside.
+
 ## Authoring route
 
 - Read `recipes/modifier.md` for `ModModifierTemplate`, good/bad registration, ordering,

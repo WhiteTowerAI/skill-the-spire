@@ -21,9 +21,15 @@ RitsuLibFramework.CreateContentPack(ModId)
 ```
 
 The qualified id is `MOD_KEYWORD_STEM`, for example
-`EXAMPLE_MOD_KEYWORD_RESONANT`. Use `BeforeCardDescription`,
-`AfterCardDescription`, or `None` intentionally. Keywords own no bitmap in skill-the-spire;
-keep `iconPath` null.
+`EXAMPLE_MOD_KEYWORD_RESONANT`. Keywords own no bitmap in skill-the-spire; keep `iconPath`
+null.
+
+Pick the placement by the pinned `CardKeywordOrder` meaning (`surfaces/keyword.md`
+§ Placement follows the vanilla order): `BeforeCardDescription` for hand/playability rules
+like `Ethereal`, `Sly`, `Retain`, `Innate`, `Unplayable`; `AfterCardDescription` for
+after-play/deck rules like `Exhaust`, `Eternal`; `None` only for a numbered keyword whose
+line the Card description writes itself (`[gold]Resonant[/gold] {Resonant:diff()}.`, the
+vanilla `Forge` shape).
 
 ## Attach to a Card
 
@@ -56,9 +62,21 @@ the rule is conditional. Ship matching `localization/eng/card_keywords.json` and
 ```json
 {
   "<MOD>_KEYWORD_<STEM>.title": "Resonant",
-  "<MOD>_KEYWORD_<STEM>.description": "Plain-language shared rule."
+  "<MOD>_KEYWORD_<STEM>.description": "When this card is played, also play the top card of your [gold]Draw Pile[/gold]."
 }
 ```
+
+```json
+{
+  "<MOD>_KEYWORD_<STEM>.title": "共鸣",
+  "<MOD>_KEYWORD_<STEM>.description": "打出这张牌时，同时打出你[gold]抽牌堆[/gold]顶的牌。"
+}
+```
+
+The description follows `reference/vanilla-text-style.md`: one or two sentences, other
+glossary terms in `[gold]`, Chinese full-width punctuation. Any other string that names the
+keyword writes `[gold]Resonant[/gold]` and declares
+`.. new[] { KeywordId }.ToHoverTips()` in its `AdditionalHoverTips`.
 
 `ModKeywordRegistry.GetTitle(id)` and `GetDescription(id)` expose the same localized
 strings. RitsuLib's hover tip uses a deliberate null icon when no icon path is registered.

@@ -36,7 +36,8 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   - fields: character name, description, and pronouns (in `characters.json`); all pool Card
     and Power titles/descriptions; all Ancient dialogue lines
   - table intent: `characters.json` plus element-specific tables
-  - formatting: plain | dynamic value placeholders for Cards and Powers
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`); description is two
+    short lines joined by `\n`; Cards and Powers follow their own surface rows
 - **effects**:
   - trigger: run start
   - target: player

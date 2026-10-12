@@ -75,6 +75,10 @@ format genuinely cannot express the requested structure. Ship matching `eng` and
 }
 ```
 
+Title and epithet stay plain. Page and option descriptions follow the Event rows of
+`reference/vanilla-text-style.md` (`Lose [red]{HpLoss}[/red] HP. Obtain [gold]{Relic}[/gold].`);
+dialogue follows `reference/ancient-dialogue.md` and keeps its spoken voice.
+
 Character dialogue uses `<ENTRY>.talk.<CHARACTER_ENTRY>.<dialogue>-<line>.<ancient|char>`.
 Dialogue and line indices start at zero and remain contiguous; an `r` after the line index marks
 a repeating dialogue, consistently for every line in that dialogue. Add `.next` only where the

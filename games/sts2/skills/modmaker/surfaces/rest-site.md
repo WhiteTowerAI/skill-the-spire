@@ -21,6 +21,13 @@ Settle and write:
 This maintained route does not promise variable/non-Gold costs, a player choice after payment,
 arbitrary rollback, same-visit successful repeat, or multiplayer.
 
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+the button title stays plain Title Case; the description is one sentence with `[blue]`
+counts, `[green]` heals and Max HP gains, and `[gold]` glossary terms
+(`[gold]Upgrade[/gold] a card in your [gold]Deck[/gold].`).
+
 ## Authoring route
 
 Read `recipes/rest-site.md` and `reference/rest-site-options.md`. The recipe selects the owner

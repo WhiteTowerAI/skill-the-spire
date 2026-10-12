@@ -32,11 +32,12 @@ custom/Ancient scenes are not.
   - fields: title, initial page description, every option title/description and result page;
     all in `events.json` under Mod-local keys
   - table intent: flat `events.json` entries
-  - formatting: plain | bounded vanilla rich text (descriptions only; titles plain)
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`): option descriptions
+    color costs red, gains green, counts blue, and terms gold; titles plain
   - displayed values: none | <value name -> the option/page text that shows it; declare one
     name per number the player reads, and reference it as a placeholder>
-  - text spans: <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis, aqua/blue/
-    gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
+  - extra atmosphere: none | <PAGE/OPTION_KEY -> exact phrase -> one or more of emphasis,
+    aqua/blue/gold/green/orange/purple/red, jitter, sine; descriptions only; titles plain>
 - **effects**:
   - trigger: option selection
   - target: player
@@ -197,7 +198,11 @@ Record each one in `displayed values`.
   page, portrait, combat, or finish transitions. Do not promote RitsuLib's arbitrary custom
   VFX/layout routes. Custom phobia
   art, arbitrary VFX, custom layouts, and Ancient background assets remain unsupported.
-- When SPEC selects vanilla Event text effects, apply only the exact bounded tags from
+- Write every page and option string in the default style of
+  `reference/vanilla-text-style.md`: option descriptions color costs `[red]`, heals and gains
+  `[green]`, counts `[blue]`, and glossary terms and obtained Relic/Card names `[gold]`; pages
+  are second-person narrative with paragraphs separated by `\n\n`; titles stay plain.
+- When SPEC selects `extra atmosphere`, apply only the exact bounded tags from
   `reference/event-text-effects.md` around the named phrases in `events.json` page/option
   descriptions. Keep titles plain; emit no helper node or cleanup code.
 - When an enabled option selects typed Hover Tips, pass the exact grounded
@@ -221,7 +226,8 @@ Record each one in `displayed values`.
 
 Event mechanics route to `recipes/event.md`, full outcomes to
 `reference/event-outcomes.md`, the optional halo to `reference/event-vfx.md`, and bounded
-description styling to `reference/event-text-effects.md`. Enabled typed option tips, normal
+description style to `reference/vanilla-text-style.md`, extra atmospheric spans to
+`reference/event-text-effects.md`. Enabled typed option tips, normal
 relic-backed text/metadata, and exact HP/Max HP warnings route to
 `reference/event-option-presentation.md`. A selected forced follow-up routes to
 `reference/forced-followup-event.md`. Native Card/relic acquisition presentation,

@@ -1148,7 +1148,7 @@ visible and animating (or intentionally static in Instant mode), then prove it i
 page/combat transitions. Delay screenshots until the option UI and room fade are visibly
 settled; a node path or near-black transition frame is not visual evidence.
 
-If SPEC selects bounded Event rich text, follow `reference/event-text-effects.md` in this
+If SPEC selects Event `extra atmosphere`, follow `reference/event-text-effects.md` in this
 same `MapNode` run. Resolve `%EventDescription` as a BBCode-enabled `MegaRichTextLabel`,
 assert every required allowed host effect type is installed and the exact balanced tags reached its raw text,
 then switch to a second authored page and prove the same label contains the new tags but

@@ -133,10 +133,11 @@ rm -rf "${TOOLS_DIR_ABS:?}"
 mkdir -p "$TOOLS_DIR_ABS"
 for t in "$REPO_ROOT"/games/sts2/tools/*.py; do
     # Catalog collection is a repository-maintainer workflow: one needs a C# project/template,
-    # the other reads the gitignored decompile under baselines/. Neither can run in a user's
-    # runtime, and generated Mods need only the checked catalogs plus their validators.
+    # one reads the gitignored decompile under baselines/, and one reads the installed game's
+    # PCK. None runs in a user's runtime, and generated Mods need only the checked catalogs
+    # plus their validators.
     case "$(basename "$t")" in
-        collect_vanilla_catalog.py|collect_model_hooks.py) continue ;;
+        collect_vanilla_catalog.py|collect_model_hooks.py|collect_text_glossary.py) continue ;;
     esac
     cp "$t" "$TOOLS_DIR_ABS/"
 done

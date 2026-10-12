@@ -238,6 +238,18 @@ RitsuLib uses the normalized public entry
 <CHAR_ID>.banter.dead.endTurnPing
 ```
 
+Write them in the vanilla style of `reference/vanilla-text-style.md`:
+
+- `title`/`titleObject`: the plain display name (`The Silent` / `静默猎手`);
+- `description`: two short plain sentences joined by `\n`, identity then fighting style
+  (`A huntress from outside the Spire.\nReady to stab and poison anything in her way.`);
+- pronoun keys: the bare word (`she`, `her`, `hers` / `她`, `她的`);
+- `cardsModifierTitle`: `<Name> Cards`; `cardsModifierDescription`:
+  `<Name> cards will now appear in rewards and shops.`;
+- spoken lines (`goldMonologue`, `eventDeathPrevention`, `aromaPrinciple`, banter): short,
+  in character, trailing `...` in English and `……` in Chinese; vanilla wraps murmurs in
+  `[sine]` and may tint `aromaPrinciple`, but plain is always valid.
+
 Also ship this complete repeating `ancients.json` group. It covers Architect win index
 zero and all later wins even when no optional Ancient dialogue was requested:
 

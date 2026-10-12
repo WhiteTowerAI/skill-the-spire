@@ -24,6 +24,12 @@ Settle and write every selected pile's:
   and
 - real-host SelfTest plus headed/controller cases for every selected lifetime and UI consumer.
 
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+the pile title stays plain Title Case; the description and empty text are short sentences
+with glossary terms in `[gold]` and counts in `[blue]`.
+
 ## Authoring route
 
 - Read `recipes/card-pile.md`, then the complete `reference/card-piles.md` API.

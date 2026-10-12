@@ -22,6 +22,12 @@ saved state from `reference/lifecycle-state-rng.md`. A rule that needs both run-
 combat-only dispatchers is two explicit owners or a redesigned truthful scope, never one singleton
 subscribed to both streams.
 
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+a visible rule uses the row of the consumer that shows it (Relic, Power, Modifier, or Hover
+Tip) in that page.
+
 ## Authoring route
 
 - Read `recipes/global-effect.md` for `HookedSingletonModel`, `.Singleton<T>()`, scope selection,

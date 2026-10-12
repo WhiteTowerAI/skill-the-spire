@@ -24,7 +24,8 @@ request -> DESIGN -> SPEC -> thin capability preflight -> Author + SelfTest
 The suite under `games/sts2/tools/tests/` protects product behavior and artifacts:
 
 - scaffold, local runtime resolution, profile identity, manifests, and build inputs;
-- localization table/key/token parity and nonempty bilingual values;
+- localization table/key/variable parity and nonempty bilingual values;
+- rich-text markup validity and vanilla text-style drift against the generated glossary;
 - resource packaging and deterministic art normalization/catalog projection;
 - model-hook catalog extraction, declaration shape, route ownership, and dispatch reachability;
 - capability preflight in repository and published payload layouts;

@@ -62,11 +62,22 @@ Use `afflictions.json` in `eng` and `zhs` once this surface has any localization
 
 ```json
 {
-  "<MOD>-<AFFLICTION>.title": "<title>",
-  "<MOD>-<AFFLICTION>.description": "<description using {Amount} when needed>",
-  "<MOD>-<AFFLICTION>.extraCardText": "<optional card text>"
+  "<MOD>-<AFFLICTION>.title": "Galvanized",
+  "<MOD>-<AFFLICTION>.description": "Take [blue]{Amount}[/blue] damage when this card is played.",
+  "<MOD>-<AFFLICTION>.extraCardText": "Take [blue]{Amount}[/blue] damage."
 }
 ```
+
+```json
+{
+  "<MOD>-<AFFLICTION>.title": "流电",
+  "<MOD>-<AFFLICTION>.description": "打出这张牌时受到[blue]{Amount}[/blue]点伤害。",
+  "<MOD>-<AFFLICTION>.extraCardText": "受到[blue]{Amount}[/blue]点伤害。"
+}
+```
+
+Follow the Affliction row of `reference/vanilla-text-style.md`: plain title, `[blue]` amounts,
+`[gold]` glossary terms, Energy through `energyIcons()`.
 
 Set `HasExtraCardText` only when the key exists. `RegisteredKeywordIds` and
 `AdditionalHoverTips` add display tips; they do not implement keyword behavior. A selected custom

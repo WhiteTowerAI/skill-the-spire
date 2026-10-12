@@ -29,10 +29,12 @@ for the whole SPEC by the host.
   - placement: applied by <the host element that applies it>
 - **localization**:
   - languages: [eng, zhs]
-  - fields: title=<shown name>; description=<hover text using {Amount}>
-  - smartDescription: <usually the same text; required>
-  - formatting: dynamic value placeholders; plain | bounded vanilla rich text
-  - text spans: <description phrase -> blue/gold; apply to smartDescription too>
+  - fields: title=<shown name>; description=<the general rule, without {Amount}: Card and
+    Relic tooltips show it before any stack exists>
+  - smartDescription: <the live rule with [blue]{Amount}[/blue]; required>
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`); dynamic value placeholders
+  - extra emphasis: none | <description phrase -> color the default style would not apply>
+  - hover tips: none | <each other Power, keyword, or Card the text names>
 - **effects**:
   - trigger: <the exact hook or passive boundary the behavior runs on>
   - target: owner | the creature the owner affects
@@ -122,8 +124,8 @@ value hook modifies its return value and cannot run an awaited effect sequence.
 
 ## Author the element class
 
-Read `reference/mechanics.md` and `recipes/power.md` first, `reference/content-text-effects.md`
-when `text spans` are selected, and `reference/extra-corner-labels.md` when an extra badge is
+Read `reference/mechanics.md`, `recipes/power.md`, and `reference/vanilla-text-style.md` first,
+`reference/content-text-effects.md` when `extra emphasis` is selected, and `reference/extra-corner-labels.md` when an extra badge is
 selected.
 
 **Custom power** — add `<ModName>Code/Powers/<PowerName>.cs` and extend `ModPowerTemplate`:

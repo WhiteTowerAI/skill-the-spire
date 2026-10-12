@@ -147,13 +147,27 @@ exact public entry:
 ```json
 {
   "<MOD>_POWER_<TYPE>.title": "Display Name",
-  "<MOD>_POWER_<TYPE>.description": "Rules text using {Amount}.",
-  "<MOD>_POWER_<TYPE>.smartDescription": "Rules text using {Amount}."
+  "<MOD>_POWER_<TYPE>.description": "At the start of your turn, gain [gold]Block[/gold].",
+  "<MOD>_POWER_<TYPE>.smartDescription": "At the start of your turn, gain [blue]{Amount}[/blue] [gold]Block[/gold]."
 }
 ```
 
-The game falls back from smart description at runtime, but the active authoring contract
-always emits all three keys.
+```json
+{
+  "<MOD>_POWER_<TYPE>.title": "显示名称",
+  "<MOD>_POWER_<TYPE>.description": "在你的回合开始时，获得[gold]格挡[/gold]。",
+  "<MOD>_POWER_<TYPE>.smartDescription": "在你的回合开始时，获得[blue]{Amount}[/blue]点[gold]格挡[/gold]。"
+}
+```
+
+The two descriptions have different jobs. The pinned `PowerModel.HoverTips` uses
+`.smartDescription` for a live, mutable Power, with `{Amount}` bound to its stacks. A Card,
+Relic, or Potion tooltip built from `HoverTipFactory.FromPower<T>()` shows the canonical
+model's `.description` with `{Amount}` bound to the canonical amount, usually 0. So
+`.description` states the general rule without `{Amount}` (a fixed number may appear as
+`[blue]2[/blue]`), and `.smartDescription` states the live rule with `[blue]{Amount}[/blue]`,
+as vanilla `DEMON_FORM_POWER` does. Both follow the Power row of
+`reference/vanilla-text-style.md`. The active authoring contract always emits all three keys.
 
 ## Verification
 

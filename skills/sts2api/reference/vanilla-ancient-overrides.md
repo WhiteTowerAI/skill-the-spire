@@ -320,13 +320,14 @@ directory, including required `eng` and `zhs`,
 ```json
 {
   "EXAMPLEMOD_ANCIENT_ENTER_WORKSHOP.title": "Enter the workshop",
-  "EXAMPLEMOD_ANCIENT_ENTER_WORKSHOP.description": "Pay 25 Gold. Gain 3 Max HP.",
+  "EXAMPLEMOD_ANCIENT_ENTER_WORKSHOP.description": "Pay [red]25[/red] [gold]Gold[/gold]. Gain [green]3[/green] Max HP.",
   "EXAMPLEMOD_ANCIENT_WORKSHOP_DESCRIPTION": "The work is complete."
 }
 ```
 
 Option keys are prefixes and require `.title` plus `.description`; page description keys
-are complete table entries. Build preflight rejects missing files, keys, and empty values.
+are complete table entries. Titles stay plain; descriptions follow the Event option row of
+`reference/vanilla-text-style.md` (`[red]` costs, `[green]` gains, `[gold]` terms). Build preflight rejects missing files, keys, and empty values.
 Do not put these non-dialogue keys in `ancients.json`; that table remains owned by native
 Ancient dialogue and the existing custom-Character dialogue route.
 

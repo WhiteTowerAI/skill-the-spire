@@ -339,8 +339,20 @@ prefixed keys derived by the same rule as every other type
 { "EXAMPLE_MOD_MONSTER_CLOCKWORK_MITE.name": "Clockwork Mite" }
 // encounters.json
 { "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.title": "Clockwork Mite",
-  "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.loss": "The Clockwork Mite has fallen." }
+  "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.loss": "{character} was ground down by [gold]{encounter}[/gold]." }
 ```
+
+```json
+// zhs
+{ "EXAMPLE_MOD_MONSTER_CLOCKWORK_MITE.name": "发条螨" }
+{ "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.title": "发条螨",
+  "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.loss": "{character}被[gold]{encounter}[/gold]碾碎了。" }
+```
+
+`.loss` is the run-summary line shown when the player dies to this Encounter, so it describes
+the player's defeat in the vanilla shape `{character} was <verb> by [gold]{encounter}[/gold].`
+Monster names, move titles, and Encounter titles stay plain Title Case
+(`reference/vanilla-text-style.md`).
 
 ## Art contract (one static body; animation deferred)
 

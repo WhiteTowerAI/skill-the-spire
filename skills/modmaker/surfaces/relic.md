@@ -27,8 +27,8 @@ and art in `reference/art-contract.md`. Shared proof machinery stays in `verify.
 - **localization**:
   - languages: [eng, zhs]
   - fields: title=<shown name>; description=<hover text>; flavor=<flavor line>
-  - formatting: plain | bounded vanilla rich text
-  - text spans: <description phrase -> semantic color intent>
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`); dynamic value placeholders
+  - extra emphasis: none | <description phrase -> color the default style would not apply>
   - displayed values: none | <value name -> declared scaling name; literal or placeholder>
 - **effects**:
   - trigger: <plain-language event and boundary, e.g. start of combat>
@@ -45,7 +45,7 @@ and art in `reference/art-contract.md`. Shared proof machinery stays in `verify.
   - assets: relic icon; placeholder | generate
   - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
   - native presentation: standard relic display
-  - keyword tips: none | <native or mod keyword named in the description>
+  - hover tips: none | <each keyword, Power, Card, or Orb named in the description>
   - extra badges: none | one to three
     - meaning: <player-facing auxiliary value, e.g. charges remaining>
       value: <state value or bounded display rule>
@@ -147,13 +147,13 @@ than accidental.
 Unlike a Card, a Relic gets no keyword tooltip from naming a keyword in its description.
 `ModRelicTemplate` surfaces tips only through its explicitly declared `RegisteredKeywordIds`
 and `AdditionalHoverTips`. If the description names a native or mod keyword, declare it in
-`presentation.keyword tips` and register it, or the player reads a term with nothing to
+`presentation.hover tips` and register it, or the player reads a term with nothing to
 hover.
 
 ## Author the element class
 
-Read `recipes/relic.md` for the skeleton and trigger hooks, `reference/content-text-effects.md`
-when `text spans` are selected, and `reference/extra-corner-labels.md` when extra badges are
+Read `recipes/relic.md` for the skeleton and trigger hooks, `reference/vanilla-text-style.md`
+for every string, `reference/content-text-effects.md` when `extra emphasis` is selected, and `reference/extra-corner-labels.md` when extra badges are
 selected.
 
 **Relic** — add `<ModName>Code/Relics/<RelicName>.cs`. Use the recipe skeleton, then:

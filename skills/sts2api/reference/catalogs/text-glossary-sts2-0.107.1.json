@@ -1,0 +1,5067 @@
+{
+ "schema": "skillthespire.sts2.text-glossary/v1",
+ "host": "0.107.1",
+ "terms": [
+  {
+   "eng": "A Thousand Cuts",
+   "zhs": "凌迟",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Accelerant",
+   "zhs": "触媒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Accuracy",
+   "zhs": "精准",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Act",
+   "zhs": "阶段",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 6,
+   "zhs_colored": 2,
+   "zhs_plain": 9
+  },
+  {
+   "eng": "Adaptable",
+   "zhs": "适者生存",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Adaptation",
+   "zhs": "适应",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Adroit",
+   "zhs": "伶俐",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Afterimage",
+   "zhs": "余像",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Aggression",
+   "zhs": "好勇斗狠",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Ancient",
+   "zhs": "先古之民",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Ancient Card",
+   "zhs": "先古牌",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Antechamber",
+   "zhs": "前厅",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Apotheosis",
+   "zhs": "神化",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Arsenal",
+   "zhs": "武器库",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Artifact",
+   "zhs": "人工制品",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Asleep",
+   "zhs": "沉睡",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Attack",
+   "zhs": "攻击牌",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 64,
+   "zhs_colored": 3,
+   "zhs_plain": 98
+  },
+  {
+   "eng": "Automation",
+   "zhs": "自动化",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Back Attack",
+   "zhs": "后方攻击",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Barricade",
+   "zhs": "壁垒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Beacon of Hope",
+   "zhs": "希望灯塔",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Biased Cognition",
+   "zhs": "偏差认知",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Black Hole",
+   "zhs": "黑洞",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Block",
+   "zhs": "格挡",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 229,
+   "eng_plain": 0,
+   "zhs_colored": 229,
+   "zhs_plain": 24,
+   "zhs_measure": "点"
+  },
+  {
+   "eng": "Block Next Turn",
+   "zhs": "下回合格挡",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Blur",
+   "zhs": "残影",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Borrowed Time",
+   "zhs": "预借时间",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Boss",
+   "zhs": "Boss",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 1,
+   "zhs_colored": 1,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Bound",
+   "zhs": "魂缚",
+   "color": "gold",
+   "kinds": [
+    "affliction",
+    "observed"
+   ],
+   "eng_colored": 4,
+   "eng_plain": 1,
+   "zhs_colored": 4,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Brightest Flame",
+   "zhs": "至亮之焰",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Buffer",
+   "zhs": "缓冲",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Burrowed",
+   "zhs": "埋地",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Burst",
+   "zhs": "爆发",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Calamity",
+   "zhs": "劫难",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Calcify",
+   "zhs": "钙化",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Call of the Void",
+   "zhs": "虚空之唤",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Card Reward",
+   "zhs": "卡牌奖励",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 24,
+   "zhs_measure": "次"
+  },
+  {
+   "eng": "Chains of Binding",
+   "zhs": "魂缚锁链",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Channel",
+   "zhs": "生成",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 37,
+   "eng_plain": 0,
+   "zhs_colored": 39,
+   "zhs_plain": 17
+  },
+  {
+   "eng": "Channeled",
+   "zhs": "充能球",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 4,
+   "zhs_plain": 72
+  },
+  {
+   "eng": "Child of the Stars",
+   "zhs": "群星之子",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Clarity",
+   "zhs": "明晰",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Clone",
+   "zhs": "克隆",
+   "color": "purple",
+   "kinds": [
+    "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Colossus",
+   "zhs": "巨像",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Common",
+   "zhs": "普通",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 3,
+   "zhs_colored": 2,
+   "zhs_plain": 6
+  },
+  {
+   "eng": "Compendium",
+   "zhs": "百科大全",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Confused",
+   "zhs": "混乱",
+   "color": "red",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Conqueror",
+   "zhs": "征服者",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Constrict",
+   "zhs": "紧缠",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Consuming Shadow",
+   "zhs": "吞噬暗影",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Contractility",
+   "zhs": "伸缩力",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Cook",
+   "zhs": "烹饪",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Coolant",
+   "zhs": "冷却剂",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Corrosive Wave",
+   "zhs": "腐蚀波",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Corrupted",
+   "zhs": "腐化",
+   "color": "purple",
+   "kinds": [
+    "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Corruption",
+   "zhs": "腐化",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Countdown",
+   "zhs": "倒数计时",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Covered",
+   "zhs": "掩护",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Crab Rage",
+   "zhs": "蟹之怒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Creative AI",
+   "zhs": "创造性AI",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Crimson Mantle",
+   "zhs": "绯红披风",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Cruelty",
+   "zhs": "残酷",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Curious",
+   "zhs": "好奇",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Curl Up",
+   "zhs": "蜷身",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Curse",
+   "zhs": "诅咒",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 4,
+   "eng_plain": 0,
+   "zhs_colored": 6,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Curses",
+   "zhs": "诅咒",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 6,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Dampen",
+   "zhs": "抑制",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Danse Macabre",
+   "zhs": "死亡之舞",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Dark",
+   "zhs": "黑暗",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "orb"
+   ],
+   "eng_colored": 8,
+   "eng_plain": 0,
+   "zhs_colored": 8,
+   "zhs_plain": 0,
+   "zhs_measure": "个"
+  },
+  {
+   "eng": "Dark Embrace",
+   "zhs": "黑暗之拥",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Dazed",
+   "zhs": "晕眩",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 5,
+   "eng_plain": 0,
+   "zhs_colored": 5,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Debilitate",
+   "zhs": "摧残",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Debris",
+   "zhs": "碎屑",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Deck",
+   "zhs": "牌组",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 109,
+   "eng_plain": 1,
+   "zhs_colored": 110,
+   "zhs_plain": 7
+  },
+  {
+   "eng": "Decree of Entropy",
+   "zhs": "熵之律令",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Decree of Unmaking",
+   "zhs": "亡之律令",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Defend",
+   "zhs": "附魔",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 3,
+   "zhs_colored": 37,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Defends",
+   "zhs": "防御",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 9,
+   "eng_plain": 0,
+   "zhs_colored": 12,
+   "zhs_plain": 3
+  },
+  {
+   "eng": "Demesne",
+   "zhs": "领域",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Demise",
+   "zhs": "消亡",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Demon Form",
+   "zhs": "恶魔形态",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Despair",
+   "zhs": "绝望",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Devour Life",
+   "zhs": "吞噬生命",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Dexterity",
+   "zhs": "敏捷",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 33,
+   "eng_plain": 1,
+   "zhs_colored": 33,
+   "zhs_plain": 1,
+   "zhs_measure": "点"
+  },
+  {
+   "eng": "Dexterity Down",
+   "zhs": "敏捷下降",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Diamond Diadem",
+   "zhs": "钻石头冠",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Die for You",
+   "zhs": "为你而死",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Discard Pile",
+   "zhs": "弃牌堆",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 26,
+   "eng_plain": 0,
+   "zhs_colored": 26,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Disintegration",
+   "zhs": "瓦解",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Divine",
+   "zhs": "占卜",
+   "color": "purple",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Doll Relics",
+   "zhs": "玩偶遗物",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Doom",
+   "zhs": "灾厄",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 38,
+   "eng_plain": 1,
+   "zhs_colored": 38,
+   "zhs_plain": 1,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Double Damage",
+   "zhs": "双倍伤害",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 8
+  },
+  {
+   "eng": "Doubt",
+   "zhs": "疑虑",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Downgrade",
+   "zhs": "降级",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Draw Cards Next Turn",
+   "zhs": "下回合抽牌",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Draw Pile",
+   "zhs": "抽牌堆",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 66,
+   "eng_plain": 0,
+   "zhs_colored": 65,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Duplication",
+   "zhs": "复制",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 17
+  },
+  {
+   "eng": "Echo Form",
+   "zhs": "回响形态",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Elite",
+   "zhs": "精英",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 5,
+   "eng_plain": 1,
+   "zhs_colored": 9,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Elites",
+   "zhs": "精英",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 1,
+   "zhs_colored": 9,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Enchant",
+   "zhs": "附魔",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 31,
+   "eng_plain": 0,
+   "zhs_colored": 37,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Enchanted",
+   "zhs": "附魔",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 6,
+   "eng_plain": 3,
+   "zhs_colored": 37,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "End Turn",
+   "zhs": "结束回合",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 3
+  },
+  {
+   "eng": "Enemy",
+   "zhs": "敌人",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 8,
+   "zhs_colored": 0,
+   "zhs_plain": 276
+  },
+  {
+   "eng": "Energy",
+   "zhs": "能量",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 10,
+   "eng_plain": 8,
+   "zhs_colored": 10,
+   "zhs_plain": 6,
+   "zhs_measure": "点"
+  },
+  {
+   "eng": "Energy Next Turn",
+   "zhs": "下回合能量",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Enrage",
+   "zhs": "激怒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Entangled",
+   "zhs": "缠身",
+   "color": "gold",
+   "kinds": [
+    "affliction"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 1,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Enthralled",
+   "zhs": "执迷",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Entropy",
+   "zhs": "熵",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Envenom",
+   "zhs": "涂毒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Escape Artist",
+   "zhs": "逃脱大师",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Eternal",
+   "zhs": "永恒",
+   "color": "gold",
+   "kinds": [
+    "keyword",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Ethereal",
+   "zhs": "虚无",
+   "color": "gold",
+   "kinds": [
+    "keyword",
+    "observed"
+   ],
+   "eng_colored": 19,
+   "eng_plain": 0,
+   "zhs_colored": 20,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Event",
+   "zhs": "事件",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Evoke",
+   "zhs": "激发",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 7,
+   "eng_plain": 1,
+   "zhs_colored": 8,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Evoke Lightning",
+   "zhs": "激发闪电",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Evoke:",
+   "zhs": "激发：",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 5,
+   "eng_plain": 0,
+   "zhs_colored": 5,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Exhaust",
+   "zhs": "消耗",
+   "color": "gold",
+   "kinds": [
+    "keyword",
+    "observed"
+   ],
+   "eng_colored": 30,
+   "eng_plain": 1,
+   "zhs_colored": 43,
+   "zhs_plain": 7
+  },
+  {
+   "eng": "Exhaust Pile",
+   "zhs": "消耗牌堆",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 6,
+   "eng_plain": 0,
+   "zhs_colored": 6,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Exhausted",
+   "zhs": "消耗",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 14,
+   "eng_plain": 2,
+   "zhs_colored": 43,
+   "zhs_plain": 7
+  },
+  {
+   "eng": "Exhausted Cards",
+   "zhs": "消耗牌堆",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 6,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Fan of Knives",
+   "zhs": "刀扇",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Fasten",
+   "zhs": "勒紧",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Fatal",
+   "zhs": "斩杀",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 4,
+   "eng_plain": 0,
+   "zhs_colored": 4,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Feel No Pain",
+   "zhs": "无惧疼痛",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Feral",
+   "zhs": "野性",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Flame Barrier",
+   "zhs": "火焰屏障",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Flanking",
+   "zhs": "夹击",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Floor",
+   "zhs": "楼层",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Flutter",
+   "zhs": "振翅",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Focus",
+   "zhs": "集中",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 20,
+   "eng_plain": 0,
+   "zhs_colored": 20,
+   "zhs_plain": 0,
+   "zhs_measure": "点"
+  },
+  {
+   "eng": "Focus Down",
+   "zhs": "集中下降",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Folly",
+   "zhs": "愚行",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Forbidden Grimoire",
+   "zhs": "禁忌魔典",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Foregone Conclusion",
+   "zhs": "既定事项",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Forge",
+   "zhs": "铸造",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 22,
+   "eng_plain": 0,
+   "zhs_colored": 23,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Frail",
+   "zhs": "脆弱",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 1,
+   "zhs_colored": 1,
+   "zhs_plain": 1,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Free Attack",
+   "zhs": "免费攻击",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Free Power",
+   "zhs": "免费能力",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Free Skill",
+   "zhs": "免费技能",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Friendship",
+   "zhs": "友谊",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Frost",
+   "zhs": "冰霜",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "orb"
+   ],
+   "eng_colored": 9,
+   "eng_plain": 0,
+   "zhs_colored": 9,
+   "zhs_plain": 0,
+   "zhs_measure": "个"
+  },
+  {
+   "eng": "Furnace",
+   "zhs": "熔炉",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Galvanic",
+   "zhs": "流电",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Galvanized",
+   "zhs": "流电",
+   "color": "gold",
+   "kinds": [
+    "affliction",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Genesis",
+   "zhs": "创世纪",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Gigantification",
+   "zhs": "超巨化",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Glam",
+   "zhs": "华彩",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Glass",
+   "zhs": "玻璃",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "orb"
+   ],
+   "eng_colored": 5,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0,
+   "zhs_measure": "个"
+  },
+  {
+   "eng": "Gold",
+   "zhs": "金币",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 74,
+   "eng_plain": 3,
+   "zhs_colored": 75,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Goopy",
+   "zhs": "黏糊",
+   "color": "purple",
+   "kinds": [
+    "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Grabbed",
+   "zhs": "抓取",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Gravity",
+   "zhs": "引力",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Greed",
+   "zhs": "贪婪",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Guarded",
+   "zhs": "护卫",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hailstorm",
+   "zhs": "冰雹风暴",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hammer Time",
+   "zhs": "锤子时间",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hand",
+   "zhs": "手牌",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 185,
+   "eng_plain": 1,
+   "zhs_colored": 186,
+   "zhs_plain": 12
+  },
+  {
+   "eng": "Hang",
+   "zhs": "吊杀",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 1,
+   "zhs_colored": 2,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Hangs",
+   "zhs": "吊杀",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Hard to Kill",
+   "zhs": "难以杀灭",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hardened Shell",
+   "zhs": "硬化外壳",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hatch",
+   "zhs": "孵化",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 1,
+   "zhs_colored": 0,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Haunt",
+   "zhs": "纠缠",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Heatsink",
+   "zhs": "散热片",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Heist",
+   "zhs": "盗窃",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hello World",
+   "zhs": "你好世界",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hellraiser",
+   "zhs": "地狱狂徒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hex",
+   "zhs": "恶咒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hexed",
+   "zhs": "邪咒",
+   "color": "gold",
+   "kinds": [
+    "affliction"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "High Voltage",
+   "zhs": "高电压",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Hit Points (HP)",
+   "zhs": "生命值（HP）",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Illusion",
+   "zhs": "幻象",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Imbalanced",
+   "zhs": "失衡",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Imbued",
+   "zhs": "注能",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 1,
+   "zhs_colored": 2,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Improvement",
+   "zhs": "改善",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Inferno",
+   "zhs": "狱火",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Infested",
+   "zhs": "寄生物",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Infinite Blades",
+   "zhs": "无尽刀刃",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Injury",
+   "zhs": "受伤",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Inked",
+   "zhs": "墨染",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Inky",
+   "zhs": "墨影",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Innate",
+   "zhs": "固有",
+   "color": "gold",
+   "kinds": [
+    "keyword",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Instinct",
+   "zhs": "本能",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Intangible",
+   "zhs": "无实体",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 7,
+   "eng_plain": 0,
+   "zhs_colored": 7,
+   "zhs_plain": 0,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Intercept",
+   "zhs": "拦截",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Iteration",
+   "zhs": "迭代",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Juggernaut",
+   "zhs": "势不可当",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Juggling",
+   "zhs": "杂耍",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Knockdown",
+   "zhs": "击倒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Lantern Key",
+   "zhs": "灯火钥匙",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Leadership",
+   "zhs": "领袖气质",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Lethality",
+   "zhs": "致死性",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Lightning",
+   "zhs": "闪电",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "orb"
+   ],
+   "eng_colored": 15,
+   "eng_plain": 0,
+   "zhs_colored": 14,
+   "zhs_plain": 0,
+   "zhs_measure": "个"
+  },
+  {
+   "eng": "Lightning Rod",
+   "zhs": "引雷针",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Linked Rewards",
+   "zhs": "相连奖励",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Loop",
+   "zhs": "循环",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Machine Learning",
+   "zhs": "机器学习",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Magic Bomb",
+   "zhs": "魔法炸弹",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Map",
+   "zhs": "地图",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 2,
+   "zhs_colored": 0,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Master Planner",
+   "zhs": "谋划专家",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Maul",
+   "zhs": "撕咬",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 1,
+   "zhs_colored": 2,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Max HP",
+   "zhs": "最大生命",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 49,
+   "zhs_colored": 2,
+   "zhs_plain": 49
+  },
+  {
+   "eng": "Mayhem",
+   "zhs": "乱战",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Melancholy",
+   "zhs": "忧郁",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Merchant",
+   "zhs": "商人",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 3,
+   "zhs_colored": 2,
+   "zhs_plain": 5
+  },
+  {
+   "eng": "Mind Rot",
+   "zhs": "心灵腐化",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Minion",
+   "zhs": "爪牙",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 2,
+   "zhs_colored": 0,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Momentum",
+   "zhs": "动量",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Monarch's Gaze",
+   "zhs": "王之凝视",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Monologue",
+   "zhs": "独白",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Multiplayer Cards",
+   "zhs": "多人游戏牌",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Necro Mastery",
+   "zhs": "亡灵精通",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Negates",
+   "zhs": "免疫",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Nemesis",
+   "zhs": "天罚",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Neow's Fury",
+   "zhs": "涅奥之怒",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Neurosurge",
+   "zhs": "精神过载",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Nightmare",
+   "zhs": "夜魇",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Nimble",
+   "zhs": "灵巧",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "No Block",
+   "zhs": "不可格挡",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "No Draw",
+   "zhs": "不可抽牌",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "No Energy Gain",
+   "zhs": "无法获得能量",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "No Escape",
+   "zhs": "无处可逃",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Nostalgia",
+   "zhs": "怀旧",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Noxious Fumes",
+   "zhs": "毒雾",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Oblivion",
+   "zhs": "湮灭",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "One-Two Punch",
+   "zhs": "连环拳",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Orb Generator",
+   "zhs": "充能球生成器",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Orb Slot",
+   "zhs": "充能球栏位",
+   "color": "gold",
+   "kinds": [
+    "orb"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 4,
+   "zhs_measure": "个"
+  },
+  {
+   "eng": "Orb Slots",
+   "zhs": "充能球栏位",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 1,
+   "zhs_colored": 3,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Orbit",
+   "zhs": "环绕轨道",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Orbs",
+   "zhs": "充能球",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 5,
+   "zhs_colored": 4,
+   "zhs_plain": 72
+  },
+  {
+   "eng": "Osty",
+   "zhs": "奥斯提",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 28,
+   "eng_plain": 0,
+   "zhs_colored": 33,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Osty's",
+   "zhs": "奥斯提",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 5,
+   "eng_plain": 0,
+   "zhs_colored": 33,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Outbreak",
+   "zhs": "毒性爆发",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Pagestorm",
+   "zhs": "书页风暴",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Painful Stabs",
+   "zhs": "疼痛戳刺",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Pale Blue Dot",
+   "zhs": "暗淡蓝点",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Panache",
+   "zhs": "神气制胜",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Paper Cuts",
+   "zhs": "纸伤难愈",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Parry",
+   "zhs": "招架",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Passive:",
+   "zhs": "被动：",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 5,
+   "eng_plain": 0,
+   "zhs_colored": 5,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Perfect Fit",
+   "zhs": "完美契合",
+   "color": "purple",
+   "kinds": [
+    "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 1,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Personal Hive",
+   "zhs": "人体蜂房",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Phantom Blades",
+   "zhs": "幻影之刃",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Pillar of Creation",
+   "zhs": "创世之柱",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Plasma",
+   "zhs": "等离子",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "orb"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 1,
+   "zhs_colored": 3,
+   "zhs_plain": 1,
+   "zhs_measure": "个"
+  },
+  {
+   "eng": "Plating",
+   "zhs": "覆甲",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 8,
+   "eng_plain": 0,
+   "zhs_colored": 8,
+   "zhs_plain": 0,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Plow",
+   "zhs": "横冲直撞",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Poison",
+   "zhs": "中毒",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 29,
+   "eng_plain": 1,
+   "zhs_colored": 29,
+   "zhs_plain": 2,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Possess Speed",
+   "zhs": "抢夺速度",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Possess Strength",
+   "zhs": "抢夺力量",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Potion",
+   "zhs": "药水",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 5,
+   "eng_plain": 1,
+   "zhs_colored": 7,
+   "zhs_plain": 26
+  },
+  {
+   "eng": "Potion Slot",
+   "zhs": "药水栏位",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 5
+  },
+  {
+   "eng": "Potions",
+   "zhs": "药水",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 2,
+   "zhs_colored": 7,
+   "zhs_plain": 26
+  },
+  {
+   "eng": "Prep Time",
+   "zhs": "准备时间",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Pyre",
+   "zhs": "薪火之源",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Radiance",
+   "zhs": "明耀",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Rage",
+   "zhs": "狂怒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Rampart",
+   "zhs": "盾墙",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Rare",
+   "zhs": "稀有",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 2,
+   "zhs_colored": 3,
+   "zhs_plain": 3
+  },
+  {
+   "eng": "Rare Card",
+   "zhs": "稀有牌",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Ravenous",
+   "zhs": "饥饿",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Read the Bones",
+   "zhs": "识骨知数",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Reaper Form",
+   "zhs": "死神形态",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Reattach",
+   "zhs": "接续",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Rebound",
+   "zhs": "弹回",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Reflect",
+   "zhs": "倒映",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Reflective Fortress",
+   "zhs": "逆反要塞",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Regen",
+   "zhs": "再生",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 4,
+   "eng_plain": 0,
+   "zhs_colored": 4,
+   "zhs_plain": 0,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Regret",
+   "zhs": "悔恨",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Relax",
+   "zhs": "放松",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Relic",
+   "zhs": "遗物",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 17,
+   "eng_plain": 1,
+   "zhs_colored": 28,
+   "zhs_plain": 7
+  },
+  {
+   "eng": "Relics",
+   "zhs": "遗物",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 8,
+   "eng_plain": 1,
+   "zhs_colored": 28,
+   "zhs_plain": 7
+  },
+  {
+   "eng": "Remove",
+   "zhs": "休息处",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 16,
+   "zhs_colored": 13,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Replay",
+   "zhs": "重放",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 9,
+   "eng_plain": 0,
+   "zhs_colored": 9,
+   "zhs_plain": 0,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Reserves",
+   "zhs": "储备",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Rest",
+   "zhs": "休息",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 4,
+   "eng_plain": 1,
+   "zhs_colored": 4,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Rest Site",
+   "zhs": "休息处",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 6,
+   "eng_plain": 0,
+   "zhs_colored": 13,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Rest Sites",
+   "zhs": "休息处",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 7,
+   "eng_plain": 1,
+   "zhs_colored": 13,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Restore Dexterity",
+   "zhs": "敏捷恢复",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Restore Focus",
+   "zhs": "集中恢复",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Retain",
+   "zhs": "保留",
+   "color": "gold",
+   "kinds": [
+    "keyword",
+    "observed"
+   ],
+   "eng_colored": 19,
+   "eng_plain": 0,
+   "zhs_colored": 20,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Retain Hand",
+   "zhs": "保留手牌",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Ringing",
+   "zhs": "昏眩",
+   "color": "gold",
+   "kinds": [
+    "affliction",
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 1,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Ritual",
+   "zhs": "仪式",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Rolling Boulder",
+   "zhs": "滚石",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Royally Approved",
+   "zhs": "王室认证",
+   "color": "purple",
+   "kinds": [
+    "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Royalties",
+   "zhs": "王国资产",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Rupture",
+   "zhs": "撕裂",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sandpit",
+   "zhs": "沙坑",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Seeking Edge",
+   "zhs": "追踪之刃",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Self-Forming Clay",
+   "zhs": "自成型黏土",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sentry Mode",
+   "zhs": "哨卫模式",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Serpent Form",
+   "zhs": "群蛇形态",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Settings (ESC)",
+   "zhs": "设置（ESC）",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Shadow Step",
+   "zhs": "暗影步",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Shadowmeld",
+   "zhs": "融入暗影",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sharp",
+   "zhs": "锋利",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sharp Edge",
+   "zhs": "锋利边缘",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Shiv",
+   "zhs": "小刀",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 10,
+   "eng_plain": 0,
+   "zhs_colored": 26,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Shivs",
+   "zhs": "小刀",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 9,
+   "eng_plain": 0,
+   "zhs_colored": 26,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Shop",
+   "zhs": "商店",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Shriek",
+   "zhs": "尖叫",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Shrink",
+   "zhs": "缩小",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Shroud",
+   "zhs": "厄运之衣",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sic 'Em",
+   "zhs": "紧追不放",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Signal Boost",
+   "zhs": "信号增强",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Skills",
+   "zhs": "技能",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 5,
+   "zhs_colored": 3,
+   "zhs_plain": 44
+  },
+  {
+   "eng": "Skittish",
+   "zhs": "胆小",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sleight of Flesh",
+   "zhs": "血肉戏法",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Slippery",
+   "zhs": "滑溜",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Slither",
+   "zhs": "蛇行",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Sloth",
+   "zhs": "懒惰",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Slow",
+   "zhs": "缓慢",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Slumber",
+   "zhs": "熟睡",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Slumbering Essence",
+   "zhs": "沉眠精华",
+   "color": "purple",
+   "kinds": [
+    "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sly",
+   "zhs": "奇巧",
+   "color": "gold",
+   "kinds": [
+    "keyword",
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Smog",
+   "zhs": "烟雾",
+   "color": "gold",
+   "kinds": [
+    "affliction"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Smoggy",
+   "zhs": "烟雾弥漫",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Smokestack",
+   "zhs": "烟囱",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sneaky",
+   "zhs": "鬼祟",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Soar",
+   "zhs": "翱翔",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Soot",
+   "zhs": "煤灰",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Soul",
+   "zhs": "灵魂",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 10,
+   "eng_plain": 2,
+   "zhs_colored": 14,
+   "zhs_plain": 2
+  },
+  {
+   "eng": "Soul Wither",
+   "zhs": "灵魂枯萎",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Soul's Power",
+   "zhs": "灵魂之力",
+   "color": "purple",
+   "kinds": [
+    "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sovereign Blade",
+   "zhs": "君王之剑",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 15,
+   "eng_plain": 0,
+   "zhs_colored": 15,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sow",
+   "zhs": "播种",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sown",
+   "zhs": "播种",
+   "color": "purple",
+   "kinds": [
+    "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Spectrum Shift",
+   "zhs": "光谱偏移",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Speedster",
+   "zhs": "速行者",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Spinner",
+   "zhs": "旋转工艺",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Spiral",
+   "zhs": "涡旋",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 1,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Spirit of Ash",
+   "zhs": "灰烬之灵",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Stampede",
+   "zhs": "惊逃",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Star Next Turn",
+   "zhs": "下回合辉星",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Stars",
+   "zhs": "辉星",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Steady",
+   "zhs": "稳定",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Steam Eruption",
+   "zhs": "蒸汽喷发",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Stock",
+   "zhs": "库存",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Storm",
+   "zhs": "雷暴",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Strangle",
+   "zhs": "紧勒",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Stratagem",
+   "zhs": "计策",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Strength",
+   "zhs": "力量",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 92,
+   "eng_plain": 2,
+   "zhs_colored": 92,
+   "zhs_plain": 2,
+   "zhs_measure": "点"
+  },
+  {
+   "eng": "Strike",
+   "zhs": "打击",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 4,
+   "eng_plain": 6,
+   "zhs_colored": 13,
+   "zhs_plain": 6
+  },
+  {
+   "eng": "Strikes",
+   "zhs": "打击",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 9,
+   "eng_plain": 0,
+   "zhs_colored": 13,
+   "zhs_plain": 6
+  },
+  {
+   "eng": "Stun",
+   "zhs": "击晕",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 14,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Stunned",
+   "zhs": "击晕",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 12,
+   "eng_plain": 0,
+   "zhs_colored": 14,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Subroutine",
+   "zhs": "子程序",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Suck",
+   "zhs": "吮吸",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Summon",
+   "zhs": "召唤",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 24,
+   "eng_plain": 2,
+   "zhs_colored": 24,
+   "zhs_plain": 7
+  },
+  {
+   "eng": "Summon Next Turn",
+   "zhs": "下回合召唤",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Surprise",
+   "zhs": "意外",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Surrounded",
+   "zhs": "遭到包围",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sweeping Gaze",
+   "zhs": "扫荡凝视",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Swift",
+   "zhs": "迅速",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Swipe",
+   "zhs": "顺走",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Sword Sage",
+   "zhs": "剑圣",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Tag Team",
+   "zhs": "多人组队",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Tainted",
+   "zhs": "污染",
+   "color": "gold",
+   "kinds": [
+    "affliction",
+    "observed",
+    "power"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 1,
+   "zhs_colored": 3,
+   "zhs_plain": 1,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Tangled",
+   "zhs": "缠结",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Tank",
+   "zhs": "肉盾",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Taunt",
+   "zhs": "挑衅",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Tender",
+   "zhs": "柔嫩",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Territorial",
+   "zhs": "领地意识",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Tezcatara's Ember",
+   "zhs": "特兹卡塔拉的余烬",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Tezcataras Blight",
+   "zhs": "特兹卡塔拉的荒疫",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "The Bomb",
+   "zhs": "炸弹",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "The Gambit",
+   "zhs": "孤注一掷",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "The Hunt",
+   "zhs": "狩猎",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "The Sealed Throne",
+   "zhs": "封印王座",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Thievery",
+   "zhs": "偷窃",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 4
+  },
+  {
+   "eng": "Thorns",
+   "zhs": "荆棘",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0,
+   "zhs_measure": "点"
+  },
+  {
+   "eng": "Thunder",
+   "zhs": "雷霆",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Time Limit",
+   "zhs": "时间限制",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Tools of the Trade",
+   "zhs": "必备工具",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Toric Toughness",
+   "zhs": "坚韧之环",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Torn",
+   "zhs": "破裂",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Tracking",
+   "zhs": "跟踪",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Transform",
+   "zhs": "变化",
+   "color": "gold",
+   "kinds": [
+    "hover_tip",
+    "observed"
+   ],
+   "eng_colored": 26,
+   "eng_plain": 2,
+   "zhs_colored": 24,
+   "zhs_plain": 9
+  },
+  {
+   "eng": "Trash to Treasure",
+   "zhs": "化废为宝",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Treasure Room",
+   "zhs": "宝箱房",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Tyranny",
+   "zhs": "暴政",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Unknown - Elite",
+   "zhs": "未知 - 精英",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Unknown - Enemy",
+   "zhs": "未知 - 敌人",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Unknown - Event",
+   "zhs": "未知 - 事件",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Unknown - Merchant",
+   "zhs": "未知 - 商人",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Unknown - Treasure",
+   "zhs": "未知 - 财宝",
+   "color": "gold",
+   "kinds": [
+    "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Unmovable",
+   "zhs": "不动",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Unplayable",
+   "zhs": "不能被打出",
+   "color": "gold",
+   "kinds": [
+    "keyword"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 1,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Unstable",
+   "zhs": "不稳定",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Unsteady",
+   "zhs": "脚下不稳",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Upgrade",
+   "zhs": "升级",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 51,
+   "eng_plain": 0,
+   "zhs_colored": 59,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Upgraded",
+   "zhs": "升级",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 9,
+   "eng_plain": 0,
+   "zhs_colored": 59,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Veilpiercer",
+   "zhs": "刺破帷幕",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Vicious",
+   "zhs": "凶恶",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Vigor",
+   "zhs": "活力",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 6,
+   "eng_plain": 0,
+   "zhs_colored": 7,
+   "zhs_plain": 0,
+   "zhs_measure": "点"
+  },
+  {
+   "eng": "Vigorous",
+   "zhs": "活力",
+   "color": "purple",
+   "kinds": [
+    "enchantment",
+    "observed"
+   ],
+   "eng_colored": 1,
+   "eng_plain": 0,
+   "zhs_colored": 7,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Visual Only",
+   "zhs": "仅视觉",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 1,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
+   "eng": "Vital Spark",
+   "zhs": "活力火花",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Void Form",
+   "zhs": "虚空形态",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Vulnerable",
+   "zhs": "易伤",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 45,
+   "eng_plain": 2,
+   "zhs_colored": 45,
+   "zhs_plain": 1,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Waste Away",
+   "zhs": "衰朽",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Weak",
+   "zhs": "虚弱",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 32,
+   "eng_plain": 0,
+   "zhs_colored": 32,
+   "zhs_plain": 1,
+   "zhs_measure": "层"
+  },
+  {
+   "eng": "Well-Laid Plans",
+   "zhs": "计划妥当",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Whistle",
+   "zhs": "吹哨",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Winged Jump",
+   "zhs": "翱翔之跃",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Wishes",
+   "zhs": "许愿",
+   "color": "purple",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Wither",
+   "zhs": "凋萎",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Withering Presence",
+   "zhs": "凋萎存在",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Wraith Form",
+   "zhs": "幽魂形态",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  }
+ ]
+}

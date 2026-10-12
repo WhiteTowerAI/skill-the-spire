@@ -12,8 +12,9 @@ Markdown:
 - content identity, surface, registration/availability, and ownership;
 - trigger, target, conditions, ordered effects, exact values, upgrades, and native result pile;
 - state owner, transition timing, bounds, lifetime, reset, persistence, and visibility;
-- exact English and Simplified Chinese player-facing text, including DynamicVar/SmartFormat
-  names and token parity;
+- exact English and Simplified Chinese player-facing text in the vanilla style of
+  `reference/vanilla-text-style.md`, including DynamicVar/SmartFormat names, variable
+  parity, glossary terms, and hover tips for every named term;
 - presentation, art choice, native consumers, and checked fallback;
 - supported recipe/reference route;
 - adapter outputs such as stable IDs, tables/keys, resources, and classes when known; and

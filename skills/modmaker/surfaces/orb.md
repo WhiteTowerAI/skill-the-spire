@@ -30,8 +30,8 @@ and its three behaviors are separate `effects` entries rather than one sequence.
   - fields: title=<shown name>; description=<plain fallback text, read when no
     smartDescription resolves>
   - smartDescription: <text using {Passive} and {Evoke}; required for live values>
-  - formatting: dynamic value placeholders; plain | bounded vanilla rich text
-  - text spans: <phrase -> semantic color intent>
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`); dynamic value placeholders
+  - extra emphasis: none | <description phrase -> color the default style would not apply>
 - **effects**:
   - trigger: channel | per-turn passive | evoke (three independent behaviors)
   - target: <per behavior>
@@ -107,10 +107,21 @@ Ship all three keys in matching `localization/eng/orbs.json` and
 ```json
 {
   "<MOD>_ORB_<TYPE>.title": "Display Name",
-  "<MOD>_ORB_<TYPE>.description": "Passive and Evoke rules.",
-  "<MOD>_ORB_<TYPE>.smartDescription": "[gold]Passive:[/gold] {Passive}.\n[gold]Evoke:[/gold] {Evoke}."
+  "<MOD>_ORB_<TYPE>.description": "Orb: Gains [gold]Block[/gold].",
+  "<MOD>_ORB_<TYPE>.smartDescription": "[gold]Passive:[/gold] At the end of turn, gain [blue]{Passive}[/blue] [gold]Block[/gold].\n[gold]Evoke:[/gold] Gain [blue]{Evoke}[/blue] [gold]Block[/gold]."
 }
 ```
+
+```json
+{
+  "<MOD>_ORB_<TYPE>.title": "显示名称",
+  "<MOD>_ORB_<TYPE>.description": "充能球：获得[gold]格挡[/gold]。",
+  "<MOD>_ORB_<TYPE>.smartDescription": "[gold]被动：[/gold]在回合结束时，获得[blue]{Passive}[/blue]点[gold]格挡[/gold]。\n[gold]激发：[/gold]获得[blue]{Evoke}[/blue]点[gold]格挡[/gold]。"
+}
+```
+
+This is the vanilla `FROST_ORB` shape (`reference/vanilla-text-style.md`, Orb row): a short
+general `.description`, and a two-line `.smartDescription` whose values are `[blue]`.
 
 The `Passive:` and `Evoke:` labels are author-written, not engine-composed — that is why they
 appear literally above. Only the `{Passive}`/`{Evoke}` values are substituted.

@@ -296,8 +296,11 @@ string, re-rendered through SmartFormat — so you write the number as a placeho
 `:diff()` and it shows the new value in green after upgrade:
 
 ```
-"Deal {Damage:diff()} damage. Apply {VulnerablePower:diff()} Vulnerable."
+"Deal {Damage:diff()} damage.\nApply {VulnerablePower:diff()} [gold]Vulnerable[/gold]."
 ```
+
+Card text follows `reference/vanilla-text-style.md`: one effect per line (`\n`), glossary
+terms in `[gold]`, and uncolored `:diff()` numbers.
 
 Use `{X:showIfUpgraded()}` for text that should appear only on the upgraded card. See
 `mechanics.md` §2 for the full formatter table.
@@ -311,10 +314,24 @@ the exact RitsuLib public entry (`MOD_CARD_TYPENAME`):
 ```json
 {
   "<MOD>_CARD_<TYPE>.title": "Display Name",
-  "<MOD>_CARD_<TYPE>.description": "Deal {Damage:diff()} damage.",
-  "<MOD>_CARD_<TYPE>.selectionScreenPrompt": "Prompt — only if the card asks the player to choose; else omit."
+  "<MOD>_CARD_<TYPE>.description": "Deal {Damage:diff()} damage.\nApply {VulnerablePower:diff()} [gold]Vulnerable[/gold].",
+  "<MOD>_CARD_<TYPE>.selectionScreenPrompt": "Choose a card to put into your [gold]Hand[/gold]."
 }
 ```
+
+```json
+{
+  "<MOD>_CARD_<TYPE>.title": "显示名称",
+  "<MOD>_CARD_<TYPE>.description": "造成{Damage:diff()}点伤害。\n给予{VulnerablePower:diff()}层[gold]易伤[/gold]。",
+  "<MOD>_CARD_<TYPE>.selectionScreenPrompt": "选择一张牌加入你的[gold]手牌[/gold]。"
+}
+```
+
+Emit `selectionScreenPrompt` only when the card asks the player to choose. Write every value
+in the vanilla style of `reference/vanilla-text-style.md`: glossary terms (Block, Vulnerable,
+Hand, Draw Pile, Exhaust, …) with their exact `eng`/`zhs` names in `[gold]`, one effect per
+line, uncolored `:diff()` numbers, Energy as `{Energy:energyIcons()}`, and Chinese
+full-width punctuation with the vanilla measure word (点/层/张) and no spaces.
 
 `{Damage}`/`{Block}` resolve from the matching `DynamicVar`; a power var resolves by its
 class-name key (`{StrengthPower}`, `{VulnerablePower}`). **Flat string keys, not nested
@@ -326,12 +343,29 @@ Calculated icon variables use the pinned `{EnergyGain:energyIcons()}` and
 `reference/card-computed-values.md` for the deterministic entry stem and null-icon
 fallback.
 
-### Bounded rich text
+### Extra emphasis
 
-If SPEC selects vanilla text effects, read `reference/content-text-effects.md`. Card
-descriptions may author only balanced `gold` and `purple` spans. Preserve SmartFormat
-placeholders; `:diff()` owns its automatic green/red preview highlighting. The same
-description renders in the real Card body and typed Card Hover Tip preview.
+The default style above is not optional. Only when SPEC selects `extra emphasis` beyond it,
+read `reference/content-text-effects.md`. Card descriptions may author only balanced `gold`,
+`purple`, and `blue` spans. Preserve SmartFormat placeholders; `:diff()` owns its automatic
+green/red preview highlighting. The same description renders in the real Card body and typed
+Card Hover Tip preview.
+
+### Hover tips for named terms
+
+When the description names a Power, keyword, Orb, or specific Card that is not one of this
+Card's own keywords, declare its tip as vanilla does (`Bash` shows Vulnerable, `Blade Dance`
+shows Shiv):
+
+```csharp
+using MegaCrit.Sts2.Core.HoverTips;
+
+protected override IEnumerable<IHoverTip> AdditionalHoverTips =>
+    [HoverTipFactory.FromPower<VulnerablePower>()];
+```
+
+`reference/vanilla-text-style.md` § Hover tips for named terms lists the factory for each
+kind, including Mod Powers and Mod keywords.
 
 ## ID / loc-key derivation
 
@@ -378,6 +412,11 @@ content-pack Card registration. Do not create a second id rule.
 - [ ] Block card sets `GainsBlock => true` and uses the `cardPlay` overload of `GainBlock`.
 - [ ] `cards.json` has `<MOD>_CARD_<TYPE>.{title,description}` — flat public-entry keys,
       table `cards`; description uses `{Damage:diff()}` etc. so upgrades render.
+- [ ] Text follows `reference/vanilla-text-style.md`: glossary terms in `[gold]` with their
+      exact `eng`/`zhs` names, one effect per line, no hand-written keyword line, Chinese
+      full-width punctuation and measure words; Build lists no `.text-style.log` entry.
+- [ ] Every named Power/keyword/Orb/Card that is not the Card's own keyword has an
+      `AdditionalHoverTips` entry.
 - [ ] All `Cmd`s `await`ed.
 - [ ] `[T2MOD-SELFTEST]` diagnostic marker logged in `OnPlay`; load marker in MainFile;
       `SelfTest` independently asserts post-state.
@@ -411,6 +450,7 @@ public sealed class QuickJab : ModCardTemplate
 }
 ```
 `cards.json`: `{ "QUICK_JAB_CARD_QUICK_JAB.title": "Quick Jab", "QUICK_JAB_CARD_QUICK_JAB.description": "Deal {Damage:diff()} damage." }`
+(`zhs`: `"造成{Damage:diff()}点伤害。"`)
 
 **Self block — `DefendIronclad` shape (Skill, Self):**
 ```csharp
@@ -451,9 +491,12 @@ public sealed class Bulk : ModCardTemplate
     protected override void OnUpgrade() => base.DynamicVars["StrengthPower"].UpgradeValueBy(1m);
 }
 ```
-`cards.json`: `{ ...".description": "Gain {StrengthPower:diff()} Strength." }` (needs `using MegaCrit.Sts2.Core.Models.Powers;` for `StrengthPower`.)
+`cards.json`: `{ ...".description": "Gain {StrengthPower:diff()} [gold]Strength[/gold]." }`
+(`zhs`: `"获得{StrengthPower:diff()}点[gold]力量[/gold]。"`; needs
+`using MegaCrit.Sts2.Core.Models.Powers;` for `StrengthPower`.) Add
+`AdditionalHoverTips => [HoverTipFactory.FromPower<StrengthPower>()]` so the term has its tip.
 
-**Attack + debuff — `Bash` shape (Attack, AnyEnemy):** declare `DamageVar` + `PowerVar<VulnerablePower>`, run the attack then apply — see "Combine" above; upgrade bumps both vars.
+**Attack + debuff — `Bash` shape (Attack, AnyEnemy):** declare `DamageVar` + `PowerVar<VulnerablePower>`, run the attack then apply — see "Combine" above; upgrade bumps both vars. Text: `"Deal {Damage:diff()} damage.\nApply {VulnerablePower:diff()} [gold]Vulnerable[/gold]."` / `"造成{Damage:diff()}点伤害。\n给予{VulnerablePower:diff()}层[gold]易伤[/gold]。"`, plus `HoverTipFactory.FromPower<VulnerablePower>()`.
 
 ## Verify (tier-1 + tier-2)
 

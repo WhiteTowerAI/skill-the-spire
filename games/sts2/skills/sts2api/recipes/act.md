@@ -97,7 +97,7 @@ Ship identical-key `localization/eng/acts.json` and `localization/zhs/acts.json`
 
 ```json
 {
-  "<MOD>_ACT_<ACT>.title": "<title>"
+  "<MOD>_ACT_<ACT>.title": "<plain Title Case name>"
 }
 ```
 

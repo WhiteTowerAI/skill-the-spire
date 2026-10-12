@@ -18,7 +18,12 @@ Before MSBuild, the tool verifies:
   `0.107.1` even when the scaffold-pinned local compile runtime is newer;
 - `has_pck` is `true` exactly when the authored Mod resource tree is non-empty;
 - when localization tables exist, require both `eng` and `zhs` directories with
-  identical table names, keys, and SmartFormat tokens plus nonempty localized values;
+  identical table names and keys, nonempty localized values, the same SmartFormat variables,
+  and the same `:diff()`/`energyIcons()`/`starIcons()` values (grammar formatters such as
+  `plural` may differ per language);
+- every rich-text tag is a vanilla tag, unparameterized, balanced, and correctly nested
+  (failure), and every string is compared with the vanilla text style of
+  `reference/vanilla-text-style.md` (warnings written to `<project>/.text-style.log`);
 - the installed host's `release_info.json` is stable `0.107.1`;
 - the game `mods/STS2-RitsuLib` directory or official Steam Workshop item `3747602295`
   is a complete RitsuLib 0.6 runtime folder: loader `STS2-RitsuLib.dll`, schema-2
@@ -67,6 +72,9 @@ zip can be inspected separately but cannot be used to compile until it is instal
 ## Expect
 
 - build summary: `0 warnings, 0 errors`;
+- `[build] text style OK`. When Build prints `text style WARNING`, read `.text-style.log`, fix
+  each listed string in both languages, and rebuild; record in `MEMORY.md` any line where the
+  vanilla shape deliberately does not apply;
 - profile lines report the exact scaffold-pinned compile version, exact `host=0.107.1`, and
   exact `compat=0.107.1`;
 - `mods/<ModName>/` contains `<ModName>.dll`, `mod_manifest.json`, optional PDB, and a PCK

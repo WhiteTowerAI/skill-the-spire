@@ -23,6 +23,14 @@ owner. `CardCmd.Afflict<T>` returns `null` when combat/host checks or `CanAfflic
 existing Affliction must be the same concrete type before stacking; another attached type is not a
 replacement route.
 
+## Text style
+
+Write every player-facing string in the default style of `reference/vanilla-text-style.md`:
+the title stays plain; `.description` shows `[blue]{Amount}[/blue]`, glossary terms in
+`[gold]`, and Energy through `energyIcons()`; `.extraCardText` is one short Card-face
+sentence. A Card or Relic that applies the Affliction names it in `[gold]` and declares
+`HoverTipFactory.FromAffliction<T>()` in its `AdditionalHoverTips`.
+
 ## Authoring route
 
 - Read `recipes/affliction.md` for template, registration, `CardCmd.Afflict<T>`,

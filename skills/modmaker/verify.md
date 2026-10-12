@@ -10,7 +10,8 @@ bug when the cited shared route may be violating its own contract.
 ## Bilingual localization proof
 
 Build preflight establishes the static localization half: required directories, table/key
-parity, nonempty values, and SmartFormat token parity. Tier 2 owns the runtime half. Before
+parity, nonempty values, SmartFormat variable parity, valid rich-text markup, and the static
+vanilla-style comparison in `.text-style.log`. Tier 2 owns the runtime half. Before
 driving the selected behavior, the generated harness snapshots `LocManager.Instance.Language`,
 switches through `eng` and `zhs` with the public `SetLanguage` route, and resolves every
 SPEC-required player-facing `LocString` through its real model/UI consumer. Compare against the
@@ -131,6 +132,12 @@ subjective feel. When SPEC selects one of those, run the headed checks in the ow
 `rest-site-options.md`, `art-contract.md`, `character-presentation.md`,
 `character-combat-cues.md`, `ancient-dialogue.md`, `event-vfx.md`,
 `event-native-presentation.md`, or `forced-followup-event.md`).
+
+Rendered text is also a headed observation. When the user reviews a Card, Relic, Potion,
+Power, or Event in game, ask them to compare it with a similar vanilla one: gold terms,
+colored numbers, line breaks, the tooltip list, and the Chinese text after switching language
+(`reference/vanilla-text-style.md` § Verification). Build's style check is static evidence
+only.
 
 Custom art stays unverified until the real headed game visibly shows it, not the fallback, in
 every consumer `art-contract.md` lists for that spec. Never infer it from a resource path, a
