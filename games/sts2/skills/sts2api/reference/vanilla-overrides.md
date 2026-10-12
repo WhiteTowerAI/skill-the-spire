@@ -50,6 +50,13 @@ IDs/types, category properties, Card base/upgrade costs and typed dynamic variab
 Card/Relic/Potion pool membership, Act/shared source membership, and stable title
 localization table/key pairs from RitsuLib's public `ModelTitleExtensions` mappings.
 
+Card, Relic, Potion, and Power records also carry `description_localization`: the English
+and Simplified Chinese rules-text template from the same table as the title
+(`<ENTRY>.description`), with its SmartFormat variables intact. It is reference text for
+"like vanilla X" lookups and is excluded from `catalog_sha256`, so the identity above and
+existing override manifests stay valid. Curse/Status Cards and some Powers have no
+description key and carry none.
+
 For title-bearing model families, the collector uses the game's public
 `LocManager.SetLanguage` route to read each local title in all 14 pinned languages. That
 API explicitly changes the runtime language temporarily without writing the player's
@@ -185,7 +192,14 @@ python games/sts2/tools/collect_vanilla_catalog.py merge `
   --authorable-family availability-overrides `
   --authorable-family non-card-data-behavior `
   --output games/sts2/skills/sts2api/reference/vanilla-overrides/catalogs/sts2-0.107.1.json
+
+python games/sts2/tools/collect_vanilla_catalog.py add-descriptions `
+  --sts2-dir <installed-game-dir> [--check]
 ```
+
+`merge` writes no descriptions; run `add-descriptions` after it. It reads the eng/zhs
+localization tables from `SlayTheSpire2.pck` with the text-glossary reader and fails if the
+catalog identity would change. `--check` fails when the committed descriptions are stale.
 
 Supporting another STS2 version requires a new runtime snapshot, assembly snapshot,
 reviewed adapter-target file, merged catalog, and proof. Never change the version label on

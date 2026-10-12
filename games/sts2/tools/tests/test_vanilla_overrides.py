@@ -919,6 +919,60 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
         ):
             overrides.resolve_model(make_catalog(), "lost wis", category="card")
 
+    def test_descriptions_attach_without_changing_catalog_identity(self) -> None:
+        catalog = make_catalog()
+        tables = {
+            "eng": {
+                "cards": {"LOST_WISP.description": "Draw {Cards} card."},
+                "relics": {"LOST_WISP.description": "Gain 1 Energy."},
+            },
+            "zhs": {"cards": {"LOST_WISP.description": "抽{Cards}张牌。"}},
+        }
+
+        updated, attached = collector.attach_descriptions(catalog, tables)
+
+        self.assertEqual(2, attached)
+        self.assertEqual(catalog["catalog_sha256"], updated["catalog_sha256"])
+        self.assertEqual(catalog["catalog_sha256"], overrides.catalog_digest(updated))
+        card = overrides.resolve_model(updated, "迷失幽火", category="card")
+        self.assertEqual(
+            {"eng": "Draw {Cards} card.", "zhs": "抽{Cards}张牌。"},
+            card["description_localization"]["localized_descriptions"],
+        )
+        keys = list(card)
+        self.assertEqual(keys.index("title_localization") + 1, keys.index("description_localization"))
+        relic = overrides.resolve_model(updated, "迷失幽火", category="relic")
+        self.assertEqual(
+            {"eng": "Gain 1 Energy."},
+            relic["description_localization"]["localized_descriptions"],
+        )
+        self.assertEqual(updated, collector.attach_descriptions(updated, tables)[0])
+
+    def test_description_localization_accepts_only_nonempty_eng_and_zhs(self) -> None:
+        updated, _ = collector.attach_descriptions(
+            make_catalog(), {"eng": {"cards": {"LOST_WISP.description": "Draw."}}, "zhs": {}}
+        )
+        for language, text in (("deu", "Ziehe."), ("eng", " ")):
+            broken = copy.deepcopy(updated)
+            broken["models"][0]["description_localization"]["localized_descriptions"] = {
+                language: text
+            }
+            with self.assertRaises(overrides.VanillaOverrideError):
+                overrides.validate_catalog(broken)
+
+    def test_checked_real_catalog_carries_bilingual_rules_text(self) -> None:
+        catalog = overrides.load_catalog()
+
+        bash = overrides.resolve_model(catalog, "痛击", category="card")
+        descriptions = bash["description_localization"]["localized_descriptions"]
+        self.assertIn("{Damage:diff()}", descriptions["eng"])
+        self.assertIn("易伤", descriptions["zhs"])
+        for model in catalog["models"]:
+            if model["category"] in {"RELIC", "POTION"} and not model["is_debug"]:
+                record = model.get("description_localization")
+                self.assertIsNotNone(record, model["id"])
+                self.assertEqual({"eng", "zhs"}, set(record["localized_descriptions"]), model["id"])
+
     def test_wrong_profile_hash_and_collector_hash_fail_closed(self) -> None:
         catalog = make_catalog()
         wrong_profile = copy.deepcopy(catalog)
