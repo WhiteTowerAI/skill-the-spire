@@ -877,17 +877,21 @@ guide; `gen_sprite.py` owns the final 3440×1613 crop and placement.
 For a host-native tool, the mod-level `generate` choice authorizes the initial one-image-
 per-asset run without a separate API key. Follow any approval or usage warning presented by
 the host and do not claim that host usage is free. For a paid API or managed-credit CLI,
-**before every paid generation, disclose the model/backend, output count (one), and credit-
-spending action. Use the assembled prompt** (segments ①②③ concatenated) and the subject
-you derived, and get a quick yes — one line, e.g. *"I'll generate the portrait with this
-prompt: … — go ahead?"* Do not silently spend or treat an earlier custom-art preference as
-approval for an external route. Every regeneration, including a native-tool regeneration,
-needs a new confirmation after the user sees the current result. This is also where the §7.1
+**get one approval for the whole initial run before the first paid call.** Show it in one
+message: the model/backend, the credit-spending action, the shared segments ①③ once, then
+one line per asset with its segment ② subject and its call count (one, or the spec's fixed
+budget such as four Character cue sheets), and the total number of calls. One yes covers
+exactly that list; an asset added later needs its own yes. A Character run is two batches:
+the selection portrait alone first, because every later Character asset uses it as the
+identity reference, then the rest after the user has seen the portrait. Do not silently
+spend or treat an earlier custom-art preference as approval for an external route. Every
+regeneration, including a native-tool regeneration, needs a new confirmation after the user
+sees the current result. This is also where the §7.1
 "regenerate/tweak this sprite" loop
 lives:
 
 ```
-derive subject (②) → assemble ①②③ → show user → generate → user looks at result
+derive subjects (②) → show the batch list → one yes → generate all → user looks at results
    → happy: keep it, continue to build
    → not happy: adjust ② (or the subject), re-run gen_sprite.py, look again
 ```
@@ -925,7 +929,7 @@ python ${GAME_TOOLS_DIR}/gen_sprite.py import \
 python ${GAME_TOOLS_DIR}/acquire_sprite.py preflight --model <chosen-model>
 vofy models <chosen-model>
 
-# after explicit approval for this prompt/model/one-image spend. Add the root --reference
+# after the batch approval that lists this asset (or a regeneration's own yes). Add the root --reference
 # once when the live model guide supports image inputs; the tool selects the spec and 3 files:
 python ${GAME_TOOLS_DIR}/acquire_sprite.py create \
   --spec card --slug firebolt --prompt "<the filled template above>" \
