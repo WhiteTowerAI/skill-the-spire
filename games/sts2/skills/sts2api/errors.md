@@ -28,7 +28,7 @@ switching to an old template.
 
 - **Cause:** the installed RitsuLib changed after scaffold, usually a Workshop auto-update.
 - **Fix:** read the RitsuLib release notes between the two versions, then run
-  `scaffold.py --repin-runtime` on the existing project (see `modmaker/scaffold.md`) and rerun
+  `scaffold.py --repin-runtime` on the existing project (see `${MODMAKER_SKILL_DIR}/scaffold.md`) and rerun
   Build, Tier 1, and Tier 2. Do not edit the pin by hand.
 
 ### `this project was scaffolded for the single-DLL RitsuLib runtime before 0.6.0`

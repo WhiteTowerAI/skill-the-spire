@@ -118,7 +118,7 @@ and `OnPlay` behavior explicit. A custom icon uses the checked 64x64
   `HasExtraCardText` — `.extraCardText`.
 - Leave the host card's description free of both strings.
 
-See `sts2api/recipes/enchantment.md` for the exact registration call and JSON shape.
+See `${STS2API_SKILL_DIR}/recipes/enchantment.md` for the exact registration call and JSON shape.
 
 ## Self-test driver body
 

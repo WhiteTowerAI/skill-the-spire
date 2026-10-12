@@ -11,7 +11,7 @@ description: |
 
 ## Design grammar and planning routing
 
-After `modmaker/route.md` classifies the request, load only the design references named in
+After `../modmaker/route.md` classifies the request, load only the design references named in
 its handoff:
 
 - read `../sts2api/design/character-foundation.md` for a playable Character,
@@ -37,7 +37,7 @@ not dump entire files into the response.
 ## Adapter routing
 
 For generated content, the semantic contract is the product-level source of truth:
-read `./semantic-contract.md` before selecting an implementation.
+read `../modmaker/semantic-contract.md` before selecting an implementation.
 Lazily read `reference/ritsulib-adapter.md` next. It
 pins RitsuLib `0.6.7` against STS2 `0.107.1`, maps each semantic surface to one public
 registration/template and asset profile, and owns the framework/version diagnostic
@@ -66,7 +66,7 @@ explicitly accepted composition instead.
 
 1. Find the element's recipe under `../sts2api/recipes/`, then read only the
    references the table below names for the selected behavior. The caller's
-   `modmaker/surfaces/<surface>.md` page names the same routes for its element.
+   `../modmaker/surfaces/<surface>.md` page names the same routes for its element.
 2. For error signatures, read `../sts2api/errors.md`.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a symbol the
    recipe lacks, read `../sts2api/grounding.md`; for potions, also

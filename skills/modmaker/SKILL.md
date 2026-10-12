@@ -79,7 +79,7 @@ integrations, and one-click Workshop publishing.
 
 ## Read stages lazily
 
-Read each file from `./` only when its stage begins:
+Read each file from `../modmaker/` only when its stage begins:
 
 | File | Purpose |
 |---|---|

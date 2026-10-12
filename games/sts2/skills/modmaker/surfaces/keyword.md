@@ -95,7 +95,7 @@ its named behavior in the host.
   keyword state.
 - Leave the host card's description free of the keyword name.
 
-See `sts2api/recipes/keyword.md` for the exact registration call and JSON shape.
+See `${STS2API_SKILL_DIR}/recipes/keyword.md` for the exact registration call and JSON shape.
 
 ## Self-test driver body
 

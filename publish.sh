@@ -85,7 +85,10 @@ case "$AGENT" in
 esac
 
 TOOLS_DIR_REL="$SKILLS_DIR_REL/modmaker/scripts"
-MODMAKER_SKILL_DIR="."
+# Path tokens are relative to the skill directory of the file that uses them. The skills are
+# siblings, so the sibling form resolves to the same place from either one; a "." would point
+# at whichever skill holds the file.
+MODMAKER_SKILL_DIR="../modmaker"
 STS2API_SKILL_DIR="../sts2api"
 GAME_TOOLS_DIR="../modmaker/scripts"
 
