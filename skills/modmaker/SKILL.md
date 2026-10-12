@@ -69,13 +69,12 @@ Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, and
 whose purpose is to connect another element to those families are deferred. Do not route one
 through Runtime UI, persistence, lifecycle, or another included owner.
 
-Outside maintained routes, a missing recipe is not a stop condition; follow
-`../sts2api/grounding.md` § Mod-local Routes. Stop only when the behavior requires private APIs, runtime
-patching, or decompilation, or cannot be given a verifiable lifecycle. Known unsupported areas
-include arbitrary behavior-bearing scenes/materials
-without a public host, global room replacement, arbitrary transactions/transitions/RNG rewrites,
-alternative Energy, retained played-Card zones, ungrounded disable/weighting surfaces, multiplayer
-integrations, and one-click Workshop publishing.
+Stop only when the behavior requires private APIs, runtime patching, or decompilation, or cannot
+be given a verifiable lifecycle. Known unsupported areas include arbitrary behavior-bearing
+scenes/materials without a public host, global room replacement, arbitrary
+transactions/transitions/RNG rewrites, alternative Energy, retained played-Card zones,
+ungrounded disable/weighting surfaces, multiplayer integrations, and one-click Workshop
+publishing.
 
 ## Read stages lazily
 
@@ -127,15 +126,9 @@ human idea
    concise Markdown. Do not create IDs, ledgers, trace blocks, coherence contracts, completion
    claims, settlements, or impact queues.
 4. **SPEC.** Write the sole implementation work order: exact behavior/state/text/presentation,
-   maintained support routes, and concrete SelfTest scenarios. Run:
-
-   ```powershell
-   python ../modmaker/scripts/capability_preflight.py --spec SPEC.md
-   ```
-
-   This preflight checks only selected route existence and model-hook capability, shape,
-   route ownership, and surface reachability. The compiler, Build, Tier 2, and human review own
-   everything else.
+   maintained support routes, and concrete SelfTest scenarios, then run the thin capability
+   preflight from Core commands. The compiler, Build, Tier 2, and human review own everything
+   else.
 5. **Scaffold and Author.** Resolve the local profile, create the project, translate only the
    current SPEC through its recipes, author bilingual localization when used, add the load marker,
    and generate an arg-gated `SelfTest.cs` from `reference/selftest-harness.md`. Art defaults to

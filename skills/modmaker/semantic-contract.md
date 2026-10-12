@@ -9,12 +9,14 @@ it. Keep it readable by both the user and the authoring agent.
 For each content element or existing-content change, write the applicable facts in ordinary
 Markdown:
 
-- content identity, surface, registration/availability, and ownership;
-- trigger, target, conditions, ordered effects, exact values, upgrades, and native result pile;
-- state owner, transition timing, bounds, lifetime, reset, persistence, and visibility;
+- name, content identity, surface, pool/registration/availability, ownership, and relationships;
+- trigger, target, conditions, ordered effects, exact values, upgrades, calculation timing, and
+  native result pile;
+- state owner, transition timing, bounds, lifetime, reset, persistence, visibility, and consumers;
 - exact English and Simplified Chinese player-facing text in the vanilla style of
-  `reference/vanilla-text-style.md`, including DynamicVar/SmartFormat names, variable
-  parity, glossary terms, and hover tips for every named term;
+  `reference/vanilla-text-style.md` (glossary terms, colors, line breaks, Chinese punctuation
+  and measure words), including localization table/key intent, DynamicVar/SmartFormat names,
+  variable parity, and hover tips for every named term;
 - presentation, art choice, native consumers, and checked fallback;
 - supported recipe/reference route;
 - adapter outputs such as stable IDs, tables/keys, resources, and classes when known; and
@@ -29,7 +31,7 @@ rationale, future ideas, verification outcomes, or stage status in SPEC.
 Every new or revised SPEC contains one short `## Implementation` section. It is both the
 author's route list and the input to the one pre-Author machine check.
 
-Use one line per maintained route selected by the current work:
+List each maintained route selected by the current work exactly once:
 
 ```markdown
 ## Implementation
@@ -49,9 +51,9 @@ An operation with no maintained route adds one `- Mod-local: <operation> - <publ
 Owner.Member list>` line, grounded under `../sts2api/grounding.md` § Mod-local Routes.
 
 The thin preflight fails a SPEC with no `Support`, `Hook`, or `Mod-local` line, requires each
-`Mod-local` line to name a public `Owner.Member`, and otherwise checks only that each route exists and that each Hook is cataloged, declared
-by its route, uses the catalog shape, is not owned by another route, and can reach the selected
-surface. Do not add Markdown anchors: headings are documentation navigation, not capability
+`Mod-local` line to name a public `Owner.Member`, and otherwise checks only that each route
+exists and that each Hook is cataloged, declared by its route, uses the catalog shape, is not
+owned by another route, and can reach the selected surface. Do not add Markdown anchors: headings are documentation navigation, not capability
 identity. An ordinary operation needs no invented capability ID.
 
 ## Surface and capability ownership

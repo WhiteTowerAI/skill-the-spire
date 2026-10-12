@@ -6,19 +6,8 @@ root. This is the one artifact Author follows.
 
 ## Lower the accepted scope
 
-Write only the current supported work. For every element or operation make these facts explicit
-where applicable:
-
-- name, logical identity, surface, pool/availability, owner, and relationships;
-- trigger, target, conditions, ordered effects, values, upgrades, and calculation timing;
-- state owner, transitions, bounds, lifetime, reset, persistence, visibility, and consumers;
-- exact English and Simplified Chinese text, already written in the vanilla style of
-  `reference/vanilla-text-style.md` (glossary terms, colors, line breaks, Chinese
-  punctuation and measure words), localization table/key intent, formatting variables, and
-  the hover tips each description needs;
-- art/presentation choice, real consumer, and fallback;
-- maintained recipe/reference routes in `## Implementation`; and
-- real-host autotest scenarios in `## Autotest`.
+Write only the current supported work. For every element or operation make explicit the facts
+`semantic-contract.md` § What every current operation says lists.
 
 Do not copy DESIGN rationale or deferred work into implementation. Do not embed scope,
 deliverable, coherence, settlement, repair, surface-data, or evidence JSON. A simple Mod should
@@ -36,69 +25,22 @@ accepted value.
 
 ## Use the owner pages
 
-Each selected surface page owns its exact domain vocabulary and proof matrix. Preserve all
-current product capabilities, including:
-
-- new Card/Relic/Potion/Power/Keyword/Enchantment/Orb content;
-- complete singleplayer Acts with explicit entry policies, and new Shared/Act-scoped Ancients;
-- combat Card Afflictions, selectable run Modifiers, scoped Global Effects, and independent Rest
-  Site actions;
-- custom Rewards with native claim/refusal and pending-save reconstruction, and independent Card
-  Piles across the complete documented public API;
-- local Mod-owned Runtime UI workflows using selected top-bar, Toast, runtime-hotkey, Capstone,
-  Catalog, floating-window, search-expansion, fixed node-attachment, and shell-token routes;
-- Monster move graphs and Encounter rosters;
-- ordinary Events, supported native presentation, and bounded forced follow-up Events;
-- playable Character Foundation, presentation, dialogue, combat cues, secondary resources,
-  and ordered semantic buffers;
-- computed Card values, advanced targeting, bounded state, Rest Site options,
-  readability, and custom static art;
-- grounded vanilla Card, visual, Ancient, availability, and non-Card overrides; and
-- cataloged model-hook participation only on surfaces in its dispatch listener set.
-
-For the exact current boundary, use the selected surface pages and `sts2api` references. When no
-maintained route covers an operation, ground it as a Mod-local route under
-`../sts2api/grounding.md` § Mod-local Routes and record it as a `- Mod-local:` line in
-`## Implementation`. A prompt is never authority to invent an ungrounded API.
+Each selected surface page owns its exact domain vocabulary and proof matrix. Every capability in
+`SKILL.md`'s supported product boundary stays authorable; use the selected surface pages and
+`sts2api` references for its exact current limits. When no maintained route covers an operation,
+ground it under `../sts2api/grounding.md` § Mod-local Routes. A prompt is never
+authority to invent an ungrounded API.
 
 ## Implementation
 
-List every selected maintained route exactly once. Example:
+Write `## Implementation` in the line format `semantic-contract.md` defines: `Support:` for each
+maintained route, `Hook:` for each raw model-hook capability, and `Mod-local:` for each grounded
+operation without a maintained route.
 
-```markdown
-## Implementation
-
-- Support: `recipes/card.md`
-- Support: `reference/card-computed-values.md`
-```
-
-An operation with no maintained route adds one `Mod-local` line naming its grounded public members:
-
-```markdown
-- Mod-local: <operation> - <public Owner.Member list>
-```
-
-For raw model-hook participation, add one line per capability. Global Effect uses the exact
-`global-effect-run` or `global-effect-combat` dispatcher surface from its selected singleton
-scope:
-
-```markdown
-- Hook: modify_damage_multiplicative | surface: power | shape: value | route: reference/model-hook-participation.md
-```
-
-Do not add a Hook line for ordinary recipe behavior. Do not cite a heading fragment. For a hook,
-copy `shape` from `reference/catalogs/model-hooks-sts2-0.107.1.json`, preserve unrelated
-collection entries for collection edits, and state the subject guard, condition, value/edit,
-neutral result, DynamicVar text binding, and ordering in the human-readable operation above.
-
-Run the only pre-Author check after writing the SPEC:
-
-```powershell
-python ../modmaker/scripts/capability_preflight.py --spec SPEC.md
-```
-
-This check is intentionally thin. It does not judge missing ordinary fields, Markdown layout,
-business rules, C# types, manifests, localization payloads, runtime lifecycle, visuals, or proof.
+Do not add a Hook line for ordinary recipe behavior. For a hook, copy `shape` from
+`reference/catalogs/model-hooks-sts2-0.107.1.json`, preserve unrelated collection entries for
+collection edits, and state the subject guard, condition, value/edit, neutral result,
+DynamicVar text binding, and ordering in the human-readable operation above.
 
 Write ordinary player-visible results as one ordered `effects.sequence` in game terms. When that
 sequence uses damage, Block/healing/HP changes, Powers, native resources, draw/discard/exhaust,
@@ -114,6 +56,12 @@ transaction, Card-play lifecycle control, a custom Card Pile, or another special
 also cites that owning route. If the selected callback cannot provide a primitive's required
 context/owner/source/target, record the exact unsupported combination instead of changing the
 accepted result.
+
+Once every route is listed, run the only pre-Author check:
+
+```powershell
+python ../modmaker/scripts/capability_preflight.py --spec SPEC.md
+```
 
 ## Autotest
 
