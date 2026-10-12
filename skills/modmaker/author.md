@@ -33,6 +33,11 @@ Read `semantic-contract.md` first, then read the selected framework reference
 snippets live in that reference and the surface recipe it routes to; do not copy a
 second framework branch into this file.
 
+When the SPEC selects generated art, start §4 first: get its one batch approval and start the
+calls, then write §§1-3 while they run. C#, localization, and SelfTest never depend on art.
+If the host cannot run generation in the background, do §4 after §3 as written. Build waits
+until every approved asset has landed or fallen back to placeholder.
+
 ## 0. Read before writing C#
 
 - Read `quirks.md` before writing any C#.
@@ -228,8 +233,8 @@ build until the user supplies it.
 2. **Respect the route's consent boundary.** For `runtime-imagegen`, the user's Mod-level
    `generate` choice authorizes the initial one-image-per-asset run; follow any approval or
    usage warning the host presents and never claim host usage is free. For Vofy or BYO HTTP,
-   show the assembled prompt, chosen model/backend, output count (**one**), and the
-   credit-spending action, then get a one-line yes for this exact paid generation. Every
+   get **one** yes for the whole initial run from the batch list in `reference/art-contract.md`
+   § Consent and the regenerate loop (a Character asks twice: portrait, then the rest). Every
    regeneration, on any route, needs a new confirmation after the user sees the current result.
 3. Acquire through the SPEC's `art source`, then normalize into
    `<work dir>/<ModName>/images` with `gen_sprite.py import` (or `acquire_sprite.py create`,
