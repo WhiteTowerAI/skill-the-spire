@@ -8,8 +8,11 @@ Mod without rebuilding it.
 
 - A compiler, resource, manifest, localization, packaging, or deployment failure is repaired at
   the earliest source/build layer that produced it.
-- A structured Tier 2 mismatch is repaired in the implementation or SelfTest according to the
-  actual expected and observed state.
+- A structured Tier 2 mismatch is repaired in the implementation. The expected value comes
+  from SPEC, never from the observed run: change a SelfTest expectation only when it encoded
+  SPEC wrongly (for example it left out a native modifier the SPEC's result includes), and
+  record that reason in `MEMORY.md`. Never set an expectation to the observed value to make
+  the check pass.
 - If the code does not implement the accepted SPEC, correct the code or SPEC detail without
   changing the intended result.
 - If the fix would change player-visible behavior, text, scope, or presentation, stop and obtain
