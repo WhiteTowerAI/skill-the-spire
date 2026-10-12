@@ -151,6 +151,11 @@ human idea
     failed, or was not run and where artifacts live. Do not infer missing evidence or route the
     report through a ledger.
 
+While working, tell the user what is happening to their Mod in one to three plain sentences
+when a stage finishes, e.g. "The card is written; now checking it in a real fight." Do not
+name internal files, tools, tiers, routes, hooks, or stage numbers. Questions still follow
+`interview.md`, and the final report still follows `verify.md`.
+
 On a failure, read `repair.md`, make one grounded change, rebuild where required, and rerun the
 earliest meaningful check. Stop after the bounded attempt cap or when resolution needs a
 player-visible design change or missing shared capability.
