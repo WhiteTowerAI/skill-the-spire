@@ -19,8 +19,10 @@ Settle and write:
 - English and Simplified Chinese title, epithet, page/option text, dialogue, and SmartFormat
   variable parity; stable page/option names are localization and run-history identities;
 - layout/portrait/background/VFX, map and run-history icon pairs, optional procedural stage, ambient
-  BGM, and explicit fallback; and
-- a real Ancient `MapNode` SelfTest plus headed dialogue/options/icons/controller proof.
+  BGM, and explicit fallback. Placeholder mode is the checked Darv fallback profile in
+  `recipes/ancient.md` § Required explicit fallback, never empty profiles; and
+- a real Ancient `MapNode` SelfTest (`reference/selftest-harness.md` § The Ancient `MapNode`
+  scenario) plus headed dialogue/options/icons/controller proof.
 
 Ancient option bodies may use the same bounded public Event outcome routes, but a new Ancient is
 not an ordinary Event and must not be lowered through `recipes/event.md`. Settings, Progression,
