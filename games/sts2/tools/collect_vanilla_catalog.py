@@ -8,14 +8,21 @@ import subprocess
 import sys
 from pathlib import Path
 
+from collect_text_glossary import GlossaryError, read_localization
+from localization_contract import REQUIRED_LANGUAGES
 from ritsu_profile import PROFILE
 from scaffold import generate
 from vanilla_overrides import (
     VanillaOverrideError,
     catalog_digest,
+    default_catalog_path,
     merge_catalogs,
     validate_catalog,
 )
+
+# Models whose rules text a "like vanilla X" request needs. Their description lives next to
+# the title in the same table: `<ENTRY>.title` -> `<ENTRY>.description`.
+DESCRIPTION_TABLES = ("cards", "relics", "potions", "powers")
 
 
 TOOLS_DIR = Path(__file__).resolve().parent
@@ -271,6 +278,64 @@ def merge(
     )
 
 
+def _with_description(model: dict, record: dict | None) -> dict:
+    """Return the model with its description record placed right after its title."""
+    rebuilt: dict = {}
+    for key, value in model.items():
+        if key == "description_localization":
+            continue
+        rebuilt[key] = value
+        if key == "title_localization" and record is not None:
+            rebuilt["description_localization"] = record
+    return rebuilt
+
+
+def attach_descriptions(catalog: dict, tables: dict) -> tuple[dict, int]:
+    """Copy eng/zhs description templates from the game's localization tables into the
+    catalog. Descriptions are excluded from catalog_sha256, so identity must not change."""
+    validate_catalog(catalog)
+    models = []
+    attached = 0
+    for model in catalog["models"]:
+        title = model.get("title_localization") or {}
+        record = None
+        if title.get("table") in DESCRIPTION_TABLES and title.get("key", "").endswith(".title"):
+            key = title["key"][: -len(".title")] + ".description"
+            texts = {
+                language: tables.get(language, {}).get(title["table"], {}).get(key, "").strip()
+                for language in REQUIRED_LANGUAGES
+            }
+            texts = {language: text for language, text in texts.items() if text}
+            if texts:
+                record = {"table": title["table"], "key": key, "localized_descriptions": texts}
+                attached += 1
+        models.append(_with_description(model, record))
+    updated = {**catalog, "models": models}
+    if catalog_digest(updated) != catalog["catalog_sha256"]:
+        raise VanillaOverrideError("attaching descriptions changed catalog identity")
+    validate_catalog(updated)
+    return updated, attached
+
+
+def add_descriptions(catalog_path: Path, sts2_dir: Path, check: bool) -> int:
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    try:
+        tables = read_localization(sts2_dir / "SlayTheSpire2.pck")
+    except GlossaryError as exc:
+        raise VanillaOverrideError(str(exc)) from exc
+    updated, attached = attach_descriptions(catalog, tables)
+    rendered = json.dumps(updated, ensure_ascii=False, indent=2) + "\n"
+    if check:
+        if catalog_path.read_text(encoding="utf-8") != rendered:
+            print(f"[catalog] STALE descriptions: {catalog_path}", file=sys.stderr)
+            return 1
+        print(f"[catalog] descriptions up to date: {attached} models")
+        return 0
+    _write(catalog_path, rendered)
+    print(f"[catalog] descriptions attached={attached} sha256={updated['catalog_sha256']}")
+    return 0
+
+
 def refresh_adapters(
     catalog_path: Path,
     assembly_path: Path,
@@ -306,6 +371,14 @@ def refresh_adapters(
     refreshed["authorable_route_families"] = sorted(
         set(current["authorable_route_families"]) | set(authorable_families or [])
     )
+    descriptions = {
+        model["id"]: model["description_localization"]
+        for model in current["models"]
+        if model.get("description_localization")
+    }
+    refreshed["models"] = [
+        _with_description(model, descriptions.get(model["id"])) for model in refreshed["models"]
+    ]
     refreshed["catalog_sha256"] = catalog_digest(refreshed)
     validate_catalog(refreshed)
     _write(output, json.dumps(refreshed, ensure_ascii=False, indent=2) + "\n")
@@ -350,8 +423,17 @@ def main(argv: list[str] | None = None) -> int:
     refresh_parser.add_argument("--output", required=True)
     refresh_parser.add_argument("--authorable-family", action="append", default=[])
 
+    descriptions_parser = subparsers.add_parser(
+        "add-descriptions", help="attach eng/zhs rules text from the game PCK"
+    )
+    descriptions_parser.add_argument("--sts2-dir", required=True)
+    descriptions_parser.add_argument("--catalog", default=str(default_catalog_path()))
+    descriptions_parser.add_argument("--check", action="store_true")
+
     args = parser.parse_args(argv)
     try:
+        if args.command == "add-descriptions":
+            return add_descriptions(Path(args.catalog), Path(args.sts2_dir), args.check)
         if args.command == "create-runtime-project":
             create_runtime_collector(Path(args.project_dir), args.mod_name, args.author)
             print(f"[catalog] runtime collector -> {Path(args.project_dir).resolve()}")

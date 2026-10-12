@@ -955,6 +955,11 @@ def _canonical_json(value: Any) -> bytes:
 def catalog_digest(catalog: dict[str, Any]) -> str:
     payload = copy.deepcopy(catalog)
     payload.pop("catalog_sha256", None)
+    # Description text is reference material for "like vanilla X" lookups, not catalog
+    # identity. Leaving it out keeps existing override manifests' catalog_sha256 valid.
+    for model in payload.get("models", []):
+        if isinstance(model, dict):
+            model.pop("description_localization", None)
     return hashlib.sha256(_canonical_json(payload)).hexdigest()
 
 
@@ -1088,6 +1093,27 @@ def _validate_title_localization(
         _require_text(title, f"{label} localized title {language}")
 
 
+def _validate_description_localization(value: Any, label: str) -> None:
+    if value is None:
+        return
+    if not isinstance(value, dict):
+        raise VanillaOverrideError(f"{label} must be an object or null")
+    _require_exact_keys(value, {"table", "key", "localized_descriptions"}, label)
+    _require_text(value.get("table"), f"{label} table")
+    _require_text(value.get("key"), f"{label} key")
+    descriptions = value.get("localized_descriptions")
+    if not isinstance(descriptions, dict) or not descriptions:
+        raise VanillaOverrideError(f"{label} localized_descriptions must be a non-empty object")
+    unknown_languages = sorted(set(descriptions) - set(REQUIRED_LANGUAGES))
+    if unknown_languages:
+        raise VanillaOverrideError(
+            f"{label} localized_descriptions allows only {', '.join(REQUIRED_LANGUAGES)}; "
+            f"found {', '.join(unknown_languages)}"
+        )
+    for language, description in descriptions.items():
+        _require_text(description, f"{label} localized description {language}")
+
+
 def validate_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
     if catalog.get("schema") != CATALOG_SCHEMA:
         raise VanillaOverrideError(f"catalog schema must be {CATALOG_SCHEMA}")
@@ -1173,6 +1199,7 @@ def validate_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
                 "aliases",
                 "is_debug",
                 "title_localization",
+                "description_localization",
                 "properties",
                 "sources",
             },
@@ -1201,6 +1228,10 @@ def validate_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
             model.get("title_localization"),
             f"catalog model {model_id} title_localization",
             localization_languages,
+        )
+        _validate_description_localization(
+            model.get("description_localization"),
+            f"catalog model {model_id} description_localization",
         )
         aliases = model.get("aliases")
         if (
