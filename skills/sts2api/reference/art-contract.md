@@ -215,7 +215,8 @@ visual proof for those consumers.
 is preserved inside `(6,8)-(126,187)` on the unchanged 132x195 canvas.
 `character_background` remains exact 16:10 `cover` with chroma off. The icon,
 marker, static body, and energy profiles use `contain` with chroma on and a flat pure
-`#FF00FF` source background. The normalizer writes only loose PNGs; author code creates
+`#FF00FF` source background (`#00FF00` for a magenta/pink/purple subject; see the key-color
+rule under "The card portrait prompt template"). The normalizer writes only loose PNGs; author code creates
 the tiny raw `.tscn` wrappers for icon/background/rest/merchant/energy, and `build.py` packs them
 without Godot/MegaDot. Full energy references all five layers from that one energy scene.
 The optional non-Spine cue contract is limited to the four tabled sequences. Cast, Spine,
@@ -694,6 +695,11 @@ Rules that make the output usable (they mirror the fit logic in `gen_sprite.py`)
   `fit: contain`, chroma ON) that sit transparent on game UI — for those, add "solid flat
   magenta (#FF00FF) background, no gradient" to the prompt. Force keying on a card with
   `--chroma` only if you deliberately want to cut a magenta-backed portrait out.
+- **Key color follows the subject.** When the subject's own colors include magenta, pink,
+  or purple, replace every `#FF00FF` magenta background instruction in that asset's prompt
+  (including Character sheets) with solid flat pure `#00FF00` green, and "no magenta in the
+  subject" with "no green in the subject". Import reads the key from the source border, so
+  the command and flags stay the same. Otherwise keep magenta.
 - **Subject centered, generous margin**, so the `cover` crop keeps the subject in frame.
 - **One image per call.** `gen_sprite.py` requests `n=1` and keeps that single result —
   there is no batch-and-pick. If it's not right, *regenerate*: tweak segment ② and re-run

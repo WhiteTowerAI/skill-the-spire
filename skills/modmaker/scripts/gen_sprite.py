@@ -11,7 +11,8 @@ upstream; this tool only runs when the user chose a custom sprite):
               prompt (+ few-shot references), gets an image back.
   import    — local file. The user already has an image; skip the network.
 
-Both then NORMALIZE + PLACE identically: optional magenta (#FF00FF) chroma-key →
+Both then NORMALIZE + PLACE identically: optional chroma-key (#FF00FF, or #00FF00 when the
+border shows a green source background) →
 fit/center to the exact contract size (reference/art-contract.md) → write <slug>.png at
 the exact sub-path under the mod's images/ dir. Dropping that file in and rebuilding the
   .pck (build.py) is the whole "install a custom sprite" operation — the selected
@@ -46,7 +47,7 @@ import urllib.error
 from pathlib import Path
 
 from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
-from character_cues import remove_magenta
+from character_cues import KEY_COLORS, detect_key_color, remove_key_color
 from ritsu_profile import PROFILE
 
 try:
@@ -89,7 +90,8 @@ except ImportError:
 #                  game frames itself, e.g. a card portrait). Opaque.
 #      "contain" = fit inside with transparent padding (a cut-out object on a keyed
 #                  background, e.g. a relic/power icon on the relic bar).
-# chroma: default #FF00FF chroma-key on generate. TRUE for cut-out icons (they need
+# chroma: key out the flat source background (#FF00FF, or #00FF00 detected from the
+#         border for a magenta/pink/purple subject). TRUE for cut-out icons (they need
 #         transparency); FALSE for full-bleed illustrations (a card portrait is a full
 #         scene filling the frame window, not an object on transparency). Overridable
 #         per call with --chroma / --no-chroma.
@@ -170,14 +172,15 @@ def cue_sheet_size(spec: str, override: tuple[int, int] | None) -> tuple[int, in
 # --- normalize primitives (magenta chroma-key adapted from agent-sprite-forge,
 #     reference/baselines; foreground cut-outs also remove disconnected model debris) ---
 
-def chroma_key_magenta(img: "Image.Image", threshold: int = 100) -> "Image.Image":
-    """Make near-#FF00FF pixels transparent. Single pass over RGBA data."""
+def chroma_key(img: "Image.Image", key: str = "magenta",
+               threshold: int = 100) -> "Image.Image":
+    """Make pixels near the key color transparent. Single pass over RGBA data."""
     img = img.convert("RGBA")
     thr_sq = threshold * threshold
+    kr, kg, kb = KEY_COLORS[key]
     out = []
     for r, g, b, a in img.getdata():
-        # squared distance to pure magenta (255, 0, 255)
-        if a != 0 and ((r - 255) ** 2 + g * g + (b - 255) ** 2) < thr_sq:
+        if a != 0 and ((r - kr) ** 2 + (g - kg) ** 2 + (b - kb) ** 2) < thr_sq:
             out.append((0, 0, 0, 0))
         else:
             out.append((r, g, b, a))
@@ -358,15 +361,16 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
     footprint = info.get("visible_footprint")
     img = src
     if do_chroma:
+        key = detect_key_color(img)
         if spec in CHARACTER_SOFT_CHROMA_SPECS:
-            img = remove_magenta(img, threshold=180, edge_threshold=200)
-            log("applied edge-connected soft magenta chroma-key")
+            img = remove_key_color(img, threshold=180, edge_threshold=200, key=key)
+            log(f"applied edge-connected soft {key} chroma-key")
             img = remove_cutout_fragments(img)
             log("removed disconnected Character cut-out background fragments")
         else:
             threshold = 180 if spec in FRAGMENT_CLEANUP_SPECS else 100
-            img = chroma_key_magenta(img, threshold=threshold)
-            log("applied magenta chroma-key")
+            img = chroma_key(img, key=key, threshold=threshold)
+            log(f"applied {key} chroma-key")
     if footprint is not None:
         img = fit_into_footprint(
             img,

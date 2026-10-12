@@ -65,7 +65,8 @@ Repeat for `attack`, `hit`, and `dead`. Imports stage the original sheets under
 files. Once all four are present, `character_cues.py` processes the bundle and replaces
 `images/charui/cues/` only after every action passes.
 
-The deterministic processor owns magenta cleanup, grid splitting, largest connected-body
+The deterministic processor owns key-color cleanup (magenta, or green read from the sheet
+border), grid splitting, largest connected-body
 selection, edge-touch rejection, shared cross-action scaling, baseline alignment, and
 Attack/Hit body-height drift rejection against Idle (`0.85..1.15`). It writes per-action
 transparent GIFs, cleaned sheets, one contact sheet, and `pipeline-meta.json` under
