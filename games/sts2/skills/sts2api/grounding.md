@@ -40,8 +40,9 @@ accepted operation:
    C#/BCL, and Mod-owned state. Never use Harmony, reflection, Publicizer, IL, or runtime
    patching.
 3. Record it in the SPEC `## Implementation` section as
-   `- Mod-local: <operation> - <public Owner.Member list>`. The capability preflight ignores
-   this line; keep `Support:` lines for the parts that do have maintained routes.
+   `- Mod-local: <operation> - <public Owner.Member list>`. The capability preflight checks
+   only that this line names at least one `Owner.Member`; the compiler checks the member. Keep
+   `Support:` lines for the parts that do have maintained routes.
 4. Record the grounded signatures in `MEMORY.md`.
 5. Verify it in full: Build, Tier 1, and a Tier 2 SelfTest scenario that drives it through the
    real host and asserts its exact post-state, plus headed review when it has visible UI, input,

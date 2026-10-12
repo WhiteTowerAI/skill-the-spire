@@ -8,11 +8,13 @@ declaration lines anywhere in the document:
     - Support: reference/card-computed-values.md
     - Hook: modify_damage_multiplicative | surface: power | shape: value |
       route: reference/model-hook-participation.md
+    - Mod-local: grant gold - PlayerCmd.GainGold
 
 This tool deliberately does not validate Markdown structure, ordinary fields, business rules,
 localization, manifests, lifecycle behavior, evidence, or project status. Build and real-host
-verification own those checks. A SPEC with no Support or Hook declarations, such as one made
-only of Mod-local routes, has nothing for this tool to check and is skipped.
+verification own those checks. A Mod-local line must name at least one public Owner.Member; the
+compiler checks that member. A SPEC made only of Mod-local routes is skipped, and a SPEC with no
+Support, Hook, or Mod-local line fails because its Implementation section is missing.
 """
 from __future__ import annotations
 
@@ -30,6 +32,8 @@ CAPABILITY_DECLARATION_RE = re.compile(
 )
 SUPPORT_RE = re.compile(r"^\s*-\s*Support\s*:\s*`?(?P<route>[^`\s]+)`?\s*$", re.I)
 HOOK_RE = re.compile(r"^\s*-\s*Hook\s*:\s*(?P<body>.+?)\s*$", re.I)
+MOD_LOCAL_RE = re.compile(r"^\s*-\s*Mod-local\s*:\s*(?P<body>.+?)\s*$", re.I)
+PUBLIC_MEMBER_RE = re.compile(r"\b[A-Za-z_]\w*\.[A-Za-z_]\w*")
 ROUTE_RE = re.compile(r"^(?:recipes|reference)/[a-z0-9][a-z0-9_./-]*\.md$")
 CAPABILITY_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 SURFACE_RE = re.compile(r"^[a-z][a-z0-9_-]*$")
@@ -46,6 +50,7 @@ class HookSelection:
     surface: str
     shape: str
     route: str
+    line: int
 
 
 def _tools_dir() -> Path:
@@ -123,80 +128,111 @@ def _parse_hook(body: str, line_number: int) -> HookSelection:
     for part in parts[1:]:
         key, separator, value = part.partition(":")
         if not separator:
-            raise CapabilityPreflightError(
-                f"Implementation line {line_number} has an invalid Hook field: {part!r}"
-            )
+            raise CapabilityPreflightError(f"invalid Hook field: {part!r}")
         fields[key.strip().lower()] = _clean(value)
     missing = [name for name in ("surface", "shape", "route") if not fields.get(name)]
     if missing:
-        raise CapabilityPreflightError(
-            f"Implementation line {line_number} Hook is missing: {', '.join(missing)}"
-        )
+        raise CapabilityPreflightError(f"Hook is missing: {', '.join(missing)}")
     if not CAPABILITY_RE.fullmatch(capability):
         raise CapabilityPreflightError(f"invalid hook capability {capability!r}")
     if not SURFACE_RE.fullmatch(fields["surface"]):
         raise CapabilityPreflightError(f"invalid hook surface {fields['surface']!r}")
-    return HookSelection(capability, fields["surface"], fields["shape"], fields["route"])
+    return HookSelection(
+        capability, fields["surface"], fields["shape"], fields["route"], line_number
+    )
 
 
-def parse_implementation(text: str) -> tuple[list[str], list[HookSelection]] | None:
-    routes: list[str] = []
+def _check_mod_local(body: str) -> None:
+    _, separator, members = body.partition(" - ")
+    if not separator or not PUBLIC_MEMBER_RE.search(members):
+        raise CapabilityPreflightError(
+            "Mod-local must read '<operation> - <public Owner.Member list>'"
+        )
+
+
+def parse_implementation(
+    text: str, errors: list[str]
+) -> tuple[list[tuple[int, str]], list[HookSelection], int]:
+    """Collect Support routes, Hook selections, and the Mod-local count; append line errors."""
+    routes: list[tuple[int, str]] = []
     hooks: list[HookSelection] = []
+    mod_local = 0
     for line_number, line in enumerate(text.splitlines(), start=1):
         if not line.strip() or line.lstrip().startswith("<!--"):
             continue
         support = SUPPORT_RE.match(line)
         if support:
-            routes.append(_clean(support.group("route")))
+            routes.append((line_number, _clean(support.group("route"))))
             continue
         hook = HOOK_RE.match(line)
         if hook:
-            hooks.append(_parse_hook(hook.group("body"), line_number))
-    if not routes and not hooks:
-        return None
-    return routes, hooks
+            try:
+                hooks.append(_parse_hook(hook.group("body"), line_number))
+            except CapabilityPreflightError as exc:
+                errors.append(f"line {line_number}: {exc}")
+            continue
+        local = MOD_LOCAL_RE.match(line)
+        if local:
+            mod_local += 1
+            try:
+                _check_mod_local(local.group("body"))
+            except CapabilityPreflightError as exc:
+                errors.append(f"line {line_number}: {exc}")
+    return routes, hooks, mod_local
+
+
+def _check_hook(hook: HookSelection, catalog: dict[str, dict]) -> None:
+    route_file = _route_file(hook.route)
+    entry = catalog.get(hook.capability)
+    if entry is None:
+        raise CapabilityPreflightError(
+            f"hook capability {hook.capability!r} is not in {HOOK_CATALOG_NAME}"
+        )
+    owned_by = entry.get("owned_by_route")
+    if owned_by:
+        raise CapabilityPreflightError(
+            f"hook capability {hook.capability!r} is owned by {owned_by}; use that route"
+        )
+    authorable = entry["authorable_surfaces"]
+    if hook.surface not in authorable:
+        raise CapabilityPreflightError(
+            f"hook capability {hook.capability!r} cannot reach surface {hook.surface!r}; "
+            f"authorable on: {', '.join(authorable)}"
+        )
+    expected_shape = SHAPES[entry["declaration_shape"]]
+    if hook.shape != expected_shape:
+        raise CapabilityPreflightError(
+            f"hook capability {hook.capability!r} uses shape {hook.shape!r}; "
+            f"the catalog requires {expected_shape!r}"
+        )
+    if hook.capability not in declared_capabilities(route_file.read_text(encoding="utf-8")):
+        raise CapabilityPreflightError(
+            f"hook route {hook.route} does not declare capability {hook.capability!r}"
+        )
 
 
 def validate_spec_text(text: str) -> tuple[int, int, bool]:
-    parsed = parse_implementation(text)
-    if parsed is None:
-        return 0, 0, True
-    routes, hooks = parsed
-    for route in routes:
-        _route_file(route)
-
-    catalog = load_hook_catalog()
+    """Return (support routes, hooks, skipped); raise once with every line error."""
+    errors: list[str] = []
+    routes, hooks, mod_local = parse_implementation(text, errors)
+    if not routes and not hooks and not mod_local and not errors:
+        raise CapabilityPreflightError(
+            "SPEC declares no Support, Hook, or Mod-local line; write its ## Implementation section"
+        )
+    for line_number, route in routes:
+        try:
+            _route_file(route)
+        except CapabilityPreflightError as exc:
+            errors.append(f"line {line_number}: {exc}")
+    catalog = load_hook_catalog() if hooks else {}
     for hook in hooks:
-        route_file = _route_file(hook.route)
-        entry = catalog.get(hook.capability)
-        if entry is None:
-            raise CapabilityPreflightError(
-                f"hook capability {hook.capability!r} is not in {HOOK_CATALOG_NAME}"
-            )
-        owned_by = entry.get("owned_by_route")
-        if owned_by:
-            raise CapabilityPreflightError(
-                f"hook capability {hook.capability!r} is owned by {owned_by}; use that route"
-            )
-        authorable = entry["authorable_surfaces"]
-        if hook.surface not in authorable:
-            raise CapabilityPreflightError(
-                f"hook capability {hook.capability!r} cannot reach surface {hook.surface!r}; "
-                f"authorable on: {', '.join(authorable)}"
-            )
-        expected_shape = SHAPES[entry["declaration_shape"]]
-        if hook.shape != expected_shape:
-            raise CapabilityPreflightError(
-                f"hook capability {hook.capability!r} uses shape {hook.shape!r}; "
-                f"the catalog requires {expected_shape!r}"
-            )
-        if hook.capability not in declared_capabilities(
-            route_file.read_text(encoding="utf-8")
-        ):
-            raise CapabilityPreflightError(
-                f"hook route {hook.route} does not declare capability {hook.capability!r}"
-            )
-    return len(routes), len(hooks), False
+        try:
+            _check_hook(hook, catalog)
+        except CapabilityPreflightError as exc:
+            errors.append(f"line {hook.line}: {exc}")
+    if errors:
+        raise CapabilityPreflightError("\n".join(errors))
+    return len(routes), len(hooks), not routes and not hooks
 
 
 def validate_spec_file(path: Path) -> tuple[int, int, bool]:
@@ -212,10 +248,12 @@ def main(argv: list[str] | None = None) -> int:
     try:
         routes, hooks, skipped = validate_spec_file(args.spec)
     except (CapabilityPreflightError, OSError, KeyError, json.JSONDecodeError) as exc:
-        print(f"[capability-preflight] failed: {exc}", file=sys.stderr)
+        print("[capability-preflight] failed:", file=sys.stderr)
+        for line in str(exc).splitlines():
+            print(f"  {line}", file=sys.stderr)
         return 2
     if skipped:
-        print("[capability-preflight] skipped: SPEC declares no Support or Hook lines")
+        print("[capability-preflight] skipped: SPEC declares only Mod-local routes")
     else:
         print(f"[capability-preflight] ok support_routes={routes} hooks={hooks}")
     return 0
