@@ -86,7 +86,7 @@ When a value or outcome is random (random target, random Card or Power, chance t
   average";
 - check the worst and best realistic outcomes on purpose, including a streak of bad
   results, and soften a streak that reads as unfair rather than raising the average; and
-- leave the random source to Author: the game's seeded RNG per `./quirks.md` § RNG,
+- leave the random source to Author: the game's seeded RNG per `../modmaker/quirks.md` § RNG,
   never `System.Random`.
 
 ## Sensitivity and tuning

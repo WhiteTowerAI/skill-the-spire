@@ -29,7 +29,7 @@ affected PLAN stages and the nearest proportional host/check; do not schedule a 
 unless the user or active project plan explicitly selects it.
 
 Read `semantic-contract.md` first, then read the selected framework reference
-(`sts2api/reference/ritsulib-adapter.md` for the current target). RitsuLib-specific
+(`${STS2API_SKILL_DIR}/reference/ritsulib-adapter.md` for the current target). RitsuLib-specific
 snippets live in that reference and the surface recipe it routes to; do not copy a
 second framework branch into this file.
 

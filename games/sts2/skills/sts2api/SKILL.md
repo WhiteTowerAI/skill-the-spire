@@ -11,7 +11,7 @@ description: |
 
 ## Design grammar and planning routing
 
-After `modmaker/route.md` classifies the request, load only the design references named in
+After `${MODMAKER_SKILL_DIR}/route.md` classifies the request, load only the design references named in
 its handoff:
 
 - read `${STS2API_SKILL_DIR}/design/character-foundation.md` for a playable Character,
@@ -66,7 +66,7 @@ explicitly accepted composition instead.
 
 1. Find the element's recipe under `${STS2API_SKILL_DIR}/recipes/`, then read only the
    references the table below names for the selected behavior. The caller's
-   `modmaker/surfaces/<surface>.md` page names the same routes for its element.
+   `${MODMAKER_SKILL_DIR}/surfaces/<surface>.md` page names the same routes for its element.
 2. For error signatures, read `${STS2API_SKILL_DIR}/errors.md`.
 3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a symbol the
    recipe lacks, read `${STS2API_SKILL_DIR}/grounding.md`; for potions, also
