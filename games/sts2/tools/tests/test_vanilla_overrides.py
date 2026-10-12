@@ -973,6 +973,12 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
                 self.assertIsNotNone(record, model["id"])
                 self.assertEqual({"eng", "zhs"}, set(record["localized_descriptions"]), model["id"])
 
+    def test_short_chinese_typo_still_suggests_the_title(self) -> None:
+        with self.assertRaisesRegex(
+            overrides.VanillaOverrideError, r"unknown vanilla target.*Suggestions:.*CARD\.BASH"
+        ):
+            overrides.resolve_model(overrides.load_catalog(), "痛机", category="card")
+
     def test_wrong_profile_hash_and_collector_hash_fail_closed(self) -> None:
         catalog = make_catalog()
         wrong_profile = copy.deepcopy(catalog)

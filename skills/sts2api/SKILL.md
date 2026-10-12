@@ -68,10 +68,11 @@ explicitly accepted composition instead.
    references the table below names for the selected behavior. The caller's
    `../modmaker/surfaces/<surface>.md` page names the same routes for its element.
 2. For error signatures, read `../sts2api/errors.md`.
-3. For content facts (what effects exist, a vanilla analog, realistic numbers) or a symbol the
-   recipe lacks, read `../sts2api/grounding.md`; for potions, also
-   `reference/potions-snapshot.md`. If the pack has no maintained route, follow `grounding.md`
-   § Mod-local Routes rather than guessing.
+3. For a vanilla analog or realistic numbers, resolve the element with
+   `python ../modmaker/scripts/vanilla_overrides.py resolve <name> --category <card|relic|potion|power>`
+   and read its values and rules text. For a symbol the recipe lacks, read
+   `../sts2api/grounding.md`. If the pack has no maintained route, follow
+   `grounding.md` § Mod-local Routes rather than guessing.
 4. Return only the relevant snippet (hook, Cmd, loc-key rule, error fix, one analog).
 
 **Never read all files at once.** Each file is loaded on demand.
@@ -142,5 +143,4 @@ explicitly accepted composition instead.
 | `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and nine promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | Type-matched real STS2 reference pools for card/relic/power/potion/enchantment/orb/monster/event (© Mega Crit, reference-only — see ATTRIBUTION.md); tools select the matching family and randomly sample three distinct images | Passed as the root `--reference` in the art step; never mix families |
 | `grounding.md` | Where facts come from, the runtime lookup order, and the Mod-local route procedure for an operation no maintained route covers: ground public signatures, implement with public APIs only, verify through Tier 2 | An answer the recipe lacks |
-| `reference/potions-snapshot.md` | Distilled spire-codex content facts: the 63 vanilla potions + enum values | Picking a potion effect / analog |
 | `errors.md` | Error signature → cause → fix catalog; append-only | Build or load failure; repair loop |
