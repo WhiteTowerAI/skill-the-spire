@@ -48,7 +48,8 @@ shape, and the single maintained route:
 An operation with no maintained route adds one `- Mod-local: <operation> - <public
 Owner.Member list>` line, grounded under `../sts2api/grounding.md` § Mod-local Routes.
 
-The thin preflight ignores `Mod-local` lines and checks only that each route exists and that each Hook is cataloged, declared
+The thin preflight fails a SPEC with no `Support`, `Hook`, or `Mod-local` line, requires each
+`Mod-local` line to name a public `Owner.Member`, and otherwise checks only that each route exists and that each Hook is cataloged, declared
 by its route, uses the catalog shape, is not owned by another route, and can reach the selected
 surface. Do not add Markdown anchors: headings are documentation navigation, not capability
 identity. An ordinary operation needs no invented capability ID.

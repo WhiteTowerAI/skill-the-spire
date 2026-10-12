@@ -119,14 +119,46 @@ class CapabilityPreflightTests(unittest.TestCase):
             preflight.validate_spec_text(text)
         self.assertIn("does not declare", str(caught.exception))
 
-    def test_spec_without_declarations_is_skipped(self) -> None:
-        self.assertEqual((0, 0, True), preflight.validate_spec_text("# Old SPEC\n\n- card: x\n"))
+    def test_spec_without_implementation_lines_fails(self) -> None:
+        with self.assertRaises(preflight.CapabilityPreflightError) as caught:
+            preflight.validate_spec_text("# SPEC\n\n- card: x\n")
+        self.assertIn("## Implementation", str(caught.exception))
+
+    def test_mod_local_only_spec_is_skipped(self) -> None:
+        self.assertEqual(
+            (0, 0, True),
+            preflight.validate_spec_text(spec("- Mod-local: grant gold - PlayerCmd.GainGold")),
+        )
+
+    def test_mod_local_without_public_member_fails(self) -> None:
+        with self.assertRaises(preflight.CapabilityPreflightError) as caught:
+            preflight.validate_spec_text(spec("- Mod-local: grant gold"))
+        self.assertIn("Owner.Member", str(caught.exception))
+
+    def test_reports_every_error_with_line_numbers(self) -> None:
+        text = spec(
+            "- Support: recipes/not-real.md",
+            "- Hook: modify_damage_multiplicative | surface: power | shape: collection | "
+            "route: reference/model-hook-participation.md",
+        )
+        with self.assertRaises(preflight.CapabilityPreflightError) as caught:
+            preflight.validate_spec_text(text)
+        message = str(caught.exception)
+        self.assertIn("line 5: support route does not exist", message)
+        self.assertIn("line 6: hook capability", message)
+        self.assertIn("catalog requires 'value'", message)
 
     def test_cli_runs_against_payload_layout_shape(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             path = Path(raw) / "SPEC.md"
             path.write_text(spec("- Support: recipes/card.md"), encoding="utf-8")
             self.assertEqual(0, preflight.main(["--spec", str(path)]))
+
+    def test_cli_fails_on_spec_without_implementation_lines(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            path = Path(raw) / "SPEC.md"
+            path.write_text("# SPEC\n\n## Autotest\n", encoding="utf-8")
+            self.assertEqual(2, preflight.main(["--spec", str(path)]))
 
 
 if __name__ == "__main__":
