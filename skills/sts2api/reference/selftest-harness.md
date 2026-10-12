@@ -165,7 +165,7 @@ using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
 using MegaCrit.Sts2.Core.Rooms;
 using MegaCrit.Sts2.Core.Runs;
 
-namespace <ModName>.<ModName>Code;   // SAME namespace as MainFile.cs (scaffold nests <ModName>Code)
+namespace <ModName>;   // SAME namespace as MainFile.cs (the scaffold writes `namespace <ModName>;`)
 
 // Verification-only. Dormant unless the game is launched with --t2selftest.
 // Gated in MainFile.Initialize(): if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();
@@ -241,10 +241,10 @@ internal static class SelfTest
         if (abandon.Visible)   // an old run is open — abandon it first
         {
             await UiHelper.Click(abandon);
-            await WaitHelper.Until(() => NModalContainer.Instance?.SkillTheSpireal != null, ct, TimeSpan.FromSeconds(10), "no abandon modal");
-            var modal = (Node)NModalContainer.Instance!.SkillTheSpireal!;
+            await WaitHelper.Until(() => NModalContainer.Instance?.OpenModal != null, ct, TimeSpan.FromSeconds(10), "no abandon modal");
+            var modal = (Node)NModalContainer.Instance!.OpenModal!;
             await UiHelper.Click(modal.GetNode<NButton>("VerticalPopup/YesButton"));
-            await WaitHelper.Until(() => NModalContainer.Instance.SkillTheSpireal == null, ct, TimeSpan.FromSeconds(10), "abandon modal stuck");
+            await WaitHelper.Until(() => NModalContainer.Instance.OpenModal == null, ct, TimeSpan.FromSeconds(10), "abandon modal stuck");
         }
 
         await UiHelper.Click(mainMenu.GetNode<NButton>("MainMenuTextButtons/SingleplayerButton"));
@@ -1129,7 +1129,9 @@ await WaitHelper.Until(() =>
 await UiHelper.Click(proceed!);
 ```
 
-For a resumable combat, retain the first mutable Event reference and require all of:
+For a resumable combat, retain the first mutable Event reference as its concrete custom type
+(`mutableEvent`) and require all of the following. `ResumeCount` is the counter its `Resume`
+override increments (`reference/event-outcomes.md` § Resume the Event after combat):
 
 ```csharp
 await WaitHelper.Until(
@@ -1224,7 +1226,7 @@ an unrun strict `selftest done` as an explicit verification exception.
 
 ## Checklist
 
-- [ ] `SelfTest.cs` emitted in `<ModName>Code/`, in the same namespace as `MainFile.cs` (`<ModName>.<ModName>Code`) so `MainFile.Logger` resolves.
+- [ ] `SelfTest.cs` emitted in `<ModName>Code/`, in the same namespace as `MainFile.cs` (`<ModName>`) so `MainFile.Logger` resolves.
 - [ ] `MainFile.Initialize()` has, after the load marker: `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();`
 - [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + all independent option outcomes); a forced follow-up Event enters through one real Unknown MapPoint instead of direct canonical entry; multi-element interactions reuse that real source driver and add observations.
 - [ ] Native Event presentation proves the real Card/relic consumers, preference-aware

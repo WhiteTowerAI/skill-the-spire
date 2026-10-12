@@ -225,6 +225,12 @@ For a custom attack-scaling buff, use the same hook contract as vanilla Strength
 keeping the type/loc/art rules from `recipes/power.md`:
 
 ```csharp
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Powers;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.ValueProps;
+using STS2RitsuLib.Scaffolding.Content;
+
 public sealed class <CustomBuff> : <ModName>Power
 {
     public override PowerType Type => PowerType.Buff;
@@ -278,7 +284,7 @@ public sealed class <Name> : ModMonsterTemplate
     public static string FallbackVisualPath =>
         SceneHelper.GetScenePath("creature_visuals/fallback");
     public static string ModVisualPath =>
-        $"{MainFile.ResPath}/images/monsters/<slug>.png";
+        "res://<ModName>/images/monsters/<slug>.png";
 
     public override int MinInitialHp => <min-hp>;
     public override int MaxInitialHp => <max-hp>;
@@ -369,7 +375,7 @@ while the profile retains the checked fallback scene:
 public static string FallbackVisualPath =>
     SceneHelper.GetScenePath("creature_visuals/fallback");
 public static string ModVisualPath =>
-    $"{MainFile.ResPath}/images/monsters/<slug>.png";
+    "res://<ModName>/images/monsters/<slug>.png";
 
 public override MonsterAssetProfile AssetProfile => new(FallbackVisualPath);
 public override bool HasDeathSfx => false;

@@ -80,6 +80,10 @@ screen through the native host. Use `ModScreenService.Open`, `Toggle`, and `Clos
 top-bar context helpers.
 
 ```csharp
+using Godot;
+using MegaCrit.Sts2.Core.Entities.Multiplayer;
+using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
+
 public sealed partial class ModCodexScreen : Control, ICapstoneScreen
 {
     public NetScreenType ScreenType => NetScreenType.None;

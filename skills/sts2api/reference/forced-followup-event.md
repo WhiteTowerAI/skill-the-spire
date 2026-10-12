@@ -151,6 +151,9 @@ The target file needs `System`, `System.Linq`, `System.Threading.Tasks`,
 Event recipe imports.
 
 ```csharp
+using MegaCrit.Sts2.Core.Runs;
+using STS2RitsuLib.Scaffolding.Content;
+
 public sealed class <TargetEvent> : ModEventTemplate
 {
     public override bool IsShared => true;

@@ -30,9 +30,12 @@ Before MSBuild, the tool verifies:
   `ritsulib-variants.manifest`, a `compat/0.107.1/` variant with its marker, and the
   `shared/` modules, with every module hash matching the manifest and the whole compile
   assembly set matching the scaffold pin;
-- any generated Character `ancients.json` uses the pinned vanilla target catalog,
-  contiguous dialogue/line structure, valid visit/repeat/Architect metadata, matching
-  Character entries, and identical keys across `eng` and `zhs`;
+- any generated `ancients.json` has identical keys across `eng` and `zhs`. Character
+  dialogue on vanilla Ancients uses the pinned vanilla target catalog, contiguous
+  dialogue/line structure, valid visit/repeat/Architect metadata, and matching Character
+  entries. A new Mod-owned Ancient has `.title`, `.epithet`, `.pages.INITIAL.description`,
+  complete option title/description pairs, and well-formed `.talk.` groups with `.next` only
+  on non-terminal lines;
 - when present, `skillthespire/vanilla-overrides.json` has the pinned host/profile/catalog
   digest, matching Mod id, grounded baselines/routes, no same-Mod conflict, and only
   operations the current catalog promotes. Each override family is accepted by its own

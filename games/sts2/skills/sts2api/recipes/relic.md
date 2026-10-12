@@ -304,6 +304,14 @@ Pools (`MegaCrit.Sts2.Core.Models.RelicPools`):
 ## Full golden example (Gambler's Coin — verified firing in-game)
 
 ```csharp
+using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Entities.Relics;
+using MegaCrit.Sts2.Core.Random;
+using STS2RitsuLib.Scaffolding.Content;
+
 public sealed class GamblersCoin : ModRelicTemplate
 {
     public override RelicRarity Rarity => RelicRarity.Common;

@@ -68,8 +68,10 @@ switching to an old template.
 ### `[ancient-dialogue]` or an Ancient localization detail in a profile failure
 
 - **Cause:** the generated flat dialogue table is structurally unsafe — wrong semantic
-  group/key, non-contiguous line structure, bad visit/repeat/Architect metadata, or keys that
-  differ across shipped languages.
+  group/key, non-contiguous line structure, `.next` on a terminal line, bad
+  visit/repeat/Architect metadata, a new Mod-owned Ancient missing `.title`/`.epithet`/
+  `.pages.INITIAL.description` or half of an option pair, or keys that differ across shipped
+  languages.
 - **Fix:** fix the reported semantic group/key. Never bypass the preflight and never enable
   the debug missing-Architect fallback to make it pass.
 

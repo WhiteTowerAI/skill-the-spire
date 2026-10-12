@@ -66,6 +66,19 @@ LINE_KEY_RE = re.compile(
 METADATA_KEY_RE = re.compile(
     r"^(?P<dialogue>\d+)-(?P<kind>visit|attack|startattack|endattack)$"
 )
+# A new Mod-owned Ancient (`ModAncientEventTemplate`) keeps its whole identity in the same
+# `ancients` table: title, epithet, pages/options, and its own `.talk.` dialogue, read by
+# RitsuLib `AncientDialogueLocalization.BuildDialogueSetForModAncient`.
+MOD_ANCIENT_KEY_RE = re.compile(
+    r"^(?P<entry>[A-Z0-9]+(?:_[A-Z0-9]+)*)\."
+    r"(?:(?P<field>title|epithet)"
+    r"|pages\.(?P<page>[A-Z0-9_]+)\.(?:description|options\.(?P<option>[A-Z0-9_]+)\."
+    r"(?P<option_field>title|description))"
+    r"|talk\.(?P<group>[A-Za-z0-9_]+)\.(?P<suffix>.+))$"
+)
+MOD_ANCIENT_SFX_RE = re.compile(r"^\d+-\d+r?\.(?:ancient|char)\.sfx$")
+MOD_ANCIENT_GROUP_RE = re.compile(r"^(?:firstVisitEver|ANY|[A-Z0-9]+(?:_[A-Z0-9]+)*)$")
+MOD_ANCIENT_REQUIRED = ("title", "epithet", "pages.INITIAL.description")
 MARKUP_RE = re.compile(r"\[([^\]]+)\]")
 ALLOWED_OPEN_TAGS = {
     "aqua": "aqua",
@@ -386,6 +399,113 @@ def parse_ancient_dialogue_table(
     return tuple(parsed)
 
 
+def split_ancients_table(
+    table: dict[str, object],
+) -> tuple[dict[str, object], dict[str, object]]:
+    """Split keys into custom-Character dialogue on vanilla Ancients and Mod-owned Ancients."""
+    character_part: dict[str, object] = {}
+    mod_part: dict[str, object] = {}
+    for key, value in table.items():
+        entry = key.split(".", 1)[0]
+        (character_part if entry in TARGET_BY_ENTRY else mod_part)[key] = value
+    return character_part, mod_part
+
+
+def parse_mod_ancient_table(
+    table: dict[str, object],
+) -> tuple[frozenset[str], tuple[DialogueGroup, ...]]:
+    """Validate a new Mod-owned Ancient's identity, pages, and its own dialogue."""
+    present: dict[str, set[str]] = {}
+    options: dict[tuple[str, str, str], set[str]] = {}
+    grouped: dict[tuple[str, str, int], _GroupInput] = {}
+
+    for key, raw_value in table.items():
+        value = _nonempty_string(raw_value, key)
+        match = MOD_ANCIENT_KEY_RE.fullmatch(key)
+        if not match:
+            raise AncientDialogueValidationError(
+                f"{key}: unsupported ancients.json key for a Mod-owned Ancient; use "
+                "<ENTRY>.title/.epithet/.pages.<PAGE>.description/"
+                ".pages.<PAGE>.options.<OPTION>.title|description/.talk.<GROUP>.<n>-<m>.<speaker>"
+            )
+        entry = match.group("entry")
+        fields = present.setdefault(entry, set())
+        if match.group("field"):
+            fields.add(match.group("field"))
+            continue
+        if match.group("page"):
+            page = match.group("page")
+            if match.group("option"):
+                options.setdefault((entry, page, match.group("option")), set()).add(
+                    match.group("option_field")
+                )
+            else:
+                fields.add(f"pages.{page}.description")
+            continue
+
+        group_name, suffix = match.group("group"), match.group("suffix")
+        if not MOD_ANCIENT_GROUP_RE.fullmatch(group_name):
+            raise AncientDialogueValidationError(
+                f"{key}: dialogue group must be firstVisitEver, ANY, or a Character entry"
+            )
+        if MOD_ANCIENT_SFX_RE.fullmatch(suffix):
+            continue
+        line_match = LINE_KEY_RE.fullmatch(suffix)
+        metadata_match = METADATA_KEY_RE.fullmatch(suffix)
+        if line_match:
+            group = grouped.setdefault(
+                (entry, group_name, int(line_match.group("dialogue"))), _GroupInput.create()
+            )
+            repeating = line_match.group("repeat") == "r"
+            line_index = int(line_match.group("line"))
+            if line_match.group("kind") == "next":
+                group.prompts.setdefault(line_index, []).append((repeating, value, key))
+            else:
+                speaker = "Ancient" if line_match.group("kind") == "ancient" else "Character"
+                group.line_texts.setdefault(line_index, []).append((speaker, repeating, value, key))
+            continue
+        if metadata_match and metadata_match.group("kind") == "visit":
+            group = grouped.setdefault(
+                (entry, group_name, int(metadata_match.group("dialogue"))), _GroupInput.create()
+            )
+            if "visit" in group.metadata:
+                raise AncientDialogueValidationError(f"{key}: duplicate metadata")
+            group.metadata["visit"] = (key, value)
+            continue
+        raise AncientDialogueValidationError(f"{key}: malformed or unsupported dialogue key")
+
+    for entry, fields in sorted(present.items()):
+        missing = [field for field in MOD_ANCIENT_REQUIRED if field not in fields]
+        if missing:
+            raise AncientDialogueValidationError(
+                f"{entry}: a Mod-owned Ancient requires " + ", ".join(f".{m}" for m in missing)
+            )
+    for (entry, page, option), option_fields in sorted(options.items()):
+        if option_fields != {"title", "description"}:
+            raise AncientDialogueValidationError(
+                f"{entry}.pages.{page}.options.{option}: an option requires .title and .description"
+            )
+
+    pair_indexes: dict[tuple[str, str], list[int]] = {}
+    for entry, group_name, dialogue_index in grouped:
+        pair_indexes.setdefault((entry, group_name), []).append(dialogue_index)
+    parsed: list[DialogueGroup] = []
+    for (entry, group_name), indexes in sorted(pair_indexes.items()):
+        if sorted(indexes) != list(range(len(indexes))):
+            raise AncientDialogueValidationError(
+                f"{entry}.talk.{group_name}: dialogue indexes must begin at 0 and be contiguous"
+            )
+        previous_visit = 0
+        for dialogue_index in sorted(indexes):
+            group = _parse_group(
+                entry, group_name, dialogue_index, grouped[(entry, group_name, dialogue_index)],
+                previous_visit,
+            )
+            parsed.append(group)
+            previous_visit = group.visit_index
+    return frozenset(present), tuple(parsed)
+
+
 def _validate_architect_coverage(
     groups: Iterable[DialogueGroup],
     required_characters: Iterable[str] | None = None,
@@ -465,22 +585,25 @@ def validate_project_ancient_dialogue(project_dir: Path, mod_name: str) -> str:
         return "no ancients.json"
 
     table_languages = {path.parent.name for path in tables}
+    loaded = {path: _load_json_object(path) for path in tables}
+    has_character_dialogue = any(split_ancients_table(table)[0] for table in loaded.values())
     missing_languages = sorted(set(character_languages) - table_languages)
     if missing_languages:
         raise AncientDialogueValidationError(
             "ancients.json is required for Character localization language(s): "
             + ", ".join(missing_languages)
         )
-    missing_character_languages = sorted(table_languages - set(character_languages))
-    if missing_character_languages:
-        raise AncientDialogueValidationError(
-            "characters.json with the custom Character entry is required for Ancient "
-            "dialogue language(s): " + ", ".join(missing_character_languages)
-        )
+    if has_character_dialogue:
+        missing_character_languages = sorted(table_languages - set(character_languages))
+        if missing_character_languages:
+            raise AncientDialogueValidationError(
+                "characters.json with the custom Character entry is required for Ancient "
+                "dialogue language(s): " + ", ".join(missing_character_languages)
+            )
     missing_required_languages = sorted(set(REQUIRED_LANGUAGES) - table_languages)
     if missing_required_languages:
         raise AncientDialogueValidationError(
-            "custom-Character Ancient dialogue requires English and Simplified Chinese; "
+            "ancients.json requires English and Simplified Chinese; "
             "missing " + ", ".join(missing_required_languages)
         )
 
@@ -489,8 +612,8 @@ def validate_project_ancient_dialogue(project_dir: Path, mod_name: str) -> str:
     all_groups: list[DialogueGroup] = []
     targets: set[str] = set()
     characters: set[str] = set()
-    for path in tables:
-        table = _load_json_object(path)
+    mod_ancients: set[str] = set()
+    for path, table in loaded.items():
         keys = set(table)
         if reference_keys is None:
             reference_keys = keys
@@ -502,16 +625,21 @@ def validate_project_ancient_dialogue(project_dir: Path, mod_name: str) -> str:
                 f"{path}: structural keys differ from {reference_language}; "
                 f"missing={missing} extra={extra}"
             )
+        character_part, mod_part = split_ancients_table(table)
         character_entries = _character_entries(path.with_name("characters.json"))
-        groups = parse_ancient_dialogue_table(table, character_entries)
-        all_groups.extend(groups)
-        targets.update(group.ancient_entry for group in groups)
-        characters.update(group.character_entry for group in groups)
+        if character_part or character_entries:
+            groups = parse_ancient_dialogue_table(character_part, character_entries)
+            all_groups.extend(groups)
+            targets.update(group.ancient_entry for group in groups)
+            characters.update(group.character_entry for group in groups)
+        entries, _ = parse_mod_ancient_table(mod_part)
+        mod_ancients.update(entries)
 
     per_language = len(all_groups) // len(tables)
     return (
         f"{len(tables)} language(s), {per_language} dialogue group(s), "
-        f"{len(targets)} target(s), {len(characters)} Character(s)"
+        f"{len(targets)} target(s), {len(characters)} Character(s), "
+        f"{len(mod_ancients)} Mod Ancient(s)"
     )
 
 

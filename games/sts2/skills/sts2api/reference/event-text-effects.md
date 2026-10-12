@@ -61,8 +61,8 @@ extra atmosphere:
   FOLLOWED: "darkness breathes" -> sine + purple
 ```
 
-At author time, apply only the allowed tags to the exact phrase in the corresponding
-`EventPageLoc` or `EventOptionLoc` description. Do not translate the tags themselves and
+At author time, apply only the allowed tags to the exact phrase in the corresponding page
+`.description` or option `.description` entry of `events.json`. Do not translate the tags themselves and
 do not duplicate them around a whole paragraph merely because the user requested
 "dramatic text."
 

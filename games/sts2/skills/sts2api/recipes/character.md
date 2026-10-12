@@ -112,6 +112,9 @@ Settings, Progression, Multiplayer, or process-wide effects.
 Use RitsuLib's public pool models:
 
 ```csharp
+using Godot;
+using STS2RitsuLib.Scaffolding.Content;
+
 public sealed class <CardPool> : TypeListCardPoolModel
 {
     public override string Title => "<Character> Cards";

@@ -34,6 +34,7 @@ Implement exactly the specs provider for the host:
 
 ```csharp
 using STS2RitsuLib.Combat.Ui.ExtraCornerAmountLabels;
+using STS2RitsuLib.Scaffolding.Content;
 
 public sealed class <PowerName> : ModPowerTemplate,
     IPowerExtraIconAmountLabelSpecsProvider
