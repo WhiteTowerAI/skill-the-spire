@@ -1492,7 +1492,9 @@ def resolve_model(
         )
 
     alias_keys = {normalize_alias(alias): (alias, model_id) for alias, model_id in searchable}
-    close = difflib.get_close_matches(normalized_query, list(alias_keys), n=5, cutoff=0.62)
+    # A two- or three-character Chinese title with one homophone typo (痛机 for 痛击) scores 0.5.
+    cutoff = 0.5 if len(normalized_query) <= 3 else 0.62
+    close = difflib.get_close_matches(normalized_query, list(alias_keys), n=5, cutoff=cutoff)
     suggestions = ", ".join(
         f"{alias_keys[key][0]!r} ({alias_keys[key][1]})" for key in close
     )

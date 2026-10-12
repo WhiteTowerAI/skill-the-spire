@@ -8,7 +8,7 @@ decompile code, or use a private or internal member.
 
 | Source | Answers |
 |---|---|
-| spire-codex / curated snapshots | what vanilla content exists, does, and resembles |
+| pinned vanilla catalog, read through `../modmaker/scripts/vanilla_overrides.py resolve` | what vanilla content exists, does, and resembles: titles, costs, values and upgrades, pools, eng/zhs rules text |
 | pinned official RitsuLib tutorial distillations | player-facing purpose and documented feature-family membership |
 | pinned STS2 + RitsuLib signatures (distilled by maintainers into recipes and catalogs; at runtime, public metadata only) | exact C# commands, hooks, enums, templates, registries, and hosts |
 | skill-the-spire profile/recipes/tests/live runs | what the generator implements and what was observed |

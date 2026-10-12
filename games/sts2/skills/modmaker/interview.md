@@ -26,6 +26,17 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
   load `${STS2API_SKILL_DIR}/design/character-foundation.md` before creative questions.
   Recommend an exact native-shaped starter deck before asking for deck details, and label
   pinned facts, observed conventions, and creative decisions distinctly.
+- **Ground "like vanilla X" first.** When the user models a new element on an existing one,
+  run `python ${GAME_TOOLS_DIR}/vanilla_overrides.py resolve <name> --category <card|relic|potion|power>`
+  and pre-fill from the record: cost, type, values and upgrade, keywords, pool, and rules
+  text. Restate it in one plain line for the user to confirm; the analog fills answers and
+  skips no later stage. Changing X itself is an override (step 1 below), not a new element.
+  - The user names Slay the Spire 1, or what they describe differs from the record: ask one
+    question about which they mean.
+  - Nothing resolves and the suggestions do not fit (a Slay the Spire 1 or other-Mod
+    element): design it as a new element. Any recollection of it is an unverified draft
+    the user confirms, never copied content. If it shares a name with a different STS2
+    element, suggest a new name.
 - **Plan only when routed.** Load only the mechanic, content-set, and balance references
   named by `route.md`. An exact narrow Card keeps the fast path and does not receive a
   general design review merely because it has numbers.
