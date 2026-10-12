@@ -88,22 +88,46 @@ class ExtractedFrame:
     component_count: int
 
 
-def remove_magenta(
+# Cut-out sources sit on flat magenta by default. A subject that itself uses magenta,
+# pink, or purple is drawn on flat green instead, or keying eats the subject.
+KEY_COLORS = {"magenta": (255, 0, 255), "green": (0, 255, 0)}
+
+
+def _key_distance_sq(pixel: tuple[int, int, int], key: tuple[int, int, int]) -> int:
+    return sum((channel - target) ** 2 for channel, target in zip(pixel, key))
+
+
+def detect_key_color(image: Image.Image, threshold: int = 100) -> str:
+    """Name the key color the source background uses, read from its border pixels."""
+    rgb = image.convert("RGB")
+    pixels = rgb.load()
+    width, height = rgb.size
+    border = [pixels[x, y] for x in range(width) for y in (0, height - 1)]
+    border += [pixels[x, y] for y in range(height) for x in (0, width - 1)]
+    threshold_sq = threshold * threshold
+    green = sum(_key_distance_sq(p, KEY_COLORS["green"]) < threshold_sq for p in border)
+    magenta = sum(_key_distance_sq(p, KEY_COLORS["magenta"]) < threshold_sq for p in border)
+    return "green" if green > magenta else "magenta"
+
+
+def remove_key_color(
     image: Image.Image,
     threshold: int = 100,
     edge_threshold: int = 150,
+    key: str = "magenta",
 ) -> Image.Image:
-    """Remove solid magenta, then flood softer magenta inward from sheet edges."""
+    """Remove the solid key color, then flood the softer key color inward from edges."""
     image = image.convert("RGBA")
     pixels = image.load()
     width, height = image.size
     threshold_sq = threshold * threshold
     edge_threshold_sq = edge_threshold * edge_threshold
+    key_rgb = KEY_COLORS[key]
 
     for y in range(height):
         for x in range(width):
             r, g, b, a = pixels[x, y]
-            if a and (r - 255) ** 2 + g * g + (b - 255) ** 2 < threshold_sq:
+            if a and _key_distance_sq((r, g, b), key_rgb) < threshold_sq:
                 pixels[x, y] = (0, 0, 0, 0)
 
     queue: deque[tuple[int, int]] = deque()
@@ -125,7 +149,7 @@ def remove_magenta(
         visited[flat_index] = 1
 
         r, g, b, a = pixels[x, y]
-        removable = a == 0 or (r - 255) ** 2 + g * g + (b - 255) ** 2 < edge_threshold_sq
+        removable = a == 0 or _key_distance_sq((r, g, b), key_rgb) < edge_threshold_sq
         if not removable:
             continue
         if a:
@@ -180,7 +204,7 @@ def connected_components(image: Image.Image, alpha_threshold: int = 8) -> list[C
 def _largest_component_image(image: Image.Image) -> tuple[Image.Image, Component, int]:
     components = connected_components(image)
     if not components:
-        raise CharacterCueError("frame is empty after magenta cleanup")
+        raise CharacterCueError("frame is empty after key-color cleanup")
     selected = components[0]
     mask = Image.new("L", image.size, 0)
     mask_pixels = mask.load()
@@ -216,7 +240,7 @@ def extract_action(
             f"{cols} cols x {rows} rows grid "
             f"(expected {cols * 512}x{rows * 512})"
         )
-    cleaned = remove_magenta(raw.copy(), threshold, edge_threshold)
+    cleaned = remove_key_color(raw.copy(), threshold, edge_threshold, detect_key_color(raw))
     cell_width, cell_height = raw.width // cols, raw.height // rows
     frames: list[ExtractedFrame] = []
     for index in range(rows * cols):

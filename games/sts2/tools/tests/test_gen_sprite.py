@@ -206,6 +206,31 @@ class GenSpriteTests(unittest.TestCase):
             log = (out / ".gen_sprite.log").read_text(encoding="utf-8")
             self.assertIn("edge-connected soft magenta", log)
 
+    def test_magenta_subject_on_green_background_keeps_its_color(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            image = Image.new("RGBA", (100, 100), (0, 255, 0, 255))
+            ImageDraw.Draw(image).ellipse((25, 25, 74, 74), fill=(200, 40, 200, 255))
+            image.save(source)
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "relic", "--slug", "orchid",
+                    "--input", str(source), "--out", str(out), "--chroma",
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            with Image.open(out / "relics" / "orchid.png") as normalized:
+                self.assertEqual(0, normalized.getpixel((0, 0))[3])
+                self.assertEqual((200, 40, 200, 255), normalized.getpixel((128, 128)))
+            log = (out / ".gen_sprite.log").read_text(encoding="utf-8")
+            self.assertIn("applied green chroma-key", log)
+
     def test_character_icon_drops_disconnected_debris_before_outline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
