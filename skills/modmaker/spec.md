@@ -24,6 +24,16 @@ Do not copy DESIGN rationale or deferred work into implementation. Do not embed 
 deliverable, coherence, settlement, repair, surface-data, or evidence JSON. A simple Mod should
 have a simple SPEC.
 
+Before preflight, check in your head that every number can actually be reached. Build, Tier 1,
+and Tier 2 all pass on a condition that never fires in a real run. Two checks, nothing written:
+
+- every threshold, cost, or condition (for example "if you have 10 Strength") has a source the
+  player can actually get in this Mod's pool, Character, or vanilla content; and
+- every Mod-owned counter or resource has both a source and a spend or reset.
+
+When one fails, ask the user one question with a recommended fix. Never silently change an
+accepted value.
+
 ## Use the owner pages
 
 Each selected surface page owns its exact domain vocabulary and proof matrix. Preserve all
