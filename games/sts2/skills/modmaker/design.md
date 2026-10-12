@@ -39,10 +39,8 @@ Recommended shape:
 ```
 
 For a revision, edit only affected decisions and scope. Keep rejected alternatives only when
-they prevent a later agent from reintroducing them. If no maintained route exists but a public
-implementation can be grounded, record it as a Mod-local public-API implementation and continue
-to SPEC. Stop only when public grounding fails or the implementation requires prohibited
-techniques.
+they prevent a later agent from reintroducing them. An operation without a maintained route
+continues to SPEC as a Mod-local route (`${STS2API_SKILL_DIR}/grounding.md` § Mod-local Routes).
 
 A project with SPEC but no
 DESIGN may resume from its existing artifacts; create a compact DESIGN only when the user asks
