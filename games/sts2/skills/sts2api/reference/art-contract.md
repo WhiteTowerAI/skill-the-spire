@@ -34,6 +34,10 @@
 > A concrete monster must check its static PNG in `TryCreateCreatureVisuals()` and pass its
 > texture to RitsuLib's `RitsuGodotNodeFactories`; `MonsterAssetProfile` retains the explicit
 > built-in fallback scene. Never put the PNG in the profile's scene path.
+> A new Ancient must set every `EventAssetProfile` and `AncientEventPresentationAssetProfile`
+> field explicitly: empty fields derive missing paths from its own id. The checked placeholder
+> borrows Darv's background scene and map/run-history icons (`recipes/ancient.md`
+> § Required explicit fallback). No `gen_sprite.py` spec produces Ancient art.
 > A concrete Rest Site option must resolve an absent custom icon to
 > `res://images/ui/rest_site/option_heal.png` before constructing
 > `RestSiteOptionAssetProfile`. The vanilla path derived from a custom `OptionId` is not a

@@ -1189,6 +1189,90 @@ run and one structured marker. Required additional namespaces are
 `MegaCrit.Sts2.Core.Hooks`, `MegaCrit.Sts2.Core.Models.Events`, and the Quest Card/target
 Event types.
 
+## The Ancient `MapNode` scenario (new Mod-owned Ancient)
+
+A new `ModAncientEventTemplate` Ancient is not an ordinary Event: its room uses
+`NAncientEventLayout`, plays a dialogue, and is recorded as an Ancient map point. Reuse the
+fixed menu-to-run navigation, the `NRun.GlobalUi` gate, and the map-ready gate from the
+`MapNode` scenario above, then replace the Event driver with this one. It enters the room the
+same way the game's own `event <ID>` console command does for an Ancient, and advances
+dialogue the way the game's AutoSlay `EventRoomHandler` does.
+
+This driver passed Tier 2 on the pinned host for a Shared Ancient with a Gold option, and a
+headed run confirmed its dialogue displays.
+
+```csharp
+// REGISTRATION: exactly one identity, in the set SPEC selected (Shared or the Act's set).
+var shared = ModelDb.AllSharedAncients.OfType<<Name>>().ToList();
+var all = ModelDb.AllAncients.OfType<<Name>>().ToList();
+StateProof(shared.Count == 1 && all.Count == 1,
+    $"ancient registration expected=shared:1/all:1 observed=shared:{shared.Count}/all:{all.Count}");
+var canonical = shared[0];
+
+// DIALOGUE DATA: the real localization consumer parsed every SPEC group.
+var dialogues = canonical.DialogueSet;
+int firstLines = dialogues.FirstVisitEverDialogue?.Lines.Count ?? 0;
+int anyCount = dialogues.AgnosticDialogues.Count;
+StateProof(firstLines == <first-visit line count> && anyCount == <ANY dialogue count>,
+    $"ancient dialogue expected=firstVisitEver:<n>/ANY:<m> observed=firstVisitEver:{firstLines}/ANY:{anyCount}");
+
+// ENTER as an Ancient map point (not MapPointType.Unknown).
+await RunManager.Instance.EnterRoomDebug(RoomType.Event, MapPointType.Ancient, canonical);
+EventRoom? room = null;
+await WaitHelper.Until(() =>
+{
+    room = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom as EventRoom;
+    return room?.LocalMutableEvent is <Name> && NEventRoom.Instance?.Layout != null;
+}, ct, TimeSpan.FromSeconds(30), "custom ancient room not entered");
+var mutableEvent = (<Name>)room!.LocalMutableEvent;
+var layout = UiHelper.FindFirst<NAncientEventLayout>(NEventRoom.Instance!)
+    ?? throw new InvalidOperationException("room did not use NAncientEventLayout");
+
+// DIALOGUE UI: click the real dialogue hitbox until the options are enabled.
+int clicks = 0;
+while (clicks < 20)
+{
+    ct.ThrowIfCancellationRequested();
+    if (UiHelper.FindAll<NEventOptionButton>(layout).Any(b => b.IsEnabled && !b.Option.IsLocked))
+        break;
+    var hitbox = layout.GetNodeOrNull<NButton>("%DialogueHitbox");
+    if (hitbox == null || !hitbox.Visible || !hitbox.IsEnabled)
+    {
+        await Task.Delay(100, ct);
+        continue;
+    }
+    hitbox.EmitSignal(NClickableControl.SignalName.Released, hitbox);
+    clicks++;
+    await Task.Delay(500, ct);
+}
+await WaitHelper.Until(
+    () => UiHelper.FindAll<NEventOptionButton>(layout).Count(b => b.IsEnabled && !b.Option.IsLocked)
+          == <initial option count>,
+    ct, TimeSpan.FromSeconds(15), "ancient options did not appear after dialogue");
+```
+
+The options can be enabled while the dialogue is still on screen, so a passing run may
+advance with zero clicks. The click count therefore proves nothing about dialogue display:
+the `DialogueSet` assertion proves the data and headed review proves the display.
+
+Then resolve every SPEC string in both languages through the real consumers and restore the
+original language (§ Bilingual localization driver): `mutableEvent.Title`,
+`mutableEvent.Epithet`, and each button's `Option.Title`/`Option.Description`. Select a
+button by its stable `Option.TextKey` suffix (for example `.EndsWith(".BLESSING")`), not by
+English text, click it through `UiHelper.Click`, wait for the SPEC consequence plus
+`mutableEvent.IsFinished` (or the next page), and finish with `StateProof`, for example
+`ancient blessing gold expected=25 observed={player.Gold - before}; finished={mutableEvent.IsFinished}`.
+
+Required namespaces beyond the fixed scaffold: the Ancient type; `MegaCrit.Sts2.Core.Localization`;
+`MegaCrit.Sts2.Core.Map`; `MegaCrit.Sts2.Core.Nodes.Events`;
+`MegaCrit.Sts2.Core.Nodes.GodotExtensions`; `MegaCrit.Sts2.Core.Nodes.Rooms`; and
+`MegaCrit.Sts2.Core.Rooms`.
+
+Headed review still owns: name/epithet banner, whether the dialogue displays and in which
+order, background, speech color, option layout and text colors, map and run-history icons,
+mouse/controller progression, and the return to the map. To reach the room by hand, start a
+run and enter `event <ENTRY>` in the dev console.
+
 ## Relic-owned Rest Site option focused host
 
 Use `reference/rest-site-options.md` for the supported contract. This proof is not a

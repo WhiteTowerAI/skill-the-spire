@@ -97,6 +97,50 @@ and optional `StageProcedural` from `ModAncientStageVisuals.Stage()`. `DialogueC
 `AmbientBgm`, and the normal event `ButtonColor` are model properties. Prefer explicit Mod-local
 paths; a vanilla helper is valid only when every derived resource is checked.
 
+### Required explicit fallback
+
+Never leave both profiles empty. Unset fields fall back to the pinned `AncientEventModel`
+convention, which derives every path from the new Ancient's own id:
+`scenes/events/background_scenes/<entry>.tscn`,
+`images/packed/map/ancients/ancient_node_<entry>.png` (+ `_outline`), the run-history
+icon/outline, and `images/events/<entry>.png`. None of those exist for a new id, so the room or
+map would load missing resources. Point every field at checked vanilla resources instead. The
+default fallback borrows the shared vanilla Ancient Darv:
+
+```csharp
+using MegaCrit.Sts2.Core.Helpers;
+using STS2RitsuLib.Scaffolding.Content;
+
+public override EventAssetProfile AssetProfile => new(
+    InitialPortraitPath: "res://images/events/this_or_that.png",
+    BackgroundScenePath: SceneHelper.GetScenePath("events/background_scenes/darv"));
+
+public override AncientEventPresentationAssetProfile AncientPresentationAssetProfile => new(
+    MapIconPath: ImageHelper.GetImagePath("packed/map/ancients/ancient_node_darv.png"),
+    MapIconOutlinePath: ImageHelper.GetImagePath("packed/map/ancients/ancient_node_darv_outline.png"),
+    RunHistoryIconPath: ImageHelper.GetImagePath("ui/run_history/darv.png"),
+    RunHistoryIconOutlinePath: ImageHelper.GetImagePath("ui/run_history/darv_outline.png"));
+```
+
+This exact profile entered a real Ancient room on the pinned host (Tier 2 passed; headed
+review saw the dialogue and room). Its map and run-history icons were not yet
+headed-reviewed.
+
+A custom Ancient look needs Mod-local resources the user supplies: a background
+`PackedScene` and PNG icons. `gen_sprite.py` has no Ancient background or Ancient icon spec,
+so image generation cannot produce them. Check each Mod-local path with
+`ResourceLoader.Exists` and keep the Darv fallback for every missing field. Record the
+borrowed look as a presentation choice in SPEC so the user knows the room shares Darv's
+background and icons.
+
 No asset path, parsed dialogue key, or direct option call proves the native Ancient room. Follow
 `surfaces/ancient.md` for exact `MapNode`, choice-history, dialogue, controller, icon, audio, and
-cleanup proof. All new Ancient shapes remain game-unobserved until those authorized checks run.
+cleanup proof. The SelfTest driver is `reference/selftest-harness.md` § The Ancient `MapNode`
+scenario.
+
+Game-observed so far: one Shared Ancient with the Darv fallback profile, a two-line
+`firstVisitEver` plus one `ANY` dialogue, two initial options, and one Gold-gain option ending in
+`Done()`. Its registration, parsed dialogue, both-language title/epithet/options, Gold, and
+completion passed Tier 2, and headed review saw the dialogue display. Act-scoped
+registration, `IsValidForAct` rejection, page transitions, Character-specific dialogue,
+repeat visits, choice history, and map/run-history icons remain game-unobserved.
