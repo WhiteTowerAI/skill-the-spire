@@ -38,7 +38,9 @@ Resolve only the fields that materially shape play:
    intent, timing, Energy/Card opportunity cost, setup exposure, deck dilution, exhaust,
    target availability, or a reset boundary. Do not invent PvP counterplay.
 6. **Rules and edge cases:** define zero, cap/full, insufficient payment, repeated trigger,
-   invalid target, ordering, reset, and any save boundary selected by the mechanic.
+   invalid target, ordering, reset, and any save boundary selected by the mechanic. For an
+   ordered multi-step effect, also define whether the remaining steps still happen when the
+   target dies or combat ends partway through.
 7. **Tuning knobs:** name the smallest independent values that can change cadence, access,
    payoff, reliability, or ceiling without rewriting the mechanic.
 

@@ -75,6 +75,20 @@ Treat `expected` inputs as assumptions until measured. Check starvation, effortl
 hoarding, dead overflow, repeated full-state triggers, self-funding conversion, and whether
 the optimal line is always "never spend" or always "spend immediately."
 
+## Randomness
+
+When a value or outcome is random (random target, random Card or Power, chance to trigger):
+
+- say whether the player sees the random result before deciding (plannable, such as an
+  offered choice or known intent) or only after committing (luck); prefer before when the
+  mechanic's fantasy is planning;
+- tune expected value and spread separately, and state both, such as "deals 4-12, 8 on
+  average";
+- check the worst and best realistic outcomes on purpose, including a streak of bad
+  results, and soften a streak that reads as unfair rather than raising the average; and
+- leave the random source to Author: the game's seeded RNG per `${MODMAKER_SKILL_DIR}/quirks.md` § RNG,
+  never `System.Random`.
+
 ## Sensitivity and tuning
 
 Evaluate low, working, and high scenarios. Change one independent knob at a time and state
