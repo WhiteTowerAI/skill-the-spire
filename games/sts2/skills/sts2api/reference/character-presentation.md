@@ -95,9 +95,8 @@ The normalized combat alpha is contained by `(26,26)-(486,486)` with exclusive b
 baseline `486`; empty alpha, any canvas-edge contact, bounds outside that box, and a wrong
 baseline are contract failures. Headed review checks that the combat body stays inside the
 `1920x1080` viewport, clear of top/bottom UI, the enemy lane, and the turn banner. Selection
-retains 132x195 pixels while fitting the entire opaque source composition inside
-`(6,8)-(126,187)`; headed review checks that the real button stays inside the viewport with
-no extra zoom, UI occlusion, or host clipping.
+fills all 132x195 pixels as a full-bleed close-up; headed review checks that it reads like the
+vanilla buttons beside it, with no extra zoom, UI occlusion, or host clipping.
 
 Missing/unused rows resolve against the explicitly selected base-game Ironclad profile. For
 Energy this means `ironclad_energy_counter.tscn`; it must not be derived from the Character

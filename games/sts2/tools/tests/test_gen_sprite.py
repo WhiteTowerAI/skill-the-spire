@@ -160,7 +160,7 @@ class GenSpriteTests(unittest.TestCase):
 
     def test_character_specs_match_their_current_promotion_state(self) -> None:
         expected = {
-            "character_select": ((132, 195), "contain", False, True),
+            "character_select": ((132, 195), "cover", False, True),
             "character_select_locked": ((132, 195), "cover", False, False),
             "character_icon": ((88, 88), "contain", True, True),
             "character_map_marker": ((49, 64), "contain", True, False),

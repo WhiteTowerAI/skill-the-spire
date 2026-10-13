@@ -60,7 +60,7 @@ class CharacterArtBundleTests(unittest.TestCase):
         specs = CHARACTER_ART_BUNDLE.sprite_specs()
 
         self.assertEqual((132, 195), specs["character_select"]["size"])
-        self.assertEqual("contain", specs["character_select"]["fit"])
+        self.assertEqual("cover", specs["character_select"]["fit"])
         self.assertFalse(specs["character_select"]["chroma"])
         self.assertEqual((256, 256), specs["character_energy"]["size"])
         self.assertTrue(specs["character_energy"]["chroma"])
@@ -78,9 +78,9 @@ class CharacterArtBundleTests(unittest.TestCase):
             "character_background",
             CHARACTER_ART_BUNDLE.reference_families()["character_background"],
         )
-        selection = CHARACTER_ART_BUNDLE.visible_footprint("character_select")
+        self.assertIsNone(CHARACTER_ART_BUNDLE.visible_footprint("character_select"))
+        self.assertEqual("cover", CHARACTER_ART_BUNDLE.slot("selection_portrait").fit)
         combat = CHARACTER_ART_BUNDLE.visible_footprint("character_combat")
-        self.assertEqual((6, 8, 126, 187), selection.content_box)
         self.assertEqual((26, 26, 486, 486), combat.content_box)
         self.assertEqual(486, combat.baseline_y)
         self.assertEqual(0.80, combat.visual_scale)
