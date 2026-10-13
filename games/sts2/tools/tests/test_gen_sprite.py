@@ -139,6 +139,7 @@ class GenSpriteTests(unittest.TestCase):
             "orb": (5, (100, 100)),
             "monster": (3, (512, 512)),
             "event": (6, (1616, 1616)),
+            "rest_site_option": (3, (256, 169)),
             "character_select": (3, (132, 195)),
             "character_icon": (3, (88, 88)),
             "character_combat": (3, (512, 512)),
