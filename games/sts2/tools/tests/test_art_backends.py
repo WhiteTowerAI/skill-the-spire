@@ -218,7 +218,24 @@ class ArtBackendTests(unittest.TestCase):
         self.assertTrue(url.endswith("/models/gemini-2.5-flash-image:generateContent"))
         self.assertEqual("g", headers["X-goog-api-key"])
         self.assertEqual("21:9", body["generationConfig"]["imageConfig"]["aspectRatio"])
+        self.assertNotIn("imageSize", body["generationConfig"]["imageConfig"])
         self.assertIn("inlineData", body["contents"][0]["parts"][1])
+
+        with mock.patch.object(gen_sprite.urllib.request, "urlopen", fake_urlopen):
+            gen_sprite.call_backend({**cfg, "image_size": True}, "p", (3440, 1613), lambda _: None)
+        self.assertEqual("2K", sent[1][2]["generationConfig"]["imageConfig"]["imageSize"])
+
+    def test_resolution_token_asks_for_2k_only_for_large_contracts(self) -> None:
+        self.assertEqual("2K", gen_sprite.resolution_for((3440, 1613)))
+        self.assertEqual("2K", gen_sprite.resolution_for((1920, 1200)))
+        self.assertEqual("1K", gen_sprite.resolution_for((1000, 760)))
+        self.assertEqual("1K", gen_sprite.resolution_for((256, 256)))
+        self.write_config(command=[sys.executable, str(self.fake), "--res", "{resolution}",
+                                   "--prompt", "{prompt}", "--out", "{out_dir}"])
+        result = self.generate("--backend", "mine", spec="event")
+        self.assertEqual(0, result.returncode, result.stderr)
+        (call,) = self.calls()
+        self.assertEqual("2K", call[call.index("--res") + 1])
 
     def test_chat_transport_reads_a_structured_data_url_image(self) -> None:
         payload = {"choices": [{"message": {"content": "", "images": [

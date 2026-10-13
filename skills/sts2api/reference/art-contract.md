@@ -1015,12 +1015,16 @@ prompt.
   orientation.
 - `gemini` — the Gemini API's native `generateContent` with image output. References are
   inline image parts, and `imageConfig.aspectRatio` is the closest of `aspect_ratios`.
-  Optional: `base_url`, `aspect_ratios`, `timeout`.
+  Optional: `base_url`, `aspect_ratios`, `timeout`, and `image_size: true` for a model
+  that accepts `imageConfig.imageSize` (Gemini 3 image models); it then asks for `2K` on
+  event and Character background specs and `1K` otherwise.
 - `command` — the user's own CLI, script, or local workflow (for example ComfyUI). The tool
   runs `command` with stdin closed and its output hidden, into a fresh empty `{out_dir}`,
   and requires exactly one image there. Tokens: `{prompt}` (folded to one line for Windows
-  `.cmd` shims), `{out_dir}`, `{model}`, `{request_size}`, and `{aspect_ratio}` (the
-  closest of `aspect_ratios`, default `1:1 2:3 3:2 3:4 4:3 9:16 16:9 21:9`). Each reference
+  `.cmd` shims), `{out_dir}`, `{model}`, `{request_size}`, `{aspect_ratio}` (the
+  closest of `aspect_ratios`, default `1:1 2:3 3:2 3:4 4:3 9:16 16:9 21:9`), and
+  `{resolution}` (`2K` when the contract's long edge exceeds 1600 px, such as an event
+  portrait, else `1K`). Each reference
   appends `reference_args` with `{image}`; without `reference_args`, references are
   skipped. Optional: `model`, `preflight` (commands that must exit 0 first, such as an
   auth check), `timeout` (default 600 seconds).

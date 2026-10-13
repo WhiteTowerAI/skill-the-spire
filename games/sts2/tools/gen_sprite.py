@@ -605,6 +605,12 @@ def nearest_aspect_ratio(size: tuple[int, int], choices=ASPECT_RATIOS) -> str:
     return min(choices, key=distance)
 
 
+def resolution_for(size: tuple[int, int]) -> str:
+    """The common "1K"/"2K" output label a wide or large contract needs. A ~1K source
+    would be upscaled more than 2x into a 3440x1613 event portrait."""
+    return "2K" if max(size) > 1600 else "1K"
+
+
 def _fill(template: str, values: dict[str, str]) -> str:
     for key, value in values.items():
         template = template.replace("{" + key + "}", value)
@@ -635,7 +641,7 @@ def _call_backend_command(cfg: dict, prompt: str, size: tuple[int, int], log,
                           references: list[Path] | None = None) -> "Image.Image":
     """Command transport: run the user's own CLI or script, which must write exactly one
     image into the empty {out_dir}. Tokens: {prompt} {out_dir} {model} {request_size}
-    {aspect_ratio}; each reference expands "reference_args" with {image}."""
+    {aspect_ratio} {resolution}; each reference expands "reference_args" with {image}."""
     import tempfile
     # Windows .cmd shims split arguments on newlines; keep every sentence on one line.
     prompt = " ".join(prompt.split())
@@ -651,6 +657,7 @@ def _call_backend_command(cfg: dict, prompt: str, size: tuple[int, int], log,
             "model": str(cfg.get("model", "")),
             "request_size": request_size_for(size),
             "aspect_ratio": nearest_aspect_ratio(size, cfg.get("aspect_ratios", ASPECT_RATIOS)),
+            "resolution": resolution_for(size),
         }
         argv = [_fill(part, values) for part in cfg["command"]]
         reference_args = cfg.get("reference_args", [])
@@ -828,10 +835,13 @@ def _call_backend_gemini(cfg: dict, prompt: str, size: tuple[int, int], log,
         parts.append({"inlineData": {"mimeType": mime,
                                      "data": base64.b64encode(path.read_bytes()).decode("ascii")}})
     aspect = nearest_aspect_ratio(size, cfg.get("aspect_ratios", ASPECT_RATIOS))
+    image_config = {"aspectRatio": aspect}
+    # Only models that accept imageSize get it; an unsupported field can fail the request.
+    if cfg.get("image_size"):
+        image_config["imageSize"] = resolution_for(size)
     body = json.dumps({
         "contents": [{"parts": parts}],
-        "generationConfig": {"responseModalities": ["IMAGE"],
-                             "imageConfig": {"aspectRatio": aspect}},
+        "generationConfig": {"responseModalities": ["IMAGE"], "imageConfig": image_config},
     }).encode("utf-8")
     headers = {"Content-Type": "application/json", "x-goog-api-key": cfg["api_key"]}
     log(f"POST {url} aspect={aspect} with {len(references or [])} reference image(s)")
