@@ -369,6 +369,24 @@ class GenSpriteTests(unittest.TestCase):
             with Image.open(root / "opaque" / "potions" / "keyed.png") as result:
                 self.assertEqual(255, result.getpixel((0, 0))[3])
 
+    def test_cutout_import_neutralizes_key_spill_on_edges(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            image = Image.new("RGB", (100, 100), (255, 0, 255))
+            draw = ImageDraw.Draw(image)
+            draw.ellipse((18, 18, 81, 81), fill=(150, 30, 150))  # antialiased blend ring
+            draw.ellipse((20, 20, 79, 79), fill=(40, 40, 48))
+            image.save(source)
+
+            result = self.run_import("relic", source, root / "images")
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            with Image.open(root / "images" / "relics" / "keyed.png") as keyed:
+                tinted = [p for p in keyed.convert("RGBA").getdata()
+                          if p[3] and min(p[0], p[2]) - p[1] > 40]
+            self.assertEqual([], tinted)
+
     def test_cutout_import_warns_when_the_background_was_not_keyed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -516,6 +534,15 @@ class GenSpriteTests(unittest.TestCase):
 
             self.assertEqual(chosen, references)
             factory.return_value.sample.assert_called_once_with(expected_pool, 3)
+
+    def test_missing_named_reference_stops_before_generation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            present = Path(tmp) / "a.png"
+            Image.new("RGB", (8, 8)).save(present)
+            with self.assertRaises(SystemExit) as raised:
+                gen_sprite.resolve_references(
+                    f"{present},{Path(tmp) / 'missing.png'}", 3, lambda _: None, spec="card")
+            self.assertIn("missing.png", str(raised.exception))
 
     def test_character_reference_alias_never_falls_back_to_the_root_pool(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
