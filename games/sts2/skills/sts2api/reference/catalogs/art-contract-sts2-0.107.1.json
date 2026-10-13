@@ -463,12 +463,50 @@
     }
   ],
   "character_identity_slot": "selection_portrait",
+  "character_art_sheets": [
+    {
+      "name": "body_sheet",
+      "columns": 2,
+      "rows": 2,
+      "sheet_px": [
+        1024,
+        1024
+      ],
+      "cells": [
+        "combat_body",
+        "rest_body",
+        "merchant_body",
+        null
+      ],
+      "reference_role": "identity",
+      "generation_calls": 1
+    },
+    {
+      "name": "icon_sheet",
+      "columns": 2,
+      "rows": 2,
+      "sheet_px": [
+        1024,
+        1024
+      ],
+      "cells": [
+        "top_panel_icon",
+        "full_energy_layer_1",
+        "large_energy_icon",
+        "compact_energy_icon"
+      ],
+      "reference_role": "palette",
+      "generation_calls": 1
+    }
+  ],
   "character_art_tiers": [
     {
       "name": "minimal",
       "slots": [
         "selection_portrait",
-        "combat_body"
+        "combat_body",
+        "rest_body",
+        "merchant_body"
       ],
       "combat_cues": false,
       "generation_calls": 2
@@ -487,7 +525,7 @@
         "compact_energy_icon"
       ],
       "combat_cues": false,
-      "generation_calls": 9
+      "generation_calls": 4
     },
     {
       "name": "full",
@@ -503,7 +541,7 @@
         "compact_energy_icon"
       ],
       "combat_cues": true,
-      "generation_calls": 13
+      "generation_calls": 8
     }
   ],
   "character_cues": {
@@ -623,5 +661,5 @@
     "total_frames": 18,
     "generation_calls": 4
   },
-  "catalog_sha256": "67d5f6682c20b9d1bf02964e1a333fc3a0752b4c650877f28e7f66385d3422fd"
+  "catalog_sha256": "cef188cedf38780f9e1ab27090d6513888b5ce24ebc00fbd1c75179d5edbb498"
 }

@@ -39,7 +39,83 @@ def make_cue_sheet(path: Path, action_name: str) -> None:
     image.save(path)
 
 
+def make_body_sheet(path: Path) -> Image.Image:
+    """A 2x2 magenta sheet with three standing bodies and drawn black grid lines."""
+    image = Image.new("RGB", (1024, 1024), (255, 0, 255))
+    draw = ImageDraw.Draw(image)
+    for index in range(3):
+        row, column = divmod(index, 2)
+        left, top = column * 512, row * 512
+        draw.rectangle((left + 120, top + 60, left + 380, top + 450), fill=(40 + 30 * index, 90, 110))
+    draw.line((512, 0, 512, 1023), fill=(0, 0, 0), width=5)
+    draw.line((0, 512, 1023, 512), fill=(0, 0, 0), width=5)
+    image.save(path)
+    return image
+
+
 class GenSpriteTests(unittest.TestCase):
+    def test_split_sheet_cells_drops_drawn_grid_lines(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            sheet = make_body_sheet(Path(tmp) / "sheet.png")
+        cells = gen_sprite.split_sheet_cells(
+            sheet, gen_sprite.CHARACTER_ART_BUNDLE.sheet("body_sheet")
+        )
+
+        self.assertEqual(["combat_body", "rest_body", "merchant_body"], [name for name, _ in cells])
+        for _, cell in cells:
+            border = [cell.getpixel((x, y)) for x in range(cell.width) for y in (0, cell.height - 1)]
+            border += [cell.getpixel((x, y)) for y in range(cell.height) for x in (0, cell.width - 1)]
+            self.assertTrue(all(pixel == (255, 0, 255) for pixel in border))
+
+    def test_import_sheet_places_every_body_cell_on_its_slot_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sheet = root / "sheet.png"
+            out = root / "Mod" / "images"
+            make_body_sheet(sheet)
+
+            result = subprocess.run(
+                [sys.executable, str(GEN_SPRITE), "import-sheet", "--sheet", "body_sheet",
+                 "--input", str(sheet), "--out", str(out)],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            for name in ("combat", "rest", "merchant"):
+                with Image.open(out / "charui" / f"{name}.png") as placed:
+                    self.assertEqual((512, 512), placed.size)
+                    self.assertEqual(0, placed.getpixel((0, 0))[3])
+                    self.assertEqual(255, placed.getchannel("A").getextrema()[1])
+            self.assertEqual(str(sheet), result.stdout.strip().splitlines()[-1])
+
+    def test_generate_sheet_spends_one_call_keeps_source_and_routes_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sheet_image = make_body_sheet(root / "sheet.png")
+            portrait = root / "portrait.png"
+            Image.new("RGB", (848, 1264), (80, 110, 140)).save(portrait)
+            out = root / "Mod" / "images"
+            parser = gen_sprite.build_parser()
+            base = ["generate-sheet", "--sheet", "body_sheet", "--prompt", "p", "--out", str(out)]
+            cfg = {"mode": "command", "command": ["x"]}
+
+            with mock.patch.object(gen_sprite, "load_config", return_value=cfg), \
+                    mock.patch.object(gen_sprite, "call_backend", return_value=sheet_image) as backend:
+                with self.assertRaises(SystemExit):
+                    gen_sprite.cmd_generate_sheet(parser.parse_args(base))
+                backend.assert_not_called()
+                code = gen_sprite.cmd_generate_sheet(
+                    parser.parse_args([*base, "--identity-reference", str(portrait)])
+                )
+
+            self.assertEqual(0, code)
+            self.assertEqual(1, backend.call_count)
+            self.assertEqual((1024, 1024), backend.call_args.args[2])
+            self.assertIn(portrait.resolve(), backend.call_args.kwargs["references"])
+            self.assertTrue((root / "art-sources" / "generated" / "sheets" / "body_sheet.png").is_file())
+            self.assertTrue((out / "charui" / "merchant.png").is_file())
+
+
     def test_cutout_fragment_cleanup_keeps_subject_cluster_and_removes_debris(self) -> None:
         image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
