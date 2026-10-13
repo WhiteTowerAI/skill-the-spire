@@ -71,7 +71,7 @@ explicit and one recipe can emit the selected graph. This does not force a one-t
 - **presentation**:
   - assets: static monster body; placeholder | generate: <one full creature in a neutral
     combat-ready pose>
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: combat body plus default bestiary entry
   - art boundary: one checked 360x360 static body shared by combat and bestiary; no
     Spine/attack/hurt/death animation or separate phobia body

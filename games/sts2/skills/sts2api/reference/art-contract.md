@@ -49,11 +49,11 @@
 > theme palette name such as `red`.
 >
 > **Acquisition is source-independent.** When the current agent runtime exposes a
-> callable host-native raster image tool, it may create the source PNG without a separate
+> callable raster image tool of its own (`host-tool`), it may create the source PNG without a separate
 > user API key (Codex calls the tool `image_gen`). Do not infer that capability from a
 > text-model name or an installed skill file: the tool itself must be callable and must
-> yield a local image file. Its output, Vofy output, and user/local files all enter the
-> same `gen_sprite.py import` path. A host without that tool keeps the placeholder unless
+> yield a local image file. Its output, a user-configured backend's output, and user/local
+> files all enter the same normalization path. A host without that tool keeps the placeholder unless
 > the user explicitly selects another acquisition route.
 >
 > **Sizes derived from MegaCrit content** (via the decompile / existing snapshots) unless
@@ -234,7 +234,7 @@ Character static slot and the four-action cue contract. Each static row records
 required/optional status, normalized output path,
 exact dimensions, alpha policy, checked fallback, real consumer, style-reference family,
 fit mode, verification status, and any host-specific visible content box/baseline/public
-visual style. `gen_sprite.py` and `acquire_sprite.py` read this
+visual style. `gen_sprite.py` reads this
 bundle instead of maintaining a second Character spec table. The optional locked
 selection and map-marker rows remain native/shared fallback rows; their presence in the
 inventory does not promote those consumers. The cue contract separately owns action order,
@@ -618,7 +618,7 @@ border, card frame, UI, or watermark.
 
 **Layer 2 — few-shot reference images (when the acquisition route supports them, much
 stronger).**
-Pass `--reference <sts2api>/reference/art-samples` to either acquisition tool — always the
+Pass `--reference <sts2api>/reference/art-samples` to `gen_sprite.py generate` — always the
 **root** samples dir, not a subdir. It contains `card/` (18 portraits), `relic/` (6 icons),
 `power/` (6 icons), `potion/` (6 icons), `enchantment/` (20 normal 64x64 icons), `orb/`
 (5 non-empty icons), `monster/` (the Axebot, Ceremonial Beast, and Crossbow Ruby Raider
@@ -635,8 +635,8 @@ Monster's fixed three are always all supplied.
 Never mix families merely to fill the reference list; their visual languages differ.
 
 The Images transport sends the selected files as multipart `image[]` inputs to
-`/images/edits`; Chat transports inline them as image data URLs; Vofy receives repeated
-`--image` arguments. This needs a model that accepts image inputs. For a host-native tool,
+`/images/edits`; Chat transports inline them as image data URLs; a command backend receives its
+`reference_args` once per file. This needs a model that accepts image inputs. For a host tool,
 randomly choose up to three files from the matching spec directory, make them visible
 through the runtime's normal local-image mechanism, and label each one STYLE REFERENCE
 ONLY. If the route cannot consume local references, use the type-specific text prompt
@@ -874,9 +874,9 @@ guide; `gen_sprite.py` owns the final 3440×1613 crop and placement.
 
 ## Consent and the regenerate loop
 
-For a host-native tool, the mod-level `generate` choice authorizes the initial one-image-
+For a host tool, the mod-level `generate` choice authorizes the initial one-image-
 per-asset run without a separate API key. Follow any approval or usage warning presented by
-the host and do not claim that host usage is free. For a paid API or managed-credit CLI,
+the host and do not claim that host usage is free. For a `backend:<name>` route,
 **get one approval for the whole initial run before the first paid call.** Show it in one
 message: the model/backend, the credit-spending action, the shared segments ①③ once, then
 one line per asset with its segment ② subject and its call count (one, or the spec's fixed
@@ -912,7 +912,7 @@ regeneration.
 ## Using the tool
 
 ```
-# host-native image generation is an agent tool call, not a shell command. Use it only
+# host-tool: image generation is an agent tool call, not a shell command. Use it only
 # when the current runtime actually exposes it. Codex: built-in image_gen mode, one call
 # per asset, no OPENAI_API_KEY. Then normalize the host-reported local source file:
 python ${GAME_TOOLS_DIR}/gen_sprite.py import \
@@ -925,27 +925,15 @@ python ${GAME_TOOLS_DIR}/gen_sprite.py import \
 # Keep the raw source on a perfectly flat #FF00FF background until this import step.
 # For each selected normal-event slot use --spec event; it writes events/<slot-slug>.png.
 
-# managed credits — Vofy is acquisition only. The user installs/logs in themselves;
-# preflight prints no account/credit details. Inspect live model capabilities separately:
-python ${GAME_TOOLS_DIR}/acquire_sprite.py preflight --model <chosen-model>
-vofy models <chosen-model>
-
-# after the batch approval that lists this asset (or a regeneration's own yes). Add the root --reference
-# once when the live model guide supports image inputs; the tool selects the spec and 3 files:
-python ${GAME_TOOLS_DIR}/acquire_sprite.py create \
-  --spec card --slug firebolt --prompt "<the filled template above>" \
-  --out <mod>/<ModName>/images --model <chosen-model> \
-  --aspect-ratio <confirmed-ratio> \
-  [--reference ${STS2API_SKILL_DIR}/reference/art-samples] --yes
-
-# generate (BYO backend) — POSTs the prompt (+ few-shot STS2 style references when the
-# backend supports them), then fits + resizes to the contract size + places it:
+# backend:<name> — after the batch approval that lists this asset (or a regeneration's
+# own yes). Sends the prompt (+ the spec's few-shot references when the backend takes
+# images), then fits, resizes, and places the result like import:
 python ${GAME_TOOLS_DIR}/gen_sprite.py generate \
   --spec card --slug firebolt --prompt "<the filled template above>" \
-  --out <mod>/<ModName>/images --config <path to art-backend.json> \
+  --out <mod>/<ModName>/images --backend <name> \
   --reference ${STS2API_SKILL_DIR}/reference/art-samples
 
-# import (local file) — same normalize + place, no HTTP:
+# local-image — the user's own file, same normalize + place:
 python ${GAME_TOOLS_DIR}/gen_sprite.py import \
   --spec card --slug firebolt --input ./my-art.png --out <mod>/<ModName>/images
 
@@ -953,18 +941,18 @@ python ${GAME_TOOLS_DIR}/gen_sprite.py import \
 python ${GAME_TOOLS_DIR}/gen_sprite.py list-specs
 ```
 
-The host-native route must follow the runtime's installed image-generation instructions.
+The host-tool route must follow the runtime's installed image-generation instructions.
 For Codex, use the built-in `image_gen` tool rather than the image skill's CLI/API fallback;
-that fallback requires `OPENAI_API_KEY` and belongs under the explicit BYO route. Inspect
+that fallback requires `OPENAI_API_KEY` and belongs under an explicit backend. Inspect
 the native output before importing it. Use the actual local path returned by the host
 (Codex normally stores built-in output under `$CODEX_HOME/generated_images/`); if the host
 returns no local file, the route is unavailable and the placeholder remains. Do not run a
-  second background-removal helper for cut-out sources: `gen_sprite.py import` owns the
+second background-removal helper for cut-out sources: `gen_sprite.py import` owns the
 keying, fit, resize, and final STS2 placement. When the host tool takes a size or
 orientation, request the one matching the spec: landscape for card, event, Rest Site, and
 Character background; portrait for Character selection and the 2x3 Dead cue sheet; square
-otherwise. `gen_sprite.py generate` picks the same orientation for an Images backend
-unless `art-backend.json` sets `request_size`.
+otherwise. `gen_sprite.py generate` picks the same orientation for a backend unless its
+config sets `request_size`.
 
 After a cut-out import, a stdout line starting `[gen_sprite] warning:` means almost none of
 the source became transparent: the background was not a flat key color and will show as a
@@ -972,47 +960,50 @@ box in game. Regenerate with a flatter background instead of shipping it. Before
 any imported result to the user, look at the normalized PNG yourself and regenerate an
 obvious framing or background failure first; the user still judges style.
 
-`acquire_sprite.py` never installs Vofy, runs `vofy login`, reads credentials, records
-status/credit output, or parses Vofy's normal stdout for a result filename. It runs one
-synchronous `vofy image create --yes --n 1` into a unique empty temporary directory,
-requires exactly one downloaded image, and invokes `gen_sprite.py import` for the real
-crop/fit/chroma/path contract, so cut-out specs are keyed by import's per-spec default and
-event and Character selection/background remain opaque. It forwards import's warning line
-and prints the selected reference filenames
-so the random few-shot choice is auditable without exposing account data. For enchantment,
-orb, and monster, normalization also keeps the centered subject cluster and removes
-disconnected dark/chroma debris before the final `contain` fit; this is bounded to the new
-profiles and does not alter the earlier icon specs. Before crossing a Windows/npm `.cmd` shim it folds all prompt whitespace
-to one line, preserving every sentence; an empty/whitespace-only prompt stops before any
-CLI call. A missing CLI/auth/account, model lookup failure, task failure/timeout, or
-zero/multiple downloads exits nonzero. Do not automatically resubmit after a timeout or
-ambiguous result; inspect `vofy tasks --plain` first because the task may already be paid.
-Offer BYO HTTP, local import, or placeholder instead, with no silent second paid route.
+`generate` keeps each raw backend source at `<project>/art-sources/generated/<spec>/<slug>.png`,
+outside the packed Mod folder. A failed or redone normalization re-imports that file
+instead of paying for a second generation. A failed, timed-out, or ambiguous generation
+exits nonzero; never resubmit it automatically, because the backend may already have
+charged. Offer another route, local import, or placeholder instead.
 
-Backend config (`art-backend.json`, **never committed — holds a key**) is
-provider-agnostic. There are **two transport shapes**, chosen by `mode` — because image
-models split into two API families and BYO means the config, not the code, says which:
+## Backend config
+
+The user creates and owns `~/.skill-the-spire/art-backends.json` (or a file named by
+`--config` / `$GEN_SPRITE_CONFIG`). It lives outside every Mod project and is **never
+committed — it may hold a key**. Never ask the user to paste a key into the conversation.
+Each named backend picks one transport with `mode`; `--backend <name>` selects it, and a
+file with one backend needs no name:
 
 ```json
-// mode "images" (default) — OpenAI *Images* API: /images/generations (+ /images/edits
-// for references). Used by OpenAI gpt-image-1 and gateways exposing that endpoint.
-{ "base_url": "https://api.example.com/v1", "api_key": "sk-...", "model": "gpt-image-1" }
+{ "backends": {
+    "openai":  { "mode": "images", "base_url": "https://api.openai.com/v1",
+                 "api_key": "sk-...", "model": "gpt-image-1.5" },
+    "gateway": { "mode": "chat", "base_url": "https://openrouter.ai/api/v1",
+                 "api_key": "...", "model": "google/gemini-2.5-flash-image" },
+    "local":   { "mode": "command",
+                 "command": ["my-image-cli", "--prompt", "{prompt}",
+                             "--ratio", "{aspect_ratio}", "--out", "{out_dir}"],
+                 "reference_args": ["--image", "{image}"] } } }
 ```
 
-```json
-// mode "chat" — OpenAI *Chat Completions* API returning an image in the reply. Used by
-// Poe, Gemini-native, OpenRouter, and most "one key, many models" gateways.
-{ "mode": "chat",
-  "base_url": "https://api.poe.com/v1", "api_key": "...", "model": "GPT-Image-1.5" }
-```
+- `images` — the OpenAI *Images* API: `/images/generations`, or multipart `/images/edits`
+  with references. OpenAI's gpt-image models and any gateway exposing that endpoint.
+  Optional: `edit_url`, `request_size`, `timeout`.
+- `chat` — the OpenAI *Chat Completions* API returning an image in the reply. Poe,
+  OpenRouter, and most "one key, many models" gateways. References are inlined as
+  `image_url` data URLs, and the tool parses the image back out of the reply (structured
+  image array, inline base64 data URL, or an image link — in that order). Optional:
+  `chat_url`, `chat_extra` (merged into the request body, e.g. a provider's `modalities`
+  knob), `timeout`. This transport sends no size; the prompt states the orientation.
+- `command` — the user's own CLI, script, or local workflow (for example ComfyUI). The tool
+  runs `command` with stdin closed and its output hidden, into a fresh empty `{out_dir}`,
+  and requires exactly one image there. Tokens: `{prompt}` (folded to one line for Windows
+  `.cmd` shims), `{out_dir}`, `{model}`, `{request_size}`, and `{aspect_ratio}` (the
+  closest of `aspect_ratios`, default `1:1 2:3 3:2 3:4 4:3 9:16 16:9 21:9`). Each reference
+  appends `reference_args` with `{image}`; without `reference_args`, references are
+  skipped. Optional: `model`, `preflight` (commands that must exit 0 first, such as an
+  auth check), `timeout` (default 600 seconds).
 
-In `chat` mode, references (few-shot style images) are inlined into the user message as
-`image_url` data URLs, and the tool parses the generated image back out of the reply
-(structured image array, inline base64 data URL, or an image link — in that order).
-Optional keys: `chat_url` (override the endpoint), `chat_extra` (merge extra JSON into
-the request body, e.g. a provider's `modalities` knob), `request_size`, `timeout`.
-
-We bundle or default to **no** provider — the user points this at whatever endpoint
-(cloud or local) they want; the backend remains user-provided. A missing/invalid config makes
-`generate` fail with a clear message and a non-zero exit, and the caller falls back to the
-placeholder.
+We bundle or default to **no** provider; the user chooses one. A missing/invalid config
+makes `generate` fail with a clear message and a non-zero exit, and the caller falls back to
+the placeholder.

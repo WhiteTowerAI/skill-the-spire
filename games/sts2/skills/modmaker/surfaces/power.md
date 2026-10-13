@@ -50,7 +50,7 @@ for the whole SPEC by the host.
   - visible state: native Amount display
 - **presentation**:
   - assets: power icon; placeholder | generate
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: standard Power icon plus composed title/description Hover Tip
   - extra badges: none | one
     - meaning: <player-facing auxiliary value distinct from Amount>
