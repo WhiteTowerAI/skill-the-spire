@@ -312,9 +312,9 @@ paths, normalization specs, and real consumers; neither path may stand in for th
 
 Full Energy is rendered, never generated. The source directory `reference/energy_template/`
 contains four bundled, transparent `256x256` PNGs `layer_2.png` through `layer_5.png` that
-fix the counter's shape: a translucent swirl (2), an opaque pale core (3), and the rotating
-octagonal ring (4) and edge (5). Layer 1 sits under all of them, so only its tint around the
-core shows. `character_art.py --energy-colors` writes all five layers from the Character
+fix the counter's shape: a translucent swirl (2) and an opaque pale core (3), which rotate,
+and the fixed octagonal ring (4) and edge (5) above them (`character-presentation.md` §
+Raw scene contract). Layer 1 sits under all of them, so only its tint around the core shows. `character_art.py --energy-colors` writes all five layers from the Character
 theme contract: layer 1 is a radial disc in the card-frame color, layers 2-4 are the
 templates recolored along the card-frame color, and layer 5 along the Energy outline color.
 Geometry and alpha are kept exactly. Pass the card-frame target RGB as hex (each 0..1
