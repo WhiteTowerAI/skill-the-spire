@@ -57,7 +57,7 @@ and its three behaviors are separate `effects` entries rather than one sequence.
 - **presentation**:
   - assets: orb icon; placeholder | generate (one 100x100 icon; the persistent combat body
     stays the checked Frost Spine fallback)
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: smart tooltip plus trigger flash
 - **fallback**:
   - missing asset: checked Frost orb icon; the Frost Spine body and channel SFX remain

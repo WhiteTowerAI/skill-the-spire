@@ -87,7 +87,7 @@ Shared proof machinery stays in `verify.md`.
   - multiplayer: singleplayer only
 - **presentation**:
   - assets: card portrait; placeholder | generate
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: standard card body/preview
   - hand emphasis: none | one or more ordered rules
     - rule: <stable local rule name; repeat in precedence order>

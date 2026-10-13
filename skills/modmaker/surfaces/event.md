@@ -69,7 +69,7 @@ custom/Ancient scenes are not.
   - portrait slots:
     - initial: `<event-slug>`
     - `<PAGE_KEY>`: `<event-slug>_<page-key-lower>` (only when explicitly requested)
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art source: host-tool | backend:<name> | local-image (generate only)
   - art subject/style: <opening situation; focal subject left, darker UI space right>
   - native presentation: standard Event room layout
   - event VFX: none | `portrait_halo` | `trial_noble`

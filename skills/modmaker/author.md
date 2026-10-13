@@ -230,22 +230,23 @@ build until the user supplies it.
    the only identity reference for later Character assets. Material, PackedScene, Spine, and
    layer-directory inputs must already be authored local resources; never ask an image model
    for them.
-2. **Respect the route's consent boundary.** For `runtime-imagegen`, the user's Mod-level
+2. **Respect the route's consent boundary.** For `host-tool`, the user's Mod-level
    `generate` choice authorizes the initial one-image-per-asset run; follow any approval or
-   usage warning the host presents and never claim host usage is free. For Vofy or BYO HTTP,
+   usage warning the host presents and never claim host usage is free. For `backend:<name>`,
    get **one** yes for the whole initial run from the batch list in `reference/art-contract.md`
    § Consent and the regenerate loop (a Character asks twice: portrait, then the rest). Every
    regeneration, on any route, needs a new confirmation after the user sees the current result.
 3. Acquire through the SPEC's `art source`, then normalize into
-   `<work dir>/<ModName>/images` with `gen_sprite.py import` (or `acquire_sprite.py create`,
-   which imports for you). Use a host-native image tool only when it is actually callable; in
-   Codex, follow the `imagegen` skill's built-in `image_gen` mode, not its API fallback.
+   `<work dir>/<ModName>/images`: `host-tool` and `local-image` sources go through
+   `gen_sprite.py import`; `backend:<name>` runs `gen_sprite.py generate --backend <name>`,
+   which imports for you. Use a host image tool only when it is actually callable; in Codex,
+   follow the `imagegen` skill's built-in `image_gen` mode, not its API fallback.
 4. **Unavailable or failed means a bounded fallback, not a block.** A missing tool, missing
-   output file, missing Vofy/auth/credits, task failure or timeout, zero or multiple downloads,
-   missing BYO config, or import failure stops that route and keeps the placeholder unless the
-   user explicitly selects another route. Never silently choose a paid backend or retry a
-   possibly charged task. Record only the route and outcome in `MEMORY.md`, never account or
-   credit output.
+   output file, missing backend config, a failed or timed-out generation, zero or multiple
+   images, or an import failure stops that route and keeps the placeholder unless the user
+   explicitly selects another route. Never silently choose a paid backend or retry a
+   possibly charged generation. Record only the route and outcome in `MEMORY.md`, never
+   account or credit output.
 
 Whether placeholder or generated, the `.pck` build (`build.md`) is what makes the art reach the
 game; a code-only `dotnet build` won't (same rule as localization).

@@ -4,11 +4,11 @@
 Two sources, one normalizer: placeholder-vs-generate is decided
 upstream; this tool only runs when the user chose a custom sprite):
 
-  generate  — BYO backend. Reads a provider-agnostic config ({base_url, api_key, model,
-              mode}). Two transport shapes chosen by `mode`: "images" (OpenAI Images API,
-              /images/generations + /images/edits) or "chat" (OpenAI Chat Completions,
-              image returned in the reply — Poe / Gemini-native / OpenRouter). POSTs the
-              prompt (+ few-shot references), gets an image back.
+  generate  — a user-configured backend from art-backends.json. Transport by `mode`:
+              "images" (OpenAI Images API, /images/generations + /images/edits), "chat"
+              (OpenAI Chat Completions, image returned in the reply — Poe / OpenRouter),
+              or "command" (the user's own CLI or script writes one image to a directory).
+              Sends the prompt (+ few-shot references), gets one image back.
   import    — local file. The user already has an image; skip the network.
 
 Both then NORMALIZE + PLACE identically: optional chroma-key (#FF00FF, or #00FF00 when the
@@ -19,9 +19,9 @@ the exact sub-path under the mod's images/ dir. Dropping that file in and rebuil
   framework asset profile resolves it; a missing file falls back to the template default
   (= the placeholder).
 
-We do NOT bundle or default to any provider (§7.1: bring-your-own-backend). No key is
-committed. A missing/invalid config makes `generate` fail with a clear message and a
-non-zero exit so the caller can fall back to the placeholder.
+We do NOT bundle or default to any provider: the user chooses and configures the backend.
+No key is committed. A missing/invalid config makes `generate` fail with a clear message
+and a non-zero exit so the caller can fall back to the placeholder.
 
 Cross-platform (Windows/macOS/Linux). Depends on Pillow; HTTP uses stdlib urllib (no
 `requests` dep). Quiet output: detail to a .gen_sprite.log next to the output, one
@@ -30,7 +30,7 @@ it — same convention as build.py).
 
 Usage:
   python gen_sprite.py generate --spec card --slug firebolt \
-      --prompt "<filled prompt>" --out <mod>/<ModName>/images --config art-backend.json
+      --prompt "<filled prompt>" --out <mod>/<ModName>/images --backend <name>
   python gen_sprite.py import --spec card --slug firebolt \
       --input ./my-art.png --out <mod>/<ModName>/images
   python gen_sprite.py list-specs
@@ -455,23 +455,57 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
         )
     return dest
 
-# --- BYO backend (OpenAI-images-compatible HTTP) ---------------------------
+# --- user-configured backends -----------------------------------------------
+#
+# The user owns every backend. art-backends.json lives outside any Mod project (it may hold
+# a key) and names one or more backends:
+#   {"backends": {"<name>": {"mode": "images" | "chat" | "command", ...}}}
+# A file without "backends" is one unnamed backend (the original art-backend.json shape).
 
-def load_config(config_path: Path | None) -> dict:
-    """Provider-agnostic config: {base_url, api_key, model}. From --config, else
-    the GEN_SPRITE_CONFIG env var. NEVER hardcode a provider or a key."""
+BACKEND_MODES = ("images", "chat", "command")
+
+
+def default_config_path() -> Path:
+    return Path.home() / ".skill-the-spire" / "art-backends.json"
+
+
+def load_config(config_path: Path | None, backend: str | None = None) -> dict:
+    """Resolve one backend from --config, $GEN_SPRITE_CONFIG, or the user-level file.
+    NEVER hardcode a provider or a key."""
     import os
     path = config_path or (Path(os.environ["GEN_SPRITE_CONFIG"])
-                           if os.environ.get("GEN_SPRITE_CONFIG") else None)
-    if not path:
-        raise SystemExit(
-            "[gen_sprite] no backend config. Pass --config <art-backend.json> or set "
-            "GEN_SPRITE_CONFIG. It is provider-agnostic (OpenAI-images-compatible):\n"
-            '  {"base_url": "https://api.example.com/v1", "api_key": "...", "model": "..."}\n'
-            "We bundle no provider (BYO backend). Falling back to a placeholder is fine.")
+                           if os.environ.get("GEN_SPRITE_CONFIG") else default_config_path())
     if not path.is_file():
-        raise SystemExit(f"[gen_sprite] config not found: {path}")
-    cfg = json.loads(path.read_text(encoding="utf-8"))
+        raise SystemExit(
+            f"[gen_sprite] no backend config at {path}. The user creates it (see "
+            "art-contract.md § Backend config); falling back to a placeholder is fine.")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if "backends" in data:
+        backends = data["backends"]
+        if backend is None and len(backends) == 1:
+            backend = next(iter(backends))
+        if backend not in backends:
+            raise SystemExit(
+                f"[gen_sprite] choose --backend from {sorted(backends)} in {path}")
+        cfg = dict(backends[backend])
+    else:
+        cfg = dict(data)
+    validate_backend(cfg, path)
+    return cfg
+
+
+def validate_backend(cfg: dict, path: Path) -> None:
+    mode = str(cfg.setdefault("mode", "images")).lower()
+    cfg["mode"] = mode
+    if mode not in BACKEND_MODES:
+        raise SystemExit(f"[gen_sprite] unknown backend mode {mode!r}; use one of {BACKEND_MODES}")
+    if mode == "command":
+        command = cfg.get("command")
+        if not (isinstance(command, list) and command
+                and all(isinstance(part, str) for part in command)):
+            raise SystemExit(f"[gen_sprite] command backend in {path} needs a nonempty "
+                             '"command" list of strings')
+        return
     missing = [k for k in ("base_url", "api_key", "model") if not cfg.get(k)]
     if missing:
         raise SystemExit(f"[gen_sprite] config missing keys: {', '.join(missing)}")
@@ -484,7 +518,6 @@ def load_config(config_path: Path | None) -> dict:
                 f"[gen_sprite] config '{k}' has non-ASCII characters — this is almost "
                 f"always an unfilled placeholder. Put your real backend {k} in {path} "
                 f"(ASCII only, no angle brackets).")
-    return cfg
 
 
 def _parse_image_response(payload: dict, cfg: dict, log) -> "Image.Image":
@@ -521,7 +554,89 @@ def call_backend(cfg: dict, prompt: str, size: tuple[int, int], log,
         return _call_backend_chat(cfg, prompt, size, log, references)
     if mode == "images":
         return _call_backend_images(cfg, prompt, size, log, references)
-    raise SystemExit(f"[gen_sprite] unknown config mode {mode!r} (use \"images\" or \"chat\")")
+    if mode == "command":
+        return _call_backend_command(cfg, prompt, size, log, references)
+    raise SystemExit(f"[gen_sprite] unknown config mode {mode!r}; use one of {BACKEND_MODES}")
+
+
+ASPECT_RATIOS = ("1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9")
+
+
+def nearest_aspect_ratio(size: tuple[int, int], choices=ASPECT_RATIOS) -> str:
+    """The listed W:H ratio closest to the contract size on a log scale."""
+    import math
+    target = math.log(size[0] / size[1])
+    def distance(ratio: str) -> float:
+        w, h = ratio.split(":")
+        return abs(math.log(float(w) / float(h)) - target)
+    return min(choices, key=distance)
+
+
+def _fill(template: str, values: dict[str, str]) -> str:
+    for key, value in values.items():
+        template = template.replace("{" + key + "}", value)
+    return template
+
+
+def _run_quiet(argv: list[str], timeout: float, what: str) -> None:
+    """Run a user command without echoing or logging its output, which may carry account
+    or credit details."""
+    import shutil
+    import subprocess
+    executable = shutil.which(argv[0])
+    if not executable:
+        raise SystemExit(f"[gen_sprite] {what}: {argv[0]!r} was not found on PATH")
+    try:
+        result = subprocess.run([executable, *argv[1:]], stdin=subprocess.DEVNULL,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                timeout=timeout, check=False)
+    except subprocess.TimeoutExpired as exc:
+        raise SystemExit(
+            f"[gen_sprite] {what} timed out after {timeout:g}s. Do not resubmit "
+            "automatically: the backend may already have charged for it.") from exc
+    if result.returncode != 0:
+        raise SystemExit(f"[gen_sprite] {what} failed (exit {result.returncode})")
+
+
+def _call_backend_command(cfg: dict, prompt: str, size: tuple[int, int], log,
+                          references: list[Path] | None = None) -> "Image.Image":
+    """Command transport: run the user's own CLI or script, which must write exactly one
+    image into the empty {out_dir}. Tokens: {prompt} {out_dir} {model} {request_size}
+    {aspect_ratio}; each reference expands "reference_args" with {image}."""
+    import tempfile
+    # Windows .cmd shims split arguments on newlines; keep every sentence on one line.
+    prompt = " ".join(prompt.split())
+    if not prompt:
+        raise SystemExit("[gen_sprite] the image prompt is empty")
+    timeout = float(cfg.get("timeout", 600))
+    for check in cfg.get("preflight", []):
+        _run_quiet(list(check), timeout, f"preflight {check[0]!r}")
+    with tempfile.TemporaryDirectory(prefix="gen-sprite-") as tmp:
+        values = {
+            "prompt": prompt,
+            "out_dir": tmp,
+            "model": str(cfg.get("model", "")),
+            "request_size": request_size_for(size),
+            "aspect_ratio": nearest_aspect_ratio(size, cfg.get("aspect_ratios", ASPECT_RATIOS)),
+        }
+        argv = [_fill(part, values) for part in cfg["command"]]
+        reference_args = cfg.get("reference_args", [])
+        for reference in references or []:
+            if not reference_args:
+                log("command backend declares no reference_args; references ignored")
+                break
+            argv += [_fill(part, {**values, "image": str(reference)}) for part in reference_args]
+        log(f"command backend {argv[0]!r} with {len(references or [])} reference(s)")
+        _run_quiet(argv, timeout, "image command")
+        images = [p for p in sorted(Path(tmp).rglob("*"))
+                  if p.is_file() and p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")]
+        if len(images) != 1:
+            raise SystemExit(
+                f"[gen_sprite] image command wrote {len(images)} images; expected exactly 1. "
+                "Nothing was imported and nothing will be resubmitted automatically.")
+        with Image.open(images[0]) as img:
+            img.load()
+            return img.copy()
 
 
 def _call_backend_images(cfg: dict, prompt: str, size: tuple[int, int], log,
@@ -816,6 +931,18 @@ def stage_character_cue_source(
     return runtime_dir, True
 
 
+def keep_generated_source(src: "Image.Image", spec: str, slug: str, images_root: Path) -> Path:
+    """Save the raw paid source outside the packed Mod folder, so a failed or redone
+    normalization never needs a second generation call."""
+    images_root = images_root.resolve()
+    project_root = (images_root.parent.parent if images_root.name.lower() == "images"
+                    else images_root.parent)
+    destination = project_root / "art-sources" / "generated" / spec / f"{slug}.png"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    src.save(destination, "PNG")
+    return destination
+
+
 def cmd_generate(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     log, flush = make_logger(out_dir)
@@ -823,7 +950,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
     info = SPECS.get(args.spec)
     size = cue_sheet_size(args.spec, args.size) if cue_spec else resolve_size(args.spec, args.size)
     try:
-        cfg = load_config(Path(args.config) if args.config else None)
+        cfg = load_config(Path(args.config) if args.config else None, args.backend)
         refs = resolve_references(
             args.reference,
             args.max_refs,
@@ -832,6 +959,9 @@ def cmd_generate(args: argparse.Namespace) -> int:
             identity_reference=args.identity_reference,
         )
         src = call_backend(cfg, args.prompt, size, log, references=refs)
+        if not cue_spec:
+            kept = keep_generated_source(src, args.spec, args.slug, out_dir)
+            log(f"kept generated source -> {kept}")
         # default follows the spec (cut-out icon → key; full-bleed illustration → don't);
         # explicit --chroma / --no-chroma override it.
         if cue_spec:
@@ -1121,12 +1251,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Produce an STS2 custom sprite at the exact contract path+size.")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    g = sub.add_parser("generate", help="Generate via a BYO OpenAI-compatible backend.")
+    g = sub.add_parser("generate", help="Generate via a user-configured backend.")
     g.add_argument("--spec", required=True, choices=sorted(ALL_SPECS))
     g.add_argument("--slug", required=True, help="lowercased prefix-stripped id, e.g. firebolt")
     g.add_argument("--prompt", required=True)
     g.add_argument("--out", required=True, help="the mod's <ModName>/images dir")
-    g.add_argument("--config", help="art-backend.json (else $GEN_SPRITE_CONFIG)")
+    g.add_argument("--config", help="backend config (else $GEN_SPRITE_CONFIG, else "
+                   "~/.skill-the-spire/art-backends.json)")
+    g.add_argument("--backend", help="backend name inside the config (optional with one backend)")
     g.add_argument("--size", type=parse_size, help="override WxH (required for unverified specs)")
     g.add_argument("--reference", help="few-shot STS2 style references: a dir (e.g. the "
                    "sts2api art-samples/) or comma-separated image files. Sent to the "

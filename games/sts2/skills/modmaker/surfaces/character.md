@@ -59,7 +59,7 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
 - **presentation**:
   - assets: placeholder | generate (Character static profiles and optional combat cues;
     list each consumer and acquisition count)
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: character select screen + combat UI
   - character art bundle: one `CharacterArtBundle` row per selected slot; record
     required/optional, output path, dimensions, alpha policy, fallback, and real consumer

@@ -43,7 +43,7 @@ and art in `reference/art-contract.md`. Shared proof machinery stays in `verify.
 - **state**: none | see `reference/stateful-mechanics.md`
 - **presentation**:
   - assets: relic icon; placeholder | generate
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: standard relic display
   - hover tips: none | <each keyword, Power, Card, or Orb named in the description>
   - extra badges: none | one to three

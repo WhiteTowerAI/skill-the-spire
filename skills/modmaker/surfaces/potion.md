@@ -49,7 +49,7 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
 - **presentation**:
   - assets: potion icon; placeholder | generate (a loose 256×256 PNG, generate-wired and
     live-verified — same as relic/power; see `reference/art-contract.md`)
-  - art source: runtime-imagegen | vofy | byo-http | local-image (generate only)
+  - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: standard potion belt/tooltip display
   - hover tips: none | <each keyword, Power, Card, or Orb named in the description>
 - **fallback**:

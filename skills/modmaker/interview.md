@@ -167,13 +167,12 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
    their boundaries live in `../sts2api/reference/art-contract.md`; requests outside
    them (Spine, animation, phobia variants, custom layouts) stay explicit gaps.
    - Prefer a host-native image generator only when the current runtime actually exposes a
-     callable image tool (`runtime-imagegen`). In Codex this is the built-in `image_gen` tool
+     callable image tool (`host-tool`). In Codex this is the built-in `image_gen` tool
      from the `imagegen` skill, which needs no `OPENAI_API_KEY`. A model name or skill file
      alone does not prove the tool exists.
-   - Otherwise offer one available source in plain language: an installed and authenticated
-     Vofy CLI (check only with `acquire_sprite.py preflight`; never install it or log in),
-     the user's own OpenAI-compatible endpoint (`art-backend.json`), or an existing local
-     image. If none is ready, record `art: placeholder`.
+   - Otherwise offer one source in plain language: a backend the user configured in
+     `~/.skill-the-spire/art-backends.json` (`backend:<name>`), or an existing local image.
+     If none is ready, record `art: placeholder`.
    - Capture one overall subject/style note. `author.md` derives each asset's subject from
      its SPEC. Before any paid route, show how many image calls it will spend.
 
