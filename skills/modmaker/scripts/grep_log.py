@@ -31,6 +31,7 @@ from pathlib import Path
 from ritsu_profile import PROFILE, is_supported_runtime_version
 
 
+MARKER = "[T2MOD-SELFTEST]"
 LOG_RECORD_RE = re.compile(
     r"^\s*(?:\d+\w*\s+)?\[(?P<level>TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL)\]",
     re.IGNORECASE,
@@ -58,6 +59,10 @@ PROFILE_EXPECTATION = (
     f"framework=RitsuLib frameworkVersion>={PROFILE.framework_version} "
     f"host={PROFILE.host_version} compat={PROFILE.host_version}"
 )
+
+
+def load_marker(mod: str) -> str:
+    return f"{MARKER} {mod} loaded ok"
 
 
 def has_supported_framework_profile(line: str | None) -> bool:
@@ -170,16 +175,15 @@ def main(argv: list[str]) -> int:
         return 2
 
     lines = content.splitlines()
-    marker = "[T2MOD-SELFTEST]"
-    load_marker = f"{marker} {mod} loaded ok"
-    done_marker = f"{marker} {mod} selftest done"
-    failed_marker = f"{marker} {mod} selftest FAILED"
-    proof_marker = f"{marker} {mod} state proof:"
+    mod_load_marker = load_marker(mod)
+    done_marker = f"{MARKER} {mod} selftest done"
+    failed_marker = f"{MARKER} {mod} selftest FAILED"
+    proof_marker = f"{MARKER} {mod} state proof:"
 
     # Tier-1: require the exact initialization marker. A later mod-named self-test
     # line does not prove that MainFile.Initialize emitted the load contract.
     load_matches = [(index, line) for index, line in enumerate(lines)
-                    if load_marker in line]
+                    if mod_load_marker in line]
     load_match = load_matches[-1] if load_matches else None
     load_index = load_match[0] if load_match else None
     load_line = load_match[1] if load_match else None

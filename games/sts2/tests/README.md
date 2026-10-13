@@ -52,9 +52,10 @@ localization, PCK/package output, and deployment artifacts. Build success is not
 ### Tier 1
 
 ```powershell
-python games/sts2/tools/launch.py
-python games/sts2/tools/grep_log.py --mod-name <ModName>
+python games/sts2/tools/launch.py --mod-name <ModName>
 ```
+
+`launch.py` polls until the main menu, closes the game, and prints the `grep_log.py` verdict.
 
 Tier 1 requires the exact `[T2MOD-SELFTEST] <ModName> loaded ok` marker with
 `framework=RitsuLib`, actual framework version `>=0.6.7`, exact `host=0.107.1`, exact

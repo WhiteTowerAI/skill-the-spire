@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Launch STS2 out-of-Steam for load verification, wait, then close it.
+"""Launch STS2 out-of-Steam for verification, poll its fresh log, then close it.
 
 Launch helper for modmaker's verify.md. Ensures steam_appid.txt (=2868840) exists in
-the game dir so the game runs without Steam, launches it, waits, then stops the
-process. Pair with grep_log.py to verify the resulting state-proof marker.
+the game dir so the game runs without Steam, launches it, polls this launch's
+godot.log, then stops the process.
 
-Two modes:
-  default (tier-1) : launch, wait a fixed --wait-seconds, close. Proves it loads.
+Two modes, both requiring --mod-name and bounded by --wait-seconds:
+  default (tier-1) : poll until the game reaches its main menu, keep it open a few more
+    seconds for late load errors, close, then run grep_log.py's Tier 1 check and print its
+    verdict. One command proves the Mod loads.
   --self-test (t2) : pass --t2selftest so the mod's in-process harness drives itself
     from the main menu into the hosted scenario required by the mod and fires the
-    effect with zero interaction. Instead of a fixed wait, POLL the log until it prints its
-    terminal marker ([T2MOD-SELFTEST] <ModName> selftest done | selftest FAILED),
-    bounded by --wait-seconds. Requires --mod-name.
+    effect with zero interaction. Poll until it prints its terminal marker
+    ([T2MOD-SELFTEST] <ModName> selftest done | selftest FAILED), close, then pair with
+    grep_log.py --tier2-pattern to verify the asserted state proof.
 
 The game dir is auto-detected by probing the local
 Steam libraries (registry/standard roots -> libraryfolders.vdf -> appmanifest_2868840),
@@ -21,23 +23,29 @@ macOS/Linux Steam roots and Godot user-data dir are best-effort -- override with
 --game-dir / --log-path if detection misses.
 
 Usage:
-  python launch.py                                        # tier-1: launch, wait, close
+  python launch.py --mod-name ExampleMod                  # tier-1: load, verify, close
   python launch.py --self-test --mod-name ExampleMod      # tier-2: self-drive, poll
 """
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import subprocess
 import sys
 import time
 from pathlib import Path
 
+import grep_log
+from grep_log import default_log_path, load_marker, read_shared
 from ritsu_profile import game_executable_dir
 
 APPID = "2868840"
 GAME_FOLDER = "Slay the Spire 2"
+# STS2 0.107.1 logs this once the main menu is up. Mod initializers run before it, so a
+# load marker that has not appeared by then never will.
+MAIN_MENU_MARKER = "[Startup] Time to main menu"
+TIER1_SETTLE_SECONDS = 5
+DEFAULT_WAIT_SECONDS = {"tier1": 90, "self-test": 180}
 
 
 def steam_roots() -> list[Path]:
@@ -142,17 +150,6 @@ def default_exe_name() -> str:
     return "SlayTheSpire2.x86_64"
 
 
-def default_log_path() -> Path:
-    if sys.platform.startswith("win"):
-        base = os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming"))
-        return Path(base) / "SlayTheSpire2" / "logs" / "godot.log"
-    if sys.platform == "darwin":
-        return (Path.home() / "Library" / "Application Support"
-                / "SlayTheSpire2" / "logs" / "godot.log")
-    xdg = os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local" / "share"))
-    return Path(xdg) / "SlayTheSpire2" / "logs" / "godot.log"
-
-
 def steam_appid_path(game_dir: Path, platform_name: str | None = None) -> Path:
     return game_executable_dir(game_dir, platform_name) / "steam_appid.txt"
 
@@ -165,11 +162,6 @@ def launch_process(exe: Path, game_dir: Path, extra_args: list[str]) -> subproce
             cmd += ["--args", *extra_args]
         return subprocess.Popen(cmd, cwd=str(game_dir))
     return subprocess.Popen([str(exe), *extra_args], cwd=str(game_dir))
-
-
-def read_shared(path: Path) -> str:
-    with open(path, "r", encoding="utf-8", errors="replace") as fh:
-        return fh.read()
 
 
 def log_since_launch(baseline: str | None, current: str) -> str:
@@ -187,22 +179,45 @@ def log_since_launch(baseline: str | None, current: str) -> str:
     return current
 
 
+def tier1_log_outcome(current_launch_log: str) -> str | None:
+    """'ready' once this launch reached the main menu, after every Mod initializer ran."""
+    return "ready" if MAIN_MENU_MARKER in current_launch_log else None
+
+
 def self_test_log_outcome(current_launch_log: str, mod_name: str) -> str | None:
     """Read a terminal outcome only after this launch's exact mod-load marker."""
-    marker = "[T2MOD-SELFTEST]"
-    load_marker = f"{marker} {mod_name} loaded ok"
-    load_index = current_launch_log.rfind(load_marker)
+    load_index = current_launch_log.rfind(load_marker(mod_name))
     if load_index < 0:
         return None
 
     after_load = current_launch_log[load_index:]
-    fail_marker = f"{marker} {mod_name} selftest FAILED"
-    done_marker = f"{marker} {mod_name} selftest done"
+    fail_marker = f"{grep_log.MARKER} {mod_name} selftest FAILED"
+    done_marker = f"{grep_log.MARKER} {mod_name} selftest done"
     if fail_marker in after_load:
         return "failed"
     if done_marker in after_load:
         return "done"
     return None
+
+
+def poll_log(proc: subprocess.Popen, log_path: Path, baseline: str | None,
+             wait_seconds: int, outcome_of) -> str:
+    """Poll this launch's log until outcome_of returns a value, the game exits, or timeout."""
+    deadline = time.monotonic() + wait_seconds
+    while time.monotonic() < deadline:
+        if proc.poll() is not None:
+            return "process-exited"
+        time.sleep(2)
+        if not log_path.is_file():
+            continue
+        try:
+            txt = read_shared(log_path)
+        except OSError:
+            continue
+        outcome = outcome_of(log_since_launch(baseline, txt))
+        if outcome is not None:
+            return outcome
+    return "timeout"
 
 
 def stop_process(proc: subprocess.Popen) -> None:
@@ -224,27 +239,20 @@ def self_test_exit_code(outcome: str) -> int:
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description="Launch STS2 out-of-Steam for verification")
     ap.add_argument("--game-dir", default=None, help="STS2 install dir")
-    ap.add_argument("--wait-seconds", type=int, default=25,
-                    help="Tier-1: seconds to load before closing (default 25). "
-                         "--self-test: max seconds to wait for the harness marker.")
+    ap.add_argument("--wait-seconds", type=int, default=None,
+                    help="Max seconds to poll: main menu for Tier 1 (default 90), harness "
+                         "terminal marker for --self-test (default 180).")
     ap.add_argument("--self-test", action="store_true",
                     help="Append --t2selftest and poll for the harness done/FAILED marker.")
-    ap.add_argument("--mod-name", default="",
-                    help="Required with --self-test: whose 'selftest done' marker to poll for.")
+    ap.add_argument("--mod-name", required=True,
+                    help="Mod name (Mod.json 'id') whose markers are verified.")
     ap.add_argument("--log-path", default=None, help="godot.log location")
     args = ap.parse_args(argv)
 
     game_dir = Path(args.game_dir) if args.game_dir else default_game_dir()
     log_path = Path(args.log_path) if args.log_path else default_log_path()
-    wait_seconds = args.wait_seconds
-
-    if args.self_test:
-        if not args.mod_name:
-            print("--self-test requires --mod-name (whose 'selftest done' marker to wait for).",
-                  file=sys.stderr)
-            return 2
-        if wait_seconds < 60:
-            wait_seconds = 180  # self-test needs real time; don't inherit the 25s tier-1 default
+    mode = "self-test" if args.self_test else "tier1"
+    wait_seconds = args.wait_seconds or DEFAULT_WAIT_SECONDS[mode]
 
     exe = game_dir / default_exe_name()
     if not exe.exists():
@@ -259,9 +267,9 @@ def main(argv: list[str]) -> int:
         print(f"[launch] created steam_appid.txt ({APPID}) for no-Steam launch")
 
     # Polling can start before Godot rotates godot.log. Capture the old contents so a
-    # stale terminal marker can never satisfy this launch's self-test.
+    # stale main-menu or terminal marker can never satisfy this launch.
     log_baseline: str | None = None
-    if args.self_test and log_path.is_file():
+    if log_path.is_file():
         try:
             log_baseline = read_shared(log_path)
         except OSError as exc:
@@ -277,48 +285,40 @@ def main(argv: list[str]) -> int:
     print(f"[launch] starting {exe.name} ...")
     proc = launch_process(exe, game_dir, extra_args)
 
-    if args.self_test:
-        print(f"[launch] pid {proc.pid}; polling log up to {wait_seconds}s "
-              f"for '{args.mod_name} selftest done|FAILED'")
-        deadline = time.monotonic() + wait_seconds
-        outcome = "timeout"
-        while time.monotonic() < deadline:
-            if proc.poll() is not None:
-                outcome = "process-exited"
-                break
-            time.sleep(2)
-            if not log_path.is_file():
-                continue
-            try:
-                txt = read_shared(log_path)
-            except OSError:
-                continue
-            current_outcome = self_test_log_outcome(log_since_launch(log_baseline, txt),
-                                                    args.mod_name)
-            if current_outcome is not None:
-                outcome = current_outcome
-                break
-        if outcome == "done":
-            print("[launch] harness reported: selftest DONE (scenario driven; verify its asserted state proof now)")
-        elif outcome == "failed":
-            print("[launch] harness reported: selftest FAILED (couldn't reach/drive its scenario) -- "
-                  "verify.md: fall back to manual, report tier-1 only", file=sys.stderr)
+    if not args.self_test:
+        print(f"[launch] pid {proc.pid}; polling log up to {wait_seconds}s for the main menu")
+        outcome = poll_log(proc, log_path, log_baseline, wait_seconds, tier1_log_outcome)
+        if outcome == "ready":
+            time.sleep(TIER1_SETTLE_SECONDS)
         elif outcome == "process-exited":
-            print(f"[launch] game exited with code {proc.returncode} before a harness terminal marker -- "
-                  "treat as harness/setup failure", file=sys.stderr)
+            print(f"[launch] game exited with code {proc.returncode} before the main menu",
+                  file=sys.stderr)
         else:
-            print(f"[launch] TIMEOUT after {wait_seconds}s with no terminal marker -- "
-                  "treat as harness setup failure (manual fallback)", file=sys.stderr)
+            print(f"[launch] main menu not seen within {wait_seconds}s", file=sys.stderr)
+        stop_process(proc)
+        return grep_log.main(["--mod-name", args.mod_name, "--log-path", str(log_path)])
+
+    print(f"[launch] pid {proc.pid}; polling log up to {wait_seconds}s "
+          f"for '{args.mod_name} selftest done|FAILED'")
+    outcome = poll_log(proc, log_path, log_baseline, wait_seconds,
+                       lambda log: self_test_log_outcome(log, args.mod_name))
+    if outcome == "done":
+        print("[launch] harness reported: selftest DONE (scenario driven; verify its asserted state proof now)")
+    elif outcome == "failed":
+        print("[launch] harness reported: selftest FAILED (couldn't reach/drive its scenario) -- "
+              "verify.md: fall back to manual, report tier-1 only", file=sys.stderr)
+    elif outcome == "process-exited":
+        print(f"[launch] game exited with code {proc.returncode} before a harness terminal marker -- "
+              "treat as harness/setup failure", file=sys.stderr)
     else:
-        print(f"[launch] pid {proc.pid}; waiting {wait_seconds}s for load")
-        time.sleep(wait_seconds)
+        print(f"[launch] TIMEOUT after {wait_seconds}s with no terminal marker -- "
+              "treat as harness setup failure (manual fallback)", file=sys.stderr)
 
     stop_process(proc)
 
-    tier2_hint = ' --tier2-pattern "<state-proof-pattern>"' if args.self_test else ""
-    print(f"[launch] done. Now run grep_log.py --mod-name {args.mod_name or '<ModName>'}{tier2_hint} "
-          "to check the fresh log.")
-    return self_test_exit_code(outcome) if args.self_test else 0
+    print(f'[launch] done. Now run grep_log.py --mod-name {args.mod_name} '
+          '--tier2-pattern "<state-proof-pattern>" to check the fresh log.')
+    return self_test_exit_code(outcome)
 
 
 if __name__ == "__main__":

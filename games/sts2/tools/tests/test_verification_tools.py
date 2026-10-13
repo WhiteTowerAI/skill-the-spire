@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 TOOLS_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS_DIR))
@@ -284,6 +285,12 @@ class LaunchOutcomeTests(unittest.TestCase):
             launch.log_since_launch(baseline, rotated), mod
         ))
 
+    def test_tier1_ready_needs_this_launch_main_menu(self) -> None:
+        menu = "[INFO] [Startup] Time to main menu: 10,516ms"
+        self.assertIsNone(launch.tier1_log_outcome("[INFO] Preloading assets"))
+        self.assertEqual("ready", launch.tier1_log_outcome(menu))
+        self.assertIsNone(launch.tier1_log_outcome(launch.log_since_launch(menu, menu)))
+
     def test_failed_marker_dominates_done_in_current_launch(self) -> None:
         mod = "ExampleMod"
         current = "\n".join([
@@ -292,6 +299,88 @@ class LaunchOutcomeTests(unittest.TestCase):
             f"[T2MOD-SELFTEST] {mod} selftest FAILED: late assertion",
         ])
         self.assertEqual("failed", launch.self_test_log_outcome(current, mod))
+
+
+class FakeGame:
+    returncode = None
+
+    def __init__(self) -> None:
+        self.pid = 1
+        self.stopped = False
+
+    def poll(self):
+        return 0 if self.stopped else None
+
+    def terminate(self) -> None:
+        self.stopped = True
+
+    def wait(self, timeout: float | None = None) -> int:
+        return 0
+
+    def kill(self) -> None:
+        self.stopped = True
+
+
+class Tier1CommandTests(unittest.TestCase):
+    mod = "ExampleMod"
+
+    def run_tier1(self, fresh_log: list[str]) -> tuple[int, str]:
+        with tempfile.TemporaryDirectory() as tmp:
+            game_dir = Path(tmp) / "game"
+            game_dir.mkdir()
+            (game_dir / launch.default_exe_name()).write_text("", encoding="utf-8")
+            log_path = Path(tmp) / "godot.log"
+            log_path.write_text(
+                f"[T2MOD-SELFTEST] {self.mod} loaded ok from an older launch\n"
+                "[INFO] [Startup] Time to main menu: 1ms\n",
+                encoding="utf-8",
+            )
+
+            def start_game(*_args):
+                log_path.write_text("\n".join(fresh_log), encoding="utf-8")
+                return FakeGame()
+
+            output = io.StringIO()
+            with mock.patch.object(launch, "launch_process", start_game), \
+                    mock.patch.object(launch.time, "sleep"), \
+                    contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+                code = launch.main([
+                    "--mod-name", self.mod,
+                    "--game-dir", str(game_dir),
+                    "--log-path", str(log_path),
+                    "--wait-seconds", "5",
+                ])
+            return code, output.getvalue()
+
+    def loaded(self) -> list[str]:
+        return [
+            "RUNNING MODDED",
+            f"[INFO] [T2MOD-SELFTEST] {self.mod} loaded ok "
+            "framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1",
+            "[INFO] [Startup] Time to main menu: 10,516ms",
+        ]
+
+    def test_tier1_command_prints_pass_verdict(self) -> None:
+        code, output = self.run_tier1(self.loaded())
+        self.assertEqual(0, code, output)
+        self.assertIn("[PASS] Tier-1 verified", output)
+
+    def test_tier1_command_fails_on_fresh_error(self) -> None:
+        code, output = self.run_tier1(
+            self.loaded() + ["[ERROR] System.NullReferenceException: boom"]
+        )
+        self.assertEqual(1, code)
+        self.assertIn("[FAIL] Fresh-run error block", output)
+
+    def test_tier1_command_fails_without_load_marker(self) -> None:
+        code, output = self.run_tier1(["[INFO] [Startup] Time to main menu: 10,516ms"])
+        self.assertEqual(1, code)
+        self.assertIn("[FAIL] Load marker missing", output)
+
+    def test_mod_name_is_required(self) -> None:
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as caught:
+            launch.main([])
+        self.assertEqual(2, caught.exception.code)
 
 
 if __name__ == "__main__":

@@ -25,32 +25,16 @@ setting or leave the verification language active after the check.
 
 ## Tier-1 — does it load? (automated, guaranteed)
 
-Launch STS2 without Steam, wait, then grep the log for the framework profile, exact load
-marker, and fresh-run error blocks. The pinned scaffold and verifier enforce this before any
-RitsuLib runtime claim.
-
 ```bash
-python ../modmaker/scripts/launch.py
-python ../modmaker/scripts/grep_log.py --mod-name <ModName>
+python ../modmaker/scripts/launch.py --mod-name <ModName>
 ```
 
-- `launch.py` ensures `steam_appid.txt` (=2868840) exists, launches the game,
-  waits ~25s, and closes it.
-- `grep_log.py` reads the **current** `godot.log` in full. The verifier passes
-  only if the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record also contains
-  `framework=RitsuLib`, an actual `frameworkVersion>=0.6.7`, and exact
-  `host=0.107.1 compat=0.107.1`, with no
-  error/exception block after that
-  boundary. It includes multiline stack context and global errors whose header does not
-  name the mod. It also reports the `RUNNING MODDED` flag. Two exact, stack-qualified
-  base-game cleanup blocks are reported but ignored: abandon deleting a nonexistent
-  `current_run.save.backup`, and native Sentry close during launcher termination. Similar
-  headers without those cleanup stacks still fail.
-- Read the whole current log. Never slice it by a pre-launch byte offset: STS2 archives the
-  previous log and starts a fresh `godot.log` each launch, so a stale offset points into the
-  wrong file and makes a working Mod look like it failed to load.
+One command launches STS2 without Steam, waits for the main menu, closes the game, and
+prints the verdict. Do not read or slice the log yourself.
 
-**PASS** = marker found, no fresh-run error blocks. **FAIL** → go to `repair.md`.
+**PASS** = the exact `[T2MOD-SELFTEST] <ModName> loaded ok` record carries the pinned
+framework/host/compat profile, and no error/exception block follows it, including global
+errors that do not name the Mod. **FAIL** → go to `repair.md`.
 
 Tier 1 has three distinct failure modes, and they are not interchangeable: a **framework
 marker** missing or mismatched is a profile/scaffold problem, a **load marker NOT FOUND while

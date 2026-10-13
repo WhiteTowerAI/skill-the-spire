@@ -166,8 +166,7 @@ player-visible design change or missing shared capability.
 python ../modmaker/scripts/capability_preflight.py --spec SPEC.md
 python ../modmaker/scripts/scaffold.py --project-dir <outer-dir> --mod-name <ModName> --author <Author>
 python ../modmaker/scripts/build.py --project-dir <outer-dir> --mod-name <ModName>
-python ../modmaker/scripts/launch.py
-python ../modmaker/scripts/grep_log.py --mod-name <ModName>
+python ../modmaker/scripts/launch.py --mod-name <ModName>
 python ../modmaker/scripts/launch.py --self-test --mod-name <ModName>
 python ../modmaker/scripts/grep_log.py --mod-name <ModName> --tier2-pattern "<structured proof>"
 ```
