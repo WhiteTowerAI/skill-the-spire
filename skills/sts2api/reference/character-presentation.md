@@ -189,22 +189,149 @@ Rest and merchant are each one `Sprite2D` with the matching 512x512 texture:
 texture = ExtResource("1")
 ```
 
-The energy scene is a 128x128 `Control` with these exact native names:
+The energy scene follows the native counter's structure. RitsuLib converts it into a real
+`NEnergyCounter` by these exact names, and the native counter spins every child of
+`%RotationLayers` around that child's own `pivot_offset`:
 
-```text
-EnergyVfxBack (Node2D, unique)
-Layers (Control, unique)
-  Layer1..Layer3 (TextureRect)
-RotationLayers (Control, unique)
-  Layer4..Layer5 (TextureRect)
-EnergyVfxFront (Node2D, unique)
-Label (Label, centered)
-StarAnchor (Node2D, unique)
+- `%RotationLayers` sits **inside** `%Layers` and holds only Layer2 (swirl) and Layer3
+  (core), each with `pivot_offset = Vector2(64, 64)`;
+- Layer1 is drawn below it, and Layer4 (ring) and Layer5 (edge) stay fixed above it;
+- every layer uses the base-game `energy_orb_dark` material, which dims the counter at zero
+  Energy; `%EnergyVfxBack`/`%EnergyVfxFront` may stay empty (no particles).
+
+A sibling `RotationLayers` holding Layer4/5, or a missing per-layer pivot, spins the fixed
+ring around its top-left corner so it swings off the counter like a stray effect. Use this
+template (`<ModName>` and the label outline from the theme contract):
+
+```ini
+[gd_scene load_steps=8 format=3]
+[ext_resource type="Texture2D" path="res://<ModName>/images/charui/orb_layer_1.png" id="1"]
+[ext_resource type="Texture2D" path="res://<ModName>/images/charui/orb_layer_2.png" id="2"]
+[ext_resource type="Texture2D" path="res://<ModName>/images/charui/orb_layer_3.png" id="3"]
+[ext_resource type="Texture2D" path="res://<ModName>/images/charui/orb_layer_4.png" id="4"]
+[ext_resource type="Texture2D" path="res://<ModName>/images/charui/orb_layer_5.png" id="5"]
+[ext_resource type="Material" path="res://materials/ui/energy_orb_dark.tres" id="dark"]
+[ext_resource type="FontVariation" path="res://themes/kreon_bold_shared.tres" id="font"]
+[node name="EnergyCounter" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 128.0
+offset_bottom = 128.0
+pivot_offset = Vector2(64, 64)
+[node name="EnergyVfxBack" type="Node2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(64, 64)
+[node name="Layers" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+[node name="Layer1" type="TextureRect" parent="Layers"]
+material = ExtResource("dark")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1")
+expand_mode = 1
+stretch_mode = 5
+[node name="RotationLayers" type="Control" parent="Layers"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+[node name="Layer2" type="TextureRect" parent="Layers/RotationLayers"]
+material = ExtResource("dark")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(64, 64)
+mouse_filter = 2
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+[node name="Layer3" type="TextureRect" parent="Layers/RotationLayers"]
+material = ExtResource("dark")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(64, 64)
+mouse_filter = 2
+texture = ExtResource("3")
+expand_mode = 1
+stretch_mode = 5
+[node name="Layer4" type="TextureRect" parent="Layers"]
+material = ExtResource("dark")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4")
+expand_mode = 1
+stretch_mode = 5
+[node name="Layer5" type="TextureRect" parent="Layers"]
+material = ExtResource("dark")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5")
+expand_mode = 1
+stretch_mode = 5
+[node name="EnergyVfxFront" type="Node2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(64, 64)
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -29.0
+offset_right = -16.0
+offset_bottom = 29.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.964706, 0.886275, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.188235)
+theme_override_colors/font_outline_color = <EnergyLabelOutlineColor as Color(r, g, b, 1)>
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 16
+theme_override_constants/shadow_outline_size = 16
+theme_override_fonts/font = ExtResource("font")
+theme_override_font_sizes/font_size = 36
+text = "3/3"
+horizontal_alignment = 1
+vertical_alignment = 1
 ```
 
-Each layer fills its parent and references one distinct 256x256
-`character_energy` output. A successful scene load alone is insufficient: the headed
-proof must find one native counter and all five visible exact paths.
+Each layer references one distinct 256x256 `character_energy` output. A successful scene
+load alone is insufficient: the proof must find one native counter, all five exact paths,
+and a settled screenshot.
 
 The pool icons stay separate from full energy and from one another. The card pool checks
 `energy_large.png` before returning `BigEnergyIconPath` and independently checks
