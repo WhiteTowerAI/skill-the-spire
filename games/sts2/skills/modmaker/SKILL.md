@@ -167,8 +167,7 @@ player-visible design change or missing shared capability.
 python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
 python ${GAME_TOOLS_DIR}/scaffold.py --project-dir <outer-dir> --mod-name <ModName> --author <Author>
 python ${GAME_TOOLS_DIR}/build.py --project-dir <outer-dir> --mod-name <ModName>
-python ${GAME_TOOLS_DIR}/launch.py
-python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName>
+python ${GAME_TOOLS_DIR}/launch.py --mod-name <ModName>
 python ${GAME_TOOLS_DIR}/launch.py --self-test --mod-name <ModName>
 python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "<structured proof>"
 ```
