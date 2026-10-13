@@ -463,6 +463,49 @@
     }
   ],
   "character_identity_slot": "selection_portrait",
+  "character_art_tiers": [
+    {
+      "name": "minimal",
+      "slots": [
+        "selection_portrait",
+        "combat_body"
+      ],
+      "combat_cues": false,
+      "generation_calls": 2
+    },
+    {
+      "name": "standard",
+      "slots": [
+        "selection_portrait",
+        "top_panel_icon",
+        "selection_background",
+        "combat_body",
+        "rest_body",
+        "merchant_body",
+        "full_energy_layer_1",
+        "large_energy_icon",
+        "compact_energy_icon"
+      ],
+      "combat_cues": false,
+      "generation_calls": 9
+    },
+    {
+      "name": "full",
+      "slots": [
+        "selection_portrait",
+        "top_panel_icon",
+        "selection_background",
+        "combat_body",
+        "rest_body",
+        "merchant_body",
+        "full_energy_layer_1",
+        "large_energy_icon",
+        "compact_energy_icon"
+      ],
+      "combat_cues": true,
+      "generation_calls": 13
+    }
+  ],
   "character_cues": {
     "actions": [
       {
@@ -580,5 +623,5 @@
     "total_frames": 18,
     "generation_calls": 4
   },
-  "catalog_sha256": "6ebeff42f1dc241d16a9b138b932c0a008ef40630b6a44a3bd2405cbb8d2b01a"
+  "catalog_sha256": "67d5f6682c20b9d1bf02964e1a333fc3a0752b4c650877f28e7f66385d3422fd"
 }

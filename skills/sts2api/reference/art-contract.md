@@ -213,7 +213,14 @@ request: cells are read left-to-right, then top-to-bottom, and each cell is 512x
 | `character_cue_dead` | 2x3 | 1024x1536 | `cues/dead/00.png` .. `05.png` | 140 ms, terminal |
 
 Locked selection and map marker are not in the supported list: resource existence is not
-visual proof for those consumers.
+visual proof for those consumers. They are in no art tier and are generated only when the
+user names them.
+
+The bundle's `tiers` set the spend the user picks at interview; `export-contract` publishes
+each tier's slots, cue choice, and call count as `character_art_tiers` in the catalog.
+`minimal` acquires the selection portrait and combat body, `standard` every required
+static slot, and `full` adds the four cue sheets. A slot outside the chosen tier keeps its
+checked fallback: author no wrapper scene or profile path for it.
 
 `character_select` uses safe `contain` composition with chroma off; its full opaque source
 is preserved inside `(6,8)-(126,187)` on the unchanged 132x195 canvas.
@@ -288,13 +295,16 @@ Run the bundle review after the selected required outputs are normalized:
 ```powershell
 python ../modmaker/scripts/character_art.py \
   --images-root <work dir>/<ModName>/images \
-  --install-energy-templates \
+  --tier <minimal|standard|full> \
+  [--install-energy-templates] \
   --out-dir <work dir>/art-review
 ```
 
-The command validates exact dimensions, alpha policy, readable PNGs, required outputs,
-and the selection identity bootstrap, then writes a labeled contact sheet plus a
-deterministic five-layer Energy composite outside the runtime asset directory. These are
+Pass `--install-energy-templates` only when the tier includes full Energy. The command
+validates exact dimensions, alpha policy, readable PNGs, the tier's required outputs,
+and the selection identity bootstrap, then writes a labeled contact sheet plus, when the
+tier includes it, a deterministic five-layer Energy composite outside the runtime asset
+directory. These are
 human review artifacts; no brittle image-similarity score is used as runtime acceptance.
 
 Downfall's `char_select_locked.png` is a shared lock treatment, so generated mods may keep
@@ -975,7 +985,8 @@ the host and do not claim that host usage is free. For a `backend:<name>` route,
 message: the model/backend, the credit-spending action, the shared segments ①③ once, then
 one line per asset with its segment ② subject and its call count (one, or the spec's fixed
 budget such as four Character cue sheets), and the total number of calls. One yes covers
-exactly that list; an asset added later needs its own yes. A Character run is two batches:
+exactly that list; an asset added later needs its own yes. A Character lists only its
+chosen tier's slots and cue sheets. A Character run is two batches:
 the selection portrait alone first, because every later Character asset uses it as the
 identity reference, then the rest after the user has seen the portrait. Do not silently
 spend or treat an earlier custom-art preference as approval for an external route. Every

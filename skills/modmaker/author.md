@@ -220,9 +220,12 @@ build until the user supplies it.
 1. Follow `reference/art-contract.md` for each spec's path, size, chroma, prompt template, and
    import command. Character art also follows `reference/character-presentation.md` and
    `reference/character-combat-cues.md`: normalize the selection portrait first, because it is
-   the only identity reference for later Character assets. Material, PackedScene, Spine, and
-   layer-directory inputs must already be authored local resources; never ask an image model
-   for them.
+   the only identity reference for later Character assets. Acquire only the slots of the
+   SPEC's `character art tier` (`character_art_tiers` in the art-contract catalog). A slot
+   outside it gets no wrapper scene and no profile path, so RitsuLib keeps the Ironclad
+   fallback, and the bundle review runs with `--tier <tier>`. Material, PackedScene, Spine,
+   and layer-directory inputs must already be authored local resources; never ask an image
+   model for them.
 2. **Respect the route's consent boundary.** For `host-tool`, the user's Mod-level
    `generate` choice authorizes the initial one-image-per-asset run; follow any approval or
    usage warning the host presents and never claim host usage is free. For `backend:<name>`,

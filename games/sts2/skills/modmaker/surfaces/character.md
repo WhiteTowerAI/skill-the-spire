@@ -60,6 +60,7 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   - assets: placeholder | generate (Character static profiles and optional combat cues;
     list each consumer and acquisition count)
   - art source: host-tool | backend:<name> | local-image (generate only)
+  - character art tier: minimal | standard | full (generate only; see `interview.md` step 4)
   - native presentation: character select screen + combat UI
   - character art bundle: one `CharacterArtBundle` row per selected slot; record
     required/optional, output path, dimensions, alpha policy, fallback, and real consumer
