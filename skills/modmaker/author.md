@@ -231,7 +231,9 @@ build until the user supplies it.
    usage warning the host presents and never claim host usage is free. For `backend:<name>`,
    get **one** yes for the whole initial run from the batch list in `reference/art-contract.md`
    § Consent and the regenerate loop (a Character asks twice: portrait, then the rest). Every
-   regeneration, on any route, needs a new confirmation after the user sees the current result.
+   regeneration, on any route, needs a new confirmation after the user sees the current result,
+   and each asset gets at most two (`reference/art-contract.md` § Consent and the regenerate
+   loop).
 3. Acquire through the SPEC's `art source`, then normalize into
    `<work dir>/<ModName>/images`: `host-tool` and `local-image` sources go through
    `gen_sprite.py import`; `backend:<name>` runs `gen_sprite.py generate --backend <name>`,
