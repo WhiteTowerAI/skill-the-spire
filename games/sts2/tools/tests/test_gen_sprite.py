@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import base64
+import io
+import json
 import subprocess
 import sys
 import tempfile
@@ -15,6 +18,10 @@ TOOLS_DIR = Path(__file__).resolve().parents[1]
 GEN_SPRITE = TOOLS_DIR / "gen_sprite.py"
 sys.path.insert(0, str(TOOLS_DIR))
 import gen_sprite  # noqa: E402
+
+_png = io.BytesIO()
+Image.new("RGB", (4, 4)).save(_png, "PNG")
+PNG_B64 = base64.b64encode(_png.getvalue())
 
 
 def make_cue_sheet(path: Path, action_name: str) -> None:
@@ -332,6 +339,79 @@ class GenSpriteTests(unittest.TestCase):
                     {pixel[:3] for pixel in outline.convert("RGBA").getdata() if pixel[3]},
                 )
                 self.assertEqual(0, outline.getpixel((0, 0))[3])
+
+    def run_import(self, spec: str, source: Path, out: Path, *extra: str):
+        return subprocess.run(
+            [
+                sys.executable, str(GEN_SPRITE), "import",
+                "--spec", spec, "--slug", "keyed",
+                "--input", str(source), "--out", str(out), *extra,
+            ],
+            capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+
+    def test_cutout_import_keys_by_spec_default_and_honors_no_chroma(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            image = Image.new("RGB", (100, 100), (255, 0, 255))
+            ImageDraw.Draw(image).ellipse((20, 20, 79, 79), fill=(40, 160, 120))
+            image.save(source)
+
+            keyed = self.run_import("potion", source, root / "default")
+            self.assertEqual(0, keyed.returncode, keyed.stderr)
+            self.assertNotIn("warning", keyed.stdout)
+            with Image.open(root / "default" / "potions" / "keyed.png") as result:
+                self.assertEqual(0, result.getpixel((0, 0))[3])
+
+            opaque = self.run_import("potion", source, root / "opaque", "--no-chroma")
+            self.assertEqual(0, opaque.returncode, opaque.stderr)
+            with Image.open(root / "opaque" / "potions" / "keyed.png") as result:
+                self.assertEqual(255, result.getpixel((0, 0))[3])
+
+    def test_cutout_import_warns_when_the_background_was_not_keyed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            out = root / "images"
+            image = Image.new("RGB", (100, 100), (30, 30, 60))
+            ImageDraw.Draw(image).ellipse((20, 20, 79, 79), fill=(40, 160, 120))
+            image.save(source)
+
+            result = self.run_import("relic", source, out)
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            lines = result.stdout.splitlines()
+            self.assertTrue(any(line.startswith("[gen_sprite] warning:") for line in lines))
+            self.assertEqual(str(out / "relics" / "keyed.png"), lines[-1])
+
+    def test_backend_request_size_follows_the_spec_orientation(self) -> None:
+        self.assertEqual("1536x1024", gen_sprite.request_size_for(gen_sprite.resolve_size("card", None)))
+        self.assertEqual("1536x1024", gen_sprite.request_size_for(gen_sprite.resolve_size("event", None)))
+        self.assertEqual("1024x1536", gen_sprite.request_size_for(gen_sprite.resolve_size("character_select", None)))
+        self.assertEqual("1024x1024", gen_sprite.request_size_for(gen_sprite.resolve_size("relic", None)))
+
+        sent: list[dict] = []
+
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def read(self):
+                return b'{"data": [{"b64_json": "%s"}]}' % PNG_B64
+
+        def fake_urlopen(request, timeout):
+            sent.append(json.loads(request.data))
+            return Response()
+
+        cfg = {"base_url": "https://example.test/v1", "api_key": "test", "model": "m"}
+        with mock.patch.object(gen_sprite.urllib.request, "urlopen", fake_urlopen):
+            gen_sprite.call_backend(cfg, "p", (3440, 1613), lambda _: None)
+            gen_sprite.call_backend({**cfg, "request_size": "1024x1024"}, "p", (3440, 1613), lambda _: None)
+        self.assertEqual(["1536x1024", "1024x1024"], [body["size"] for body in sent])
 
     def test_character_background_import_writes_opaque_profile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
