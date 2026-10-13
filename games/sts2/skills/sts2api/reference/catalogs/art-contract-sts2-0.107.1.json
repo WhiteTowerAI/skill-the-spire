@@ -340,8 +340,8 @@
       "fit": "contain",
       "verified": true,
       "reference_role": "palette",
-      "asset_origin": "generated",
-      "generation_calls": 1
+      "asset_origin": "derived",
+      "generation_calls": 0
     },
     {
       "name": "full_energy_layer_2",
@@ -491,9 +491,9 @@
       ],
       "cells": [
         "top_panel_icon",
-        "full_energy_layer_1",
         "large_energy_icon",
-        "compact_energy_icon"
+        "compact_energy_icon",
+        null
       ],
       "reference_role": "palette",
       "generation_calls": 1
@@ -661,5 +661,5 @@
     "total_frames": 18,
     "generation_calls": 4
   },
-  "catalog_sha256": "cef188cedf38780f9e1ab27090d6513888b5ce24ebc00fbd1c75179d5edbb498"
+  "catalog_sha256": "e3ab00a735dc80371e6dfbb500bebf75d567332d62499e88146d2733a7eba1f2"
 }

@@ -231,7 +231,7 @@ bodies, one identity; a real trial kept the same individual across all three bod
 | sheet | 2x2 cells, reading order | references |
 |---|---|---|
 | `body_sheet` | combat body, rest body, merchant body, empty | portrait source as identity + `character_combat` style |
-| `icon_sheet` | top-panel icon, full-energy layer 1, large Energy icon, text Energy icon | `character_icon` style; no portrait |
+| `icon_sheet` | top-panel icon, large Energy icon, text Energy icon, empty | `character_icon` style; no portrait |
 
 ```powershell
 python ${GAME_TOOLS_DIR}/gen_sprite.py generate-sheet --sheet body_sheet `
@@ -265,8 +265,7 @@ only background">.
 
 Each cell line carries its slot's own constraint from the templates below: the three
 bodies are the same individual in a 3/4 view facing right (combat stance, sitting at rest,
-standing at ease); the icon is readable at 88x88; layer 1 is the backing disc with no
-central subject; the large Energy icon is readable at 256x256; the text Energy icon is the
+standing at ease); the icon is readable at 88x88; the large Energy icon is readable at 256x256; the text Energy icon is the
 same core simplified for 24x24.
 
 `character_select` uses safe `contain` composition with chroma off; its full opaque source
@@ -311,13 +310,17 @@ The contract splits `energy_large.png` into a 256x256 pool Energy icon while ret
 `energy_text.png` as the 24x24 rich-text icon. They are separate required bundle rows,
 paths, normalization specs, and real consumers; neither path may stand in for the other.
 
-The source directory `reference/energy_template/` contains four bundled,
-transparent `256x256` PNGs `layer_2.png` through `layer_5.png`. They are fixed assets,
-not generation targets: `character_energy` layer 1 has one Character-specific generation
-call, while layers 2-5 have zero generation calls and are copied byte-for-byte to
-`orb_layer_2.png` through `orb_layer_5.png`. The bundle validates dimensions, alpha, exact
-slot mapping, and source presence before installation; it never resizes or invents a
-template.
+Full Energy is rendered, never generated. The source directory `reference/energy_template/`
+contains four bundled, transparent `256x256` PNGs `layer_2.png` through `layer_5.png` that
+fix the counter's shape: a translucent swirl (2), an opaque pale core (3), and the rotating
+octagonal ring (4) and edge (5). Layer 1 sits under all of them, so only its tint around the
+core shows. `character_art.py --energy-colors` writes all five layers from the Character
+theme contract: layer 1 is a radial disc in the card-frame color, layers 2-4 are the
+templates recolored along the card-frame color, and layer 5 along the Energy outline color.
+Geometry and alpha are kept exactly. Pass the card-frame target RGB as hex (each 0..1
+channel times 255) and the `EnergyOutlineColor`, so the counter matches the card frames.
+The bundle validates every template's dimensions, alpha, slot mapping, and presence before
+writing; it never resizes or invents a template.
 
 The required `selection_portrait` is the sole identity bootstrap. It is normalized first
 to `charui/select.png` and is the only approved identity image; skill-the-spire does not create a
@@ -345,11 +348,11 @@ Run the bundle review after the selected required outputs are normalized:
 python ${GAME_TOOLS_DIR}/character_art.py \
   --images-root <work dir>/<ModName>/images \
   --tier <minimal|standard|full> \
-  [--install-energy-templates] \
+  [--energy-colors <frame RRGGBB>,<energy outline RRGGBB>] \
   --out-dir <work dir>/art-review
 ```
 
-Pass `--install-energy-templates` only when the tier includes full Energy. The command
+Pass `--energy-colors` only when the tier includes full Energy. The command
 validates exact dimensions, alpha policy, readable PNGs, the tier's required outputs,
 and the selection identity bootstrap, then writes a labeled contact sheet plus, when the
 tier includes it, a deterministic five-layer Energy composite outside the runtime asset
@@ -475,19 +478,8 @@ relic panel; keep the bottom strip and lower-right confirm-button region readabl
 16:10 landscape, no text, logo, UI, border, watermark, or borrowed character design.
 ```
 
-Full-energy layer 1 (`character_energy`, slug `orb_layer_1`). It is the bottom layer of
-the counter: fixed layer 2 (a translucent swirl), layer 3 (an opaque pale core about half
-the width), and the rotating octagonal ring of layers 4-5 are drawn on top. Only its tint
-around the core shows, so anything drawn in its center is hidden:
-
-```text
-Original round backing disc for a layered energy counter in a deck-building combat game.
-Follow the Character theme's exact palette/motif brief. Fill a centered circle about 90%
-of the square with the theme colors as a soft radial glow or brushed material, strongest
-in the outer half. No central object, symbol, flame, or fine detail, and no square plate,
-frame, or backdrop. Perfectly flat solid #FF00FF background outside the circle. No text,
-watermark, or detached particles.
-```
+Full Energy needs no prompt: it is rendered from the theme (see § CharacterArtBundle and
+reference routing).
 
 Pool Energy icons (`character_energy_large`, `character_energy_text`):
 
@@ -501,14 +493,11 @@ two or three value groups that survive at 24x24. Put it on a perfectly flat soli
 background. No frame, text, watermark, detached particles, or borrowed design.
 ```
 
-These three Energy outputs and the top-panel icon come from one `icon_sheet` call; a single
-regeneration uses `character_energy` with slug `orb_layer_1`, or the pool icon's own spec.
-Install the committed `energy_template/layer_2.png` through `layer_5.png` files as
-`orb_layer_2.png` through `orb_layer_5.png`; these four transparent 256x256 layers are
-fixed byte-for-byte and never generation targets. The 256x256 `character_energy_large`
-and 24x24 `character_energy_text` outputs are separate cells normalized from the same theme
-brief. Show the user that full energy is five image assets, with only layer 1 generated,
-and that the two pool icons are separate assets before a paid acquisition route runs.
+Both pool Energy icons and the top-panel icon come from one `icon_sheet` call; a single
+regeneration uses the pool icon's own spec. The 256x256 `character_energy_large` and 24x24
+`character_energy_text` outputs are separate cells normalized from the same theme brief.
+Show the user that full energy is five layers rendered in the theme colors at no cost, and
+that the two pool icons are separate generated assets, before a paid acquisition route runs.
 
 ## The enchantment icon contract
 

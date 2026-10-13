@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
-import shutil
 
 
 AlphaPolicy = Literal["opaque", "transparent"]
@@ -291,10 +290,10 @@ class CharacterArtBundle:
                         f"Character art tier {tier.name!r} names unknown slot {name!r}"
                     )
                 slot = self.slot(name)
-                if not slot.required or slot.asset_origin != "generated":
+                if not slot.required or slot.asset_origin == "fixed_template":
                     raise CharacterArtValidationError(
                         f"Character art tier {tier.name!r} may list only required generated "
-                        f"slots; {name!r} is not one"
+                        f"or derived slots; {name!r} is not one"
                     )
             for sheet in self.sheets:
                 listed = set(sheet.slots) & set(tier.slots)
@@ -659,19 +658,49 @@ class CharacterArtBundle:
             raise CharacterArtValidationError("\n".join(errors))
         return tuple(checked)
 
-    def install_fixed_templates(self, images_root: Path) -> tuple[Path, ...]:
-        """Copy validated layer 2-5 templates to their exact runtime output paths."""
-        # Validate all sources before creating runtime output so a malformed template
-        # cannot leave a partially installed Energy bundle.
+    def render_energy_counter(
+        self, images_root: Path, frame_hex: str, outline_hex: str
+    ) -> tuple[Path, ...]:
+        """Write all five full-Energy layers from the Character theme, with no generation.
+
+        Layer 1 is the bottom backing disc; the fixed layers 2-5 carry the shape, and only
+        layer 1's tint around the core shows through them. So layer 1 is a radial disc in
+        the card-frame color, the core layers 2-3 and ring layer 4 are the templates recolored
+        along the frame color, and the edge layer 5 follows the Energy outline color.
+        Template geometry and alpha are kept exactly; only color changes.
+        """
+        from PIL import Image, ImageOps
+
+        frame = _parse_hex_color(frame_hex, "card-frame color")
+        outline = _parse_hex_color(outline_hex, "Energy outline color")
+        white = (255, 255, 255)
+        # Validate every source before writing so a bad template leaves no partial counter.
         self.validate_templates()
-        installed: list[Path] = []
-        for slot in self.fixed_template_slots:
-            source = self.template_source_path(slot)
+        ramps = {
+            "full_energy_layer_2": (_scale(frame, 0.40), _mix(frame, white, 0.55)),
+            "full_energy_layer_3": (_scale(frame, 0.45), _mix(frame, white, 0.65)),
+            "full_energy_layer_4": (_scale(frame, 0.12), _scale(frame, 0.55)),
+            "full_energy_layer_5": (_scale(outline, 0.55), _mix(outline, white, 0.25)),
+        }
+        written: list[Path] = []
+        for slot in self.slots:
+            if slot.spec != "character_energy":
+                continue
+            if slot.asset_origin == "fixed_template":
+                with Image.open(self.template_source_path(slot)) as source:
+                    template = source.convert("RGBA")
+                dark, light = ramps[slot.name]
+                image = ImageOps.colorize(
+                    ImageOps.grayscale(template.convert("RGB")), dark, light
+                ).convert("RGBA")
+                image.putalpha(template.getchannel("A"))
+            else:
+                image = _radial_disc(slot.size, _scale(frame, 0.55), _scale(frame, 0.22))
             destination = images_root / slot.output_path
             destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, destination)
-            installed.append(destination)
-        return tuple(installed)
+            image.save(destination, "PNG")
+            written.append(destination)
+        return tuple(written)
 
     def validate_outputs(
         self,
@@ -785,6 +814,39 @@ class CharacterArtBundle:
         return contact_path, composite_path
 
 
+def _parse_hex_color(value: str, label: str) -> tuple[int, int, int]:
+    text = value.strip().lstrip("#")
+    if len(text) != 6 or any(character not in "0123456789abcdefABCDEF" for character in text):
+        raise CharacterArtValidationError(f"{label} must be RRGGBB hex, got {value!r}")
+    return int(text[0:2], 16), int(text[2:4], 16), int(text[4:6], 16)
+
+
+def _scale(color: tuple[int, int, int], factor: float) -> tuple[int, int, int]:
+    return tuple(max(0, min(255, round(channel * factor))) for channel in color)
+
+
+def _mix(color: tuple[int, int, int], other: tuple[int, int, int], amount: float) -> tuple[int, int, int]:
+    return tuple(round(a * (1 - amount) + b * amount) for a, b in zip(color, other))
+
+
+def _radial_disc(
+    size: tuple[int, int], inner: tuple[int, int, int], outer: tuple[int, int, int]
+) -> "Image.Image":
+    """An opaque disc filling ~92% of the square, inner color at the center."""
+    from PIL import Image
+
+    width, height = size
+    radius = min(width, height) * 0.46
+    image = Image.new("RGBA", size, (0, 0, 0, 0))
+    pixels = image.load()
+    for y in range(height):
+        for x in range(width):
+            distance = ((x - width / 2 + 0.5) ** 2 + (y - height / 2 + 0.5) ** 2) ** 0.5
+            if distance < radius:
+                pixels[x, y] = (*_mix(inner, outer, distance / radius), 255)
+    return image
+
+
 def _checkerboard(size: tuple[int, int], tile: int = 16) -> "Image.Image":
     from PIL import Image, ImageDraw
 
@@ -888,7 +950,7 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
         CharacterArtSlot(
             "full_energy_layer_1", "character_energy", "charui/orb_layer_1.png", (256, 256),
             "transparent", True, _IRONCLAD_ENERGY_COUNTER_FALLBACK, "NEnergyCounter.Layer1",
-            "character_icon", "contain", True, "palette",
+            "character_icon", "contain", True, "palette", "derived", 0,
         ),
         CharacterArtSlot(
             "full_energy_layer_2", "character_energy", "charui/orb_layer_2.png", (256, 256),
@@ -965,7 +1027,7 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
         ),
         CharacterArtSheet(
             "icon_sheet", 2, 2,
-            ("top_panel_icon", "full_energy_layer_1", "large_energy_icon", "compact_energy_icon"),
+            ("top_panel_icon", "large_energy_icon", "compact_energy_icon", None),
         ),
     ),
     # Spend levels offered at interview. A slot outside the chosen tier keeps its fallback.
@@ -1015,9 +1077,10 @@ def main() -> None:
     parser.add_argument("--images-root", required=True)
     parser.add_argument("--out-dir", required=True)
     parser.add_argument(
-        "--install-energy-templates",
-        action="store_true",
-        help="validate and copy the fixed layer 2-5 templates before review",
+        "--energy-colors",
+        metavar="FRAME,OUTLINE",
+        help="render the five full-Energy layers from the theme's card-frame and Energy "
+             "outline colors (RRGGBB,RRGGBB) before review",
     )
     parser.add_argument(
         "--tier",
@@ -1026,9 +1089,12 @@ def main() -> None:
     )
     args = parser.parse_args()
     try:
-        if args.install_energy_templates:
-            installed = CHARACTER_ART_BUNDLE.install_fixed_templates(Path(args.images_root))
-            print(f"[character_art] installed fixed templates: {len(installed)}")
+        if args.energy_colors:
+            frame, _, outline = args.energy_colors.partition(",")
+            written = CHARACTER_ART_BUNDLE.render_energy_counter(
+                Path(args.images_root), frame, outline
+            )
+            print(f"[character_art] rendered Energy layers: {len(written)}")
         contact, composite = CHARACTER_ART_BUNDLE.render_review(
             Path(args.images_root), Path(args.out_dir), tier=args.tier
         )

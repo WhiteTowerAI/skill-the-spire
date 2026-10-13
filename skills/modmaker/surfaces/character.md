@@ -77,6 +77,8 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
     - card-frame target RGB: `<0..1, 0..1, 0..1>`
     - card-frame brightness: `<0..2>`
     - energy-icon palette: `<primary/accent/outline colors plus motif/material>`
+    - full Energy counter: rendered from the card-frame target RGB and energy outline
+      (`character_art.py --energy-colors`); no generation call
     - energy resource prefix: `<stable Mod-owned lookup key; never a palette name>`
     - placeholder Energy fallback: Ironclad counter, large Card icon, and rich-text icon
   - character art profiles: none | selection | locked selection | top-panel icon |
