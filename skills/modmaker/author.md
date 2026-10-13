@@ -85,21 +85,14 @@ Counter mutation, read that Power's `amount domain` from SPEC and follow
 `recipes/power.md` § Amount domain: consume by clamping to the existing amount, never with a
 negative `PowerCmd.Apply<T>`, and re-read the retained Power after amount hooks run.
 
-## 2. Inject the load and diagnostic markers
+## 2. Keep the load marker; add diagnostic markers
 
-The selected scaffold must emit the framework diagnostic and exact **load** marker, or
-tier-1 verify silently finds nothing. Use the shared envelope from
-`semantic-contract.md`:
+The scaffolded `MainFile.Initialize()` already emits the exact **load** marker with the loaded
+framework version and host/compat profile that Tier 1 checks. Do not add, move, duplicate, or
+rewrite any `loaded ok` line: verification reads the last one, so a second marker without the
+profile fails Tier 1.
 
-```csharp
-Logger.Info($"[SKILLTHESPIRE-FRAMEWORK] phase=load mod=<mod-id> framework=RitsuLib frameworkVersion={typeof(RitsuLibFramework).Assembly.GetName().Version?.ToString(3)} host=0.107.1 compat=0.107.1 adapter=<surface>/sts2-content-semantic-v1 status=resolved");
-Logger.Info("[T2MOD-SELFTEST] <ModName> loaded ok");
-```
-
-The adapter must derive these values from the selected compat profile. Do not hardcode
-a beta-facing fallback or emit `status=resolved` before the host/compat check succeeds.
-
-Then log a **diagnostic** marker inside the trigger showing what code ran
+Log a **diagnostic** marker inside the trigger showing what code ran
 (a relic's combat-start hook, a potion's `OnUse`, a card's `OnPlay`, an enemy's move body,
 or an event option method):
 
