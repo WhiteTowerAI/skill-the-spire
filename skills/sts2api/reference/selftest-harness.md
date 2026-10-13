@@ -98,7 +98,17 @@ failure from a real effect bug:
 ## Bilingual localization driver
 
 Every generated harness with player-facing localization uses the public
-`MegaCrit.Sts2.Core.Localization.LocManager` route before its scenario driver. Snapshot
+`MegaCrit.Sts2.Core.Localization.LocManager` route before its scenario driver. The harness
+arms during Mod initialization, when `NGame.Instance` already exists but Mod localization
+tables are not merged yet and `LocManager.Instance` is still null, so first wait for the
+main menu and the manager:
+
+```csharp
+await WaitHelper.ForNode<Control>(root, "/root/Game/RootSceneContainer/MainMenu", ct, TimeSpan.FromSeconds(60));
+await WaitHelper.Until(() => LocManager.Instance != null, ct, TimeSpan.FromSeconds(30), "LocManager not ready");
+```
+
+Snapshot
 `LocManager.Instance.Language`; for `eng` and `zhs`, call `SetLanguage(language)` and resolve
 the SPEC's title/description/prompt/tip strings through the real model or UI consumer. Compare
 the returned formatted strings with that language's exact SPEC values and reject empty values,
@@ -928,7 +938,24 @@ textures under the same real `NRelic`, plus its explicit big-icon path. Compare 
 CharacterModel main/outline texture properties to the same top-icon paths so a decorative
 proof-only node cannot hide broken RitsuLib wiring. Then finish combat and enter RestSite and Shop
 to assert the real `NRestSiteCharacter` and `NMerchantCharacter` with their 512x512 bodies.
-Capture settled selection, combat/top-panel/energy, RestSite, and Shop screenshots.
+Capture settled selection, combat/top-panel/energy, RestSite, and Shop screenshots. Structured
+state cannot see placement, so these are what the maintainer and the user review; a real run
+whose node assertions all passed still showed a spinning Energy ring, an oversized health bar,
+and a sunken merchant body. Save each after a short settle delay:
+
+```csharp
+private static void Capture(string name)
+{
+    var directory = OS.GetUserDataDir() + "/<modname>_selftest";
+    DirAccess.MakeDirRecursiveAbsolute(directory);
+    var path = $"{directory}/{name}.png";
+    ((SceneTree)Engine.GetMainLoop()).Root.GetViewport().GetTexture().GetImage().SavePng(path);
+    MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> screenshot: {path}");
+}
+```
+
+Also assert the combat body's `%Bounds` width equals its opaque width times 0.80 within 2 px
+(`reference/character-presentation.md`); the health bar takes that width.
 
 For the Card/UI theme, replace the shared compact-icon assertion with two
 independent consumers. Assert the Character/card-pool properties equal all four theme
