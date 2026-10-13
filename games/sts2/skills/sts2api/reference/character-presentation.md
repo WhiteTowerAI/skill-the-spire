@@ -332,7 +332,7 @@ vertical_alignment = 1
 
 Each layer references one distinct 256x256 `character_energy` output. A successful scene
 load alone is insufficient: the proof must find one native counter, all five exact paths,
-exactly Layer2/Layer3 under `%RotationLayers` with their pivots, and a settled screenshot.
+and a settled screenshot.
 
 The pool icons stay separate from full energy and from one another. The card pool checks
 `energy_large.png` before returning `BigEnergyIconPath` and independently checks
