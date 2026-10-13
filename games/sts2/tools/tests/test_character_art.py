@@ -146,7 +146,8 @@ class CharacterArtBundleTests(unittest.TestCase):
             [slot.name for slot in fixed],
         )
         self.assertTrue(all(slot.generation_calls == 0 for slot in fixed))
-        self.assertEqual(1, CHARACTER_ART_BUNDLE.slot("full_energy_layer_1").generation_calls)
+        layer_1 = CHARACTER_ART_BUNDLE.slot("full_energy_layer_1")
+        self.assertEqual(("derived", 0), (layer_1.asset_origin, layer_1.generation_calls))
         outline = CHARACTER_ART_BUNDLE.slot("top_panel_icon_outline")
         self.assertEqual("derived", outline.asset_origin)
         self.assertEqual(0, outline.generation_calls)
@@ -180,21 +181,34 @@ class CharacterArtBundleTests(unittest.TestCase):
         self.assertNotIn('EnergyColorName => "red"', recipe)
         self.assertNotIn('EnergyIconHelper.GetPath("red")', recipe)
 
-    def test_install_fixed_templates_copies_source_assets_without_resizing(self) -> None:
+    def test_energy_counter_is_rendered_from_theme_colors_on_template_shapes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             images = Path(tmp) / "images"
-            installed = CHARACTER_ART_BUNDLE.install_fixed_templates(images)
+            written = CHARACTER_ART_BUNDLE.render_energy_counter(images, "B83A2E", "#3A0F0A")
 
             self.assertEqual(
-                [images / f"charui/orb_layer_{index}.png" for index in range(2, 6)],
-                list(installed),
+                [images / f"charui/orb_layer_{index}.png" for index in range(1, 6)],
+                list(written),
             )
-            for slot, destination in zip(CHARACTER_ART_BUNDLE.fixed_template_slots, installed):
-                source = CHARACTER_ART_BUNDLE.template_source_path(slot)
-                self.assertEqual(source.read_bytes(), destination.read_bytes())
-                with Image.open(destination) as image:
-                    self.assertEqual((256, 256), image.size)
-                    self.assertEqual("RGBA", image.mode)
+            with Image.open(written[0]) as disc:
+                self.assertEqual(255, disc.getpixel((128, 128))[3])
+                self.assertEqual(0, disc.getpixel((0, 0))[3])
+            for slot, destination in zip(CHARACTER_ART_BUNDLE.fixed_template_slots, written[1:]):
+                with Image.open(CHARACTER_ART_BUNDLE.template_source_path(slot)) as source, \
+                        Image.open(destination) as rendered:
+                    self.assertEqual((256, 256), rendered.size)
+                    self.assertEqual("RGBA", rendered.mode)
+                    self.assertEqual(
+                        list(source.convert("RGBA").getchannel("A").getdata()),
+                        list(rendered.getchannel("A").getdata()),
+                    )
+            with Image.open(written[3]) as ring:
+                opaque = [pixel for pixel in ring.getdata() if pixel[3] > 200]
+                red = sum(pixel[0] for pixel in opaque)
+                blue = sum(pixel[2] for pixel in opaque)
+                self.assertGreater(red, blue * 2)
+            with self.assertRaisesRegex(CharacterArtValidationError, "RRGGBB"):
+                CHARACTER_ART_BUNDLE.render_energy_counter(images, "red", "3A0F0A")
 
     def test_identity_routing_requires_only_identity_sensitive_assets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
