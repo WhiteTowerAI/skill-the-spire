@@ -984,7 +984,8 @@ the host and do not claim that host usage is free. For a `backend:<name>` route,
 **get one approval for the whole initial run before the first paid call.** Show it in one
 message: the model/backend, the credit-spending action, the shared segments ①③ once, then
 one line per asset with its segment ② subject and its call count (one, or the spec's fixed
-budget such as four Character cue sheets), and the total number of calls. One yes covers
+budget such as four Character cue sheets), the total number of calls, and the worst case if
+every asset used both regenerations below. One yes covers
 exactly that list; an asset added later needs its own yes. A Character lists only its
 chosen tier's slots and cue sheets. A Character run is two batches:
 the selection portrait alone first, because every later Character asset uses it as the
@@ -998,8 +999,18 @@ lives:
 ```
 derive subjects (②) → show the batch list → one yes → generate all → user looks at results
    → happy: keep it, continue to build
-   → not happy: adjust ② (or the subject), re-run gen_sprite.py, look again
+   → not happy: fix it in import if it can be, else regenerate (at most twice), look again
 ```
+
+Each asset gets **at most two regenerations**, so the cost stays predictable:
+
+- First fix what needs no call: re-run `gen_sprite.py import` on the kept raw source under
+  `<project>/art-sources/generated/<spec>/` (import re-crops, re-fits, and re-keys it;
+  `--chroma` or `--no-chroma` toggles keying) for framing, scale, or background problems.
+- Style drift or a bad sample is usually sampling variance: re-run the same prompt once
+  before editing it. Edit segment ② only when the content itself is wrong.
+- After the second regeneration, keep the best result or the checked fallback, and say
+  which. Another paid call needs the user to ask for it explicitly, with its cost stated.
 
 Only segment ② changes on a regenerate; ①③ and the few-shot references stay fixed.
 Adjusting a prompt is far cheaper than editing code, so this loop is the natural place to
