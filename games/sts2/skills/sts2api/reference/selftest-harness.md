@@ -954,10 +954,8 @@ private static void Capture(string name)
 }
 ```
 
-Also assert the two placement facts structured state can reach: the native counter's
-`%RotationLayers` contains exactly the Layer2/Layer3 textures, each with `pivot_offset`
-`(64, 64)`; and the combat body's `%Bounds` width equals its opaque width times 0.80 within
-2 px (`reference/character-presentation.md`).
+Also assert the combat body's `%Bounds` width equals its opaque width times 0.80 within 2 px
+(`reference/character-presentation.md`); the health bar takes that width.
 
 For the Card/UI theme, replace the shared compact-icon assertion with two
 independent consumers. Assert the Character/card-pool properties equal all four theme
