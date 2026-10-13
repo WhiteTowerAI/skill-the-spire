@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import io
 import json
 import os
 import subprocess
@@ -8,6 +10,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from PIL import Image
 
@@ -16,6 +19,24 @@ TOOLS_DIR = Path(__file__).resolve().parents[1]
 GEN_SPRITE = TOOLS_DIR / "gen_sprite.py"
 sys.path.insert(0, str(TOOLS_DIR))
 import gen_sprite  # noqa: E402
+
+_png = io.BytesIO()
+Image.new("RGB", (4, 4)).save(_png, "PNG")
+PNG_B64 = base64.b64encode(_png.getvalue()).decode("ascii")
+
+
+class FakeResponse:
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        return False
+
+    def read(self) -> bytes:
+        return json.dumps(self.payload).encode("utf-8")
 
 
 # Stands in for any user CLI: records its argv, then writes images per FAKE_MODE.
@@ -150,6 +171,74 @@ class ArtBackendTests(unittest.TestCase):
         self.config.write_text(json.dumps({"backends": {"only": {
             "mode": "command", "command": ["tool"]}}}), encoding="utf-8")
         self.assertEqual(["tool"], gen_sprite.load_config(self.config)["command"])
+
+    def test_builtin_backend_reads_the_key_from_the_users_environment(self) -> None:
+        missing = self.root / "none.json"
+        with mock.patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test"}):
+            cfg = gen_sprite.load_config(missing, "openai", model="gpt-image-2")
+        self.assertEqual(("images", "sk-test", "gpt-image-2"),
+                         (cfg["mode"], cfg["api_key"], cfg["model"]))
+        with mock.patch.dict(os.environ, {"GEMINI_API_KEY": ""}):
+            with self.assertRaises(SystemExit) as raised:
+                gen_sprite.load_config(missing, "gemini")
+        self.assertIn("GEMINI_API_KEY", str(raised.exception))
+        self.assertIn("never paste", str(raised.exception))
+
+    def test_config_entry_overrides_a_builtin_and_may_name_its_key_variable(self) -> None:
+        self.config.write_text(json.dumps({"backends": {"openai": {
+            "base_url": "https://proxy.test/v1", "api_key_env": "MY_KEY", "model": "m"}}}),
+            encoding="utf-8")
+        with mock.patch.dict(os.environ, {"MY_KEY": "k"}):
+            cfg = gen_sprite.load_config(self.config, "openai")
+        self.assertEqual(("https://proxy.test/v1", "k"), (cfg["base_url"], cfg["api_key"]))
+
+    def test_no_backend_choice_lists_builtins_and_config_names(self) -> None:
+        self.write_config()
+        with self.assertRaises(SystemExit) as raised:
+            gen_sprite.load_config(self.config)
+        for name in ("gemini", "mine", "openai", "openrouter", "other"):
+            self.assertIn(name, str(raised.exception))
+
+    def test_gemini_transport_sends_ratio_and_references_and_reads_inline_data(self) -> None:
+        reference = self.root / "ref.png"
+        Image.new("RGB", (8, 8)).save(reference)
+        sent = []
+
+        def fake_urlopen(request, timeout):
+            sent.append((request.full_url, dict(request.header_items()), json.loads(request.data)))
+            return FakeResponse({"candidates": [{"content": {"parts": [
+                {"text": "here"}, {"inlineData": {"mimeType": "image/png", "data": PNG_B64}}]}}]})
+
+        cfg = {"mode": "gemini", "base_url": gen_sprite.GEMINI_BASE_URL,
+               "api_key": "g", "model": "gemini-2.5-flash-image"}
+        with mock.patch.object(gen_sprite.urllib.request, "urlopen", fake_urlopen):
+            image = gen_sprite.call_backend(cfg, "p", (3440, 1613), lambda _: None, [reference])
+        self.assertEqual((4, 4), image.size)
+        url, headers, body = sent[0]
+        self.assertTrue(url.endswith("/models/gemini-2.5-flash-image:generateContent"))
+        self.assertEqual("g", headers["X-goog-api-key"])
+        self.assertEqual("21:9", body["generationConfig"]["imageConfig"]["aspectRatio"])
+        self.assertIn("inlineData", body["contents"][0]["parts"][1])
+
+    def test_chat_transport_reads_a_structured_data_url_image(self) -> None:
+        payload = {"choices": [{"message": {"content": "", "images": [
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64," + PNG_B64}}]}}]}
+        image = gen_sprite._extract_image_from_chat(payload, {}, lambda _: None)
+        self.assertEqual((4, 4), image.size)
+
+    def test_check_runs_preflight_without_generating(self) -> None:
+        self.write_config(preflight=[[sys.executable, str(self.fake), "status"]])
+        env = os.environ.copy()
+        env.update(FAKE_MODE="success", FAKE_RECORD=str(self.record))
+        result = subprocess.run(
+            [sys.executable, str(GEN_SPRITE), "check", "--backend", "mine",
+             "--config", str(self.config)],
+            capture_output=True, text=True, encoding="utf-8", env=env, check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("is configured", result.stdout)
+        self.assertNotIn("credits", result.stdout)
+        self.assertEqual([["status"]], self.calls())
 
     def test_nearest_aspect_ratio_matches_contract_shapes(self) -> None:
         self.assertEqual("4:3", gen_sprite.nearest_aspect_ratio((1000, 760)))

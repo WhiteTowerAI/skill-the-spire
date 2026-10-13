@@ -968,33 +968,54 @@ charged. Offer another route, local import, or placeholder instead.
 
 ## Backend config
 
-The user creates and owns `~/.skill-the-spire/art-backends.json` (or a file named by
-`--config` / `$GEN_SPRITE_CONFIG`). It lives outside every Mod project and is **never
-committed — it may hold a key**. Never ask the user to paste a key into the conversation.
-Each named backend picks one transport with `mode`; `--backend <name>` selects it, and a
-file with one backend needs no name:
+No backend runs unless the user chose it in the interview. Three built-in names need only
+a key the user sets in their own environment, never in the conversation:
+
+| `--backend` | key variable | transport | default model |
+|---|---|---|---|
+| `openai` | `OPENAI_API_KEY` | `images` at `https://api.openai.com/v1` | `gpt-image-1.5` |
+| `gemini` | `GEMINI_API_KEY` | `gemini` at the Gemini API | `gemini-2.5-flash-image` |
+| `openrouter` | `OPENROUTER_API_KEY` | `chat` at `https://openrouter.ai/api/v1` | `google/gemini-2.5-flash-image` |
+
+`--model` overrides the model for one call; offer it when the user names a newer model their
+account has. A variable the user sets after the agent session started is not visible to it;
+the user restarts the session or writes a config entry instead.
+
+Anything else is a named entry in `~/.skill-the-spire/art-backends.json` (or a file named
+by `--config` / `$GEN_SPRITE_CONFIG`). The user owns that file. It lives outside every Mod
+project and is **never committed — it may hold a key**. Prefer `api_key_env` (the name of a
+variable holding the key) over `api_key`, so the file itself holds no secret. An entry
+named like a built-in overrides it, and a file with one backend needs no `--backend`:
 
 ```json
 { "backends": {
-    "openai":  { "mode": "images", "base_url": "https://api.openai.com/v1",
-                 "api_key": "sk-...", "model": "gpt-image-1.5" },
-    "gateway": { "mode": "chat", "base_url": "https://openrouter.ai/api/v1",
-                 "api_key": "...", "model": "google/gemini-2.5-flash-image" },
-    "local":   { "mode": "command",
-                 "command": ["my-image-cli", "--prompt", "{prompt}",
-                             "--ratio", "{aspect_ratio}", "--out", "{out_dir}"],
-                 "reference_args": ["--image", "{image}"] } } }
+    "my-gateway": { "mode": "images", "base_url": "https://api.example.com/v1",
+                    "api_key_env": "MY_GATEWAY_KEY", "model": "<model id>" },
+    "local":      { "mode": "command",
+                    "command": ["my-image-cli", "--prompt", "{prompt}",
+                                "--ratio", "{aspect_ratio}", "--out", "{out_dir}"],
+                    "reference_args": ["--image", "{image}"] } } }
 ```
 
+Before the first paid call, run `gen_sprite.py check --backend <name>` once. It checks the
+config shape, that the key is present, and a command backend's executable and `preflight`.
+It requests no image, so it costs nothing and does not prove the model will accept the
+prompt.
+
 - `images` — the OpenAI *Images* API: `/images/generations`, or multipart `/images/edits`
-  with references. OpenAI's gpt-image models and any gateway exposing that endpoint.
-  Optional: `edit_url`, `request_size`, `timeout`.
+  with references. OpenAI's gpt-image models and any platform exposing that endpoint.
+  The request size follows the spec's orientation. Optional: `edit_url`, `request_size`,
+  `timeout`.
 - `chat` — the OpenAI *Chat Completions* API returning an image in the reply. Poe,
   OpenRouter, and most "one key, many models" gateways. References are inlined as
   `image_url` data URLs, and the tool parses the image back out of the reply (structured
   image array, inline base64 data URL, or an image link — in that order). Optional:
-  `chat_url`, `chat_extra` (merged into the request body, e.g. a provider's `modalities`
-  knob), `timeout`. This transport sends no size; the prompt states the orientation.
+  `chat_url`, `chat_extra` (merged into the request body, e.g. OpenRouter's
+  `modalities`), `timeout`. This transport sends no size; the prompt states the
+  orientation.
+- `gemini` — the Gemini API's native `generateContent` with image output. References are
+  inline image parts, and `imageConfig.aspectRatio` is the closest of `aspect_ratios`.
+  Optional: `base_url`, `aspect_ratios`, `timeout`.
 - `command` — the user's own CLI, script, or local workflow (for example ComfyUI). The tool
   runs `command` with stdin closed and its output hidden, into a fresh empty `{out_dir}`,
   and requires exactly one image there. Tokens: `{prompt}` (folded to one line for Windows
@@ -1004,6 +1025,6 @@ file with one backend needs no name:
   skipped. Optional: `model`, `preflight` (commands that must exit 0 first, such as an
   auth check), `timeout` (default 600 seconds).
 
-We bundle or default to **no** provider; the user chooses one. A missing/invalid config
-makes `generate` fail with a clear message and a non-zero exit, and the caller falls back to
-the placeholder.
+A missing key, missing or invalid config, or unknown backend name makes `generate` and
+`check` fail with a clear message and a non-zero exit, and the caller falls back to the
+placeholder.
