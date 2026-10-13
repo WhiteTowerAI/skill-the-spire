@@ -130,9 +130,10 @@ human idea
    preflight from Core commands. The compiler, Build, Tier 2, and human review own everything
    else.
 5. **Scaffold and Author.** Resolve the local profile, create the project, translate only the
-   current SPEC through its recipes, author bilingual localization when used, add the load marker,
-   and generate an arg-gated `SelfTest.cs` from `reference/selftest-harness.md`. Art defaults to
-   checked placeholders unless the SPEC selects a supported custom route.
+   current SPEC through its recipes, author bilingual localization when used, keep the
+   scaffold's load marker, and generate an arg-gated `SelfTest.cs` from
+   `reference/selftest-harness.md`. Art defaults to checked placeholders unless the SPEC
+   selects a supported custom route.
 6. **Build.** `build.py` validates the pinned profile, compiles C#, validates manifest/resources/
    localization, packs a PCK when needed, and deploys only the Mod's own artifacts.
 7. **Tier 1.** Launch normally and require the exact load marker with no fresh error block.
