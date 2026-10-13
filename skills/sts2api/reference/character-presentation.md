@@ -82,9 +82,39 @@ protected override NCreatureVisuals? TryCreateCreatureVisuals()
     VisualNodeStyle style = VisualNodeStyle.Empty
         .WithScale(0.80f)
         .WithPosition(new Vector2(0f, -184f));
-    return RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>(texture, style);
+    var visuals = RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>(texture, style);
+    FitBoundsToBody(visuals, texture);
+    return visuals;
+}
+
+// The texture factory sizes Bounds to 1.1x the whole texture and ignores the style scale, so
+// the health bar (Bounds width) would be far wider than the drawn body. Fit Bounds, intent,
+// and center to the body's opaque pixels as the 0.80 / (0, -184) style draws them.
+private static void FitBoundsToBody(NCreatureVisuals visuals, Texture2D texture)
+{
+    const float scale = 0.80f;
+    const float offsetY = -184f;
+    Rect2I used = texture.GetImage().GetUsedRect();
+    float half = texture.GetWidth() / 2f;
+    float left = (used.Position.X - half) * scale;
+    float right = (used.End.X - half) * scale;
+    float top = offsetY + (used.Position.Y - texture.GetHeight() / 2f) * scale;
+    float bottom = offsetY + (used.End.Y - texture.GetHeight() / 2f) * scale;
+
+    if (visuals.GetNodeOrNull<Control>("%Bounds") is { } bounds)
+    {
+        bounds.Position = new Vector2(left, top);
+        bounds.Size = new Vector2(right - left, bottom - top);
+    }
+    if (visuals.GetNodeOrNull<Marker2D>("%IntentPos") is { } intent)
+        intent.Position = new Vector2((left + right) / 2f, top - 70f);
+    if (visuals.GetNodeOrNull<Marker2D>("%CenterPos") is { } center)
+        center.Position = new Vector2((left + right) / 2f, top + (bottom - top) * 0.6f);
 }
 ```
+
+The health bar takes the `%Bounds` width. The proof asserts it equals the body's opaque width
+times 0.80 (within 2 px), and headed review checks that the bar matches the body.
 
 Use the corresponding `Godot`, `NCreatureVisuals`, RitsuLib Godot-factory, Character visual
 definition, and `VisualNodeStyle` namespaces. Returning `null` is the missing-file route:
@@ -128,9 +158,15 @@ Selection background:
 [gd_scene load_steps=2 format=3]
 [ext_resource type="Texture2D" path="res://<ModName>/images/charui/background.png" id="1"]
 [node name="CharacterSelectBackground" type="TextureRect"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -960.0
+offset_top = -540.0
+offset_right = 960.0
+offset_bottom = 540.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -138,6 +174,10 @@ texture = ExtResource("1")
 expand_mode = 1
 stretch_mode = 6
 ```
+
+Vanilla select backgrounds are anchored to the screen center rather than filling their
+parent, whose size the scene does not control. Centering one 1920x1080 cover rect shows the
+full 16:10 width and crops only a thin strip top and bottom.
 
 Top-panel icon (outline first so the main icon draws over its filled interior):
 
@@ -180,13 +220,25 @@ stretch_mode = 5
 opaque-white 3% max-filter rule (3 pixels at 88x88). Main normalization reserves the same
 3-pixel inset so the derived outline is not clipped; it does not acquire another image.
 
-Rest and merchant are each one `Sprite2D` with the matching 512x512 texture:
+Rest and merchant are each one `Sprite2D` with the matching 512x512 texture. The Rest Site
+host is centered on the body, so the rest sprite stays centered:
 
 ```ini
 [gd_scene load_steps=2 format=3]
 [ext_resource type="Texture2D" path="res://<ModName>/images/charui/rest.png" id="1"]
 [node name="CharacterRest" type="Sprite2D"]
 texture = ExtResource("1")
+```
+
+The Shop host places its node at the feet, so the merchant sprite lifts its baseline (y 486
+of the 512 canvas) onto the origin; a centered merchant sprite sinks half a body low:
+
+```ini
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Texture2D" path="res://<ModName>/images/charui/merchant.png" id="1"]
+[node name="CharacterMerchant" type="Sprite2D"]
+texture = ExtResource("1")
+offset = Vector2(0, -230)
 ```
 
 The energy scene follows the native counter's structure. RitsuLib converts it into a real
