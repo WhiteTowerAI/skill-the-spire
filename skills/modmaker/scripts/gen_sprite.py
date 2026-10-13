@@ -1261,6 +1261,15 @@ def build_art_contract_catalog() -> dict:
         "content_specs": content_specs,
         "character_slots": character_slots,
         "character_identity_slot": CHARACTER_ART_BUNDLE.identity_slot,
+        "character_art_tiers": [
+            {
+                "name": tier.name,
+                "slots": list(tier.slots),
+                "combat_cues": tier.combat_cues,
+                "generation_calls": CHARACTER_ART_BUNDLE.tier_generation_calls(tier.name),
+            }
+            for tier in CHARACTER_ART_BUNDLE.tiers
+        ],
     }
 
     cues = CHARACTER_ART_BUNDLE.combat_cues

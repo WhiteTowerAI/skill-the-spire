@@ -17,6 +17,7 @@ sys.path.insert(0, str(TOOLS_DIR))
 from character_art import (  # noqa: E402
     CHARACTER_ART_BUNDLE,
     CharacterArtBundle,
+    CharacterArtTier,
     CharacterArtValidationError,
 )
 
@@ -269,6 +270,53 @@ class CharacterArtBundleTests(unittest.TestCase):
             with Image.open(composite) as image:
                 self.assertEqual((256, 256), image.size)
                 self.assertGreater(image.getchannel("A").getextrema()[1], 0)
+
+    def test_art_tiers_set_the_spend_and_skip_unpromoted_slots(self) -> None:
+        self.assertEqual(
+            {"minimal": 2, "standard": 9, "full": 13},
+            {
+                tier.name: CHARACTER_ART_BUNDLE.tier_generation_calls(tier.name)
+                for tier in CHARACTER_ART_BUNDLE.tiers
+            },
+        )
+        for tier in CHARACTER_ART_BUNDLE.tiers:
+            names = {slot.name for slot in CHARACTER_ART_BUNDLE.tier_slots(tier.name)}
+            self.assertNotIn("locked_selection_portrait", names)
+            self.assertNotIn("map_marker", names)
+        standard = {slot.name for slot in CHARACTER_ART_BUNDLE.tier_slots("standard")}
+        self.assertIn("top_panel_icon_outline", standard)
+        self.assertIn("full_energy_layer_5", standard)
+        minimal = {slot.name for slot in CHARACTER_ART_BUNDLE.tier_slots("minimal")}
+        self.assertEqual({"selection_portrait", "combat_body"}, minimal)
+        with self.assertRaisesRegex(CharacterArtValidationError, "only required generated"):
+            replace(
+                CHARACTER_ART_BUNDLE,
+                tiers=(CharacterArtTier("extra", ("selection_portrait", "map_marker")),),
+            )
+        with self.assertRaisesRegex(CharacterArtValidationError, "unknown Character art tier"):
+            CHARACTER_ART_BUNDLE.tier("deluxe")
+
+    def test_minimal_tier_review_requires_only_portrait_and_combat_body(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            images = root / "images"
+            portrait = images / "charui/select.png"
+            portrait.parent.mkdir(parents=True)
+            Image.new("RGB", (132, 195), (80, 110, 140)).save(portrait)
+            body = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+            ImageDraw.Draw(body).rectangle((80, 26, 431, 485), fill=(40, 60, 90, 255))
+            body.save(images / "charui/combat.png")
+
+            with self.assertRaisesRegex(CharacterArtValidationError, "missing required"):
+                CHARACTER_ART_BUNDLE.validate_outputs(images)
+            checked = CHARACTER_ART_BUNDLE.validate_outputs(images, tier="minimal")
+            contact, composite = CHARACTER_ART_BUNDLE.render_review(
+                images, root / "review", tier="minimal"
+            )
+
+            self.assertEqual(2, len(checked))
+            self.assertTrue(contact.is_file())
+            self.assertIsNone(composite)
 
     def test_combat_footprint_rejects_empty_edge_touching_and_wrong_baseline(self) -> None:
         empty = Image.new("RGBA", (512, 512), (0, 0, 0, 0))

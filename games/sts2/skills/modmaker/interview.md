@@ -199,6 +199,14 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
    - **3**: ask which file belongs to which asset; record `art source: local-image`.
    - For 1 and 2, capture one overall subject/style note. `author.md` derives each asset's
      subject from its SPEC. Before any paid route, show how many image calls it will spend.
+   - For a Character with 1 or 2, offer its art tier in the same message, with the call
+     counts from `character_art_tiers` in
+     `${STS2API_SKILL_DIR}/reference/catalogs/art-contract-sts2-0.107.1.json`:
+     **minimal** (selection portrait and combat body; everything else keeps the base-game
+     Ironclad art), **standard** (all static Character art, no combat animation), or
+     **full** (standard plus the four combat-animation sheets). No answer means minimal.
+     Record `character art tier: <name>`. The locked selection portrait and map marker are
+     in no tier; generate them only when the user names them.
 
 ## Defaults (apply silently unless the user specified otherwise)
 

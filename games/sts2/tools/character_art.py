@@ -99,12 +99,22 @@ class CharacterCueContract:
 
 
 @dataclass(frozen=True)
+class CharacterArtTier:
+    """One user-selectable spend level: the generated slots it acquires, plus cue sheets."""
+
+    name: str
+    slots: tuple[str, ...]
+    combat_cues: bool = False
+
+
+@dataclass(frozen=True)
 class CharacterArtBundle:
     """The one source of truth for Character asset metadata and reference routing."""
 
     slots: tuple[CharacterArtSlot, ...]
     identity_slot: str = "selection_portrait"
     combat_cues: CharacterCueContract | None = None
+    tiers: tuple[CharacterArtTier, ...] = ()
 
     def __post_init__(self) -> None:
         names: set[str] = set()
@@ -210,6 +220,31 @@ class CharacterArtBundle:
             raise CharacterArtValidationError(
                 "the identity slot must be the selection portrait bootstrap"
             )
+
+        tier_names: set[str] = set()
+        for tier in self.tiers:
+            if not tier.name or tier.name in tier_names:
+                raise CharacterArtValidationError(f"duplicate or empty Character art tier: {tier.name!r}")
+            tier_names.add(tier.name)
+            if self.identity_slot not in tier.slots:
+                raise CharacterArtValidationError(
+                    f"Character art tier {tier.name!r} must acquire the identity portrait"
+                )
+            for name in tier.slots:
+                if name not in names:
+                    raise CharacterArtValidationError(
+                        f"Character art tier {tier.name!r} names unknown slot {name!r}"
+                    )
+                slot = self.slot(name)
+                if not slot.required or slot.asset_origin != "generated":
+                    raise CharacterArtValidationError(
+                        f"Character art tier {tier.name!r} may list only required generated "
+                        f"slots; {name!r} is not one"
+                    )
+            if tier.combat_cues and self.combat_cues is None:
+                raise CharacterArtValidationError(
+                    f"Character art tier {tier.name!r} selects cues the bundle does not define"
+                )
 
         cues = self.combat_cues
         if cues is not None:
@@ -319,6 +354,32 @@ class CharacterArtBundle:
             return next(slot for slot in self.slots if slot.spec == spec)
         except StopIteration as exc:
             raise CharacterArtValidationError(f"unknown Character art spec: {spec!r}") from exc
+
+    def tier(self, name: str) -> CharacterArtTier:
+        try:
+            return next(tier for tier in self.tiers if tier.name == name)
+        except StopIteration as exc:
+            known = ", ".join(tier.name for tier in self.tiers)
+            raise CharacterArtValidationError(
+                f"unknown Character art tier {name!r}; choose one of: {known}"
+            ) from exc
+
+    def tier_slots(self, name: str) -> tuple[CharacterArtSlot, ...]:
+        """The tier's generated slots plus the derived/template slots that follow them."""
+        listed = set(self.tier(name).slots)
+        specs = {self.slot(slot_name).spec for slot_name in listed}
+        return tuple(
+            slot
+            for slot in self.slots
+            if slot.name in listed or (slot.asset_origin != "generated" and slot.spec in specs)
+        )
+
+    def tier_generation_calls(self, name: str) -> int:
+        tier = self.tier(name)
+        calls = sum(self.slot(slot_name).generation_calls for slot_name in tier.slots)
+        if tier.combat_cues and self.combat_cues is not None:
+            calls += self.combat_cues.generation_calls
+        return calls
 
     @property
     def cue_specs(self) -> tuple[str, ...]:
@@ -529,12 +590,23 @@ class CharacterArtBundle:
             installed.append(destination)
         return tuple(installed)
 
-    def validate_outputs(self, images_root: Path, identity_reference: Path | None = None) -> tuple[Path, ...]:
-        """Validate all required normalized outputs and the identity bootstrap.
+    def validate_outputs(
+        self,
+        images_root: Path,
+        identity_reference: Path | None = None,
+        tier: str | None = None,
+    ) -> tuple[Path, ...]:
+        """Validate the required normalized outputs and the identity bootstrap.
 
-        ``identity_reference`` is retained as a compatibility argument, but it must be
-        the selection portrait itself. A separate canonical sheet is deliberately invalid.
+        With ``tier``, only that tier's slots are required; every other slot keeps its
+        fallback. ``identity_reference`` is retained as a compatibility argument, but it must
+        be the selection portrait itself. A separate canonical sheet is deliberately invalid.
         """
+        required = (
+            {slot.name for slot in self.tier_slots(tier)}
+            if tier is not None
+            else {slot.name for slot in self.slots if slot.required}
+        )
         errors: list[str] = []
         identity_path = self.identity_path(images_root)
         if identity_reference is not None and identity_reference.resolve() != identity_path.resolve():
@@ -547,7 +619,7 @@ class CharacterArtBundle:
         for slot in self.slots:
             path = images_root / slot.output_path
             if not path.is_file():
-                if slot.required:
+                if slot.name in required:
                     errors.append(f"missing required {slot.name}: {path}")
                 continue
             checked.append(path)
@@ -582,9 +654,10 @@ class CharacterArtBundle:
         images_root: Path,
         output_dir: Path,
         identity_reference: Path | None = None,
-    ) -> tuple[Path, Path]:
-        """Write a labeled contact sheet and deterministic five-layer Energy composite."""
-        checked = self.validate_outputs(images_root, identity_reference)
+        tier: str | None = None,
+    ) -> tuple[Path, Path | None]:
+        """Write a labeled contact sheet and, when Energy is present, its five-layer composite."""
+        checked = self.validate_outputs(images_root, identity_reference, tier)
         checked_paths = set(checked)
 
         from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -617,6 +690,9 @@ class CharacterArtBundle:
         energy_slots = [slot for slot in self.slots if slot.spec == "character_energy"]
         if len(energy_slots) != 5:
             raise CharacterArtValidationError("Character bundle must contain exactly five Energy layers")
+        if not all(images_root / slot.output_path in checked_paths for slot in energy_slots):
+            # This tier keeps the base-game Energy counter.
+            return contact_path, None
         composite = Image.new("RGBA", energy_slots[0].size, (0, 0, 0, 0))
         for slot in energy_slots:
             with Image.open(images_root / slot.output_path) as layer:
@@ -798,6 +874,41 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
         orb_position=(-178.0, -230.0),
         talk_position=(0.0, -420.0),
     ),
+    # Spend levels offered at interview. A slot outside the chosen tier keeps its fallback.
+    # The optional locked portrait and map marker are in no tier: generate them only when
+    # the user asks for them by name, since their custom consumers are unpromoted.
+    tiers=(
+        CharacterArtTier("minimal", ("selection_portrait", "combat_body")),
+        CharacterArtTier(
+            "standard",
+            (
+                "selection_portrait",
+                "top_panel_icon",
+                "selection_background",
+                "combat_body",
+                "rest_body",
+                "merchant_body",
+                "full_energy_layer_1",
+                "large_energy_icon",
+                "compact_energy_icon",
+            ),
+        ),
+        CharacterArtTier(
+            "full",
+            (
+                "selection_portrait",
+                "top_panel_icon",
+                "selection_background",
+                "combat_body",
+                "rest_body",
+                "merchant_body",
+                "full_energy_layer_1",
+                "large_energy_icon",
+                "compact_energy_icon",
+            ),
+            combat_cues=True,
+        ),
+    ),
 )
 
 
@@ -812,18 +923,23 @@ def main() -> None:
         action="store_true",
         help="validate and copy the fixed layer 2-5 templates before review",
     )
+    parser.add_argument(
+        "--tier",
+        choices=[tier.name for tier in CHARACTER_ART_BUNDLE.tiers],
+        help="require only this art tier's outputs; other slots keep their fallback",
+    )
     args = parser.parse_args()
     try:
         if args.install_energy_templates:
             installed = CHARACTER_ART_BUNDLE.install_fixed_templates(Path(args.images_root))
             print(f"[character_art] installed fixed templates: {len(installed)}")
         contact, composite = CHARACTER_ART_BUNDLE.render_review(
-            Path(args.images_root), Path(args.out_dir)
+            Path(args.images_root), Path(args.out_dir), tier=args.tier
         )
     except CharacterArtValidationError as exc:
         parser.error(str(exc))
     print(f"[character_art] contact sheet: {contact}")
-    print(f"[character_art] energy composite: {composite}")
+    print(f"[character_art] energy composite: {composite or 'not in this tier'}")
 
 
 if __name__ == "__main__":
