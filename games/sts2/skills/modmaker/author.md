@@ -221,8 +221,9 @@ build until the user supplies it.
    import command. Character art also follows `reference/character-presentation.md` and
    `reference/character-combat-cues.md`: normalize the selection portrait first, because it is
    the only identity reference for later Character assets. Acquire only the slots of the
-   SPEC's `character art tier` (`character_art_tiers` in the art-contract catalog). A slot
-   outside it gets no wrapper scene and no profile path, so RitsuLib keeps the Ironclad
+   SPEC's `character art tier` (`character_art_tiers` in the art-contract catalog), and
+   acquire bodies and icons as one sheet each (`art-contract.md` § Character art sheets). A
+   slot outside the tier gets no wrapper scene and no profile path, so RitsuLib keeps the Ironclad
    fallback, and the bundle review runs with `--tier <tier>`. Material, PackedScene, Spine,
    and layer-directory inputs must already be authored local resources; never ask an image
    model for them.

@@ -17,6 +17,7 @@ sys.path.insert(0, str(TOOLS_DIR))
 from character_art import (  # noqa: E402
     CHARACTER_ART_BUNDLE,
     CharacterArtBundle,
+    CharacterArtSheet,
     CharacterArtTier,
     CharacterArtValidationError,
 )
@@ -273,7 +274,7 @@ class CharacterArtBundleTests(unittest.TestCase):
 
     def test_art_tiers_set_the_spend_and_skip_unpromoted_slots(self) -> None:
         self.assertEqual(
-            {"minimal": 2, "standard": 9, "full": 13},
+            {"minimal": 2, "standard": 4, "full": 8},
             {
                 tier.name: CHARACTER_ART_BUNDLE.tier_generation_calls(tier.name)
                 for tier in CHARACTER_ART_BUNDLE.tiers
@@ -287,7 +288,9 @@ class CharacterArtBundleTests(unittest.TestCase):
         self.assertIn("top_panel_icon_outline", standard)
         self.assertIn("full_energy_layer_5", standard)
         minimal = {slot.name for slot in CHARACTER_ART_BUNDLE.tier_slots("minimal")}
-        self.assertEqual({"selection_portrait", "combat_body"}, minimal)
+        self.assertEqual(
+            {"selection_portrait", "combat_body", "rest_body", "merchant_body"}, minimal
+        )
         with self.assertRaisesRegex(CharacterArtValidationError, "only required generated"):
             replace(
                 CHARACTER_ART_BUNDLE,
@@ -296,7 +299,32 @@ class CharacterArtBundleTests(unittest.TestCase):
         with self.assertRaisesRegex(CharacterArtValidationError, "unknown Character art tier"):
             CHARACTER_ART_BUNDLE.tier("deluxe")
 
-    def test_minimal_tier_review_requires_only_portrait_and_combat_body(self) -> None:
+    def test_sheets_group_one_reference_role_and_tiers_take_whole_sheets(self) -> None:
+        body = CHARACTER_ART_BUNDLE.sheet("body_sheet")
+        self.assertEqual((1024, 1024), body.source_size)
+        self.assertEqual(("combat_body", "rest_body", "merchant_body"), body.slots)
+        self.assertIs(body, CHARACTER_ART_BUNDLE.sheet_for_slot("rest_body"))
+        self.assertIsNone(CHARACTER_ART_BUNDLE.sheet_for_slot("selection_background"))
+
+        invalid = {
+            "mixes reference roles": CharacterArtSheet(
+                "mixed", 2, 1, ("combat_body", "top_panel_icon"),
+            ),
+            "non-identity": CharacterArtSheet(
+                "portrait", 2, 1, ("selection_portrait", "combat_body"),
+            ),
+            "fill its grid": CharacterArtSheet("short", 2, 2, ("combat_body", "rest_body")),
+        }
+        for message, sheet in invalid.items():
+            with self.subTest(message), self.assertRaisesRegex(CharacterArtValidationError, message):
+                replace(CHARACTER_ART_BUNDLE, sheets=(sheet,), tiers=())
+        with self.assertRaisesRegex(CharacterArtValidationError, "lists part of sheet"):
+            replace(
+                CHARACTER_ART_BUNDLE,
+                tiers=(CharacterArtTier("partial", ("selection_portrait", "combat_body")),),
+            )
+
+    def test_minimal_tier_review_requires_only_portrait_and_bodies(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             images = root / "images"
@@ -305,7 +333,8 @@ class CharacterArtBundleTests(unittest.TestCase):
             Image.new("RGB", (132, 195), (80, 110, 140)).save(portrait)
             body = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
             ImageDraw.Draw(body).rectangle((80, 26, 431, 485), fill=(40, 60, 90, 255))
-            body.save(images / "charui/combat.png")
+            for name in ("combat", "rest", "merchant"):
+                body.save(images / f"charui/{name}.png")
 
             with self.assertRaisesRegex(CharacterArtValidationError, "missing required"):
                 CHARACTER_ART_BUNDLE.validate_outputs(images)
@@ -314,7 +343,7 @@ class CharacterArtBundleTests(unittest.TestCase):
                 images, root / "review", tier="minimal"
             )
 
-            self.assertEqual(2, len(checked))
+            self.assertEqual(4, len(checked))
             self.assertTrue(contact.is_file())
             self.assertIsNone(composite)
 

@@ -218,9 +218,56 @@ user names them.
 
 The bundle's `tiers` set the spend the user picks at interview; `export-contract` publishes
 each tier's slots, cue choice, and call count as `character_art_tiers` in the catalog.
-`minimal` acquires the selection portrait and combat body, `standard` every required
+`minimal` acquires the selection portrait and the body sheet, `standard` every required
 static slot, and `full` adds the four cue sheets. A slot outside the chosen tier keeps its
 checked fallback: author no wrapper scene or profile path for it.
+
+### Character art sheets
+
+Several same-role slots come from one paid grid image, split by the tool
+(`character_art_sheets` in the catalog). One image keeps the cells in one style and, for
+bodies, one identity; a real trial kept the same individual across all three bodies.
+
+| sheet | 2x2 cells, reading order | references |
+|---|---|---|
+| `body_sheet` | combat body, rest body, merchant body, empty | portrait source as identity + `character_combat` style |
+| `icon_sheet` | top-panel icon, full-energy layer 1, large Energy icon, text Energy icon | `character_icon` style; no portrait |
+
+```powershell
+python ${GAME_TOOLS_DIR}/gen_sprite.py generate-sheet --sheet body_sheet `
+  --prompt "<sheet prompt>" --out <ModName>/images --backend <name> `
+  --reference ${STS2API_SKILL_DIR}/reference/art-samples `
+  --identity-reference <project>/art-sources/generated/character_select/select.png
+python ${GAME_TOOLS_DIR}/gen_sprite.py import-sheet --sheet icon_sheet `
+  --input <sheet.png> --out <ModName>/images
+```
+
+`generate-sheet` spends one call, keeps the raw sheet under
+`<project>/art-sources/generated/sheets/`, trims a drawn grid line from every cell edge,
+and normalizes each cell exactly as `import` does for its slot. `import-sheet` does the same
+for an existing image (a host-tool output, the user's file, or a kept sheet) without a
+call. A failed cell leaves the others placed; fix it by re-importing or by regenerating that
+one slot with `generate --spec` (one call, counted against that asset's regenerations).
+Regenerate the whole sheet only when most cells are wrong.
+
+Sheet prompt: start with the sheet's per-asset template lead and its STYLE ONLY / IDENTITY
+ONLY sentence, then this grid paragraph, then one line per cell, then the template's
+background and exclusion sentences:
+
+```text
+One square image divided into an exact 2x2 grid of four equal square cells, read
+left-to-right then top-to-bottom, with no borders, labels, numbers, or gutters. Every cell
+holds exactly one centered subject, fully inside its own cell with clear empty margin on
+all sides; nothing touches or crosses a cell edge. Cell 1 (top-left): <...>. Cell 2
+(top-right): <...>. Cell 3 (bottom-left): <...>. Cell 4 (bottom-right): <... or "empty,
+only background">.
+```
+
+Each cell line carries its slot's own constraint from the templates below: the three
+bodies are the same individual in a 3/4 view facing right (combat stance, sitting at rest,
+standing at ease); the icon is readable at 88x88; layer 1 is the backing disc with no
+central subject; the large Energy icon is readable at 256x256; the text Energy icon is the
+same core simplified for 24x24.
 
 `character_select` uses safe `contain` composition with chroma off; its full opaque source
 is preserved inside `(6,8)-(126,187)` on the unchanged 132x195 canvas.
@@ -454,14 +501,14 @@ two or three value groups that survive at 24x24. Put it on a perfectly flat soli
 background. No frame, text, watermark, detached particles, or borrowed design.
 ```
 
-For the full counter, invoke `character_energy` exactly once with slug `orb_layer_1`.
+These three Energy outputs and the top-panel icon come from one `icon_sheet` call; a single
+regeneration uses `character_energy` with slug `orb_layer_1`, or the pool icon's own spec.
 Install the committed `energy_template/layer_2.png` through `layer_5.png` files as
 `orb_layer_2.png` through `orb_layer_5.png`; these four transparent 256x256 layers are
 fixed byte-for-byte and never generation targets. The 256x256 `character_energy_large`
-and 24x24 `character_energy_text` outputs are independently acquired and normalized from
-the same theme brief. Show the user that full energy is five image assets, with only layer
-1 eligible for generation, and that the two pool icons are separate assets before a paid
-acquisition route runs.
+and 24x24 `character_energy_text` outputs are separate cells normalized from the same theme
+brief. Show the user that full energy is five image assets, with only layer 1 generated,
+and that the two pool icons are separate assets before a paid acquisition route runs.
 
 ## The enchantment icon contract
 
@@ -1001,7 +1048,8 @@ per-asset run without a separate API key. Follow any approval or usage warning p
 the host and do not claim that host usage is free. For a `backend:<name>` route,
 **get one approval for the whole initial run before the first paid call.** Show it in one
 message: the model/backend, the credit-spending action, the shared segments ①③ once, then
-one line per asset with its segment ② subject and its call count (one, or the spec's fixed
+one line per asset or Character sheet (a sheet line names its cells) with its segment ②
+subject and its call count (one, or the spec's fixed
 budget such as four Character cue sheets), the total number of calls, and the worst case if
 every asset used both regenerations below. One yes covers
 exactly that list; an asset added later needs its own yes. A Character lists only its

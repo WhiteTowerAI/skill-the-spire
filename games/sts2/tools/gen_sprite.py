@@ -1046,6 +1046,110 @@ def stage_character_cue_source(
     return runtime_dir, True
 
 
+# Models draw grid lines between sheet cells even when told not to. Trimming this fraction
+# of the cell from every edge drops the line; the subject keeps its own margin inside.
+SHEET_CELL_INSET = 0.016
+
+
+def split_sheet_cells(source: "Image.Image", sheet) -> list[tuple[str, "Image.Image"]]:
+    """Cut a Character art sheet into (slot name, cell) pairs in reading order."""
+    cell_width = source.width / sheet.columns
+    cell_height = source.height / sheet.rows
+    inset = max(4, round(min(cell_width, cell_height) * SHEET_CELL_INSET))
+    cells = []
+    for index, slot_name in enumerate(sheet.cells):
+        if slot_name is None:
+            continue
+        row, column = divmod(index, sheet.columns)
+        box = (
+            round(column * cell_width) + inset,
+            round(row * cell_height) + inset,
+            round((column + 1) * cell_width) - inset,
+            round((row + 1) * cell_height) - inset,
+        )
+        cells.append((slot_name, source.crop(box)))
+    return cells
+
+
+def place_sheet_cells(source: "Image.Image", sheet, out_dir: Path, log) -> tuple[list[Path], list[str]]:
+    """Normalize every cell exactly as `import` would for its slot's spec."""
+    placed: list[Path] = []
+    failures: list[str] = []
+    for slot_name, cell in split_sheet_cells(source.convert("RGBA"), sheet):
+        slot = CHARACTER_ART_BUNDLE.slot(slot_name)
+        info = SPECS[slot.spec]
+        slug = Path(slot.output_path).stem
+        try:
+            placed.append(normalize_and_place(
+                cell, slot.spec, slug, out_dir, resolve_size(slot.spec, None),
+                info["chroma"], info["fit"], log,
+            ))
+        except SystemExit as exc:
+            failures.append(f"{slot_name}: {exc}")
+            log(f"{sheet.name} cell {slot_name} failed: {exc}")
+    return placed, failures
+
+
+def _report_sheet(sheet, kept: Path, placed: list[Path], failures: list[str]) -> int:
+    for path in placed:
+        print(f"[gen_sprite] {sheet.name} -> {path.name}")
+    for failure in failures:
+        print(f"[gen_sprite] {sheet.name} cell FAILED {failure}", file=sys.stderr)
+    if failures:
+        print(f"[gen_sprite] re-run `import-sheet --sheet {sheet.name} --input {kept}` after "
+              "fixing, or regenerate only the failed slot", file=sys.stderr)
+    print(str(kept))
+    return 1 if failures else 0
+
+
+def _sheet_or_exit(name: str):
+    try:
+        return CHARACTER_ART_BUNDLE.sheet(name)
+    except CharacterArtValidationError as exc:
+        raise SystemExit(f"[gen_sprite] {exc}") from exc
+
+
+def cmd_generate_sheet(args: argparse.Namespace) -> int:
+    sheet = _sheet_or_exit(args.sheet)
+    out_dir = Path(args.out)
+    log, flush = make_logger(out_dir)
+    reference_spec = CHARACTER_ART_BUNDLE.slot(sheet.slots[0]).spec
+    try:
+        cfg = load_config(Path(args.config) if args.config else None, args.backend, args.model)
+        refs = resolve_references(
+            args.reference,
+            args.max_refs,
+            log,
+            spec=reference_spec,
+            identity_reference=args.identity_reference,
+        )
+        src = call_backend(cfg, args.prompt, sheet.source_size, log, references=refs)
+        kept = keep_generated_source(src, "sheets", sheet.name, out_dir)
+        log(f"kept generated sheet -> {kept}")
+        placed, failures = place_sheet_cells(src, sheet, out_dir, log)
+    finally:
+        flush()
+    return _report_sheet(sheet, kept, placed, failures)
+
+
+def cmd_import_sheet(args: argparse.Namespace) -> int:
+    sheet = _sheet_or_exit(args.sheet)
+    out_dir = Path(args.out)
+    src_path = Path(args.input)
+    if not src_path.is_file():
+        print(f"[gen_sprite] input file not found: {src_path}", file=sys.stderr)
+        return 2
+    log, flush = make_logger(out_dir)
+    try:
+        with Image.open(src_path) as opened:
+            src = opened.convert("RGBA")
+        log(f"importing {sheet.name} from {src_path}")
+        placed, failures = place_sheet_cells(src, sheet, out_dir, log)
+    finally:
+        flush()
+    return _report_sheet(sheet, src_path, placed, failures)
+
+
 def keep_generated_source(src: "Image.Image", spec: str, slug: str, images_root: Path) -> Path:
     """Save the raw paid source outside the packed Mod folder, so a failed or redone
     normalization never needs a second generation call."""
@@ -1261,6 +1365,18 @@ def build_art_contract_catalog() -> dict:
         "content_specs": content_specs,
         "character_slots": character_slots,
         "character_identity_slot": CHARACTER_ART_BUNDLE.identity_slot,
+        "character_art_sheets": [
+            {
+                "name": sheet.name,
+                "columns": sheet.columns,
+                "rows": sheet.rows,
+                "sheet_px": list(sheet.source_size),
+                "cells": list(sheet.cells),
+                "reference_role": CHARACTER_ART_BUNDLE.slot(sheet.slots[0]).reference_role,
+                "generation_calls": 1,
+            }
+            for sheet in CHARACTER_ART_BUNDLE.sheets
+        ],
         "character_art_tiers": [
             {
                 "name": tier.name,
@@ -1419,6 +1535,35 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
     g.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")
     g.set_defaults(func=cmd_generate)
+
+    sheet_names = sorted(sheet.name for sheet in CHARACTER_ART_BUNDLE.sheets)
+    gs = sub.add_parser(
+        "generate-sheet",
+        help="Generate one Character art sheet in one call and place every cell.",
+    )
+    gs.add_argument("--sheet", required=True, choices=sheet_names)
+    gs.add_argument("--prompt", required=True)
+    gs.add_argument("--out", required=True, help="the mod's <ModName>/images dir")
+    gs.add_argument("--config", help="backend config (else $GEN_SPRITE_CONFIG, else "
+                    "~/.skill-the-spire/art-backends.json)")
+    gs.add_argument("--backend", help="openai | gemini | openrouter, or a name in the config")
+    gs.add_argument("--model", help="override the backend's model")
+    gs.add_argument("--reference", help="few-shot STS2 style references, as for generate")
+    gs.add_argument("--max-refs", type=int, default=3,
+                    help="randomly sample at most three style references; identity is added separately")
+    gs.add_argument("--identity-reference",
+                    help="the approved selection portrait's full-resolution source; "
+                         "required for body_sheet, rejected for icon_sheet")
+    gs.set_defaults(func=cmd_generate_sheet)
+
+    isheet = sub.add_parser(
+        "import-sheet",
+        help="Split and place an existing Character art sheet image (no HTTP).",
+    )
+    isheet.add_argument("--sheet", required=True, choices=sheet_names)
+    isheet.add_argument("--input", required=True, help="path to the sheet image")
+    isheet.add_argument("--out", required=True, help="the mod's <ModName>/images dir")
+    isheet.set_defaults(func=cmd_import_sheet)
 
     c = sub.add_parser("check", help="Check the chosen backend without requesting an image.")
     c.add_argument("--backend", help="openai | gemini | openrouter, or a name in the config")

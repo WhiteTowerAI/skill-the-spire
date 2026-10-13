@@ -99,6 +99,29 @@ class CharacterCueContract:
 
 
 @dataclass(frozen=True)
+class CharacterArtSheet:
+    """One paid grid image split into several Character slots.
+
+    Cells are in reading order, left-to-right then top-to-bottom; ``None`` is an empty
+    cell. One image keeps the cells in one style and, for bodies, one identity.
+    """
+
+    name: str
+    columns: int
+    rows: int
+    cells: tuple[str | None, ...]
+    cell_size: int = 512
+
+    @property
+    def slots(self) -> tuple[str, ...]:
+        return tuple(name for name in self.cells if name is not None)
+
+    @property
+    def source_size(self) -> tuple[int, int]:
+        return self.columns * self.cell_size, self.rows * self.cell_size
+
+
+@dataclass(frozen=True)
 class CharacterArtTier:
     """One user-selectable spend level: the generated slots it acquires, plus cue sheets."""
 
@@ -114,6 +137,7 @@ class CharacterArtBundle:
     slots: tuple[CharacterArtSlot, ...]
     identity_slot: str = "selection_portrait"
     combat_cues: CharacterCueContract | None = None
+    sheets: tuple[CharacterArtSheet, ...] = ()
     tiers: tuple[CharacterArtTier, ...] = ()
 
     def __post_init__(self) -> None:
@@ -221,6 +245,37 @@ class CharacterArtBundle:
                 "the identity slot must be the selection portrait bootstrap"
             )
 
+        sheet_names: set[str] = set()
+        sheet_slots: set[str] = set()
+        for sheet in self.sheets:
+            if not sheet.name or sheet.name in sheet_names:
+                raise CharacterArtValidationError(f"duplicate or empty Character art sheet: {sheet.name!r}")
+            sheet_names.add(sheet.name)
+            if sheet.columns <= 0 or sheet.rows <= 0 or sheet.cell_size <= 0:
+                raise CharacterArtValidationError(f"Character art sheet {sheet.name!r} has an invalid grid")
+            if len(sheet.cells) != sheet.columns * sheet.rows or len(sheet.slots) < 2:
+                raise CharacterArtValidationError(
+                    f"Character art sheet {sheet.name!r} must fill its grid and hold at least two slots"
+                )
+            roles = set()
+            for name in sheet.slots:
+                if name not in names:
+                    raise CharacterArtValidationError(
+                        f"Character art sheet {sheet.name!r} names unknown slot {name!r}"
+                    )
+                slot = self.slot(name)
+                if slot.asset_origin != "generated" or name == self.identity_slot or name in sheet_slots:
+                    raise CharacterArtValidationError(
+                        f"Character art sheet {sheet.name!r} may hold only generated non-identity "
+                        f"slots that no other sheet holds; {name!r} is not one"
+                    )
+                sheet_slots.add(name)
+                roles.add(slot.reference_role)
+            if len(roles) != 1:
+                raise CharacterArtValidationError(
+                    f"Character art sheet {sheet.name!r} mixes reference roles {sorted(roles)}"
+                )
+
         tier_names: set[str] = set()
         for tier in self.tiers:
             if not tier.name or tier.name in tier_names:
@@ -240,6 +295,13 @@ class CharacterArtBundle:
                     raise CharacterArtValidationError(
                         f"Character art tier {tier.name!r} may list only required generated "
                         f"slots; {name!r} is not one"
+                    )
+            for sheet in self.sheets:
+                listed = set(sheet.slots) & set(tier.slots)
+                if listed and listed != set(sheet.slots):
+                    raise CharacterArtValidationError(
+                        f"Character art tier {tier.name!r} lists part of sheet {sheet.name!r}; "
+                        "one sheet call yields all of its slots, so list them all"
                     )
             if tier.combat_cues and self.combat_cues is None:
                 raise CharacterArtValidationError(
@@ -374,9 +436,30 @@ class CharacterArtBundle:
             if slot.name in listed or (slot.asset_origin != "generated" and slot.spec in specs)
         )
 
+    def sheet(self, name: str) -> CharacterArtSheet:
+        try:
+            return next(sheet for sheet in self.sheets if sheet.name == name)
+        except StopIteration as exc:
+            known = ", ".join(sheet.name for sheet in self.sheets)
+            raise CharacterArtValidationError(
+                f"unknown Character art sheet {name!r}; choose one of: {known}"
+            ) from exc
+
+    def sheet_for_slot(self, name: str) -> CharacterArtSheet | None:
+        return next((sheet for sheet in self.sheets if name in sheet.slots), None)
+
     def tier_generation_calls(self, name: str) -> int:
+        """One call per sheet the tier touches, plus one per slot outside any sheet."""
         tier = self.tier(name)
-        calls = sum(self.slot(slot_name).generation_calls for slot_name in tier.slots)
+        sheets: set[str] = set()
+        calls = 0
+        for slot_name in tier.slots:
+            sheet = self.sheet_for_slot(slot_name)
+            if sheet is not None:
+                sheets.add(sheet.name)
+            else:
+                calls += self.slot(slot_name).generation_calls
+        calls += len(sheets)
         if tier.combat_cues and self.combat_cues is not None:
             calls += self.combat_cues.generation_calls
         return calls
@@ -874,11 +957,24 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
         orb_position=(-178.0, -230.0),
         talk_position=(0.0, -420.0),
     ),
+    # Grid acquisitions: one paid image per sheet, split into its slots. A real 2x2 trial
+    # kept one identity across the three bodies and one style across the icons.
+    sheets=(
+        CharacterArtSheet(
+            "body_sheet", 2, 2, ("combat_body", "rest_body", "merchant_body", None),
+        ),
+        CharacterArtSheet(
+            "icon_sheet", 2, 2,
+            ("top_panel_icon", "full_energy_layer_1", "large_energy_icon", "compact_energy_icon"),
+        ),
+    ),
     # Spend levels offered at interview. A slot outside the chosen tier keeps its fallback.
     # The optional locked portrait and map marker are in no tier: generate them only when
     # the user asks for them by name, since their custom consumers are unpromoted.
     tiers=(
-        CharacterArtTier("minimal", ("selection_portrait", "combat_body")),
+        CharacterArtTier(
+            "minimal", ("selection_portrait", "combat_body", "rest_body", "merchant_body"),
+        ),
         CharacterArtTier(
             "standard",
             (
