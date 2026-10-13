@@ -149,6 +149,12 @@ REFERENCE_FAMILIES = CHARACTER_ART_BUNDLE.reference_families()
 DERIVED_OUTLINE_SPECS = {"character_icon", "relic"}
 OUTLINE_EXPANSION_RATIO = 0.03
 OUTLINE_COLOR = (255, 255, 255)
+# A keyed cut-out source with almost no transparent pixels means the model drew a gradient,
+# shadowed, or off-key background that the chroma-key could not remove.
+CUTOUT_MIN_TRANSPARENT = 0.05
+# The three canvases OpenAI-Images-compatible backends accept. Requesting the one closest to
+# the spec's aspect keeps the cover crop from discarding most of a wide or tall image.
+REQUEST_SIZES = {"square": "1024x1024", "landscape": "1536x1024", "portrait": "1024x1536"}
 
 
 def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
@@ -171,6 +177,21 @@ def cue_sheet_size(spec: str, override: tuple[int, int] | None) -> tuple[int, in
 
 # --- normalize primitives (magenta chroma-key adapted from agent-sprite-forge,
 #     reference/baselines; foreground cut-outs also remove disconnected model debris) ---
+
+def request_size_for(size: tuple[int, int]) -> str:
+    """Pick the backend canvas whose orientation matches the contract size."""
+    ratio = size[0] / size[1]
+    if ratio > 1.15:
+        return REQUEST_SIZES["landscape"]
+    if ratio < 1 / 1.15:
+        return REQUEST_SIZES["portrait"]
+    return REQUEST_SIZES["square"]
+
+
+def transparent_fraction(img: "Image.Image") -> float:
+    alpha = img.convert("RGBA").getchannel("A")
+    return alpha.histogram()[0] / (img.width * img.height)
+
 
 def chroma_key(img: "Image.Image", key: str = "magenta",
                threshold: int = 100) -> "Image.Image":
@@ -371,6 +392,14 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
             threshold = 180 if spec in FRAGMENT_CLEANUP_SPECS else 100
             img = chroma_key(img, key=key, threshold=threshold)
             log(f"applied {key} chroma-key")
+        cleared = transparent_fraction(img)
+        log(f"transparent after keying: {cleared:.1%}")
+        if cleared < CUTOUT_MIN_TRANSPARENT:
+            print(
+                f"[gen_sprite] warning: only {cleared:.1%} of the {spec} source became "
+                "transparent; the background was probably not a flat key color and will "
+                "show as a box in game. Regenerate with a flat #FF00FF background."
+            )
     if footprint is not None:
         img = fit_into_footprint(
             img,
@@ -499,7 +528,7 @@ def _call_backend_images(cfg: dict, prompt: str, size: tuple[int, int], log,
                          references: list[Path] | None = None) -> "Image.Image":
     """OpenAI Images transport: /images/generations, or /images/edits with references."""
     base = cfg["base_url"].rstrip("/")
-    req_size = cfg.get("request_size", "1024x1024")
+    req_size = cfg.get("request_size") or request_size_for(size)
     if references:
         url = cfg.get("edit_url") or (base + "/images/edits")
         data, ct = _multipart([
@@ -846,7 +875,11 @@ def cmd_import(args: argparse.Namespace) -> int:
                     src, args.spec, args.slug, out_dir, log
                 )
             else:
-                do_chroma = bool(args.chroma)
+                do_chroma = info["chroma"]
+                if args.chroma:
+                    do_chroma = True
+                if args.no_chroma:
+                    do_chroma = False
                 dest = normalize_and_place(src, args.spec, args.slug, out_dir, size,
                                            do_chroma, info["fit"], log)
     finally:
@@ -1116,7 +1149,8 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("--input", required=True, help="path to the source image")
     i.add_argument("--out", required=True, help="the mod's <ModName>/images dir")
     i.add_argument("--size", type=parse_size, help="override WxH (required for unverified specs)")
-    i.add_argument("--chroma", action="store_true", help="apply the #FF00FF chroma-key (default off for import)")
+    i.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
+    i.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")
     i.set_defaults(func=cmd_import)
 
     ls = sub.add_parser("list-specs", help="Print the sprite contract (path+size per spec).")

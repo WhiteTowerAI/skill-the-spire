@@ -919,10 +919,11 @@ python ../modmaker/scripts/gen_sprite.py import \
   --spec card --slug firebolt --input "<native-output.png>" \
   --out "<mod>/<ModName>/images"
 
-# For relic/power/potion/enchantment/orb/monster native sources, use the same import command with --chroma.
+# import keys each spec by its contract default: cut-out specs (relic/power/potion/
+# enchantment/orb/monster and transparent Character profiles) are keyed, card/event/
+# Rest Site/selection/background stay opaque. --chroma / --no-chroma override it.
 # Keep the raw source on a perfectly flat #FF00FF background until this import step.
-# For each selected normal-event slot use --spec event with no --chroma; it writes
-# events/<slot-slug>.png.
+# For each selected normal-event slot use --spec event; it writes events/<slot-slug>.png.
 
 # managed credits — Vofy is acquisition only. The user installs/logs in themselves;
 # preflight prints no account/credit details. Inspect live model capabilities separately:
@@ -958,16 +959,26 @@ that fallback requires `OPENAI_API_KEY` and belongs under the explicit BYO route
 the native output before importing it. Use the actual local path returned by the host
 (Codex normally stores built-in output under `$CODEX_HOME/generated_images/`); if the host
 returns no local file, the route is unavailable and the placeholder remains. Do not run a
-  second background-removal helper for cut-out sources: `gen_sprite.py import --chroma` owns the
-keying, fit, resize, and final STS2 placement.
+  second background-removal helper for cut-out sources: `gen_sprite.py import` owns the
+keying, fit, resize, and final STS2 placement. When the host tool takes a size or
+orientation, request the one matching the spec: landscape for card, event, Rest Site, and
+Character background; portrait for Character selection and the 2x3 Dead cue sheet; square
+otherwise. `gen_sprite.py generate` picks the same orientation for an Images backend
+unless `art-backend.json` sets `request_size`.
+
+After a cut-out import, a stdout line starting `[gen_sprite] warning:` means almost none of
+the source became transparent: the background was not a flat key color and will show as a
+box in game. Regenerate with a flatter background instead of shipping it. Before showing
+any imported result to the user, look at the normalized PNG yourself and regenerate an
+obvious framing or background failure first; the user still judges style.
 
 `acquire_sprite.py` never installs Vofy, runs `vofy login`, reads credentials, records
 status/credit output, or parses Vofy's normal stdout for a result filename. It runs one
 synchronous `vofy image create --yes --n 1` into a unique empty temporary directory,
 requires exactly one downloaded image, and invokes `gen_sprite.py import` for the real
-crop/fit/chroma/path contract. For relic/power/potion/enchantment/orb/monster and Character
-icon/marker/combat/rest/merchant/energy/cue profiles it supplies import's `--chroma`
-automatically; event and Character selection/background remain opaque. It prints the selected reference filenames
+crop/fit/chroma/path contract, so cut-out specs are keyed by import's per-spec default and
+event and Character selection/background remain opaque. It forwards import's warning line
+and prints the selected reference filenames
 so the random few-shot choice is auditable without exposing account data. For enchantment,
 orb, and monster, normalization also keeps the centered subject cluster and removes
 disconnected dark/chroma debris before the final `contain` fit; this is bounded to the new

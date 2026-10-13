@@ -25,12 +25,6 @@ from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
 
 
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
-CHROMA_SPECS = {
-    "relic", "power", "potion", "enchantment", "orb", "monster",
-}
-CHROMA_SPECS.update(
-    slot.spec for slot in CHARACTER_ART_BUNDLE.slots if slot.alpha == "transparent"
-)
 REFERENCE_FAMILIES = CHARACTER_ART_BUNDLE.reference_families()
 
 
@@ -162,8 +156,6 @@ def import_source(args: argparse.Namespace, source: Path) -> Path:
         "--out",
         str(Path(args.out)),
     ]
-    if args.spec in CHROMA_SPECS:
-        command.append("--chroma")
     result = subprocess.run(
         command,
         stdout=subprocess.PIPE,
@@ -184,6 +176,9 @@ def import_source(args: argparse.Namespace, source: Path) -> Path:
         raise AcquisitionError(
             "gen_sprite.py import succeeded but returned no destination path.", 7
         )
+    for line in output_lines:
+        if line.startswith("[gen_sprite] warning:"):
+            print(line)
     return Path(output_lines[-1])
 
 
