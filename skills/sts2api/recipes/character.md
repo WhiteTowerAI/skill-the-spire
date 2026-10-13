@@ -70,6 +70,13 @@ public sealed class <CharacterName>
 {
     public const int InitialHp = <HP>;
 
+    // Mod-owned resource paths used by the presentation profile, theme, and SelfTest.
+    public static string CharacterUi(string fileName) =>
+        "res://<ModName>/images/charui/" + fileName;
+
+    public static string CharacterScene(string fileName) =>
+        "res://<ModName>/scenes/charui/" + fileName;
+
     public override CharacterGender Gender => CharacterGender.Neutral;
     public override int StartingHp => InitialHp;
     public override int StartingGold => <gold>;
