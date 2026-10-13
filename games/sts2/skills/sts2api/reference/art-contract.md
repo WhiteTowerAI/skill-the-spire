@@ -345,7 +345,8 @@ Static combat/rest/merchant body:
 ```text
 Original full-body character render for a deck-building combat game. Match the provided
 references as STYLE ONLY: softly hand-painted 2D volume, readable broad value groups,
-controlled brush texture, and a neutral grounded pose. Show the entire original body on
+controlled brush texture, and a neutral grounded pose in a 3/4 view facing right, toward
+the enemies. Show the entire original body on
 one baseline, centered and filling about 85-90% of a square. Use a perfectly flat solid
 #FF00FF background with no floor, shadow, attack effect, text, UI, watermark, or animation
 streak. This still is the static fallback body, not a Spine animation frame.
@@ -602,15 +603,19 @@ treat them as STYLE REFERENCE ONLY — match their art style, rendering techniqu
 palette logic, and energy precisely, but do NOT reuse their objects, characters, or
 layout; invent a new subject.
 
-Flat 2D vector game illustration: bold simplified shapes, hard-edged cel shading with
-about two flat tones per surface, thin clean dark outlines on key objects, high color
-saturation, high contrast. One dramatic action moment frozen mid-motion, the focal
-subject centered in the frame. A bright warm glowing rim light hugs the subject's
-silhouette; energy glow flares orange-to-yellow. Background is a radial burst of color
-radiating out from the point of action, over a darker cool backdrop with large soft
-paint-splatter silhouettes. Palette by role: cool desaturated background (teal / deep
-purple / dark red), a warmer, more saturated subject that pops. The composition must
-read clearly even at small card-art size.
+Bold 2D game illustration: big simplified shapes, hard-edged cel shading with about
+two flat tones per surface, thick clean dark outlines on the focal subject, high
+contrast. One dramatic moment frozen mid-motion, shown close up: the focal subject is
+large and dominates the frame. The subject carries rich hand-painted material detail
+(chipped metal, wood grain, wrapped leather, painted highlight shapes) while the
+background stays simple. Build the whole image from two or three dominant hues:
+one for the background, one or two for the subject and its effect, taken from the
+subject's own element (fire is orange and yellow, poison green, frost cyan, shadow
+purple). A thin bright rim line in the subject's accent color traces part of its
+silhouette. The background is a few broad, low-detail flat shapes (drifting smoke, rock
+slabs, swirls, or one soft glow behind the subject), darker or less saturated than the
+subject. No rainbow palette, no busy particle field, no detailed scenery. The
+composition must read clearly even at small card-art size.
 
 NOT photorealistic, NOT a 3D render, NOT pixel art. No text, letters, numbers, logos,
 border, card frame, UI, or watermark.
@@ -655,8 +660,9 @@ can always fit/place the result:
 [① fixed style prefix]   ← the Layer-1 STS2 style descriptor above (verbatim)
 [② generated subject]    ← the ONE thing that differs per card (see below)
 [③ fixed structural/negative constraints]:
-   A single {subject}, centered in frame, full subject visible with generous margin,
-   dynamic 3/4 composition, landscape ~4:3.
+   A single {subject}, large and close up, dynamic diagonal composition. Keep its key
+   part (head, blade, point of impact) well inside the frame; the rest may run off an
+   edge. Landscape ~4:3.
    No text, no border, no card frame, no UI, no watermark.
    NOT photorealistic, NOT 3D render, NOT pixel art.
 ```
@@ -669,15 +675,15 @@ card's **name** (its flavor is a secondary seed): decide *what one thing the nam
 then describe that one thing vividly.
 
 Write ② as **two-to-four sentences describing a single dramatic moment**, not a keyword
-list. Name the focal subject and where it sits (centered, dominating the frame), the one
-action it's frozen mid-motion in, and the light on it (a warm rim light hugging its
-silhouette, an energy glow). Keep it concrete and heroic; one clear subject beats a busy
+list. Name the focal subject and how it fills the frame (large, close up), the one
+action it's frozen mid-motion in, and its two or three colors (the element hue, the rim
+line, the dark background). Keep it concrete and heroic; one clear subject beats a busy
 scene. Example shape (subject only — ①③ wrap it):
 
-> *A blazing arrow of living fire dominates the center of the frame, loosed and
-> streaking diagonally toward the upper right, frozen mid-flight. Trailing embers and a
-> ribbon of flame stream behind it; a bright orange-to-yellow rim light traces its
-> edge against the dark. Stylized and heroic.*  ← for a card named **"Firebolt"**
+> *A blazing arrow of living fire, seen close up, streaks diagonally toward the upper
+> right, frozen mid-flight. A ribbon of orange-and-yellow flame streams behind it, and a
+> thin yellow rim line traces the arrowhead against a deep navy background of slow
+> smoke shapes. Stylized and heroic.*  ← for a card named **"Firebolt"**
 
 Quick seeds (each is *what the name depicts*, mechanics ignored):
 
@@ -704,7 +710,10 @@ Rules that make the output usable (they mirror the fit logic in `gen_sprite.py`)
   (including Character sheets) with solid flat pure `#00FF00` green, and "no magenta in the
   subject" with "no green in the subject". Import reads the key from the source border, so
   the command and flags stay the same. Otherwise keep magenta.
-- **Subject centered, generous margin**, so the `cover` crop keeps the subject in frame.
+- **Key part inside the frame.** A landscape source near 4:3 loses only a sliver in the
+  `cover` crop to 1000x760, so the subject can be large as long as its key part stays
+  clear of the edges. A square source loses about a quarter of its height; keep the key
+  part nearer the middle then.
 - **One image per call.** `gen_sprite.py` requests `n=1` and keeps that single result —
   there is no batch-and-pick. If it's not right, *regenerate*: tweak segment ② and re-run
   (the regenerate loop below). One at a time, judged by eye.
@@ -713,8 +722,8 @@ Rules that make the output usable (they mirror the fit logic in `gen_sprite.py`)
 not a scene. Name one object, center it, put it on flat magenta. Spec-specific art
 direction, distilled from the vanilla references:
 
-- **Scale — make the object BIG.** Unlike a card portrait (which wants a generous margin so
-  the `cover` crop stays safe), an icon should nearly fill its frame. `gen_sprite.py` crops
+- **Scale — make the object BIG.** Unlike a card portrait (a full-bleed scene the `cover`
+  crop trims), an icon should nearly fill its frame. `gen_sprite.py` crops
   to the subject's bounding box and scales it up (`fit: contain`, `fill=1.0`), so the *only*
   thing that makes a relic look small in-game is the model drawing it small on a big empty
   background (that empty space either survives as padding, or a soft/gradient background
@@ -724,21 +733,104 @@ direction, distilled from the vanilla references:
   demand a **solid flat pure #FF00FF magenta background — no gradient, no shadow, no vignette**
   so the cut-out is clean. If a generated icon still reads small, this scale/tight-framing
   line in segment ② is the first thing to strengthen (then regenerate).
-- **potion** — draw the bottle **tilted ~45° leaning to the right** (shown diagonally).
-  That is how STS2 displays potions; only some big square-ish potions stand upright. We
-  tilt *all* generated potions right for consistency (a deliberate, accepted simplification —
-  no upright/tilt branching). Pick the bottle silhouette + liquid colour from the potion's
-  name/effect (a red fizzing flask for a damage potion, a blue calm vial for block, …).
-- **relic / power** — a single emblem/object centered upright; match the material and
-  symbol language of the `relic/` / `power/` references.
+- **No semi-transparent effects.** Smoke, steam, mist, glow haze, and soft auras blend
+  with the key color, and the cut-out keeps them as a pink smear. Every cut-out prompt's
+  segment ③ forbids them; do not describe them in segment ② either. Paint glow as solid
+  shapes inside the subject (glowing cracks, a lit core) instead.
+- **potion** — use the potion template below: the bottle **tilted ~45° leaning to the
+  right**, glass painted opaque. That is how STS2 displays potions; only some big
+  square-ish potions stand upright. We tilt *all* generated potions right for consistency
+  (a deliberate, accepted simplification — no upright/tilt branching). Pick the bottle
+  silhouette + liquid colour from the potion's name/effect (a red fizzing flask for a
+  damage potion, a blue calm vial for block, …).
+- **relic** — use the relic template below: a painted physical object.
+- **power** — use the power template below: a flat graphic glyph. Powers look nothing
+  like relics; never reuse the relic wording for them.
 - **enchantment** — use the dedicated micro-emblem template below. It is much flatter and
   simpler than a relic/power icon because it must survive at 64x64.
 - **orb icon** — use the dedicated elemental-core template below. It owns painted material
   and contained glow, not a generic flat glyph and not the combat body.
-- **monster** - one complete creature in a neutral combat-ready pose, seen from a readable
-  front or 3/4 angle. Keep both feet on one baseline and the entire silhouette inside the
-  frame; fill about 85-90%. No floor, cast shadow, background prop, attack streak, spell
-  burst, or other animation-like moment. This one still serves combat and bestiary.
+- **monster** - one complete creature in a neutral combat-ready pose, in a 3/4 view
+  **facing left**, toward the player on the left of the screen. Keep both feet on one
+  baseline and the entire silhouette inside the frame; fill about 85-90%. No floor, cast
+  shadow, background prop, attack streak, spell burst, or other animation-like moment.
+  This one still serves combat and bestiary.
+
+## The relic prompt template
+
+A relic is a painted physical object on the relic bar, reused for the inspect popup. The
+references are chunky, slightly exaggerated objects with soft painterly shading and a
+thick dark outline band; they read as real materials, not as flat symbols.
+
+```
+[① fixed relic style]:
+   Original relic icon for a deck-building game. Match the reference images'
+   hand-painted icon language as STYLE ONLY: one chunky, slightly exaggerated physical
+   object with simplified shapes, soft painterly shading in two or three value steps, a
+   few crisp highlight strokes, and a thick, even dark charcoal outline band around the
+   whole silhouette. Medium saturation with one clear local color and an honest material
+   (metal, wood, cloth, bone, stone, glass). No glossy 3D render, photoreal texture, flat
+   vector style, or app-icon gradient. Do not copy the reference objects.
+[② generated object]:
+   One or two concrete sentences translating the relic name into one object, naming its
+   main color and its single accent.
+[③ fixed relic composition/negative constraints]:
+   One object, upright or gently tilted, centered, large and filling about 90% of a
+   square, readable at 64x64. Perfectly flat solid #FF00FF background with no gradient,
+   texture, or shadow. No smoke, glow haze, sparkles, or any other semi-transparent or
+   detached effect. No text, letters, numbers, UI, frame, badge, backing plate, or
+   watermark. Do not use magenta inside the object.
+```
+
+## The power prompt template
+
+A power is a status icon over a creature and in the apply/expire popup. The references are
+flat graphic glyphs (a crosshair, a gear, a hazard barrier, a red coil) with almost no
+shading, closer to stickers or road signs than to painted objects.
+
+```
+[① fixed power style]:
+   Original status-effect icon for a deck-building combat game. Match the reference
+   images' flat graphic glyph language as STYLE ONLY: one bold, simple symbol built from
+   two or three flat colors, almost no shading (at most one darker tone per color), clean
+   geometric or brush-stroke shapes, and a thick, even dark charcoal outline band around
+   the whole silhouette. It reads like a sticker or a road sign, not a painted object. Do
+   not copy the reference symbols.
+[② generated symbol]:
+   One or two concrete sentences translating the power name into one symbol, naming its
+   two or three flat colors.
+[③ fixed power composition/negative constraints]:
+   One symbol, centered, filling about 90% of a square, instantly readable at 32x32.
+   Perfectly flat solid #FF00FF background with no gradient, texture, or shadow. No
+   smoke, glow haze, sparkles, or any other semi-transparent or detached effect. No text,
+   letters, numbers, UI, frame, badge, backing plate, or watermark. Do not use magenta
+   inside the symbol.
+```
+
+## The potion prompt template
+
+A potion is one glass bottle shown in the potion bar, tooltip, and use effect. Real
+transparency is impossible on a keyed cut-out: a model that paints see-through glass lets
+the magenta background tint the bottle, so the template asks for opaque painted glass.
+
+```
+[① fixed potion style]:
+   Original potion icon for a deck-building game. Match the reference images as STYLE
+   ONLY: one glass flask with a cork or stopper, tilted about 45 degrees to the right.
+   Paint the glass as an opaque pale grey-blue rim with one bright highlight streak, never
+   as real transparency: the background must not show through the glass. The liquid is one
+   saturated color with a few bubbles or one simple symbol shape inside. Soft painterly
+   shading and a thick, even dark charcoal outline band around the whole silhouette. Do
+   not copy the reference bottles.
+[② generated potion]:
+   One sentence naming the bottle shape, the liquid color, and the one symbol or bubble
+   pattern inside, taken from the potion's name/effect.
+[③ fixed potion composition/negative constraints]:
+   One bottle, large, filling about 90% of a square, readable at 64x64. Perfectly flat
+   solid #FF00FF background with no gradient, texture, or shadow. No smoke, fumes, glow
+   haze, sparkles, or any other semi-transparent or detached effect. No text, letters,
+   numbers, UI, frame, label, or watermark. Do not use magenta inside the bottle.
+```
 
 ## The enchantment prompt template
 
@@ -788,8 +880,8 @@ flat logo, generic glass marble, UI badge, or the persistent combat scene.
    One compact elemental core, centered, filling about 88-94% of a square, readable at
    100x100 and as a small trigger flash. Perfectly flat solid #FF00FF background with no
    gradient, texture, floor, or shadow. No environment, character, text, UI, border,
-   watermark, detached particles, or energy extending to the canvas edge. Do not use
-   magenta inside the orb.
+   watermark, detached particles, semi-transparent glow outside the core, or energy
+   extending to the canvas edge. Do not use magenta inside the orb.
 ```
 
 ## The static monster prompt template
@@ -816,11 +908,13 @@ or radial-burst language.
    Two-to-four concrete sentences translating the monster's name/concept into one original
    creature, including its dominant shape language, materials, palette, and focal accent.
 [③ fixed monster composition/negative constraints]:
-   One complete creature in a neutral combat-ready pose, front or 3/4 view.
+   One complete creature in a neutral combat-ready pose, 3/4 view facing left.
    Both feet on one shared baseline; full silhouette visible; fill 85-90% of a square.
    Perfectly flat solid #FF00FF background with no gradient, texture, or shadow.
    No floor, scenery, text, UI, watermark, attack streak, spell burst, or particles.
    No cropped limbs, cast shadow, contact shadow, reflection, or magenta in the creature.
+   No smoke, steam, mist, glow haze, or any other semi-transparent effect: everything in
+   the image is either solid creature or flat background.
 ```
 
 Do not include a transient move effect. The same still image is used for idle, every move,
@@ -908,6 +1002,10 @@ keying alone keeps those fragments and shrinks the subject. The cut-out cleanup 
 `gen_sprite.py import` retains the centered subject cluster, removes disconnected debris, and
 then performs the final `contain` fit, so such a source can pass without a paid
 regeneration.
+
+Antialiased edges blend the subject with the key color. Every keyed import neutralizes
+that spill on the visible pixels within 2 px of transparency, so a dark outline does not
+carry a thin magenta (or green) line onto the game's dark UI.
 
 ## Using the tool
 

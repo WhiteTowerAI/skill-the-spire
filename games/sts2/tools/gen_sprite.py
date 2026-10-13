@@ -209,6 +209,31 @@ def chroma_key(img: "Image.Image", key: str = "magenta",
     return img
 
 
+def despill_edges(img: "Image.Image", key: str = "magenta", band: int = 2) -> "Image.Image":
+    """Neutralize key-colored spill on the visible pixels within `band` px of transparency.
+    Antialiased edges blend the subject with the key; left alone they draw a thin magenta
+    (or green) line around the cut-out on dark game UI."""
+    img = img.convert("RGBA")
+    alpha = img.getchannel("A").point(lambda a: 255 if a else 0)
+    eroded = alpha.filter(ImageFilter.MinFilter(2 * band + 1))
+    px = img.load()
+    a_px, e_px = alpha.load(), eroded.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            if not a_px[x, y] or e_px[x, y]:
+                continue
+            r, g, b, a = px[x, y]
+            if key == "green":
+                spill = g - max(r, b)
+                if spill > 0:
+                    px[x, y] = (r, g - spill, b, a)
+            else:
+                spill = min(r, b) - g
+                if spill > 0:
+                    px[x, y] = (r - spill, g, b - spill, a)
+    return img
+
+
 def remove_cutout_fragments(img: "Image.Image", alpha_threshold: int = 8) -> "Image.Image":
     """Keep the central subject cluster while dropping disconnected background debris."""
     img = img.convert("RGBA")
@@ -392,6 +417,8 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
             threshold = 180 if spec in FRAGMENT_CLEANUP_SPECS else 100
             img = chroma_key(img, key=key, threshold=threshold)
             log(f"applied {key} chroma-key")
+        img = despill_edges(img, key=key)
+        log(f"neutralized {key} spill on cut-out edges")
         cleared = transparent_fraction(img)
         log(f"transparent after keying: {cleared:.1%}")
         if cleared < CUTOUT_MIN_TRANSPARENT:
@@ -746,7 +773,9 @@ def resolve_references(
         elif p.is_file():
             paths.append(p)
         else:
-            log(f"reference not found (skipped): {token}")
+            # A named reference that is missing must stop before a paid call, not
+            # silently weaken the style match.
+            raise SystemExit(f"[gen_sprite] reference not found: {token}")
     if max_refs and len(paths) > max_refs:
         paths = random.SystemRandom().sample(paths, max_refs)
     paths = list(dict.fromkeys(paths))
