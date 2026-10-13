@@ -890,12 +890,9 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
         CharacterArtSlot(
             "selection_portrait", "character_select", "charui/select.png", (132, 195),
             "opaque", True, _PROFILE_FALLBACK, "NCharacterSelectButton.%Icon and selected panel",
-            "character_select", "contain", True, "bootstrap",
-            visible_footprint=VisibleFootprint(
-                host="character select button and selected panel",
-                content_box=(6, 8, 126, 187),
-                alpha_content=False,
-            ),
+            # Vanilla select portraits are full-bleed head close-ups that run off every edge,
+            # so the source covers the whole 132x195 button instead of a padded safe box.
+            "character_select", "cover", True, "bootstrap",
         ),
         CharacterArtSlot(
             "locked_selection_portrait", "character_select_locked", "charui/select_locked.png", (132, 195),

@@ -136,21 +136,11 @@
       "fallback": "RitsuLib resolved CharacterAssetProfile fallback",
       "consumer": "NCharacterSelectButton.%Icon and selected panel",
       "reference_family": "character_select",
-      "fit": "contain",
+      "fit": "cover",
       "verified": true,
       "reference_role": "bootstrap",
       "asset_origin": "generated",
-      "generation_calls": 1,
-      "visible_footprint": {
-        "host": "character select button and selected panel",
-        "content_box": [
-          6,
-          8,
-          126,
-          187
-        ],
-        "alpha_content": false
-      }
+      "generation_calls": 1
     },
     {
       "name": "locked_selection_portrait",
@@ -661,5 +651,5 @@
     "total_frames": 18,
     "generation_calls": 4
   },
-  "catalog_sha256": "e3ab00a735dc80371e6dfbb500bebf75d567332d62499e88146d2733a7eba1f2"
+  "catalog_sha256": "c03eb138a331ff286a5e9b5b3fef3a6bd921214db3ffb1087d2a6bdd523e0dfc"
 }

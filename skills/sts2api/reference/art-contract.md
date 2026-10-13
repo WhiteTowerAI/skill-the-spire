@@ -268,8 +268,8 @@ bodies are the same individual in a 3/4 view facing right (combat stance, sittin
 standing at ease); the icon is readable at 88x88; the large Energy icon is readable at 256x256; the text Energy icon is the
 same core simplified for 24x24.
 
-`character_select` uses safe `contain` composition with chroma off; its full opaque source
-is preserved inside `(6,8)-(126,187)` on the unchanged 132x195 canvas.
+`character_select` uses full-bleed `cover` with chroma off, like the vanilla buttons: the
+opaque source fills the whole 132x195 canvas and its edges may crop.
 `character_background` remains exact 16:10 `cover` with chroma off. The icon,
 marker, static body, and energy profiles use `contain` with chroma on and a flat pure
 `#FF00FF` source background (`#00FF00` for a magenta/pink/purple subject; see the key-color
@@ -383,14 +383,19 @@ and `.gdextension`.
 Selection portrait:
 
 ```text
-Original opaque character-select portrait for a deck-building combat game. Match the
-provided STS2 selection references as STYLE ONLY. Show one original character in a clear,
-full-body or waist-up pose with a readable silhouette, restrained painterly 2D shading,
-and a calm neutral presentation suitable for a 132x195 button. Keep the intended head,
-body, and held-object composition visible with breathing room on all sides; deterministic
-normalization preserves the complete source inside the reviewed safe box. No text, logo, UI, frame,
-watermark, or borrowed character design.
+Original character-select portrait for a deck-building combat game. Match the provided
+STS2 selection references as STYLE ONLY, including their framing: a tight close-up of the
+character's head and shoulders, slightly tilted, filling the whole tall frame and running
+off its edges, with bold flat cel shading, thick dark outlines, high contrast, and simple
+graphic shapes, on one flat saturated background in the Character theme color. Tall 2:3
+portrait. No text, logo, UI, frame, watermark, or borrowed character design.
 ```
+
+Vanilla select buttons are full-bleed head close-ups on a flat theme-color field; a
+waist-up figure with margins reads as a small, foreign button next to them. When a
+portrait is regenerated for an existing Character, add its earlier portrait as one more
+`--reference` file and say in the prompt that it fixes the identity, so the bodies made
+from it still match.
 
 Top-panel icon/map marker:
 
