@@ -40,8 +40,9 @@ moving the Character, intent, targeting center, orb, or dialogue UI.
 The four supported source specs are `character_cue_idle`, `character_cue_attack`,
 `character_cue_hit`, and `character_cue_dead`. Each is one action-sheet acquisition, so a
 complete generated set has an explicit budget of four calls. Every request uses the
-normalized selection portrait as `--identity-reference` plus the `character_combat`
-style-reference family. The four calls belong to the Character's second art batch under the normal art consent rule.
+selection portrait's full-resolution source (`art-contract.md` § CharacterArtBundle and
+reference routing) as `--identity-reference` plus the `character_combat` style-reference
+family. The four calls belong to the Character's second art batch under the normal art consent rule.
 
 Before the first call, derive one concise neutral combat-anchor sentence from the reviewed
 selection portrait and Character description and record it in SPEC. Use the fixed combat

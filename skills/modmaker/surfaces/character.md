@@ -86,7 +86,8 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   - character combat cues: none | fixed bounded bundle
     - actions: Idle `4 x 180ms, loop`; Attack `4 x 90ms, one-shot -> Idle`;
       Hit `4 x 80ms, one-shot -> Idle`; Dead `6 x 140ms, terminal final frame`
-    - acquisition: four action sheets, normalized selection portrait as identity reference
+    - acquisition: four action sheets, the selection portrait's full-resolution source as
+      identity reference
     - neutral combat anchor: <one concise pose sentence derived once and repeated verbatim>
     - continuity lock: same identity, costume, proportions, equipment, facing, camera,
       apparent scale, pivot, and baseline across all four sheets
