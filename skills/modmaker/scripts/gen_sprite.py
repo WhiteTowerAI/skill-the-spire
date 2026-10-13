@@ -1413,7 +1413,8 @@ def build_parser() -> argparse.ArgumentParser:
                    help="randomly sample at most three style references; identity is added separately")
     g.add_argument(
         "--identity-reference",
-        help="normalized Character selection portrait; required for identity-sensitive body/cue assets",
+        help="the approved Character selection portrait, preferably its full-resolution source "
+             "under art-sources/generated/; required for identity-sensitive body/cue assets",
     )
     g.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
     g.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")

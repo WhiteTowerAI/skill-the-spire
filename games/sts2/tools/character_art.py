@@ -509,8 +509,8 @@ class CharacterArtBundle:
             return None
         if identity_reference is None:
             raise CharacterArtValidationError(
-                f"Character spec {spec!r} requires the normalized selection portrait "
-                "as --identity-reference"
+                f"Character spec {spec!r} requires the approved selection portrait "
+                "(preferably its full-resolution source) as --identity-reference"
             )
         resolved = identity_reference.resolve()
         if not _readable_image(resolved):

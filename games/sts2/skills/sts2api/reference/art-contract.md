@@ -276,9 +276,11 @@ The required `selection_portrait` is the sole identity bootstrap. It is normaliz
 to `charui/select.png` and is the only approved identity image; skill-the-spire does not create a
 separate Character sheet or canonical identity asset. Identity-sensitive
 `character_combat`, `character_rest`, `character_merchant`, and all four
-`character_cue_*` acquisitions pass that
-normalized portrait as `--identity-reference` in addition to up to three type-matched STS2
-style references. Background, top-panel icon, full-energy layers, and large/text Energy-icon
+`character_cue_*` acquisitions pass that portrait's full-resolution source as
+`--identity-reference`: the kept generated source
+`<project>/art-sources/generated/character_select/<slug>.png`, or the user's original file
+for an imported portrait. The 132x195 normalized copy is too small to carry the face and
+costume. It goes in addition to up to three type-matched STS2 style references. Background, top-panel icon, full-energy layers, and large/text Energy-icon
 acquisition use a palette/motif brief derived from the user's description and reviewed
 selection portrait, but deliberately do not receive the portrait as an image reference.
 
@@ -359,7 +361,9 @@ controlled brush texture, and a neutral grounded pose in a 3/4 view facing right
 the enemies. Show the entire original body on
 one baseline, centered and filling about 85-90% of a square. Use a perfectly flat solid
 #FF00FF background with no floor, shadow, attack effect, text, UI, watermark, or animation
-streak. This still is the static fallback body, not a Spine animation frame.
+streak. Light from a held object stays on the object and the body: no glow halo, light
+spill, or cast shadow on the background. This still is the static fallback body, not a
+Spine animation frame.
 ```
 
 Combat cue action sheets:
@@ -390,7 +394,7 @@ Use equal cells with no panel borders, labels, numbers, or gutters.
 <action-specific sentence and fixed beat list from the cue contract>
 
 Use one perfectly flat solid #FF00FF background across the sheet, with no gradient,
-floor, shadow, text, UI, border, logo, or watermark. Do not borrow a reference character's
+floor, shadow, light spill, text, UI, border, logo, or watermark. Do not borrow a reference character's
 design. NOT photorealistic, NOT a 3D render, NOT pixel art.
 ```
 
@@ -424,7 +428,21 @@ relic panel; keep the bottom strip and lower-right confirm-button region readabl
 16:10 landscape, no text, logo, UI, border, watermark, or borrowed character design.
 ```
 
-Energy icons:
+Full-energy layer 1 (`character_energy`, slug `orb_layer_1`). It is the bottom layer of
+the counter: fixed layer 2 (a translucent swirl), layer 3 (an opaque pale core about half
+the width), and the rotating octagonal ring of layers 4-5 are drawn on top. Only its tint
+around the core shows, so anything drawn in its center is hidden:
+
+```text
+Original round backing disc for a layered energy counter in a deck-building combat game.
+Follow the Character theme's exact palette/motif brief. Fill a centered circle about 90%
+of the square with the theme colors as a soft radial glow or brushed material, strongest
+in the outer half. No central object, symbol, flame, or fine detail, and no square plate,
+frame, or backdrop. Perfectly flat solid #FF00FF background outside the circle. No text,
+watermark, or detached particles.
+```
+
+Pool Energy icons (`character_energy_large`, `character_energy_text`):
 
 ```text
 Original energy-core icon for a deck-building combat game. Match the provided references
