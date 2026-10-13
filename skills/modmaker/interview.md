@@ -162,19 +162,43 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
    and threshold; do not collapse "every N" into "on the Nth", and state whether the triggering
    event counts before the check.
 
-4. **Art: one question for the whole Mod, only if the user signalled they care about the
-   look.** Default is placeholder. Ask once per Mod, never per sprite. The supported specs and
-   their boundaries live in `../sts2api/reference/art-contract.md`; requests outside
-   them (Spine, animation, phobia variants, custom layouts) stay explicit gaps.
-   - Prefer a host-native image generator only when the current runtime actually exposes a
-     callable image tool (`host-tool`). In Codex this is the built-in `image_gen` tool
-     from the `imagegen` skill, which needs no `OPENAI_API_KEY`. A model name or skill file
-     alone does not prove the tool exists.
-   - Otherwise offer one source in plain language: a backend the user configured in
-     `~/.skill-the-spire/art-backends.json` (`backend:<name>`), or an existing local image.
-     If none is ready, record `art: placeholder`.
-   - Capture one overall subject/style note. `author.md` derives each asset's subject from
-     its SPEC. Before any paid route, show how many image calls it will spend.
+4. **Art: one question for the whole Mod.** Ask it once, in the same round as the other open
+   questions, never per sprite. When the route would otherwise ask nothing, do not open a
+   round just for art: use placeholder and say in the final report that art can be added
+   later with these choices. Offer the choices in the user's language and plain words:
+   - **0. Placeholder art everywhere** — the default and the fastest way to a playable Mod;
+     art can be added later.
+   - **1. Your agent's own image tool** — no setup; uses the current subscription. List it
+     only when this runtime actually exposes a callable raster image tool that yields a
+     local file (`host-tool`). In Codex that is the built-in `image_gen` tool from the
+     `imagegen` skill, which needs no `OPENAI_API_KEY`. Claude Code has none built in; list
+     it there only when the user has connected an image tool that writes local files. A
+     model name or skill file alone does not prove the tool exists.
+   - **2. Your own image service** — an API key (OpenAI, Gemini, OpenRouter, or another
+     compatible platform) or a local command such as ComfyUI or a script. Spends the user's
+     own credit.
+   - **3. Images you already have** — the user supplies the files; import fits and places
+     them.
+
+   No answer means 0. The supported specs and their boundaries live in
+   `../sts2api/reference/art-contract.md`; requests outside them (Spine,
+   animation, phobia variants, custom layouts) stay explicit gaps. Then set up only the
+   chosen route, never probe the others:
+   - **0**: record `art: placeholder`.
+   - **1**: record `art source: host-tool`.
+   - **2**: ask which service. For OpenAI, Gemini, or OpenRouter, the user sets
+     `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY` in their own environment;
+     the built-in backend names are `openai`, `gemini`, and `openrouter`. A newly set
+     variable reaches only a newly started agent session. For any other endpoint or a local
+     command, the user adds a named entry to `~/.skill-the-spire/art-backends.json` per
+     `art-contract.md` § Backend config; offer to write it with `api_key_env` instead of the
+     key. Never ask the user to paste a key into the conversation. Then run
+     `python ../modmaker/scripts/gen_sprite.py check --backend <name>` once (it requests no
+     image). On success record `art source: backend:<name>`; on failure say what is missing
+     and let the user fix it, pick another choice, or keep placeholder.
+   - **3**: ask which file belongs to which asset; record `art source: local-image`.
+   - For 1 and 2, capture one overall subject/style note. `author.md` derives each asset's
+     subject from its SPEC. Before any paid route, show how many image calls it will spend.
 
 ## Defaults (apply silently unless the user specified otherwise)
 
@@ -244,8 +268,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
   run; "on turn N of each combat" uses that combat's turn number. Turn-local/once-per-
   combat wording resets at the boundary it names. Ask one carry-over question only when
   the phrase could reasonably mean either behavior.
-- **Art**: placeholder. Ask the one art question in step 4 only when the user signals a
-  custom look.
+- **Art**: placeholder unless the user picks another choice in step 4.
 - **Author**: reuse the project's configured author, else "SkillTheSpire".
 
 ## Output

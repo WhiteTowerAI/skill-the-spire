@@ -4,10 +4,12 @@
 Two sources, one normalizer: placeholder-vs-generate is decided
 upstream; this tool only runs when the user chose a custom sprite):
 
-  generate  — a user-configured backend from art-backends.json. Transport by `mode`:
-              "images" (OpenAI Images API, /images/generations + /images/edits), "chat"
-              (OpenAI Chat Completions, image returned in the reply — Poe / OpenRouter),
-              or "command" (the user's own CLI or script writes one image to a directory).
+  generate  — the backend the user chose: a built-in name (openai / gemini / openrouter,
+              keyed from the user's environment) or an entry in art-backends.json.
+              Transport by `mode`: "images" (OpenAI Images API, /images/generations +
+              /images/edits), "chat" (OpenAI Chat Completions, image returned in the reply
+              — Poe / OpenRouter), "gemini" (Gemini generateContent), or "command" (the
+              user's own CLI or script writes one image to a directory).
               Sends the prompt (+ few-shot references), gets one image back.
   import    — local file. The user already has an image; skip the network.
 
@@ -19,8 +21,8 @@ the exact sub-path under the mod's images/ dir. Dropping that file in and rebuil
   framework asset profile resolves it; a missing file falls back to the template default
   (= the placeholder).
 
-We do NOT bundle or default to any provider: the user chooses and configures the backend.
-No key is committed. A missing/invalid config makes `generate` fail with a clear message
+No backend runs unless the user chose it; built-in names only supply public endpoints for
+a key the user set. No key is committed. A missing/invalid config makes `generate` fail with a clear message
 and a non-zero exit so the caller can fall back to the placeholder.
 
 Cross-platform (Windows/macOS/Linux). Depends on Pillow; HTTP uses stdlib urllib (no
@@ -482,41 +484,67 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
         )
     return dest
 
-# --- user-configured backends -----------------------------------------------
+# --- user-chosen backends ---------------------------------------------------
 #
-# The user owns every backend. art-backends.json lives outside any Mod project (it may hold
-# a key) and names one or more backends:
-#   {"backends": {"<name>": {"mode": "images" | "chat" | "command", ...}}}
-# A file without "backends" is one unnamed backend (the original art-backend.json shape).
+# No backend runs unless the user chose it. Three built-in names only fill in the public
+# endpoint for a key the user set in their own environment. Anything else is an entry in
+# the user-level art-backends.json, which lives outside every Mod project (it may hold a
+# key) and names one or more backends:
+#   {"backends": {"<name>": {"mode": "images" | "chat" | "gemini" | "command", ...}}}
+# A file entry overrides a built-in of the same name. A file without "backends" is one
+# unnamed backend (the original art-backend.json shape).
 
-BACKEND_MODES = ("images", "chat", "command")
+BACKEND_MODES = ("images", "chat", "gemini", "command")
+GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+BUILTIN_BACKENDS: dict[str, dict] = {
+    "openai": {"mode": "images", "base_url": "https://api.openai.com/v1",
+               "api_key_env": "OPENAI_API_KEY", "model": "gpt-image-1.5"},
+    "gemini": {"mode": "gemini", "base_url": GEMINI_BASE_URL,
+               "api_key_env": "GEMINI_API_KEY", "model": "gemini-2.5-flash-image"},
+    "openrouter": {"mode": "chat", "base_url": "https://openrouter.ai/api/v1",
+                   "api_key_env": "OPENROUTER_API_KEY",
+                   "model": "google/gemini-2.5-flash-image",
+                   "chat_extra": {"modalities": ["image", "text"]}},
+}
 
 
 def default_config_path() -> Path:
     return Path.home() / ".skill-the-spire" / "art-backends.json"
 
 
-def load_config(config_path: Path | None, backend: str | None = None) -> dict:
-    """Resolve one backend from --config, $GEN_SPRITE_CONFIG, or the user-level file.
-    NEVER hardcode a provider or a key."""
+def load_config(config_path: Path | None, backend: str | None = None,
+                model: str | None = None) -> dict:
+    """Resolve the one backend the user chose. NEVER hardcode a key."""
     import os
     path = config_path or (Path(os.environ["GEN_SPRITE_CONFIG"])
                            if os.environ.get("GEN_SPRITE_CONFIG") else default_config_path())
-    if not path.is_file():
-        raise SystemExit(
-            f"[gen_sprite] no backend config at {path}. The user creates it (see "
-            "art-contract.md § Backend config); falling back to a placeholder is fine.")
-    data = json.loads(path.read_text(encoding="utf-8"))
-    if "backends" in data:
-        backends = data["backends"]
+    data = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+    if data and "backends" not in data and backend not in BUILTIN_BACKENDS:
+        cfg = dict(data)
+    else:
+        backends = data.get("backends", {})
         if backend is None and len(backends) == 1:
             backend = next(iter(backends))
-        if backend not in backends:
+        if backend in backends:
+            cfg = dict(backends[backend])
+        elif backend in BUILTIN_BACKENDS:
+            cfg = dict(BUILTIN_BACKENDS[backend])
+        else:
+            choices = sorted(set(backends) | set(BUILTIN_BACKENDS))
             raise SystemExit(
-                f"[gen_sprite] choose --backend from {sorted(backends)} in {path}")
-        cfg = dict(backends[backend])
-    else:
-        cfg = dict(data)
+                f"[gen_sprite] choose --backend from {choices} (user config: {path}). "
+                "Falling back to a placeholder is fine.")
+    if model:
+        cfg["model"] = model
+    key_env = cfg.get("api_key_env")
+    if key_env and not cfg.get("api_key"):
+        cfg["api_key"] = os.environ.get(key_env, "")
+        if not cfg["api_key"]:
+            raise SystemExit(
+                f"[gen_sprite] {key_env} is not set in this session. The user sets it in "
+                "their own environment (never paste a key into the conversation) and starts "
+                "a new agent session so it is visible, or puts the key in "
+                f"{default_config_path()}.")
     validate_backend(cfg, path)
     return cfg
 
@@ -533,6 +561,8 @@ def validate_backend(cfg: dict, path: Path) -> None:
             raise SystemExit(f"[gen_sprite] command backend in {path} needs a nonempty "
                              '"command" list of strings')
         return
+    if mode == "gemini":
+        cfg.setdefault("base_url", GEMINI_BASE_URL)
     missing = [k for k in ("base_url", "api_key", "model") if not cfg.get(k)]
     if missing:
         raise SystemExit(f"[gen_sprite] config missing keys: {', '.join(missing)}")
@@ -565,15 +595,16 @@ def _parse_image_response(payload: dict, cfg: dict, log) -> "Image.Image":
 
 def call_backend(cfg: dict, prompt: str, size: tuple[int, int], log,
                  references: list[Path] | None = None) -> "Image.Image":
-    """Ask the user's BYO backend for an image. Two transport shapes, chosen by the
-    config's `mode` (BYO = the config describes the backend; we hardcode no provider):
+    """Ask the user's chosen backend for one image. Transport by the config's `mode`:
 
       mode "images" (default) — the OpenAI *Images* API: POST /images/generations
         (text-to-image) or, with references, multipart /images/edits (few-shot). Used by
-        OpenAI gpt-image-1, and gateways that expose that endpoint.
+        OpenAI gpt-image models, and gateways that expose that endpoint.
       mode "chat" — the OpenAI *Chat Completions* API returning an image in the reply.
-        Used by Poe (api.poe.com), Gemini-native, OpenRouter and most "one key, many
-        models" gateways, whose image models live under /chat/completions, NOT /images.
+        Used by Poe (api.poe.com), OpenRouter and most "one key, many models" gateways,
+        whose image models live under /chat/completions, NOT /images.
+      mode "gemini" — the Gemini API's native generateContent with image output.
+      mode "command" — the user's own CLI or script.
 
     Raises SystemExit on any failure so the caller can fall back to a placeholder."""
     mode = str(cfg.get("mode", "images")).lower()
@@ -581,6 +612,8 @@ def call_backend(cfg: dict, prompt: str, size: tuple[int, int], log,
         return _call_backend_chat(cfg, prompt, size, log, references)
     if mode == "images":
         return _call_backend_images(cfg, prompt, size, log, references)
+    if mode == "gemini":
+        return _call_backend_gemini(cfg, prompt, size, log, references)
     if mode == "command":
         return _call_backend_command(cfg, prompt, size, log, references)
     raise SystemExit(f"[gen_sprite] unknown config mode {mode!r}; use one of {BACKEND_MODES}")
@@ -597,6 +630,12 @@ def nearest_aspect_ratio(size: tuple[int, int], choices=ASPECT_RATIOS) -> str:
         w, h = ratio.split(":")
         return abs(math.log(float(w) / float(h)) - target)
     return min(choices, key=distance)
+
+
+def resolution_for(size: tuple[int, int]) -> str:
+    """The common "1K"/"2K" output label a wide or large contract needs. A ~1K source
+    would be upscaled more than 2x into a 3440x1613 event portrait."""
+    return "2K" if max(size) > 1600 else "1K"
 
 
 def _fill(template: str, values: dict[str, str]) -> str:
@@ -629,7 +668,7 @@ def _call_backend_command(cfg: dict, prompt: str, size: tuple[int, int], log,
                           references: list[Path] | None = None) -> "Image.Image":
     """Command transport: run the user's own CLI or script, which must write exactly one
     image into the empty {out_dir}. Tokens: {prompt} {out_dir} {model} {request_size}
-    {aspect_ratio}; each reference expands "reference_args" with {image}."""
+    {aspect_ratio} {resolution}; each reference expands "reference_args" with {image}."""
     import tempfile
     # Windows .cmd shims split arguments on newlines; keep every sentence on one line.
     prompt = " ".join(prompt.split())
@@ -645,6 +684,7 @@ def _call_backend_command(cfg: dict, prompt: str, size: tuple[int, int], log,
             "model": str(cfg.get("model", "")),
             "request_size": request_size_for(size),
             "aspect_ratio": nearest_aspect_ratio(size, cfg.get("aspect_ratios", ASPECT_RATIOS)),
+            "resolution": resolution_for(size),
         }
         argv = [_fill(part, values) for part in cfg["command"]]
         reference_args = cfg.get("reference_args", [])
@@ -735,11 +775,14 @@ def _extract_image_from_chat(payload: dict, cfg: dict, log) -> "Image.Image":
         if isinstance(arr, list) and arr:
             item = arr[0]
             if isinstance(item, dict):
+                # OpenRouter returns {"image_url": {"url": "data:image/png;base64,..."}}.
                 b64 = item.get("b64_json") or (item.get("image_url", {}) or {}).get("url", "")
                 if b64 and b64.startswith("data:"):
                     b64 = b64.split(",", 1)[1]
-                if item.get("b64_json"):
-                    raw = base64.b64decode(item["b64_json"])
+                elif not item.get("b64_json"):
+                    b64 = ""
+                if b64:
+                    raw = base64.b64decode(b64)
                     log(f"chat: got structured b64 image ({len(raw):,} bytes)")
                     return Image.open(io.BytesIO(raw))
                 u = item.get("url") or (item.get("image_url", {}) or {}).get("url")
@@ -804,6 +847,49 @@ def _call_backend_chat(cfg: dict, prompt: str, size: tuple[int, int], log,
     except urllib.error.URLError as e:
         raise SystemExit(f"[gen_sprite] backend unreachable: {e.reason}")
     return _extract_image_from_chat(payload, cfg, log)
+
+
+def _call_backend_gemini(cfg: dict, prompt: str, size: tuple[int, int], log,
+                         references: list[Path] | None = None) -> "Image.Image":
+    """Gemini generateContent transport. References ride along as inline image parts, and
+    the aspect ratio is the supported ratio closest to the contract size."""
+    import io
+    import mimetypes
+    url = f"{cfg['base_url'].rstrip('/')}/models/{cfg['model']}:generateContent"
+    parts: list[dict] = [{"text": prompt}]
+    for path in references or []:
+        mime = mimetypes.guess_type(str(path))[0] or "image/png"
+        parts.append({"inlineData": {"mimeType": mime,
+                                     "data": base64.b64encode(path.read_bytes()).decode("ascii")}})
+    aspect = nearest_aspect_ratio(size, cfg.get("aspect_ratios", ASPECT_RATIOS))
+    image_config = {"aspectRatio": aspect}
+    # Only models that accept imageSize get it; an unsupported field can fail the request.
+    if cfg.get("image_size"):
+        image_config["imageSize"] = resolution_for(size)
+    body = json.dumps({
+        "contents": [{"parts": parts}],
+        "generationConfig": {"responseModalities": ["IMAGE"], "imageConfig": image_config},
+    }).encode("utf-8")
+    headers = {"Content-Type": "application/json", "x-goog-api-key": cfg["api_key"]}
+    log(f"POST {url} aspect={aspect} with {len(references or [])} reference image(s)")
+    req = urllib.request.Request(url, data=body, method="POST", headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=cfg.get("timeout", 180)) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", "replace")[:500]
+        raise SystemExit(f"[gen_sprite] backend HTTP {e.code}: {detail}")
+    except urllib.error.URLError as e:
+        raise SystemExit(f"[gen_sprite] backend unreachable: {e.reason}")
+    for candidate in payload.get("candidates") or []:
+        for part in (candidate.get("content") or {}).get("parts") or []:
+            inline = part.get("inlineData") or part.get("inline_data")
+            if inline and inline.get("data"):
+                raw = base64.b64decode(inline["data"])
+                log(f"gemini: received image ({len(raw):,} bytes)")
+                return Image.open(io.BytesIO(raw))
+    raise SystemExit(
+        f"[gen_sprite] Gemini reply contained no image: {json.dumps(payload)[:300]}")
 
 
 def _multipart(fields: list[tuple[str, str]], files: list[tuple[str, Path]]):
@@ -979,7 +1065,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
     info = SPECS.get(args.spec)
     size = cue_sheet_size(args.spec, args.size) if cue_spec else resolve_size(args.spec, args.size)
     try:
-        cfg = load_config(Path(args.config) if args.config else None, args.backend)
+        cfg = load_config(Path(args.config) if args.config else None, args.backend, args.model)
         refs = resolve_references(
             args.reference,
             args.max_refs,
@@ -1014,6 +1100,25 @@ def cmd_generate(args: argparse.Namespace) -> int:
         return 0
     print(f"[gen_sprite] generated {args.spec} '{args.slug}' -> {dest.name} at {size[0]}x{size[1]}")
     print(str(dest))
+    return 0
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    """Check only the backend the user chose: config shape, key presence, and a command
+    backend's executable and preflight. No image is requested, so nothing is charged."""
+    import shutil
+    cfg = load_config(Path(args.config) if args.config else None, args.backend, args.model)
+    if cfg["mode"] == "command":
+        if not shutil.which(cfg["command"][0]):
+            raise SystemExit(f"[gen_sprite] {cfg['command'][0]!r} was not found on PATH")
+        for check in cfg.get("preflight", []):
+            _run_quiet(list(check), float(cfg.get("timeout", 600)), f"preflight {check[0]!r}")
+        target = cfg["command"][0]
+    else:
+        target = cfg["base_url"]
+    print(f"[gen_sprite] backend {args.backend or 'default'!r} is configured "
+          f"(mode={cfg['mode']}, model={cfg.get('model') or '-'}, {target}); "
+          "no image was requested")
     return 0
 
 
@@ -1287,7 +1392,8 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--out", required=True, help="the mod's <ModName>/images dir")
     g.add_argument("--config", help="backend config (else $GEN_SPRITE_CONFIG, else "
                    "~/.skill-the-spire/art-backends.json)")
-    g.add_argument("--backend", help="backend name inside the config (optional with one backend)")
+    g.add_argument("--backend", help="openai | gemini | openrouter, or a name in the config")
+    g.add_argument("--model", help="override the backend's model")
     g.add_argument("--size", type=parse_size, help="override WxH (required for unverified specs)")
     g.add_argument("--reference", help="few-shot STS2 style references: a dir (e.g. the "
                    "sts2api art-samples/) or comma-separated image files. Sent to the "
@@ -1303,6 +1409,13 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
     g.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")
     g.set_defaults(func=cmd_generate)
+
+    c = sub.add_parser("check", help="Check the chosen backend without requesting an image.")
+    c.add_argument("--backend", help="openai | gemini | openrouter, or a name in the config")
+    c.add_argument("--config", help="backend config (else $GEN_SPRITE_CONFIG, else "
+                   "~/.skill-the-spire/art-backends.json)")
+    c.add_argument("--model", help="override the backend's model")
+    c.set_defaults(func=cmd_check)
 
     i = sub.add_parser("import", help="Normalize + place a local image (no HTTP).")
     i.add_argument("--spec", required=True, choices=sorted(ALL_SPECS))
