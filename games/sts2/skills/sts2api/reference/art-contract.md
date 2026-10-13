@@ -696,7 +696,8 @@ Pass `--reference <sts2api>/reference/art-samples` to `gen_sprite.py generate` �
 **root** samples dir, not a subdir. It contains `card/` (18 portraits), `relic/` (6 icons),
 `power/` (6 icons), `potion/` (6 icons), `enchantment/` (20 normal 64x64 icons), `orb/`
 (5 non-empty icons), `monster/` (the Axebot, Ceremonial Beast, and Crossbow Ruby Raider
-renders), `event/` (six reviewed wiki.gg previews), and four three-image Character pools:
+renders), `event/` (six reviewed wiki.gg previews), `rest_site_option/` (Rest, Smith, and
+Lift button tiles), and the three-image Character pools:
 `character_select/`, `character_background/`, `character_icon/`, `character_combat/`, and
 `character_rest/`.
 The tool **auto-selects the matching visual family** and randomly samples three distinct
@@ -991,20 +992,30 @@ combat damage, death fade, and the bestiary entry until the later animation expa
 
 ## The Rest Site option prompt template
 
-A Rest Site option is a compact opaque scene tile, not a transparent relic icon. Translate
-the action title into one immediately readable object or moment and keep the composition
-simple enough for the 256x169 button:
+A Rest Site option is a compact opaque button tile, not a transparent relic icon and not a
+detailed scene. The references (Rest, Smith, Lift) each use one saturated background hue
+that sets the action's mood, a few simple swirl, burst, or lightning shapes in lighter and
+darker tones of that hue, and one large central object with a thick dark outline:
 
-```text
-Original compact Rest Site action illustration for a deck-building game. Use graphic 2D
-painting, broad shapes, clear light-dark separation, and one restrained focal accent.
-Show one centered action or object with generous edge clearance in a 3:2 landscape tile.
-Use a complete opaque background. No text, numbers, logo, border, UI, card frame,
-photorealism, 3D render, pixel art, or transparent cut-out.
+```
+[① fixed Rest Site style]:
+   Original Rest Site action tile for a deck-building game. Match the reference images
+   as STYLE ONLY: one saturated dominant background hue that sets the action's mood,
+   with a few simple swirl, burst, or streak shapes in lighter and darker tones of that
+   same hue; one central object with a thick dark outline, simple painted shading, and a
+   few crisp highlights. Bold and readable like a button, not a detailed scene. Do not
+   copy the reference objects.
+[② generated action]:
+   One or two sentences naming the one object or tool that shows the action, its
+   material, and the background hue.
+[③ fixed Rest Site composition/negative constraints]:
+   The object large and centered, filling about 70% of the tile height, 3:2 landscape.
+   Full-bleed opaque background to every edge. No text, letters, numbers, logo, border,
+   frame, torn-paper edge, UI, photorealism, 3D render, or pixel art.
 ```
 
-The role has no shipped style-reference pool yet. `gen_sprite.py` normalizes the result to
-256x169 with `cover`; each generated asset still receives normal headed framing review.
+`--reference` selects the `rest_site_option/` pool. `gen_sprite.py` normalizes the result
+to 256x169 with `cover`; each generated asset still receives normal headed framing review.
 
 ## The event portrait prompt template
 

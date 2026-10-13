@@ -1,6 +1,6 @@
 # art-samples — attribution & purpose
 
-These 85 images are **© Mega Crit**, derived from *Slay the Spire 2* art. They are included
+These 88 images are **© Mega Crit**, derived from *Slay the Spire 2* art. They are included
 **solely as visual style references** for the art pipeline (`reference/art-contract.md` →
 `tools/gen_sprite.py --reference`): they are shown to a user-configured image model as
 few-shot examples so a generated custom sprite matches the game's art style. They are
@@ -8,10 +8,10 @@ few-shot examples so a generated custom sprite matches the game's art style. The
 
 Source: card/icon/monster files were extracted or rendered via `ptrlrd/spire-codex` (GDRE
 unpack), which mirrors our own grounding method. Event previews came from the attributed
-wiki.gg file pages listed below.
+wiki.gg file pages listed below. Rest Site tiles are cropped in-game screenshots.
 
 The set is split into **one subdirectory per sprite spec** so the few-shot references
-match the target visual language. Both acquisition tools auto-pick the subdir matching
+match the target visual language. `gen_sprite.py` auto-picks the subdir matching
 `--spec` and randomly sample three distinct files when the pool is larger; kinds are never
 mixed.
 
@@ -71,6 +71,12 @@ Source pages:
 - https://slaythespire.wiki.gg/wiki/File:StS2_This_or_That%3F.png
 - https://slaythespire.wiki.gg/wiki/File:StS2_War_Historian,_Repy.png
 - https://slaythespire.wiki.gg/wiki/File:StS2_Wellspring.png
+
+## `rest_site_option/` — 3 Rest Site option tiles (256×169)
+Rest, Smith, and Lift (the Girya option), cropped by the maintainer from in-game
+screenshots of the native Rest Site buttons. The outer rough button edge was cropped away
+so a model does not copy it as a drawn border; each was then resized to the 256×169
+contract. They are screenshot-derived, not native texture files.
 
 ## Character static reference pools
 
