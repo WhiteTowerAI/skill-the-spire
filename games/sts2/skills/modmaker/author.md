@@ -63,8 +63,8 @@ until every approved asset has landed or fallen back to placeholder.
   `vanilla-non-card-overrides.md`). Each owns its authoring rules, manifest operation, and stop
   conditions. Resolve the exact catalog target, lower only promoted public/fixed-Adapter routes,
   write every accepted operation to `skillthespire/vanilla-overrides.json`, and never register a
-  replacement vanilla model. If SPEC requests vanilla Card base-description replacement,
-  removal, or hiding, stop until the user explicitly accepts before/after composition.
+  replacement vanilla model. Emit no operation for a surface SPEC lists as `unchanged`; in
+  particular, no title operation unless SPEC renames the model.
 - Never emit Settings, Progression, post-run Badge, Telemetry, Multiplayer, Update Check, or a
   connection to one of those deferred families. Never substitute alternative-energy patches,
   C/D access, assembly-wide `PatchAll`, or `SkillTheSpire.Runtime`.

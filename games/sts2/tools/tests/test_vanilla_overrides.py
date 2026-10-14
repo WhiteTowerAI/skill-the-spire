@@ -166,6 +166,108 @@ def enable_card_family(catalog: dict) -> dict:
     return catalog
 
 
+def make_text_catalog() -> dict:
+    """Card and Relic targets with vanilla descriptions, variables, and one upgrade."""
+    catalog = make_catalog()
+    models = {model["id"]: model for model in catalog["models"]}
+    card = models["CARD.LOST_WISP"]
+    card["properties"]["dynamic_vars"].append(
+        {
+            "name": "CalculatedDamage",
+            "type": "MegaCrit.Sts2.Core.Localization.DynamicVars.CalculatedDamageVar",
+            "base_value": 0,
+        }
+    )
+    card["properties"]["upgrade_levels"] = [
+        {
+            "level": 1,
+            "energy_cost": 1,
+            "star_cost": -1,
+            "dynamic_vars": [
+                {
+                    "name": "Cards",
+                    "type": "MegaCrit.Sts2.Core.Localization.DynamicVars.DynamicVar",
+                    "base_value": 2,
+                },
+                {
+                    "name": "CalculatedDamage",
+                    "type": "MegaCrit.Sts2.Core.Localization.DynamicVars.CalculatedDamageVar",
+                    "base_value": 0,
+                },
+            ],
+        }
+    ]
+    card["description_localization"] = {
+        "table": "cards",
+        "key": "LOST_WISP.description",
+        "localized_descriptions": {
+            "eng": "Draw {Cards:diff()} {Cards:plural:card|cards}.",
+            "zhs": "抽{Cards:diff()}张牌。",
+        },
+    }
+    relic = models["RELIC.LOST_WISP"]
+    relic["properties"]["dynamic_vars"] = [
+        {
+            "name": "Block",
+            "type": "MegaCrit.Sts2.Core.Localization.DynamicVars.BlockVar",
+            "base_value": 3,
+        }
+    ]
+    relic["description_localization"] = {
+        "table": "relics",
+        "key": "LOST_WISP.description",
+        "localized_descriptions": {
+            "eng": "Gain {Block} [gold]Block[/gold].",
+            "zhs": "获得{Block}点[gold]格挡[/gold]。",
+        },
+    }
+    catalog["authorable_route_families"] = [
+        overrides.PUBLIC_CARD_OVERRIDE_FAMILY,
+        overrides.NON_CARD_OVERRIDE_FAMILY,
+    ]
+    catalog["catalog_sha256"] = overrides.catalog_digest(catalog)
+    return catalog
+
+
+def make_text_operation(
+    catalog: dict, index: int, operation_id: str, route_id: str, **semantics: object
+) -> dict:
+    target_id = "RELIC.LOST_WISP" if route_id.startswith("relic.") else "CARD.LOST_WISP"
+    model = next(model for model in catalog["models"] if model["id"] == target_id)
+    category = model["category"].lower()
+    baseline: dict = {"category": model["category"], "type": model["type"]}
+    if route_id.endswith(".localization"):
+        field = "title" if route_id == "card.title.localization" else "description"
+        mode = "replace"
+        surface = "card.title" if field == "title" else f"{category}.description_text"
+        source = model[f"{field}_localization"]
+        baseline[f"{field}_localization"] = copy.deepcopy(
+            {
+                "key": source["key"],
+                f"localized_{field}s": source[f"localized_{field}s"],
+            }
+        )
+        semantics = semantics or {
+            "localization": {"table": source["table"], "key": source["key"]}
+        }
+    else:
+        mode, surface = "adjust", f"{category}.dynamic_vars"
+        properties = {"dynamic_vars": model["properties"]["dynamic_vars"]}
+        if category == "card":
+            properties["upgrade_levels"] = model["properties"]["upgrade_levels"]
+        baseline["properties"] = copy.deepcopy(properties)
+    return {
+        "order": index,
+        "operation_id": operation_id,
+        "target_model_id": target_id,
+        "mode": mode,
+        "surface": surface,
+        "route": {"class": "public", "id": route_id, "fingerprint": None},
+        "expected_baseline": baseline,
+        "semantics": copy.deepcopy(dict(semantics)),
+    }
+
+
 def make_visual_catalog() -> dict:
     runtime, assembly = collector_snapshots()
     existing = {(model["id"].split(".", 1)[0], model["content_kind"]) for model in runtime["models"]}
@@ -1197,11 +1299,11 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             ),
             operation(
                 5,
-                "card.title-prefix",
-                "card.title.fragments",
                 "card.title",
-                "compose",
-                {"localization": loc, "placement": "before_base"},
+                "card.title.localization",
+                "card.title",
+                "replace",
+                {"localization": {"table": "cards", "key": "LOST_WISP.title"}},
                 title=True,
             ),
             operation(
@@ -2072,7 +2174,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "no authorable route family"):
             overrides.validate_override_manifest(manifest_with(catalog, [canonical_var]), catalog)
 
-    def test_public_card_base_description_replacement_fails_closed(self) -> None:
+    def test_public_card_description_fragments_reject_replace_mode(self) -> None:
         catalog = enable_card_family(make_catalog())
         card = next(model for model in catalog["models"] if model["id"] == "CARD.LOST_WISP")
         replacement = make_operation(
@@ -2100,7 +2202,8 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         }
 
         with self.assertRaisesRegex(
-            overrides.VanillaOverrideError, "base-description replacement is unsupported"
+            overrides.VanillaOverrideError,
+            "replace the base description with card.description.localization",
         ):
             overrides.validate_override_manifest(manifest_with(catalog, [replacement]), catalog)
 
@@ -2539,6 +2642,182 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             )
 
 
+    def test_vanilla_variable_values_set_base_and_upgrade(self) -> None:
+        catalog = make_text_catalog()
+        card = make_text_operation(
+            catalog, 0, "wisp.cards", "card.vars.base",
+            variable="Cards", base_value=2, upgrade_delta=2,
+        )
+        relic = make_text_operation(
+            catalog, 1, "wisp.block", "relic.vars.base", variable="Block", base_value=5
+        )
+        self.assertIn(
+            "operations=2",
+            overrides.validate_override_manifest(manifest_with(catalog, [card, relic]), catalog),
+        )
+        keep_upgrade = copy.deepcopy(card)
+        keep_upgrade["semantics"]["upgrade_delta"] = None
+        overrides.validate_override_manifest(manifest_with(catalog, [keep_upgrade]), catalog)
+
+        cases = (
+            ({"variable": "Damage"}, "not a vanilla DynamicVar"),
+            ({"variable": "CalculatedDamage"}, "CalculationBase"),
+            ({"upgrade_delta": 1}, "equals the vanilla upgrade"),
+            ({"base_value": -1}, "at least 0"),
+        )
+        for change, message in cases:
+            with self.subTest(change=change):
+                broken = copy.deepcopy(card)
+                broken["semantics"].update(change)
+                with self.assertRaisesRegex(overrides.VanillaOverrideError, message):
+                    overrides.validate_override_manifest(manifest_with(catalog, [broken]), catalog)
+
+        missing_delta = copy.deepcopy(card)
+        missing_delta["semantics"].pop("upgrade_delta")
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires"):
+            overrides.validate_override_manifest(manifest_with(catalog, [missing_delta]), catalog)
+
+        no_upgrades = copy.deepcopy(card)
+        no_upgrades["expected_baseline"]["properties"].pop("upgrade_levels")
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "upgrade_levels"):
+            overrides.validate_override_manifest(manifest_with(catalog, [no_upgrades]), catalog)
+
+        second = copy.deepcopy(card)
+        second["order"], second["operation_id"] = 1, "wisp.cards-again"
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "conflicting operations"):
+            overrides.validate_override_manifest(manifest_with(catalog, [card, second]), catalog)
+
+        on_card = copy.deepcopy(card)
+        on_card["route"]["id"], on_card["surface"] = "relic.vars.base", "relic.dynamic_vars"
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires a RELIC target"):
+            overrides.validate_override_manifest(manifest_with(catalog, [on_card]), catalog)
+
+    def test_description_replacement_targets_the_vanilla_description_key(self) -> None:
+        catalog = make_text_catalog()
+        card = make_text_operation(catalog, 0, "wisp.text", "card.description.localization")
+        relic = make_text_operation(
+            catalog, 1, "wisp.relic-text", "relic.description.localization"
+        )
+        overrides.validate_override_manifest(manifest_with(catalog, [card, relic]), catalog)
+
+        title_key = copy.deepcopy(card)
+        title_key["semantics"]["localization"]["key"] = "LOST_WISP.title"
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "vanilla description key"):
+            overrides.validate_override_manifest(manifest_with(catalog, [title_key]), catalog)
+
+        drifted = copy.deepcopy(card)
+        drifted["expected_baseline"]["description_localization"]["localized_descriptions"][
+            "eng"
+        ] = "Draw a card."
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "baseline drift"):
+            overrides.validate_override_manifest(manifest_with(catalog, [drifted]), catalog)
+
+        twice = copy.deepcopy(card)
+        twice["order"], twice["operation_id"] = 1, "wisp.text-again"
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "conflicting operations"):
+            overrides.validate_override_manifest(manifest_with(catalog, [card, twice]), catalog)
+
+        no_description = enable_card_family(make_catalog())
+        bare = copy.deepcopy(card)
+        bare["expected_baseline"].pop("description_localization")
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "no vanilla description"):
+            overrides.validate_override_manifest(
+                manifest_with(no_description, [bare]), no_description
+            )
+
+    def test_project_description_replacement_requires_resolvable_text(self) -> None:
+        catalog = make_text_catalog()
+        operation = make_text_operation(catalog, 0, "wisp.text", "card.description.localization")
+        manifest = manifest_with(catalog, [operation])
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            catalog_path = project / "catalog.json"
+            catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+            manifest_path = project / overrides.MANIFEST_RELATIVE_PATH
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            def write(language: str, value: str) -> None:
+                folder = project / "Proof" / "localization" / language
+                folder.mkdir(parents=True, exist_ok=True)
+                (folder / "cards.json").write_text(
+                    json.dumps({"LOST_WISP.description": value}), encoding="utf-8"
+                )
+
+            def validate() -> str:
+                return overrides.validate_project_override_manifest(
+                    project, "Proof", catalog_path=catalog_path
+                )
+
+            with self.assertRaisesRegex(overrides.VanillaOverrideError, "eng/cards.json"):
+                validate()
+            write("eng", "Draw {Cards:diff()} cards.\n{InCombat:Gain {energyPrefix}.|}")
+            write("zhs", "")
+            with self.assertRaisesRegex(overrides.VanillaOverrideError, "non-empty"):
+                validate()
+            write("zhs", "抽{Cards:diff()}张牌。")
+            self.assertIn("text_replacements=1", validate())
+
+            write("zhs", "抽{Cards:diff()}张牌，获得{Block}点格挡。")
+            with self.assertRaisesRegex(overrides.VanillaOverrideError, "cannot resolve: Block"):
+                validate()
+            write("zhs", "抽{Cards:diff()}张牌。")
+            write("fra", "")
+            with self.assertRaisesRegex(overrides.VanillaOverrideError, "fra/cards.json"):
+                validate()
+
+
+    def test_title_replacement_uses_the_vanilla_title_key(self) -> None:
+        catalog = make_text_catalog()
+        title = make_text_operation(catalog, 0, "wisp.title", "card.title.localization")
+        overrides.validate_override_manifest(manifest_with(catalog, [title]), catalog)
+
+        description_key = copy.deepcopy(title)
+        description_key["semantics"]["localization"]["key"] = "LOST_WISP.description"
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "vanilla title key"):
+            overrides.validate_override_manifest(
+                manifest_with(catalog, [description_key]), catalog
+            )
+
+        composed = copy.deepcopy(title)
+        composed["mode"] = "compose"
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "mode"):
+            overrides.validate_override_manifest(manifest_with(catalog, [composed]), catalog)
+
+        fragment = copy.deepcopy(title)
+        fragment["route"]["id"] = "card.title.fragments"
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "no authorable route family"):
+            overrides.validate_override_manifest(manifest_with(catalog, [fragment]), catalog)
+
+        manifest = manifest_with(catalog, [title])
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            catalog_path = project / "catalog.json"
+            catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+            manifest_path = project / overrides.MANIFEST_RELATIVE_PATH
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            for language, value in (("eng", "Found Wisp"), ("zhs", "寻得幽火")):
+                folder = project / "Proof" / "localization" / language
+                folder.mkdir(parents=True)
+                (folder / "cards.json").write_text(
+                    json.dumps({"LOST_WISP.title": value}), encoding="utf-8"
+                )
+            self.assertIn(
+                "text_replacements=1",
+                overrides.validate_project_override_manifest(
+                    project, "Proof", catalog_path=catalog_path
+                ),
+            )
+            (project / "Proof" / "localization" / "zhs" / "cards.json").write_text(
+                json.dumps({"LOST_WISP.title": "{Cards}幽火"}), encoding="utf-8"
+            )
+            with self.assertRaisesRegex(overrides.VanillaOverrideError, "usable variables: none"):
+                overrides.validate_project_override_manifest(
+                    project, "Proof", catalog_path=catalog_path
+                )
+
+
 class VanillaOverridePipelineTests(unittest.TestCase):
     def test_reference_docs_list_every_route_the_validator_accepts(self) -> None:
         sts2_root = TOOLS_DIR.parent
@@ -2602,6 +2881,7 @@ class VanillaOverridePipelineTests(unittest.TestCase):
             set(overrides._NON_CARD_OWNER_HOOK_ROUTES)
             | set(overrides._NON_CARD_DATA_ROUTES)
             | set(overrides._NON_CARD_LIFECYCLE_ROUTES)
+            | set(overrides._NON_CARD_PUBLIC_ROUTES)
         ):
             self.assertIn(route_id, non_card_reference)
         for hook_id in (

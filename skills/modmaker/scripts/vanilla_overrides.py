@@ -338,6 +338,7 @@ _CARD_PUBLIC_ROUTES = {
     "card.cost.energy": ("card.energy_cost", {"adjust"}),
     "card.cost.stars": ("card.star_cost", {"adjust"}),
     "card.description.fragments": ("card.description", {"compose"}),
+    "card.description.localization": ("card.description_text", {"replace"}),
     "card.glow.gold": ("card.glow.gold", {"visual"}),
     "card.glow.red": ("card.glow.red", {"visual"}),
     "card.hover-tips": ("card.hover_tips", {"compose"}),
@@ -349,9 +350,43 @@ _CARD_PUBLIC_ROUTES = {
     "card.property.tags": ("card.tags", {"compose"}),
     "card.property.target": ("card.target", {"adjust"}),
     "card.property.type": ("card.type", {"adjust"}),
-    "card.title.fragments": ("card.title", {"compose", "replace"}),
+    "card.title.localization": ("card.title", {"replace"}),
     "card.type-text": ("card.type_text", {"compose", "replace"}),
+    "card.vars.base": ("card.dynamic_vars", {"adjust"}),
 }
+# Public non-Card text and number routes: (target category, surface, mode).
+_NON_CARD_PUBLIC_ROUTES = {
+    "potion.description.localization": ("POTION", "potion.description_text", "replace"),
+    "relic.description.localization": ("RELIC", "relic.description_text", "replace"),
+    "relic.vars.base": ("RELIC", "relic.dynamic_vars", "adjust"),
+}
+_DESCRIPTION_LOCALIZATION_ROUTES = {
+    "card.description.localization",
+    "potion.description.localization",
+    "relic.description.localization",
+}
+# Route id -> the catalog text field whose vanilla key a Mod table replaces.
+_VANILLA_TEXT_ROUTES = {
+    **{route_id: "description" for route_id in _DESCRIPTION_LOCALIZATION_ROUTES},
+    "card.title.localization": "title",
+}
+_BASE_VAR_ROUTES = {"card.vars.base", "relic.vars.base"}
+# Variables CardModel.GetDescriptionForPile adds to every Card description besides its
+# own DynamicVars. Capability-owned variables are never visible to the base description.
+_CARD_DESCRIPTION_FIXED_VARIABLES = frozenset(
+    {
+        "IfUpgraded",
+        "OnTable",
+        "InCombat",
+        "IsTargeting",
+        "TargetType",
+        "GainsBlock",
+        "IsOstyAlive",
+        "energyPrefix",
+        "singleStarIcon",
+    }
+)
+_SMART_FORMAT_VARIABLE_RE = re.compile(r"\{(\w+)")
 ANCIENT_ROUTES = {
     "ancient.initial-options.append": {
         "class": "public",
@@ -2957,6 +2992,136 @@ def _validate_public_visual_operation(
         paths.add(path)
 
 
+def _validate_vanilla_text_operation(
+    operation_id: str,
+    target_model: dict[str, Any],
+    baseline: dict[str, Any],
+    semantics: dict[str, Any],
+    field: str,
+) -> None:
+    """A Mod table replaces the target's own vanilla title or description key."""
+    source_key = f"{field}_localization"
+    texts_key = f"localized_{field}s"
+    source = target_model.get(source_key)
+    if not isinstance(source, dict):
+        raise VanillaOverrideError(
+            f"operation {operation_id} target {target_model['id']} has no vanilla "
+            f"{field} key to replace"
+        )
+    _require_baseline_paths(
+        baseline,
+        (
+            (source_key, "key"),
+            (source_key, texts_key, "eng"),
+            (source_key, texts_key, "zhs"),
+        ),
+        operation_id,
+    )
+    label = f"operation {operation_id} semantics"
+    _require_exact_keys(semantics, {"localization"}, label)
+    _validate_localization_ref(semantics.get("localization"), f"{label} localization")
+    expected = {"table": source["table"], "key": source["key"]}
+    if semantics["localization"] != expected:
+        raise VanillaOverrideError(
+            f"{label} localization must be the vanilla {field} key "
+            f"{expected['table']}/{expected['key']}"
+        )
+
+
+def _validate_base_var_operation(
+    operation_id: str,
+    target_model: dict[str, Any],
+    baseline: dict[str, Any],
+    semantics: dict[str, Any],
+    *,
+    allow_upgrade_delta: bool,
+) -> None:
+    baseline_paths: tuple[tuple[str, ...], ...] = (("properties", "dynamic_vars"),)
+    if allow_upgrade_delta:
+        baseline_paths += (("properties", "upgrade_levels"),)
+    _require_baseline_paths(baseline, baseline_paths, operation_id)
+    label = f"operation {operation_id} semantics"
+    allowed = {"base_value", "upgrade_delta", "variable"} if allow_upgrade_delta else {
+        "base_value",
+        "variable",
+    }
+    _require_exact_keys(semantics, allowed, label)
+    if set(semantics) != allowed:
+        raise VanillaOverrideError(f"{label} requires {sorted(allowed)}")
+    name = _require_text(semantics.get("variable"), f"{label} variable")
+    properties = target_model.get("properties") or {}
+    variables = {
+        variable["name"]: variable for variable in properties.get("dynamic_vars") or []
+    }
+    variable = variables.get(name)
+    if variable is None:
+        raise VanillaOverrideError(
+            f"{label} variable {name!r} is not a vanilla DynamicVar of "
+            f"{target_model['id']}; choose one of {sorted(variables)}"
+        )
+    type_name = variable["type"].split("`")[0].rsplit(".", 1)[-1]
+    if type_name.startswith("Calculated") or type_name == "StringVar":
+        raise VanillaOverrideError(
+            f"{label} variable {name!r} is a {type_name}; its value is computed, so set "
+            "its CalculationBase/CalculationExtra input instead"
+        )
+    _require_number(semantics.get("base_value"), f"{label} base_value", minimum=0)
+    if not allow_upgrade_delta:
+        return
+    upgrade_delta = semantics.get("upgrade_delta")
+    if upgrade_delta is None:
+        return
+    _require_number(upgrade_delta, f"{label} upgrade_delta")
+    if properties.get("max_upgrade_level") != 1:
+        raise VanillaOverrideError(
+            f"{label} upgrade_delta requires a Card with exactly one upgrade level"
+        )
+    vanilla_delta = _vanilla_upgrade_delta(target_model, name)
+    if upgrade_delta == vanilla_delta:
+        raise VanillaOverrideError(
+            f"{label} upgrade_delta {upgrade_delta} equals the vanilla upgrade; use null"
+        )
+
+
+def _vanilla_upgrade_delta(target_model: dict[str, Any], name: str) -> float:
+    properties = target_model["properties"]
+    base = next(v for v in properties["dynamic_vars"] if v["name"] == name)["base_value"]
+    upgraded = next(
+        v for v in properties["upgrade_levels"][0]["dynamic_vars"] if v["name"] == name
+    )["base_value"]
+    return upgraded - base
+
+
+def _validate_non_card_public_operation(
+    operation_id: str,
+    target_model: dict[str, Any],
+    mode: str,
+    surface: str,
+    route_id: str,
+    baseline: dict[str, Any],
+    semantics: dict[str, Any],
+) -> None:
+    category, expected_surface, expected_mode = _NON_CARD_PUBLIC_ROUTES[route_id]
+    if target_model.get("category") != category:
+        raise VanillaOverrideError(
+            f"operation {operation_id} route {route_id} requires a {category} target"
+        )
+    if surface != expected_surface or mode != expected_mode:
+        raise VanillaOverrideError(
+            f"operation {operation_id} route {route_id} requires surface "
+            f"{expected_surface} and mode {expected_mode}"
+        )
+    _require_baseline_paths(baseline, (("category",), ("type",)), operation_id)
+    if route_id in _DESCRIPTION_LOCALIZATION_ROUTES:
+        _validate_vanilla_text_operation(
+            operation_id, target_model, baseline, semantics, "description"
+        )
+    else:
+        _validate_base_var_operation(
+            operation_id, target_model, baseline, semantics, allow_upgrade_delta=False
+        )
+
+
 def _validate_public_card_operation(
     operation: dict[str, Any],
     operation_id: str,
@@ -2975,8 +3140,9 @@ def _validate_public_card_operation(
     expected_surface, modes = _CARD_PUBLIC_ROUTES[route_id]
     if route_id == "card.description.fragments" and mode == "replace":
         raise VanillaOverrideError(
-            f"operation {operation_id} base-description replacement is unsupported; "
-            "card.description.fragments only composes before_base or after_base"
+            f"operation {operation_id} card.description.fragments only composes "
+            "before_base or after_base; replace the base description with "
+            "card.description.localization"
         )
     if surface != expected_surface or mode not in modes:
         raise VanillaOverrideError(
@@ -3055,25 +3221,13 @@ def _validate_public_card_operation(
             _require_choice(value, _RESULT_PILES, f"{label} pile value")
         elif not _OPERATION_ID_RE.fullmatch(value):
             raise VanillaOverrideError(f"{label} owned pile value must be a stable semantic id")
-    elif route_id in {"card.title.fragments", "card.description.fragments"}:
-        _require_baseline_paths(baseline, (("title_localization",),), operation_id)
+    elif route_id == "card.description.fragments":
         _require_exact_keys(semantics, {"localization", "placement"}, label)
         _validate_localization_ref(semantics.get("localization"), f"{label} localization")
-        placements = (
-            {"before_base", "replace_base", "after_base", "after_title"}
-            if route_id == "card.title.fragments"
-            else {"before_base", "after_base"}
+        _require_choice(
+            semantics.get("placement"), {"before_base", "after_base"}, f"{label} placement"
         )
-        placement = _require_choice(
-            semantics.get("placement"), placements, f"{label} placement"
-        )
-        expected_mode = "replace" if placement == "replace_base" else "compose"
-        if mode != expected_mode:
-            raise VanillaOverrideError(
-                f"{label} placement {placement} requires mode {expected_mode}"
-            )
     elif route_id == "card.type-text":
-        _require_baseline_paths(baseline, (("title_localization",),), operation_id)
         _require_exact_keys(semantics, {"composition", "localization"}, label)
         composition = _require_choice(
             semantics.get("composition"), {"replace", "wrap"}, f"{label} composition"
@@ -3180,6 +3334,18 @@ def _validate_public_card_operation(
             target_model,
             models,
             allow_play_target=True,
+        )
+    elif route_id == "card.description.localization":
+        _validate_vanilla_text_operation(
+            operation_id, target_model, baseline, semantics, "description"
+        )
+    elif route_id == "card.title.localization":
+        _validate_vanilla_text_operation(
+            operation_id, target_model, baseline, semantics, "title"
+        )
+    elif route_id == "card.vars.base":
+        _validate_base_var_operation(
+            operation_id, target_model, baseline, semantics, allow_upgrade_delta=True
         )
     elif route_id == "card.owner-hooks":
         _require_exact_keys(semantics, {"effects", "trigger", "when"}, label)
@@ -3513,6 +3679,7 @@ def _validate_operation(
             "type",
             "content_kind",
             "title_localization",
+            "description_localization",
             "properties",
             "sources",
         }
@@ -3664,6 +3831,16 @@ def _validate_operation(
                 semantics,
                 models,
             )
+        elif route_id in _NON_CARD_PUBLIC_ROUTES:
+            _validate_non_card_public_operation(
+                operation_id,
+                target_model,
+                mode,
+                surface,
+                route_id,
+                baseline,
+                semantics,
+            )
         elif route_id in PUBLIC_VISUAL_ROUTES:
             _validate_public_visual_operation(
                 operation_id,
@@ -3754,6 +3931,8 @@ def _detect_conflicts(
             continue
         if _pool_contract(route_id) is not None:
             continue
+        if route_id in _BASE_VAR_ROUTES:
+            surface = f"{surface}.{semantics['variable']}"
         composable = route_id in {
             "card.description.fragments",
             "card.glow.gold",
@@ -3762,7 +3941,7 @@ def _detect_conflicts(
             "card.owner-hooks",
             "card.play-state.can-play",
             "card.property.tags",
-        } or (route_id in {"card.title.fragments", "card.type-text", "card.play.on-play"} and mode == "compose")
+        } or (route_id in {"card.type-text", "card.play.on-play"} and mode == "compose")
         if composable:
             continue
         key = (target, surface)
@@ -3868,6 +4047,7 @@ def validate_override_manifest(
                 route_id in _NON_CARD_OWNER_HOOK_ROUTES
                 or route_id in _NON_CARD_DATA_ROUTES
                 or route_id in _NON_CARD_LIFECYCLE_ROUTES
+                or route_id in _NON_CARD_PUBLIC_ROUTES
             ):
                 if NON_CARD_OVERRIDE_FAMILY not in authorable:
                     raise VanillaOverrideError(
@@ -4027,6 +4207,71 @@ def _validate_project_ancient_localization(
     return f"event_localizations={len(languages)} keys={len(required_keys)}"
 
 
+def _allowed_text_variables(target_model: dict[str, Any], field: str) -> set[str]:
+    """Variables the game supplies when it formats the replaced vanilla key."""
+    source = target_model[f"{field}_localization"]
+    allowed: set[str] = set()
+    for template in source[f"localized_{field}s"].values():
+        allowed.update(_SMART_FORMAT_VARIABLE_RE.findall(template))
+    if field == "title":
+        return allowed
+    allowed.update(
+        variable["name"]
+        for variable in (target_model.get("properties") or {}).get("dynamic_vars") or []
+    )
+    if target_model["category"] == "CARD":
+        allowed.update(_CARD_DESCRIPTION_FIXED_VARIABLES)
+    return allowed
+
+
+def _validate_project_text_localization(
+    project_dir: Path,
+    mod_name: str,
+    operations: list[dict[str, Any]],
+    catalog: dict[str, Any],
+) -> str:
+    selected = [
+        operation
+        for operation in operations
+        if operation["route"]["id"] in _VANILLA_TEXT_ROUTES
+    ]
+    if not selected:
+        return "text_replacements=0"
+
+    models = {model["id"]: model for model in catalog["models"]}
+    localization_root = project_dir / mod_name / "localization"
+    languages = set(REQUIRED_LANGUAGES)
+    if localization_root.is_dir():
+        languages.update(path.name for path in localization_root.iterdir() if path.is_dir())
+
+    for operation in selected:
+        field = _VANILLA_TEXT_ROUTES[operation["route"]["id"]]
+        target_model = models[operation["target_model_id"]]
+        table_name = operation["semantics"]["localization"]["table"]
+        key = operation["semantics"]["localization"]["key"]
+        allowed = _allowed_text_variables(target_model, field)
+        for language in sorted(languages):
+            path = localization_root / language / f"{table_name}.json"
+            label = f"{mod_name}/localization/{language}/{table_name}.json"
+            if not path.is_file():
+                raise VanillaOverrideError(
+                    f"operation {operation['operation_id']} requires {label} with key {key}"
+                )
+            value = _read_object(path).get(key)
+            if not isinstance(value, str) or not value.strip():
+                raise VanillaOverrideError(
+                    f"{label} must replace {key} with a non-empty string"
+                )
+            unknown = sorted(set(_SMART_FORMAT_VARIABLE_RE.findall(value)) - allowed)
+            if unknown:
+                usable = ", ".join(sorted(allowed)) or "none"
+                raise VanillaOverrideError(
+                    f"{label} {key} references variables the vanilla {field} cannot "
+                    f"resolve: {', '.join(unknown)}; usable variables: {usable}"
+                )
+    return f"text_replacements={len(selected)}"
+
+
 def validate_project_override_manifest(
     project_dir: Path,
     mod_name: str,
@@ -4043,7 +4288,10 @@ def validate_project_override_manifest(
     ancient_summary = _validate_project_ancient_localization(
         project_dir, mod_name, manifest["operations"]
     )
-    return f"{summary} {resource_summary} {ancient_summary}"
+    text_summary = _validate_project_text_localization(
+        project_dir, mod_name, manifest["operations"], catalog
+    )
+    return f"{summary} {resource_summary} {ancient_summary} {text_summary}"
 
 
 def write_empty_project_manifest(

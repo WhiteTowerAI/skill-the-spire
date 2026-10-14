@@ -1,18 +1,44 @@
 # Public overrides for existing vanilla Cards
 
 Use this reference after `vanilla-overrides.md` resolves an exact `CARD.*` target. This route
-is pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. It changes existing Card instances by
-attaching a registered default `CardCapability`; it does not register a second Card,
-mutate `ModelDb`, or generate Harmony, reflection, Publicizer, or IL.
+is pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. It changes the existing Card in place
+through three public mechanisms, never by registering a second Card or generating Harmony,
+reflection, Publicizer, or IL:
+
+- a registered default `CardCapability` attached to every instance of the target;
+- the target's canonical `DynamicVars` values, assigned once when `ModelDb` is ready; and
+- the game's own localization merge, which lets a Mod table replace a vanilla key.
 
 The checked catalog lists route family `public-card-overrides` as authorable. One generated
-capability class owns all ordered operations for one target Card type. Generate another
-class for another target. This keeps manifest order explicit and avoids one runtime model
-type for every small text or number change.
+capability class owns all ordered capability operations for one target Card type. Generate
+another class for another target.
+
+## Pick routes from what the player asked for
+
+Start every vanilla Card change here. Each request maps to the smallest route set that makes
+the Card play and read the new way, and to nothing else.
+
+| The user asks to... | Operations |
+|---|---|
+| change a number the Card already has ("Strike deals 9", "upgrade gives +4") | `card.vars.base` only. The vanilla body and the vanilla description already read that variable, so both follow it. |
+| change what the Card does | `card.play.on-play` `replace` with the complete new body, plus `card.description.localization` with matching rules text, plus `card.hover-tips` for each Power, keyword, or Card the new text names. |
+| keep the Card and add an effect | `card.play.on-play` `compose`, plus either `card.description.localization` (the whole text rewritten as one vanilla-style body) or a `card.description.fragments` line before/after the original. |
+| change cost, type, rarity, target, tags, playability, result pile, or glow | the matching property/cost/state route. The vanilla rules text never states these, so no text operation follows unless the user names one. |
+| rename the Card | `card.title.localization`, only when the user asked for a new name. |
+
+**Unchanged by default.** Every surface the user did not name stays vanilla: name, cost,
+type, rarity, art, keywords, tags, and the parts of the rules text the change does not touch.
+A behavior or number change never renames the Card or adds a prefix, suffix, `+`, or "modified"
+marker; the changed rules text is how the player sees the change. When the request is
+ambiguous about a surface, keep it vanilla and say so at confirmation instead of guessing.
+
+Every behavior change keeps the Card's rules text true. If the new behavior and the vanilla
+description would disagree, the plan is incomplete until it carries the text operation from
+the table above.
 
 ## Promoted public surface
 
-| Semantic surface | Route id | Public RitsuLib contract |
+| Semantic surface | Route id | Public contract |
 |---|---|---|
 | Card type | `card.property.type` | `ICardPropertyContributor.GetCardType` |
 | rarity | `card.property.rarity` | `ICardPropertyContributor.GetCardRarity` |
@@ -22,7 +48,9 @@ type for every small text or number change.
 | evaluated Star cost | `card.cost.stars` | `ICardStarCostContributor.ModifyStarCost` |
 | conditional playability | `card.play-state.can-play` | `ICardPlayStateContributor.CanPlay`; no decision returns `null` |
 | result pile | `card.play-result.pile` | `ICardPlayResultContributor.GetResultPileTypeForCardPlay` |
-| title fragments/replacement | `card.title.fragments` | `ICardTitleContributor`; before/replace/after-base/after-title |
+| vanilla variable values | `card.vars.base` | canonical `DynamicVars[name].BaseValue` at `ModelRegistryInitializedEvent`; optional upgrade fixup in `CardCapability.OnOwnerCardUpgraded` |
+| rules text replacement | `card.description.localization` | the Mod's `cards.json` overrides the vanilla `<ENTRY>.description` key through the game's localization merge |
+| name replacement | `card.title.localization` | the Mod's `cards.json` overrides the vanilla `<ENTRY>.title` key through the game's localization merge |
 | description fragments | `card.description.fragments` | `ICardDescriptionContributor`; before/after only |
 | displayed type text | `card.type-text` | `ICardTypeTextModifier`; `{Type}` wraps, omission replaces |
 | hover tips | `card.hover-tips` | `ICardHoverTipContributor` plus typed factories or localized `HoverTip` |
@@ -31,26 +59,16 @@ type for every small text or number change.
 | compose/replace `OnPlay` | `card.play.on-play` | `CardPlayCapability` before/after owner play and public suppression |
 | owner lifecycle composition | `card.owner-hooks` | typed owner hook stream for owner draw/discard/exhaust |
 
-These routes include all non-asset Card contributor interfaces needed by the current
-semantic authoring vocabulary. Card frame/portrait/banner material providers are promoted
-separately in `vanilla-visual-overrides.md` because they require asset packaging
-and presentation contracts. `HasTurnEndInHandEffect` alone
-only asks the game to call the vanilla Card's own protected handler; do not turn it on
-without a grounded compatible owner behavior. A target-bound override must not implement
-`ICardTransformCarryOverCapability`: transforming into another Card identity must drop the
-old target's capability.
+Card frame/portrait/banner material providers are promoted separately in
+`vanilla-visual-overrides.md` because they require asset packaging and presentation
+contracts. `HasTurnEndInHandEffect` alone only asks the game to call the vanilla Card's own
+protected handler; do not turn it on without a grounded compatible owner behavior. A
+target-bound override must not implement `ICardTransformCarryOverCapability`: transforming
+into another Card identity must drop the old target's capability.
 
-The route does not change canonical variables, Energy/Star X-cost identity, tags by
-removal, keywords, the base description body, acquisition pools, or Card materials. It may
-read an existing owner variable in an effect. A newly declared variable belongs to the
-capability, not to the vanilla Card's canonical `DynamicVars` collection.
-
-**Fail-closed intent rule:** replacing, removing, or hiding the original description body
-is a base-description replacement, not composition. RitsuLib `0.6.7` exposes no public
-replacement placement for `ICardDescriptionContributor`. Tell the user that limitation and
-stop; never turn the request into a before/after fragment automatically. Only an explicit
-user choice to keep the original body and add text authorizes `compose`. Finalized values or
-"do not ask again" wording does not authorize the change in meaning.
+These routes do not change Energy/Star X-cost identity, remove tags, change keywords,
+acquisition pools, or Card materials. `card.vars.base` changes only the values of variables
+the vanilla Card already declares; a new number belongs to a capability variable.
 
 ## Manifest contract
 
@@ -81,10 +99,12 @@ catalog, and preserve operation order. A rarity change is:
 `vanilla_overrides.py` owns the exact payload shapes. Important forms are:
 
 - property `set`; tag `append`; and evaluated cost `set` or `delta`;
+- a vanilla variable's new `base_value` and optional new `upgrade_delta`;
+- the target's own title or description key for a name or rules-text replacement;
 - a playability `decision` plus a declarative `when` predicate;
 - a vanilla result pile (`Draw`, `Hand`, `Discard`, or `Exhaust`) or a stable owned-pile
   semantic id already authored through `card-piles.md`;
-- a localization table/key plus a checked title/description/type-text placement;
+- a localization table/key plus a checked description-fragment or type-text placement;
 - keyword, typed model-preview, or localized hover tips;
 - capability variables with `dynamic`, `damage`, `block`, or typed `power` roles;
 - ordered effects: attack, block, heal, apply Power, draw, gain Energy, gain Stars,
@@ -108,11 +128,141 @@ unknown enum values, malformed effects or predicates, non-Card targets, and unli
 routes. It also rejects a cost `set` after a delta. One set followed by ordered deltas is
 valid. Appended tags, fragments, tips, glow predicates, playability decisions, owner hooks,
 and composed effects retain manifest order. Multiple replacements of the same title,
-type-text, or `OnPlay` surface conflict.
+type-text, description key, `OnPlay` surface, or vanilla variable conflict.
+
+## Vanilla variable values
+
+`card.vars.base` sets one existing vanilla variable. The baseline copies the target's
+`properties.dynamic_vars` and `properties.upgrade_levels` from the catalog:
+
+```json
+{
+  "order": 0,
+  "operation_id": "strike.damage",
+  "target_model_id": "CARD.STRIKE_IRONCLAD",
+  "mode": "adjust",
+  "surface": "card.dynamic_vars",
+  "route": { "class": "public", "id": "card.vars.base", "fingerprint": null },
+  "expected_baseline": {
+    "category": "CARD",
+    "type": "MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad",
+    "properties": {
+      "dynamic_vars": [
+        { "name": "Damage", "type": "MegaCrit.Sts2.Core.Localization.DynamicVars.DamageVar", "base_value": 6 }
+      ],
+      "upgrade_levels": [
+        { "level": 1, "energy_cost": 1, "star_cost": -1, "dynamic_vars": [
+          { "name": "Damage", "type": "MegaCrit.Sts2.Core.Localization.DynamicVars.DamageVar", "base_value": 9 }
+        ] }
+      ]
+    }
+  },
+  "semantics": { "variable": "Damage", "base_value": 9, "upgrade_delta": 4 }
+}
+```
+
+`upgrade_delta` is the new amount one upgrade adds; `null` keeps the vanilla upgrade. The
+validator rejects an unknown variable, a computed `Calculated*` variable (set its
+`CalculationBase`/`CalculationExtra` input instead), an `upgrade_delta` equal to the vanilla
+one, and a second operation on the same variable.
+
+Assign the new base on the canonical model when `ModelDb` is ready. Every mutable Card is
+cloned from the canonical model, including the starter deck, rewards, generated combat
+Cards, a downgrade, and a Card restored from a save, so they all inherit it. The event can
+publish more than once; assign the absolute value, never `+=`:
+
+```csharp
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Cards;
+using STS2RitsuLib;
+
+static partial void RegisterContent()
+{
+    RitsuLibFramework.SubscribeLifecycle<ModelRegistryInitializedEvent>(_ =>
+        ModelDb.Card<StrikeIronclad>().DynamicVars["Damage"].BaseValue = 9m);
+}
+```
+
+A changed upgrade adds the difference after the vanilla upgrade body runs. Vanilla Strike
+adds 3, so a new `upgrade_delta` of 4 adds 1 more. Put it in the target's capability:
+
+```csharp
+protected override void OnOwnerCardUpgraded(CardModel card) =>
+    card.DynamicVars["Damage"].UpgradeValueBy(1m);
+```
+
+The vanilla Card has a single upgrade level, and a downgrade re-clones the canonical
+values, so this fixup needs no downgrade handler. This is the only owner-variable write a
+capability makes.
+
+Observed on the pinned host with Strike `Damage` 9 / `upgrade_delta` 4: canonical, new
+mutable copy, starter deck, upgraded copy 13, save round trip 13, downgrade 9, combat
+damage 9 and 13, and hand text `Deal 9 damage.` / `Deal 13 damage.` all followed.
+
+## Rules text replacement
+
+`card.description.localization` replaces the Card's whole vanilla description. The game
+merges each Mod's `localization/<lang>/<table>.json` into the base table and the Mod value
+wins, so the Mod ships the vanilla key itself:
+
+```json
+{
+  "order": 1,
+  "operation_id": "strike.description",
+  "target_model_id": "CARD.STRIKE_IRONCLAD",
+  "mode": "replace",
+  "surface": "card.description_text",
+  "route": { "class": "public", "id": "card.description.localization", "fingerprint": null },
+  "expected_baseline": {
+    "category": "CARD",
+    "type": "MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad",
+    "description_localization": {
+      "key": "STRIKE_IRONCLAD.description",
+      "localized_descriptions": {
+        "eng": "Deal {Damage:diff()} damage.",
+        "zhs": "造成{Damage:diff()}点伤害。"
+      }
+    }
+  },
+  "semantics": { "localization": { "table": "cards", "key": "STRIKE_IRONCLAD.description" } }
+}
+```
+
+```text
+<ModName>/localization/eng/cards.json  {"STRIKE_IRONCLAD.description": "Deal {Damage:diff()} damage.\nDraw 1 card."}
+<ModName>/localization/zhs/cards.json  {"STRIKE_IRONCLAD.description": "造成{Damage:diff()}点伤害。\n抽1张牌。"}
+```
+
+The baseline's vanilla text is drift protection: a game update that rewrites the vanilla
+description fails the build instead of silently replacing new text. No C# is generated for
+this route. Do not also write the title key unless SPEC renames the Card.
+
+The vanilla description is formatted before any capability runs, so it can reference only
+the Card's own `DynamicVars`, variables the vanilla text already uses, and the fixed Card
+description variables (`IfUpgraded`, `OnTable`, `InCombat`, `IsTargeting`, `TargetType`,
+`GainsBlock`, `IsOstyAlive`, `energyPrefix`, `singleStarIcon`). Build rejects any other
+variable. For a new number, write a fixed literal when it never changes, or put that line in
+a `card.description.fragments` fragment, which does see capability variables.
+
+The replacement is global: the Card library and every view of the Card show it. Build
+requires `eng` and `zhs`; every other language the Mod does not ship keeps the vanilla text,
+so report that. If another loaded Mod replaces the same key, the later-loaded Mod wins.
+
+## Name replacement
+
+`card.title.localization` renames the Card the same way, through its vanilla
+`<ENTRY>.title` key: `mode: replace`, surface `card.title`, baseline `title_localization`
+with its key and vanilla `eng`/`zhs` titles, and semantics
+`{"localization": {"table": "cards", "key": "<ENTRY>.title"}}`. Use it only when the user
+asked for a new name. Write the complete new name; the game still appends `+` to an
+upgraded Card. A title is formatted without variables, so Build rejects any `{...}` in it.
+Every consumer that reads the title key sees the new name, including the hover text of
+Powers and timeline entries that name the Card. Observed on the pinned host: Defend renamed
+`Brace`/`架势` resolved through `Title`, the raw title key, and the upgraded `Brace+`/`架势+`.
 
 ## Registration
 
-Create the capability through the content registry so `ModelDb` owns its identity, clone,
+Create a capability through the content registry so `ModelDb` owns its identity, clone,
 and save/load lifecycle. Never call its constructor in the default-capability lambda:
 
 ```csharp
@@ -131,12 +281,15 @@ static partial void RegisterContent()
 
 The modifier id is stable, Mod-scoped, lowercase, and specific to the target. Register the
 capability before configuring it. Do both exactly once in `MainFile.RegisterContent()`.
+A manifest with only `card.vars.base` (no `upgrade_delta`) and text replacement needs no
+capability.
 
 ## Capability lowering
 
 Start with `CardPlayCapability` when any play behavior is selected. Otherwise
 `CardCapability` is enough. Implement only the contributor interfaces selected by the
-manifest. The combined shape is:
+manifest. A combined shape for "Strike becomes a cheaper Common that gains Block before its
+attack and exhausts" is:
 
 ```csharp
 using MegaCrit.Sts2.Core.Commands;
@@ -154,7 +307,6 @@ public sealed class StrikeIroncladOverride : CardPlayCapability,
     ICardPropertyContributor,
     ICardEnergyCostContributor,
     ICardPlayResultContributor,
-    ICardTitleContributor,
     ICardDescriptionContributor,
     ICardHoverTipContributor,
     ICardGlowContributor
@@ -168,14 +320,10 @@ public sealed class StrikeIroncladOverride : CardPlayCapability,
         Math.Max(0, currentCost - 1);
     public PileType? GetResultPileTypeForCardPlay(CardModel card) => PileType.Exhaust;
 
-    public IEnumerable<CardTitleFragment> GetTitleFragments(CardTitleContext context) =>
-        [new(new LocString("cards", $"{Id.Entry}.titlePrefix"),
-            CardTitleFragmentPlacement.BeforeBase, 0)];
-
     public IEnumerable<CardDescriptionFragment> GetDescriptionFragments(
         CardDescriptionContext context) =>
         [new(new LocString("cards", $"{Id.Entry}.extraDescription"),
-            CardDescriptionFragmentPlacement.AfterBase, 0)];
+            CardDescriptionFragmentPlacement.BeforeBase, 0)];
 
     public IEnumerable<IHoverTip> GetHoverTips(CardModel card) =>
         [HoverTipFactory.FromKeyword(CardKeyword.Exhaust)];
@@ -200,10 +348,11 @@ public sealed class StrikeIroncladOverride : CardPlayCapability,
 }
 ```
 
-This is a shape, not a request to emit every interface. Keep generated code as small as the
-accepted manifest. Use the catalog's concrete target type. Emit fragments and effects in
-manifest order, and use each operation order as the fragment `Order` when RitsuLib exposes
-one.
+The Card keeps its vanilla name. The Block line is a fragment because it reads the
+capability's `Block` variable. This is a shape, not a request to emit every interface. Keep
+generated code as small as the accepted manifest. Use the catalog's concrete target type.
+Emit fragments and effects in manifest order, and use each operation order as the fragment
+`Order` when RitsuLib exposes one.
 
 For type text, return `LocString` entries from `GetTypeModifiers(CardModel)`. A wrapping
 localization value must contain exactly one `{Type}` token; a replacement must contain
@@ -234,28 +383,30 @@ Returning `true` suppresses only the vanilla Card's protected `OnPlay` body. The
 `CardModel.OnPlayWrapper` still owns payment, targeting, history, result-pile movement,
 enchantments, afflictions, and later hooks. Do not reimplement or manually call those
 stages. A replacement must include every effect the accepted SPEC promises; it must not
-silently retain part of the vanilla body.
+silently retain part of the vanilla body. A replacement that still deals the vanilla
+damage reads the owner's `Damage` variable, so a `card.vars.base` change reaches it too.
 
 Capability-owned variables clone and save through RitsuLib. Apply their upgrade deltas in
-`OnOwnerCardUpgraded`; do not write into `Owner.DynamicVars`. The default capability follows
-clones of the same target identity. It does not carry to a different transformed Card. On
-downgrade, rebuild capability-owned values from the manifest baseline and current owner
-upgrade level rather than subtracting from an unknown state.
+`OnOwnerCardUpgraded`. The default capability follows clones of the same target identity.
+It does not carry to a different transformed Card. On downgrade, rebuild capability-owned
+values from the manifest baseline and current owner upgrade level rather than subtracting
+from an unknown state.
 
 ## Localization and checks
 
 Capability localization lives in the normal Mod resource tree. Use stable capability-entry
-keys such as `<MOD>_MODEL_CAPABILITY_<TYPE>.extraDescription` in the selected table. Supply
-required `eng` and `zhs` plus every additional language named by the accepted SPEC, and
-preserve SmartFormat variables. Write every fragment, title, and type text in the Card row of
-`reference/vanilla-text-style.md` so it blends with the vanilla body it joins: glossary terms
-in `[gold]` with their exact `eng`/`zhs` names, uncolored `:diff()` numbers, one effect per
-line, and Chinese full-width punctuation. A fragment that names a Power, keyword, or Card also
-adds its tip through `card.hover-tips`.
-Changing a gameplay effect and its player-facing text is one operation plan, even though
-the manifest records separate ordered surfaces.
+keys such as `<MOD>_MODEL_CAPABILITY_<TYPE>.extraDescription` in the selected table; only
+`card.description.localization` and `card.title.localization` write a vanilla key. Supply required `eng` and `zhs` plus
+every additional language named by the accepted SPEC, and preserve SmartFormat variables.
+Write every replacement, fragment, name, and type text in the Card row of
+`reference/vanilla-text-style.md` so it reads like a vanilla Card: glossary terms in `[gold]`
+with their exact `eng`/`zhs` names, uncolored `:diff()` numbers, one effect per line, and
+Chinese full-width punctuation. Text that names a Power, keyword, or Card also adds its tip
+through `card.hover-tips`.
 
-Never claim real-game behavior, preview, clone/save, transform, payment, targeting,
-result-pile, or presentation proof that was not observed in a real host. A focused manifest
-test and a successful compile establish neither. Report every unrun path as an explicit
-exception rather than a pass.
+Tier 2 resolves the changed Card's title and description through the real Card in both
+`eng` and `zhs`, asserts the title still equals the catalog's vanilla title unless SPEC
+renamed it, and asserts the description shows the new numbers. Never claim real-game
+behavior, preview, clone/save, transform, payment, targeting, result-pile, or presentation
+proof that was not observed in a real host. A focused manifest test and a successful compile
+establish neither. Report every unrun path as an explicit exception rather than a pass.

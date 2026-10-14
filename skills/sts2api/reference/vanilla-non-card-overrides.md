@@ -9,7 +9,8 @@ availability.
 The checked catalog lists route family `non-card-data-behavior` as authorable. Its assembly identity
 is the one in `vanilla-overrides.md`; the catalog contains 1624 models and 4165 reviewed
 Adapter fingerprints. Of those Adapters, 4141 ground target-specific non-Card methods and
-four ground shared stream/flow boundaries. Every operation is `multiplayer: singleplayer`.
+four ground shared stream/flow boundaries. Every hook, data, and body operation is
+`multiplayer: singleplayer`.
 A prompt selects a
 semantic route and exact model only. It never supplies a method name, patch body, private
 field, reflection expression, Publicizer request, or IL.
@@ -18,6 +19,8 @@ field, reflection expression, Publicizer request, or IL.
 
 | Family | Route | Class/mode | Supported targets |
 |---|---|---|---|
+| rules text | `relic.description.localization`, `potion.description.localization` | public `replace` | Relic, Potion |
+| vanilla variable values | `relic.vars.base` | public `adjust` | Relic |
 | owner hooks | `behavior.<category>.owner-hooks` | public `compose`; fixed Adapter `replace` | Relic, Potion, Power, Orb, Enchantment, Affliction, Monster |
 | intrinsic data | sixteen `data.*` routes below | fixed Adapter `adjust` | Relic, Potion, Power, Enchantment, Affliction, Monster, Encounter |
 | Relic body | `behavior.relic.lifecycle` | fixed Adapter `replace` | complete obtain/remove lifecycle |
@@ -33,6 +36,49 @@ field, reflection expression, Publicizer request, or IL.
 Visuals, availability, and existing-Ancient options each remain their own separate
 operations, owned by their own references. Ordinary Event replacement here rejects every `content_kind:
 ancient` target.
+
+## Keep the text true, and nothing else changed
+
+The rule from `vanilla-card-overrides.md` § Pick routes applies to every model here: a
+number or behavior change leaves the name, rarity, art, and every unnamed surface vanilla,
+and never adds a name marker. When the vanilla description would no longer describe the
+model, the same plan carries its text operation:
+
+- a changed number the description already shows: `relic.vars.base` alone;
+- changed Relic or Potion behavior: the behavior route plus
+  `relic.description.localization` or `potion.description.localization`;
+- changed Power, Orb, Enchantment, Affliction, or Monster behavior: no text route is
+  promoted. Their in-combat text comes from variant keys (`smartDescription`,
+  `remoteDescription`, intents) that the catalog does not record. Tell the user the vanilla
+  text stays, and pause before SPEC until they accept that or drop the change.
+
+## Rules text and variable values
+
+`relic.description.localization` and `potion.description.localization` replace the vanilla
+`<ENTRY>.description` exactly like `card.description.localization`: `mode: replace`, surface
+`relic.description_text` or `potion.description_text`, baseline `category`, `type`, and
+`description_localization` with its key and vanilla `eng`/`zhs` text, and semantics
+`{"localization": {"table": "relics" | "potions", "key": "<ENTRY>.description"}}`. The Mod
+ships that key in `<ModName>/localization/<lang>/relics.json` or `potions.json` for `eng`,
+`zhs`, and every other shipped language. The text may reference the model's own
+`DynamicVars` and the variables the vanilla text already uses; Build rejects any other.
+The replacement is global, unshipped languages keep the vanilla text, and a later-loaded Mod
+replacing the same key wins.
+
+`relic.vars.base` sets one vanilla Relic variable: `mode: adjust`, surface
+`relic.dynamic_vars`, baseline `properties.dynamic_vars`, and semantics
+`{"variable": "<Name>", "base_value": <number>}`. Assign it on the canonical Relic in a
+`ModelRegistryInitializedEvent` handler, as for Cards; every obtained Relic clones it:
+
+```csharp
+RitsuLibFramework.SubscribeLifecycle<ModelRegistryInitializedEvent>(_ =>
+    ModelDb.Relic<Akabeko>().DynamicVars["VigorPower"].BaseValue = 10m);
+```
+
+Observed on the pinned host: Akabeko `VigorPower` 10 reached the obtained Relic, the combat
+start Vigor amount, and its `eng`/`zhs` description, and a replaced Block Potion
+description resolved in both languages. Potion variables are not promoted: a
+mutable Potion does not clone its canonical `DynamicVars`, and the catalog records none.
 
 ## Public owner-hook composition
 

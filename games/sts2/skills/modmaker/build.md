@@ -40,7 +40,9 @@ Before MSBuild, the tool verifies:
   digest, matching Mod id, grounded baselines/routes, no same-Mod conflict, and only
   operations the current catalog promotes. Each override family is accepted by its own
   reference, and every route outside them fails closed:
-  - `reference/vanilla-card-overrides.md` — exact public Card routes;
+  - `reference/vanilla-card-overrides.md` — exact public Card routes, including a replaced
+    vanilla description key present and nonempty in every shipped language and reading only
+    variables the vanilla description can resolve;
   - `reference/vanilla-visual-overrides.md` — the 44 exact visual routes, plus their
     required/optional Mod-local resources;
   - `reference/vanilla-ancient-overrides.md` — existing-Ancient option append/replacement
@@ -50,7 +52,7 @@ Before MSBuild, the tool verifies:
     complete pool baselines, Relic/Potion override dependencies, and ordered primary-pool
     checks;
   - `reference/vanilla-non-card-overrides.md` — non-Card data and behavior routes, including
-    owner-hook streams and checked lifecycle replacements.
+    owner-hook streams, checked lifecycle replacements, and Relic/Potion description keys.
 
 The skill supplies the small `Godot.NET.Sdk 4.5.1` import files. `GodotSharp`,
 `System.IO.Hashing`, STS2, Harmony, and RitsuLib resolve from the checked local game/runtime

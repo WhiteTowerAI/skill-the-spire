@@ -113,9 +113,11 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
    A change to an existing vanilla model starts at `reference/vanilla-overrides.md`, which
    routes to the Card, visual, Ancient, availability, or non-Card override reference. Offer a
    closest **new** element only as a separate user choice, never as an automatic substitution.
-   **Fail closed on vanilla Card base-description replacement:** RitsuLib `0.6.7` exposes only
-   before/after description fragments. Explain that and pause before SPEC; continue only after
-   the user explicitly accepts a before/after composition.
+   **Change only what was named, and keep the text true.** For a vanilla Card, pick the
+   operations from the § Pick routes table in `reference/vanilla-card-overrides.md`: a changed
+   number is one variable-value change, and a changed behavior also rewrites the Card's rules
+   text. Never rename the model, add a name marker, or touch another surface the user did not
+   ask about. Do not ask whether the description should change with the effect; it does.
 
 2. **Open fields.** The selected surface page's SPEC fields (or "DESIGN and SPEC vocabulary")
    list everything SPEC must settle. Ask only about a field the request leaves materially open;
@@ -148,9 +150,13 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      Capture every choice's visibility, lock, single fixed cost, hover content, ordered
      consequences, and next step. A replacement must describe the complete initial list with a
      reachable finish; never silently keep unspecified vanilla choices inside it.
+   - **Existing vanilla Card:** capture the new numbers (and the new upgrade amount, when it
+     changes) or the complete new behavior. Draft the new `eng`/`zhs` rules text yourself in
+     the vanilla style and show it at confirmation next to the vanilla text.
    - **Existing vanilla non-Card data/behavior:** capture the final value or delta, or the real
      trigger, scope, condition, and ordered result. For a complete behavior replacement, confirm
-     that everything on that named surface is being replaced.
+     that everything on that named surface is being replaced. A Relic or Potion whose
+     description stops being true gets new rules text the same way as a Card.
    - **Character:** load `${STS2API_SKILL_DIR}/design/character-foundation.md` first. If the
      core mechanic is unclear, ask that one decision, then propose a complete exact starter deck;
      never ask the user to name ten Cards from a blank form. Secondary resources, ordered buffers,
@@ -311,7 +317,8 @@ open hypotheses: none | <unproven claim and evidence needed>
 
 Then list, in plain language, the selected surface page's SPEC fields for each element,
 omitting fields that do not apply. A vanilla override lists its target reference's operation
-fields instead.
+fields instead, plus one `unchanged:` line naming the surfaces that stay vanilla (always the
+name, unless the user asked for a new one).
 
 Do not write files here - `design.md` writes the durable intent, decisions, and scope, and
 `spec.md` lowers the current slice. If fast routing found nothing material to ask, skip straight to `design.md`
