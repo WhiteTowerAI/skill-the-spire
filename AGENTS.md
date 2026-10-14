@@ -149,7 +149,14 @@ or other build output inside `skills/`; it invalidates payload parity.
 ## Git
 
 `main` holds released, reviewed work. Do not develop on `main` and never commit to it directly;
-changes reach `main` only by merging a reviewed PR.
+changes reach `main` only through a merged PR.
+
+The agent ships its own work end to end. Once a change is done, commit it on its branch, push,
+open the PR, and merge it yourself with a merge commit (`gh pr merge --merge`). Then switch
+back to `main` and pull. Do not stop at an open PR. Merge only when every check the
+Verification and Tests sections require has run and passed, and the PR's CI, if any, is
+green. Leave the PR open and say why when a check fails, the merge conflicts, or the user asked
+to review first.
 
 - Prefer small PRs focused on one feature, one bug fix, one chore, or one refactor.
 - Use branches:
@@ -168,5 +175,6 @@ changes reach `main` only by merging a reviewed PR.
   - How it was checked: only checks that actually ran, per the Verification section above
 
 Check `git status` before editing. Preserve unrelated dirty/untracked work. Stage only intended
-paths. Never reset, clean, rewrite history, force-push, merge into `main`, install, launch, tag,
-release, or change repository visibility without explicit authorization.
+paths. Never reset, clean, rewrite history, force-push, install, launch, tag, release, or
+change repository visibility without explicit authorization. Merging your own PR as described
+above needs no further authorization.
