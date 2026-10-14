@@ -13,12 +13,17 @@ catalog. `build.py` rejects every other route before MSBuild.
 Read this reference whenever a request targets an existing vanilla Card, Relic, Potion,
 Power, Monster, Encounter, Event, or other model. Resolve the target and report the exact
 current boundary. Route a selected public visual surface to `vanilla-visual-overrides.md`.
-Route a non-asset Card operation to `vanilla-card-overrides.md`. Other behavior/data/
-availability operations remain grounding-only until their route family is authorable. Route
-checked epoch/pool availability operations to `vanilla-availability-overrides.md`. For
-an exact `content_kind: ancient` target, route option/branch behavior to
-`vanilla-ancient-overrides.md` and visual surfaces separately to the visual route. Do not
-fall back to a new-content recipe or derive Harmony/reflection/Publicizer/IL from a prompt.
+Route a non-asset Card operation to `vanilla-card-overrides.md`, starting at its § Pick
+routes table. Route checked epoch/pool availability operations to
+`vanilla-availability-overrides.md`. Route non-Card data, behavior, rules text, and Relic
+variable values to `vanilla-non-card-overrides.md`. For an exact `content_kind: ancient`
+target, route option/branch behavior to `vanilla-ancient-overrides.md` and visual surfaces
+separately to the visual route. Do not fall back to a new-content recipe or derive
+Harmony/reflection/Publicizer/IL from a prompt.
+
+An override changes only what the user named. A changed number or behavior keeps the
+model's name and every other unnamed surface vanilla, and it changes the rules text exactly
+as far as needed to keep that text true. Each family reference names its text route.
 
 ## Pinned catalog
 
@@ -53,9 +58,9 @@ localization table/key pairs from RitsuLib's public `ModelTitleExtensions` mappi
 Card, Relic, Potion, and Power records also carry `description_localization`: the English
 and Simplified Chinese rules-text template from the same table as the title
 (`<ENTRY>.description`), with its SmartFormat variables intact. It is reference text for
-"like vanilla X" lookups and is excluded from `catalog_sha256`, so the identity above and
-existing override manifests stay valid. Curse/Status Cards and some Powers have no
-description key and carry none.
+"like vanilla X" lookups and the drift baseline of a rules-text replacement, and it is
+excluded from `catalog_sha256`, so the identity above and existing override manifests stay
+valid. Curse/Status Cards and some Powers have no description key and carry none.
 
 For title-bearing model families, the collector uses the game's public
 `LocManager.SetLanguage` route to read each local title in all 14 pinned languages. That
@@ -135,8 +140,9 @@ target record, for example:
 ```
 
 Types and values must match exactly. Missing or changed fields are baseline drift. Card
-Card operations include exact category/type baselines and the surface-specific fields in
-`vanilla-card-overrides.md`. Visual operations also require exact content kind and a
+operations include exact category/type baselines and the surface-specific fields in
+`vanilla-card-overrides.md`; a rules-text replacement also pins the vanilla
+`description_localization` text, so a game update that rewrites it is drift. Visual operations also require exact content kind and a
 checked Mod-local resource contract from `vanilla-visual-overrides.md`. No other operation
 is authorized merely because this generic shape can identify its target. Existing-Ancient
 operations additionally require exact `content_kind`, singleplayer semantics, Mod-local
@@ -164,11 +170,15 @@ Validation rejects:
 - visual paths outside exact `res://<ModId>/`, traversal/backslashes, script resources,
   wrong resource kinds, required project files that are absent, or unusable layer
   directories; and
+- a rules-text replacement whose key is not the target's vanilla description key, whose
+  shipped `eng`/`zhs` (or other shipped language) value is missing or empty, or whose text
+  references a variable the vanilla description cannot resolve; and
 - ambiguous same-Mod overlap on one target/surface.
 
 Ordered Card tag/text/tip/glow/playability/owner-hook and behavior composition is preserved.
 Costs allow one `set` followed by deltas, or deltas alone; a later `set` conflicts. Multiple
-exclusive property/result/replacement operations conflict on the same target/surface.
+exclusive property/result/replacement operations conflict on the same target/surface, and
+two variable-value operations conflict on the same target variable.
 Ancient append rules compose with other appends; one same-target replacement conflicts with
 every append or replacement in the generated Mod.
 External Mod compatibility is not inferred from this same-Mod check.

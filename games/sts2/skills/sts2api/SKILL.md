@@ -57,10 +57,11 @@ grounding kernel resolves the pinned target, then routes to the Card, visual, An
 availability, or non-Card override reference listed in the table below. Never derive a patch body
 from the prompt or silently convert the request into new content.
 
-A request to replace, remove, or hide a vanilla Card's original description is a blocking
-base-description replacement gap under RitsuLib `0.6.7`. Report that only before/after
-fragments exist and stop. Do not return an appended-text implementation unless the user has
-explicitly accepted composition instead.
+An override changes only what the request names. A changed number or behavior keeps the
+model's name and its other surfaces vanilla, and rewrites the rules text only as far as the
+change requires: `card.vars.base` for a number the text already shows, and
+`card.description.localization` (or the Relic/Potion equivalent) for new behavior. Never add
+a title change unless the request asks for a new name.
 
 ## How to answer
 
