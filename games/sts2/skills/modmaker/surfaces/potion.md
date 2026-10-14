@@ -73,6 +73,8 @@ Read `reference/model-capabilities.md` for separable behavior/state attached to 
 and `reference/shared-effect-hooks.md` for reachable per-hit attack, healing, Energy/Stars-gain
 response, or maximum-hand-size behavior. The Potion or its typed capability remains the owner;
 state reachability ends when the native Potion lifecycle removes it unless SPEC says otherwise.
+Read `reference/model-right-click.md` when right-clicking the held Potion triggers an action
+other than its native use.
 
 Keep the drinking action in `effects.sequence`. Append a shared-route SPEC block only for behavior
 while the Potion is held, and specify exact phase/order, subject guard, neutral case, removal

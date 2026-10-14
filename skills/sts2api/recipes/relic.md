@@ -149,6 +149,38 @@ implement `IRelicExtraIconAmountLabelsChangeSource`, declare
 mutation. Returning no spec after the removal condition makes RitsuLib remove the label.
 Do not poll or generate custom rectangles.
 
+## Optional hidden inventory presence
+
+For an owned Relic that must keep working while absent from the player's view (a dormant
+form, a hidden curse), implement `STS2RitsuLib.Relics.Visibility.IModRelicVisibility` on the
+same Relic class. Hiding removes only the UI presence: the inventory holder, its
+flash animation, its hover tips, and the basic holder that reward, choose-a-relic, run
+history, and unlock screens build. Hooks, state, and saves keep running.
+
+Because the same check runs on offered and history copies, derive `IsRelicVisible` only from
+Mod-owned state that the owned Relic sets, and keep it `true` by default:
+
+```csharp
+using STS2RitsuLib.Relics.Visibility;
+
+public bool IsRelicVisible => !IsMutable || !_dormant;
+
+private void SetDormant(bool dormant)
+{
+    _dormant = dormant;   // Mod-owned state; persist it per reference/stateful-mechanics.md
+    RitsuLibFramework.RefreshRelicVisibility();
+}
+```
+
+Call `RitsuLibFramework.RefreshRelicVisibility()` after every state change; it rebuilds the
+active inventory and returns `false` when no run inventory exists. Never read `Owner` in the
+getter: a canonical Relic has none. Hiding another Mod's or a vanilla Relic through the
+global `RegisterRelicVisibilityRule` is not part of this route. Generated hidden Relics remain
+game-unobserved. Tier 2 asserts `RitsuLibFramework.IsRelicVisible(relic)` before and after
+each change, that `RefreshRelicVisibility()` reports a changed inventory, and that the
+Relic's effect still resolves while hidden. Headed review confirms that the holder leaves
+and returns with no empty slot, stale tooltip, or flash.
+
 ## Optional owned Rest Site action
 
 Keep the Relic registered exactly once through the normal content pack. Add one separate

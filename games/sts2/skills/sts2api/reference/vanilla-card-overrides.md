@@ -70,6 +70,18 @@ These routes do not change Energy/Star X-cost identity, remove tags, change keyw
 acquisition pools, or Card materials. `card.vars.base` changes only the values of variables
 the vanilla Card already declares; a new number belongs to a capability variable.
 
+Tag removal stays unpromoted although RitsuLib exposes `CardModel.RemoveModCardTag`. On the
+pinned host that helper is not a safe override route:
+
+- `CardModel.Tags` lazily caches `CanonicalTags` in a `HashSet` that `DeepCloneFields` does
+  not copy, so a clone can share one set with its source and a removal leaks to other copies;
+- `SerializableCard` saves no tags, so a per-instance removal disappears on reload; and
+- any Card property capability that contributes tags makes `Tags` return a merged sequence,
+  so the helper then returns `false` without removing anything.
+
+Report a requested vanilla tag removal as unsupported. Do not lower it to
+`RemoveModCardTag`, a Mod-local mutation of the canonical Card, or a patch.
+
 ## Manifest contract
 
 Resolve the target first, copy the exact required baseline fields from the checked

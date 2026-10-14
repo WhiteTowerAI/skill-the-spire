@@ -105,7 +105,8 @@ Read `reference/model-capabilities.md` for separable behavior/state attached to 
 `reference/lifecycle-state-rng.md` when it crosses callbacks or persistence boundaries, and
 `reference/shared-effect-hooks.md` for reachable per-hit attack, healing, Energy/Stars-gain
 response, or maximum-hand-size behavior. The Power or its typed capability remains the owner and
-inherits the Power's combat-scope lifetime.
+inherits the Power's combat-scope lifetime. Read `reference/model-right-click.md` when
+right-clicking the Power icon triggers an action.
 
 Append only the selected reference's game-term SPEC block. Preserve amount/duration semantics,
 exact phase/order, owner/subject guard, unchanged neutral behavior, and cleanup when the Power or
