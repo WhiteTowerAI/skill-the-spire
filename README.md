@@ -167,9 +167,9 @@ can't judge, such as whether the art looks good, are left for you to check, and 
 
 ### For Developers
 
-Contributor rules live in [`AGENTS.md`](AGENTS.md). The exact list of supported features and
-known limits is in
-[`games/sts2/tests/content-capability-graph.md`](games/sts2/tests/content-capability-graph.md).
+Contributor rules live in [`AGENTS.md`](AGENTS.md). Supported features and their known limits
+are documented per feature in the shipped pack, starting from
+[`games/sts2/skills/sts2api/SKILL.md`](games/sts2/skills/sts2api/SKILL.md).
 Bug reports and focused pull requests are welcome at
 [`WhiteTowerAI/skill-the-spire`](https://github.com/WhiteTowerAI/skill-the-spire).
 
@@ -319,8 +319,8 @@ npx skills add WhiteTowerAI/skill-the-spire
 
 ### 开发者
 
-贡献规则见 [`AGENTS.md`](AGENTS.md)。完整的支持功能和已知限制见
-[`games/sts2/tests/content-capability-graph.md`](games/sts2/tests/content-capability-graph.md)。
+贡献规则见 [`AGENTS.md`](AGENTS.md)。支持的功能和已知限制按功能写在随插件发布的资料包里，入口是
+[`games/sts2/skills/sts2api/SKILL.md`](games/sts2/skills/sts2api/SKILL.md)。
 欢迎在 [`WhiteTowerAI/skill-the-spire`](https://github.com/WhiteTowerAI/skill-the-spire)
 提交问题和范围明确的 Pull Request。
 

@@ -2,7 +2,7 @@
 
 Load this reference only when the request creates, revises, or discusses a playable
 Character or its content set. It guides design conversation; it does not add a runtime
-route and never overrides the supported capability graph.
+route and never overrides the shipped recipes and references.
 
 ## Evidence boundary
 

@@ -100,6 +100,12 @@ ratios, then confirm that labels remain readable and do not overlap the native i
 counter, tooltip, or adjacent labels. It must also confirm removal and cleanup after host
 destruction or combat transition.
 
-Intent belongs to the supported public Extra Badges API, but no Intent authoring recipe
-exists yet. Do not adapt this Relic/Power recipe to Intent, and do not describe that missing
-recipe as an unsupported capability.
+Game-observed so far: a human-led crowded-row review and Tier 1 passed for generated Relic
+and Power labels; strict Tier 2 is unrun.
+
+Intent badges are framework-expressible through the public Extra Badges API, but this pack
+has no Intent authoring route. Do not adapt this Relic/Power recipe to Intent. An accepted
+Intent badge is a Mod-local route (`grounding.md` § Mod-local Routes) and stays unverified
+until Build, Tier 1, Tier 2, and headed review pass; do not report it as unsupported. An
+Intent badge adds information to one intent; it does not replace a separate effect icon or
+the native multi-attack count.

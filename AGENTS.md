@@ -41,7 +41,7 @@ or evidence validator.
 - `games/sts2/skills/sts2api/`: design references, recipes, API contracts, catalogs, and errors.
 - `games/sts2/tools/`: scaffold, build, pack, launch, log, profile, localization, art, catalog,
   and preflight tools.
-- `games/sts2/tests/`: current capability and verification guidance.
+- `games/sts2/tests/`: generated-Mod verification guidance.
 - `scripts/publish/`: publisher helpers, the generated notice, and the Codex and Claude Code
   `plugin.json` sources. Keep the `version` in both equal.
 - `.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`: hand-maintained
@@ -78,7 +78,9 @@ agent-neutral.
 
 ## Supported Boundary
 
-`games/sts2/tests/content-capability-graph.md` is authoritative. Keep these facts distinct:
+The shipped pack is authoritative: `sts2api/SKILL.md` routes each feature family to its recipe
+or reference, and that page states its own limitations and unsupported operations. Record a new
+limitation or boundary there, not in a separate inventory. Keep these facts distinct:
 
 - `framework-expressible`: the pinned public/fixed API can express the operation;
 - `skill-the-spire-authorable`: shipped recipes/references cover implementation and proof; and

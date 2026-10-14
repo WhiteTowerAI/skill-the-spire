@@ -1,6 +1,7 @@
 # STS2 verification ownership
 
-This directory owns the current support graph and generated-Mod verification rules.
+This directory owns the generated-Mod verification rules. The supported boundary lives in the
+shipped pack: each recipe or reference states its own limitations and unsupported operations.
 
 ## Model
 
@@ -98,7 +99,9 @@ only what a person actually observed.
 | nearest native visual consumer | actual asset-provider behavior for the selected content family |
 
 Use one representative host for a shared lifecycle. Add cases only for materially different
-lifecycle, state, input, or presentation risk.
+lifecycle, state, input, or presentation risk. Add a case to the nearest host when practical;
+use a separate project only when it is the clearest maintainable shape. Fresh acceptance
+projects do not become permanent fixtures automatically.
 
 ## Reporting
 
@@ -120,9 +123,9 @@ Maintainers improve the shipped pack offline:
 4. Inspect the pinned STS2 `0.107.1` and RitsuLib `0.6.7` code for exact signatures.
 5. Confirm build/load rules in `scaffold.py`, `ritsu_profile.py`, package metadata, and a
    focused hosted proof.
-6. Add the complete documented API inventory and narrow known limitations to the
-   capability graph. Add the smallest reusable semantic/API result to a shipped
-   recipe/reference/error entry with its version and verification facts.
+6. Add the smallest reusable semantic/API result, narrow known limitations, and unsupported
+   boundary to the shipped recipe/reference/error entry that owns the feature, with its
+   version and verification facts.
 
 The official tutorial checkout and other `baselines/` research are maintainer inputs only; only
 their reviewed distillations belong in the shipped pack, and shipped files never tell a user's
