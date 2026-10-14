@@ -78,7 +78,8 @@ Read `reference/model-capabilities.md` for separable behavior/state attached to 
 `reference/lifecycle-state-rng.md` when it crosses callbacks or selected persistence boundaries,
 and `reference/shared-effect-hooks.md` for reachable per-hit attack, healing, Energy/Stars-gain
 response, or maximum-hand-size behavior. The Orb or typed capability remains the owner and is
-reachable only while the Orb is in the combat queue.
+reachable only while the Orb is in the combat queue. Read `reference/model-right-click.md`
+when right-clicking the Orb triggers an action.
 
 Keep channel/passive/evoke behavior in their native fields. Append a shared-route SPEC block only
 for an independent rule, preserving exact phase/order, unchanged neutral behavior, combat cleanup,

@@ -57,6 +57,31 @@ authored Ancient Card for Darv's unchanged Dusty Tome option:
 `<AncientCard>` must report `CardRarity.Ancient`. Do not remove Dusty Tome, map a Basic
 starter, or continue when the Character design has no approved Ancient Card.
 
+Orobas offers two starter upgrades that vanilla maps only for vanilla Characters. Without a
+mapping, a custom Character never sees Archaic Tooth, and Touch of Orobas turns its starter
+Relic into Circlet. When the design includes either upgrade, register it on the same pack:
+
+```csharp
+    .Card<<CardPool>, <TranscendedCard>>()
+    .ArchaicToothTranscendence<<StarterCard>, <TranscendedCard>>()
+    .Relic<<RelicPool>, <RefinedStarterRelic>>()
+    .TouchOfOrobasRefinement<<StarterRelic>, <RefinedStarterRelic>>()
+```
+
+- Archaic Tooth transforms the first deck Card with a mapping, keeping its upgrade and
+  enchantment. `<TranscendedCard>` must report `CardRarity.Ancient` (RitsuLib ignores the
+  mapping otherwise) and must differ from the Dusty Tome Card: Dusty Tome excludes
+  transcendence Cards.
+- Touch of Orobas replaces the starter Relic. Give `<RefinedStarterRelic>` `RelicRarity.Starter`,
+  as vanilla does with Black Blood, so it never enters an ordinary Relic pool.
+- A second mapping for the same starter replaces the first with a warning; map each starter
+  once.
+
+Both mappings remain game-unobserved. Tier 2 grants the vanilla `ArchaicTooth` or
+`TouchOfOrobas` Relic in `RunStart` and asserts the exact deck Card or Relic replacement,
+including a preserved upgrade. Headed review enters Orobas and confirms that the offer and its
+text name the Mod Card or Relic.
+
 The character extends the typed RitsuLib template. Fill every public abstract
 member explicitly; do not infer getter names from other templates:
 

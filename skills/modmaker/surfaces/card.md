@@ -117,7 +117,9 @@ Card, and `reference/lifecycle-state-rng.md` when it crosses a turn/combat/run/s
 makes a gameplay-random choice. Read `reference/shared-effect-hooks.md` for per-hit attack,
 healing, Energy/Stars-gain response, or maximum-hand-size behavior. Read
 `reference/card-play-lifecycle.md` for before/after `OnPlay`, suppression, free-play duration,
-transform reaction/carry-over, or type-text composition.
+transform reaction/carry-over, or type-text composition. Read `reference/model-right-click.md`
+when right-clicking the Card triggers an action, and `recipes/card.md` § Custom Card tags for a
+Mod-owned mechanical category that other effects count.
 
 Append only the selected reference's game-term SPEC block. Keep an ordinary play effect in
 `effects.sequence`; do not turn it into a capability or process listener. For every selected

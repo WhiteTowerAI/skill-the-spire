@@ -375,6 +375,38 @@ uppercase snake case. Mod id `BladeDance`, Card class `BladeDance` becomes
 identity must survive a type rename, pass `ModelPublicEntryOptions.FromStem(...)` to the
 content-pack Card registration. Do not create a second id rule.
 
+## Custom Card tags
+
+A tag is a mechanical category with no text or icon of its own, like vanilla
+`CardTag.Strike`: other effects count or test it ("for each Echo card in your hand"). Use a
+Keyword instead when the player must read the category on the Card. Register each Mod tag
+once on the same content pack, before `.Apply()`; registration freezes at `ModelDb.Init`:
+
+```csharp
+using STS2RitsuLib.CardTags;
+
+    .CardTagOwned("echo")
+```
+
+The qualified id is `MOD_CARDTAG_STEM`, for example `EXAMPLE_MOD_CARDTAG_ECHO`. Resolve it
+with `GetModCardTag()` and declare it in the canonical set of every Mod Card that carries it:
+
+```csharp
+public const string EchoTagId = "<MOD>_CARDTAG_<STEM>";
+
+protected override HashSet<CardTag> CanonicalTags => new() { EchoTagId.GetModCardTag() };
+```
+
+Test membership with `card.Tags.Contains(EchoTagId.GetModCardTag())`. To put a Mod tag on a
+vanilla Card, use the existing `card.property.tags` append route in
+`reference/vanilla-card-overrides.md`. Do not call `AddModCardTag` or `RemoveModCardTag` on a
+live Card: the tag set is shared with clones, is not saved, and becomes read-only once a
+capability contributes tags (`reference/vanilla-card-overrides.md` § Promoted public
+surface). A tag that changes during a run belongs to Mod-owned state, read by the effect
+that tests it. Generated custom tags remain game-unobserved. Tier 2 asserts that the
+registered tag resolves, that the canonical Card and a new mutable copy both contain it, and
+that the counting effect produces the expected amount in `CombatPlayer`.
+
 ## Rarity & pool
 
 `CardRarity` (`mechanics.md` §3): `Basic` (starters), `Common` (default droppable),

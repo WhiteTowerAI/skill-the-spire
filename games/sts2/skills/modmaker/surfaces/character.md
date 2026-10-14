@@ -45,6 +45,9 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   - starter deck rationale: <how its first-run decisions teach the core mechanic>
   - starter relic: <exact Starter relic>
   - starter potions: <exact potion multiset, including empty>
+  - Orobas upgrades: none | <Archaic Tooth: starter Card -> Ancient Card>; <Touch of Orobas:
+    starter Relic -> refined Starter Relic> (`recipes/character.md`; without them Archaic Tooth
+    is never offered and Touch of Orobas gives Circlet)
   - hosted mechanic: <one starter card/relic grounded public mechanic with exact numbers>
   - pool cards: <every non-Basic pool card, each with its exact effect and numbers; each one
     with a non-trivial mechanic also needs its own `surfaces/card.md` envelope>

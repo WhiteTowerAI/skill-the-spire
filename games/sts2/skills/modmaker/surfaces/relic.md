@@ -106,7 +106,10 @@ Read `reference/model-capabilities.md` for separable behavior/state attached to 
 `reference/lifecycle-state-rng.md` when it crosses callbacks, run/save/profile boundaries, or uses
 gameplay RNG, and `reference/shared-effect-hooks.md` for reachable per-hit attack, healing,
 Energy/Stars-gain response, or maximum-hand-size behavior. The Relic or its typed capability
-remains the owner across its declared run/combat reachability.
+remains the owner across its declared run/combat reachability. Read
+`reference/model-right-click.md` when right-clicking the Relic triggers an action, and
+`recipes/relic.md` § Optional hidden inventory presence when the owned Relic must leave the
+player's view while it keeps working.
 
 Keep native trigger effects in `effects.sequence`. Append a shared-route SPEC block only for the
 independent capability/service behavior, preserving cadence, phase/order, subject guard, neutral
