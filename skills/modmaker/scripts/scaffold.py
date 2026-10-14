@@ -234,7 +234,9 @@ public static partial class MainFile
         # version is recorded in the project for reproducibility but must not raise the
         # player runtime minimum when the Mod uses only that baseline API.
         "dependencies": [{"id": PROFILE.runtime_mod_id, "min_version": PROFILE.framework_version}],
-        "affects_gameplay": False,
+        # Every generated Mod adds gameplay models. With false, RitsuLib treats them as
+        # local-only: no network identity, so synced actions such as right-click never send.
+        "affects_gameplay": True,
     }
     _write(project_dir / f"{mod_name}.csproj", csproj)
     _write(project_dir / "Directory.Build.props", directory_props)

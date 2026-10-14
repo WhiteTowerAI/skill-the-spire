@@ -391,10 +391,11 @@ The pool icons stay separate from full energy and from one another. The card poo
 256x256 texture in a real hand card's `%EnergyIcon`. The text route must resolve the 24x24
 path in a real card description using `EnergyIconsFormatter`; seeing the large icon does
 not prove the rich-text consumer. When either custom file is absent, map the stable custom
-pool prefix to the corresponding original Ironclad resource: `EnergyIconHelper.GetPath("ironclad")`
-(`energy_ironclad.tres`) or
-`res://images/packed/sprite_fonts/ironclad_energy_icon.png`. Never synthesize the fallback
-from a palette label such as `red`.
+pool prefix to the corresponding original Ironclad resource as a literal path:
+`res://images/atlases/ui_atlas.sprites/card/energy_ironclad.tres` or
+`res://images/packed/sprite_fonts/ironclad_energy_icon.png`. Do not call
+`EnergyIconHelper.GetPath` from the pool getter (`recipes/character.md` § Character-wide
+theme), and never synthesize the fallback from a palette label such as `red`.
 The static proof is independent from the public resource/control proof; read
 `character-resource.md` for its fixed control, offset, fallback, and non-overlap contract.
 

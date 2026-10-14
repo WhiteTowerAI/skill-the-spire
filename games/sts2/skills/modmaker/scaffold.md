@@ -49,7 +49,10 @@ The project contains:
   the framework DLL;
 - `mod_manifest.json` with only `STS2-RitsuLib >= 0.6.7` and
   `min_game_version=0.107.1`,
-  `has_dll=true`, and `has_pck=false` for the empty scaffold;
+  `has_dll=true`, `affects_gameplay=true`, and `has_pck=false` for the empty scaffold.
+  Keep `affects_gameplay=true`: RitsuLib treats the models of a Mod that declares `false` as
+  local-only, so they get no network identity and synced actions such as right-click never
+  send;
 - `Sts2PathDiscovery.props` plus optional `local.props` support; local Mods resolve beside
   the host executable, which is the game root on Windows/Linux and
   `SlayTheSpire2.app/Contents/MacOS/` on macOS;

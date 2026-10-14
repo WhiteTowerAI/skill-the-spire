@@ -77,7 +77,12 @@ Relic into Circlet. When the design includes either upgrade, register it on the 
 - A second mapping for the same starter replaces the first with a warning; map each starter
   once.
 
-Both mappings remain game-unobserved. Tier 2 grants the vanilla `ArchaicTooth` or
+Game-observed so far: for a custom Character with both mappings, each vanilla
+`SetupForPlayer` offered its upgrade, Archaic Tooth turned the upgraded starter Card into the
+upgraded Ancient Card, and Touch of Orobas replaced the starter Relic (Tier 2). Headed review
+opened Orobas with the console `ancient OROBAS <TOUCH_OF_OROBAS|ARCHAIC_TOOTH>`, saw each
+offer name the Mod Relic or Card, and took it. A preserved enchantment and multiplayer remain
+unobserved. Tier 2 grants the vanilla `ArchaicTooth` or
 `TouchOfOrobas` Relic in `RunStart` and asserts the exact deck Card or Relic replacement,
 including a preserved upgrade. Headed review enters Orobas and confirms that the offer and its
 text name the Mod Card or Relic.
@@ -197,7 +202,6 @@ card-frame texture, so no generated frame image, custom shader, or `.tres` file 
 
 ```csharp
 using Godot;
-using MegaCrit.Sts2.Core.Helpers;
 using STS2RitsuLib.Utils;
 
 internal static class <CharacterName>Theme
@@ -222,14 +226,16 @@ internal static class <CharacterName>Theme
     public static string TextEnergyIconPath =>
         <CharacterName>.CharacterUi("energy_text.png");
 
-    public const string PlaceholderEnergyColorName = "ironclad";
+    // Literal vanilla paths. Never call EnergyIconHelper.GetPath from a pool getter.
+    public const string PlaceholderLargeEnergyIconPath =
+        "res://images/atlases/ui_atlas.sprites/card/energy_ironclad.tres";
     public const string PlaceholderTextEnergyIconPath =
         "res://images/packed/sprite_fonts/ironclad_energy_icon.png";
 
     public static string? ExistingLargeEnergyIconPath =>
         ResourceLoader.Exists(LargeEnergyIconPath)
             ? LargeEnergyIconPath
-            : EnergyIconHelper.GetPath(PlaceholderEnergyColorName);
+            : PlaceholderLargeEnergyIconPath;
     public static string? ExistingTextEnergyIconPath =>
         ResourceLoader.Exists(TextEnergyIconPath)
             ? TextEnergyIconPath
@@ -243,7 +249,10 @@ transparent 24x24 `character_energy_text` output consumed by `EnergyIconsFormatt
 rich-text card descriptions. Both use the SPEC's shared palette/motif brief, but each is
 composed and normalized for its own size. Missing files fall back independently to the
 base-game Ironclad resources: `energy_ironclad.tres` for the large Card icon and
-`ironclad_energy_icon.png` for rich text. The full combat counter follows the explicit
+`ironclad_energy_icon.png` for rich text. Keep both fallbacks literal: RitsuLib patches
+`EnergyIconHelper.GetPath` and builds its icon cache by reading every pool's
+`BigEnergyIconPath`, so calling the helper from that getter recurses until the game dies with
+a stack overflow at run start. The full combat counter follows the explicit
 `PlaceholderCharacterId = "ironclad"` profile and resolves
 `ironclad_energy_counter.tscn`. Do not derive any fallback path from the theme color.
 

@@ -171,8 +171,8 @@ class CharacterArtBundleTests(unittest.TestCase):
         recipe = CHARACTER_RECIPE.read_text(encoding="utf-8")
         for required in (
             'public override string? PlaceholderCharacterId => "ironclad";',
-            'public const string PlaceholderEnergyColorName = "ironclad";',
-            "EnergyIconHelper.GetPath(PlaceholderEnergyColorName)",
+            '"res://images/atlases/ui_atlas.sprites/card/energy_ironclad.tres";',
+            ": PlaceholderLargeEnergyIconPath;",
             "res://images/packed/sprite_fonts/ironclad_energy_icon.png",
             'EnergyColorName => "<stable custom energy prefix>";',
         ):
@@ -180,6 +180,9 @@ class CharacterArtBundleTests(unittest.TestCase):
         self.assertNotIn('EnergyColorName => "<color>";', recipe)
         self.assertNotIn('EnergyColorName => "red"', recipe)
         self.assertNotIn('EnergyIconHelper.GetPath("red")', recipe)
+        # RitsuLib's patched GetPath reads every pool's BigEnergyIconPath to build its cache;
+        # calling it from that getter recursed into a stack overflow at run start.
+        self.assertNotIn(": EnergyIconHelper.GetPath(", recipe)
 
     def test_energy_counter_is_rendered_from_theme_colors_on_template_shapes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -173,10 +173,15 @@ private void SetDormant(bool dormant)
 ```
 
 Call `RitsuLibFramework.RefreshRelicVisibility()` after every state change; it rebuilds the
-active inventory and returns `false` when no run inventory exists. Never read `Owner` in the
+active inventory and returns whether a holder was removed, added, or moved (`false` when nothing
+changed or no run inventory exists). Never read `Owner` in the
 getter: a canonical Relic has none. Hiding another Mod's or a vanilla Relic through the
-global `RegisterRelicVisibilityRule` is not part of this route. Generated hidden Relics remain
-game-unobserved. Tier 2 asserts `RitsuLibFramework.IsRelicVisible(relic)` before and after
+global `RegisterRelicVisibilityRule` is not part of this route. Game-observed so far: a Relic
+hidden from `BeforeCombatStart` until `AfterCombatEnd` lost its inventory holder with
+`RefreshRelicVisibility()` reporting a change, kept gaining Block while hidden, and returned
+after combat (Tier 2); headed review saw no empty slot, flash, or stale tooltip either way.
+Reward, choose-a-relic, run-history, and unlock screens and save/resume while hidden remain
+unobserved. Tier 2 asserts `RitsuLibFramework.IsRelicVisible(relic)` before and after
 each change, that `RefreshRelicVisibility()` reports a changed inventory, and that the
 Relic's effect still resolves while hidden. Headed review confirms that the holder leaves
 and returns with no empty slot, stale tooltip, or flash.
