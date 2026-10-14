@@ -403,7 +403,10 @@ vanilla Card, use the existing `card.property.tags` append route in
 live Card: the tag set is shared with clones, is not saved, and becomes read-only once a
 capability contributes tags (`reference/vanilla-card-overrides.md` § Promoted public
 surface). A tag that changes during a run belongs to Mod-owned state, read by the effect
-that tests it. Generated custom tags remain game-unobserved. Tier 2 asserts that the
+that tests it. Game-observed so far: one `.CardTagOwned` tag resolved to its qualified id, was
+present on the canonical Mod Card and a new mutable copy and absent from an untagged Card, and a
+Card that counted tagged Cards in hand gained the expected Block (Tier 2). A Mod tag appended to
+a vanilla Card remains unobserved. Tier 2 asserts that the
 registered tag resolves, that the canonical Card and a new mutable copy both contain it, and
 that the counting effect produces the expected amount in `CombatPlayer`.
 

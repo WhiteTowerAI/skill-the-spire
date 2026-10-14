@@ -121,6 +121,8 @@ class RitsuProfileTests(unittest.TestCase):
                 manifest["dependencies"],
                 [{"id": "STS2-RitsuLib", "min_version": PROFILE.framework_version}],
             )
+            # false made RitsuLib give the Mod's models no network identity.
+            self.assertIs(True, manifest["affects_gameplay"])
             csproj = (project / "EmptyRitsu.csproj").read_text(encoding="utf-8")
             path_props = (project / "Sts2PathDiscovery.props").read_text(encoding="utf-8")
             main = (project / "EmptyRitsuCode" / "MainFile.cs").read_text(encoding="utf-8")

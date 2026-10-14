@@ -227,10 +227,32 @@ switching to an old template.
 - **Cause:** a custom/default audio id was inferred without a registered asset.
 - **Fix:** retain the verified Frost channel-SFX fallback until the audio track is opened.
 
-### Character Shop cannot generate a valid rarity
+### Character Shop or card reward cannot generate a valid rarity
 
-- **Cause:** its pool lacks enough eligible non-Basic Attacks/Skills/Powers.
-- **Fix:** meet the Character recipe's minimum Shop ecosystem before claiming Shop support.
+- **Signature:** `Tried to create a card for a reward, but we couldn't generate a valid
+  rarity!` after the first combat, or the Shop throws before its UI exists.
+- **Cause:** its pool lacks enough eligible non-Basic Attacks/Skills/Powers. A combat reward
+  draws three distinct Common/Uncommon/Rare Cards; Basic and Ancient Cards never count.
+- **Fix:** meet the Character recipe's minimum pool ecosystem before claiming Shop or reward
+  support.
+
+### Custom Character run crashes at start with exit code `0xC00000FD`
+
+- **Signature:** the game exits with `3221225725` (stack overflow) right after `Embarking on
+  a singleplayer <CHAR_ID> run`, with no managed exception in the log.
+- **Cause:** a card pool's `BigEnergyIconPath` calls `EnergyIconHelper.GetPath`. RitsuLib
+  patches that helper and builds its cache by reading every pool's `BigEnergyIconPath`.
+- **Fix:** return the literal fallback path from `recipes/character.md` § Character-wide
+  theme.
+
+### Right-click does nothing and `TryDispatch` returns `false`
+
+- **Signature:** RitsuLib logs `Assigned local-only sort IDs for <N> non-gameplay ModelDb
+  model(s)`, where `<N>` counts this Mod's models; no `[RightClick]` warning appears.
+- **Cause:** `mod_manifest.json` declares `"affects_gameplay": false`, so the Mod's models get
+  no network identity.
+- **Fix:** set it to `true` and rebuild. Projects scaffolded before the scaffold default
+  changed still carry `false`.
 
 ## Verification
 

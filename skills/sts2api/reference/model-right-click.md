@@ -16,8 +16,9 @@ behavior; RitsuLib owns input, multiplayer-safe dispatch, and the action queue.
 | Orb | the player's Orb | combat play phase, no target selection |
 
 Outside these hosts, for example the deck view outside combat or a reward screen, nothing
-dispatches. A handled right-click on a pile-screen Card consumes the input that would
-otherwise open the native inspect view; an unhandled one leaves native behavior alone.
+dispatches. A handled right-click on a pile-screen Card consumes the input; an unhandled one
+leaves native behavior alone. The pinned combat pile screen binds nothing to right-click, so
+a Card without the action shows no reaction there.
 
 ## Route
 
@@ -64,11 +65,17 @@ The interfaces are `IModRightClickableCard`, `IModRightClickableRelic`,
 - A use limit or cooldown is Mod-owned state on the model (`reference/stateful-mechanics.md`).
 
 Tell the player about the action: the model's `eng` and `zhs` descriptions name the input and
-its effect ("Right-click: ..." / "右键：..."). The pinned glossary has no right-click term, so
-write the input word plain and style the effect per `reference/vanilla-text-style.md`.
+its effect on one line, as one sentence ("Right-click: Lose {Energy:energyIcons()} to draw
+{Cards:diff()} {Cards:plural:card|cards}." / "右键：失去{Energy:energyIcons()}，抽{Cards:diff()}张牌。").
+Build's style check flags two sentences sharing a line. The pinned glossary has no
+right-click term, so write the input word plain and style the effect per
+`reference/vanilla-text-style.md`.
 
 ## Boundary
 
+- The Mod's `mod_manifest.json` must keep `"affects_gameplay": true` (the scaffold default).
+  RitsuLib gives the models of a Mod that declares `false` no network identity, so
+  `TryDispatch` returns `false` and nothing is sent, with no warning.
 - Mod-owned models only. `RitsuLibFramework.RegisterRightClick<TModel>` binds every model of a
   type, including vanilla ones, and is not part of this route; neither are custom
   `IModRightClickHandler` handlers.
@@ -81,21 +88,34 @@ write the input word plain and style the effect per `reference/vanilla-text-styl
 
 ## Verification
 
-Generated right-click actions remain game-unobserved.
+Game-observed so far: a Mod Card's action from the hand and from the combat Discard pile
+screen (Tier 2 dispatch and headed mouse right-click), the `CanExecuteRightClick` Energy guard
+(Tier 2 and headed), and refusal when the Card is not in the pile the trigger names (Tier 2).
+Relic, Potion, Power, and Orb hosts, the Draw, Exhaust, and Mod pile screens, the controller
+`cancel` action, and multiplayer remain unobserved.
 
 Tier 2 drives the real dispatch path without synthetic mouse input. Put the model in its host
 (for a Card, the hand), then call the public dispatcher with the matching source:
 
 ```csharp
+var combat = player.PlayerCombatState!;
+int energyBefore = combat.Energy;
 var trigger = new ModRightClickTrigger(false, null, ModRightClickSource.HandCard);
 var handled = ModRightClickRegistry.TryDispatch(new ModRightClickContext(player, card, trigger));
-await Task.Delay(500, ct);   // let the synchronized action resolve before observing
+// The action resolves on the action queue; poll the SPEC post-state.
+await WaitHelper.Until(() => combat.Energy == energyBefore - 1, ct,
+    TimeSpan.FromSeconds(10), "right-click did not resolve");
 ```
 
-Assert `handled`, the exact post-state, and one negative case: when `CanExecuteRightClick` is
-false (or the Card has left the hand), dispatch changes nothing. Emit the structured
-`state proof:` line from `reference/selftest-harness.md`.
+`handled` only reports that the request was queued; `CanExecuteRightClick` and the pile check
+run later, when the action executes. Poll for the expected post-state instead of a fixed
+delay. Assert `handled`, the exact post-state, and one negative case: when
+`CanExecuteRightClick` is false (or the Card has left the pile the trigger names), dispatch
+changes nothing. A pile-screen Card uses
+`new ModRightClickTrigger(false, null, ModRightClickSource.CombatPileCard, PileType.Discard)`
+with the pile it sits in. Emit the structured `state proof:` line from
+`reference/selftest-harness.md`.
 
 Headed review right-clicks the model with the mouse in each selected host, repeats with the
 controller `cancel` action, and confirms that an ordinary left-click, drag, or hover is
-unchanged and that a pile-screen Card without the action still opens native inspect.
+unchanged and that a pile-screen Card without the action keeps its native (empty) response.
