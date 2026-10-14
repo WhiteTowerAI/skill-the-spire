@@ -27,6 +27,9 @@ Settle and write:
 Ancient option bodies may use the same bounded public Event outcome routes, but a new Ancient is
 not an ordinary Event and must not be lowered through `recipes/event.md`. Settings, Progression,
 Telemetry, Multiplayer, post-run Badge, and Update Check integrations remain deferred.
+Global replacement of native Ancient dialogue or the Ancient room, behavior outside the public
+option/page/dialogue/presentation vocabulary, direct merchant/rest/treasure transitions, and
+multiplayer presentation are unsupported.
 
 ## Text style
 

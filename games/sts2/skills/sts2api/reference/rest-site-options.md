@@ -21,8 +21,9 @@ The authorable slice is deliberately bounded:
   for one subsequent choice;
 - a custom icon is optional and falls back to the checked native Heal icon.
 
-Variable or non-Gold costs, arbitrary transactional outcomes, remote-player ownership,
-multiplayer synchronization, and repeated successful use in one Rest Site are unsupported.
+Variable or non-Gold costs, post-payment choices, arbitrary transactional outcomes,
+remote-player ownership, multiplayer synchronization, and repeated successful use in one Rest
+Site are unsupported.
 Do not generate Harmony, reflection, or UI patches to extend this boundary.
 
 Card reachability is pinned rather than inferred: both Rest Site hooks dispatch through
@@ -306,3 +307,6 @@ literal stale-button transition, record it as an exception instead of claiming i
 Tier 1 still requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof plus `selftest done`; when the user performs the hosted
 matrix instead, record the unrun strict harness as an explicit exception, never a pass.
+
+Game-observed so far: the Relic-owned option in a real Rest Site. Standalone, Card, and
+Modifier owners remain game-unobserved.

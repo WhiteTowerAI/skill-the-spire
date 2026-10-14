@@ -248,6 +248,9 @@ The replacement is global: the Card library and every view of the Card show it. 
 requires `eng` and `zhs`; every other language the Mod does not ship keeps the vanilla text,
 so report that. If another loaded Mod replaces the same key, the later-loaded Mod wins.
 
+Observed on the pinned host: a replaced Strike description resolved in `eng` and `zhs` with
+the vanilla title unchanged.
+
 ## Name replacement
 
 `card.title.localization` renames the Card the same way, through its vanilla

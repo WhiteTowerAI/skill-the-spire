@@ -9,7 +9,7 @@ safe defaults.
 
 This page is a design method, not an STS2 fact inventory and not a runtime route. Resolve
 exact vanilla analogies through the pinned `0.107.1` catalog and `grounding.md`. Resolve
-implementation through the capability graph and shipped recipes only after the design is
+implementation through the shipped recipes and references only after the design is
 accepted. Label an unsupported operation as a gap; never redesign it into a supported
 operation without explicit user acceptance.
 
