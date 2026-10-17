@@ -13,7 +13,10 @@ Two modes, both requiring --mod-name and bounded by --wait-seconds:
     from the main menu into the hosted scenario required by the mod and fires the
     effect with zero interaction. Poll until it prints its terminal marker
     ([T2MOD-SELFTEST] <ModName> selftest done | selftest FAILED), close, then pair with
-    grep_log.py --tier2-pattern to verify the asserted state proof.
+    grep_log.py --tier2-pattern to verify the asserted state proof. The wait follows the
+    harness's logged `selftest budget: <N>s` plus boot time unless --wait-seconds is given.
+    Every other Mod folder with a t2selftest gate is parked outside mods/ for the run and
+    restored afterwards; any launch first restores Mods that a killed run left parked.
 
 The game dir is auto-detected by probing the local
 Steam libraries (registry/standard roots -> libraryfolders.vdf -> appmanifest_2868840),
@@ -30,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -37,7 +41,7 @@ from pathlib import Path
 
 import grep_log
 from grep_log import default_log_path, load_marker, read_shared
-from ritsu_profile import game_executable_dir
+from ritsu_profile import game_executable_dir, local_mods_dir
 
 APPID = "2868840"
 GAME_FOLDER = "Slay the Spire 2"
@@ -45,7 +49,23 @@ GAME_FOLDER = "Slay the Spire 2"
 # load marker that has not appeared by then never will.
 MAIN_MENU_MARKER = "[Startup] Time to main menu"
 TIER1_SETTLE_SECONDS = 5
-DEFAULT_WAIT_SECONDS = {"tier1": 90, "self-test": 180}
+# The harness logs its whole-scenario budget when it arms during Mod initialization. Boot
+# before that and shutdown after it need their own allowance on top.
+SELF_TEST_BOOT_ALLOWANCE = 90
+DEFAULT_SELF_TEST_BUDGET = 180
+DEFAULT_WAIT_SECONDS = {
+    "tier1": 90,
+    "self-test": DEFAULT_SELF_TEST_BUDGET + SELF_TEST_BOOT_ALLOWANCE,
+}
+BUDGET_RE = re.compile(r"selftest budget: (?P<seconds>\d+)s")
+# `--t2selftest` arms every loaded harness, so other harness Mods wait here during a run.
+PARK_DIR_NAME = "mods-parked-by-skill-the-spire"
+HARNESS_GATE = "t2selftest"
+FAILURE_OUTCOMES = {"assertion": "assertion-failed", "budget": "budget-exceeded", "setup": "failed"}
+
+
+class ParkError(RuntimeError):
+    pass
 
 
 def steam_roots() -> list[Path]:
@@ -185,7 +205,11 @@ def tier1_log_outcome(current_launch_log: str) -> str | None:
 
 
 def self_test_log_outcome(current_launch_log: str, mod_name: str) -> str | None:
-    """Read a terminal outcome only after this launch's exact mod-load marker."""
+    """Read a terminal outcome only after this launch's exact mod-load marker.
+
+    A FAILED line maps by its stage to `assertion-failed`, `budget-exceeded`, or `failed`
+    (setup/navigation).
+    """
     load_index = current_launch_log.rfind(load_marker(mod_name))
     if load_index < 0:
         return None
@@ -193,17 +217,36 @@ def self_test_log_outcome(current_launch_log: str, mod_name: str) -> str | None:
     after_load = current_launch_log[load_index:]
     fail_marker = f"{grep_log.MARKER} {mod_name} selftest FAILED"
     done_marker = f"{grep_log.MARKER} {mod_name} selftest done"
-    if fail_marker in after_load:
-        return "failed"
+    for line in after_load.splitlines():
+        if fail_marker in line:
+            return FAILURE_OUTCOMES[grep_log.failure_kind(line, mod_name)]
     if done_marker in after_load:
         return "done"
     return None
 
 
+def self_test_budget_seconds(current_launch_log: str, mod_name: str) -> int | None:
+    """The harness's logged scenario budget after this launch's load marker, if any."""
+    load_index = current_launch_log.rfind(load_marker(mod_name))
+    if load_index < 0:
+        return None
+    budget_marker = f"{grep_log.MARKER} {mod_name} selftest budget:"
+    for line in current_launch_log[load_index:].splitlines():
+        if budget_marker in line:
+            match = BUDGET_RE.search(line)
+            return int(match.group("seconds")) if match else None
+    return None
+
+
 def poll_log(proc: subprocess.Popen, log_path: Path, baseline: str | None,
-             wait_seconds: int, outcome_of) -> str:
-    """Poll this launch's log until outcome_of returns a value, the game exits, or timeout."""
-    deadline = time.monotonic() + wait_seconds
+             wait_seconds: int, outcome_of, budget_of=None) -> str:
+    """Poll this launch's log until outcome_of returns a value, the game exits, or timeout.
+
+    With budget_of, the deadline grows to the logged harness budget plus boot allowance.
+    """
+    started = time.monotonic()
+    deadline = started + wait_seconds
+    budget_seen = False
     while time.monotonic() < deadline:
         if proc.poll() is not None:
             return "process-exited"
@@ -214,10 +257,83 @@ def poll_log(proc: subprocess.Popen, log_path: Path, baseline: str | None,
             txt = read_shared(log_path)
         except OSError:
             continue
-        outcome = outcome_of(log_since_launch(baseline, txt))
+        current = log_since_launch(baseline, txt)
+        if budget_of is not None and not budget_seen:
+            budget = budget_of(current)
+            if budget is not None:
+                budget_seen = True
+                wanted = started + budget + SELF_TEST_BOOT_ALLOWANCE
+                if wanted > deadline:
+                    deadline = wanted
+                    print(f"[launch] harness budget {budget}s; waiting up to "
+                          f"{budget + SELF_TEST_BOOT_ALLOWANCE}s in total")
+        outcome = outcome_of(current)
         if outcome is not None:
             return outcome
     return "timeout"
+
+
+def parked_dir(game_dir: Path) -> Path:
+    return game_executable_dir(game_dir) / PARK_DIR_NAME
+
+
+def has_selftest_gate(mod_dir: Path) -> bool:
+    """True when a DLL in the Mod folder carries the t2selftest gate (C# literals are UTF-16)."""
+    needles = (HARNESS_GATE.encode("utf-16-le"), HARNESS_GATE.encode("ascii"))
+    for dll in mod_dir.glob("*.dll"):
+        try:
+            data = dll.read_bytes()
+        except OSError:
+            continue
+        if any(needle in data for needle in needles):
+            return True
+    return False
+
+
+def restore_parked(game_dir: Path) -> list[str]:
+    """Move every parked Mod back into mods/; never overwrite a same-named folder."""
+    park = parked_dir(game_dir)
+    if not park.is_dir():
+        return []
+    mods = local_mods_dir(game_dir)
+    mods.mkdir(parents=True, exist_ok=True)
+    restored: list[str] = []
+    for entry in sorted(park.iterdir()):
+        target = mods / entry.name
+        if target.exists():
+            raise ParkError(
+                f"cannot restore parked Mod {entry.name}: {target} already exists. "
+                f"Keep one copy and move the other out of {park} by hand."
+            )
+        try:
+            shutil.move(str(entry), str(target))
+        except OSError as exc:
+            raise ParkError(f"cannot restore parked Mod {entry.name} to {target}: {exc}") from exc
+        restored.append(entry.name)
+    park.rmdir()
+    return restored
+
+
+def park_other_harnesses(game_dir: Path, mod_name: str) -> list[str]:
+    """Park every other Mod folder with a self-test gate; undo all of it on any failure."""
+    mods = local_mods_dir(game_dir)
+    if not mods.is_dir():
+        return []
+    park = parked_dir(game_dir)
+    parked: list[str] = []
+    try:
+        for entry in sorted(mods.iterdir()):
+            if not entry.is_dir() or entry.name.casefold() == mod_name.casefold():
+                continue
+            if not has_selftest_gate(entry):
+                continue
+            park.mkdir(exist_ok=True)
+            shutil.move(str(entry), str(park / entry.name))
+            parked.append(entry.name)
+    except OSError as exc:
+        restore_parked(game_dir)
+        raise ParkError(f"could not park other self-test Mods: {exc}") from exc
+    return parked
 
 
 def stop_process(proc: subprocess.Popen) -> None:
@@ -241,7 +357,9 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--game-dir", default=None, help="STS2 install dir")
     ap.add_argument("--wait-seconds", type=int, default=None,
                     help="Max seconds to poll: main menu for Tier 1 (default 90), harness "
-                         "terminal marker for --self-test (default 180).")
+                         "terminal marker for --self-test (default: the harness's logged "
+                         f"budget + {SELF_TEST_BOOT_ALLOWANCE}s, at least "
+                         f"{DEFAULT_WAIT_SECONDS['self-test']}s).")
     ap.add_argument("--self-test", action="store_true",
                     help="Append --t2selftest and poll for the harness done/FAILED marker.")
     ap.add_argument("--mod-name", required=True,
@@ -277,13 +395,28 @@ def main(argv: list[str]) -> int:
                   file=sys.stderr)
             return 2
 
+    # A run killed before its cleanup leaves user Mods parked; put them back first.
+    if not restore_after_run(game_dir):
+        return 2
+
     extra_args: list[str] = []
     if args.self_test:
+        try:
+            parked = park_other_harnesses(game_dir, args.mod_name)
+        except ParkError as exc:
+            print(f"[launch] {exc}", file=sys.stderr)
+            return 2
+        if parked:
+            print(f"[launch] parked other self-test Mods for this run: {', '.join(parked)}")
         extra_args.append("--t2selftest")
         print("[launch] SELF-TEST mode: passing --t2selftest; harness will self-drive its scenario")
 
     print(f"[launch] starting {exe.name} ...")
-    proc = launch_process(exe, game_dir, extra_args)
+    try:
+        proc = launch_process(exe, game_dir, extra_args)
+    except BaseException:
+        restore_after_run(game_dir)
+        raise
 
     if not args.self_test:
         print(f"[launch] pid {proc.pid}; polling log up to {wait_seconds}s for the main menu")
@@ -298,12 +431,36 @@ def main(argv: list[str]) -> int:
         stop_process(proc)
         return grep_log.main(["--mod-name", args.mod_name, "--log-path", str(log_path)])
 
-    print(f"[launch] pid {proc.pid}; polling log up to {wait_seconds}s "
-          f"for '{args.mod_name} selftest done|FAILED'")
-    outcome = poll_log(proc, log_path, log_baseline, wait_seconds,
-                       lambda log: self_test_log_outcome(log, args.mod_name))
+    try:
+        print(f"[launch] pid {proc.pid}; polling log up to {wait_seconds}s "
+              f"for '{args.mod_name} selftest done|FAILED'")
+        outcome = poll_log(
+            proc, log_path, log_baseline, wait_seconds,
+            lambda log: self_test_log_outcome(log, args.mod_name),
+            None if args.wait_seconds else lambda log: self_test_budget_seconds(log, args.mod_name),
+        )
+        report_self_test_outcome(outcome, proc, wait_seconds, args.wait_seconds is not None)
+    finally:
+        stop_process(proc)
+        restored_ok = restore_after_run(game_dir)
+    if not restored_ok:
+        return 2
+
+    print(f'[launch] done. Now run grep_log.py --mod-name {args.mod_name} '
+          '--tier2-pattern "<state-proof-pattern>" to check the fresh log.')
+    return self_test_exit_code(outcome)
+
+
+def report_self_test_outcome(outcome: str, proc: subprocess.Popen, wait_seconds: int,
+                             explicit_wait: bool) -> None:
     if outcome == "done":
         print("[launch] harness reported: selftest DONE (scenario driven; verify its asserted state proof now)")
+    elif outcome == "assertion-failed":
+        print("[launch] harness reported: state proof FAILED (the scenario ran; the post-state "
+              "was wrong) -- a behavior bug, classify it in repair.md", file=sys.stderr)
+    elif outcome == "budget-exceeded":
+        print("[launch] harness reported: scenario budget exceeded -- raise Budget in "
+              "SelfTest.cs for a long scenario, or repair the stalled step", file=sys.stderr)
     elif outcome == "failed":
         print("[launch] harness reported: selftest FAILED (couldn't reach/drive its scenario) -- "
               "verify.md: fall back to manual, report tier-1 only", file=sys.stderr)
@@ -311,14 +468,21 @@ def main(argv: list[str]) -> int:
         print(f"[launch] game exited with code {proc.returncode} before a harness terminal marker -- "
               "treat as harness/setup failure", file=sys.stderr)
     else:
-        print(f"[launch] TIMEOUT after {wait_seconds}s with no terminal marker -- "
-              "treat as harness setup failure (manual fallback)", file=sys.stderr)
+        hint = ("rerun with a larger --wait-seconds" if explicit_wait
+                else "no harness budget line was seen; check the load marker and SelfTest.Arm")
+        print(f"[launch] TIMEOUT after {wait_seconds}s with no terminal marker -- the launcher "
+              f"stopped waiting; this is not evidence about the Mod ({hint})", file=sys.stderr)
 
-    stop_process(proc)
 
-    print(f'[launch] done. Now run grep_log.py --mod-name {args.mod_name} '
-          '--tier2-pattern "<state-proof-pattern>" to check the fresh log.')
-    return self_test_exit_code(outcome)
+def restore_after_run(game_dir: Path) -> bool:
+    try:
+        restored = restore_parked(game_dir)
+    except ParkError as exc:
+        print(f"[launch] {exc}", file=sys.stderr)
+        return False
+    if restored:
+        print(f"[launch] restored parked Mods: {', '.join(restored)}")
+    return True
 
 
 if __name__ == "__main__":

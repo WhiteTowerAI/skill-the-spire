@@ -65,6 +65,22 @@ def load_marker(mod: str) -> str:
     return f"{MARKER} {mod} loaded ok"
 
 
+def failure_kind(failed_line: str, mod: str) -> str:
+    """Classify a harness `selftest FAILED: <stage>: ...` line by its stage.
+
+    `assertion`: a StateProof failed after the scenario ran (behavior bug).
+    `budget`: the harness's own scenario budget ran out (timeout, not navigation).
+    `setup`: anything else; the harness could not reach or drive its scenario.
+    """
+    head = f"{MARKER} {mod} selftest FAILED:"
+    detail = failed_line.split(head, 1)[1].strip() if head in failed_line else ""
+    if detail.startswith("state proof:"):
+        return "assertion"
+    if detail.startswith("timeout:"):
+        return "budget"
+    return "setup"
+
+
 def has_supported_framework_profile(line: str | None) -> bool:
     if line is None or not all(field in line for field in PROFILE_FIELDS):
         return False
@@ -273,8 +289,16 @@ def main(argv: list[str]) -> int:
         print(f"[FAIL] Tier-2 state proof not found (pattern '{tier2_pattern}'). "
               "Hook/preview and terminal markers are not post-state proof.")
     if tier2_requested and failed_line:
-        print("[FAIL] Harness reported selftest FAILED. This is a setup/navigation miss; "
-              "use the manual fallback and report tier-1 only unless the effect is observed.")
+        kind = failure_kind(failed_line, mod)
+        if kind == "assertion":
+            print("[FAIL] Harness assertion failed: the scenario ran and the post-state was "
+                  "wrong. This is a behavior bug; classify it in repair.md.")
+        elif kind == "budget":
+            print("[FAIL] Harness scenario budget ran out before the scenario finished. "
+                  "Raise Budget in SelfTest.cs for a long scenario, or repair the stalled step.")
+        else:
+            print("[FAIL] Harness reported selftest FAILED. This is a setup/navigation miss; "
+                  "use the manual fallback and report tier-1 only unless the effect is observed.")
     elif tier2_requested and not done_line:
         print("[FAIL] Successful harness terminal marker missing; the scenario did not finish.")
     return 1

@@ -78,7 +78,7 @@ match finds no button.
 
 ## Proof and control signals for verify/repair
 
-The harness and element expose three signals so `verify.md`/`repair.md` can tell setup
+The harness and element expose these signals so `verify.md`/`repair.md` can tell setup
 failure from a real effect bug:
 
 - `[T2MOD-SELFTEST] <ModName> state proof: <invariant>; observed <before> -> <after>` —
@@ -86,10 +86,17 @@ failure from a real effect bug:
   passed. This is the **only** Tier-2 behavior proof accepted by `grep_log.py`.
 - `[T2MOD-SELFTEST] <ModName> selftest done` — the scenario driver completed after its
   assertions. This terminal marker is necessary control flow, but is never behavior proof.
-- `[T2MOD-SELFTEST] <ModName> selftest FAILED: <stage>: <reason>` — harness couldn't reach
-  or drive the scenario (navigation/timeout). **This is a harness/setup problem, NOT an
-  effect bug** —
-  `verify.md` falls back to the manual guide and reports tier-1 only.
+- `[T2MOD-SELFTEST] <ModName> selftest budget: <N>s` — the whole-scenario budget, logged
+  first. `launch.py` waits at least this long plus boot time.
+- `[T2MOD-SELFTEST] <ModName> selftest FAILED: <stage>: <reason>`, classified by stage:
+  - `state proof: <observation>` — the scenario ran and an assertion failed. **This is a
+    real behavior bug**; classify it in `repair.md`.
+  - `timeout: scenario budget <N>s exceeded` — the scenario was still running when the
+    budget ran out. Raise `Budget` when the scenario is long; otherwise find the stalled
+    step from the breadcrumbs. Never report it as a navigation failure.
+  - any other stage (`AutoSlayTimeoutException: <step>`, a navigation exception) — the
+    harness couldn't reach or drive the scenario. **This is a harness/setup problem, NOT
+    an effect bug**; `verify.md` falls back to the manual guide and reports tier-1 only.
 - the element's own type-specific `[T2MOD-SELFTEST]` diagnostic marker (for example
   `played:`, `attacked:`, or `option chosen:` from author.md step 2) — useful for locating
   the trigger, but **not proof**: calculation/preview hooks can emit it without a committed
@@ -184,12 +191,21 @@ namespace <ModName>;   // SAME namespace as MainFile.cs (the scaffold writes `na
 // Gated in MainFile.Initialize(): if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();
 internal static class SelfTest
 {
+    // Whole-scenario budget. Size it to the scenario: one element runs well inside 180 s; a
+    // full Character content set can take 4-6 minutes. launch.py reads the budget line below
+    // and waits for it, so never shorten the launcher wait instead.
+    private static readonly TimeSpan Budget = TimeSpan.FromSeconds(180);
     private static bool _armed;
+
+    private sealed class StateProofFailed : Exception
+    {
+        public StateProofFailed(string observation) : base(observation) { }
+    }
 
     private static void StateProof(bool condition, string observation)
     {
         if (!condition)
-            throw new InvalidOperationException($"state proof failed: {observation}");
+            throw new StateProofFailed(observation);
         MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> state proof: {observation}");
     }
 
@@ -202,7 +218,8 @@ internal static class SelfTest
 
     private static async Task RunAsync()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(180));
+        MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> selftest budget: {(int)Budget.TotalSeconds}s");
+        using var cts = new CancellationTokenSource(Budget);
         var ct = cts.Token;
         try
         {
@@ -236,6 +253,15 @@ internal static class SelfTest
             await InCombat(player!, ct);
 
             MainFile.Logger.Info("[T2MOD-SELFTEST] <ModName> selftest done");
+        }
+        catch (StateProofFailed e)
+        {
+            // The scenario ran and the post-state was wrong: a behavior bug, not setup.
+            MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> selftest FAILED: state proof: {e.Message}");
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> selftest FAILED: timeout: scenario budget {(int)Budget.TotalSeconds}s exceeded");
         }
         catch (Exception e)
         {
@@ -1425,4 +1451,7 @@ an unrun strict `selftest done` as an explicit verification exception.
       `MegaCrit.Sts2.Core.TestSupport.ICardSelector` and asserts what was offered.
 - [ ] Every nonnegative Counter `consumes` edge runs zero/fewer-than-N/at-least-N cases
       and asserts after each that no negative instance exists.
-- [ ] Never claim tier-2 on a `selftest FAILED` line — that's a harness/setup miss, report tier-1 + manual fallback.
+- [ ] `Budget` fits the whole scenario, and the budget line is logged before navigation.
+- [ ] Never claim tier-2 on a `selftest FAILED` line. Classify it by stage: `state proof:`
+      is a behavior bug, `timeout:` is an exhausted budget, anything else is a harness/setup
+      miss (report tier-1 + manual fallback).

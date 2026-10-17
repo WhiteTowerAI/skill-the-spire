@@ -300,6 +300,145 @@ class LaunchOutcomeTests(unittest.TestCase):
         ])
         self.assertEqual("failed", launch.self_test_log_outcome(current, mod))
 
+    def test_failed_stage_separates_assertion_budget_and_setup(self) -> None:
+        mod = "ExampleMod"
+        cases = {
+            "state proof: block expected=5 observed=3": "assertion-failed",
+            "timeout: scenario budget 180s exceeded": "budget-exceeded",
+            "AutoSlayTimeoutException: play phase not reached": "failed",
+        }
+        for stage, expected in cases.items():
+            with self.subTest(stage=stage):
+                current = "\n".join([
+                    f"[T2MOD-SELFTEST] {mod} loaded ok",
+                    f"[INFO] [T2MOD-SELFTEST] {mod} selftest FAILED: {stage}",
+                ])
+                self.assertEqual(expected, launch.self_test_log_outcome(current, mod))
+                self.assertEqual(1, launch.self_test_exit_code(expected))
+
+    def test_budget_is_read_after_this_launch_load_marker(self) -> None:
+        mod = "ExampleMod"
+        self.assertIsNone(launch.self_test_budget_seconds(
+            f"[T2MOD-SELFTEST] {mod} selftest budget: 600s", mod))
+        current = "\n".join([
+            f"[T2MOD-SELFTEST] {mod} loaded ok",
+            f"[INFO] [T2MOD-SELFTEST] {mod} selftest budget: 420s",
+        ])
+        self.assertEqual(420, launch.self_test_budget_seconds(current, mod))
+
+    def test_logged_budget_extends_the_wait(self) -> None:
+        clock = iter(range(100_000))
+        with tempfile.TemporaryDirectory() as tmp:
+            log_path = Path(tmp) / "godot.log"
+            log_path.write_text("x", encoding="utf-8")
+            for budget, expected in ((None, "timeout"), (300, "done")):
+                with self.subTest(budget=budget):
+                    reads = iter(range(100_000))
+                    outcome_of = lambda _log: "done" if next(reads) >= 50 else None
+                    with mock.patch.object(launch.time, "monotonic", lambda: next(clock)), \
+                            mock.patch.object(launch.time, "sleep"), \
+                            contextlib.redirect_stdout(io.StringIO()):
+                        outcome = launch.poll_log(
+                            FakeGame(), log_path, None, 10, outcome_of,
+                            (lambda _log: budget) if budget else None,
+                        )
+                    self.assertEqual(expected, outcome)
+
+
+def write_mod(mods: Path, name: str, gated: bool) -> None:
+    folder = mods / name
+    folder.mkdir(parents=True)
+    body = "t2selftest".encode("utf-16-le") if gated else b"plain"
+    (folder / f"{name}.dll").write_bytes(b"MZ" + body)
+
+
+class ParkingTests(unittest.TestCase):
+    def test_parks_only_other_gated_mods_and_restores_them(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp)
+            mods = game / "mods"
+            write_mod(mods, "Target", True)
+            write_mod(mods, "OtherHarness", True)
+            write_mod(mods, "PlainMod", False)
+            parked = launch.park_other_harnesses(game, "target")
+            self.assertEqual(["OtherHarness"], parked)
+            self.assertEqual({"PlainMod", "Target"}, {p.name for p in mods.iterdir()})
+            self.assertEqual(["OtherHarness"], launch.restore_parked(game))
+            self.assertEqual({"OtherHarness", "PlainMod", "Target"},
+                             {p.name for p in mods.iterdir()})
+            self.assertFalse(launch.parked_dir(game).exists())
+
+    def test_restore_refuses_to_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp)
+            write_mod(game / "mods", "Other", True)
+            write_mod(launch.parked_dir(game), "Other", True)
+            with self.assertRaisesRegex(launch.ParkError, "already exists"):
+                launch.restore_parked(game)
+
+    def run_self_test(self, game: Path, log_lines: list[str], during=None) -> tuple[int, str]:
+        (game / launch.default_exe_name()).write_text("", encoding="utf-8")
+        log_path = game / "godot.log"
+
+        def start_game(*_args):
+            if during:
+                during()
+            log_path.write_text("\n".join(log_lines), encoding="utf-8")
+            return FakeGame()
+
+        output = io.StringIO()
+        with mock.patch.object(launch, "launch_process", start_game), \
+                mock.patch.object(launch.time, "sleep"), \
+                contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+            code = launch.main([
+                "--self-test", "--mod-name", "Target", "--game-dir", str(game),
+                "--log-path", str(log_path), "--wait-seconds", "5",
+            ])
+        return code, output.getvalue()
+
+    def test_self_test_run_parks_during_and_restores_after(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp)
+            mods = game / "mods"
+            write_mod(mods, "Target", True)
+            write_mod(mods, "OtherHarness", True)
+            seen: list[set[str]] = []
+            code, output = self.run_self_test(game, [
+                "[T2MOD-SELFTEST] Target loaded ok",
+                "[T2MOD-SELFTEST] Target selftest FAILED: state proof: block observed=3",
+            ], during=lambda: seen.append({p.name for p in mods.iterdir()}))
+            self.assertEqual(1, code)
+            self.assertEqual([{"Target"}], seen)
+            self.assertIn("behavior bug", output)
+            self.assertEqual({"OtherHarness", "Target"}, {p.name for p in mods.iterdir()})
+
+    def test_leftover_parked_mods_are_restored_first(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp)
+            write_mod(game / "mods", "Target", True)
+            write_mod(launch.parked_dir(game), "Forgotten", True)
+            seen: list[set[str]] = []
+            code, output = self.run_self_test(game, [
+                "[T2MOD-SELFTEST] Target loaded ok",
+                "[T2MOD-SELFTEST] Target selftest done",
+            ], during=lambda: seen.append(
+                {p.name for p in launch.parked_dir(game).iterdir()}))
+            self.assertEqual(0, code, output)
+            self.assertEqual([{"Forgotten"}], seen)
+            self.assertEqual({"Forgotten", "Target"},
+                             {p.name for p in (game / "mods").iterdir()})
+
+    def test_restore_runs_when_polling_raises(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp)
+            mods = game / "mods"
+            write_mod(mods, "Target", True)
+            write_mod(mods, "OtherHarness", True)
+            with mock.patch.object(launch, "poll_log", side_effect=KeyboardInterrupt), \
+                    self.assertRaises(KeyboardInterrupt):
+                self.run_self_test(game, [])
+            self.assertEqual({"OtherHarness", "Target"}, {p.name for p in mods.iterdir()})
+
 
 class FakeGame:
     returncode = None

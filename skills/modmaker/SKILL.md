@@ -137,7 +137,7 @@ human idea
 6. **Build.** `build.py` validates the pinned profile, compiles C#, validates manifest/resources/
    localization, packs a PCK when needed, and deploys only the Mod's own artifacts.
 7. **Tier 1.** Launch normally and require the exact load marker with no fresh error block.
-8. **Tier 2.** Isolate one harness Mod, run `launch.py --self-test`, and require independently
+8. **Tier 2.** Run `launch.py --self-test` (it parks other harness Mods and restores them), and require independently
    asserted structured post-state plus `selftest done`. A fired/used line is diagnostic only.
 9. **Headed review.** Use it only for selected image framing, UI, controller/mouse behavior,
    animation, or subjective experience that structured state cannot prove.

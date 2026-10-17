@@ -87,15 +87,18 @@ human-readable SPEC. Do not prebuild a nine-family matrix, claim omitted variant
 authoring contract into runtime proof. Each selected variant remains unobserved until the current
 run actually proves it.
 
-> **Isolation before any `--self-test` run:** `--t2selftest` arms **every** loaded harness
-> mod, so park all non-target harness mods first (move them out of `mods/`), leaving only the
-> one under test. A stray second harness
-> collides on the main menu (`ObjectDisposedException: NMainMenu`) and fails the run.
+> **Isolation is automatic.** `--t2selftest` arms **every** loaded harness Mod, and a stray
+> second harness collides on the main menu (`ObjectDisposedException: NMainMenu`).
+> `launch.py --self-test` therefore moves every other Mod folder whose DLL contains a
+> `t2selftest` gate from `mods/` to `mods-parked-by-skill-the-spire/` for the run and moves
+> it back afterwards, even when the run fails. If an earlier run was killed before it could
+> restore, the next launch restores first. Never move user Mods by hand.
 
 - `launch.py --self-test` passes `--t2selftest` (which arms the harness — a normal launch
   never does), then **polls the log** until the harness prints its terminal marker
-  (`[T2MOD-SELFTEST] <ModName> selftest done` or `… selftest FAILED`), bounded by a
-  timeout. It exits 0 only for `done`; `FAILED`, timeout, or the game exiting before a
+  (`[T2MOD-SELFTEST] <ModName> selftest done` or `… selftest FAILED`). It waits for the
+  harness's logged `selftest budget` plus boot time; `--wait-seconds N` overrides that.
+  It exits 0 only for `done`; `FAILED`, a launcher timeout, or the game exiting before a
   terminal marker return 1. The game is closed after the terminal outcome so the grep can
   read the fresh log.
 - `grep_log.py --tier2-pattern` applies the regex only to structured `state proof:` lines.
@@ -139,8 +142,16 @@ separately. An unrun Tier 1 or Tier 2 check remains an explicit exception, never
 - `selftest done` but the matching state proof is **absent** → the harness reached its
   scenario, but no accepted post-state assertion passed → a **real tier-2 behavior bug** →
   classify in `repair.md` (ordinary trigger markers may still reveal where behavior diverged).
-- `selftest FAILED: <stage>` or timeout → the **harness couldn't reach/drive its scenario**
-  (navigation/timing — a setup problem, not your effect). Do **not** report a tier-2
+- `selftest FAILED: state proof: <observation>` → the scenario ran and the post-state was
+  wrong → a **real tier-2 behavior bug** → classify in `repair.md`.
+- `selftest FAILED: timeout: scenario budget <N>s exceeded` → the scenario was still
+  running when its own budget ran out. If the scenario is long (a full content set), raise
+  `Budget` in `SelfTest.cs`, rebuild, and rerun; otherwise read the breadcrumbs for the
+  stalled step. Report it as a timeout, never as a navigation failure.
+- `[launch] TIMEOUT` with no terminal marker → the launcher stopped waiting first. Rerun
+  with a larger `--wait-seconds`; it is not evidence about the Mod.
+- any other `selftest FAILED: <stage>` → the **harness couldn't reach/drive its scenario**
+  (navigation — a setup problem, not your effect). Do **not** report a tier-2
   failure of the mod or rewrite the element. Classify any harness navigation/timing repair as
   implementation-equivalent, or fall back to the **manual guide below**; if that is not
   feasible, report **tier-1 only** honestly.
@@ -149,7 +160,7 @@ This tells you *which* failure you have. For the cause and fix of each, match th
 `${STS2API_SKILL_DIR}/errors.md` § Verification, and § Behavior for a state proof that
 reports a wrong observed value.
 
-### Manual fallback (only if the harness reported FAILED / timed out)
+### Manual fallback (only if the harness could not reach or drive its scenario)
 
 Ask the user to drive it by hand via the dev console:
 
