@@ -264,9 +264,23 @@ switching to an old template.
 
 ### Self-test fails before reaching its host
 
-- **Cause:** navigation/timing/scene-tree setup failed.
+- **Cause:** navigation/timing/scene-tree setup failed (`selftest FAILED` with a stage other
+  than `state proof:` or `timeout:`).
 - **Fix:** repair the harness setup or increase the bounded wait. Do not change gameplay to
   fit a navigation failure. Fall back to an honest Tier 1/manual report if needed.
+
+### `selftest FAILED: timeout: scenario budget <N>s exceeded`
+
+- **Cause:** the scenario was still running when the harness's own `Budget` ran out. A
+  whole Character content set can need 4-6 minutes; the default is 180 s.
+- **Fix:** if the breadcrumbs show steady progress, raise `Budget` in `SelfTest.cs` and
+  rebuild (`launch.py` follows the logged budget). If one step stalled, repair that step.
+
+### `selftest FAILED: state proof: <observation>`
+
+- **Cause:** the scenario ran and an asserted post-state was wrong.
+- **Fix:** treat it as a behavior bug: localize it with the diagnostic trigger lines, repair
+  the failed invariant, rebuild, and rerun Tier 2.
 
 ### `selftest done` appears without the structured state proof
 
