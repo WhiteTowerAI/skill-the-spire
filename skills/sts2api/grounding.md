@@ -26,7 +26,9 @@ Record a concrete failure as the smallest known limitation.
 2. Read only the referenced mechanics, state, presentation, art, or self-test page, and the
    shipped catalogs under `reference/catalogs/` when they cover the symbol.
 3. Check `errors.md` for an exact failure signature.
-4. If no maintained route covers the operation, implement it as a Mod-local route below.
+4. For an exact signature, overload, default value, or base-class hook the pages do not
+   spell out, run `api.py` (below) instead of guessing.
+5. If no maintained route covers the operation, implement it as a Mod-local route below.
 
 ## Mod-local Routes
 
@@ -35,7 +37,18 @@ accepted operation:
 
 1. Ground the exact public types and members in the pinned local assemblies the scaffold
    references (STS2, GodotSharp, RitsuLib). Use only public metadata: type and member names,
-   signatures, and documentation. The compiler is the final check on every signature.
+   signatures, and documentation. Read it with the lookup tool, which reads the installed
+   assemblies and their XML docs without loading them:
+
+   ```powershell
+   python ../modmaker/scripts/api.py search CardSelectCmd FromHand   # a type's matching members
+   python ../modmaker/scripts/api.py search RelicModel AfterPlayerTurnStart   # with inherited
+   python ../modmaker/scripts/api.py find ShuffleIfNecessary         # which type declares it
+   python ../modmaker/scripts/api.py --godot search Node2D Position  # include GodotSharp
+   ```
+
+   It prints public and protected members only. Nullable reference annotations and
+   attributes are not shown, and the compiler is the final check on every signature.
 2. Write the smallest Mod-owned implementation that uses only those public members, ordinary
    C#/BCL, and Mod-owned state. Never use Harmony, reflection, Publicizer, IL, or runtime
    patching.

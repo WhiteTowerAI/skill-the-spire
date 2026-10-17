@@ -165,6 +165,7 @@ player-visible design change or missing shared capability.
 
 ```powershell
 python ../modmaker/scripts/capability_preflight.py --spec SPEC.md
+python ../modmaker/scripts/api.py search <Type> [<member>]
 python ../modmaker/scripts/scaffold.py --project-dir <outer-dir> --mod-name <ModName> --author <Author>
 python ../modmaker/scripts/build.py --project-dir <outer-dir> --mod-name <ModName>
 python ../modmaker/scripts/launch.py --mod-name <ModName>
