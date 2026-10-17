@@ -34,6 +34,9 @@ GODOT_SDK_FILES = (
     "SdkPackageVersions.props",
 )
 UNRESOLVED_COMPILE_HASH = "0" * 64
+# The modmaker pipeline writes these at the outer project root before scaffold runs.
+# Scaffold never writes a file with these names, so they cannot be overwritten.
+PLANNING_DOCS = frozenset({"DESIGN.md", "SPEC.md", "PLAN.md", "MEMORY.md"})
 
 
 def _write(path: Path, text: str) -> None:
@@ -76,10 +79,17 @@ def generate(
         raise ValueError("mod name may not select a historical BaseLib path")
     if project_dir.name.casefold() == mod_name.casefold():
         raise ValueError("outer project directory name must differ from the Mod name")
-    if project_dir.exists() and any(project_dir.iterdir()):
-        raise ValueError(
-            f"project directory must be empty; use a dedicated outer directory, not {project_dir}"
+    if project_dir.exists():
+        foreign = sorted(
+            entry.name for entry in project_dir.iterdir()
+            if not (entry.is_file() and entry.name in PLANNING_DOCS)
         )
+        if foreign:
+            raise ValueError(
+                "project directory must be empty apart from "
+                f"{', '.join(sorted(PLANNING_DOCS))}; use a dedicated outer directory, "
+                f"not {project_dir} (found {', '.join(foreign)})"
+            )
     project_dir.mkdir(parents=True, exist_ok=True)
 
     # Programmatic maintainer fixtures may omit a host. The shipped CLI always resolves and

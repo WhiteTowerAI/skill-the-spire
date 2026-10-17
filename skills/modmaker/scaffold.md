@@ -18,22 +18,24 @@ unvalidated packer fallback.
 
 ## 1. Toolchain and location
 
-Require .NET SDK 9 and Python 3. Choose a dedicated empty outer directory outside the
-skill repository. Its leaf name must differ from `<ModName>`; the Mod resource tree may
-later use `<project-dir>/<ModName>/`.
+Require .NET SDK 9 and Python 3. Use the dedicated outer directory outside the skill
+repository that already holds `DESIGN.md` and `SPEC.md` (and `PLAN.md`/`MEMORY.md` when
+present). Its leaf name must differ from `<ModName>`; the Mod resource tree may later use
+`<project-dir>/<ModName>/`.
 
 ```powershell
 dotnet --version
 python ../modmaker/scripts/scaffold.py `
-  --project-dir <absolute-empty-outer-directory> `
+  --project-dir <absolute-outer-directory> `
   --mod-name <ModName> `
   --author <Author> `
   --game-dir <STS2-install-directory> `
   --runtime-dir <optional-installed-RitsuLib-directory>
 ```
 
-`<ModName>` is a C# identifier without spaces. The generator refuses a nonempty directory
-and never overwrites an existing project.
+`<ModName>` is a C# identifier without spaces. The generator accepts a directory that holds
+only `DESIGN.md`, `SPEC.md`, `PLAN.md`, and `MEMORY.md`, keeps them untouched, refuses any
+other existing entry, and never overwrites an existing project.
 
 ## 2. Generated contract
 
