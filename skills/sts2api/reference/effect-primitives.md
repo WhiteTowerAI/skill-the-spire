@@ -23,9 +23,10 @@ Resolve these values from the selected surface, not from canonical models or glo
 - `target` or `targets`: live mutable Creature instances supplied or selected by the callback.
 - `cardPlay`: the current `CardPlay` only for Block directly caused by that play; otherwise `null`.
 
-Card selection, target selection, Reward/UI choices, custom pile movement, lifecycle listeners,
-and state/RNG are separate routes. This page consumes their resolved results but does not perform
-their transactions.
+In-combat Card selection and moving a Card to the top of the Draw Pile are below. Target
+selection, deck/Event selection, Reward/UI choices, Custom Pile movement, lifecycle listeners,
+and state/RNG are separate routes. This page consumes their resolved results but does not
+perform their transactions.
 
 ## Damage
 
@@ -180,7 +181,7 @@ cannot author this primitive.
 ## Discard or Exhaust known combat Cards
 
 Selection is not part of these primitives. First obtain exact live Card instances through the
-surface or a selected specialized route, then preserve their owner and combat-pile identity:
+surface or § Choose Cards in combat, then preserve their owner and combat-pile identity:
 
 ```csharp
 await CardCmd.Discard(choiceContext, card);
@@ -195,6 +196,72 @@ for the native Ethereal lifecycle, and do not suppress visuals for ordinary effe
 neutral once combat is no longer in progress and reject Cards that do not belong to the expected
 live combat lifecycle. Arbitrary movement, shuffle, Custom Piles, and retained zones remain
 `recipes/card-pile.md` plus `reference/card-piles.md`.
+
+## Choose Cards in combat
+
+```csharp
+var prefs = new CardSelectorPrefs(SelectionScreenPrompt, minCount, maxCount);   // or (prompt, count)
+
+IEnumerable<CardModel> fromHand = await CardSelectCmd.FromHand(
+    choiceContext, player, prefs, filter: null, source: this);
+IEnumerable<CardModel> fromPile = await CardSelectCmd.FromCombatPile(
+    choiceContext, PileType.Draw.GetPile(player), player, prefs);
+IEnumerable<CardModel> fromList = await CardSelectCmd.FromSimpleGrid(
+    choiceContext, cards, player, prefs);
+CardModel? oneOfThree = await CardSelectCmd.FromChooseACardScreen(
+    choiceContext, cards, player, canSkip: false);
+```
+
+Every call needs the effect's real `PlayerChoiceContext`, so it runs only from a hook or
+callback that receives one (`OnPlay`, `AfterPlayerTurnStart`, a Potion use; never
+`AfterSideTurnStart`). `SelectionScreenPrompt` is the owning model's protected
+`<id>.selectionScreenPrompt` localization key; Cards, Relics, and Powers throw when it is
+missing, so emit it in both languages whenever SPEC selects a choice. The vanilla prompts
+`CardSelectorPrefs.ExhaustSelectionPrompt`, `DiscardSelectionPrompt`, and the other static
+ones are reusable when the wording matches. `FromHandForDiscard` is the discard variant.
+
+`FromChooseACardScreen` accepts at most three Cards and returns `null` for an empty list or a
+skip. `FromHand` returns the whole filtered Hand without asking when it holds no more Cards
+than `MinSelect` (unless `RequireManualConfirmation` is set). Always operate on the returned
+instances, and inspect the count rather than assuming the requested number. Drive these in
+Tier 2 with `reference/selftest-harness.md` § card that asks the player to choose.
+
+## Put an existing Card on top of the Draw Pile
+
+```csharp
+await CardPileCmd.Add(card, PileType.Draw, CardPilePosition.Top);
+CardModel? top = PileType.Draw.GetPile(player).Cards.FirstOrDefault();   // Cards[0] is the top
+await CardPileCmd.ShuffleIfNecessary(choiceContext, player);
+```
+
+`CardPileCmd.Add` moves a live combat Card from its current pile; inspect the returned
+`CardPileAddResult` when later steps depend on it. The Draw Pile's top is `Cards[0]`, the
+next Card a draw takes. `ShuffleIfNecessary` shuffles the Discard Pile into an empty Draw
+Pile and does nothing otherwise; call it before reading or revealing the top of a pile that
+may be empty. Generated Cards use § Create a known Card in combat instead.
+
+## Make a Card free this turn
+
+```csharp
+card.SetToFreeThisTurn();      // Energy and Star cost 0 until played or the turn ends
+card.SetToFreeThisCombat();    // for the rest of this combat
+```
+
+Both are synchronous and apply to that one live instance. Assert the instance's current cost,
+not the canonical model's.
+
+## Stun an enemy
+
+```csharp
+await CreatureCmd.Stun(target);                     // as vanilla Whistle does
+await CreatureCmd.Stun(target, nextMoveId: "MOVE"); // choose the move after the stun
+```
+
+The target must be a monster; stunning a player throws. The stun replaces the monster's
+next move with `MonsterModel.stunnedMoveId` (`"STUNNED"`), shows the stun intent, and then
+continues with `nextMoveId`, or with the move it last performed when that is null. Assert
+`target.Monster!.NextMove.Id == MonsterModel.stunnedMoveId` right after the call, and the
+skipped damage after the enemy turn.
 
 ## Create a known Card in combat
 
@@ -211,8 +278,9 @@ already have a pile. Combat ending returns an unsuccessful/default result. Inspe
 `result.success`, `result.cardAdded`, and its pile rather than assuming the request succeeded;
 the command owns generated history, pile movement, and generated hooks.
 
-This primitive creates a known registered Card type. Choosing a random/selected type or moving an
-existing Card uses the RNG/selection/Card Pile route.
+This primitive creates a known registered Card type. Choosing a random type uses the RNG route;
+moving an existing Card uses § Put an existing Card on top of the Draw Pile or the Card Pile
+route.
 
 ## Acquire known run content
 

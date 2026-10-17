@@ -221,8 +221,11 @@ There is NO `ICombatHook` to implement; just override the method.
 
 | Request phrasing | Hook to override | Notes |
 |---|---|---|
-| "at the start of combat" | `AfterSideTurnStart(CombatSide, IReadOnlyList<Creature>, ICombatState)` | Guard `TurnNumber <= 1`. **This is the combat-start hook** — same one Lantern uses. Fires every turn otherwise. |
-| "at the start of each turn" | `AfterSideTurnStart(...)` | Same hook, no TurnNumber guard (still guard `participants.Contains(Owner.Creature)`). |
+| "at the start of combat": Block, damage, Energy | `AfterSideTurnStart(CombatSide, IReadOnlyList<Creature>, ICombatState)` | Guard `participants.Contains(Owner.Creature)` and `TurnNumber <= 1`, as Lantern does. It has **no `PlayerChoiceContext`**, so nothing that draws, selects, or asks the player belongs here. |
+| "at the start of combat": apply a Power | `AfterRoomEntered(AbstractRoom room)` | Guard `room is CombatRoom`; the Power is on before turn 1, as Bronze Scales does. Pass `new ThrowingPlayerChoiceContext()` to `PowerCmd.Apply`. |
+| "at the start of combat": more cards in the opening hand | `ModifyHandDraw(Player, decimal)` | Hook participation, guard `player == Owner` and `TurnNumber <= 1`, as Bag of Preparation does. |
+| "at the start of combat/turn": draw after the opening hand, choose/discard/exhaust a Card, or anything else that needs a `PlayerChoiceContext` | `AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)` | Guard `player == Owner` (for a Power, `player == Owner.Player`) and, for combat start, `Owner.PlayerCombatState!.TurnNumber <= 1`, as Gambling Chip does. Runs after the Energy reset and the hand draw, before `AfterSideTurnStart`. |
+| "at the start of each turn" | `AfterSideTurnStart(...)`, or `AfterPlayerTurnStart(...)` when it needs a `PlayerChoiceContext` | Same hooks, no TurnNumber guard (still guard the owner). |
 | "every N turns" across combats | `AfterSideTurnStart(...)` | `SavedAttachedState<SpecificRelic, int>` modulo progress; never clear it at combat end. See `stateful-mechanics.md`. |
 | "on turn N" / "every N turns this combat" | start: `AfterSideTurnStart(...)`; end: `BeforeSideTurnEnd(...)` | Read `Owner.PlayerCombatState.TurnNumber` (`== N` or `% N == 0`); no saved counter. |
 | "every N cards this turn" | `AfterCardPlayed(...)` + `BeforeSideTurnStart(...)` reset | Owner-card guard; ordinary turn-local field. |
@@ -231,7 +234,8 @@ There is NO `ICombatHook` to implement; just override the method.
 
 > ⚠️ Do not use `BeforeCombatStart()` for energy. Confirmed: `PlayerCombatState`
 > resets energy to max at turn start, so any energy added earlier is lost. Use
-> `AfterSideTurnStart` + `TurnNumber <= 1`.
+> `AfterSideTurnStart` + `TurnNumber <= 1` (or `AfterPlayerTurnStart`, which also runs
+> after the reset).
 
 The `participants.Contains(Owner.Creature)` check is mandatory in multiplayer —
 the hook fires for every side; act only when your owner's side is the one starting.

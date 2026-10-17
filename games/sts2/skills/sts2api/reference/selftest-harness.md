@@ -350,9 +350,12 @@ during previews. Branch on SPEC's `element` and adapt the shown invariant to the
 
 ### relic — grant before combat, then just wait
 
-A relic's `AfterSideTurnStart` fires on its own at combat start (`TurnNumber <= 1`), so
-there's nothing to drive in-combat — grant it *before* `EnterRoomDebug` and let the
-existing wait-for-Play-phase give it time to fire.
+A relic's combat-start hook (`AfterRoomEntered`, `AfterPlayerTurnStart`, or
+`AfterSideTurnStart` with `TurnNumber <= 1`) fires on its own, so there's nothing to drive
+in-combat — grant it *before* `EnterRoomDebug` and let the existing wait-for-Play-phase give
+it time to fire. When that hook asks for a Card selection, it runs before the Play phase:
+keep the `CardSelectCmd.UseSelector` scope from § card that asks the player to choose open
+from `BeforeCombat` until the Play-phase wait returns, or combat never reaches Play.
 
 ```csharp
 private static async Task BeforeCombat(CancellationToken ct)
