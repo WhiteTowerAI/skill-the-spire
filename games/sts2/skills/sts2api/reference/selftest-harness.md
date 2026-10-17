@@ -71,10 +71,10 @@ after character-select Confirm and `RunManager.Instance.IsInProgress`, wait for
 `LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())` is non-null. A single read
 after the UI gate is still racy: an earlier focused proof reached a ready
 `GlobalUi` before the local Player was injected. The earlier Character proof likewise
-proved that the run-state flag can become true while the local player is unavailable. Also
-normalize `\\` to `/` on both the template's character-select
-icon path and Godot's texture `ResourcePath`; Windows template helpers may return a mixed
-separator `res://` path even though the correct button is present.
+proved that the run-state flag can become true while the local player is unavailable.
+Locate the character-select button by model type (`button.Character is <CharacterName>`),
+never by its `%Icon` texture path: placeholder art keeps the fallback portrait, so a path
+match finds no button.
 
 ## Proof and control signals for verify/repair
 
@@ -152,6 +152,7 @@ substituted exactly as elsewhere.
 
 ```csharp
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -160,8 +161,10 @@ using MegaCrit.Sts2.Core.AutoSlay.Helpers;   // UiHelper, WaitHelper (public, sh
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.CardRewardAlternatives;   // ScriptedSelector only
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Powers;                   // PowerType (ClearDebuffs)
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Helpers;
@@ -293,6 +296,24 @@ internal static class SelfTest
     private static Task InCombat(Player player, CancellationToken ct) => Task.CompletedTask;   // <see element table>
 }
 ```
+
+### Baseline encounter debuffs
+
+`CorpseSlugsWeak` is not inert. Its two slugs start on different moves, and `GOOP_MOVE`
+applies 2 `FrailPower` to the player, so from the first enemy turn on every Block
+assertion reads 25% low. `PlatingPower` only keeps the player alive. Any scenario that
+crosses an enemy turn (End Turn, a turn-N trigger, a multi-turn proof) must clear the
+player's debuffs after the wait and before it snapshots Damage or Block:
+
+```csharp
+private static async Task ClearDebuffs(Creature creature)
+{
+    foreach (var power in creature.Powers.Where(p => p.Type == PowerType.Debuff).ToList())
+        await PowerCmd.Remove(power);
+}
+```
+
+Do not clear a debuff the SPEC itself applies or reads; assert that one explicitly instead.
 
 ## The DRIVER bodies (fill per SPEC element type)
 
@@ -442,6 +463,56 @@ private static async Task InCombat(Player player, CancellationToken ct)
 ```
 (`TargetType` is `MegaCrit.Sts2.Core.Models` — already imported. For an attack the
 `card.CombatState.HittableEnemies` list is the slugs from the minimal encounter.)
+
+### card that asks the player to choose — script the selection
+
+An effect that awaits `CardSelectCmd.FromHand`, `FromCombatPile`, `FromSimpleGrid`,
+`FromChooseACardScreen`, or a deck selection blocks on a screen nobody clicks. Install a
+scripted selector around the play instead. Every one of those commands checks
+`CardSelectCmd.Selector` first and, when one is set, skips the screen and asks it.
+
+Two public interfaces share the name `ICardSelector`. Implement
+`MegaCrit.Sts2.Core.TestSupport.ICardSelector`, the one `CardSelectCmd.UseSelector` takes.
+`MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.ICardSelector` belongs to the selection
+screen node and does not compile there. Write the namespace out in full.
+
+```csharp
+private sealed class ScriptedSelector : MegaCrit.Sts2.Core.TestSupport.ICardSelector
+{
+    private readonly Func<IReadOnlyList<CardModel>, IEnumerable<CardModel>> _pick;
+    public readonly List<int> OfferedCounts = new();
+
+    public ScriptedSelector(Func<IReadOnlyList<CardModel>, IEnumerable<CardModel>> pick) => _pick = pick;
+
+    public Task<IEnumerable<CardModel>> GetSelectedCards(
+        IEnumerable<CardModel> options, int minSelect, int maxSelect)
+    {
+        var offered = options.ToList();
+        OfferedCounts.Add(offered.Count);
+        return Task.FromResult<IEnumerable<CardModel>>(_pick(offered).Take(maxSelect).ToList());
+    }
+
+    public MegaCrit.Sts2.Core.TestSupport.CardRewardSelection GetSelectedCardReward(
+        IReadOnlyList<CardCreationResult> options, IReadOnlyList<CardRewardAlternative> alternatives)
+        => new() { card = options.FirstOrDefault()?.Card };
+}
+
+// In InCombat, after the card is in hand:
+var chosen = PileType.Hand.GetPile(player).Cards.First(c => c != card);
+var selector = new ScriptedSelector(offered => offered.Where(c => c == chosen));
+using (CardSelectCmd.UseSelector(selector))
+{
+    await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
+}
+StateProof(selector.OfferedCounts.Count == 1 && <exact post-state of chosen>,
+    $"selection offered={string.Join(",", selector.OfferedCounts)}; ...");
+```
+
+`UseSelector` throws when a selector is already active, and disposing the scope clears
+it, so keep exactly one `using` scope per play. Some commands return without asking when
+the pile is empty or holds no more cards than the minimum, so assert `OfferedCounts`
+along with the post-state. The selector skips the screen, so the prompt text and screen
+layout stay headed-review items.
 
 ### calculated-value Card — preview, raw request, final state, and headed text
 
@@ -884,14 +955,11 @@ var registered = ModelDb.AllCharacters.OfType<<CharacterName>>().ToList();
 StateProof(registered.Count == 1,
     $"content-pack registration expected=1 observed={registered.Count}");
 var canonical = registered.Single();
-var expectedIconPath = <CharacterName>.CharacterUi("<select-file>.png")
-    .Replace('\\', '/');
 var buttons = UiHelper.FindAll<NCharacterSelectButton>(
     charSelect!.GetNode("CharSelectButtons/ButtonContainer"));
-var pick = buttons.SingleOrDefault(button =>
-    button.GetNodeOrNull<TextureRect>("%Icon")?.Texture?.ResourcePath.Replace('\\', '/') ==
-    expectedIconPath);
-StateProof(pick?.Character is <CharacterName> && !pick.IsLocked,
+// Match by model type: placeholder art keeps the fallback %Icon texture.
+var pick = buttons.SingleOrDefault(button => button.Character is <CharacterName>);
+StateProof(pick != null && !pick.IsLocked,
     $"character select expected=<CharacterName>/unlocked " +
     $"observed={(pick == null ? "missing" : pick.Character.GetType().Name + "/locked=" + pick.IsLocked)}");
 pick!.UnlockIfPossible();
@@ -1351,6 +1419,10 @@ an unrun strict `selftest done` as an explicit verification exception.
       intents + `MonsterPerformedMoveEntry`, and traverses every declared cycle/branch outcome.
 - [ ] Multi-hit proof counts `CreatureAttackedEntry.DamageResults`; self Power proof includes
       its downstream changed result; Block/Heal/debuff assertions read exact live state.
+- [ ] A scenario that crosses an enemy turn clears the player's baseline debuffs (slug
+      Frail) before snapshotting Damage or Block.
+- [ ] A Card selection runs inside one `CardSelectCmd.UseSelector` scope with a
+      `MegaCrit.Sts2.Core.TestSupport.ICardSelector` and asserts what was offered.
 - [ ] Every nonnegative Counter `consumes` edge runs zero/fewer-than-N/at-least-N cases
       and asserts after each that no negative instance exists.
 - [ ] Never claim tier-2 on a `selftest FAILED` line — that's a harness/setup miss, report tier-1 + manual fallback.

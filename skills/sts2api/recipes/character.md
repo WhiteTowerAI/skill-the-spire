@@ -371,11 +371,12 @@ backgrounds/layouts, options/rewards, line audio, and multiplayer remain unsuppo
 ## Tier 2: selection + RunStart + CombatPlayer + world consumers
 
 1. Require exactly one registered custom Character.
-2. On the real character-select screen, locate its button by normalized `%Icon`
-   texture path, unlock only for proof setup, and select that exact model. Never
-   choose the first unlocked character.
-3. Prove the 132x195 portrait and 1920x1200 background in the visible select UI,
-   assert the button is inside the 1920x1080 viewport, capture a settled screenshot, and
+2. On the real character-select screen, locate its button by model type
+   (`button.Character is <CharacterName>`), unlock only for proof setup, and select that
+   exact model. Never match the `%Icon` texture path (placeholder art keeps the fallback
+   portrait) and never choose the first unlocked character.
+3. When custom selection art is selected, prove the 132x195 portrait and 1920x1200
+   background in the visible select UI. In every case assert the button is inside the 1920x1080 viewport, capture a settled screenshot, and
    click Confirm.
 4. After `NRun.GlobalUi` is ready, assert selected identity, exact HP/Max HP,
    starting Gold, all three exact typed pool types/member sets, every independently
