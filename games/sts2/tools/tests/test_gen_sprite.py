@@ -464,6 +464,48 @@ class GenSpriteTests(unittest.TestCase):
                           if p[3] and min(p[0], p[2]) - p[1] > 40]
             self.assertEqual([], tinted)
 
+    def test_import_crop_uses_only_the_source_pixel_box(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "card.png"
+            image = Image.new("RGB", (400, 600), (200, 30, 30))       # frame and text
+            ImageDraw.Draw(image).rectangle((100, 100, 299, 299), fill=(30, 60, 200))
+            image.save(source)
+
+            result = self.run_import("relic", source, root / "images", "--no-chroma",
+                                     "--crop", "100,100,200,200")
+            self.assertEqual(0, result.returncode, result.stderr)
+            with Image.open(root / "images" / "relics" / "keyed.png") as placed:
+                colors = {p[:3] for p in placed.convert("RGBA").getdata() if p[3]}
+            self.assertTrue(all(b > r for r, _g, b in colors), colors)
+
+            outside = self.run_import("relic", source, root / "other", "--crop", "300,500,200,200")
+            self.assertNotEqual(0, outside.returncode)
+            self.assertIn("leaves the 400x600 source", outside.stdout + outside.stderr)
+
+    def test_grid_preview_keeps_source_resolution_and_validates_boxes(self) -> None:
+        self.assertEqual(50, gen_sprite.grid_step((600, 840)))
+        self.assertEqual(100, gen_sprite.grid_step((1200, 1800)))
+        self.assertEqual((1, 2, 3, 4), gen_sprite.parse_box("1,2,3,4"))
+        with self.assertRaises(gen_sprite.argparse.ArgumentTypeError):
+            gen_sprite.parse_box("1,2,0,4")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "card.png"
+            Image.new("RGB", (300, 420), (220, 210, 190)).save(source)
+            run = lambda *extra: subprocess.run(
+                [sys.executable, str(GEN_SPRITE), "grid", "--input", str(source),
+                 "--out", str(root / "grid.png"), *extra],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+            ok = run("--box", "10,20,100,80")
+            self.assertEqual(0, ok.returncode, ok.stderr)
+            self.assertIn("source 300x420", ok.stdout)
+            with Image.open(root / "grid.png") as grid:
+                self.assertEqual((300, 420), grid.size)
+            bad = run("--box", "250,400,100,80")
+            self.assertNotEqual(0, bad.returncode)
+
     def test_cutout_import_warns_when_the_subject_was_cut_off(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
