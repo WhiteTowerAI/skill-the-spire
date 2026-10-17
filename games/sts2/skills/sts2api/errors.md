@@ -269,6 +269,15 @@ switching to an old template.
 - **Fix:** repair the harness setup or increase the bounded wait. Do not change gameplay to
   fit a navigation failure. Fall back to an honest Tier 1/manual report if needed.
 
+### `Failed to upload run history/metrics: ... ModelNotFoundException: Model id=<id> not found`
+
+- **Cause:** the harness abandoned an open run whose character comes from a Mod that is not
+  loaded, usually one `launch.py --self-test` parked. RitsuLib's post-run unlock patch
+  cannot find the model. The abandon still completes.
+- **Fix:** none when `<id>` belongs to another Mod; `grep_log.py` ignores that exact block.
+  When `<id>` carries the tested Mod's own prefix, it still fails: the Mod's Character did
+  not register, so repair registration.
+
 ### `selftest FAILED: timeout: scenario budget <N>s exceeded`
 
 - **Cause:** the scenario was still running when the harness's own `Budget` ran out. A

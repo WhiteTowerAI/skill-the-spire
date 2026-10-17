@@ -164,6 +164,47 @@ class GrepLogTests(unittest.TestCase):
         self.assertEqual(0, code)
         self.assertIn("Known verification cleanup noise: IGNORED", output)
 
+    def abandon_missing_model(self, model: str, exception: str = "ModelNotFoundException",
+                              abandon: bool = True) -> list[str]:
+        # Observed 2026-10-17 when the harness abandoned a run whose character Mod was parked.
+        lines = [
+            "[ERROR] ERROR: Failed to upload run history/metrics: "
+            f"MegaCrit.Sts2.Core.Models.Exceptions.{exception}: Model id={model} not found",
+            "   at MegaCrit.Sts2.Core.Models.ModelDb.GetById[T](ModelId id)",
+            "   at STS2RitsuLib.Unlocks.Patches.PostRunCharacterUnlockEpochCompatibilityPatch"
+            ".Prefix(SerializablePlayer serializablePlayer, SerializableRun serializableRun)",
+            "   at MegaCrit.Sts2.Core.Saves.SaveManager.UpdateProgressWithRunData("
+            "SerializableRun serializableRun, Boolean victory)",
+        ]
+        if abandon:
+            lines += [
+                "   at MegaCrit.Sts2.Core.Nodes.Screens.MainMenu.NMainMenu.AbandonRun()",
+                "   at MegaCrit.Sts2.Core.AutoSlay.Helpers.UiHelper.Click("
+                "NClickableControl button, Int32 delayMs)",
+            ]
+        return lines
+
+    def test_abandoning_a_parked_mods_run_is_ignored(self) -> None:
+        code, output = self.run_grep(
+            self.baseline() + self.abandon_missing_model("CHARACTER.ZHANG_JUE_CHARACTER_ZHANG_JUE")
+        )
+        self.assertEqual(0, code, output)
+        self.assertIn("Known verification cleanup noise: IGNORED", output)
+
+    def test_missing_model_near_misses_still_fail(self) -> None:
+        cases = {
+            "own model": self.abandon_missing_model("CHARACTER.EXAMPLE_MOD_CHARACTER_HERO"),
+            "no abandon stack": self.abandon_missing_model(
+                "CHARACTER.ZHANG_JUE_CHARACTER_ZHANG_JUE", abandon=False),
+            "other exception": self.abandon_missing_model(
+                "CHARACTER.ZHANG_JUE_CHARACTER_ZHANG_JUE", exception="NullReferenceException"),
+        }
+        for name, block in cases.items():
+            with self.subTest(case=name):
+                code, output = self.run_grep(self.baseline() + block)
+                self.assertEqual(1, code, output)
+                self.assertIn("[FAIL] Fresh-run error block", output)
+
     def test_similar_backup_error_without_abandon_stack_still_fails(self) -> None:
         code, output = self.run_grep(
             self.baseline()
