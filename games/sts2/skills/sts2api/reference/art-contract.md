@@ -1132,6 +1132,16 @@ python ${GAME_TOOLS_DIR}/gen_sprite.py generate \
 python ${GAME_TOOLS_DIR}/gen_sprite.py import \
   --spec card --slug firebolt --input ./my-art.png --out <mod>/<ModName>/images
 
+# local-image inside a larger picture (a whole card with frame and text, a sheet):
+# 1. write a source-pixel grid preview, read the box off it, and redraw to confirm;
+python ${GAME_TOOLS_DIR}/gen_sprite.py grid \
+  --input ./whole-card.png --out <work dir>/art-review/whole-card-grid.png \
+  [--box 40,90,520,381]
+# 2. import only that box (X,Y,W,H in source pixels, exactly as the grid labels them):
+python ${GAME_TOOLS_DIR}/gen_sprite.py import \
+  --spec card --slug firebolt --input ./whole-card.png --crop 40,90,520,381 \
+  --out <mod>/<ModName>/images
+
 # list the contract (script's view — should match the table above):
 python ${GAME_TOOLS_DIR}/gen_sprite.py list-specs
 ```

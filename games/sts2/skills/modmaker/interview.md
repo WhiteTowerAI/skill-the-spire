@@ -202,7 +202,10 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      `python ${GAME_TOOLS_DIR}/gen_sprite.py check --backend <name>` once (it requests no
      image). On success record `art source: backend:<name>`; on failure say what is missing
      and let the user fix it, pick another choice, or keep placeholder.
-   - **3**: ask which file belongs to which asset; record `art source: local-image`.
+   - **3**: ask which file belongs to which asset; record `art source: local-image`. When
+     the art sits inside a larger picture (a whole card with frame and text), crop it
+     with `gen_sprite.py grid` and `import --crop` per `art-contract.md`; anything beyond a
+     rectangular crop is the user's own edit.
    - For 1 and 2, capture one overall subject/style note. `author.md` derives each asset's
      subject from its SPEC. Before any paid route, show how many image calls it will spend.
    - For a Character with 1 or 2, offer its art tier in the same message, with the call

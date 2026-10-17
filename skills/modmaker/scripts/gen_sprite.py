@@ -1257,6 +1257,71 @@ def cmd_check(args: argparse.Namespace) -> int:
     return 0
 
 
+GRID_STEPS = (10, 20, 25, 50, 100, 200, 250, 500, 1000)
+GRID_MAX_LINES = 20
+
+
+def crop_box(src: "Image.Image", box: tuple[int, int, int, int]) -> "Image.Image":
+    """Crop X,Y,W,H in source pixels, refusing any box that leaves the image."""
+    x, y, w, h = box
+    if x < 0 or y < 0 or x + w > src.width or y + h > src.height:
+        raise SystemExit(
+            f"[gen_sprite] crop {x},{y},{w},{h} leaves the {src.width}x{src.height} source; "
+            "read coordinates from `gen_sprite.py grid`, which labels source pixels"
+        )
+    return src.crop((x, y, x + w, y + h))
+
+
+def grid_step(size: tuple[int, int]) -> int:
+    longest = max(size)
+    return next((step for step in GRID_STEPS if longest / step <= GRID_MAX_LINES), GRID_STEPS[-1])
+
+
+def render_grid(src: "Image.Image", step: int,
+                boxes: list[tuple[int, int, int, int]]) -> "Image.Image":
+    """The source at its own resolution with source-pixel grid labels and crop boxes."""
+    from PIL import ImageDraw, ImageFont
+
+    base = src.convert("RGBA")
+    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    font = ImageFont.load_default()
+    for x in range(0, base.width, step):
+        draw.line((x, 0, x, base.height), fill=(0, 255, 255, 110))
+        draw.rectangle((x + 1, 0, x + 6 * len(str(x)) + 3, 11), fill=(0, 0, 0, 170))
+        draw.text((x + 2, 0), str(x), fill=(255, 255, 255, 255), font=font)
+    for y in range(0, base.height, step):
+        draw.line((0, y, base.width, y), fill=(0, 255, 255, 110))
+        if y:
+            draw.rectangle((0, y + 1, 6 * len(str(y)) + 3, y + 12), fill=(0, 0, 0, 170))
+            draw.text((2, y + 1), str(y), fill=(255, 255, 255, 255), font=font)
+    for x, y, w, h in boxes:
+        draw.rectangle((x, y, x + w - 1, y + h - 1), outline=(255, 40, 40, 255), width=2)
+        label = f"{x},{y},{w},{h}"
+        draw.rectangle((x, y + h, x + 6 * len(label) + 4, y + h + 12), fill=(255, 40, 40, 220))
+        draw.text((x + 2, y + h + 1), label, fill=(255, 255, 255, 255), font=font)
+    return Image.alpha_composite(base, overlay)
+
+
+def cmd_grid(args: argparse.Namespace) -> int:
+    src_path = Path(args.input)
+    if not src_path.is_file():
+        print(f"[gen_sprite] input file not found: {src_path}", file=sys.stderr)
+        return 2
+    with Image.open(src_path) as opened:
+        src = opened.convert("RGBA")
+    for box in args.box:
+        crop_box(src, box)
+    step = args.step or grid_step(src.size)
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    render_grid(src, step, args.box).save(out, "PNG")
+    print(f"[gen_sprite] grid: source {src.width}x{src.height}, lines every {step} px; "
+          "labels are source pixels, so pass them to --crop unchanged even if a viewer zooms")
+    print(str(out))
+    return 0
+
+
 def cmd_import(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     log, flush = make_logger(out_dir)
@@ -1267,8 +1332,16 @@ def cmd_import(args: argparse.Namespace) -> int:
     if not src_path.is_file():
         print(f"[gen_sprite] input file not found: {src_path}", file=sys.stderr)
         return 2
+    if args.crop and cue_spec:
+        print("[gen_sprite] --crop does not apply to a Character cue sheet", file=sys.stderr)
+        return 2
     try:
-        with Image.open(src_path) as src:
+        with Image.open(src_path) as opened:
+            src = opened
+            if args.crop:
+                src = crop_box(opened, args.crop)
+                log(f"cropped source {opened.size} to {args.crop[2]}x{args.crop[3]} at "
+                    f"{args.crop[0]},{args.crop[1]}")
             if cue_spec:
                 dest, complete = stage_character_cue_source(
                     src, args.spec, args.slug, out_dir, log
@@ -1537,6 +1610,16 @@ def parse_size(text: str) -> tuple[int, int]:
         raise argparse.ArgumentTypeError(f"size must be WxH, e.g. 1000x760 (got {text!r})")
 
 
+def parse_box(text: str) -> tuple[int, int, int, int]:
+    try:
+        x, y, w, h = (int(part) for part in text.split(","))
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"box must be X,Y,W,H in source pixels (got {text!r})")
+    if w <= 0 or h <= 0:
+        raise argparse.ArgumentTypeError(f"box width and height must be positive (got {text!r})")
+    return x, y, w, h
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Produce an STS2 custom sprite at the exact contract path+size.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1611,7 +1694,17 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("--size", type=parse_size, help="override WxH (required for unverified specs)")
     i.add_argument("--chroma", action="store_true", help="force the #FF00FF chroma-key on (default: per-spec)")
     i.add_argument("--no-chroma", action="store_true", help="force the #FF00FF chroma-key off (default: per-spec)")
+    i.add_argument("--crop", type=parse_box, metavar="X,Y,W,H",
+                   help="crop this source-pixel box first (read it from the `grid` preview)")
     i.set_defaults(func=cmd_import)
+
+    gr = sub.add_parser("grid", help="Write a source-pixel coordinate grid to pick --crop boxes.")
+    gr.add_argument("--input", required=True, help="path to the source image")
+    gr.add_argument("--out", required=True, help="preview PNG to write (outside the Mod's images)")
+    gr.add_argument("--step", type=int, help="grid spacing in source pixels (default: auto)")
+    gr.add_argument("--box", type=parse_box, action="append", default=[], metavar="X,Y,W,H",
+                    help="draw a candidate crop box; repeatable")
+    gr.set_defaults(func=cmd_grid)
 
     ls = sub.add_parser("list-specs", help="Print the sprite contract (path+size per spec).")
     ls.set_defaults(func=cmd_list_specs)
