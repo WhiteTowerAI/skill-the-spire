@@ -100,6 +100,23 @@ class RitsuProfileTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "outer project directory"):
                 generate(Path(tmp) / "EmptyRitsu", "EmptyRitsu", "SkillTheSpire")
 
+    def test_scaffold_keeps_planning_docs_and_refuses_other_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "planned-outer"
+            project.mkdir()
+            for name in ("DESIGN.md", "SPEC.md", "PLAN.md", "MEMORY.md"):
+                (project / name).write_text(f"# {name}\n", encoding="utf-8")
+            generate(project, "EmptyRitsu", "SkillTheSpire")
+            self.assertEqual("# SPEC.md\n", (project / "SPEC.md").read_text(encoding="utf-8"))
+            self.assertTrue((project / "EmptyRitsu.csproj").is_file())
+
+            other = Path(tmp) / "used-outer"
+            other.mkdir()
+            (other / "SPEC.md").write_text("spec", encoding="utf-8")
+            (other / "notes.txt").write_text("x", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "found notes.txt"):
+                generate(other, "EmptyRitsu", "SkillTheSpire")
+
     def test_scaffold_uses_bundled_sdk_and_pinned_local_assemblies(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "empty-outer"
