@@ -165,9 +165,12 @@ selected.
 - Extend `ModRelicTemplate` and add exactly one `.Relic<TPool,TRelic>()` step to
   `MainFile.Content.cs`. The content-pack pool generic is the availability contract.
 - Override the hook matching SPEC's trigger (recipe's "Trigger hooks" table). For
-  combat-start: `AfterSideTurnStart` + `participants.Contains(Owner.Creature)` +
+  combat-start Block/damage/Energy: `AfterSideTurnStart` + `participants.Contains(Owner.Creature)` +
   `Owner.PlayerCombatState!.TurnNumber <= 1` guards. That last guard **is** the declared
-  cadence; the hook fires every turn without it.
+  cadence; the hook fires every turn without it. A combat-start effect that needs a
+  `PlayerChoiceContext` (draw, select, discard) uses `AfterPlayerTurnStart` with
+  `player == Owner` and the same `TurnNumber` guard; a combat-start Power uses
+  `AfterRoomEntered` with `room is CombatRoom`.
 - Declare a SPEC displayed value in `CanonicalVars` and reference it as a placeholder in the
   localized text; use a literal only under § Displayed values the engine keeps current.
 - Declare every keyword named in the description through `RegisteredKeywordIds`.
@@ -189,7 +192,7 @@ selected.
 
 ## Self-test driver body
 
-**relic** → `BeforeCombat` (grant it, its `AfterSideTurnStart` fires on its own);
+**relic** → `BeforeCombat` (grant it, its combat-start hook fires on its own);
 
 The focused body is in `reference/selftest-harness.md` § relic: grant the relic in
 `BeforeCombat` before `EnterRoomDebug`, then assert SPEC state in `InCombat`.

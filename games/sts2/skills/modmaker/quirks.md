@@ -48,6 +48,11 @@ not restate the other file's half — a diagnostic in two homes drifts.
 - `AfterSideTurnStart` fires **for every side and every turn**. Always guard with
   `participants.Contains(Owner.Creature)` (right owner, matters in multiplayer) and,
   for "start of combat", `Owner.PlayerCombatState!.TurnNumber <= 1` (else it re-fires each turn).
+- `AfterSideTurnStart` has **no `PlayerChoiceContext`**. A turn-start or combat-start effect
+  that draws, selects, discards, or otherwise needs one overrides
+  `AfterPlayerTurnStart(PlayerChoiceContext, Player)` with `player == Owner` (a Power:
+  `Owner.Player`) plus the same `TurnNumber` guard. A combat-start Power goes on in
+  `AfterRoomEntered(room)` with `room is CombatRoom`. See `recipes/relic.md` § Trigger hooks.
 - Relics receive combat hooks automatically (`RelicModel.ShouldReceiveCombatHooks => true`).
   There is **no `ICombatHook` interface to implement** — just override the method.
 

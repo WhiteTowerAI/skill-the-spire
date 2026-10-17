@@ -99,7 +99,9 @@ Process-wide registration is not a Power route.
 
 Override only the hook selected by SPEC. Examples:
 
-- turn start: `AfterSideTurnStart(...)`, guarded by `participants.Contains(Owner)`;
+- turn start: `AfterSideTurnStart(...)`, guarded by `participants.Contains(Owner)`; when
+  the effect draws, selects, or otherwise needs a `PlayerChoiceContext`, use
+  `AfterPlayerTurnStart(choiceContext, player)` guarded by `player == Owner.Player`;
 - turn end/duration: `AfterSideTurnEnd(...)` plus `PowerCmd.TickDownDuration(this)`;
 - flat outgoing damage: `ModifyDamageAdditive(...)`, guarded by owner/props;
 - application/removal: `AfterApplied(...)` / `AfterRemoved(...)`.
