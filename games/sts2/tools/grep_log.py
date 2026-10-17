@@ -45,6 +45,11 @@ ABANDON_MISSING_BACKUP_RE = re.compile(
     r"modded[\\/]profile\d+[\\/]saves[\\/]current_run\.save\.backup: Failed\s*$",
     re.IGNORECASE,
 )
+ABANDON_MISSING_MODEL_RE = re.compile(
+    r"^\s*\[ERROR\]\s+ERROR: Failed to upload run history/metrics: "
+    r"MegaCrit\.Sts2\.Core\.Models\.Exceptions\.ModelNotFoundException: "
+    r"Model id=(?P<model>[A-Z_]+\.[A-Z0-9_]+) not found\s*$",
+)
 SENTRY_SHUTDOWN_RE = re.compile(
     r"^\s*ERROR:\s+Sentry: Failed to close native SDK cleanly\. Error code: 1\s*$",
     re.IGNORECASE,
@@ -134,19 +139,40 @@ def error_blocks(lines: list[str], start_index: int) -> list[list[str]]:
     return blocks
 
 
-def is_known_verification_cleanup(block: list[str]) -> bool:
+def _model_from_mod(model_id: str, mod: str | None) -> bool:
+    """Whether a `CATEGORY.MOD_PREFIX_ENTRY` model id carries this Mod's id prefix."""
+    if not mod:
+        return False
+    entry = re.sub(r"[^A-Z0-9]", "", model_id.split(".", 1)[-1].upper())
+    return entry.startswith(re.sub(r"[^A-Z0-9]", "", mod.upper()))
+
+
+def is_known_verification_cleanup(block: list[str], mod: str | None = None) -> bool:
     """Match only grounded base-game noise caused by the verification lifecycle.
 
     STS2's abandon path unconditionally removes a backup; on Windows/Godot a missing
     backup can return ``Failed`` instead of ``FileNotFound``. The launcher can also
     make the native Sentry bridge report a close error while terminating the headed
-    verification process. Require each exact header plus its base-game cleanup stack
-    so similarly worded mod/runtime errors still fail.
+    verification process. The harness abandons any open run; when that run used a
+    character from a Mod that is not loaded (launch.py parks other self-test Mods),
+    RitsuLib's post-run unlock patch cannot find the model. That is ignored only when
+    the missing model is not the Mod under test's own. Require each exact header plus
+    its cleanup stack so similarly worded mod/runtime errors still fail.
     """
     if not block:
         return False
     header = block[0]
     context = "\n".join(block)
+    missing_model = ABANDON_MISSING_MODEL_RE.match(header)
+    if missing_model:
+        return not _model_from_mod(missing_model.group("model"), mod) and all(
+            frame in context
+            for frame in (
+                "PostRunCharacterUnlockEpochCompatibilityPatch.Prefix",
+                "NMainMenu.AbandonRun()",
+                "UiHelper.Click",
+            )
+        )
     if ABANDON_MISSING_BACKUP_RE.match(header):
         return all(
             frame in context
@@ -232,10 +258,10 @@ def main(argv: list[str]) -> int:
             block for block in parsed_error_blocks if mod in "\n".join(block)
         ]
     ignored_cleanup_blocks = [
-        block for block in parsed_error_blocks if is_known_verification_cleanup(block)
+        block for block in parsed_error_blocks if is_known_verification_cleanup(block, mod)
     ]
     parsed_error_blocks = [
-        block for block in parsed_error_blocks if not is_known_verification_cleanup(block)
+        block for block in parsed_error_blocks if not is_known_verification_cleanup(block, mod)
     ]
 
     modded = any("RUNNING MODDED" in ln for ln in lines)

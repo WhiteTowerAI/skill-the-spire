@@ -93,6 +93,10 @@ run actually proves it.
 > `t2selftest` gate from `mods/` to `mods-parked-by-skill-the-spire/` for the run and moves
 > it back afterwards, even when the run fails. If an earlier run was killed before it could
 > restore, the next launch restores first. Never move user Mods by hand.
+> The harness abandons any run open in the modded profile before it starts its own. When
+> that run used a parked Mod's character, RitsuLib logs `Failed to upload run
+> history/metrics: ... ModelNotFoundException`; `grep_log.py` ignores exactly that block
+> unless the missing model belongs to the Mod under test.
 
 - `launch.py --self-test` passes `--t2selftest` (which arms the harness — a normal launch
   never does), then **polls the log** until the harness prints its terminal marker
