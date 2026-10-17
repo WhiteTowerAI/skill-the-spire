@@ -1145,9 +1145,12 @@ Character background; portrait for Character selection and the 2x3 Dead cue shee
 otherwise. `gen_sprite.py generate` picks the same orientation for a backend unless its
 config sets `request_size`.
 
-After a cut-out import, a stdout line starting `[gen_sprite] warning:` means almost none of
-the source became transparent: the background was not a flat key color and will show as a
-box in game. Regenerate with a flatter background instead of shipping it. Before showing
+After a cut-out import, a stdout line starting `[gen_sprite] warning:` names one of two
+failures. `only N% ... became transparent` means the background was not a flat key color
+and will show as a box in game; regenerate with a flatter background instead of shipping
+it. `subject touches the <edge> edge` means the subject reached the source border (for a
+sheet, its cell border), so part of it, such as a hem or a weapon tip, was probably cut
+off; look at the result and regenerate with margin on every side when it is. Before showing
 any imported result to the user, look at the normalized PNG yourself and regenerate an
 obvious framing or background failure first; the user still judges style.
 
