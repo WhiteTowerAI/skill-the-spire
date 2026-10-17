@@ -15,6 +15,7 @@ STS2_DIR = TOOLS_DIR.parent
 ART_SAMPLES = STS2_DIR / "skills" / "sts2api" / "reference" / "art-samples"
 CHARACTER_RECIPE = STS2_DIR / "skills" / "sts2api" / "recipes" / "character.md"
 sys.path.insert(0, str(TOOLS_DIR))
+import character_art  # noqa: E402
 from character_art import (  # noqa: E402
     CHARACTER_ART_BUNDLE,
     CharacterArtBundle,
@@ -365,6 +366,73 @@ class CharacterArtBundleTests(unittest.TestCase):
             self.assertTrue(contact.is_file())
             self.assertIsNone(composite)
 
+    # Center colors measured from the vanilla large card Energy icons (STS2 0.107.1 ui_atlas)
+    # with their shipped card-pool EnergyOutlineColor.
+    VANILLA_COST_ICONS = {
+        "colorless": ((0xD5, 0xD5, 0xD5), (0x5C, 0x54, 0x40)),
+        "defect": ((0x70, 0xB6, 0xEC), (0x1D, 0x56, 0x73)),
+        "ironclad": ((0xF5, 0x7E, 0x19), (0x80, 0x20, 0x20)),
+        "necrobinder": ((0xFC, 0x98, 0xC8), (0x80, 0x33, 0x67)),
+        "quest": ((0x66, 0x39, 0x25), (0x43, 0x1E, 0x14)),
+        "regent": ((0xF8, 0xC2, 0x2A), (0x80, 0x3D, 0x0E)),
+        "silent": ((0x2E, 0xBD, 0x5E), (0x1A, 0x66, 0x25)),
+    }
+
+    def test_number_contrast_rule_accepts_every_vanilla_cost_icon(self) -> None:
+        for name, (center, outline) in self.VANILLA_COST_ICONS.items():
+            with self.subTest(name=name):
+                self.assertEqual([], character_art.number_outline_problems(outline, center))
+
+    def test_derived_outline_reads_on_any_center_and_keeps_hue(self) -> None:
+        import colorsys
+
+        for name, (center, _outline) in self.VANILLA_COST_ICONS.items():
+            derived = character_art.derive_number_outline(center)
+            with self.subTest(name=name):
+                self.assertEqual([], character_art.number_outline_problems(
+                    derived, center, character_art.DERIVE_MARGIN))
+                if name != "colorless":
+                    hue = colorsys.rgb_to_hls(*(v / 255 for v in center))[0]
+                    got = colorsys.rgb_to_hls(*(v / 255 for v in derived))[0]
+                    self.assertLess(min(abs(hue - got), 1 - abs(hue - got)), 0.05)
+        gray = character_art.derive_number_outline((0xD5, 0xD5, 0xD5))
+        self.assertEqual(len(set(gray)), 1, gray)
+        for value in range(0, 256, 15):
+            for center in ((value, value, value), (value, 255 - value, 128), (255, value, 0)):
+                derived = character_art.derive_number_outline(center)
+                self.assertEqual([], character_art.number_outline_problems(derived, center),
+                                 (center, derived))
+
+    def test_pale_outline_on_pale_icon_is_rejected(self) -> None:
+        problems = character_art.number_outline_problems((0xE0, 0xC0, 0xF0), (0xEB, 0xBE, 0xFA))
+        self.assertEqual(2, len(problems))
+
+    def test_cli_derives_checks_and_rejects_number_outlines(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            images = root / "images"
+            (images / "charui").mkdir(parents=True)
+            icon = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+            draw = ImageDraw.Draw(icon)
+            draw.regular_polygon((128, 128, 110), 8, fill=(150, 40, 200, 255))
+            draw.ellipse((70, 70, 186, 186), fill=(235, 190, 250, 255))
+            icon.save(images / "charui/energy_large.png")
+            base = [
+                sys.executable, str(Path(__file__).resolve().parents[1] / "character_art.py"),
+                "--images-root", str(images), "--out-dir", str(root / "review"), "--present-only",
+            ]
+            derived = subprocess.run(base + ["--energy-colors", "6a2c8a,auto"],
+                                     capture_output=True, text=True, check=False)
+            self.assertEqual(0, derived.returncode, derived.stderr)
+            self.assertIn("derived EnergyOutlineColor #", derived.stdout)
+            self.assertIn("card cost: EnergyOutlineColor #", derived.stdout)
+            self.assertIn("use EnergyLabelOutlineColor #", derived.stdout)
+
+            rejected = subprocess.run(base + ["--number-outlines", "E0C0F0,"],
+                                      capture_output=True, text=True, check=False)
+            self.assertEqual(2, rejected.returncode)
+            self.assertIn("EnergyOutlineColor #E0C0F0 is hard to read", rejected.stderr)
+
     def test_present_only_review_requires_only_the_groups_on_disk(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -373,7 +441,7 @@ class CharacterArtBundleTests(unittest.TestCase):
             body = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
             ImageDraw.Draw(body).rectangle((80, 26, 431, 485), fill=(40, 60, 90, 255))
             body.save(images / "charui/combat.png")
-            CHARACTER_ART_BUNDLE.render_energy_counter(images, "3a6ea5", "c8e6ff")
+            CHARACTER_ART_BUNDLE.render_energy_counter(images, "3a6ea5", "1d3a5c")
 
             checked = CHARACTER_ART_BUNDLE.validate_outputs(images, present_only=True)
             contact, composite = CHARACTER_ART_BUNDLE.render_review(
@@ -405,7 +473,7 @@ class CharacterArtBundleTests(unittest.TestCase):
             command = [
                 sys.executable, str(Path(__file__).resolve().parents[1] / "character_art.py"),
                 "--images-root", str(images), "--out-dir", str(root / "review"),
-                "--energy-colors", "3a6ea5,c8e6ff",
+                "--energy-colors", "3a6ea5,1d3a5c",
             ]
             strict = subprocess.run(command, capture_output=True, text=True, check=False)
             self.assertEqual(2, strict.returncode)

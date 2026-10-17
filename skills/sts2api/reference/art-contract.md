@@ -348,9 +348,22 @@ Run the bundle review after the selected required outputs are normalized:
 python ../modmaker/scripts/character_art.py \
   --images-root <work dir>/<ModName>/images \
   (--tier <minimal|standard|full> | --present-only) \
-  [--energy-colors <frame RRGGBB>,<energy outline RRGGBB>] \
+  [--energy-colors <frame RRGGBB>,<energy outline RRGGBB | auto>] \
+  [--number-outlines <EnergyOutlineColor>,<EnergyLabelOutlineColor>] \
   --out-dir <work dir>/art-review
 ```
+
+Energy numbers are drawn by the game in a fixed cream fill (`#FFF6E2`) with a
+Mod-owned outline: the card-pool `EnergyOutlineColor` around the cost on the large card
+Energy icon, and the Character `EnergyLabelOutlineColor` around "3/3" on the combat
+counter. The rich-text icon never carries a number. Vanilla icon centers are mostly light,
+so the outline carries readability; it must reach 6.5:1 against the cream fill and 2.8:1
+against the icon center, unless the icon center is dark enough (4.5:1) for the fill alone.
+The review measures each icon's center (vanilla Ironclad's for a consumer on its fallback)
+and then either checks the two colors given with `--number-outlines` or prints the shade of
+the icon's own hue to use. `--energy-colors <frame>,auto` derives `EnergyOutlineColor`
+from `energy_large.png`. Copy the reported or derived colors into the Character theme;
+never pick these two outlines by eye.
 
 Use `--tier` for generated art (`host-tool` or `backend:<name>`). Use `--present-only` for
 `local-image` art that covers only part of the bundle, or for an Energy-only recolor: it
