@@ -835,6 +835,70 @@ class CharacterArtBundle:
         composite.save(composite_path, "PNG")
         return contact_path, composite_path
 
+    def number_contrast(
+        self,
+        images_root: Path,
+        energy_outline: str | None = None,
+        label_outline: str | None = None,
+    ) -> tuple[list[str], list[str]]:
+        """Check (or suggest) the two Mod-owned outlines around Energy numbers.
+
+        Returns (report lines, errors). The card cost sits on `energy_large.png` with the
+        pool `EnergyOutlineColor`; the combat "3/3" sits on the five-layer counter with the
+        Character `EnergyLabelOutlineColor`. A consumer still on its fallback is checked
+        against vanilla Ironclad's measured center, since the Mod's outline is drawn there.
+        """
+        from PIL import Image
+
+        lines: list[str] = []
+        errors: list[str] = []
+        large = images_root / self.slot("large_energy_icon").output_path
+        layers = [images_root / slot.output_path
+                  for slot in self.slots if slot.spec == "character_energy"]
+        consumers: list[tuple[str, str, str | None, Image.Image | None]] = []
+        if large.is_file():
+            with Image.open(large) as icon:
+                consumers.append(("card cost", "EnergyOutlineColor", energy_outline,
+                                  icon.convert("RGBA")))
+        else:
+            consumers.append(("card cost", "EnergyOutlineColor", energy_outline, None))
+        if all(path.is_file() for path in layers):
+            composite = None
+            for path in layers:
+                with Image.open(path) as layer:
+                    rgba = layer.convert("RGBA")
+                composite = rgba if composite is None else Image.alpha_composite(composite, rgba)
+            consumers.append(("combat counter", "EnergyLabelOutlineColor", label_outline, composite))
+        else:
+            consumers.append(("combat counter", "EnergyLabelOutlineColor", label_outline, None))
+
+        fallback_centers = {"card cost": FALLBACK_CARD_ICON_CENTER,
+                            "combat counter": FALLBACK_COUNTER_CENTER}
+        for consumer, member, chosen, image in consumers:
+            if image is None:
+                center = fallback_centers[consumer]
+                consumer = f"{consumer} (fallback Ironclad art)"
+            else:
+                center = icon_center_color(image)
+            suggested = derive_number_outline(center)
+            if chosen is None:
+                lines.append(f"{consumer}: icon center #{_hex(center)}; use {member} "
+                             f"#{_hex(suggested)}")
+                continue
+            outline = _parse_hex_color(chosen, member)
+            problems = number_outline_problems(outline, center)
+            if problems:
+                errors.append(f"{consumer}: {member} #{_hex(outline)} is hard to read on icon "
+                              f"center #{_hex(center)} ({'; '.join(problems)}); use "
+                              f"#{_hex(suggested)}")
+            else:
+                lines.append(
+                    f"{consumer}: {member} #{_hex(outline)} OK on icon center #{_hex(center)} "
+                    f"(vs number {contrast_ratio(outline, COST_FILL):.2f}, "
+                    f"vs icon {contrast_ratio(outline, center):.2f})"
+                )
+        return lines, errors
+
 
 def _parse_hex_color(value: str, label: str) -> tuple[int, int, int]:
     text = value.strip().lstrip("#")
@@ -879,6 +943,97 @@ def _checkerboard(size: tuple[int, int], tile: int = 16) -> "Image.Image":
             if (x // tile + y // tile) % 2:
                 draw.rectangle((x, y, x + tile - 1, y + tile - 1), fill="#aeb4bb")
     return image
+
+
+# --- cost-number contrast ---------------------------------------------------------------
+#
+# STS2 draws Energy numbers in a fixed fill (`StsColors.cream` #FFF6E2) with an outline the
+# Mod owns: the card-pool `EnergyOutlineColor` around the cost on the large card Energy
+# icon, and the Character `EnergyLabelOutlineColor` around "3/3" on the combat counter
+# (NCard.UpdateEnergyCostColor, NEnergyCounter). The rich-text icon never carries a number.
+# Calibrated on the seven vanilla large card icons in STS2 0.107.1: icon centers are mostly
+# light (cream vs center 1.37-2.48), so readability comes from the outline, which reaches
+# 6.57-13.62 against cream and at least 2.88 against the icon center. The one dark icon
+# (Quest, cream vs center 8.97) relies on the fill instead.
+COST_FILL = (0xFF, 0xF6, 0xE2)
+OUTLINE_MIN_VS_FILL = 6.5
+OUTLINE_MIN_VS_ICON = 2.8
+FILL_MIN_VS_DARK_ICON = 4.5
+CENTER_BOX = (0.3, 0.3, 0.7, 0.7)
+# Without custom art the fallbacks are vanilla Ironclad's, whose centers measured from the
+# 0.107.1 PCK are: card icon (ui_atlas energy_ironclad) and five-layer combat counter.
+FALLBACK_CARD_ICON_CENTER = (0xF5, 0x7E, 0x19)
+FALLBACK_COUNTER_CENTER = (0xFF, 0x66, 0x12)
+
+
+def _relative_luminance(color: tuple[int, int, int]) -> float:
+    def channel(value: int) -> float:
+        c = value / 255
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+    r, g, b = (channel(v) for v in color)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def contrast_ratio(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
+    """WCAG contrast ratio, 1.0 (identical) to 21.0 (black on white)."""
+    high, low = sorted((_relative_luminance(a), _relative_luminance(b)), reverse=True)
+    return (high + 0.05) / (low + 0.05)
+
+
+def icon_center_color(image: "Image.Image") -> tuple[int, int, int]:
+    """The median-luminance opaque color in the central box, where the number sits."""
+    rgba = image.convert("RGBA")
+    w, h = rgba.size
+    box = rgba.crop(tuple(round(f * s) for f, s in zip(CENTER_BOX, (w, h, w, h))))
+    pixels = [p[:3] for p in box.getdata() if p[3] >= 200]
+    if not pixels:
+        raise CharacterArtValidationError("the Energy icon center is transparent")
+    pixels.sort(key=_relative_luminance)
+    return pixels[len(pixels) // 2]
+
+
+# Derivation aims inside vanilla's range, not at the acceptance edge.
+DERIVE_MARGIN = 1.15
+NEUTRAL_SATURATION = 0.15
+
+
+def number_outline_problems(outline: tuple[int, int, int], center: tuple[int, int, int],
+                            margin: float = 1.0) -> list[str]:
+    """Why a cost-number outline is hard to read on this icon center; empty when readable."""
+    problems = []
+    vs_fill = contrast_ratio(outline, COST_FILL)
+    if vs_fill < OUTLINE_MIN_VS_FILL * margin:
+        problems.append(f"outline vs number {vs_fill:.2f} < {OUTLINE_MIN_VS_FILL * margin:.2f}")
+    vs_icon = contrast_ratio(outline, center)
+    fill_vs_icon = contrast_ratio(COST_FILL, center)
+    if vs_icon < OUTLINE_MIN_VS_ICON * margin and fill_vs_icon < FILL_MIN_VS_DARK_ICON:
+        problems.append(
+            f"outline vs icon {vs_icon:.2f} < {OUTLINE_MIN_VS_ICON * margin:.2f} and number "
+            f"vs icon {fill_vs_icon:.2f} < {FILL_MIN_VS_DARK_ICON}"
+        )
+    return problems
+
+
+def derive_number_outline(center: tuple[int, int, int]) -> tuple[int, int, int]:
+    """The lightest shade of the icon center's own hue that reads clearly, like vanilla.
+
+    A neutral (gray) center keeps a neutral outline instead of borrowing hue 0 (red).
+    """
+    import colorsys
+
+    hue, _lightness, saturation = colorsys.rgb_to_hls(*(v / 255 for v in center))
+    if saturation >= NEUTRAL_SATURATION:
+        saturation = min(max(saturation, 0.35), 0.75)
+    for step in range(60, -1, -1):
+        rgb = tuple(round(v * 255) for v in colorsys.hls_to_rgb(hue, step / 100, saturation))
+        if not number_outline_problems(rgb, center, DERIVE_MARGIN):
+            return rgb
+    return (0, 0, 0)
+
+
+def _hex(color: tuple[int, int, int]) -> str:
+    return "".join(f"{v:02X}" for v in color)
 
 
 def _readable_image(path: Path) -> bool:
@@ -1099,7 +1254,15 @@ def main() -> None:
         "--energy-colors",
         metavar="FRAME,OUTLINE",
         help="render the five full-Energy layers from the theme's card-frame and Energy "
-             "outline colors (RRGGBB,RRGGBB) before review",
+             "outline colors (RRGGBB,RRGGBB) before review; OUTLINE may be `auto` to derive "
+             "the card-pool EnergyOutlineColor from energy_large.png",
+    )
+    parser.add_argument(
+        "--number-outlines",
+        metavar="ENERGY_OUTLINE,LABEL_OUTLINE",
+        help="check the card-pool EnergyOutlineColor and Character EnergyLabelOutlineColor "
+             "(RRGGBB, either may be empty) against the icons the numbers sit on; without "
+             "it the review prints the colors to use",
     )
     scope = parser.add_mutually_exclusive_group()
     scope.add_argument(
@@ -1114,28 +1277,48 @@ def main() -> None:
              "of the bundle); every other slot keeps its fallback",
     )
     args = parser.parse_args()
+    images_root = Path(args.images_root)
+    energy_outline, _, label_outline = (args.number_outlines or "").partition(",")
     rendered = False
     try:
         if args.energy_colors:
             frame, _, outline = args.energy_colors.partition(",")
-            written = CHARACTER_ART_BUNDLE.render_energy_counter(
-                Path(args.images_root), frame, outline
-            )
+            if outline.strip().lower() == "auto":
+                large = images_root / CHARACTER_ART_BUNDLE.slot("large_energy_icon").output_path
+                if not large.is_file():
+                    raise CharacterArtValidationError(
+                        f"--energy-colors {frame},auto needs the large Energy icon at {large}"
+                    )
+                from PIL import Image
+
+                with Image.open(large) as icon:
+                    outline = _hex(derive_number_outline(icon_center_color(icon)))
+                print(f"[character_art] derived EnergyOutlineColor #{outline} from {large.name}")
+            energy_outline = energy_outline or outline
+            written = CHARACTER_ART_BUNDLE.render_energy_counter(images_root, frame, outline)
             rendered = True
             print(f"[character_art] rendered Energy layers: {len(written)}")
         contact, composite = CHARACTER_ART_BUNDLE.render_review(
-            Path(args.images_root), Path(args.out_dir), tier=args.tier,
+            images_root, Path(args.out_dir), tier=args.tier,
             present_only=args.present_only,
         )
+        lines, errors = CHARACTER_ART_BUNDLE.number_contrast(
+            images_root, energy_outline or None, label_outline or None
+        )
+        if errors:
+            raise CharacterArtValidationError("\n".join(errors))
     except CharacterArtValidationError as exc:
         if rendered:
+            hint = ("\n(use --present-only when the other slots are meant to keep their "
+                    "fallback)" if "missing required" in str(exc) else "")
             exc = CharacterArtValidationError(
-                f"the Energy layers were written, but the review failed:\n{exc}\n"
-                "(use --present-only when the other slots are meant to keep their fallback)"
+                f"the Energy layers were written, but the review failed:\n{exc}{hint}"
             )
         parser.error(str(exc))
     print(f"[character_art] contact sheet: {contact}")
     print(f"[character_art] energy composite: {composite or 'not in this review'}")
+    for line in lines:
+        print(f"[character_art] number contrast, {line}")
 
 
 if __name__ == "__main__":

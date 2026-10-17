@@ -74,9 +74,11 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
     the user's description and reviewed selection portrait; never a second canonical image
   - character theme contract:
     - name color: `<RRGGBB>`
-    - energy-label outline: `<RRGGBB>`
+    - energy-label outline: `<RRGGBB>` (outline of the combat "3/3"; never a free pick:
+      use the color `character_art.py` reports for the counter, see below)
     - deck-entry color: `<RRGGBB>`
-    - energy outline: `<RRGGBB>`
+    - energy outline: `<RRGGBB>` (outline of the card cost and the counter's edge ring;
+      derived from the large Energy icon with `--energy-colors <frame>,auto`)
     - card-frame target RGB: `<0..1, 0..1, 0..1>`
     - card-frame brightness: `<0..2>`
     - energy-icon palette: `<primary/accent/outline colors plus motif/material>`

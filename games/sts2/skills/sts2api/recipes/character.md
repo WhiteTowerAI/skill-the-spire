@@ -207,6 +207,7 @@ using STS2RitsuLib.Utils;
 internal static class <CharacterName>Theme
 {
     public static Color NameColor => new("<RRGGBB>");
+    // The two Energy-number outlines come from character_art.py's number-contrast review.
     public static Color EnergyLabelOutlineColor => new("<RRGGBB>");
     public static Color DeckEntryCardColor => new("<RRGGBB>");
     public static Color EnergyOutlineColor => new("<RRGGBB>");
