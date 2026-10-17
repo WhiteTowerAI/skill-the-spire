@@ -464,6 +464,27 @@ class GenSpriteTests(unittest.TestCase):
                           if p[3] and min(p[0], p[2]) - p[1] > 40]
             self.assertEqual([], tinted)
 
+    def test_cutout_import_warns_when_the_subject_was_cut_off(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            image = Image.new("RGB", (100, 100), (255, 0, 255))
+            ImageDraw.Draw(image).rectangle((30, 20, 69, 99), fill=(40, 160, 120))  # hem cut at the bottom
+            image.save(source)
+
+            result = self.run_import("relic", source, root / "images")
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertIn("touches the bottom edge", result.stdout)
+
+    def test_edge_check_ignores_margins_and_stray_pixels(self) -> None:
+        image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
+        ImageDraw.Draw(image).ellipse((20, 20, 79, 79), fill=(40, 160, 120, 255))
+        image.putpixel((50, 99), (40, 160, 120, 255))
+        self.assertEqual([], gen_sprite.cutout_edges_touched(image))
+        ImageDraw.Draw(image).rectangle((0, 40, 30, 60), fill=(40, 160, 120, 255))
+        self.assertEqual(["left"], gen_sprite.cutout_edges_touched(image))
+
     def test_cutout_import_warns_when_the_background_was_not_keyed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -154,6 +154,10 @@ OUTLINE_COLOR = (255, 255, 255)
 # A keyed cut-out source with almost no transparent pixels means the model drew a gradient,
 # shadowed, or off-key background that the chroma-key could not remove.
 CUTOUT_MIN_TRANSPARENT = 0.05
+# A keyed subject that still reaches its source edge was cut off by the frame or sheet cell
+# before import; fitting cannot restore it. A few stray pixels in the band are not a subject.
+CUTOUT_EDGE_BAND = 2
+CUTOUT_EDGE_MIN_FRACTION = 0.01
 # The three canvases OpenAI-Images-compatible backends accept. Requesting the one closest to
 # the spec's aspect keeps the cover crop from discarding most of a wide or tall image.
 REQUEST_SIZES = {"square": "1024x1024", "landscape": "1536x1024", "portrait": "1024x1536"}
@@ -193,6 +197,24 @@ def request_size_for(size: tuple[int, int]) -> str:
 def transparent_fraction(img: "Image.Image") -> float:
     alpha = img.convert("RGBA").getchannel("A")
     return alpha.histogram()[0] / (img.width * img.height)
+
+
+def cutout_edges_touched(img: "Image.Image") -> list[str]:
+    """Edges where the keyed subject's mostly-opaque pixels reach the source border."""
+    alpha = img.convert("RGBA").getchannel("A").point(lambda value: 255 if value >= 128 else 0)
+    width, height = alpha.size
+    band = CUTOUT_EDGE_BAND
+    touched = []
+    for side, box in (
+        ("top", (0, 0, width, band)),
+        ("bottom", (0, height - band, width, height)),
+        ("left", (0, 0, band, height)),
+        ("right", (width - band, 0, width, height)),
+    ):
+        strip = alpha.crop(box)
+        if strip.histogram()[255] >= max(1, strip.width * strip.height * CUTOUT_EDGE_MIN_FRACTION):
+            touched.append(side)
+    return touched
 
 
 def chroma_key(img: "Image.Image", key: str = "magenta",
@@ -429,6 +451,15 @@ def normalize_and_place(src: "Image.Image", spec: str, slug: str, out_dir: Path,
                 "transparent; the background was probably not a flat key color and will "
                 "show as a box in game. Regenerate with a flat #FF00FF background."
             )
+        else:
+            touched = cutout_edges_touched(img)
+            if touched:
+                print(
+                    f"[gen_sprite] warning: the {spec} subject touches the "
+                    f"{'/'.join(touched)} edge of its source, so it was probably cut off "
+                    "(for a sheet, it crossed its cell border). Check the result, and "
+                    "regenerate with margin on every side if part of it is missing."
+                )
     if footprint is not None:
         img = fit_into_footprint(
             img,
