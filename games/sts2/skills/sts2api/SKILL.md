@@ -72,8 +72,10 @@ a title change unless the request asks for a new name.
 3. For a vanilla analog or realistic numbers, resolve the element with
    `python ${GAME_TOOLS_DIR}/vanilla_overrides.py resolve <name> --category <card|relic|potion|power>`
    and read its values and rules text. For a symbol the recipe lacks, read
-   `${STS2API_SKILL_DIR}/grounding.md`. If the pack has no maintained route, follow
-   `grounding.md` § Mod-local Routes rather than guessing.
+   `${STS2API_SKILL_DIR}/grounding.md`. For an exact public signature, run
+   `python ${GAME_TOOLS_DIR}/api.py search <Type> [<member>]` or `api.py find <member>`. If
+   the pack has no maintained route, follow `grounding.md` § Mod-local Routes rather than
+   guessing.
 4. Return only the relevant snippet (hook, Cmd, loc-key rule, error fix, one analog).
 
 **Never read all files at once.** Each file is loaded on demand.
