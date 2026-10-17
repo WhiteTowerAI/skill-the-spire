@@ -347,13 +347,17 @@ Run the bundle review after the selected required outputs are normalized:
 ```powershell
 python ../modmaker/scripts/character_art.py \
   --images-root <work dir>/<ModName>/images \
-  --tier <minimal|standard|full> \
+  (--tier <minimal|standard|full> | --present-only) \
   [--energy-colors <frame RRGGBB>,<energy outline RRGGBB>] \
   --out-dir <work dir>/art-review
 ```
 
-Pass `--energy-colors` only when the tier includes full Energy. The command
-validates exact dimensions, alpha policy, readable PNGs, the tier's required outputs,
+Use `--tier` for generated art (`host-tool` or `backend:<name>`). Use `--present-only` for
+`local-image` art that covers only part of the bundle, or for an Energy-only recolor: it
+requires every slot of each group already on disk (the icon with its derived outline, all
+five Energy layers) and leaves every other slot on its fallback. Pass `--energy-colors`
+only when full Energy is selected. The command
+validates exact dimensions, alpha policy, readable PNGs, the selected required outputs,
 and the selection identity bootstrap, then writes a labeled contact sheet plus, when the
 tier includes it, a deterministic five-layer Energy composite outside the runtime asset
 directory. These are

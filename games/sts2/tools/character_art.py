@@ -435,6 +435,17 @@ class CharacterArtBundle:
             if slot.name in listed or (slot.asset_origin != "generated" and slot.spec in specs)
         )
 
+    def present_slots(self, images_root: Path) -> tuple[CharacterArtSlot, ...]:
+        """Every slot of each consumer group that has at least one output on disk.
+
+        A group is the slots sharing one spec: the top-panel icon with its derived outline,
+        and the five full-Energy layers. One file of a group present means its consumer
+        switches away from the fallback, so the rest of that group is required too; groups
+        with nothing on disk keep their fallback.
+        """
+        specs = {slot.spec for slot in self.slots if (images_root / slot.output_path).is_file()}
+        return tuple(slot for slot in self.slots if slot.spec in specs)
+
     def sheet(self, name: str) -> CharacterArtSheet:
         try:
             return next(sheet for sheet in self.sheets if sheet.name == name)
@@ -707,18 +718,28 @@ class CharacterArtBundle:
         images_root: Path,
         identity_reference: Path | None = None,
         tier: str | None = None,
+        present_only: bool = False,
     ) -> tuple[Path, ...]:
         """Validate the required normalized outputs and the identity bootstrap.
 
         With ``tier``, only that tier's slots are required; every other slot keeps its
-        fallback. ``identity_reference`` is retained as a compatibility argument, but it must
-        be the selection portrait itself. A separate canonical sheet is deliberately invalid.
+        fallback. With ``present_only``, only the groups already on disk are required (see
+        ``present_slots``), for user-supplied images that cover part of the bundle.
+        ``identity_reference`` is retained as a compatibility argument, but it must be the
+        selection portrait itself. A separate canonical sheet is deliberately invalid.
         """
-        required = (
-            {slot.name for slot in self.tier_slots(tier)}
-            if tier is not None
-            else {slot.name for slot in self.slots if slot.required}
-        )
+        if tier is not None and present_only:
+            raise CharacterArtValidationError("choose either a tier or present-only, not both")
+        if present_only:
+            required = {slot.name for slot in self.present_slots(images_root)}
+            if not required:
+                raise CharacterArtValidationError(
+                    f"no Character art output exists under {images_root}"
+                )
+        elif tier is not None:
+            required = {slot.name for slot in self.tier_slots(tier)}
+        else:
+            required = {slot.name for slot in self.slots if slot.required}
         errors: list[str] = []
         identity_path = self.identity_path(images_root)
         if identity_reference is not None and identity_reference.resolve() != identity_path.resolve():
@@ -767,9 +788,10 @@ class CharacterArtBundle:
         output_dir: Path,
         identity_reference: Path | None = None,
         tier: str | None = None,
+        present_only: bool = False,
     ) -> tuple[Path, Path | None]:
         """Write a labeled contact sheet and, when Energy is present, its five-layer composite."""
-        checked = self.validate_outputs(images_root, identity_reference, tier)
+        checked = self.validate_outputs(images_root, identity_reference, tier, present_only)
         checked_paths = set(checked)
 
         from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -1079,26 +1101,41 @@ def main() -> None:
         help="render the five full-Energy layers from the theme's card-frame and Energy "
              "outline colors (RRGGBB,RRGGBB) before review",
     )
-    parser.add_argument(
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument(
         "--tier",
         choices=[tier.name for tier in CHARACTER_ART_BUNDLE.tiers],
         help="require only this art tier's outputs; other slots keep their fallback",
     )
+    scope.add_argument(
+        "--present-only",
+        action="store_true",
+        help="require only the groups already on disk (user-supplied images that cover part "
+             "of the bundle); every other slot keeps its fallback",
+    )
     args = parser.parse_args()
+    rendered = False
     try:
         if args.energy_colors:
             frame, _, outline = args.energy_colors.partition(",")
             written = CHARACTER_ART_BUNDLE.render_energy_counter(
                 Path(args.images_root), frame, outline
             )
+            rendered = True
             print(f"[character_art] rendered Energy layers: {len(written)}")
         contact, composite = CHARACTER_ART_BUNDLE.render_review(
-            Path(args.images_root), Path(args.out_dir), tier=args.tier
+            Path(args.images_root), Path(args.out_dir), tier=args.tier,
+            present_only=args.present_only,
         )
     except CharacterArtValidationError as exc:
+        if rendered:
+            exc = CharacterArtValidationError(
+                f"the Energy layers were written, but the review failed:\n{exc}\n"
+                "(use --present-only when the other slots are meant to keep their fallback)"
+            )
         parser.error(str(exc))
     print(f"[character_art] contact sheet: {contact}")
-    print(f"[character_art] energy composite: {composite or 'not in this tier'}")
+    print(f"[character_art] energy composite: {composite or 'not in this review'}")
 
 
 if __name__ == "__main__":

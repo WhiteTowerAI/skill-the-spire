@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -363,6 +364,58 @@ class CharacterArtBundleTests(unittest.TestCase):
             self.assertEqual(4, len(checked))
             self.assertTrue(contact.is_file())
             self.assertIsNone(composite)
+
+    def test_present_only_review_requires_only_the_groups_on_disk(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            images = root / "images"
+            (images / "charui").mkdir(parents=True)
+            body = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+            ImageDraw.Draw(body).rectangle((80, 26, 431, 485), fill=(40, 60, 90, 255))
+            body.save(images / "charui/combat.png")
+            CHARACTER_ART_BUNDLE.render_energy_counter(images, "3a6ea5", "c8e6ff")
+
+            checked = CHARACTER_ART_BUNDLE.validate_outputs(images, present_only=True)
+            contact, composite = CHARACTER_ART_BUNDLE.render_review(
+                images, root / "review", present_only=True
+            )
+
+            self.assertEqual(6, len(checked))
+            self.assertTrue(contact.is_file())
+            self.assertIsNotNone(composite)
+
+    def test_present_only_still_requires_the_rest_of_a_started_group(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            images = Path(tmp) / "images"
+            (images / "charui").mkdir(parents=True)
+            with self.assertRaisesRegex(CharacterArtValidationError, "no Character art output"):
+                CHARACTER_ART_BUNDLE.validate_outputs(images, present_only=True)
+            Image.new("RGBA", (88, 88), (0, 0, 0, 0)).save(images / "charui/icon.png")
+            with self.assertRaisesRegex(CharacterArtValidationError,
+                                        "missing required top_panel_icon_outline"):
+                CHARACTER_ART_BUNDLE.validate_outputs(images, present_only=True)
+            with self.assertRaisesRegex(CharacterArtValidationError, "not both"):
+                CHARACTER_ART_BUNDLE.validate_outputs(images, tier="minimal", present_only=True)
+
+    def test_cli_energy_render_then_present_only_review_succeeds(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            images = root / "images"
+            (images / "charui").mkdir(parents=True)
+            command = [
+                sys.executable, str(Path(__file__).resolve().parents[1] / "character_art.py"),
+                "--images-root", str(images), "--out-dir", str(root / "review"),
+                "--energy-colors", "3a6ea5,c8e6ff",
+            ]
+            strict = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual(2, strict.returncode)
+            self.assertIn("Energy layers were written, but the review failed", strict.stderr)
+
+            partial = subprocess.run(command + ["--present-only"], capture_output=True,
+                                     text=True, check=False)
+            self.assertEqual(0, partial.returncode, partial.stderr)
+            self.assertIn("energy composite:", partial.stdout)
+            self.assertNotIn("not in this review", partial.stdout)
 
     def test_combat_footprint_rejects_empty_edge_touching_and_wrong_baseline(self) -> None:
         empty = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
