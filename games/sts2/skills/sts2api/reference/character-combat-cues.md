@@ -104,8 +104,9 @@ The deterministic processor owns:
   cells (Gemini returns 2:3 as 848x1264) is resampled to the exact grid size;
 - **grid lines**: drawn cell-border lines and their antialiased key-tinted fringe are erased;
 - **keying**: background reachable from the sheet edge is cleared when near the measured
-  sheet background or a light blend of it. Darker blends are subject: see-through glass
-  painted as darkened key, or an ink rim. Enclosed background is cleared only when close to
+  sheet background, near the pure key (a real sheet on pale pink drew its cell borders in
+  saturated key), or a light blend of the background. Darker blends are subject: see-through
+  glass painted as darkened key, or an ink rim. Enclosed background is cleared only when close to
   the measured background. Every remaining key tint is then neutralized;
 - **cells**: each cell takes the largest component centered in it, wherever its pixels reach
   (models draw off the exact grid; 12 of 16 bodies in a real sheet crossed the cell bottom),

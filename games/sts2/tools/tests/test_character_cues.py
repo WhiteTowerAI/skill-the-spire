@@ -200,6 +200,31 @@ class CharacterCueProcessorTests(unittest.TestCase):
                     self.assertTrue(any(p[0] > 200 and p[2] < 120 for p in pixels))  # item kept
                     self.assertFalse(any(min(p[0], p[2]) - p[1] > 40 for p in pixels))
 
+    def test_floods_key_colored_grid_lines_on_a_pale_background(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # A real sheet came back on pale pink with cell borders in saturated key, whose
+            # blends are darker than that background and once survived as a frame.
+            image = blank_sheet((255, 143, 252, 255))
+            draw = ImageDraw.Draw(image)
+            for index in range(SHEET_COLUMNS * SHEET_ROWS):
+                x, y = draw_body(draw, index)
+                # Each cell framed by a key line with darker blends on both sides.
+                for inset, color in ((2, (214, 23, 214)), (3, (240, 9, 240)), (4, (213, 24, 212))):
+                    draw.rectangle((x + inset, y + inset, x + CELL - 1 - inset, y + CELL - 1 - inset),
+                                   outline=(*color, 255))
+            image.save(root / "sheet.png")
+
+            process_sheet(root / "sheet.png", root / "images", root / "review")
+
+            for action in ACTION_CONTRACT:
+                for frame in frames(root, action):
+                    left, top, right, bottom = frame.getchannel("A").getbbox()
+                    # The 40x80 body alone, not a square frame around the whole cell.
+                    self.assertLess(right - left, 0.75 * (bottom - top))
+                    pixels = [p for p in frame.getdata() if p[3]]
+                    self.assertFalse(any(min(p[0], p[2]) - p[1] > 40 for p in pixels))
+
     def test_keeps_feet_that_cross_the_cell_edge(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

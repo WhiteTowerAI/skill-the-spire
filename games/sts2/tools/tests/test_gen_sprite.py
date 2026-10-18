@@ -67,7 +67,7 @@ class GenSpriteTests(unittest.TestCase):
         for _, cell in cells:
             border = [cell.getpixel((x, y)) for x in range(cell.width) for y in (0, cell.height - 1)]
             border += [cell.getpixel((x, y)) for y in range(cell.height) for x in (0, cell.width - 1)]
-            self.assertTrue(all(pixel == (255, 0, 255) for pixel in border))
+            self.assertTrue(all(pixel[:3] == (255, 0, 255) for pixel in border))
 
     def test_import_sheet_places_every_body_cell_on_its_slot_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -89,6 +89,39 @@ class GenSpriteTests(unittest.TestCase):
                     self.assertEqual(0, placed.getpixel((0, 0))[3])
                     self.assertEqual(255, placed.getchannel("A").getextrema()[1])
             self.assertEqual(str(sheet), result.stdout.strip().splitlines()[-1])
+
+    def test_import_sheet_keeps_feet_that_cross_the_cell_edge(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sheet = root / "sheet.png"
+            out = root / "Mod" / "images"
+            image = Image.new("RGB", (1024, 1024), (255, 0, 255))
+            draw = ImageDraw.Draw(image)
+            for index in range(3):
+                row, column = divmod(index, 2)
+                left, top = column * 512, row * 512
+                # Top-row bodies end 6 px into the next row's cell, as real sheets do.
+                bottom = top + 517 if row == 0 else top + 470
+                draw.rectangle((left + 140, bottom - 400, left + 370, bottom),
+                               fill=(40 + 30 * index, 90, 110))
+                draw.rectangle((left + 140, bottom - 3, left + 370, bottom), fill=(210, 60, 30))
+            draw.line((512, 0, 512, 1023), fill=(0, 0, 0), width=5)
+            image.save(sheet)
+
+            result = subprocess.run(
+                [sys.executable, str(GEN_SPRITE), "import-sheet", "--sheet", "body_sheet",
+                 "--input", str(sheet), "--out", str(out)],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            for name in ("combat", "rest", "merchant"):
+                with Image.open(out / "charui" / f"{name}.png") as placed:
+                    pixels = placed.convert("RGBA").getdata()
+                    self.assertTrue(
+                        any(p[3] > 200 and p[0] > 170 and p[1] < 100 and p[2] < 70 for p in pixels),
+                        f"{name}: the red sole was cut off",
+                    )
 
     def test_generate_sheet_spends_one_call_keeps_source_and_routes_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
