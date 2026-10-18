@@ -54,9 +54,10 @@ BASELINE_Y = CUE_CONTRACT.baseline_y
 # error of its grid is resampled to the exact grid size; anything further off is the wrong
 # shape and fails.
 SHEET_ASPECT_TOLERANCE = 0.02
-# Fraction of each cell trimmed from every edge before keying, to drop drawn grid lines
-# (the same inset gen_sprite uses for Character art sheets).
-CELL_INSET = 0.016
+# Drawn cell-border lines: pixels darker than this (max channel) on a row or column near a
+# cell boundary, covering at least this share of the sheet's length.
+GRID_LINE_DARK = 90
+GRID_LINE_COVERAGE = 0.5
 ACTION_CONTRACT = {
     action.name: {
         "state_name": action.state_name,
@@ -191,20 +192,6 @@ def despill_edges(image: Image.Image, key: str = "magenta", band: int = 2) -> Im
     return image
 
 
-def key_cell(
-    cell: Image.Image,
-    key: str = "magenta",
-    threshold: int = 100,
-    edge_threshold: int = 200,
-) -> Image.Image:
-    """Key one grid cell on its own. Models draw dark grid lines between cells; keying the
-    whole sheet lets those lines wall off the edge flood, so a cell's noisy off-key
-    background survived as one cell-sized component in a real 2K sheet. Despill matches
-    static Character bodies: without it, 56-80% of the visible rim of real frames stayed
-    magenta-tinted ink."""
-    return despill_edges(remove_key_color(cell, threshold, edge_threshold, key), key)
-
-
 def connected_components(image: Image.Image, alpha_threshold: int = 8) -> list[Component]:
     alpha = image.getchannel("A")
     pixels = alpha.load()
@@ -248,44 +235,130 @@ def connected_components(image: Image.Image, alpha_threshold: int = 8) -> list[C
     return sorted(components, key=lambda component: component.area, reverse=True)
 
 
-def _largest_component_image(image: Image.Image) -> tuple[Image.Image, Component, int]:
-    """The body plus its detached companions (same rule as static Character cut-outs).
+def erase_grid_lines(image: Image.Image, rows: int, cols: int, key: str) -> Image.Image:
+    """Repaint drawn cell-border lines in the key color so keying can flood past them.
 
-    A held item often separates from the body after keying (a thin handle, a dropped
-    lantern); keeping only the largest component made a real lantern blink out of 7 of 32
-    frames. Companions are components of at least 1% of the body's area whose center lies
-    within the body's bounds padded by 25%; smaller or farther ones are debris.
+    Only a row or column near a cell boundary that is dark along at least half the sheet
+    counts as a line, so a subject that merely crosses a boundary keeps its pixels.
     """
-    components = connected_components(image)
-    if not components:
-        raise CharacterCueError("frame is empty after key-color cleanup")
-    body = components[0]
-    left, top, right, bottom = body.bbox
-    padding = max(2, round(max(right - left, bottom - top) * 0.25))
-    min_area = max(3, round(body.area * 0.01))
-    kept = [body] + [
-        component for component in components[1:]
-        if component.area >= min_area
-        and left - padding <= (component.bbox[0] + component.bbox[2]) / 2 <= right + padding
-        and top - padding <= (component.bbox[1] + component.bbox[3]) / 2 <= bottom + padding
-    ]
-    selected = Component(
-        area=sum(component.area for component in kept),
-        bbox=(
-            min(component.bbox[0] for component in kept),
-            min(component.bbox[1] for component in kept),
-            max(component.bbox[2] for component in kept),
-            max(component.bbox[3] for component in kept),
-        ),
-        pixels=tuple(pixel for component in kept for pixel in component.pixels),
-    )
-    mask = Image.new("L", image.size, 0)
-    mask_pixels = mask.load()
-    for flat_index in selected.pixels:
-        mask_pixels[flat_index % image.width, flat_index // image.width] = 255
-    isolated = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    isolated.paste(image, (0, 0), mask)
-    return isolated.crop(selected.bbox), selected, len(components)
+    image = image.copy()
+    pixels = image.load()
+    width, height = image.size
+    cell_width, cell_height = width / cols, height / rows
+    band = max(3, round(min(cell_width, cell_height) * 0.02))
+    key_pixel = (*KEY_COLORS[key], 255)
+
+    def dark(pixel: tuple[int, int, int, int]) -> bool:
+        return max(pixel[:3]) < GRID_LINE_DARK
+
+    for boundary in range(cols + 1):
+        center = round(boundary * cell_width)
+        for x in range(max(0, center - band), min(width, center + band + 1)):
+            if sum(dark(pixels[x, y]) for y in range(height)) >= GRID_LINE_COVERAGE * height:
+                for y in range(height):
+                    if dark(pixels[x, y]):
+                        pixels[x, y] = key_pixel
+    for boundary in range(rows + 1):
+        center = round(boundary * cell_height)
+        for y in range(max(0, center - band), min(height, center + band + 1)):
+            if sum(dark(pixels[x, y]) for x in range(width)) >= GRID_LINE_COVERAGE * width:
+                for x in range(width):
+                    if dark(pixels[x, y]):
+                        pixels[x, y] = key_pixel
+    return image
+
+
+def _center(component: Component) -> tuple[float, float]:
+    left, top, right, bottom = component.bbox
+    return (left + right) / 2, (top + bottom) / 2
+
+
+def segment_sheet(
+    raw: Image.Image,
+    rows: int,
+    cols: int,
+    threshold: int = 100,
+    edge_threshold: int = 200,
+) -> tuple[Image.Image, list[tuple[Image.Image, tuple[int, int, int, int], Component, int]]]:
+    """Key the whole sheet and give every cell its body plus detached companions.
+
+    Models do not draw on an exact pixel grid: in a real 2K sheet 12 of 16 bodies crossed
+    their cell's bottom edge by 2-7 px, and fixed-grid cropping cut their feet. So each cell
+    takes the largest component centered in it, wherever its pixels reach, plus companions
+    (a held item that separated from the body: at least 1% of the body's area, centered
+    within the body's bounds padded by 25%; a lantern otherwise blinked out of 7 of 32
+    frames). Despill matches static Character bodies: without it, 56-80% of the visible
+    rim of real frames stayed magenta-tinted ink.
+
+    Returns the cleaned sheet and, per cell in reading order, (subject image, cell box,
+    selected component in sheet coordinates, components centered in the cell).
+    """
+    key = detect_key_color(raw)
+    cleaned = remove_key_color(erase_grid_lines(raw, rows, cols, key), threshold, edge_threshold, key)
+    cleaned = despill_edges(cleaned, key)
+    width, height = cleaned.size
+    cell_width, cell_height = width // cols, height // rows
+
+    def cell_of(component: Component) -> int:
+        x, y = _center(component)
+        return (min(rows - 1, int(y // cell_height)) * cols
+                + min(cols - 1, int(x // cell_width)))
+
+    components = connected_components(cleaned)
+    bodies: dict[int, Component] = {}
+    counts = [0] * (rows * cols)
+    for component in components:
+        counts[cell_of(component)] += 1
+        bodies.setdefault(cell_of(component), component)
+    missing = [index for index in range(rows * cols) if index not in bodies]
+    if missing:
+        raise CharacterCueError(f"cells {missing} are empty after key-color cleanup")
+
+    kept: dict[int, list[Component]] = {index: [body] for index, body in bodies.items()}
+    body_ids = {id(body) for body in bodies.values()}
+    for component in components:
+        if id(component) in body_ids:
+            continue
+        x, y = _center(component)
+        owners = []
+        for index, body in bodies.items():
+            left, top, right, bottom = body.bbox
+            padding = max(2, round(max(right - left, bottom - top) * 0.25))
+            if (
+                component.area >= max(3, round(body.area * 0.01))
+                and left - padding <= x <= right + padding
+                and top - padding <= y <= bottom + padding
+            ):
+                bx, by = _center(body)
+                owners.append(((x - bx) ** 2 + (y - by) ** 2, index))
+        if owners:
+            kept[min(owners)[1]].append(component)
+
+    cells = []
+    for index in range(rows * cols):
+        members = kept[index]
+        bbox = (
+            min(member.bbox[0] for member in members),
+            min(member.bbox[1] for member in members),
+            max(member.bbox[2] for member in members),
+            max(member.bbox[3] for member in members),
+        )
+        selected = Component(
+            area=sum(member.area for member in members),
+            bbox=bbox,
+            pixels=tuple(pixel for member in members for pixel in member.pixels),
+        )
+        mask = Image.new("L", (bbox[2] - bbox[0], bbox[3] - bbox[1]), 0)
+        mask_pixels = mask.load()
+        for flat_index in selected.pixels:
+            mask_pixels[flat_index % width - bbox[0], flat_index // width - bbox[1]] = 255
+        subject = Image.new("RGBA", mask.size, (0, 0, 0, 0))
+        subject.paste(cleaned.crop(bbox), (0, 0), mask)
+        row, column = divmod(index, cols)
+        cell_box = (column * cell_width, row * cell_height,
+                    (column + 1) * cell_width, (row + 1) * cell_height)
+        cells.append((subject, cell_box, selected, counts[index]))
+    return cleaned, cells
 
 
 def extract_action(
@@ -320,35 +393,24 @@ def extract_action(
             f"{cols} cols x {rows} rows grid "
             f"(expected {cols * 512}x{rows * 512})"
         )
-    key = detect_key_color(raw)
-    cleaned = Image.new("RGBA", raw.size, (0, 0, 0, 0))
-    cell_width, cell_height = raw.width // cols, raw.height // rows
-    inset = max(4, round(min(cell_width, cell_height) * CELL_INSET))
-    cell_width, cell_height = cell_width - 2 * inset, cell_height - 2 * inset
+    cleaned, cells = segment_sheet(raw, rows, cols, threshold, edge_threshold)
     frames: list[ExtractedFrame] = []
-    for index in range(rows * cols):
-        row, column = divmod(index, cols)
-        source_box = (
-            column * (cell_width + 2 * inset) + inset,
-            row * (cell_height + 2 * inset) + inset,
-            (column + 1) * (cell_width + 2 * inset) - inset,
-            (row + 1) * (cell_height + 2 * inset) - inset,
-        )
-        cell = key_cell(raw.crop(source_box), key, threshold, edge_threshold)
-        cleaned.paste(cell, source_box[:2])
-        subject, selected, component_count = _largest_component_image(cell)
+    for index, (subject, cell_box, selected, component_count) in enumerate(cells):
         left, top, right, bottom = selected.bbox
-        if left <= 0 or top <= 0 or right >= cell_width or bottom >= cell_height:
+        if left <= 0 or top <= 0 or right >= raw.width or bottom >= raw.height:
             raise CharacterCueError(
-                f"{action} frame {index:02d} touches its {cell_width}x{cell_height} cell edge: "
+                f"{action} frame {index:02d} touches the {raw.width}x{raw.height} sheet edge: "
                 f"{selected.bbox}"
             )
         frames.append(ExtractedFrame(
             action=action,
             index=index,
             image=subject,
-            source_box=source_box,
-            source_bbox=selected.bbox,
+            source_box=cell_box,
+            # Relative to the cell's own origin; may run past the cell when the model
+            # drew across the boundary.
+            source_bbox=(left - cell_box[0], top - cell_box[1],
+                         right - cell_box[0], bottom - cell_box[1]),
             selected_area=selected.area,
             component_count=component_count,
         ))

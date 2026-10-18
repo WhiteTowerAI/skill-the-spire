@@ -174,6 +174,33 @@ class CharacterCueProcessorTests(unittest.TestCase):
                     self.assertTrue(any(p[0] > 200 and p[2] < 120 for p in pixels))  # item kept
                     self.assertFalse(any(min(p[0], p[2]) - p[1] > 40 for p in pixels))
 
+    def test_keeps_feet_that_cross_the_cell_edge(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sources = self._sources(root)
+            contract = ACTION_CONTRACT["hit"]
+            cell = 100
+            image = Image.new("RGBA", (contract["cols"] * cell, contract["rows"] * cell), MAGENTA)
+            draw = ImageDraw.Draw(image)
+            for index in range(contract["rows"] * contract["cols"]):
+                row, column = divmod(index, contract["cols"])
+                x, y = column * cell, row * cell
+                # Body ends 6 px into the next row's cell, as real 2K sheets do; the last row
+                # stays inside the sheet.
+                bottom = y + cell + 5 if row < contract["rows"] - 1 else y + cell - 6
+                draw.rectangle((x + 30, bottom - 79, x + 69, bottom), fill=(40, 130, 190, 255))
+                draw.rectangle((x + 30, bottom - 3, x + 69, bottom), fill=(200, 60, 30, 255))
+            image.save(sources["hit"])
+
+            process_bundle(sources, root / "images", root / "review")
+
+            for frame_path in sorted((root / "images" / "charui" / "cues" / "hit").glob("*.png")):
+                with Image.open(frame_path) as frame:
+                    rgba = frame.convert("RGBA")
+                    bottom_row = [rgba.getpixel((x, BASELINE_Y - 1)) for x in range(512)]
+                    # The red "sole" painted on the last 4 px survives in every frame.
+                    self.assertTrue(any(p[3] and p[0] > 150 and p[2] < 90 for p in bottom_row))
+
     def test_requires_all_four_action_sheets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
