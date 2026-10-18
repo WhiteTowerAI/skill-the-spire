@@ -699,6 +699,37 @@ class GenSpriteTests(unittest.TestCase):
 
             self.assertEqual([expected], references)
 
+    def test_body_sheet_splits_references_across_combat_and_rest_pools(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pools = {}
+            for family in ("character_combat", "character_rest"):
+                (root / family).mkdir()
+                pools[family] = []
+                for name in ("ironclad", "regent", "silent"):
+                    path = root / family / f"{name}.png"
+                    path.touch()
+                    pools[family].append(path)
+            families = tuple(dict.fromkeys(
+                gen_sprite.CHARACTER_ART_BUNDLE.slot(name).reference_family
+                for name in gen_sprite.CHARACTER_ART_BUNDLE.sheet("body_sheet").slots
+            ))
+
+            identity = root / "select.png"
+            Image.new("RGB", (132, 195), (80, 110, 140)).save(identity)
+
+            references = gen_sprite.resolve_references(
+                str(root), 4, lambda _message: None, spec="character_combat",
+                identity_reference=str(identity), families=families,
+            )
+
+            self.assertEqual(("character_combat", "character_rest"), families)
+            self.assertEqual(identity.resolve(), references[-1])
+            references = references[:-1]
+            self.assertEqual(4, len(references))
+            for family in families:
+                self.assertEqual(2, len(set(references) & set(pools[family])))
+
     def test_character_background_uses_its_own_reference_pool(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

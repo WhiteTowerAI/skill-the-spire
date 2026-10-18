@@ -963,6 +963,7 @@ def resolve_references(
     log,
     spec: str | None = None,
     identity_reference: str | None = None,
+    families: tuple[str, ...] = (),
 ) -> list[Path] | None:
     """Turn --reference (a dir of style samples, or a comma-separated file list) into a
     randomly capped list of image Paths for the few-shot edit call. Returns None if nothing
@@ -972,7 +973,11 @@ def resolve_references(
     art-samples/ dir is split into per-spec subdirs. When a --reference
     token is a directory that CONTAINS a subdir named after the current --spec, we descend
     into it. A root with no matching subdir contributes only its own direct image files,
-    never another family's subdir. A custom flat dir keeps the old behavior."""
+    never another family's subdir. A custom flat dir keeps the old behavior.
+
+    `families` overrides the spec's one family for a sheet whose cells need different
+    poses (body_sheet: combat and rest). The cap is then split evenly across the family
+    subdirs found, so random sampling never drops a cell's only pose examples."""
     IMG_EXT = (".png", ".jpg", ".jpeg", ".webp")
     def images_in(d: Path) -> list[Path]:
         return [f for f in sorted(d.iterdir()) if f.suffix.lower() in IMG_EXT]
@@ -984,23 +989,26 @@ def resolve_references(
     except CharacterArtValidationError as exc:
         raise SystemExit(f"[gen_sprite] {exc}") from exc
 
+    if not families and spec:
+        families = (REFERENCE_FAMILIES.get(spec, spec),)
     paths: list[Path] = []
+    pools: list[list[Path]] = []
     for token in str(ref_arg or "").split(","):
         token = token.strip()
         if not token:
             continue
         p = Path(token)
         if p.is_dir():
-            reference_family = REFERENCE_FAMILIES.get(spec, spec) if spec else None
-            spec_subdir = (p / reference_family) if reference_family else None
-            if spec_subdir and spec_subdir.is_dir():
+            subdirs = [p / family for family in families if (p / family).is_dir()]
+            for spec_subdir in subdirs:
                 imgs = images_in(spec_subdir)
                 log(
                     f"reference: using spec subdir {spec_subdir.name}/ "
                     f"for {spec} ({len(imgs)} images)"
                 )
+                pools.append(imgs)
                 paths.extend(imgs)
-            else:
+            if not subdirs:
                 paths.extend(images_in(p))
         elif p.is_file():
             paths.append(p)
@@ -1008,7 +1016,16 @@ def resolve_references(
             # A named reference that is missing must stop before a paid call, not
             # silently weaken the style match.
             raise SystemExit(f"[gen_sprite] reference not found: {token}")
-    if max_refs and len(paths) > max_refs:
+    if max_refs and len(pools) > 1:
+        share = max(1, max_refs // len(pools))
+        pooled = {path for pool in pools for path in pool}
+        rng = random.SystemRandom()
+        paths = [
+            path
+            for pool in pools
+            for path in (rng.sample(pool, share) if len(pool) > share else pool)
+        ] + [path for path in paths if path not in pooled]
+    elif max_refs and len(paths) > max_refs:
         paths = random.SystemRandom().sample(paths, max_refs)
     paths = list(dict.fromkeys(paths))
     if identity is not None:
@@ -1145,6 +1162,9 @@ def cmd_generate_sheet(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     log, flush = make_logger(out_dir)
     reference_spec = CHARACTER_ART_BUNDLE.slot(sheet.slots[0]).spec
+    families = tuple(dict.fromkeys(
+        CHARACTER_ART_BUNDLE.slot(name).reference_family for name in sheet.slots
+    ))
     try:
         cfg = load_config(Path(args.config) if args.config else None, args.backend, args.model)
         refs = resolve_references(
@@ -1153,6 +1173,7 @@ def cmd_generate_sheet(args: argparse.Namespace) -> int:
             log,
             spec=reference_spec,
             identity_reference=args.identity_reference,
+            families=families,
         )
         src = call_backend(cfg, args.prompt, sheet.source_size, log, references=refs)
         kept = keep_generated_source(src, "sheets", sheet.name, out_dir)
@@ -1663,8 +1684,9 @@ def build_parser() -> argparse.ArgumentParser:
     gs.add_argument("--backend", help="openai | gemini | openrouter, or a name in the config")
     gs.add_argument("--model", help="override the backend's model")
     gs.add_argument("--reference", help="few-shot STS2 style references, as for generate")
-    gs.add_argument("--max-refs", type=int, default=3,
-                    help="randomly sample at most three style references; identity is added separately")
+    gs.add_argument("--max-refs", type=int, default=4,
+                    help="style references to sample, split evenly across the sheet's reference "
+                         "families (body_sheet: two combat, two rest); identity is added separately")
     gs.add_argument("--identity-reference",
                     help="the approved selection portrait's full-resolution source; "
                          "required for body_sheet, rejected for icon_sheet")
