@@ -54,29 +54,39 @@ class CharacterArtSlot:
 
 @dataclass(frozen=True)
 class CharacterCueAction:
-    """One paid action-sheet acquisition and its runtime frame sequence."""
+    """One cue: a row of the combined cue sheet and its runtime frame sequence.
+
+    A breathing cue takes only its row's first cell and derives every frame from it by a
+    small vertical stretch about the baseline (`CharacterCueContract.breath`): redrawn
+    idle cells read as jitter in headed review, and a single frame cannot.
+    """
 
     name: str
     state_name: str
-    source_spec: str
-    rows: int
-    columns: int
+    sheet_row: int
+    frame_count: int
     frame_duration_ms: int
     loop: bool
     terminal: bool
     output_dir: str
-    generation_calls: int = 1
-
-    @property
-    def frame_count(self) -> int:
-        return self.rows * self.columns
+    breathing: bool = False
 
 
 @dataclass(frozen=True)
 class CharacterCueContract:
-    """Shared acquisition, normalization, geometry, and fallback contract for combat cues."""
+    """Shared acquisition, normalization, geometry, and fallback contract for combat cues.
+
+    All cues come from one paid sheet of `sheet_columns` x `sheet_rows` cells, one row per
+    cue: a single image keeps one style, light, and scale across the actions, which four
+    separate action sheets did not. The approved static combat body is the anchor reference.
+    """
 
     actions: tuple[CharacterCueAction, ...]
+    source_spec: str
+    sheet_columns: int
+    sheet_rows: int
+    cell_size: int
+    breath: tuple[float, ...]
     frame_size: tuple[int, int]
     content_box: tuple[int, int, int, int]
     baseline_y: int
@@ -94,7 +104,11 @@ class CharacterCueContract:
 
     @property
     def generation_calls(self) -> int:
-        return sum(action.generation_calls for action in self.actions)
+        return 1
+
+    @property
+    def sheet_size(self) -> tuple[int, int]:
+        return self.sheet_columns * self.cell_size, self.sheet_rows * self.cell_size
 
 
 @dataclass(frozen=True)
@@ -314,17 +328,23 @@ class CharacterArtBundle:
                 raise CharacterArtValidationError(
                     "Character combat cues must be ordered Idle, Attack, Hit, Dead"
                 )
-            cue_specs: set[str] = set()
+            if (
+                not cues.source_spec
+                or cues.source_spec in self.specs
+                or cues.sheet_columns <= 0
+                or cues.sheet_rows <= 0
+                or cues.cell_size <= 0
+            ):
+                raise CharacterArtValidationError("Character cue sheet has invalid metadata")
+            cue_rows: set[int] = set()
             cue_paths: set[str] = set()
             for action in cues.actions:
                 output = Path(action.output_dir)
                 if (
                     not action.state_name
-                    or not action.source_spec
-                    or action.rows <= 0
-                    or action.columns <= 0
+                    or not 0 <= action.sheet_row < cues.sheet_rows
+                    or not 0 < action.frame_count <= cues.sheet_columns
                     or action.frame_duration_ms <= 0
-                    or action.generation_calls != 1
                     or output.is_absolute()
                     or ".." in output.parts
                     or output.suffix
@@ -332,16 +352,26 @@ class CharacterArtBundle:
                     raise CharacterArtValidationError(
                         f"Character cue action {action.name!r} has invalid metadata"
                     )
-                if action.source_spec in cue_specs or action.source_spec in self.specs:
+                if action.sheet_row in cue_rows:
                     raise CharacterArtValidationError(
-                        f"Character cue source spec is duplicated: {action.source_spec!r}"
+                        f"Character cue sheet row {action.sheet_row} is used twice"
                     )
                 if action.output_dir in cue_paths:
                     raise CharacterArtValidationError(
                         f"Character cue output directory is duplicated: {action.output_dir!r}"
                     )
-                cue_specs.add(action.source_spec)
+                if action.breathing and (
+                    len(cues.breath) != action.frame_count or cues.breath[0] != 0
+                    or any(not 0 <= amount < 0.05 for amount in cues.breath)
+                ):
+                    raise CharacterArtValidationError(
+                        f"Character cue {action.name!r} breath needs one small stretch per "
+                        "frame, starting at 0"
+                    )
+                cue_rows.add(action.sheet_row)
                 cue_paths.add(action.output_dir)
+            if [action.name for action in cues.actions if action.breathing] not in ([], ["idle"]):
+                raise CharacterArtValidationError("only the Idle cue may breathe")
             if cues.actions[-1].terminal is not True or any(
                 action.terminal for action in cues.actions[:-1]
             ):
@@ -478,19 +508,19 @@ class CharacterArtBundle:
     def cue_specs(self) -> tuple[str, ...]:
         if self.combat_cues is None:
             return ()
-        return tuple(action.source_spec for action in self.combat_cues.actions)
+        return (self.combat_cues.source_spec,)
 
     @property
     def acquisition_specs(self) -> tuple[str, ...]:
         return (*self.specs, *self.cue_specs)
 
-    def cue_action(self, name_or_spec: str) -> CharacterCueAction:
+    def cue_action(self, name: str) -> CharacterCueAction:
         cues = self.combat_cues
         if cues is not None:
             for action in cues.actions:
-                if name_or_spec in (action.name, action.source_spec, action.state_name):
+                if name in (action.name, action.state_name):
                     return action
-        raise CharacterArtValidationError(f"unknown Character combat cue: {name_or_spec!r}")
+        raise CharacterArtValidationError(f"unknown Character combat cue: {name!r}")
 
     def sprite_specs(self) -> dict[str, dict]:
         """Expose the normalizer shape without duplicating the Character contract."""
@@ -562,10 +592,7 @@ class CharacterArtBundle:
     def reference_families(self) -> dict[str, str]:
         families = {spec: self.slot_for_spec(spec).reference_family for spec in self.specs}
         if self.combat_cues is not None:
-            families.update(
-                (action.source_spec, self.combat_cues.reference_family)
-                for action in self.combat_cues.actions
-            )
+            families[self.combat_cues.source_spec] = self.combat_cues.reference_family
         return families
 
     def reference_role(self, spec: str) -> ReferenceRole:
@@ -1159,25 +1186,22 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
             "character_icon", "contain", True, "palette",
         ),
     ),
+    # Four key poses per cue, timed after headed review of a real Character: 8 redrawn
+    # frames per cue read as jitter, and faster timings read as twitchy. Attack's strike is
+    # its third frame, so the Character's AttackAnimDelay is 2 x the Attack frame time.
     combat_cues=CharacterCueContract(
         actions=(
-            CharacterCueAction(
-                "idle", "Idle", "character_cue_idle", 2, 2, 180,
-                True, False, "charui/cues/idle",
-            ),
-            CharacterCueAction(
-                "attack", "Attack", "character_cue_attack", 2, 2, 90,
-                False, False, "charui/cues/attack",
-            ),
-            CharacterCueAction(
-                "hit", "Hit", "character_cue_hit", 2, 2, 80,
-                False, False, "charui/cues/hit",
-            ),
-            CharacterCueAction(
-                "dead", "Dead", "character_cue_dead", 3, 2, 140,
-                False, True, "charui/cues/dead",
-            ),
+            CharacterCueAction("idle", "Idle", 0, 4, 250, True, False, "charui/cues/idle",
+                               breathing=True),
+            CharacterCueAction("attack", "Attack", 1, 4, 120, False, False, "charui/cues/attack"),
+            CharacterCueAction("hit", "Hit", 2, 4, 110, False, False, "charui/cues/hit"),
+            CharacterCueAction("dead", "Dead", 3, 4, 220, False, True, "charui/cues/dead"),
         ),
+        source_spec="character_cues",
+        sheet_columns=4,
+        sheet_rows=4,
+        cell_size=512,
+        breath=(0.0, 0.004, 0.008, 0.004),
         frame_size=(512, 512),
         content_box=(26, 26, 486, 486),
         baseline_y=486,

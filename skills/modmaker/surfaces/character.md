@@ -68,7 +68,8 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
   - character art bundle: one `CharacterArtBundle` row per selected slot; record
     required/optional, output path, dimensions, alpha policy, fallback, and real consumer
   - character identity route: selection portrait is the sole identity bootstrap;
-    combat/rest/merchant and combat cue sheets use identity + type-matched style;
+    combat/rest/merchant use identity + type-matched style; the combat cue sheet uses the
+    approved combat body as its anchor + combat style;
     background/icon/Energy use palette/motif brief + type-matched style only
   - palette/motif brief: concise colors, motif, material, and silhouette derived from
     the user's description and reviewed selection portrait; never a second canonical image
@@ -91,16 +92,16 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
     large energy icon | text energy icon (do not infer one profile from another; mark
     unsupported consumers as explicit gaps per `reference/character-presentation.md`)
   - character combat cues: none | fixed bounded bundle
-    - actions: Idle `4 x 180ms, loop`; Attack `4 x 90ms, one-shot -> Idle`;
-      Hit `4 x 80ms, one-shot -> Idle`; Dead `6 x 140ms, terminal final frame`
-    - acquisition: four action sheets, the selection portrait's full-resolution source as
-      identity reference
-    - neutral combat anchor: <one concise pose sentence derived once and repeated verbatim>
-    - continuity lock: same identity, costume, proportions, equipment, facing, camera,
-      apparent scale, pivot, and baseline across all four sheets
-    - frame motion: adjacent cells are small, substantially overlapping in-between pose
-      steps, not distant key poses; Attack/Hit begin near and recover toward Idle; Dead falls
-      through six adjacent steps
+    - actions: Idle `4 x 250ms, loop` (one frame breathing); Attack `4 x 120ms, one-shot ->
+      Idle`; Hit `4 x 110ms, one-shot -> Idle`; Dead `4 x 220ms, terminal final frame`
+    - acquisition: one 2048x2048 sheet (one row per cue), one call, after the body sheet;
+      the normalized `charui/combat.png` as anchor reference
+    - poses: <signature item, attack wind-up and strike, in the SPEC's words>
+    - continuity lock: same identity, costume, proportions, equipment, handedness, facing,
+      camera, apparent scale, and baseline in every cell
+    - frame motion: four key poses per cue; Attack/Hit begin at and recover toward the
+      anchor; Dead lowers the full-size body to the ground
+    - attack timing: `AttackAnimDelay` `0.24f`, so damage lands on the strike frame
     - geometry: shared 512x512 content box/baseline/style and Bounds/Intent/Center/Orb/Talk anchors
     - fallback: one missing or invalid frame disables all cues and uses static combat body
     - explicit gaps: Cast, Spine, trails, audio, animated merchant/rest bodies

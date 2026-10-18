@@ -24,19 +24,21 @@ Image.new("RGB", (4, 4)).save(_png, "PNG")
 PNG_B64 = base64.b64encode(_png.getvalue())
 
 
-def make_cue_sheet(path: Path, action_name: str) -> None:
-    action = gen_sprite.CHARACTER_ART_BUNDLE.cue_action(action_name)
+def make_cue_sheet(path: Path) -> Image.Image:
+    """The combined cue sheet: one row per cue, a standing body in every cell."""
+    cues = gen_sprite.CHARACTER_ART_BUNDLE.combat_cues
     cell = 100
     image = Image.new(
-        "RGBA", (action.columns * cell, action.rows * cell), (255, 0, 255, 255)
+        "RGBA", (cues.sheet_columns * cell, cues.sheet_rows * cell), (255, 0, 255, 255)
     )
     draw = ImageDraw.Draw(image)
-    for index in range(action.frame_count):
-        row, column = divmod(index, action.columns)
+    for index in range(cues.sheet_columns * cues.sheet_rows):
+        row, column = divmod(index, cues.sheet_columns)
         left = column * cell + 30
         top = row * cell + 10
         draw.rectangle((left, top, left + 39, top + 79), fill=(40, 130, 190, 255))
     image.save(path)
+    return image
 
 
 def make_body_sheet(path: Path) -> Image.Image:
@@ -181,43 +183,31 @@ class GenSpriteTests(unittest.TestCase):
                 self.assertEqual(chroma, info["chroma"])
                 self.assertEqual(verified, info["verified"])
 
-    def test_character_cue_import_stages_until_complete_then_writes_atomic_bundle(self) -> None:
+    def test_character_cue_import_writes_the_whole_bundle_from_one_sheet(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             project = root / "project"
             images = project / "CueMod" / "images"
-            inputs = root / "inputs"
-            inputs.mkdir()
+            source = root / "sheet.png"
+            make_cue_sheet(source)
 
-            for index, action in enumerate(
-                gen_sprite.CHARACTER_ART_BUNDLE.combat_cues.actions
-            ):
-                source = inputs / f"{action.name}.png"
-                make_cue_sheet(source, action.name)
-                result = subprocess.run(
-                    [
-                        sys.executable, str(GEN_SPRITE), "import",
-                        "--spec", action.source_spec,
-                        "--slug", action.name,
-                        "--input", str(source),
-                        "--out", str(images),
-                    ],
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    check=False,
-                )
-                self.assertEqual(0, result.returncode, result.stderr)
-                self.assertTrue(
-                    (project / "art-sources" / "character-cues" / f"{action.name}.png").is_file()
-                )
-                if index < 3:
-                    self.assertIn("bundle incomplete", result.stdout)
-                    self.assertFalse((images / "charui" / "cues").exists())
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "character_cues", "--slug", "cues",
+                    "--input", str(source), "--out", str(images),
+                ],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+            )
 
+            self.assertEqual(0, result.returncode, result.stderr)
             self.assertIn("normalized complete bundle", result.stdout)
+            self.assertTrue((project / "art-sources" / "character-cues" / "sheet.png").is_file())
             runtime_frames = sorted((images / "charui" / "cues").rglob("*.png"))
-            self.assertEqual(18, len(runtime_frames))
+            self.assertEqual(16, len(runtime_frames))
             self.assertTrue(
                 (project / "art-review" / "character-cues" / "pipeline-meta.json").is_file()
             )
@@ -225,6 +215,50 @@ class GenSpriteTests(unittest.TestCase):
                 (project / "art-review" / "character-cues" /
                  "character-cues-contact-sheet.png").is_file()
             )
+
+    def test_character_cue_generate_sends_the_anchor_first_and_asks_for_the_full_sheet(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            images = root / "project" / "CueMod" / "images"
+            anchor = root / "combat.png"
+            Image.new("RGBA", (512, 512), (40, 130, 190, 255)).save(anchor)
+            style = root / "style"
+            (style / "character_combat").mkdir(parents=True)
+            Image.new("RGB", (8, 8)).save(style / "character_combat" / "ironclad.png")
+            sheet = make_cue_sheet(root / "sheet.png")
+            parser = gen_sprite.build_parser()
+            args = parser.parse_args([
+                "generate", "--spec", "character_cues", "--slug", "cues", "--prompt", "p",
+                "--out", str(images), "--reference", str(style),
+                "--identity-reference", str(anchor),
+            ])
+            cfg = {"mode": "command", "command": ["x"]}
+
+            with mock.patch.object(gen_sprite, "load_config", return_value=cfg), \
+                    mock.patch.object(gen_sprite, "call_backend", return_value=sheet) as backend:
+                self.assertEqual(0, gen_sprite.cmd_generate(args))
+
+            self.assertEqual((2048, 2048), backend.call_args.args[2])
+            self.assertEqual(anchor.resolve(), backend.call_args.kwargs["references"][0])
+            self.assertEqual(1, backend.call_count)
+
+    def test_images_backend_requests_the_exact_large_size_only_when_enabled(self) -> None:
+        captured = {}
+
+        def fake_urlopen(request, timeout=None):
+            captured["body"] = request.data
+            raise gen_sprite.urllib.error.URLError("stop")
+
+        cfg = {"mode": "images", "base_url": "https://example.test/v1", "api_key": "k",
+               "model": "gpt-image-2"}
+        for exact, expected in ((False, b"1024x1024"), (True, b"2048x2048")):
+            with self.subTest(exact=exact):
+                with mock.patch.object(gen_sprite.urllib.request, "urlopen", fake_urlopen):
+                    with self.assertRaises(SystemExit):
+                        gen_sprite._call_backend_images(
+                            {**cfg, "exact_size": exact}, "p", (2048, 2048), lambda _: None
+                        )
+                self.assertIn(expected, captured["body"])
 
     def test_character_icon_import_writes_exact_transparent_profile(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

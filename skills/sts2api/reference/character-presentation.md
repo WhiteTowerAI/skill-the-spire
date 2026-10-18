@@ -26,7 +26,7 @@ observed, which is not something the contract holds.
 | map marker, 49x64 | `Ui.MapMarkerPath` | run map marker | grounded only |
 | select background, 1920x1200 | `Ui.CharacterSelectBgPath` | character-select background | visible raw-scene consumer |
 | combat body, 512x512 | existence-checked resource factory | player `NCreature.Visuals` | visible static non-Spine body with reviewed public style |
-| Idle/Attack/Hit/Dead cue bundle, 18x 512x512 | private set passed by `SetupCustomCombatAnimationStateMachine` | player `NCreature.Visuals` in combat only | full route and all-or-nothing fallback headed-review-proven |
+| Idle/Attack/Hit/Dead cue bundle, 16x 512x512 | private set passed by `SetupCustomCombatAnimationStateMachine` | player `NCreature.Visuals` in combat only | full route and all-or-nothing fallback headed-review-proven |
 | rest body, 512x512 | `Scenes.RestSiteAnimPath` | `NRestSiteCharacter` | visible raw-scene consumer |
 | merchant body, 512x512 | `Scenes.MerchantAnimPath` | `NMerchantCharacter` | visible raw-scene consumer |
 | full energy, five 256x256 layers | `Scenes.EnergyCounterPath` | one native `NEnergyCounter` | all five layers visible |
@@ -138,7 +138,7 @@ particular, the RitsuLib Shop route does not need an
 
 The optional cue layer reuses the combat body's public scale/position but owns a fixed
 Bounds/Intent/Center/Orb/Talk geometry. It accepts only the four sequences and timings in
-`reference/character-combat-cues.md`. Require all eighteen resources before constructing
+`reference/character-combat-cues.md`. Require all sixteen resources before constructing
 the set; otherwise keep the static body and mount no cue playback node.
 
 The set is deliberately private to `SetupCustomCombatAnimationStateMachine`, which passes

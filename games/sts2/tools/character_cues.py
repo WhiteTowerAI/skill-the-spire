@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Normalize four Character action sheets into one all-or-nothing cue bundle.
+"""Normalize one combined Character cue sheet into an all-or-nothing cue bundle.
 
 Frame extraction, magenta cleanup, connected-component selection, shared scaling,
 bottom alignment, edge-touch QC, and GIF preview techniques are adapted from
@@ -58,24 +58,34 @@ SHEET_ASPECT_TOLERANCE = 0.02
 # cell boundary, covering at least this share of the sheet's length.
 GRID_LINE_DARK = 90
 GRID_LINE_COVERAGE = 0.5
+# Pixels this close to a detected line and tinted toward the key by more than this are the
+# line's antialiased fringe.
+GRID_LINE_FRINGE = 2
+GRID_LINE_FRINGE_SPILL = 40
+# Background flood from the sheet edge: always clear pixels this close to the measured
+# background; farther ones (up to the edge threshold) only when at least this bright
+# relative to it.
+FLOOD_NEAR_BACKGROUND = 60
+FLOOD_MIN_RELATIVE_LUMINANCE = 0.8
+SHEET_COLUMNS = CUE_CONTRACT.sheet_columns
+SHEET_ROWS = CUE_CONTRACT.sheet_rows
 ACTION_CONTRACT = {
     action.name: {
         "state_name": action.state_name,
-        "source_spec": action.source_spec,
-        "rows": action.rows,
-        "cols": action.columns,
+        "sheet_row": action.sheet_row,
+        "frame_count": action.frame_count,
         "duration_ms": action.frame_duration_ms,
         "loop": action.loop,
         "terminal": action.terminal,
         "output_dir": action.output_dir,
-        "generation_calls": action.generation_calls,
+        "breathing": action.breathing,
     }
     for action in CUE_CONTRACT.actions
 }
 
 
 class CharacterCueError(ValueError):
-    """Raised when an action sheet cannot satisfy the cue bundle contract."""
+    """Raised when a cue sheet cannot satisfy the cue bundle contract."""
 
 
 @dataclass(frozen=True)
@@ -166,14 +176,16 @@ def remove_key_color(
     return image
 
 
-def despill_edges(image: Image.Image, key: str = "magenta", band: int = 2) -> Image.Image:
-    """Neutralize key-colored spill on the visible pixels within `band` px of transparency.
+def despill_edges(image: Image.Image, key: str = "magenta", band: int | None = 2) -> Image.Image:
+    """Neutralize key-colored spill on the visible pixels within `band` px of transparency,
+    or on every visible pixel when `band` is None.
     Antialiased edges blend the subject (often a dark ink line) with the key; distance keying
     cannot remove those without eating real dark pixels, and left alone they draw a magenta
     (or green) rim around the cut-out on dark game UI."""
     image = image.convert("RGBA")
     alpha = image.getchannel("A").point(lambda a: 255 if a else 0)
-    eroded = alpha.filter(ImageFilter.MinFilter(2 * band + 1))
+    eroded = (Image.new("L", image.size, 0) if band is None
+              else alpha.filter(ImageFilter.MinFilter(2 * band + 1)))
     pixels = image.load()
     alpha_pixels, eroded_pixels = alpha.load(), eroded.load()
     for y in range(image.height):
@@ -251,20 +263,113 @@ def erase_grid_lines(image: Image.Image, rows: int, cols: int, key: str) -> Imag
     def dark(pixel: tuple[int, int, int, int]) -> bool:
         return max(pixel[:3]) < GRID_LINE_DARK
 
-    for boundary in range(cols + 1):
-        center = round(boundary * cell_width)
-        for x in range(max(0, center - band), min(width, center + band + 1)):
-            if sum(dark(pixels[x, y]) for y in range(height)) >= GRID_LINE_COVERAGE * height:
-                for y in range(height):
-                    if dark(pixels[x, y]):
-                        pixels[x, y] = key_pixel
-    for boundary in range(rows + 1):
-        center = round(boundary * cell_height)
-        for y in range(max(0, center - band), min(height, center + band + 1)):
-            if sum(dark(pixels[x, y]) for x in range(width)) >= GRID_LINE_COVERAGE * width:
-                for x in range(width):
-                    if dark(pixels[x, y]):
-                        pixels[x, y] = key_pixel
+    def key_tinted(pixel: tuple[int, int, int, int]) -> bool:
+        r, g, b = pixel[:3]
+        if key == "green":
+            return g - max(r, b) > GRID_LINE_FRINGE_SPILL
+        return min(r, b) - g > GRID_LINE_FRINGE_SPILL
+
+    line_columns = [
+        x
+        for boundary in range(cols + 1)
+        for x in range(max(0, round(boundary * cell_width) - band),
+                       min(width, round(boundary * cell_width) + band + 1))
+        if sum(dark(pixels[x, y]) for y in range(height)) >= GRID_LINE_COVERAGE * height
+    ]
+    line_rows = [
+        y
+        for boundary in range(rows + 1)
+        for y in range(max(0, round(boundary * cell_height) - band),
+                       min(height, round(boundary * cell_height) + band + 1))
+        if sum(dark(pixels[x, y]) for x in range(width)) >= GRID_LINE_COVERAGE * width
+    ]
+    for x in line_columns:
+        for y in range(height):
+            if dark(pixels[x, y]):
+                pixels[x, y] = key_pixel
+    for y in line_rows:
+        for x in range(width):
+            if dark(pixels[x, y]):
+                pixels[x, y] = key_pixel
+    # A line's antialiased fringe is a dark blend with the key, e.g. (104, 0, 104): too
+    # light to count as line and too far from the key to flood, it bridged a real 1K
+    # sheet's rows into one component. Neutral subject pixels such as boots stay.
+    fringe = GRID_LINE_FRINGE
+    for x in {c for line in line_columns
+              for c in range(max(0, line - fringe), min(width, line + fringe + 1))}:
+        for y in range(height):
+            if key_tinted(pixels[x, y]):
+                pixels[x, y] = key_pixel
+    for y in {r for line in line_rows
+              for r in range(max(0, line - fringe), min(height, line + fringe + 1))}:
+        for x in range(width):
+            if key_tinted(pixels[x, y]):
+                pixels[x, y] = key_pixel
+    return image
+
+
+def _measured_background(image: Image.Image) -> tuple[int, int, int]:
+    """The median color of the sheet border; backends rarely return the exact key."""
+    rgb = image.convert("RGB")
+    pixels = rgb.load()
+    width, height = rgb.size
+    border = [pixels[x, y] for x in range(0, width, 3) for y in (0, height - 1)]
+    border += [pixels[x, y] for y in range(0, height, 3) for x in (0, width - 1)]
+    return tuple(int(statistics.median(channel)) for channel in zip(*border))
+
+
+def _clear_near(
+    image: Image.Image, colors: tuple[tuple[int, int, int], ...], distance: int
+) -> Image.Image:
+    image = image.convert("RGBA")
+    pixels = image.load()
+    limit = distance * distance
+    for y in range(image.height):
+        for x in range(image.width):
+            r, g, b, a = pixels[x, y]
+            if a and any((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2 < limit
+                         for cr, cg, cb in colors):
+                pixels[x, y] = (0, 0, 0, 0)
+    return image
+
+
+def _luminance(color: tuple[int, int, int]) -> float:
+    return 0.2126 * color[0] + 0.7152 * color[1] + 0.0722 * color[2]
+
+
+def _flood_background(
+    image: Image.Image, background: tuple[int, int, int], edge_threshold: int
+) -> Image.Image:
+    """Clear background reachable from the sheet edge.
+
+    A pixel floods when it is near the measured background, or within `edge_threshold` of
+    it and at least about as bright (a light glow haze). Darker blends are subject: see-
+    through glass painted as darkened key, or an ink rim; despill neutralizes their tint.
+    Flooding those too punched lantern glass out of a real 1K sheet.
+    """
+    image = image.convert("RGBA")
+    pixels = image.load()
+    width, height = image.size
+    near = FLOOD_NEAR_BACKGROUND ** 2
+    edge = edge_threshold ** 2
+    bright_enough = FLOOD_MIN_RELATIVE_LUMINANCE * _luminance(background)
+    visited = bytearray(width * height)
+    queue: deque[tuple[int, int]] = deque()
+    queue.extend((x, y) for x in range(width) for y in (0, height - 1))
+    queue.extend((x, y) for y in range(height) for x in (0, width - 1))
+    while queue:
+        x, y = queue.popleft()
+        if not (0 <= x < width and 0 <= y < height) or visited[y * width + x]:
+            continue
+        visited[y * width + x] = 1
+        r, g, b, a = pixels[x, y]
+        distance = ((r - background[0]) ** 2 + (g - background[1]) ** 2
+                    + (b - background[2]) ** 2)
+        if not (a == 0 or distance < near
+                or (distance < edge and _luminance((r, g, b)) >= bright_enough)):
+            continue
+        pixels[x, y] = (0, 0, 0, 0)
+        queue.extend(((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)))
     return image
 
 
@@ -277,7 +382,7 @@ def segment_sheet(
     raw: Image.Image,
     rows: int,
     cols: int,
-    threshold: int = 100,
+    threshold: int = 40,
     edge_threshold: int = 200,
 ) -> tuple[Image.Image, list[tuple[Image.Image, tuple[int, int, int, int], Component, int]]]:
     """Key the whole sheet and give every cell its body plus detached companions.
@@ -294,8 +399,17 @@ def segment_sheet(
     selected component in sheet coordinates, components centered in the cell).
     """
     key = detect_key_color(raw)
-    cleaned = remove_key_color(erase_grid_lines(raw, rows, cols, key), threshold, edge_threshold, key)
-    cleaned = despill_edges(cleaned, key)
+    erased = erase_grid_lines(raw, rows, cols, key)
+    background = _measured_background(erased)
+    # Enclosed background (between an arm and the body) is cleared only when it is close
+    # to the sheet's measured background, not anything within 100 of the pure key: a real
+    # 1K sheet painted lantern glass as see-through key, (133, 30, 99), and the wide pass
+    # punched it out. Background reachable from the sheet edge is flooded as before.
+    cleaned = _clear_near(erased, (background, KEY_COLORS[key]), threshold)
+    cleaned = _flood_background(cleaned, background, edge_threshold)
+    # A subject on the key color holds no key hue by contract (pink or purple subjects use
+    # the other key), so any tint left anywhere is background seen through the subject.
+    cleaned = despill_edges(cleaned, key, band=None)
     width, height = cleaned.size
     cell_width, cell_height = width // cols, height // rows
 
@@ -361,60 +475,83 @@ def segment_sheet(
     return cleaned, cells
 
 
-def extract_action(
-    action: str,
+def extract_sheet(
     source_path: Path,
-    threshold: int = 100,
+    threshold: int = 40,
     edge_threshold: int = 200,
-) -> tuple[Image.Image, list[ExtractedFrame]]:
-    contract = ACTION_CONTRACT[action]
+) -> tuple[Image.Image, dict[str, list[ExtractedFrame]]]:
+    """Cut the combined sheet into each cue's frames; a breathing cue keeps one cell."""
     try:
         with Image.open(source_path) as source:
             source.verify()
         with Image.open(source_path) as source:
             raw = source.convert("RGBA")
     except (OSError, ValueError, SyntaxError) as exc:
-        raise CharacterCueError(f"{action} sheet is not a readable image: {source_path} ({exc})") from exc
+        raise CharacterCueError(f"cue sheet is not a readable image: {source_path} ({exc})") from exc
 
-    rows, cols = contract["rows"], contract["cols"]
-    expected = (cols * FRAME_SIZE[0], rows * FRAME_SIZE[1])
+    rows, cols = SHEET_ROWS, SHEET_COLUMNS
+    expected = CUE_CONTRACT.sheet_size
     if (raw.width % cols or raw.height % rows) and abs(
         (raw.width / raw.height) / (expected[0] / expected[1]) - 1
     ) <= SHEET_ASPECT_TOLERANCE:
-        # Backends round non-square canvases to their own sizes (Gemini returns 2:3 as
-        # 848x1264), so a right-shaped sheet rarely divides into whole cells as delivered.
+        # Backends round canvases to their own sizes (Gemini returns 2:3 as 848x1264), so a
+        # right-shaped sheet does not always divide into whole cells as delivered.
         raw = raw.resize(expected, Image.Resampling.LANCZOS)
     if raw.width % cols or raw.height % rows:
         # Name the axes. A bare "NxM" grid reads as WxH to anyone who just produced the
         # sheet, which is the opposite order, and that ambiguity is how a wrong-shaped
         # sheet gets requested in the first place.
         raise CharacterCueError(
-            f"{action} sheet size {raw.width}x{raw.height} is not divisible by its "
-            f"{cols} cols x {rows} rows grid "
-            f"(expected {cols * 512}x{rows * 512})"
+            f"cue sheet size {raw.width}x{raw.height} is not divisible by its "
+            f"{cols} cols x {rows} rows grid (expected {expected[0]}x{expected[1]})"
         )
     cleaned, cells = segment_sheet(raw, rows, cols, threshold, edge_threshold)
-    frames: list[ExtractedFrame] = []
-    for index, (subject, cell_box, selected, component_count) in enumerate(cells):
-        left, top, right, bottom = selected.bbox
-        if left <= 0 or top <= 0 or right >= raw.width or bottom >= raw.height:
-            raise CharacterCueError(
-                f"{action} frame {index:02d} touches the {raw.width}x{raw.height} sheet edge: "
-                f"{selected.bbox}"
-            )
-        frames.append(ExtractedFrame(
-            action=action,
-            index=index,
-            image=subject,
-            source_box=cell_box,
-            # Relative to the cell's own origin; may run past the cell when the model
-            # drew across the boundary.
-            source_bbox=(left - cell_box[0], top - cell_box[1],
-                         right - cell_box[0], bottom - cell_box[1]),
-            selected_area=selected.area,
-            component_count=component_count,
-        ))
+    frames: dict[str, list[ExtractedFrame]] = {}
+    for action, contract in ACTION_CONTRACT.items():
+        used = 1 if contract["breathing"] else contract["frame_count"]
+        frames[action] = []
+        for column in range(used):
+            index = contract["sheet_row"] * cols + column
+            subject, cell_box, selected, component_count = cells[index]
+            left, top, right, bottom = selected.bbox
+            if left <= 0 or top <= 0 or right >= raw.width or bottom >= raw.height:
+                raise CharacterCueError(
+                    f"{action} frame {column:02d} touches the {raw.width}x{raw.height} sheet "
+                    f"edge: {selected.bbox}"
+                )
+            frames[action].append(ExtractedFrame(
+                action=action,
+                index=column,
+                image=subject,
+                source_box=cell_box,
+                # Relative to the cell's own origin; may run past the cell when the model
+                # drew across the boundary.
+                source_bbox=(left - cell_box[0], top - cell_box[1],
+                             right - cell_box[0], bottom - cell_box[1]),
+                selected_area=selected.area,
+                component_count=component_count,
+            ))
     return cleaned, frames
+
+
+def breathing_frames(anchor: Image.Image) -> list[Image.Image]:
+    """Idle from one painted frame: a small vertical stretch about the baseline per frame.
+
+    Redrawn idle cells jitter (adjacent silhouettes differed 14-26% in a real sheet while
+    looking identical); stretching one frame moves only the breath.
+    """
+    frames = []
+    for amount in CUE_CONTRACT.breath:
+        stretch = 1 + amount
+        frame = anchor.transform(
+            anchor.size, Image.Transform.AFFINE,
+            (1, 0, 0, 0, 1 / stretch, BASELINE_Y * (1 - 1 / stretch)),
+            resample=Image.Resampling.BICUBIC,
+        )
+        # Bicubic rings one row past the feet; the contract baseline is exclusive.
+        frame.paste((0, 0, 0, 0), (0, BASELINE_Y, frame.width, frame.height))
+        frames.append(frame)
+    return frames
 
 
 def _validate_body_scale(frames_by_action: dict[str, list[ExtractedFrame]]) -> dict[str, float]:
@@ -448,7 +585,10 @@ def normalize_frames(
     max_height = max(frame.image.height for frame in all_frames)
     box_width = CONTENT_BOX[2] - CONTENT_BOX[0]
     box_height = CONTENT_BOX[3] - CONTENT_BOX[1]
-    global_scale = min(box_width / (union_right - union_left), box_height / max_height)
+    # Leave headroom for the breathing stretch, so a body that fills the box stays inside it.
+    headroom = 1 + max(CUE_CONTRACT.breath, default=0.0)
+    global_scale = min(box_width / (union_right - union_left),
+                       box_height / (max_height * headroom))
     offset_x = (
         CONTENT_BOX[0]
         + (box_width - (union_right - union_left) * global_scale) / 2
@@ -589,38 +729,32 @@ def _replace_directory(source: Path, destination: Path) -> None:
             shutil.rmtree(backup)
 
 
-def process_bundle(
-    sources: dict[str, Path],
+def process_sheet(
+    source: Path,
     images_root: Path,
     review_dir: Path,
-    threshold: int = 100,
+    threshold: int = 40,
     edge_threshold: int = 200,
 ) -> dict:
-    missing = [action for action in ACTION_CONTRACT if action not in sources]
-    if missing:
-        raise CharacterCueError(f"missing action sheet(s): {', '.join(missing)}")
-
-    cleaned_sheets: dict[str, Image.Image] = {}
-    extracted: dict[str, list[ExtractedFrame]] = {}
-    for action in ACTION_CONTRACT:
-        cleaned, frames = extract_action(
-            action,
-            Path(sources[action]),
-            threshold=threshold,
-            edge_threshold=edge_threshold,
-        )
-        cleaned_sheets[action] = cleaned
-        extracted[action] = frames
-
+    cleaned_sheet, extracted = extract_sheet(
+        Path(source), threshold=threshold, edge_threshold=edge_threshold
+    )
     normalized, frame_metadata, global_scale, ratios = normalize_frames(extracted)
+    for action, contract in ACTION_CONTRACT.items():
+        if contract["breathing"]:
+            normalized[action] = breathing_frames(normalized[action][0])
     metadata = {
-        "contract": "skill-the-spire-character-cues/v1",
+        "contract": "skill-the-spire-character-cues/v2",
         "processor_source": "agent-sprite-forge techniques, adapted under MIT",
+        "source": str(Path(source).resolve()),
+        "sheet": {"columns": SHEET_COLUMNS, "rows": SHEET_ROWS,
+                  "sheet_px": list(CUE_CONTRACT.sheet_size)},
         "frame_size": list(FRAME_SIZE),
         "content_box": list(CONTENT_BOX),
         "baseline_y": BASELINE_Y,
         "global_scale": global_scale,
         "body_height_ratio_to_idle": ratios,
+        "breath": list(CUE_CONTRACT.breath),
         "generation_calls": CUE_CONTRACT.generation_calls,
         "fallback_slot": CUE_CONTRACT.fallback_slot,
         "consumer": CUE_CONTRACT.consumer,
@@ -641,7 +775,6 @@ def process_bundle(
     for action, contract in ACTION_CONTRACT.items():
         metadata["actions"][action] = {
             **contract,
-            "source": str(Path(sources[action]).resolve()),
             "frame_order": list(range(len(normalized[action]))),
             "frames": frame_metadata[action],
         }
@@ -659,16 +792,14 @@ def process_bundle(
             action_dir.mkdir(parents=True)
             for index, frame in enumerate(frames):
                 frame.save(action_dir / f"{index:02d}.png", "PNG", optimize=True)
-
             action_review = stage_review / action
             action_review.mkdir(parents=True)
-            cleaned_sheets[action].save(action_review / "raw-sheet-clean.png", "PNG", optimize=True)
             save_transparent_gif(
                 frames,
                 action_review / "animation.gif",
                 ACTION_CONTRACT[action]["duration_ms"],
             )
-
+        cleaned_sheet.save(stage_review / "raw-sheet-clean.png", "PNG", optimize=True)
         render_contact_sheet(normalized).save(
             stage_review / "character-cues-contact-sheet.png", "PNG", optimize=True
         )
@@ -687,15 +818,13 @@ def process_bundle(
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Normalize Idle/Attack/Hit/Dead action sheets into Character cue frames."
+        description="Normalize one combined Idle/Attack/Hit/Dead sheet into Character cue frames."
     )
-    parser.add_argument("--idle", type=Path, required=True, help="2x2 Idle sheet")
-    parser.add_argument("--attack", type=Path, required=True, help="2x2 Attack sheet")
-    parser.add_argument("--hit", type=Path, required=True, help="2x2 Hit sheet")
-    parser.add_argument("--dead", type=Path, required=True, help="2x3 Dead sheet")
+    parser.add_argument("--sheet", type=Path, required=True,
+                        help=f"{SHEET_COLUMNS} cols x {SHEET_ROWS} rows cue sheet, one row per cue")
     parser.add_argument("--images-root", type=Path, required=True)
     parser.add_argument("--review-dir", type=Path, required=True)
-    parser.add_argument("--threshold", type=int, default=100)
+    parser.add_argument("--threshold", type=int, default=40)
     parser.add_argument("--edge-threshold", type=int, default=200)
     return parser
 
@@ -703,8 +832,8 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Iterable[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     try:
-        metadata = process_bundle(
-            {action: getattr(args, action) for action in ACTION_CONTRACT},
+        metadata = process_sheet(
+            args.sheet,
             args.images_root,
             args.review_dir,
             threshold=args.threshold,
@@ -713,7 +842,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     except CharacterCueError as exc:
         print(f"[character_cues] FAILED: {exc}")
         return 2
-    frame_count = sum(len(action["frames"]) for action in metadata["actions"].values())
+    frame_count = sum(len(action["frame_order"]) for action in metadata["actions"].values())
     print(f"[character_cues] OK: {frame_count} frames -> {args.images_root / 'charui' / 'cues'}")
     print(f"[character_cues] review -> {args.review_dir}")
     return 0

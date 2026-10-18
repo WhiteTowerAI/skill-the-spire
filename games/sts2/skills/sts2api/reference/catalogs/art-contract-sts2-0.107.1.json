@@ -531,78 +531,70 @@
         "compact_energy_icon"
       ],
       "combat_cues": true,
-      "generation_calls": 8
+      "generation_calls": 5
     }
   ],
   "character_cues": {
+    "source_spec": "character_cues",
+    "sheet": {
+      "columns": 4,
+      "rows": 4,
+      "cell_px": 512,
+      "sheet_px": [
+        2048,
+        2048
+      ]
+    },
+    "breath": [
+      0.0,
+      0.004,
+      0.008,
+      0.004
+    ],
     "actions": [
       {
         "name": "idle",
         "state_name": "Idle",
-        "source_spec": "character_cue_idle",
-        "columns": 2,
-        "rows": 2,
-        "sheet_px": [
-          1024,
-          1024
-        ],
+        "sheet_row": 0,
         "frame_count": 4,
-        "frame_duration_ms": 180,
+        "frame_duration_ms": 250,
         "loop": true,
         "terminal": false,
-        "output_dir": "charui/cues/idle",
-        "generation_calls": 1
+        "breathing": true,
+        "output_dir": "charui/cues/idle"
       },
       {
         "name": "attack",
         "state_name": "Attack",
-        "source_spec": "character_cue_attack",
-        "columns": 2,
-        "rows": 2,
-        "sheet_px": [
-          1024,
-          1024
-        ],
+        "sheet_row": 1,
         "frame_count": 4,
-        "frame_duration_ms": 90,
+        "frame_duration_ms": 120,
         "loop": false,
         "terminal": false,
-        "output_dir": "charui/cues/attack",
-        "generation_calls": 1
+        "breathing": false,
+        "output_dir": "charui/cues/attack"
       },
       {
         "name": "hit",
         "state_name": "Hit",
-        "source_spec": "character_cue_hit",
-        "columns": 2,
-        "rows": 2,
-        "sheet_px": [
-          1024,
-          1024
-        ],
+        "sheet_row": 2,
         "frame_count": 4,
-        "frame_duration_ms": 80,
+        "frame_duration_ms": 110,
         "loop": false,
         "terminal": false,
-        "output_dir": "charui/cues/hit",
-        "generation_calls": 1
+        "breathing": false,
+        "output_dir": "charui/cues/hit"
       },
       {
         "name": "dead",
         "state_name": "Dead",
-        "source_spec": "character_cue_dead",
-        "columns": 2,
-        "rows": 3,
-        "sheet_px": [
-          1024,
-          1536
-        ],
-        "frame_count": 6,
-        "frame_duration_ms": 140,
+        "sheet_row": 3,
+        "frame_count": 4,
+        "frame_duration_ms": 220,
         "loop": false,
         "terminal": true,
-        "output_dir": "charui/cues/dead",
-        "generation_calls": 1
+        "breathing": false,
+        "output_dir": "charui/cues/dead"
       }
     ],
     "frame_size": [
@@ -648,8 +640,8 @@
       0.0,
       -420.0
     ],
-    "total_frames": 18,
-    "generation_calls": 4
+    "total_frames": 16,
+    "generation_calls": 1
   },
-  "catalog_sha256": "c03eb138a331ff286a5e9b5b3fef3a6bd921214db3ffb1087d2a6bdd523e0dfc"
+  "catalog_sha256": "b851efef26d9afb0d5f9c491e2eda327123b9a761f5fc5abed3ed80890053ea8"
 }

@@ -177,8 +177,10 @@ def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]
 def cue_sheet_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
     if override:
         return override
-    action = CHARACTER_ART_BUNDLE.cue_action(spec)
-    return action.columns * 512, action.rows * 512
+    cues = CHARACTER_ART_BUNDLE.combat_cues
+    if cues is None or spec != cues.source_spec:
+        raise SystemExit(f"[gen_sprite] unknown Character cue spec: {spec!r}")
+    return cues.sheet_size
 
 
 # --- normalize primitives (magenta chroma-key adapted from agent-sprite-forge,
@@ -717,6 +719,10 @@ def _call_backend_images(cfg: dict, prompt: str, size: tuple[int, int], log,
     """OpenAI Images transport: /images/generations, or /images/edits with references."""
     base = cfg["base_url"].rstrip("/")
     req_size = cfg.get("request_size") or request_size_for(size)
+    if cfg.get("exact_size") and max(size) > 1536:
+        # gpt-image-2 takes custom sizes (edges multiples of 16, under 3840); older gpt-image
+        # models accept only the three canvases, so this stays opt-in per backend.
+        req_size = f"{size[0]}x{size[1]}"
     if references:
         url = cfg.get("edit_url") or (base + "/images/edits")
         data, ct = _multipart([
@@ -1004,7 +1010,12 @@ def resolve_references(
         paths = random.SystemRandom().sample(paths, max_refs)
     paths = list(dict.fromkeys(paths))
     if identity is not None:
-        paths.append(identity)
+        # The cue sheet's anchor goes first, as the real trials sent it ("the FIRST provided
+        # image is the anchor"); every other identity image goes last.
+        if spec in CHARACTER_ART_BUNDLE.cue_specs:
+            paths.insert(0, identity)
+        else:
+            paths.append(identity)
         log(f"identity reference: {identity.name}")
     if not paths:
         log("no usable reference images — falling back to text-to-image")
@@ -1022,12 +1033,7 @@ def stage_character_cue_source(
     images_root: Path,
     log,
 ) -> tuple[Path, bool]:
-    """Stage one action sheet; normalize runtime cues only when all four exist."""
-    action = CHARACTER_ART_BUNDLE.cue_action(spec)
-    if slug.lower() != action.name:
-        raise SystemExit(
-            f"[gen_sprite] cue spec {spec!r} requires --slug {action.name!r}"
-        )
+    """Stage the combined cue sheet and normalize the whole cue bundle from it."""
     if images_root.name.lower() != "images":
         raise SystemExit(
             "[gen_sprite] Character cue import requires --out <project>/<ModName>/images"
@@ -1037,31 +1043,19 @@ def stage_character_cue_source(
     source_dir = project_root / "art-sources" / "character-cues"
     review_dir = project_root / "art-review" / "character-cues"
     source_dir.mkdir(parents=True, exist_ok=True)
-    destination = source_dir / f"{action.name}.png"
-    temporary = source_dir / f".{action.name}.tmp.png"
+    destination = source_dir / "sheet.png"
+    temporary = source_dir / ".sheet.tmp.png"
     source.convert("RGBA").save(temporary, "PNG")
     temporary.replace(destination)
-    log(f"staged {action.name} action sheet -> {destination}")
+    log(f"staged {spec} sheet -> {destination}")
 
-    cue_contract = CHARACTER_ART_BUNDLE.combat_cues
-    if cue_contract is None:
-        raise SystemExit("[gen_sprite] Character combat cue contract is unavailable")
-    sources = {
-        item.name: source_dir / f"{item.name}.png"
-        for item in cue_contract.actions
-    }
-    missing = [name for name, path in sources.items() if not path.is_file()]
-    if missing:
-        log(f"cue bundle waiting for action sheet(s): {missing}")
-        return destination, False
-
-    from character_cues import CharacterCueError, process_bundle
+    from character_cues import CharacterCueError, process_sheet
 
     try:
-        process_bundle(sources, images_root, review_dir)
+        process_sheet(destination, images_root, review_dir)
     except CharacterCueError as exc:
         raise SystemExit(
-            "[gen_sprite] Character cue bundle failed deterministic QC; existing runtime "
+            "[gen_sprite] Character cue sheet failed deterministic QC; existing runtime "
             f"cues were not changed: {exc}"
         ) from exc
     runtime_dir = images_root / "charui" / "cues"
@@ -1493,20 +1487,25 @@ def build_art_contract_catalog() -> dict:
         catalog["character_cues"] = {
             # Named columns/rows plus explicit pixel geometry: a bare "NxM" grid string is
             # ambiguous and the two orders previously disagreed across this repo.
+            "source_spec": cues.source_spec,
+            "sheet": {
+                "columns": cues.sheet_columns,
+                "rows": cues.sheet_rows,
+                "cell_px": cues.cell_size,
+                "sheet_px": list(cues.sheet_size),
+            },
+            "breath": list(cues.breath),
             "actions": [
                 {
                     "name": action.name,
                     "state_name": action.state_name,
-                    "source_spec": action.source_spec,
-                    "columns": action.columns,
-                    "rows": action.rows,
-                    "sheet_px": [action.columns * 512, action.rows * 512],
+                    "sheet_row": action.sheet_row,
                     "frame_count": action.frame_count,
                     "frame_duration_ms": action.frame_duration_ms,
                     "loop": action.loop,
                     "terminal": action.terminal,
+                    "breathing": action.breathing,
                     "output_dir": action.output_dir,
-                    "generation_calls": action.generation_calls,
                 }
                 for action in cues.actions
             ],
@@ -1582,15 +1581,15 @@ def cmd_list_specs(_args: argparse.Namespace) -> int:
         chroma = "on" if info["chroma"] else "off"
         star = "" if info["verified"] else "  *not live-verified"
         print(f'{name:<11} {info["sub_path"]:<30} {size:<12} {info["fit"]:<8} {chroma}{star}')
-    for spec in CHARACTER_ART_BUNDLE.cue_specs:
-        action = CHARACTER_ART_BUNDLE.cue_action(spec)
+    cues = CHARACTER_ART_BUNDLE.combat_cues
+    if cues is not None:
         # Print the sheet the same width-first way every other row prints its size, and name
         # the axes. A bare "NxM" grid is ambiguous, and printing it rows-first contradicted
         # both this tool's own WxH convention and every prose copy of the cue table.
-        sheet = f"{action.columns * 512}x{action.rows * 512}"
-        layout = f"{action.columns} cols x {action.rows} rows"
+        sheet = f"{cues.sheet_size[0]}x{cues.sheet_size[1]}"
+        layout = f"{cues.sheet_columns} cols x {cues.sheet_rows} rows"
         print(
-            f"{spec:<11} {'art-sources/character-cues':<30} "
+            f"{cues.source_spec:<11} {'art-sources/character-cues':<30} "
             f"{sheet:<12} {'grid':<8} on   {layout}"
         )
     if any(not info["verified"] for info in SPECS.values()):

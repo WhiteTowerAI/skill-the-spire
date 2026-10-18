@@ -8,24 +8,36 @@ Use this page with `recipes/character.md`, `reference/character-presentation.md`
 
 ## Cue contract
 
-Source sheets are **columns x rows** of 512x512 cells, read left-to-right then
-top-to-bottom. The same values are queryable under `character_cues` in
-`reference/catalogs/art-contract-sts2-0.107.1.json`, which names `columns`, `rows`, and
-`sheet_px` separately so the grid order cannot be misread.
+All four cues come from **one** generated sheet of **4x4** cells (columns x rows), each cell
+512x512, so the sheet is **2048x2048**. Row 1 is Idle, row 2 Attack, row 3 Hit, row 4 Dead,
+read left-to-right. One image keeps one style, light, and body scale across every action;
+four separate action sheets did not, and switching cues then read as a different person in
+headed review. The same values are queryable under `character_cues` in
+`reference/catalogs/art-contract-sts2-0.107.1.json`.
 
-| cue | source sheet (cols x rows) | runtime frames | frame time | behavior |
-|---|---|---:|---:|---|
-| `Idle` | 2x2 | 4 | 180 ms | loops |
-| `Attack` | 2x2 | 4 | 90 ms | one shot, then returns to `Idle` |
-| `Hit` | 2x2 | 4 | 80 ms | one shot, then returns to `Idle` |
-| `Dead` | 2x3 | 6 | 140 ms | one shot, then holds its final frame |
+| cue | sheet row | runtime frames | frame time | behavior |
+|---|---:|---:|---:|---|
+| `Idle` | 1 | 4, from the row's first cell | 250 ms | loops |
+| `Attack` | 2 | 4 | 120 ms | one shot, then returns to `Idle` |
+| `Hit` | 3 | 4 | 110 ms | one shot, then returns to `Idle` |
+| `Dead` | 4 | 4 | 220 ms | one shot, then holds its final frame |
+
+Idle uses only its first cell. Its four frames are that one painted frame stretched
+vertically about the baseline by 0%, 0.4%, 0.8%, and 0.4%: a breath that moves the head a
+few pixels. Redrawn idle cells jitter (adjacent silhouettes differed 14-26% in a real sheet
+while looking identical), and a single stretched frame cannot. The other cues are four key
+poses each. In headed review, eight frames per cue read as jitter and faster timings as
+twitchy, so the counts and timings above are deliberate.
+
+Attack's strike is its third frame, which starts at 2 x 120 ms. Set the Character's
+`AttackAnimDelay` to that (`0.24f`) so damage lands on the strike pose.
 
 There is no `Cast` cue. Do not infer extra states, variable frame counts, per-frame timing,
 Spine data, transition materials, trails, audio, or merchant/rest animation from this
 contract.
 
 Each runtime frame is a transparent 512x512 PNG under
-`images/charui/cues/<idle|attack|hit|dead>/<00..>.png`. All eighteen frames share:
+`images/charui/cues/<idle|attack|hit|dead>/<00..03>.png`. All sixteen frames share:
 
 - alpha bounds contained by `(26,26)-(486,486)` with exclusive baseline `486`;
 - public `VisualNodeStyle` scale `0.80` and position `(0,-184)`;
@@ -37,46 +49,57 @@ moving the Character, intent, targeting center, orb, or dialogue UI.
 
 ## Acquisition and normalization
 
-The four supported source specs are `character_cue_idle`, `character_cue_attack`,
-`character_cue_hit`, and `character_cue_dead`. Each is one action-sheet acquisition, so a
-complete generated set has an explicit budget of four calls. Every request uses the
-selection portrait's full-resolution source (`art-contract.md` § CharacterArtBundle and
-reference routing) as `--identity-reference` plus the `character_combat` style-reference
-family. The four calls belong to the Character's second art batch under the normal art consent rule.
+The source spec is `character_cues`: one paid call. It belongs to the Character's second art
+batch under the normal art consent rule, after the static combat body is approved, because
+that body is the anchor: pass the normalized `<ModName>/images/charui/combat.png` as
+`--identity-reference`. The tool sends it as the first reference image, ahead of the
+`character_combat` style samples.
 
-Before the first call, derive one concise neutral combat-anchor sentence from the reviewed
-selection portrait and Character description and record it in SPEC. Use the fixed combat
-cue prompt in `reference/art-contract.md`, repeating its identity, costume, camera, scale,
-pivot, baseline, and neutral-anchor wording verbatim in all four requests. Only the action
-sentence, grid, and fixed beats differ. Because these short sequences play quickly, every
-adjacent cell is a closely spaced in-between pose with substantial silhouette overlap,
-never a jump between distant key poses. Attack and Hit begin near the neutral anchor and
-finish already recovering toward Idle; Dead distributes its fall across all six frames.
-
-Import each sheet with the matching lowercase action slug:
+Request a 2048x2048 square. A backend that only returns 1024x1024 still works: the
+processor upscales its 256 px cells about 1.9x, and a real trial measured those frames at
+about 0.6x the interior detail of a 2K sheet. Say so before the call when the chosen
+backend cannot return 2K. For an OpenAI Images backend on `gpt-image-2`, set
+`"exact_size": true` in its config entry; for a Gemini 3 image model, `image_size: true`.
 
 ```powershell
-python ../modmaker/scripts/gen_sprite.py import --spec character_cue_idle --slug idle `
-  --input <idle-sheet.png> --out <ModName>/images `
-  --identity-reference <ModName>/images/charui/select.png
+python ../modmaker/scripts/gen_sprite.py generate --spec character_cues --slug cues `
+  --prompt "<filled cue prompt>" --out <ModName>/images --backend <name> `
+  --reference ../sts2api/reference/art-samples `
+  --identity-reference <ModName>/images/charui/combat.png
+python ../modmaker/scripts/gen_sprite.py import --spec character_cues --slug cues `
+  --input <sheet.png> --out <ModName>/images
 ```
 
-Repeat for `attack`, `hit`, and `dead`. Imports stage the original sheets under
-`<project>/art-sources/character-cues/`. The first three sheets do not modify runtime cue
-files. Once all four are present, `character_cues.py` processes the bundle and replaces
-`images/charui/cues/` only after every action passes.
+Use the fixed cue prompt in `reference/art-contract.md`. `import` takes an existing sheet (a
+host-tool output, the user's file, or a kept source) without a call and no identity
+reference. Either command stages the sheet at `<project>/art-sources/character-cues/sheet.png`
+and replaces `images/charui/cues/` only after the whole sheet passes.
 
-The deterministic processor owns key-color cleanup (magenta, or green read from the sheet
-border), grid splitting, largest connected-body
-selection, edge-touch rejection, shared cross-action scaling, baseline alignment, and
-Attack/Hit body-height drift rejection against Idle (`0.85..1.15`). It writes per-action
-transparent GIFs, cleaned sheets, one contact sheet, and `pipeline-meta.json` under
-`<project>/art-review/character-cues/`. A failed import leaves the existing runtime cue
-directory unchanged. These processing techniques are adapted from agent-sprite-forge
-under its MIT license; no runtime dependency or shipped external asset is introduced.
-The contact-sheet review must reject identity/costume drift, apparent-size or camera
-changes, baseline/pivot movement, and large adjacent-frame pose jumps; deterministic
-geometry checks do not substitute for that visual continuity review.
+The deterministic processor owns:
+
+- **resampling**: a sheet within 2% of the grid's aspect that does not divide into whole
+  cells (Gemini returns 2:3 as 848x1264) is resampled to the exact grid size;
+- **grid lines**: drawn cell-border lines and their antialiased key-tinted fringe are erased;
+- **keying**: background reachable from the sheet edge is cleared when near the measured
+  sheet background or a light blend of it. Darker blends are subject: see-through glass
+  painted as darkened key, or an ink rim. Enclosed background is cleared only when close to
+  the measured background. Every remaining key tint is then neutralized;
+- **cells**: each cell takes the largest component centered in it, wherever its pixels reach
+  (models draw off the exact grid; 12 of 16 bodies in a real sheet crossed the cell bottom),
+  plus detached companions such as a held item;
+- **QC**: a frame touching the sheet edge fails, and Attack/Hit body height must stay within
+  `0.85..1.15` of Idle;
+- **placement**: one shared scale and horizontal offset for every frame, so frames keep
+  their source positions and do not slide, with headroom for the breath; each frame's feet
+  sit on the baseline.
+
+It writes per-cue transparent GIFs, the cleaned sheet, one contact sheet, and
+`pipeline-meta.json` under `<project>/art-review/character-cues/`. A failed import leaves the
+existing runtime cue directory unchanged. These processing techniques are adapted from
+agent-sprite-forge under its MIT license; no runtime dependency or shipped external asset is
+introduced. The contact-sheet review must reject identity/costume drift, apparent-size or
+camera changes, and a held item that switches hands; deterministic geometry checks do not
+substitute for that visual review.
 
 ## Runtime wiring
 
@@ -108,11 +131,13 @@ protected override ModAnimStateMachine? SetupCustomCombatAnimationStateMachine(
 }
 ```
 
-When the set is complete, `TryCreateCreatureVisuals()` uses `Idle/00.png` as the initial
-texture and creates the shared anchored `NCreatureVisuals`. When it is incomplete, return
-the existing static 512x512 `combat.png` factory result. If that static file is also absent,
-return `null` so RitsuLib resumes the resolved Character profile fallback. The incomplete
-route must create no cue playback node and must never play the surviving action frames.
+`TryBuild()` adds one `VisualFrameSequenceBuilder` per cue, with `Loop(true)` only for Idle
+and each frame at its cue's frame time. When the set is complete, `TryCreateCreatureVisuals()`
+uses `Idle/00.png` as the initial texture and creates the shared anchored `NCreatureVisuals`.
+When it is incomplete, return the existing static 512x512 `combat.png` factory result. If that
+static file is also absent, return `null` so RitsuLib resumes the resolved Character profile
+fallback. The incomplete route must create no cue playback node and must never play the
+surviving action frames.
 
 ## Hosted proof
 
@@ -123,7 +148,7 @@ The `RunStart` + `CombatPlayer` harness must prove all of these in real combat:
 3. an Attack trigger enters Attack and returns to Idle;
 4. real damage enters Hit and returns to Idle;
 5. leaving the first combat frees its cue playback node;
-6. in a fresh combat, death reaches the sixth Dead frame after the contracted duration and
+6. in a fresh combat, death reaches the fourth Dead frame after the contracted duration and
    holds that terminal frame;
 7. omitting one expected frame selects the static combat body, creates no playback node,
    and never flashes a remaining cue frame.

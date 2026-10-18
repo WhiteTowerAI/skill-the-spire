@@ -201,16 +201,16 @@ packed resource instead of the resolved fallback.
 | `character_energy_large` | `<slug>.png` | 256x256 | transparent large card Energy icon |
 | `character_energy_text` | `<slug>.png` | 24x24 | transparent rich-text Energy icon |
 
-The bounded combat-cue sources are four action sheets rather than ordinary single-file
-runtime specs. Every grid below is **columns x rows**, matching the sheet you actually
-request: cells are read left-to-right, then top-to-bottom, and each cell is 512x512.
+The bounded combat cues come from one source sheet, `character_cues`, rather than ordinary
+single-file runtime specs. Its grid is **4x4** (columns x rows), 512x512 cells, so the sheet
+is **2048x2048**; cells are read left-to-right, one row per cue.
 
-| source spec | sheet grid (cols x rows) | source size | runtime output | timing |
-|---|---:|---:|---|---:|
-| `character_cue_idle` | 2x2 | 1024x1024 | `cues/idle/00.png` .. `03.png` | 180 ms, loop |
-| `character_cue_attack` | 2x2 | 1024x1024 | `cues/attack/00.png` .. `03.png` | 90 ms, one shot |
-| `character_cue_hit` | 2x2 | 1024x1024 | `cues/hit/00.png` .. `03.png` | 80 ms, one shot |
-| `character_cue_dead` | 2x3 | 1024x1536 | `cues/dead/00.png` .. `05.png` | 140 ms, terminal |
+| sheet row | cue | cells used | runtime output | timing |
+|---:|---|---|---|---:|
+| 1 | Idle | first only; 4 breathing frames derived from it | `cues/idle/00.png` .. `03.png` | 250 ms, loop |
+| 2 | Attack | 4 | `cues/attack/00.png` .. `03.png` | 120 ms, one shot |
+| 3 | Hit | 4 | `cues/hit/00.png` .. `03.png` | 110 ms, one shot |
+| 4 | Dead | 4 | `cues/dead/00.png` .. `03.png` | 220 ms, terminal |
 
 Locked selection and map marker are not in the supported list: resource existence is not
 visual proof for those consumers. They are in no art tier and are generated only when the
@@ -219,7 +219,7 @@ user names them.
 The bundle's `tiers` set the spend the user picks at interview; `export-contract` publishes
 each tier's slots, cue choice, and call count as `character_art_tiers` in the catalog.
 `minimal` acquires the selection portrait and the body sheet, `standard` every required
-static slot, and `full` adds the four cue sheets. A slot outside the chosen tier keeps its
+static slot, and `full` adds the one cue sheet. A slot outside the chosen tier keeps its
 checked fallback: author no wrapper scene or profile path for it.
 
 ### Character art sheets
@@ -279,14 +279,14 @@ marker, static body, and energy profiles use `contain` with chroma on and a flat
 rule under "The card portrait prompt template"). The normalizer writes only loose PNGs; author code creates
 the tiny raw `.tscn` wrappers for icon/background/rest/merchant/energy, and `build.py` packs them
 without Godot/MegaDot. Full energy references all five layers from that one energy scene.
-The optional non-Spine cue contract is limited to the four tabled sequences. Cast, Spine,
+The optional non-Spine cue contract is limited to the four tabled cues. Cast, Spine,
 phobia, trails, audio, animated merchant/rest bodies, and multiplayer views remain outside
 the contract. Read `reference/character-combat-cues.md` for runtime ownership and fallback.
 
 ### CharacterArtBundle and reference routing
 
 `character_art.py` owns one structured `CharacterArtBundle` for every
-Character static slot and the four-action cue contract. Each static row records
+Character static slot and the one-sheet cue contract. Each static row records
 required/optional status, normalized output path,
 exact dimensions, alpha policy, checked fallback, real consumer, style-reference family,
 fit mode, verification status, and any host-specific visible content box/baseline/public
@@ -294,8 +294,9 @@ visual style. `gen_sprite.py` reads this
 bundle instead of maintaining a second Character spec table. The optional locked
 selection and map-marker rows remain native/shared fallback rows; their presence in the
 inventory does not promote those consumers. The cue contract separately owns action order,
-sheet layout, frame count/timing, loop/terminal flags, generation-call count, output
-directories, shared geometry, style, anchors, and static fallback slot.
+sheet rows and grid, frame count/timing, loop/terminal flags, the Idle breath, the
+one-call budget, output directories, shared geometry, style, anchors, and static fallback
+slot.
 
 The generated Character profile uses these stable bundle output names: `select.png`,
 `background.png`, `icon.png`, `icon_outline.png`, `combat.png`, `rest.png`, `merchant.png`,
@@ -328,21 +329,24 @@ writing; it never resizes or invents a template.
 The required `selection_portrait` is the sole identity bootstrap. It is normalized first
 to `charui/select.png` and is the only approved identity image; skill-the-spire does not create a
 separate Character sheet or canonical identity asset. Identity-sensitive
-`character_combat`, `character_rest`, `character_merchant`, and all four
-`character_cue_*` acquisitions pass that portrait's full-resolution source as
-`--identity-reference`: the kept generated source
+`character_combat`, `character_rest`, and `character_merchant` acquisitions pass that
+portrait's full-resolution source as `--identity-reference`: the kept generated source
 `<project>/art-sources/generated/character_select/<slug>.png`, or the user's original file
 for an imported portrait. The 132x195 normalized copy is too small to carry the face and
 costume. It goes in addition to the type-matched STS2 style references (three for a single
 asset, two combat plus two rest for `body_sheet`). Background, top-panel icon, full-energy layers, and large/text Energy-icon
 acquisition use a palette/motif brief derived from the user's description and reviewed
 selection portrait, but deliberately do not receive the portrait as an image reference.
+The `character_cues` sheet is the exception to portrait identity: its anchor is the
+approved full-body combat body, `<ModName>/images/charui/combat.png`, passed as
+`--identity-reference` and sent first, since every cue must start from that exact figure.
 
-Cue imports stage sheets under `<project>/art-sources/character-cues/`. Runtime cue files
-are replaced only when all four sheets pass magenta cleanup, grid/component extraction,
-edge/body-scale QC, shared cross-action scaling, and baseline alignment. Review GIFs,
-cleaned sheets, a contact sheet, and QC metadata land under
-`<project>/art-review/character-cues/`; failed processing leaves prior runtime cues intact.
+Cue imports stage the sheet at `<project>/art-sources/character-cues/sheet.png`. Runtime cue
+files are replaced only when the whole sheet passes key cleanup, grid/component extraction,
+edge/body-scale QC, shared scaling, and baseline alignment (`character-combat-cues.md` §
+Acquisition and normalization). Review GIFs, the cleaned sheet, a contact sheet, and QC
+metadata land under `<project>/art-review/character-cues/`; failed processing leaves prior
+runtime cues intact.
 The processing techniques are adapted from agent-sprite-forge under MIT, with no runtime
 dependency or external asset reuse.
 
@@ -490,55 +494,70 @@ braced one; a rest pose without the seated rest samples sits on air or sprawls w
 word "campfire" alone makes the model paint one; and the vanilla samples' gray floor
 shadows come back as a dark key-colored patch that survives the cut-out.
 
-Combat cue action sheets:
+Combat cue sheet (`character_cues`, one call). Fill the `<...>` slots from the Character
+SPEC; keep everything else verbatim:
 
 ```text
-Original non-Spine combat action sheet for a deck-building combat game. The normalized
-selection portrait is CHARACTER IDENTITY ONLY; the provided STS2 combat images are STYLE
-ONLY. Across every cell in this sheet and across all Idle, Attack, Hit, and Dead sheets,
-depict exactly the same original individual, never a redesign, variant, costume change,
-or reinterpretation. Keep the face, head shape, hairstyle, body proportions, outfit
-construction and layers, accessories, colors, weapon shape and size, handedness, and
-facing direction unchanged.
+Original non-Spine combat animation sheet for a deck-building combat game. The FIRST
+provided image is the approved full-body combat render of this character and is the ANCHOR
+POSE: reproduce exactly this individual, <head covering, clothing, signature item>, colors,
+lighting, painted rendering, body proportions, apparent size, and facing in every cell, never
+a redesign, variant, costume change, or restyle. The other provided images are STS2 combat
+renders and are STYLE ONLY: soft hand-painted 2D with subtle angular faceted planes, muted
+colors, warm key light from the upper left and cool shadows, and no black ink outlines;
+every edge is a soft change of value or color.
 
-Reuse this exact neutral combat anchor from the Character SPEC: <one concise pose sentence>.
-Use the same locked camera, viewing angle, apparent body scale, torso and head size, ground
-baseline, and visual pivot in every cell and every action. Motion comes only from pose
-changes; never zoom, crop, resize, or move the camera. Attack and Hit may extend limbs or
-the weapon, while preserving body scale. Dead rotates and lowers the same-sized body
-rather than shrinking, stretching, or changing its proportions.
+One square image divided into an exact 4x4 grid of sixteen equal square cells, read
+left-to-right then top-to-bottom, with no borders, lines, labels, numbers, or gutters. Each
+row is one action of four frames. Every cell holds one full-body frame of the same
+character, fully inside its own cell with clear empty margin on all sides, at the same size
+and standing on the same ground line as in every other cell. The camera is locked: never
+zoom, crop, pan, or change the viewing angle. The feet stay planted where they are unless a
+step is described. Light comes from the same direction in every cell. Paint every cell as a
+copy of the anchor that changes only what the action describes; everything else, including
+cloth folds, hair, and outlines, stays pixel-for-pixel the same.
 
-These frames play quickly. Treat adjacent cells as closely spaced in-between frames, not
-widely separated key poses. Advance the pose by one small readable step per cell; adjacent
-silhouettes must substantially overlap, with no sudden jump in limb position, weapon
-position, body angle, center of mass, or facing direction. Keep the complete silhouette
-inside every cell with consistent padding. Read frames left-to-right, then top-to-bottom.
-Use equal cells with no panel borders, labels, numbers, or gutters.
+Row 1 (cells 1-4): IDLE, an almost motionless breathing loop. All four cells show the
+identical anchor pose: the same arm, <signature item>, clothing, head, and feet positions.
+The only change is a barely visible breath: in cells 2 and 3 the chest and shoulders sit
+about 1% of the body height higher than in cells 1 and 4. Nothing else moves.
 
-<action-specific sentence and fixed beat list from the cue contract>
+Row 2 (cells 5-8): ATTACK, <the Character's attack> at an enemy on the right. Cell 5: the
+anchor pose with the weight just starting onto the back foot. Cell 6: the wind-up, <wind-up
+pose>. Cell 7: the strike, <strike pose reaching toward the right>, weight on the front
+foot. Cell 8: recovering, almost back to the anchor pose.
 
-Use one perfectly flat solid #FF00FF background across the sheet, with no gradient,
-floor, shadow, light spill, text, UI, border, logo, or watermark. Do not borrow a reference character's
-design. NOT photorealistic, NOT a 3D render, NOT pixel art.
+Row 3 (cells 9-12): HIT, a compact recoil from a blow arriving from the right. Cell 9: the
+anchor pose with the head starting to snap back. Cell 10: the torso leaning back and away
+to the left, the <signature item> arm pulled in. Cell 11: the deepest recoil, shoulders
+hunched, the back foot sliding a little. Cell 12: recovering, almost back to the anchor
+pose.
+
+Row 4 (cells 13-16): DEAD, a collapse; the body keeps its full size and is only lowered and
+rotated. Cell 13: the body sags from the anchor pose, knees buckling. Cell 14: down on one
+knee, the torso slumping forward. Cell 15: tipping forward onto one side, a hand reaching
+for the ground. Cell 16: lying still on the ground on one side<, the dropped signature item
+beside the body>.
+
+The <signature item> stays in the same hand as in the anchor image. <Any glowing or glass
+part> is solid and opaque in its own warm color: the background never shows through it or
+through any gap in it, and it is never pink, purple, or magenta. Use one perfectly flat
+solid pure magenta #FF00FF background (RGB 255,0,255, fully saturated, not pink or lilac)
+across the whole sheet: no gradient, floor, ground shadow, glow halo, light spill, motion
+streak, attack effect, text, UI, border, logo, or watermark. Do not borrow a reference
+character's design. Not photorealistic, not a 3D render, not pixel art, not a comic
+illustration.
 ```
 
-The continuity and geometry paragraphs plus the SPEC's neutral anchor are repeated
-verbatim in all four paid requests. Only the action-specific sentence, grid, and beat list
-may change:
+The anchor is the static body, not the selection portrait: the portrait is a head close-up
+in an inked style, and real sheets made from it changed stance, line weight, and light
+between actions. The rows ask for key poses, not in-betweens: a real 8-frame-per-cue sheet
+filled its extra cells with copies of the anchor and two key poses, and played as jitter.
+The Idle row is a fallback only; the processor uses its first cell and breathes it.
 
-- `Idle` 2x2: four subtle breathing/cloth/weapon-settle steps; frame 4 stays close enough
-  to frame 1 for a quiet loop.
-- `Attack` 2x2: begin close to the neutral anchor, move through four restrained adjacent
-  attack steps, and end already recovering toward Idle. Do not compress distant wind-up,
-  peak, and recovery key poses into abrupt jumps.
-- `Hit` 2x2: begin close to the neutral anchor, show a compact recoil through four small
-  adjacent steps, and end already recovering toward Idle.
-- `Dead` 2x3: begin from the same anchor and distribute the fall across six small adjacent
-  steps before the final terminal pose; do not jump directly from standing to the ground.
-
-Reject and regenerate a sheet when the contact-sheet review shows identity, costume,
-scale, camera, pivot, or baseline drift, or when any adjacent pair has a large pose jump.
-Do not replace this review with a brittle image-similarity score.
+Reject and regenerate the sheet when the contact-sheet review shows identity, costume,
+scale, camera, or baseline drift, or a held item switching hands. Do not replace this
+review with a brittle image-similarity score.
 
 Select background:
 
@@ -771,7 +790,7 @@ Lift button tiles), and the three-image Character pools:
 `character_rest/`.
 The tool **auto-selects the matching visual family** and randomly samples three distinct
 images when the pool is larger. Character aliases are explicit: locked uses select,
-marker/energy use icon, merchant and all combat cues use combat, and rest uses rest;
+marker/energy use icon, merchant and the combat cue sheet use combat, and rest uses rest;
 background uses its own
 wide selection-scene pool. A missing
 same-name directory never falls back to another content family's images.
@@ -1124,12 +1143,14 @@ the host and do not claim that host usage is free. For a `backend:<name>` route,
 message: the model/backend, the credit-spending action, the shared segments ①③ once, then
 one line per asset or Character sheet (a sheet line names its cells) with its segment ②
 subject and its call count (one, or the spec's fixed
-budget such as four Character cue sheets), the total number of calls, and the worst case if
+budget such as one Character sheet), the total number of calls, and the worst case if
 every asset used both regenerations below. One yes covers
 exactly that list; an asset added later needs its own yes. A Character lists only its
-chosen tier's slots and cue sheets. A Character run is two batches:
+chosen tier's slots and its cue sheet. A Character run is two batches:
 the selection portrait alone first, because every later Character asset uses it as the
-identity reference, then the rest after the user has seen the portrait. Do not silently
+identity reference, then the rest after the user has seen the portrait. Within the second
+batch the cue sheet runs after the body sheet, since its anchor is the normalized combat
+body. Do not silently
 spend or treat an earlier custom-art preference as approval for an external route. Every
 regeneration, including a native-tool regeneration, needs a new confirmation after the user
 sees the current result. This is also where the §7.1
@@ -1220,9 +1241,9 @@ returns no local file, the route is unavailable and the placeholder remains. Do 
 second background-removal helper for cut-out sources: `gen_sprite.py import` owns the
 keying, fit, resize, and final STS2 placement. When the host tool takes a size or
 orientation, request the one matching the spec: landscape for card, event, Rest Site, and
-Character background; portrait for Character selection and the 2x3 Dead cue sheet; square
-otherwise. `gen_sprite.py generate` picks the same orientation for a backend unless its
-config sets `request_size`.
+Character background; portrait for Character selection; square otherwise, at 2048x2048
+for the `character_cues` sheet when the tool takes a size. `gen_sprite.py generate` picks
+the same orientation for a backend unless its config sets `request_size`.
 
 After a cut-out import, a stdout line starting `[gen_sprite] warning:` names one of two
 failures. `only N% ... became transparent` means the background was not a flat key color
@@ -1277,8 +1298,10 @@ prompt.
 
 - `images` — the OpenAI *Images* API: `/images/generations`, or multipart `/images/edits`
   with references. OpenAI's gpt-image models and any platform exposing that endpoint.
-  The request size follows the spec's orientation. Optional: `edit_url`, `request_size`,
-  `timeout`.
+  The request size follows the spec's orientation (1024x1024, 1536x1024, or 1024x1536).
+  Optional: `edit_url`, `request_size`, `timeout`, and `exact_size: true` for a model that
+  takes custom sizes (`gpt-image-2`); it then asks for the contract size itself when that
+  is larger than 1536 px, such as the 2048x2048 cue sheet.
 - `chat` — the OpenAI *Chat Completions* API returning an image in the reply. Poe,
   OpenRouter, and most "one key, many models" gateways. References are inlined as
   `image_url` data URLs, and the tool parses the image back out of the reply (structured
@@ -1290,7 +1313,7 @@ prompt.
   inline image parts, and `imageConfig.aspectRatio` is the closest of `aspect_ratios`.
   Optional: `base_url`, `aspect_ratios`, `timeout`, and `image_size: true` for a model
   that accepts `imageConfig.imageSize` (Gemini 3 image models); it then asks for `2K` on
-  event and Character background specs and `1K` otherwise.
+  event, Character background, and cue sheet specs and `1K` otherwise.
 - `command` — the user's own CLI, script, or local workflow (for example ComfyUI). The tool
   runs `command` with stdin closed and its output hidden, into a fresh empty `{out_dir}`,
   and requires exactly one image there. Tokens: `{prompt}` (folded to one line for Windows
