@@ -214,9 +214,18 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      **minimal** (selection portrait plus the combat, rest, and merchant bodies; everything
      else keeps the base-game Ironclad art), **standard** (all static Character art, no
      combat animation), or
-     **full** (standard plus one combat-animation sheet; offer it only when the chosen
-     route returns 2048x2048 images, see `reference/character-combat-cues.md`). No answer
-     means minimal.
+     **full** (standard plus combat animation: idle breathing, attack, hit, and death). No
+     answer means minimal.
+   - Whenever the user picks **full** or otherwise asks for the Character to move in
+     combat, tell them plainly before recording it: the animation is drawn as one large
+     image that must come back at 2048x2048, and a 1024x1024 result was rejected as too
+     blurry. Name whether their route can do it, from the list in
+     `${STS2API_SKILL_DIR}/reference/character-combat-cues.md` § Acquisition and
+     normalization (Codex's built-in `image_gen` can; the built-in `openai`, `gemini`, and
+     `openrouter` defaults cannot without a newer model and a config change). When it
+     cannot, offer **standard** or a route switch, and record what the user chooses. No
+     other Character art needs 2K: the selection background asks for 2K when the route
+     supports it but works from a smaller image.
      Record `character art tier: <name>`. The locked selection portrait and map marker are
      in no tier; generate them only when the user names them.
 
