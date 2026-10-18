@@ -55,11 +55,15 @@ that body is the anchor: pass the normalized `<ModName>/images/charui/combat.png
 `--identity-reference`. The tool sends it as the first reference image, ahead of the
 `character_combat` style samples.
 
-Request a 2048x2048 square. A backend that only returns 1024x1024 still works: the
-processor upscales its 256 px cells about 1.9x, and a real trial measured those frames at
-about 0.6x the interior detail of a 2K sheet. Say so before the call when the chosen
-backend cannot return 2K. For an OpenAI Images backend on `gpt-image-2`, set
-`"exact_size": true` in its config entry; for a Gemini 3 image model, `image_size: true`.
+The sheet must come back at 2048x2048. A real 1024x1024 sheet needed its 256 px cells
+upscaled about 1.9x, measured about 0.6x the interior detail of a 2K sheet, and was rejected
+in headed review as too blurry. So `generate` refuses a cue sheet under 1536 px (it keeps
+the paid source for a later import), and `import` processes a small file but prints a
+warning. Offer combat cues only with a backend that returns 2K: an OpenAI Images backend on
+`gpt-image-2` with `"exact_size": true` in its config entry, a Gemini 3 image model with
+`image_size: true`, or a command backend whose `{resolution}` reaches the model. A 1K-only
+backend (the built-in defaults `gpt-image-1.5` and `gemini-2.5-flash-image`, or a chat
+gateway that sends no size) keeps the static combat body.
 
 ```powershell
 python ${GAME_TOOLS_DIR}/gen_sprite.py generate --spec character_cues --slug cues `

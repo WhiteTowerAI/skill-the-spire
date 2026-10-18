@@ -1032,8 +1032,13 @@ def stage_character_cue_source(
     slug: str,
     images_root: Path,
     log,
+    generated: bool = False,
 ) -> tuple[Path, bool]:
-    """Stage the combined cue sheet and normalize the whole cue bundle from it."""
+    """Stage the combined cue sheet and normalize the whole cue bundle from it.
+
+    A paid sheet smaller than the contract is refused before processing; an imported one
+    only warns, since the user chose that file.
+    """
     if images_root.name.lower() != "images":
         raise SystemExit(
             "[gen_sprite] Character cue import requires --out <project>/<ModName>/images"
@@ -1049,6 +1054,21 @@ def stage_character_cue_source(
     temporary.replace(destination)
     log(f"staged {spec} sheet -> {destination}")
 
+    expected = cue_sheet_size(spec, None)
+    if min(source.size) < CUE_MIN_SOURCE_FRACTION * min(expected):
+        # A real 1024x1024 sheet needed ~1.9x upscaling and was rejected in headed review
+        # as too blurry; the cue tier needs a backend that returns the full sheet.
+        message = (
+            f"cue sheet is {source.width}x{source.height}; frames need the "
+            f"{expected[0]}x{expected[1]} sheet and would come out blurry"
+        )
+        if generated:
+            raise SystemExit(
+                f"[gen_sprite] {message}. Kept the source at {destination}; regenerate with "
+                "a backend that returns 2K, or keep the static combat body."
+            )
+        print(f"[gen_sprite] warning: {message}")
+
     from character_cues import CharacterCueError, process_sheet
 
     try:
@@ -1061,6 +1081,10 @@ def stage_character_cue_source(
     runtime_dir = images_root / "charui" / "cues"
     log(f"normalized complete Character cue bundle -> {runtime_dir}")
     return runtime_dir, True
+
+
+# A cue sheet below this fraction of the contract size makes upscaled, blurry frames.
+CUE_MIN_SOURCE_FRACTION = 0.75
 
 
 # Models draw grid lines between sheet cells even when told not to. Trimming this fraction
@@ -1206,7 +1230,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
         # explicit --chroma / --no-chroma override it.
         if cue_spec:
             dest, complete = stage_character_cue_source(
-                src, args.spec, args.slug, out_dir, log
+                src, args.spec, args.slug, out_dir, log, generated=True
             )
         else:
             do_chroma = info["chroma"]

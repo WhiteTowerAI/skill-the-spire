@@ -214,8 +214,9 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      **minimal** (selection portrait plus the combat, rest, and merchant bodies; everything
      else keeps the base-game Ironclad art), **standard** (all static Character art, no
      combat animation), or
-     **full** (standard plus one combat-animation sheet, best at 2K; a 1K-only backend
-     gives softer frames). No answer means minimal.
+     **full** (standard plus one combat-animation sheet; offer it only when the chosen
+     route returns 2048x2048 images, see `reference/character-combat-cues.md`). No answer
+     means minimal.
      Record `character art tier: <name>`. The locked selection portrait and map marker are
      in no tier; generate them only when the user names them.
 

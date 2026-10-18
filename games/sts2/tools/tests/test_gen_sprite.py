@@ -205,6 +205,8 @@ class GenSpriteTests(unittest.TestCase):
 
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertIn("normalized complete bundle", result.stdout)
+            # The user's own small file is processed, with a plain warning about blur.
+            self.assertIn("warning: cue sheet is 400x400", result.stdout)
             self.assertTrue((project / "art-sources" / "character-cues" / "sheet.png").is_file())
             runtime_frames = sorted((images / "charui" / "cues").rglob("*.png"))
             self.assertEqual(16, len(runtime_frames))
@@ -216,7 +218,7 @@ class GenSpriteTests(unittest.TestCase):
                  "character-cues-contact-sheet.png").is_file()
             )
 
-    def test_character_cue_generate_sends_the_anchor_first_and_asks_for_the_full_sheet(self) -> None:
+    def test_character_cue_generate_sends_anchor_first_and_refuses_a_small_sheet(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             images = root / "project" / "CueMod" / "images"
@@ -234,13 +236,19 @@ class GenSpriteTests(unittest.TestCase):
             ])
             cfg = {"mode": "command", "command": ["x"]}
 
+            # The backend returns a sheet far below 2048x2048, as a 1K-only model does.
             with mock.patch.object(gen_sprite, "load_config", return_value=cfg), \
                     mock.patch.object(gen_sprite, "call_backend", return_value=sheet) as backend:
-                self.assertEqual(0, gen_sprite.cmd_generate(args))
+                with self.assertRaisesRegex(SystemExit, "2048x2048"):
+                    gen_sprite.cmd_generate(args)
 
             self.assertEqual((2048, 2048), backend.call_args.args[2])
             self.assertEqual(anchor.resolve(), backend.call_args.kwargs["references"][0])
             self.assertEqual(1, backend.call_count)
+            self.assertTrue(
+                (root / "project" / "art-sources" / "character-cues" / "sheet.png").is_file()
+            )
+            self.assertFalse((images / "charui" / "cues").exists())
 
     def test_images_backend_requests_the_exact_large_size_only_when_enabled(self) -> None:
         captured = {}

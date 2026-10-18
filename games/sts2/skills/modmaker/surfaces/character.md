@@ -95,7 +95,8 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
     - actions: Idle `4 x 250ms, loop` (one frame breathing); Attack `4 x 120ms, one-shot ->
       Idle`; Hit `4 x 110ms, one-shot -> Idle`; Dead `4 x 220ms, terminal final frame`
     - acquisition: one 2048x2048 sheet (one row per cue), one call, after the body sheet;
-      the normalized `charui/combat.png` as anchor reference
+      the normalized `charui/combat.png` as anchor reference; a route that cannot return
+      2K keeps the static body (1K frames were rejected as too blurry)
     - poses: <signature item, attack wind-up and strike, in the SPEC's words>
     - continuity lock: same identity, costume, proportions, equipment, handedness, facing,
       camera, apparent scale, and baseline in every cell
