@@ -9,35 +9,54 @@ Use this page with `recipes/character.md`, `reference/character-presentation.md`
 ## Cue contract
 
 All four cues come from **one** generated sheet of **4x4** cells (columns x rows), each cell
-512x512, so the sheet is **2048x2048**. Row 1 is Idle, row 2 Attack, row 3 Hit, row 4 Dead,
-read left-to-right. One image keeps one style, light, and body scale across every action;
-four separate action sheets did not, and switching cues then read as a different person in
-headed review. The same values are queryable under `character_cues` in
+512x512, so the sheet is **2048x2048**. One image keeps one style, light, and body scale
+across every action; four separate action sheets did not, and switching cues then read as a
+different person in headed review. The same values are queryable under `character_cues` in
 `reference/catalogs/art-contract-sts2-0.107.1.json`.
 
-| cue | sheet row | runtime frames | frame time | behavior |
-|---|---:|---:|---:|---|
-| `Idle` | 1 | 4, from the row's first cell | 250 ms | loops |
-| `Attack` | 2 | 4 | 120 ms | one shot, then returns to `Idle` |
-| `Hit` | 3 | 4 | 110 ms | one shot, then returns to `Idle` |
-| `Dead` | 4 | 4 | 220 ms | one shot, then holds its final frame |
+Cells are numbered 1-16 in reading order (the catalog's `play_cells` count from 0):
 
-Idle uses only its first cell. Its four frames are that one painted frame stretched
-vertically about the baseline by 0%, 0.4%, 0.8%, and 0.4%: a breath that moves the head a
-few pixels. Redrawn idle cells jitter (adjacent silhouettes differed 14-26% in a real sheet
-while looking identical), and a single stretched frame cannot. The other cues are four key
-poses each. In headed review, eight frames per cue read as jitter and faster timings as
-twitchy, so the counts and timings above are deliberate.
+| cells | content |
+|---|---|
+| 1 | the anchor: the approved combat body's pose, redrawn once and shared |
+| 2-7 | Attack: crouch, wind-up, mid-swing, strike, follow-through, recovery |
+| 8-11 | Hit: flinch, recoil, deepest recoil, steadying (a spare: drawn, not played) |
+| 12-16 | Dead: sag, kneel, topple, fall, lying still |
 
-Attack's strike is its third frame, which starts at 2 x 120 ms. Set the Character's
-`AttackAnimDelay` to that (`0.24f`) so damage lands on the strike pose.
+Each cue plays sheet cells in a fixed order. A repeated cell is a hold, and a cell may serve
+two cues:
 
-There is no `Cast` cue. Do not infer extra states, variable frame counts, per-frame timing,
-Spine data, transition materials, trails, audio, or merchant/rest animation from this
-contract.
+| cue | play order (cells) | runtime frames | frame time | behavior |
+|---|---|---:|---:|---|
+| `Idle` | 1, breathing | 4 | 250 ms | loops |
+| `Attack` | 1, 2, 3, 3, 4, 5, 5, 6, 7 | 9 | 60 ms | one shot, then returns to `Idle` |
+| `Hit` | 1, 8, 9, 10, 10, 7 | 6 | 70 ms | one shot, then returns to `Idle` |
+| `Dead` | 12, 13, 14, 15, 16 | 5 | 170 ms | one shot, then holds its final frame |
+
+Why this shape, from headed review of a real Character:
+
+- **Shared anchor.** Attack and Hit start on cell 1 itself, the same image Idle breathes,
+  so starting a cue never redraws the body. Hit also ends on Attack's recovery (cell 7),
+  which keeps the held item; the steadying cell lost it in a real sheet.
+- **Breathing Idle.** Idle's four frames are cell 1 stretched vertically about the
+  baseline by 0%, 0.4%, 0.8%, and 0.4%: a breath that moves the head a few pixels. Redrawn
+  idle cells jitter (adjacent silhouettes differed 14-26% in a real sheet while looking
+  identical), and a single stretched frame cannot.
+- **Distinct poses, holds by repetition.** Every cell is a clearly different body
+  position. Cells described as "starting to" or "almost back to" another came back as
+  copies of it, and an 8-frame-per-cue sheet played as jitter. Anticipation (the wind-up)
+  and impact (the strike, the deepest recoil) are held by repeating a cell, at no extra
+  cost.
+
+The Attack strike (cell 5) starts at frame 5, so set the Character's `AttackAnimDelay` to
+5 x 60 ms (`0.30f`) and damage lands on the strike pose.
+
+There is no `Cast` cue. Do not infer extra states, per-frame timing, Spine data,
+transition materials, trails, audio, or merchant/rest animation from this contract.
 
 Each runtime frame is a transparent 512x512 PNG under
-`images/charui/cues/<idle|attack|hit|dead>/<00..03>.png`. All sixteen frames share:
+`images/charui/cues/<idle|attack|hit|dead>/<00..>.png`, written in play order, so a hold or
+a shared cell is the same image saved again. All twenty-four frames share:
 
 - alpha bounds contained by `(26,26)-(486,486)` with exclusive baseline `486`;
 - public `VisualNodeStyle` scale `0.80` and position `(0,-184)`;
@@ -91,8 +110,8 @@ The deterministic processor owns:
 - **cells**: each cell takes the largest component centered in it, wherever its pixels reach
   (models draw off the exact grid; 12 of 16 bodies in a real sheet crossed the cell bottom),
   plus detached companions such as a held item;
-- **QC**: a frame touching the sheet edge fails, and Attack/Hit body height must stay within
-  `0.85..1.15` of Idle;
+- **QC**: a played cell touching the sheet edge fails, and Attack/Hit body height must stay
+  within `0.85..1.15` of Idle; unplayed cells take no part in QC or scaling;
 - **placement**: one shared scale and horizontal offset for every frame, so frames keep
   their source positions and do not slide, with headroom for the breath; each frame's feet
   sit on the baseline.
@@ -102,7 +121,9 @@ It writes per-cue transparent GIFs, the cleaned sheet, one contact sheet, and
 existing runtime cue directory unchanged. These processing techniques are adapted from
 agent-sprite-forge under its MIT license; no runtime dependency or shipped external asset is
 introduced. The contact-sheet review must reject identity/costume drift, apparent-size or
-camera changes, and a held item that switches hands; deterministic geometry checks do not
+camera changes, a held item that switches hands or vanishes between cells, a cell that
+copies its neighbor instead of a new pose, and drawn numbers or labels (a model that writes
+cell numbers leaks them into frames as companions); deterministic geometry checks do not
 substitute for that visual review.
 
 ## Runtime wiring
@@ -136,7 +157,7 @@ protected override ModAnimStateMachine? SetupCustomCombatAnimationStateMachine(
 ```
 
 `TryBuild()` adds one `VisualFrameSequenceBuilder` per cue, with `Loop(true)` only for Idle
-and each frame at its cue's frame time. When the set is complete, `TryCreateCreatureVisuals()`
+and each frame file, in order, at its cue's frame time. When the set is complete, `TryCreateCreatureVisuals()`
 uses `Idle/00.png` as the initial texture and creates the shared anchored `NCreatureVisuals`.
 When it is incomplete, return the existing static 512x512 `combat.png` factory result. If that
 static file is also absent, return `null` so RitsuLib resumes the resolved Character profile
@@ -152,7 +173,7 @@ The `RunStart` + `CombatPlayer` harness must prove all of these in real combat:
 3. an Attack trigger enters Attack and returns to Idle;
 4. real damage enters Hit and returns to Idle;
 5. leaving the first combat frees its cue playback node;
-6. in a fresh combat, death reaches the fourth Dead frame after the contracted duration and
+6. in a fresh combat, death reaches the last Dead frame after the contracted duration and
    holds that terminal frame;
 7. omitting one expected frame selects the static combat body, creates no playback node,
    and never flashes a remaining cue frame.

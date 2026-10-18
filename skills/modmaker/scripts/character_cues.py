@@ -72,7 +72,7 @@ SHEET_ROWS = CUE_CONTRACT.sheet_rows
 ACTION_CONTRACT = {
     action.name: {
         "state_name": action.state_name,
-        "sheet_row": action.sheet_row,
+        "play_cells": list(action.play_cells),
         "frame_count": action.frame_count,
         "duration_ms": action.frame_duration_ms,
         "loop": action.loop,
@@ -506,22 +506,25 @@ def extract_sheet(
             f"{cols} cols x {rows} rows grid (expected {expected[0]}x{expected[1]})"
         )
     cleaned, cells = segment_sheet(raw, rows, cols, threshold, edge_threshold)
-    frames: dict[str, list[ExtractedFrame]] = {}
+    # Each played cell is extracted once, under the first cue that plays it; unplayed cells
+    # (the spare Hit pose) take no part in scaling.
+    frames: dict[str, list[ExtractedFrame]] = {action: [] for action in ACTION_CONTRACT}
+    seen: set[int] = set()
     for action, contract in ACTION_CONTRACT.items():
-        used = 1 if contract["breathing"] else contract["frame_count"]
-        frames[action] = []
-        for column in range(used):
-            index = contract["sheet_row"] * cols + column
+        for index in dict.fromkeys(contract["play_cells"]):
+            if index in seen:
+                continue
+            seen.add(index)
             subject, cell_box, selected, component_count = cells[index]
             left, top, right, bottom = selected.bbox
             if left <= 0 or top <= 0 or right >= raw.width or bottom >= raw.height:
                 raise CharacterCueError(
-                    f"{action} frame {column:02d} touches the {raw.width}x{raw.height} sheet "
+                    f"{action} cell {index + 1} touches the {raw.width}x{raw.height} sheet "
                     f"edge: {selected.bbox}"
                 )
             frames[action].append(ExtractedFrame(
                 action=action,
-                index=column,
+                index=index,
                 image=subject,
                 source_box=cell_box,
                 # Relative to the cell's own origin; may run past the cell when the model
@@ -633,7 +636,7 @@ def normalize_frames(
                 "output_size": [new_width, new_height],
                 "paste_position": [paste_x, paste_y],
                 "alpha_bbox": list(alpha_bbox),
-                "output_path": f"{ACTION_CONTRACT[action]['output_dir']}/{frame.index:02d}.png",
+                "cell": frame.index,
             })
     return normalized, metadata, global_scale, ratios
 
@@ -739,12 +742,20 @@ def process_sheet(
     cleaned_sheet, extracted = extract_sheet(
         Path(source), threshold=threshold, edge_threshold=edge_threshold
     )
-    normalized, frame_metadata, global_scale, ratios = normalize_frames(extracted)
+    normalized_poses, pose_metadata, global_scale, ratios = normalize_frames(extracted)
+    by_cell = {
+        frame.index: image
+        for action in extracted
+        for frame, image in zip(extracted[action], normalized_poses[action])
+    }
+    normalized: dict[str, list[Image.Image]] = {}
     for action, contract in ACTION_CONTRACT.items():
         if contract["breathing"]:
-            normalized[action] = breathing_frames(normalized[action][0])
+            normalized[action] = breathing_frames(by_cell[contract["play_cells"][0]])
+        else:
+            normalized[action] = [by_cell[cell] for cell in contract["play_cells"]]
     metadata = {
-        "contract": "skill-the-spire-character-cues/v2",
+        "contract": "skill-the-spire-character-cues/v3",
         "processor_source": "agent-sprite-forge techniques, adapted under MIT",
         "source": str(Path(source).resolve()),
         "sheet": {"columns": SHEET_COLUMNS, "rows": SHEET_ROWS,
@@ -755,6 +766,8 @@ def process_sheet(
         "global_scale": global_scale,
         "body_height_ratio_to_idle": ratios,
         "breath": list(CUE_CONTRACT.breath),
+        "anchor_cell": CUE_CONTRACT.anchor_cell,
+        "attack_strike_frame": CUE_CONTRACT.attack_strike_frame,
         "generation_calls": CUE_CONTRACT.generation_calls,
         "fallback_slot": CUE_CONTRACT.fallback_slot,
         "consumer": CUE_CONTRACT.consumer,
@@ -776,7 +789,7 @@ def process_sheet(
         metadata["actions"][action] = {
             **contract,
             "frame_order": list(range(len(normalized[action]))),
-            "frames": frame_metadata[action],
+            "poses": pose_metadata[action],
         }
 
     images_root = images_root.resolve()
@@ -800,7 +813,11 @@ def process_sheet(
                 ACTION_CONTRACT[action]["duration_ms"],
             )
         cleaned_sheet.save(stage_review / "raw-sheet-clean.png", "PNG", optimize=True)
-        render_contact_sheet(normalized).save(
+        render_contact_sheet({
+            action: [by_cell[frame.index] for frame in extracted[action]]
+            for action in extracted
+            if extracted[action]
+        }).save(
             stage_review / "character-cues-contact-sheet.png", "PNG", optimize=True
         )
         (stage_review / "pipeline-meta.json").write_text(

@@ -92,17 +92,20 @@ Foundation SPEC. The Foundation proof matrix owns the complete verification cont
     large energy icon | text energy icon (do not infer one profile from another; mark
     unsupported consumers as explicit gaps per `reference/character-presentation.md`)
   - character combat cues: none | fixed bounded bundle
-    - actions: Idle `4 x 250ms, loop` (one frame breathing); Attack `4 x 120ms, one-shot ->
-      Idle`; Hit `4 x 110ms, one-shot -> Idle`; Dead `4 x 220ms, terminal final frame`
-    - acquisition: one 2048x2048 sheet (one row per cue), one call, after the body sheet;
+    - actions: Idle `4 x 250ms, loop` (the anchor breathing); Attack `9 x 60ms, one-shot ->
+      Idle`; Hit `6 x 70ms, one-shot -> Idle`; Dead `5 x 170ms, terminal final frame`
+    - acquisition: one 2048x2048 sheet (shared anchor + 6 Attack + 4 Hit + 5 Dead poses),
+      one call, after the body sheet;
       the normalized `charui/combat.png` as anchor reference; a route that cannot return
       2K keeps the static body (1K frames were rejected as too blurry)
     - poses: <signature item, attack wind-up and strike, in the SPEC's words>
     - continuity lock: same identity, costume, proportions, equipment, handedness, facing,
       camera, apparent scale, and baseline in every cell
-    - frame motion: four key poses per cue; Attack/Hit begin at and recover toward the
-      anchor; Dead lowers the full-size body to the ground
-    - attack timing: `AttackAnimDelay` `0.24f`, so damage lands on the strike frame
+    - frame motion: one concrete, distinct pose per cell; Attack/Hit start on the shared
+      anchor, Hit recovers through Attack's recovery, holds repeat a cell; Dead lowers the
+      full-size body to the ground
+    - attack timing: `AttackAnimDelay` `0.30f` (strike at frame 5 x 60ms), so damage lands
+      on the strike
     - geometry: shared 512x512 content box/baseline/style and Bounds/Intent/Center/Orb/Talk anchors
     - fallback: one missing or invalid frame disables all cues and uses static combat body
     - explicit gaps: Cast, Spine, trails, audio, animated merchant/rest bodies

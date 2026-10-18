@@ -6,7 +6,7 @@ import sys
 import tempfile
 import unittest
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 
 
 TOOLS_DIR = Path(__file__).resolve().parents[1]
@@ -41,17 +41,26 @@ def draw_body(draw: ImageDraw.ImageDraw, index: int, size=(40, 80), bottom_offse
     return x, y
 
 
+def cell_owner() -> dict[int, str]:
+    """Each played cell belongs to the first cue that plays it, as the processor groups it."""
+    owner: dict[int, str] = {}
+    for action, contract in ACTION_CONTRACT.items():
+        for cell in contract["play_cells"]:
+            owner.setdefault(cell, action)
+    return owner
+
+
 def make_sheet(path: Path, sizes: dict[str, tuple[int, int]] | None = None,
                touch_edge: bool = False) -> Path:
     image = blank_sheet()
     draw = ImageDraw.Draw(image)
-    for action, contract in ACTION_CONTRACT.items():
-        for column in range(SHEET_COLUMNS):
-            index = contract["sheet_row"] * SHEET_COLUMNS + column
-            left = 0 if touch_edge and index == 0 else None
-            x, y = draw_body(draw, index, (sizes or {}).get(action, (40, 80)), left=left)
-            # A dark speck in the cell corner: debris, not part of the frame.
-            draw.rectangle((x + 4, y + 4, x + 5, y + 5), fill=(30, 30, 30, 255))
+    owner = cell_owner()
+    for index in range(SHEET_COLUMNS * SHEET_ROWS):
+        left = 0 if touch_edge and index == 0 else None
+        size = (sizes or {}).get(owner.get(index, ""), (40, 80))
+        x, y = draw_body(draw, index, size, left=left)
+        # A dark speck in the cell corner: debris, not part of the frame.
+        draw.rectangle((x + 4, y + 4, x + 5, y + 5), fill=(30, 30, 30, 255))
     image.save(path)
     return path
 
@@ -68,7 +77,7 @@ class CharacterCueProcessorTests(unittest.TestCase):
             review = root / "review"
             metadata = process_sheet(make_sheet(root / "sheet.png"), root / "images", review)
 
-            self.assertEqual("skill-the-spire-character-cues/v2", metadata["contract"])
+            self.assertEqual("skill-the-spire-character-cues/v3", metadata["contract"])
             self.assertEqual(1, metadata["generation_calls"])
             self.assertEqual("combat_body", metadata["fallback_slot"])
             self.assertEqual({"scale": 0.8, "position": [0.0, -184.0]}, metadata["visual_style"])
@@ -93,16 +102,33 @@ class CharacterCueProcessorTests(unittest.TestCase):
             self.assertLess(tops[2], tops[1])
             self.assertLess(tops[1], tops[0])
             self.assertLessEqual(tops[0] - tops[2], 6)
-            self.assertEqual(1, len(metadata["actions"]["idle"]["frames"]))
+            self.assertEqual(1, len(metadata["actions"]["idle"]["poses"]))
+
+            # Shared and repeated cells are the very same image, so a cue switch or a hold
+            # never redraws the body.
+            def same(a, b):
+                return ImageChops.difference(a, b).getbbox() is None
+            idle, attack, hit = (frames(root, name) for name in ("idle", "attack", "hit"))
+            plays = {name: ACTION_CONTRACT[name]["play_cells"] for name in ("attack", "hit")}
+            self.assertTrue(same(idle[0], attack[0]))
+            self.assertTrue(same(idle[0], hit[0]))
+            for name, images in (("attack", attack), ("hit", hit)):
+                for i, j in ((i, j) for i in range(len(images)) for j in range(i + 1, len(images))):
+                    if plays[name][i] == plays[name][j]:
+                        self.assertTrue(same(images[i], images[j]), (name, i, j))
+            shared = set(plays["attack"][1:]) & set(plays["hit"][1:])
+            for cell in shared:
+                self.assertTrue(same(attack[plays["attack"].index(cell)],
+                                     hit[plays["hit"].index(cell)]))
 
             self.assertTrue((review / "raw-sheet-clean.png").is_file())
             self.assertTrue((review / "character-cues-contact-sheet.png").is_file())
             saved = json.loads((review / "pipeline-meta.json").read_text(encoding="utf-8"))
             self.assertEqual(metadata["global_scale"], saved["global_scale"])
             self.assertTrue(all(
-                frame["component_count"] == 2
+                pose["component_count"] == 2
                 for action in saved["actions"].values()
-                for frame in action["frames"]
+                for pose in action["poses"]
             ))
 
     def test_rejects_a_frame_cut_by_the_sheet_edge_before_writing_anything(self) -> None:
@@ -132,7 +158,8 @@ class CharacterCueProcessorTests(unittest.TestCase):
                 # Right shape, not whole cells, as a backend's own rounding returns it.
                 image.resize((402, 402), Image.Resampling.NEAREST).save(sheet)
             metadata = process_sheet(sheet, root / "images", root / "review")
-            self.assertEqual(4, len(metadata["actions"]["attack"]["frames"]))
+            self.assertEqual(ACTION_CONTRACT["attack"]["frame_count"],
+                             len(metadata["actions"]["attack"]["frame_order"]))
 
             with Image.open(sheet) as image:
                 image.resize((401, 703), Image.Resampling.NEAREST).save(sheet)

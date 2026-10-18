@@ -337,7 +337,7 @@ its Energy consumers through the same public pool model:
 `EnergyIconsFormatter` owns the rich-text consumer.
 
 The bounded non-Spine combat route builds its Idle/Attack/Hit/Dead `VisualCueSet` only when
-all sixteen 512x512 resources exist, then passes that private set directly to
+all twenty-four 512x512 resources exist, then passes that private set directly to
 `ModAnimStateMachines.StandardCue` from `SetupCustomCombatAnimationStateMachine`. Keep
 `CharacterAssetProfile.VisualCues` unset: RitsuLib also consults it for merchant/rest
 playback. An incomplete set selects static `combat.png`, or the resolved profile fallback

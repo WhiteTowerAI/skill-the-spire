@@ -135,11 +135,10 @@ class ArtContractCatalogTests(unittest.TestCase):
             sheet["sheet_px"],
             "sheet_px must be columns-first, matching the requested image",
         )
-        rows = [action["sheet_row"] for action in self.catalog["character_cues"]["actions"]]
-        self.assertEqual(sorted(set(rows)), rows)
+        cells = sheet["columns"] * sheet["rows"]
         for action in self.catalog["character_cues"]["actions"]:
             with self.subTest(cue=action["name"]):
-                self.assertLessEqual(action["frame_count"], sheet["columns"])
+                self.assertTrue(all(0 <= cell < cells for cell in action["play_cells"]))
         grid = f"{sheet['columns']}x{sheet['rows']}"
         pixels = f"{sheet['sheet_px'][0]}x{sheet['sheet_px'][1]}"
         for page, text in (("art-contract.md", self.art), ("character-combat-cues.md",
@@ -165,13 +164,13 @@ class ArtContractCatalogTests(unittest.TestCase):
 
     def test_cue_shared_geometry_matches_the_prose_contract(self) -> None:
         cues = self.catalog["character_cues"]
-        self.assertEqual(16, cues["total_frames"])
+        self.assertEqual(24, cues["total_frames"])
         self.assertEqual(1, cues["generation_calls"])
         for phrase in (
             f"({cues['content_box'][0]},{cues['content_box'][1]})-"
             f"({cues['content_box'][2]},{cues['content_box'][3]})",
             f"baseline `{cues['baseline_y']}`",
-            "sixteen frames",
+            "twenty-four frames",
         ):
             self.assertIn(phrase, self.cues_page)
 

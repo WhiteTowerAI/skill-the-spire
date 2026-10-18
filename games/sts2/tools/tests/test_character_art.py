@@ -95,13 +95,20 @@ class CharacterArtBundleTests(unittest.TestCase):
         self.assertEqual(("character_cues",), CHARACTER_ART_BUNDLE.cue_specs)
         self.assertEqual(1, cues.generation_calls)
         self.assertEqual((2048, 2048), cues.sheet_size)
-        self.assertEqual((0, 1, 2, 3), tuple(action.sheet_row for action in cues.actions))
-        self.assertEqual((4, 4, 4, 4), tuple(action.frame_count for action in cues.actions))
+        self.assertEqual(0, cues.anchor_cell)
+        plays = {action.name: action.play_cells for action in cues.actions}
+        self.assertEqual((0,), plays["idle"])
+        self.assertEqual(cues.anchor_cell, plays["attack"][0])
+        self.assertEqual(cues.anchor_cell, plays["hit"][0])
+        # Hit recovers through Attack's recovery cell; holds are repeated cells.
+        self.assertEqual(plays["attack"][-1], plays["hit"][-1])
+        self.assertEqual((4, 9, 6, 5), tuple(action.frame_count for action in cues.actions))
         self.assertEqual(["idle"], [action.name for action in cues.actions if action.breathing])
         self.assertEqual(0.0, cues.breath[0])
-        self.assertEqual((250, 120, 110, 220), tuple(
+        self.assertEqual((250, 60, 70, 170), tuple(
             action.frame_duration_ms for action in cues.actions
         ))
+        self.assertEqual(5, cues.attack_strike_frame)
         self.assertEqual((512, 512), cues.frame_size)
         self.assertEqual((26, 26, 486, 486), cues.content_box)
         self.assertEqual(486, cues.baseline_y)

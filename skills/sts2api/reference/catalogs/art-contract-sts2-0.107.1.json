@@ -545,17 +545,21 @@
         2048
       ]
     },
+    "anchor_cell": 0,
     "breath": [
       0.0,
       0.004,
       0.008,
       0.004
     ],
+    "attack_strike_frame": 5,
     "actions": [
       {
         "name": "idle",
         "state_name": "Idle",
-        "sheet_row": 0,
+        "play_cells": [
+          0
+        ],
         "frame_count": 4,
         "frame_duration_ms": 250,
         "loop": true,
@@ -566,9 +570,19 @@
       {
         "name": "attack",
         "state_name": "Attack",
-        "sheet_row": 1,
-        "frame_count": 4,
-        "frame_duration_ms": 120,
+        "play_cells": [
+          0,
+          1,
+          2,
+          2,
+          3,
+          4,
+          4,
+          5,
+          6
+        ],
+        "frame_count": 9,
+        "frame_duration_ms": 60,
         "loop": false,
         "terminal": false,
         "breathing": false,
@@ -577,9 +591,16 @@
       {
         "name": "hit",
         "state_name": "Hit",
-        "sheet_row": 2,
-        "frame_count": 4,
-        "frame_duration_ms": 110,
+        "play_cells": [
+          0,
+          7,
+          8,
+          9,
+          9,
+          6
+        ],
+        "frame_count": 6,
+        "frame_duration_ms": 70,
         "loop": false,
         "terminal": false,
         "breathing": false,
@@ -588,9 +609,15 @@
       {
         "name": "dead",
         "state_name": "Dead",
-        "sheet_row": 3,
-        "frame_count": 4,
-        "frame_duration_ms": 220,
+        "play_cells": [
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "frame_count": 5,
+        "frame_duration_ms": 170,
         "loop": false,
         "terminal": true,
         "breathing": false,
@@ -640,8 +667,8 @@
       0.0,
       -420.0
     ],
-    "total_frames": 16,
+    "total_frames": 24,
     "generation_calls": 1
   },
-  "catalog_sha256": "b851efef26d9afb0d5f9c491e2eda327123b9a761f5fc5abed3ed80890053ea8"
+  "catalog_sha256": "4a6ab14ec3f88f60bd65680a4f3b0be519925f86b6394be5a836713f0be5c9dd"
 }

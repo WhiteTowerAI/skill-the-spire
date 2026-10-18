@@ -1065,7 +1065,7 @@ assertion succeeds. Automatic node/property proof is required even when the main
 chooses to perform the focused visual review manually.
 
 For bounded Character combat cues, read `reference/character-combat-cues.md` and keep the
-proof independent from the static/theme marker. Assert all sixteen exact 512x512 paths,
+proof independent from the static/theme marker. Assert all twenty-four exact 512x512 paths,
 shared style plus Bounds/Intent/Center/Orb/Talk geometry,
 Idle advance/loop, Attack trigger and return to Idle, damage-triggered Hit and return to
 Idle, first-combat playback-node cleanup, and Dead's contracted duration/final-frame hold

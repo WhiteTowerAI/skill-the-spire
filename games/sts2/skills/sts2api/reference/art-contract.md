@@ -203,14 +203,15 @@ packed resource instead of the resolved fallback.
 
 The bounded combat cues come from one source sheet, `character_cues`, rather than ordinary
 single-file runtime specs. Its grid is **4x4** (columns x rows), 512x512 cells, so the sheet
-is **2048x2048**; cells are read left-to-right, one row per cue.
+is **2048x2048**, read left-to-right then top-to-bottom: cell 1 is the shared anchor, cells
+2-7 Attack, 8-11 Hit (11 is a spare), 12-16 Dead.
 
-| sheet row | cue | cells used | runtime output | timing |
-|---:|---|---|---|---:|
-| 1 | Idle | first only; 4 breathing frames derived from it | `cues/idle/00.png` .. `03.png` | 250 ms, loop |
-| 2 | Attack | 4 | `cues/attack/00.png` .. `03.png` | 120 ms, one shot |
-| 3 | Hit | 4 | `cues/hit/00.png` .. `03.png` | 110 ms, one shot |
-| 4 | Dead | 4 | `cues/dead/00.png` .. `03.png` | 220 ms, terminal |
+| cue | play order (cells) | runtime output | timing |
+|---|---|---|---:|
+| Idle | 1, breathing | `cues/idle/00.png` .. `03.png` | 250 ms, loop |
+| Attack | 1, 2, 3, 3, 4, 5, 5, 6, 7 | `cues/attack/00.png` .. `08.png` | 60 ms, one shot |
+| Hit | 1, 8, 9, 10, 10, 7 | `cues/hit/00.png` .. `05.png` | 70 ms, one shot |
+| Dead | 12, 13, 14, 15, 16 | `cues/dead/00.png` .. `04.png` | 170 ms, terminal |
 
 Locked selection and map marker are not in the supported list: resource existence is not
 visual proof for those consumers. They are in no art tier and are generated only when the
@@ -495,7 +496,8 @@ word "campfire" alone makes the model paint one; and the vanilla samples' gray f
 shadows come back as a dark key-colored patch that survives the cut-out.
 
 Combat cue sheet (`character_cues`, one call). Fill the `<...>` slots from the Character
-SPEC; keep everything else verbatim:
+SPEC; keep everything else verbatim. Never number the cells in the prompt: a model told the
+cells are "numbered" writes the numbers, and they leak into frames.
 
 ```text
 Original non-Spine combat animation sheet for a deck-building combat game. The FIRST
@@ -508,56 +510,73 @@ colors, warm key light from the upper left and cool shadows, and no black ink ou
 every edge is a soft change of value or color.
 
 One square image divided into an exact 4x4 grid of sixteen equal square cells, read
-left-to-right then top-to-bottom, with no borders, lines, labels, numbers, or gutters. Each
-row is one action of four frames. Every cell holds one full-body frame of the same
-character, fully inside its own cell with clear empty margin on all sides, at the same size
-and standing on the same ground line as in every other cell. The camera is locked: never
-zoom, crop, pan, or change the viewing angle. The feet stay planted where they are unless a
-step is described. Light comes from the same direction in every cell. Paint every cell as a
-copy of the anchor that changes only what the action describes; everything else, including
-cloth folds, hair, and outlines, stays pixel-for-pixel the same.
+left-to-right then top-to-bottom. The cells are empty background apart from the character:
+no borders, lines, gutters, labels, letters, numbers, or marks of any kind. Every cell holds
+one full-body frame of the same character, fully inside its own cell with clear empty margin
+on all sides, at the same size and standing on the same ground line as in every other cell.
+The camera is locked: never zoom, crop, pan, or change the viewing angle. Light comes from
+the same direction in every cell. Every cell shows a clearly different body position from
+its neighbors; only the first cell shows the anchor pose. The <signature item> stays in the
+same hand as in the anchor image in every cell.
 
-Row 1 (cells 1-4): IDLE, an almost motionless breathing loop. All four cells show the
-identical anchor pose: the same arm, <signature item>, clothing, head, and feet positions.
-The only change is a barely visible breath: in cells 2 and 3 the chest and shoulders sit
-about 1% of the body height higher than in cells 1 and 4. Nothing else moves.
+Row 1, first cell: the exact anchor pose, unchanged.
 
-Row 2 (cells 5-8): ATTACK, <the Character's attack> at an enemy on the right. Cell 5: the
-anchor pose with the weight just starting onto the back foot. Cell 6: the wind-up, <wind-up
-pose>. Cell 7: the strike, <strike pose reaching toward the right>, weight on the front
-foot. Cell 8: recovering, almost back to the anchor pose.
+ATTACK, one continuous <attack with the signature item> at an enemy on the right, in the
+next six cells (row 1 cells two to four, then row 2 cells one to three):
+- Crouch: knees bent deeper than the anchor, the body lowered, the <signature item> pulled in
+  tight against the chest.
+- Wind-up: the torso twisted away to the left, the <signature item> swung far back behind the
+  hip, the free arm thrown forward for balance.
+- Mid-swing: the <signature item> passing in front of the belly at waist height, halfway
+  between the wind-up and the strike, the torso turning back toward the right.
+- Strike: the <signature item> arm fully extended toward the right at shoulder height, the
+  torso leaning into it, the weight on the front foot.
+- Follow-through: the arm carried past the strike and upward, the <signature item> raised
+  above shoulder height, the body still leaning forward.
+- Recovery: the <signature item> arm halfway back toward the chest, the weight returning to
+  the center, the knees softening.
 
-Row 3 (cells 9-12): HIT, a compact recoil from a blow arriving from the right. Cell 9: the
-anchor pose with the head starting to snap back. Cell 10: the torso leaning back and away
-to the left, the <signature item> arm pulled in. Cell 11: the deepest recoil, shoulders
-hunched, the back foot sliding a little. Cell 12: recovering, almost back to the anchor
-pose.
+HIT, a blow arriving from the right, in the next four cells (row 2 cell four, then row 3
+cells one to three):
+- Flinch: the head snapped back, the mouth open, the shoulders jerked up.
+- Recoil: the torso thrown back and away to the left, the clothing flaring, the back foot
+  lifted off the ground.
+- Deepest recoil: hunched low with the back foot slid far back, the head turned away, the
+  <signature item> held close.
+- Steadying: half upright again, the free arm out for balance, the <signature item> still
+  held.
 
-Row 4 (cells 13-16): DEAD, a collapse; the body keeps its full size and is only lowered and
-rotated. Cell 13: the body sags from the anchor pose, knees buckling. Cell 14: down on one
-knee, the torso slumping forward. Cell 15: tipping forward onto one side, a hand reaching
-for the ground. Cell 16: lying still on the ground on one side<, the dropped signature item
-beside the body>.
+DEAD, one collapse in the last five cells (row 3 cell four, then all of row 4); the body
+keeps its full size and is only lowered and rotated, and the <signature item> is visible in
+every one of these cells:
+- Sag: the knees buckling, the head dropping, the <signature item> arm hanging limp.
+- Kneel: down on one knee, the torso slumped forward, the <signature item> touching the
+  ground.
+- Topple: both knees down and tipping forward, the <signature item> slipping out of the hand
+  onto the ground beside the body.
+- Fall: falling onto one side, the clothing spreading, the <signature item> on the ground
+  beside the body.
+- Lying still on the ground on one side, the <signature item> on the ground beside the body.
 
-The <signature item> stays in the same hand as in the anchor image. <Any glowing or glass
-part> is solid and opaque in its own warm color: the background never shows through it or
-through any gap in it, and it is never pink, purple, or magenta. Use one perfectly flat
-solid pure magenta #FF00FF background (RGB 255,0,255, fully saturated, not pink or lilac)
-across the whole sheet: no gradient, floor, ground shadow, glow halo, light spill, motion
-streak, attack effect, text, UI, border, logo, or watermark. Do not borrow a reference
-character's design. Not photorealistic, not a 3D render, not pixel art, not a comic
-illustration.
+<Any glowing or glass part> is solid and opaque in its own warm color: the background never
+shows through it or through any gap in it, and it is never pink, purple, or magenta. Use one
+perfectly flat solid pure magenta #FF00FF background (RGB 255,0,255, fully saturated, not
+pink or lilac) across the whole sheet: no gradient, floor, ground shadow, glow halo, light
+spill, motion streak, attack effect, text, UI, border, logo, or watermark. Do not borrow a
+reference character's design. Not photorealistic, not a 3D render, not pixel art, not a
+comic illustration.
 ```
 
 The anchor is the static body, not the selection portrait: the portrait is a head close-up
 in an inked style, and real sheets made from it changed stance, line weight, and light
-between actions. The rows ask for key poses, not in-betweens: a real 8-frame-per-cue sheet
-filled its extra cells with copies of the anchor and two key poses, and played as jitter.
-The Idle row is a fallback only; the processor uses its first cell and breathes it.
+between actions. Each cell names one concrete body position, because a cell described as
+"starting to" or "almost back to" another came back as a copy of it. The Hit steadying cell
+is a spare that the contract does not play; Hit recovers through Attack's recovery cell.
 
 Reject and regenerate the sheet when the contact-sheet review shows identity, costume,
-scale, camera, or baseline drift, or a held item switching hands. Do not replace this
-review with a brittle image-similarity score.
+scale, camera, or baseline drift, drawn numbers or labels, a held item switching hands or
+vanishing between cells, or a cell that copies its neighbor. Do not replace this review
+with a brittle image-similarity score.
 
 Select background:
 

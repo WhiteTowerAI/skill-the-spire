@@ -1518,12 +1518,14 @@ def build_art_contract_catalog() -> dict:
                 "cell_px": cues.cell_size,
                 "sheet_px": list(cues.sheet_size),
             },
+            "anchor_cell": cues.anchor_cell,
             "breath": list(cues.breath),
+            "attack_strike_frame": cues.attack_strike_frame,
             "actions": [
                 {
                     "name": action.name,
                     "state_name": action.state_name,
-                    "sheet_row": action.sheet_row,
+                    "play_cells": list(action.play_cells),
                     "frame_count": action.frame_count,
                     "frame_duration_ms": action.frame_duration_ms,
                     "loop": action.loop,

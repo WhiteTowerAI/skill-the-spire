@@ -54,16 +54,18 @@ class CharacterArtSlot:
 
 @dataclass(frozen=True)
 class CharacterCueAction:
-    """One cue: a row of the combined cue sheet and its runtime frame sequence.
+    """One cue and its runtime frame sequence, as sheet cells in play order.
 
-    A breathing cue takes only its row's first cell and derives every frame from it by a
-    small vertical stretch about the baseline (`CharacterCueContract.breath`): redrawn
-    idle cells read as jitter in headed review, and a single frame cannot.
+    `play_cells` names sheet cells (0-based, reading order). A repeated cell is a hold, and
+    a cell may serve two cues: Hit recovers through Attack's recovery pose, and Attack and
+    Hit both start on the shared anchor cell, so switching cues never redraws the body. A
+    breathing cue plays only the anchor, stretched per frame by `CharacterCueContract.breath`:
+    redrawn idle cells read as jitter in headed review, and a single frame cannot.
     """
 
     name: str
     state_name: str
-    sheet_row: int
+    play_cells: tuple[int, ...]
     frame_count: int
     frame_duration_ms: int
     loop: bool
@@ -76,9 +78,12 @@ class CharacterCueAction:
 class CharacterCueContract:
     """Shared acquisition, normalization, geometry, and fallback contract for combat cues.
 
-    All cues come from one paid sheet of `sheet_columns` x `sheet_rows` cells, one row per
-    cue: a single image keeps one style, light, and scale across the actions, which four
-    separate action sheets did not. The approved static combat body is the anchor reference.
+    All cues come from one paid sheet of `sheet_columns` x `sheet_rows` cells: a single
+    image keeps one style, light, and scale across the actions, which four separate action
+    sheets did not. The approved static combat body is the anchor reference, and the sheet's
+    `anchor_cell` redraws it once for every cue to share. `attack_strike_frame` is the Attack
+    frame where the strike pose starts; the Character's AttackAnimDelay is that many Attack
+    frame times, so damage lands on the strike.
     """
 
     actions: tuple[CharacterCueAction, ...]
@@ -86,7 +91,9 @@ class CharacterCueContract:
     sheet_columns: int
     sheet_rows: int
     cell_size: int
+    anchor_cell: int
     breath: tuple[float, ...]
+    attack_strike_frame: int
     frame_size: tuple[int, int]
     content_box: tuple[int, int, int, int]
     baseline_y: int
@@ -328,22 +335,23 @@ class CharacterArtBundle:
                 raise CharacterArtValidationError(
                     "Character combat cues must be ordered Idle, Attack, Hit, Dead"
                 )
+            cell_count = cues.sheet_columns * cues.sheet_rows
             if (
                 not cues.source_spec
                 or cues.source_spec in self.specs
                 or cues.sheet_columns <= 0
                 or cues.sheet_rows <= 0
                 or cues.cell_size <= 0
+                or not 0 <= cues.anchor_cell < cell_count
             ):
                 raise CharacterArtValidationError("Character cue sheet has invalid metadata")
-            cue_rows: set[int] = set()
             cue_paths: set[str] = set()
             for action in cues.actions:
                 output = Path(action.output_dir)
                 if (
                     not action.state_name
-                    or not 0 <= action.sheet_row < cues.sheet_rows
-                    or not 0 < action.frame_count <= cues.sheet_columns
+                    or not action.play_cells
+                    or any(not 0 <= cell < cell_count for cell in action.play_cells)
                     or action.frame_duration_ms <= 0
                     or output.is_absolute()
                     or ".." in output.parts
@@ -352,24 +360,33 @@ class CharacterArtBundle:
                     raise CharacterArtValidationError(
                         f"Character cue action {action.name!r} has invalid metadata"
                     )
-                if action.sheet_row in cue_rows:
-                    raise CharacterArtValidationError(
-                        f"Character cue sheet row {action.sheet_row} is used twice"
-                    )
                 if action.output_dir in cue_paths:
                     raise CharacterArtValidationError(
                         f"Character cue output directory is duplicated: {action.output_dir!r}"
                     )
-                if action.breathing and (
-                    len(cues.breath) != action.frame_count or cues.breath[0] != 0
-                    or any(not 0 <= amount < 0.05 for amount in cues.breath)
-                ):
+                if action.breathing:
+                    if (
+                        action.play_cells != (cues.anchor_cell,)
+                        or len(cues.breath) != action.frame_count
+                        or cues.breath[0] != 0
+                        or any(not 0 <= amount < 0.05 for amount in cues.breath)
+                    ):
+                        raise CharacterArtValidationError(
+                            f"Character cue {action.name!r} must breathe the anchor cell with "
+                            "one small stretch per frame, starting at 0"
+                        )
+                elif action.frame_count != len(action.play_cells):
                     raise CharacterArtValidationError(
-                        f"Character cue {action.name!r} breath needs one small stretch per "
-                        "frame, starting at 0"
+                        f"Character cue {action.name!r} frame count must match its play cells"
                     )
-                cue_rows.add(action.sheet_row)
+                if action.name in ("attack", "hit") and action.play_cells[0] != cues.anchor_cell:
+                    raise CharacterArtValidationError(
+                        f"Character cue {action.name!r} must start on the shared anchor cell"
+                    )
                 cue_paths.add(action.output_dir)
+            attack = next(action for action in cues.actions if action.name == "attack")
+            if not 0 < cues.attack_strike_frame < attack.frame_count:
+                raise CharacterArtValidationError("Attack strike frame is outside the Attack cue")
             if [action.name for action in cues.actions if action.breathing] not in ([], ["idle"]):
                 raise CharacterArtValidationError("only the Idle cue may breathe")
             if cues.actions[-1].terminal is not True or any(
@@ -1186,22 +1203,29 @@ CHARACTER_ART_BUNDLE = CharacterArtBundle(
             "character_icon", "contain", True, "palette",
         ),
     ),
-    # Four key poses per cue, timed after headed review of a real Character: 8 redrawn
-    # frames per cue read as jitter, and faster timings read as twitchy. Attack's strike is
-    # its third frame, so the Character's AttackAnimDelay is 2 x the Attack frame time.
+    # One anchor + 6 Attack + 4 Hit + 5 Dead poses on a 4x4 sheet, chosen after headed review
+    # of a real Character: a shared anchor removes the redraw jump when a cue starts, distinct
+    # poses per cell stop the model from filling cells with anchor copies, and holds come from
+    # repeated cells, not extra cells. Cell 10 (a Hit "steadying" pose) is drawn but not
+    # played: Hit recovers through Attack's recovery (cell 6), which keeps the held item.
     combat_cues=CharacterCueContract(
         actions=(
-            CharacterCueAction("idle", "Idle", 0, 4, 250, True, False, "charui/cues/idle",
-                               breathing=True),
-            CharacterCueAction("attack", "Attack", 1, 4, 120, False, False, "charui/cues/attack"),
-            CharacterCueAction("hit", "Hit", 2, 4, 110, False, False, "charui/cues/hit"),
-            CharacterCueAction("dead", "Dead", 3, 4, 220, False, True, "charui/cues/dead"),
+            CharacterCueAction("idle", "Idle", (0,), 4, 250, True, False,
+                               "charui/cues/idle", breathing=True),
+            CharacterCueAction("attack", "Attack", (0, 1, 2, 2, 3, 4, 4, 5, 6), 9, 60,
+                               False, False, "charui/cues/attack"),
+            CharacterCueAction("hit", "Hit", (0, 7, 8, 9, 9, 6), 6, 70, False, False,
+                               "charui/cues/hit"),
+            CharacterCueAction("dead", "Dead", (11, 12, 13, 14, 15), 5, 170, False, True,
+                               "charui/cues/dead"),
         ),
         source_spec="character_cues",
         sheet_columns=4,
         sheet_rows=4,
         cell_size=512,
+        anchor_cell=0,
         breath=(0.0, 0.004, 0.008, 0.004),
+        attack_strike_frame=5,
         frame_size=(512, 512),
         content_box=(26, 26, 486, 486),
         baseline_y=486,

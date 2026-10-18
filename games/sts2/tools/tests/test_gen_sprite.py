@@ -209,7 +209,10 @@ class GenSpriteTests(unittest.TestCase):
             self.assertIn("warning: cue sheet is 400x400", result.stdout)
             self.assertTrue((project / "art-sources" / "character-cues" / "sheet.png").is_file())
             runtime_frames = sorted((images / "charui" / "cues").rglob("*.png"))
-            self.assertEqual(16, len(runtime_frames))
+            self.assertEqual(
+                sum(a.frame_count for a in gen_sprite.CHARACTER_ART_BUNDLE.combat_cues.actions),
+                len(runtime_frames),
+            )
             self.assertTrue(
                 (project / "art-review" / "character-cues" / "pipeline-meta.json").is_file()
             )
