@@ -49,7 +49,7 @@ import urllib.error
 from pathlib import Path
 
 from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
-from character_cues import KEY_COLORS, detect_key_color, remove_key_color
+from character_cues import KEY_COLORS, despill_edges, detect_key_color, remove_key_color
 from ritsu_profile import PROFILE
 
 try:
@@ -177,8 +177,10 @@ def resolve_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]
 def cue_sheet_size(spec: str, override: tuple[int, int] | None) -> tuple[int, int]:
     if override:
         return override
-    action = CHARACTER_ART_BUNDLE.cue_action(spec)
-    return action.columns * 512, action.rows * 512
+    cues = CHARACTER_ART_BUNDLE.combat_cues
+    if cues is None or spec != cues.source_spec:
+        raise SystemExit(f"[gen_sprite] unknown Character cue spec: {spec!r}")
+    return cues.sheet_size
 
 
 # --- normalize primitives (magenta chroma-key adapted from agent-sprite-forge,
@@ -230,31 +232,6 @@ def chroma_key(img: "Image.Image", key: str = "magenta",
         else:
             out.append((r, g, b, a))
     img.putdata(out)
-    return img
-
-
-def despill_edges(img: "Image.Image", key: str = "magenta", band: int = 2) -> "Image.Image":
-    """Neutralize key-colored spill on the visible pixels within `band` px of transparency.
-    Antialiased edges blend the subject with the key; left alone they draw a thin magenta
-    (or green) line around the cut-out on dark game UI."""
-    img = img.convert("RGBA")
-    alpha = img.getchannel("A").point(lambda a: 255 if a else 0)
-    eroded = alpha.filter(ImageFilter.MinFilter(2 * band + 1))
-    px = img.load()
-    a_px, e_px = alpha.load(), eroded.load()
-    for y in range(img.height):
-        for x in range(img.width):
-            if not a_px[x, y] or e_px[x, y]:
-                continue
-            r, g, b, a = px[x, y]
-            if key == "green":
-                spill = g - max(r, b)
-                if spill > 0:
-                    px[x, y] = (r, g - spill, b, a)
-            else:
-                spill = min(r, b) - g
-                if spill > 0:
-                    px[x, y] = (r - spill, g, b - spill, a)
     return img
 
 
@@ -742,6 +719,10 @@ def _call_backend_images(cfg: dict, prompt: str, size: tuple[int, int], log,
     """OpenAI Images transport: /images/generations, or /images/edits with references."""
     base = cfg["base_url"].rstrip("/")
     req_size = cfg.get("request_size") or request_size_for(size)
+    if cfg.get("exact_size") and max(size) > 1536:
+        # gpt-image-2 takes custom sizes (edges multiples of 16, under 3840); older gpt-image
+        # models accept only the three canvases, so this stays opt-in per backend.
+        req_size = f"{size[0]}x{size[1]}"
     if references:
         url = cfg.get("edit_url") or (base + "/images/edits")
         data, ct = _multipart([
@@ -1029,7 +1010,12 @@ def resolve_references(
         paths = random.SystemRandom().sample(paths, max_refs)
     paths = list(dict.fromkeys(paths))
     if identity is not None:
-        paths.append(identity)
+        # The cue sheet's anchor goes first, as the real trials sent it ("the FIRST provided
+        # image is the anchor"); every other identity image goes last.
+        if spec in CHARACTER_ART_BUNDLE.cue_specs:
+            paths.insert(0, identity)
+        else:
+            paths.append(identity)
         log(f"identity reference: {identity.name}")
     if not paths:
         log("no usable reference images — falling back to text-to-image")
@@ -1046,13 +1032,13 @@ def stage_character_cue_source(
     slug: str,
     images_root: Path,
     log,
+    generated: bool = False,
 ) -> tuple[Path, bool]:
-    """Stage one action sheet; normalize runtime cues only when all four exist."""
-    action = CHARACTER_ART_BUNDLE.cue_action(spec)
-    if slug.lower() != action.name:
-        raise SystemExit(
-            f"[gen_sprite] cue spec {spec!r} requires --slug {action.name!r}"
-        )
+    """Stage the combined cue sheet and normalize the whole cue bundle from it.
+
+    A paid sheet smaller than the contract is refused before processing; an imported one
+    only warns, since the user chose that file.
+    """
     if images_root.name.lower() != "images":
         raise SystemExit(
             "[gen_sprite] Character cue import requires --out <project>/<ModName>/images"
@@ -1062,36 +1048,43 @@ def stage_character_cue_source(
     source_dir = project_root / "art-sources" / "character-cues"
     review_dir = project_root / "art-review" / "character-cues"
     source_dir.mkdir(parents=True, exist_ok=True)
-    destination = source_dir / f"{action.name}.png"
-    temporary = source_dir / f".{action.name}.tmp.png"
+    destination = source_dir / "sheet.png"
+    temporary = source_dir / ".sheet.tmp.png"
     source.convert("RGBA").save(temporary, "PNG")
     temporary.replace(destination)
-    log(f"staged {action.name} action sheet -> {destination}")
+    log(f"staged {spec} sheet -> {destination}")
 
-    cue_contract = CHARACTER_ART_BUNDLE.combat_cues
-    if cue_contract is None:
-        raise SystemExit("[gen_sprite] Character combat cue contract is unavailable")
-    sources = {
-        item.name: source_dir / f"{item.name}.png"
-        for item in cue_contract.actions
-    }
-    missing = [name for name, path in sources.items() if not path.is_file()]
-    if missing:
-        log(f"cue bundle waiting for action sheet(s): {missing}")
-        return destination, False
+    expected = cue_sheet_size(spec, None)
+    if min(source.size) < CUE_MIN_SOURCE_FRACTION * min(expected):
+        # A real 1024x1024 sheet needed ~1.9x upscaling and was rejected in headed review
+        # as too blurry; the cue tier needs a backend that returns the full sheet.
+        message = (
+            f"cue sheet is {source.width}x{source.height}; frames need the "
+            f"{expected[0]}x{expected[1]} sheet and would come out blurry"
+        )
+        if generated:
+            raise SystemExit(
+                f"[gen_sprite] {message}. Kept the source at {destination}; regenerate with "
+                "a backend that returns 2K, or keep the static combat body."
+            )
+        print(f"[gen_sprite] warning: {message}")
 
-    from character_cues import CharacterCueError, process_bundle
+    from character_cues import CharacterCueError, process_sheet
 
     try:
-        process_bundle(sources, images_root, review_dir)
+        process_sheet(destination, images_root, review_dir)
     except CharacterCueError as exc:
         raise SystemExit(
-            "[gen_sprite] Character cue bundle failed deterministic QC; existing runtime "
+            "[gen_sprite] Character cue sheet failed deterministic QC; existing runtime "
             f"cues were not changed: {exc}"
         ) from exc
     runtime_dir = images_root / "charui" / "cues"
     log(f"normalized complete Character cue bundle -> {runtime_dir}")
     return runtime_dir, True
+
+
+# A cue sheet below this fraction of the contract size makes upscaled, blurry frames.
+CUE_MIN_SOURCE_FRACTION = 0.75
 
 
 # Models draw grid lines between sheet cells even when told not to. Trimming this fraction
@@ -1237,7 +1230,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
         # explicit --chroma / --no-chroma override it.
         if cue_spec:
             dest, complete = stage_character_cue_source(
-                src, args.spec, args.slug, out_dir, log
+                src, args.spec, args.slug, out_dir, log, generated=True
             )
         else:
             do_chroma = info["chroma"]
@@ -1518,20 +1511,27 @@ def build_art_contract_catalog() -> dict:
         catalog["character_cues"] = {
             # Named columns/rows plus explicit pixel geometry: a bare "NxM" grid string is
             # ambiguous and the two orders previously disagreed across this repo.
+            "source_spec": cues.source_spec,
+            "sheet": {
+                "columns": cues.sheet_columns,
+                "rows": cues.sheet_rows,
+                "cell_px": cues.cell_size,
+                "sheet_px": list(cues.sheet_size),
+            },
+            "anchor_cell": cues.anchor_cell,
+            "breath": list(cues.breath),
+            "attack_strike_frame": cues.attack_strike_frame,
             "actions": [
                 {
                     "name": action.name,
                     "state_name": action.state_name,
-                    "source_spec": action.source_spec,
-                    "columns": action.columns,
-                    "rows": action.rows,
-                    "sheet_px": [action.columns * 512, action.rows * 512],
+                    "play_cells": list(action.play_cells),
                     "frame_count": action.frame_count,
                     "frame_duration_ms": action.frame_duration_ms,
                     "loop": action.loop,
                     "terminal": action.terminal,
+                    "breathing": action.breathing,
                     "output_dir": action.output_dir,
-                    "generation_calls": action.generation_calls,
                 }
                 for action in cues.actions
             ],
@@ -1607,15 +1607,15 @@ def cmd_list_specs(_args: argparse.Namespace) -> int:
         chroma = "on" if info["chroma"] else "off"
         star = "" if info["verified"] else "  *not live-verified"
         print(f'{name:<11} {info["sub_path"]:<30} {size:<12} {info["fit"]:<8} {chroma}{star}')
-    for spec in CHARACTER_ART_BUNDLE.cue_specs:
-        action = CHARACTER_ART_BUNDLE.cue_action(spec)
+    cues = CHARACTER_ART_BUNDLE.combat_cues
+    if cues is not None:
         # Print the sheet the same width-first way every other row prints its size, and name
         # the axes. A bare "NxM" grid is ambiguous, and printing it rows-first contradicted
         # both this tool's own WxH convention and every prose copy of the cue table.
-        sheet = f"{action.columns * 512}x{action.rows * 512}"
-        layout = f"{action.columns} cols x {action.rows} rows"
+        sheet = f"{cues.sheet_size[0]}x{cues.sheet_size[1]}"
+        layout = f"{cues.sheet_columns} cols x {cues.sheet_rows} rows"
         print(
-            f"{spec:<11} {'art-sources/character-cues':<30} "
+            f"{cues.source_spec:<11} {'art-sources/character-cues':<30} "
             f"{sheet:<12} {'grid':<8} on   {layout}"
         )
     if any(not info["verified"] for info in SPECS.values()):

@@ -92,17 +92,23 @@ class CharacterArtBundleTests(unittest.TestCase):
         cues = CHARACTER_ART_BUNDLE.combat_cues
 
         self.assertIsNotNone(cues)
-        self.assertEqual(
-            ("character_cue_idle", "character_cue_attack", "character_cue_hit", "character_cue_dead"),
-            CHARACTER_ART_BUNDLE.cue_specs,
-        )
-        self.assertEqual(4, cues.generation_calls)
-        self.assertEqual((4, 4, 4, 6), tuple(action.frame_count for action in cues.actions))
-        dead = next(action for action in cues.actions if action.name == "dead")
-        self.assertEqual((3, 2), (dead.rows, dead.columns))
-        self.assertEqual((180, 90, 80, 140), tuple(
+        self.assertEqual(("character_cues",), CHARACTER_ART_BUNDLE.cue_specs)
+        self.assertEqual(1, cues.generation_calls)
+        self.assertEqual((2048, 2048), cues.sheet_size)
+        self.assertEqual(0, cues.anchor_cell)
+        plays = {action.name: action.play_cells for action in cues.actions}
+        self.assertEqual((0,), plays["idle"])
+        self.assertEqual(cues.anchor_cell, plays["attack"][0])
+        self.assertEqual(cues.anchor_cell, plays["hit"][0])
+        # Hit recovers through Attack's recovery cell; holds are repeated cells.
+        self.assertEqual(plays["attack"][-1], plays["hit"][-1])
+        self.assertEqual((4, 9, 6, 5), tuple(action.frame_count for action in cues.actions))
+        self.assertEqual(["idle"], [action.name for action in cues.actions if action.breathing])
+        self.assertEqual(0.0, cues.breath[0])
+        self.assertEqual((250, 60, 70, 170), tuple(
             action.frame_duration_ms for action in cues.actions
         ))
+        self.assertEqual(5, cues.attack_strike_frame)
         self.assertEqual((512, 512), cues.frame_size)
         self.assertEqual((26, 26, 486, 486), cues.content_box)
         self.assertEqual(486, cues.baseline_y)
@@ -110,18 +116,18 @@ class CharacterArtBundleTests(unittest.TestCase):
         self.assertEqual((0.0, -184.0), cues.visual_position)
         self.assertEqual(
             "character_combat",
-            CHARACTER_ART_BUNDLE.reference_families()["character_cue_attack"],
+            CHARACTER_ART_BUNDLE.reference_families()["character_cues"],
         )
 
         with tempfile.TemporaryDirectory() as tmp:
-            identity = Path(tmp) / "select.png"
-            Image.new("RGB", (132, 195), (80, 110, 140)).save(identity)
+            anchor = Path(tmp) / "combat.png"
+            Image.new("RGBA", (512, 512), (80, 110, 140, 255)).save(anchor)
             self.assertEqual(
-                identity.resolve(),
-                CHARACTER_ART_BUNDLE.validate_identity_reference(
-                    "character_cue_dead", identity
-                ),
+                anchor.resolve(),
+                CHARACTER_ART_BUNDLE.validate_identity_reference("character_cues", anchor),
             )
+            with self.assertRaises(CharacterArtValidationError):
+                CHARACTER_ART_BUNDLE.validate_identity_reference("character_cues", None)
 
     def test_character_background_reference_pool_is_shipped(self) -> None:
         pool = ART_SAMPLES / "character_background"
@@ -293,7 +299,7 @@ class CharacterArtBundleTests(unittest.TestCase):
 
     def test_art_tiers_set_the_spend_and_skip_unpromoted_slots(self) -> None:
         self.assertEqual(
-            {"minimal": 2, "standard": 4, "full": 8},
+            {"minimal": 2, "standard": 4, "full": 5},
             {
                 tier.name: CHARACTER_ART_BUNDLE.tier_generation_calls(tier.name)
                 for tier in CHARACTER_ART_BUNDLE.tiers

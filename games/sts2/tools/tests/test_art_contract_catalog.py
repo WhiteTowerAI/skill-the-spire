@@ -129,23 +129,23 @@ class ArtContractCatalogTests(unittest.TestCase):
 
     def test_cue_grid_geometry_is_named_and_consistent_everywhere(self) -> None:
         """columns x rows, 512px cells, and the same order in code, catalog, and prose."""
+        sheet = self.catalog["character_cues"]["sheet"]
+        self.assertEqual(
+            [sheet["columns"] * sheet["cell_px"], sheet["rows"] * sheet["cell_px"]],
+            sheet["sheet_px"],
+            "sheet_px must be columns-first, matching the requested image",
+        )
+        cells = sheet["columns"] * sheet["rows"]
         for action in self.catalog["character_cues"]["actions"]:
             with self.subTest(cue=action["name"]):
-                self.assertEqual(
-                    [action["columns"] * 512, action["rows"] * 512],
-                    action["sheet_px"],
-                    "sheet_px must be columns-first, matching the requested image",
-                )
-                self.assertEqual(
-                    action["columns"] * action["rows"], action["frame_count"]
-                )
-                grid = f"{action['columns']}x{action['rows']}"
-                self.assertIn(
-                    grid,
-                    self.art,
-                    f"{action['name']} grid {grid} (cols x rows) is not in art-contract.md",
-                )
-                self.assertIn(grid, self.cues_page)
+                self.assertTrue(all(0 <= cell < cells for cell in action["play_cells"]))
+        grid = f"{sheet['columns']}x{sheet['rows']}"
+        pixels = f"{sheet['sheet_px'][0]}x{sheet['sheet_px'][1]}"
+        for page, text in (("art-contract.md", self.art), ("character-combat-cues.md",
+                                                           self.cues_page)):
+            with self.subTest(page=page):
+                self.assertIn(grid, text, f"cue grid {grid} (cols x rows) is not in {page}")
+                self.assertIn(pixels, text, f"cue sheet {pixels} is not in {page}")
 
     def test_list_specs_prints_cue_sheets_width_first(self) -> None:
         result = subprocess.run(
@@ -154,24 +154,23 @@ class ArtContractCatalogTests(unittest.TestCase):
             text=True,
         )
         self.assertEqual(0, result.returncode, result.stderr)
-        dead = [
+        sheet = [
             line for line in result.stdout.splitlines()
-            if line.startswith("character_cue_dead")
+            if line.startswith("character_cues")
         ]
-        self.assertEqual(1, len(dead), result.stdout)
-        self.assertIn("1024x1536", dead[0])
-        self.assertIn("2 cols x 3 rows", dead[0])
-        self.assertNotIn("3x2", dead[0])
+        self.assertEqual(1, len(sheet), result.stdout)
+        self.assertIn("2048x2048", sheet[0])
+        self.assertIn("4 cols x 4 rows", sheet[0])
 
     def test_cue_shared_geometry_matches_the_prose_contract(self) -> None:
         cues = self.catalog["character_cues"]
-        self.assertEqual(18, cues["total_frames"])
-        self.assertEqual(4, cues["generation_calls"])
+        self.assertEqual(24, cues["total_frames"])
+        self.assertEqual(1, cues["generation_calls"])
         for phrase in (
             f"({cues['content_box'][0]},{cues['content_box'][1]})-"
             f"({cues['content_box'][2]},{cues['content_box'][3]})",
             f"baseline `{cues['baseline_y']}`",
-            "eighteen frames",
+            "twenty-four frames",
         ):
             self.assertIn(phrase, self.cues_page)
 

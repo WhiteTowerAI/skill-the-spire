@@ -346,11 +346,14 @@ visible-footprint transform.
 
 ## Bounded combat cues
 
-The optional combat-cue bundle is exactly Idle 4x180ms loop, Attack 4x90ms one-shot then
-Idle, Hit 4x80ms one-shot then Idle, and Dead 6x140ms terminal final pose. All eighteen
+The optional combat-cue bundle is exactly Idle 4x250ms loop (the anchor breathing), Attack
+9x60ms one-shot then Idle, Hit 6x70ms one-shot then Idle, and Dead 5x170ms terminal final
+pose, all played from one generated sheet anchored on the static combat body, with Attack
+and Hit starting on the shared anchor cell. All twenty-four
 transparent 512x512 frames share the static combat content box, baseline, public style,
 and the fixed Bounds/Intent/Center/Orb/Talk geometry from
-`reference/character-combat-cues.md`.
+`reference/character-combat-cues.md`. Set `AttackAnimDelay` to `0.30f`, five Attack frame
+times, so damage lands on the strike frame.
 
 Require every expected path and size before building one private `VisualCueSet`. Use
 `Idle/00` to create the anchored combat visuals and pass that set directly to
@@ -394,7 +397,7 @@ backgrounds/layouts, options/rewards, line audio, and multiplayer remain unsuppo
    bounds inside the viewport, and no overlap with top/bottom UI, enemy lane, or turn banner.
 6. When combat cues are selected, prove Idle loops, Attack/Hit each return to Idle, all
    shared geometry remains fixed, the first combat's playback node is freed, and a fresh
-   combat's Dead sequence reaches and holds its sixth frame. Run the one-missing-frame
+   combat's Dead sequence reaches and holds its last frame. Run the one-missing-frame
    fallback proof separately and require static combat with no playback node/frame flash.
 7. Finish combat, enter RestSite and Shop, and assert the real
    `NRestSiteCharacter` / `NMerchantCharacter`, exact 512x512 resources, and
