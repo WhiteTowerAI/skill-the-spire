@@ -50,6 +50,10 @@ if CUE_CONTRACT is None:
 FRAME_SIZE = CUE_CONTRACT.frame_size
 CONTENT_BOX = CUE_CONTRACT.content_box
 BASELINE_Y = CUE_CONTRACT.baseline_y
+# A delivered sheet that does not divide into whole cells but is within this relative aspect
+# error of its grid is resampled to the exact grid size; anything further off is the wrong
+# shape and fails.
+SHEET_ASPECT_TOLERANCE = 0.02
 ACTION_CONTRACT = {
     action.name: {
         "state_name": action.state_name,
@@ -231,6 +235,13 @@ def extract_action(
         raise CharacterCueError(f"{action} sheet is not a readable image: {source_path} ({exc})") from exc
 
     rows, cols = contract["rows"], contract["cols"]
+    expected = (cols * FRAME_SIZE[0], rows * FRAME_SIZE[1])
+    if (raw.width % cols or raw.height % rows) and abs(
+        (raw.width / raw.height) / (expected[0] / expected[1]) - 1
+    ) <= SHEET_ASPECT_TOLERANCE:
+        # Backends round non-square canvases to their own sizes (Gemini returns 2:3 as
+        # 848x1264), so a right-shaped sheet rarely divides into whole cells as delivered.
+        raw = raw.resize(expected, Image.Resampling.LANCZOS)
     if raw.width % cols or raw.height % rows:
         # Name the axes. A bare "NxM" grid reads as WxH to anyone who just produced the
         # sheet, which is the opposite order, and that ambiguity is how a wrong-shaped

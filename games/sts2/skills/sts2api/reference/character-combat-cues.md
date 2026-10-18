@@ -57,11 +57,13 @@ Import each sheet with the matching lowercase action slug:
 
 ```powershell
 python ${GAME_TOOLS_DIR}/gen_sprite.py import --spec character_cue_idle --slug idle `
-  --input <idle-sheet.png> --out <ModName>/images `
-  --identity-reference <ModName>/images/charui/select.png
+  --input <idle-sheet.png> --out <ModName>/images
 ```
 
-Repeat for `attack`, `hit`, and `dead`. Imports stage the original sheets under
+Repeat for `attack`, `hit`, and `dead`. `import` takes no identity reference; that applies
+only to the paid `generate` call. A sheet whose aspect is within 2% of its grid is resampled
+to the exact grid size first, since backends round non-square canvases (Gemini returns 2:3
+as 848x1264). Imports stage the original sheets under
 `<project>/art-sources/character-cues/`. The first three sheets do not modify runtime cue
 files. Once all four are present, `character_cues.py` processes the bundle and replaces
 `images/charui/cues/` only after every action passes.

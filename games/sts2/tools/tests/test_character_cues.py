@@ -123,6 +123,22 @@ class CharacterCueProcessorTests(unittest.TestCase):
             with self.assertRaisesRegex(CharacterCueError, "attack median body height"):
                 process_bundle(sources, root / "images", root / "review")
 
+    def test_resamples_backend_rounded_sheet_and_rejects_wrong_shape(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sources = self._sources(root)
+            # Gemini returns a 2:3 request as 848x1264: right shape, not whole cells.
+            with Image.open(sources["dead"]) as dead:
+                dead.resize((848, 1264), Image.Resampling.NEAREST).save(sources["dead"])
+
+            metadata = process_bundle(sources, root / "images", root / "review")
+            self.assertEqual(6, len(metadata["actions"]["dead"]["frames"]))
+
+            with Image.open(sources["dead"]) as dead:
+                dead.resize((1001, 1001), Image.Resampling.NEAREST).save(sources["dead"])
+            with self.assertRaisesRegex(CharacterCueError, "not divisible"):
+                process_bundle(sources, root / "images2", root / "review2")
+
     def test_requires_all_four_action_sheets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
