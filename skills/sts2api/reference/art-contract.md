@@ -230,7 +230,7 @@ bodies, one identity; a real trial kept the same individual across all three bod
 
 | sheet | 2x2 cells, reading order | references |
 |---|---|---|
-| `body_sheet` | combat body, rest body, merchant body, empty | portrait source as identity + `character_combat` style |
+| `body_sheet` | combat body, rest body, merchant body, empty | portrait source as identity + two `character_combat` and two `character_rest` style samples |
 | `icon_sheet` | top-panel icon, large Energy icon, text Energy icon, empty | `character_icon` style; no portrait |
 
 ```powershell
@@ -242,7 +242,9 @@ python ../modmaker/scripts/gen_sprite.py import-sheet --sheet icon_sheet `
   --input <sheet.png> --out <ModName>/images
 ```
 
-`generate-sheet` spends one call, keeps the raw sheet under
+`generate-sheet` spends one call, splits `--max-refs` (default 4) evenly across the
+reference families of the sheet's cells, so the rest cell always sees seated rest
+examples, keeps the raw sheet under
 `<project>/art-sources/generated/sheets/`, trims a drawn grid line from every cell edge,
 and normalizes each cell exactly as `import` does for its slot. `import-sheet` does the same
 for an existing image (a host-tool output, the user's file, or a kept sheet) without a
@@ -264,9 +266,10 @@ only background">.
 ```
 
 Each cell line carries its slot's own constraint from the templates below: the three
-bodies are the same individual in a 3/4 view facing right (combat stance, sitting at rest,
-standing at ease); the icon is readable at 88x88; the large Energy icon is readable at 256x256; the text Energy icon is the
-same core simplified for 24x24.
+bodies use the combat, rest, and merchant cell lines of the body template; the icon is
+readable at 88x88; the large Energy icon is readable at 256x256; the text Energy icon is
+the same core simplified for 24x24. Models often fill the empty fourth cell anyway; the
+split ignores it.
 
 `character_select` uses full-bleed `cover` with chroma off, like the vanilla buttons: the
 opaque source fills the whole 132x195 canvas and its edges may crop.
@@ -330,7 +333,8 @@ separate Character sheet or canonical identity asset. Identity-sensitive
 `--identity-reference`: the kept generated source
 `<project>/art-sources/generated/character_select/<slug>.png`, or the user's original file
 for an imported portrait. The 132x195 normalized copy is too small to carry the face and
-costume. It goes in addition to up to three type-matched STS2 style references. Background, top-panel icon, full-energy layers, and large/text Energy-icon
+costume. It goes in addition to the type-matched STS2 style references (three for a single
+asset, two combat plus two rest for `body_sheet`). Background, top-panel icon, full-energy layers, and large/text Energy-icon
 acquisition use a palette/motif brief derived from the user's description and reviewed
 selection portrait, but deliberately do not receive the portrait as an image reference.
 
@@ -424,19 +428,67 @@ Place it on a perfectly flat solid #FF00FF background. No text, border, badge, w
 detached particles, or borrowed character design.
 ```
 
-Static combat/rest/merchant body:
+Static combat/rest/merchant body. The lead and the closing paragraph are shared; a single
+`generate --spec` request uses the one pose line for its spec, and the `body_sheet`
+request puts the three pose lines into its cell lines after the consistency sentence:
 
 ```text
-Original full-body character render for a deck-building combat game. Match the provided
-references as STYLE ONLY: softly hand-painted 2D volume, readable broad value groups,
-controlled brush texture, and a neutral grounded pose in a 3/4 view facing right, toward
-the enemies. Show the entire original body on
-one baseline, centered and filling about 85-90% of a square. Use a perfectly flat solid
-#FF00FF background with no floor, shadow, attack effect, text, UI, watermark, or animation
-streak. Light from a held object stays on the object and the body: no glow halo, light
-spill, or cast shadow on the background. This still is the static fallback body, not a
-Spine animation frame.
+Original full-body character render for a deck-building combat game. The provided STS2
+body renders are STYLE ONLY: paint exactly like them, in soft hand-painted 2D with subtle
+angular faceted planes, muted slightly desaturated colors, broad value groups, warm key
+light from the upper left and cool shadows. Paint with no black ink outlines: every edge
+is a soft change of value or color, as in those renders. Use their sturdy stylized
+proportions: a strong readable silhouette, with hands, feet, and the signature item
+slightly oversized, never spindly. The last provided image, the selection portrait, is
+CHARACTER IDENTITY ONLY: copy its face, head covering, hair, costume, colors, and
+signature item, but repaint them in the body-render style above, never in the portrait's
+inked comic style or close-up framing. Character: <one-sentence identity brief>.
+
+The body is turned toward the right in a 3/4 view and never faces the viewer; the
+signature item stays in the character's right hand, the hand nearer the viewer, whenever
+it is held.
+
+Combat: combat idle, ready for battle like the STS2 combat references: feet planted wide
+apart, knees bent, weight low, chest and face turned toward the right edge so the torso is
+seen at a 3/4 angle rather than from the front, the signature item raised and brandished
+toward the enemies on the right, the other arm ready; a held pose, not mid-attack.
+
+Rest: resting at the rest site like the STS2 rest references, facing right where the game
+scene places its campfire; draw only the character, never the fire, firewood, or ground:
+seated low on the ground, knees drawn up with one knee higher than the other, forearms on
+the knees, shoulders slumped and head lowered toward the fire, the signature item set down
+touching the body; an asymmetric, compact pose about as wide as it is tall, seen from a
+slightly raised camera that looks down onto the head and shoulders.
+
+Merchant: visiting a shop: standing relaxed with weight on one leg, the signature item
+lowered at the side, head turned slightly right as if browsing wares; calm, not a combat
+stance.
+
+Each standing body sits on one baseline and fills about 85-90% of its square's height.
+The STS2 renders' soft floor shadows are not part of the style: paint no shadow, contact
+shadow, or dark patch under the feet, seat, or body. Use a perfectly flat solid #FF00FF
+background with no floor, attack effect, text, UI, watermark, or animation streak. Light
+from a held object stays inside the object and on the body: the background right next to
+a light source is the same flat #FF00FF, with no glow, bloom, halo, or haze outside the
+silhouette. This still is the static fallback body, not a Spine animation frame. Not
+photorealistic, not a 3D render, not pixel art, not a comic illustration.
 ```
+
+The `body_sheet` consistency sentence, placed after the grid paragraph:
+
+```text
+All three bodies are the same individual at the same scale, with the head covering, mask,
+hair, and costume unchanged in every cell, turned toward the right in a 3/4 view and
+never facing the viewer, and the signature item stays in the character's right hand, the
+hand nearer the viewer, in every cell where it is held.
+```
+
+Each rule answers a failure seen in real trials against the shipped references: the
+portrait's ink outlines and flat cel shading leak into the bodies unless the prompt says
+to repaint them; "neutral" yields a passive, front-facing stance instead of vanilla's
+braced one; a rest pose without the seated rest samples sits on air or sprawls wide; the
+word "campfire" alone makes the model paint one; and the vanilla samples' gray floor
+shadows come back as a dark key-colored patch that survives the cut-out.
 
 Combat cue action sheets:
 
