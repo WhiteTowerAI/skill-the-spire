@@ -246,8 +246,10 @@ python ${GAME_TOOLS_DIR}/gen_sprite.py import-sheet --sheet icon_sheet `
 `generate-sheet` spends one call, splits `--max-refs` (default 4) evenly across the
 reference families of the sheet's cells, so the rest cell always sees seated rest
 examples, keeps the raw sheet under
-`<project>/art-sources/generated/sheets/`, trims a drawn grid line from every cell edge,
-and normalizes each cell exactly as `import` does for its slot. `import-sheet` does the same
+`<project>/art-sources/generated/sheets/`, finds each cell's subject over the whole sheet
+(drawn grid lines erased; a subject may run past its cell edge, as real bodies' feet do,
+and a fixed-grid crop once cut them), crops it with a key-colored margin, and normalizes
+it exactly as `import` does for its slot. `import-sheet` does the same
 for an existing image (a host-tool output, the user's file, or a kept sheet) without a
 call. A failed cell leaves the others placed; fix it by re-importing or by regenerating that
 one slot with `generate --spec` (one call, counted against that asset's regenerations).

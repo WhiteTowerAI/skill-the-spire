@@ -66,6 +66,8 @@ GRID_LINE_FRINGE_SPILL = 40
 # background; farther ones (up to the edge threshold) only when at least this bright
 # relative to it.
 FLOOD_NEAR_BACKGROUND = 60
+# Edge-reachable pixels this close to the pure key flood whatever the background is.
+FLOOD_NEAR_KEY = 90
 FLOOD_MIN_RELATIVE_LUMINANCE = 0.8
 SHEET_COLUMNS = CUE_CONTRACT.sheet_columns
 SHEET_ROWS = CUE_CONTRACT.sheet_rows
@@ -338,19 +340,25 @@ def _luminance(color: tuple[int, int, int]) -> float:
 
 
 def _flood_background(
-    image: Image.Image, background: tuple[int, int, int], edge_threshold: int
+    image: Image.Image,
+    background: tuple[int, int, int],
+    edge_threshold: int,
+    key: tuple[int, int, int],
 ) -> Image.Image:
     """Clear background reachable from the sheet edge.
 
-    A pixel floods when it is near the measured background, or within `edge_threshold` of
-    it and at least about as bright (a light glow haze). Darker blends are subject: see-
-    through glass painted as darkened key, or an ink rim; despill neutralizes their tint.
-    Flooding those too punched lantern glass out of a real 1K sheet.
+    A pixel floods when it is near the measured background or near the pure key, or within
+    `edge_threshold` of the background and at least about as bright (a light glow haze).
+    Darker blends are subject: see-through glass painted as darkened key, or an ink rim;
+    despill neutralizes their tint. Flooding those too punched lantern glass out of a real
+    1K sheet. Near-key pixels always flood: a real sheet on pale pink drew its cell borders
+    in saturated key, and their blends, darker than that background, became a frame.
     """
     image = image.convert("RGBA")
     pixels = image.load()
     width, height = image.size
     near = FLOOD_NEAR_BACKGROUND ** 2
+    near_key = FLOOD_NEAR_KEY ** 2
     edge = edge_threshold ** 2
     bright_enough = FLOOD_MIN_RELATIVE_LUMINANCE * _luminance(background)
     visited = bytearray(width * height)
@@ -365,7 +373,8 @@ def _flood_background(
         r, g, b, a = pixels[x, y]
         distance = ((r - background[0]) ** 2 + (g - background[1]) ** 2
                     + (b - background[2]) ** 2)
-        if not (a == 0 or distance < near
+        to_key = (r - key[0]) ** 2 + (g - key[1]) ** 2 + (b - key[2]) ** 2
+        if not (a == 0 or distance < near or to_key < near_key
                 or (distance < edge and _luminance((r, g, b)) >= bright_enough)):
             continue
         pixels[x, y] = (0, 0, 0, 0)
@@ -384,8 +393,12 @@ def segment_sheet(
     cols: int,
     threshold: int = 40,
     edge_threshold: int = 200,
-) -> tuple[Image.Image, list[tuple[Image.Image, tuple[int, int, int, int], Component, int]]]:
+    required: Iterable[int] | None = None,
+) -> tuple[Image.Image, list[tuple[Image.Image, tuple[int, int, int, int], Component, int] | None]]:
     """Key the whole sheet and give every cell its body plus detached companions.
+
+    Only the `required` cells (default: all) must hold a subject; any other empty cell is
+    returned as None.
 
     Models do not draw on an exact pixel grid: in a real 2K sheet 12 of 16 bodies crossed
     their cell's bottom edge by 2-7 px, and fixed-grid cropping cut their feet. So each cell
@@ -406,7 +419,7 @@ def segment_sheet(
     # 1K sheet painted lantern glass as see-through key, (133, 30, 99), and the wide pass
     # punched it out. Background reachable from the sheet edge is flooded as before.
     cleaned = _clear_near(erased, (background, KEY_COLORS[key]), threshold)
-    cleaned = _flood_background(cleaned, background, edge_threshold)
+    cleaned = _flood_background(cleaned, background, edge_threshold, KEY_COLORS[key])
     # A subject on the key color holds no key hue by contract (pink or purple subjects use
     # the other key), so any tint left anywhere is background seen through the subject.
     cleaned = despill_edges(cleaned, key, band=None)
@@ -424,9 +437,12 @@ def segment_sheet(
     for component in components:
         counts[cell_of(component)] += 1
         bodies.setdefault(cell_of(component), component)
-    missing = [index for index in range(rows * cols) if index not in bodies]
+    expected = range(rows * cols) if required is None else required
+    missing = [index for index in expected if index not in bodies]
     if missing:
-        raise CharacterCueError(f"cells {missing} are empty after key-color cleanup")
+        raise CharacterCueError(
+            f"cells {[index + 1 for index in missing]} are empty after key-color cleanup"
+        )
 
     kept: dict[int, list[Component]] = {index: [body] for index, body in bodies.items()}
     body_ids = {id(body) for body in bodies.values()}
@@ -450,6 +466,9 @@ def segment_sheet(
 
     cells = []
     for index in range(rows * cols):
+        if index not in kept:
+            cells.append(None)
+            continue
         members = kept[index]
         bbox = (
             min(member.bbox[0] for member in members),
@@ -505,7 +524,8 @@ def extract_sheet(
             f"cue sheet size {raw.width}x{raw.height} is not divisible by its "
             f"{cols} cols x {rows} rows grid (expected {expected[0]}x{expected[1]})"
         )
-    cleaned, cells = segment_sheet(raw, rows, cols, threshold, edge_threshold)
+    played = {cell for contract in ACTION_CONTRACT.values() for cell in contract["play_cells"]}
+    cleaned, cells = segment_sheet(raw, rows, cols, threshold, edge_threshold, required=played)
     # Each played cell is extracted once, under the first cue that plays it; unplayed cells
     # (the spare Hit pose) take no part in scaling.
     frames: dict[str, list[ExtractedFrame]] = {action: [] for action in ACTION_CONTRACT}

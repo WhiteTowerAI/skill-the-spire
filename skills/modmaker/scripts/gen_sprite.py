@@ -1087,29 +1087,52 @@ def stage_character_cue_source(
 CUE_MIN_SOURCE_FRACTION = 0.75
 
 
-# Models draw grid lines between sheet cells even when told not to. Trimming this fraction
-# of the cell from every edge drops the line; the subject keeps its own margin inside.
-SHEET_CELL_INSET = 0.016
+# Key-colored room kept around each cell's subject, so the slot's own keying sees a clean
+# border, as a fraction of the cell.
+SHEET_SUBJECT_MARGIN = 0.04
 
 
 def split_sheet_cells(source: "Image.Image", sheet) -> list[tuple[str, "Image.Image"]]:
-    """Cut a Character art sheet into (slot name, cell) pairs in reading order."""
-    cell_width = source.width / sheet.columns
-    cell_height = source.height / sheet.rows
-    inset = max(4, round(min(cell_width, cell_height) * SHEET_CELL_INSET))
-    cells = []
-    for index, slot_name in enumerate(sheet.cells):
-        if slot_name is None:
-            continue
-        row, column = divmod(index, sheet.columns)
-        box = (
-            round(column * cell_width) + inset,
-            round(row * cell_height) + inset,
-            round((column + 1) * cell_width) - inset,
-            round((row + 1) * cell_height) - inset,
+    """Cut a Character art sheet into (slot name, subject crop) pairs in reading order.
+
+    Models do not draw on an exact grid: real sheets put feet a few pixels past the cell
+    edge, and a fixed-grid crop with an inset cut them. So each cell's subject is found over
+    the whole sheet (`character_cues.segment_sheet`), the drawn-grid-free source is cropped
+    around it with a key-colored margin, and any other cell's subject inside that box is
+    repainted with the key. Each crop is then keyed by its slot exactly as `import` does.
+    """
+    from character_cues import CharacterCueError, erase_grid_lines, segment_sheet
+
+    rgba = source.convert("RGBA")
+    key = detect_key_color(rgba)
+    erased = erase_grid_lines(rgba, sheet.rows, sheet.columns, key)
+    filled = [index for index, name in enumerate(sheet.cells) if name is not None]
+    try:
+        _, cells = segment_sheet(rgba, sheet.rows, sheet.columns, required=filled)
+    except CharacterCueError as exc:
+        raise SystemExit(f"[gen_sprite] {sheet.name}: {exc}") from exc
+
+    owner = Image.new("L", rgba.size, 0)
+    owner_pixels = owner.load()
+    for index, cell in enumerate(cells):
+        if cell is not None:
+            for flat in cell[2].pixels:
+                owner_pixels[flat % rgba.width, flat // rgba.width] = index + 1
+    key_fill = Image.new("RGBA", rgba.size, (*KEY_COLORS[key], 255))
+    margin = max(8, round(min(rgba.width / sheet.columns, rgba.height / sheet.rows)
+                          * SHEET_SUBJECT_MARGIN))
+    crops = []
+    for index in filled:
+        left, top, right, bottom = cells[index][2].bbox
+        box = (max(0, left - margin), max(0, top - margin),
+               min(rgba.width, right + margin), min(rgba.height, bottom + margin))
+        crop = erased.crop(box)
+        others = owner.crop(box).point(
+            lambda value, mine=index + 1: 255 if value not in (0, mine) else 0
         )
-        cells.append((slot_name, source.crop(box)))
-    return cells
+        crop.paste(key_fill.crop(box), (0, 0), others)
+        crops.append((sheet.cells[index], crop))
+    return crops
 
 
 def place_sheet_cells(source: "Image.Image", sheet, out_dir: Path, log) -> tuple[list[Path], list[str]]:
