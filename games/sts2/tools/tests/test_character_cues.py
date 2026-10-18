@@ -139,6 +139,41 @@ class CharacterCueProcessorTests(unittest.TestCase):
             with self.assertRaisesRegex(CharacterCueError, "not divisible"):
                 process_bundle(sources, root / "images2", root / "review2")
 
+    def test_keys_each_cell_despills_rims_and_keeps_detached_item(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sources = self._sources(root)
+            contract = ACTION_CONTRACT["idle"]
+            cell = 100
+            off_key = (255, 85, 252, 255)  # a real Gemini background, not pure #FF00FF
+            image = Image.new("RGBA", (contract["cols"] * cell, contract["rows"] * cell), off_key)
+            draw = ImageDraw.Draw(image)
+            for index in range(contract["rows"] * contract["cols"]):
+                row, column = divmod(index, contract["cols"])
+                x, y = column * cell, row * cell
+                # Background noise just past the global threshold, joined to the drawn grid
+                # lines: keyed as one sheet it became a cell-sized component.
+                draw.line((x, y + 6, x + cell - 1, y + 6), fill=(255, 130, 250, 255))
+                draw.rectangle((x + 30, y + 10, x + 69, y + 89), fill=(40, 130, 190, 255))
+                draw.rectangle((x + 30, y + 10, x + 69, y + 11), fill=(120, 40, 120, 255))
+                draw.rectangle((x + 74, y + 40, x + 81, y + 52), fill=(230, 170, 60, 255))
+            for line in range(cell, image.width, cell):
+                draw.line((line, 0, line, image.height), fill=(10, 10, 10, 255), width=3)
+            for line in range(cell, image.height, cell):
+                draw.line((0, line, image.width, line), fill=(10, 10, 10, 255), width=3)
+            image.save(sources["idle"])
+
+            process_bundle(sources, root / "images", root / "review")
+
+            for frame_path in sorted((root / "images" / "charui" / "cues" / "idle").glob("*.png")):
+                with Image.open(frame_path) as frame:
+                    rgba = frame.convert("RGBA")
+                    width = rgba.getchannel("A").getbbox()
+                    self.assertLess(width[2] - width[0], 512 - 52)  # not a whole cell
+                    pixels = [p for p in rgba.getdata() if p[3]]
+                    self.assertTrue(any(p[0] > 200 and p[2] < 120 for p in pixels))  # item kept
+                    self.assertFalse(any(min(p[0], p[2]) - p[1] > 40 for p in pixels))
+
     def test_requires_all_four_action_sheets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

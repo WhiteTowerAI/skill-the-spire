@@ -39,7 +39,7 @@ import statistics
 import tempfile
 from typing import Iterable
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from character_art import CHARACTER_ART_BUNDLE
 
 
@@ -54,6 +54,9 @@ BASELINE_Y = CUE_CONTRACT.baseline_y
 # error of its grid is resampled to the exact grid size; anything further off is the wrong
 # shape and fails.
 SHEET_ASPECT_TOLERANCE = 0.02
+# Fraction of each cell trimmed from every edge before keying, to drop drawn grid lines
+# (the same inset gen_sprite uses for Character art sheets).
+CELL_INSET = 0.016
 ACTION_CONTRACT = {
     action.name: {
         "state_name": action.state_name,
@@ -117,7 +120,7 @@ def detect_key_color(image: Image.Image, threshold: int = 100) -> str:
 def remove_key_color(
     image: Image.Image,
     threshold: int = 100,
-    edge_threshold: int = 150,
+    edge_threshold: int = 200,
     key: str = "magenta",
 ) -> Image.Image:
     """Remove the solid key color, then flood the softer key color inward from edges."""
@@ -160,6 +163,46 @@ def remove_key_color(
             pixels[x, y] = (0, 0, 0, 0)
         queue.extend(((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)))
     return image
+
+
+def despill_edges(image: Image.Image, key: str = "magenta", band: int = 2) -> Image.Image:
+    """Neutralize key-colored spill on the visible pixels within `band` px of transparency.
+    Antialiased edges blend the subject (often a dark ink line) with the key; distance keying
+    cannot remove those without eating real dark pixels, and left alone they draw a magenta
+    (or green) rim around the cut-out on dark game UI."""
+    image = image.convert("RGBA")
+    alpha = image.getchannel("A").point(lambda a: 255 if a else 0)
+    eroded = alpha.filter(ImageFilter.MinFilter(2 * band + 1))
+    pixels = image.load()
+    alpha_pixels, eroded_pixels = alpha.load(), eroded.load()
+    for y in range(image.height):
+        for x in range(image.width):
+            if not alpha_pixels[x, y] or eroded_pixels[x, y]:
+                continue
+            r, g, b, a = pixels[x, y]
+            if key == "green":
+                spill = g - max(r, b)
+                if spill > 0:
+                    pixels[x, y] = (r, g - spill, b, a)
+            else:
+                spill = min(r, b) - g
+                if spill > 0:
+                    pixels[x, y] = (r - spill, g, b - spill, a)
+    return image
+
+
+def key_cell(
+    cell: Image.Image,
+    key: str = "magenta",
+    threshold: int = 100,
+    edge_threshold: int = 200,
+) -> Image.Image:
+    """Key one grid cell on its own. Models draw dark grid lines between cells; keying the
+    whole sheet lets those lines wall off the edge flood, so a cell's noisy off-key
+    background survived as one cell-sized component in a real 2K sheet. Despill matches
+    static Character bodies: without it, 56-80% of the visible rim of real frames stayed
+    magenta-tinted ink."""
+    return despill_edges(remove_key_color(cell, threshold, edge_threshold, key), key)
 
 
 def connected_components(image: Image.Image, alpha_threshold: int = 8) -> list[Component]:
@@ -206,10 +249,36 @@ def connected_components(image: Image.Image, alpha_threshold: int = 8) -> list[C
 
 
 def _largest_component_image(image: Image.Image) -> tuple[Image.Image, Component, int]:
+    """The body plus its detached companions (same rule as static Character cut-outs).
+
+    A held item often separates from the body after keying (a thin handle, a dropped
+    lantern); keeping only the largest component made a real lantern blink out of 7 of 32
+    frames. Companions are components of at least 1% of the body's area whose center lies
+    within the body's bounds padded by 25%; smaller or farther ones are debris.
+    """
     components = connected_components(image)
     if not components:
         raise CharacterCueError("frame is empty after key-color cleanup")
-    selected = components[0]
+    body = components[0]
+    left, top, right, bottom = body.bbox
+    padding = max(2, round(max(right - left, bottom - top) * 0.25))
+    min_area = max(3, round(body.area * 0.01))
+    kept = [body] + [
+        component for component in components[1:]
+        if component.area >= min_area
+        and left - padding <= (component.bbox[0] + component.bbox[2]) / 2 <= right + padding
+        and top - padding <= (component.bbox[1] + component.bbox[3]) / 2 <= bottom + padding
+    ]
+    selected = Component(
+        area=sum(component.area for component in kept),
+        bbox=(
+            min(component.bbox[0] for component in kept),
+            min(component.bbox[1] for component in kept),
+            max(component.bbox[2] for component in kept),
+            max(component.bbox[3] for component in kept),
+        ),
+        pixels=tuple(pixel for component in kept for pixel in component.pixels),
+    )
     mask = Image.new("L", image.size, 0)
     mask_pixels = mask.load()
     for flat_index in selected.pixels:
@@ -223,7 +292,7 @@ def extract_action(
     action: str,
     source_path: Path,
     threshold: int = 100,
-    edge_threshold: int = 150,
+    edge_threshold: int = 200,
 ) -> tuple[Image.Image, list[ExtractedFrame]]:
     contract = ACTION_CONTRACT[action]
     try:
@@ -251,18 +320,22 @@ def extract_action(
             f"{cols} cols x {rows} rows grid "
             f"(expected {cols * 512}x{rows * 512})"
         )
-    cleaned = remove_key_color(raw.copy(), threshold, edge_threshold, detect_key_color(raw))
+    key = detect_key_color(raw)
+    cleaned = Image.new("RGBA", raw.size, (0, 0, 0, 0))
     cell_width, cell_height = raw.width // cols, raw.height // rows
+    inset = max(4, round(min(cell_width, cell_height) * CELL_INSET))
+    cell_width, cell_height = cell_width - 2 * inset, cell_height - 2 * inset
     frames: list[ExtractedFrame] = []
     for index in range(rows * cols):
         row, column = divmod(index, cols)
         source_box = (
-            column * cell_width,
-            row * cell_height,
-            (column + 1) * cell_width,
-            (row + 1) * cell_height,
+            column * (cell_width + 2 * inset) + inset,
+            row * (cell_height + 2 * inset) + inset,
+            (column + 1) * (cell_width + 2 * inset) - inset,
+            (row + 1) * (cell_height + 2 * inset) - inset,
         )
-        cell = cleaned.crop(source_box)
+        cell = key_cell(raw.crop(source_box), key, threshold, edge_threshold)
+        cleaned.paste(cell, source_box[:2])
         subject, selected, component_count = _largest_component_image(cell)
         left, top, right, bottom = selected.bbox
         if left <= 0 or top <= 0 or right >= cell_width or bottom >= cell_height:
@@ -305,11 +378,20 @@ def normalize_frames(
 ) -> tuple[dict[str, list[Image.Image]], dict[str, list[dict]], float, dict[str, float]]:
     ratios = _validate_body_scale(frames_by_action)
     all_frames = [frame for frames in frames_by_action.values() for frame in frames]
-    max_width = max(frame.image.width for frame in all_frames)
+    # Keep each frame's horizontal place in its cell (one shared transform) instead of
+    # centering every frame on its own bounds: re-centering slid real Attack/Hit frames up
+    # to ~30 px against each other whenever a limb or the weapon reached out.
+    union_left = min(frame.source_bbox[0] for frame in all_frames)
+    union_right = max(frame.source_bbox[2] for frame in all_frames)
     max_height = max(frame.image.height for frame in all_frames)
     box_width = CONTENT_BOX[2] - CONTENT_BOX[0]
     box_height = CONTENT_BOX[3] - CONTENT_BOX[1]
-    global_scale = min(box_width / max_width, box_height / max_height)
+    global_scale = min(box_width / (union_right - union_left), box_height / max_height)
+    offset_x = (
+        CONTENT_BOX[0]
+        + (box_width - (union_right - union_left) * global_scale) / 2
+        - union_left * global_scale
+    )
 
     normalized: dict[str, list[Image.Image]] = {}
     metadata: dict[str, list[dict]] = {}
@@ -320,7 +402,10 @@ def normalize_frames(
             new_width = max(1, round(frame.image.width * global_scale))
             new_height = max(1, round(frame.image.height * global_scale))
             resized = frame.image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-            paste_x = CONTENT_BOX[0] + (box_width - new_width) // 2
+            paste_x = min(
+                max(CONTENT_BOX[0], round(offset_x + frame.source_bbox[0] * global_scale)),
+                CONTENT_BOX[2] - new_width,
+            )
             paste_y = BASELINE_Y - new_height
             canvas = Image.new("RGBA", FRAME_SIZE, (0, 0, 0, 0))
             canvas.paste(resized, (paste_x, paste_y), resized)
@@ -447,7 +532,7 @@ def process_bundle(
     images_root: Path,
     review_dir: Path,
     threshold: int = 100,
-    edge_threshold: int = 150,
+    edge_threshold: int = 200,
 ) -> dict:
     missing = [action for action in ACTION_CONTRACT if action not in sources]
     if missing:
@@ -549,7 +634,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--images-root", type=Path, required=True)
     parser.add_argument("--review-dir", type=Path, required=True)
     parser.add_argument("--threshold", type=int, default=100)
-    parser.add_argument("--edge-threshold", type=int, default=150)
+    parser.add_argument("--edge-threshold", type=int, default=200)
     return parser
 
 

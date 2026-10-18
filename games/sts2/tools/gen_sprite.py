@@ -49,7 +49,7 @@ import urllib.error
 from pathlib import Path
 
 from character_art import CHARACTER_ART_BUNDLE, CharacterArtValidationError
-from character_cues import KEY_COLORS, detect_key_color, remove_key_color
+from character_cues import KEY_COLORS, despill_edges, detect_key_color, remove_key_color
 from ritsu_profile import PROFILE
 
 try:
@@ -230,31 +230,6 @@ def chroma_key(img: "Image.Image", key: str = "magenta",
         else:
             out.append((r, g, b, a))
     img.putdata(out)
-    return img
-
-
-def despill_edges(img: "Image.Image", key: str = "magenta", band: int = 2) -> "Image.Image":
-    """Neutralize key-colored spill on the visible pixels within `band` px of transparency.
-    Antialiased edges blend the subject with the key; left alone they draw a thin magenta
-    (or green) line around the cut-out on dark game UI."""
-    img = img.convert("RGBA")
-    alpha = img.getchannel("A").point(lambda a: 255 if a else 0)
-    eroded = alpha.filter(ImageFilter.MinFilter(2 * band + 1))
-    px = img.load()
-    a_px, e_px = alpha.load(), eroded.load()
-    for y in range(img.height):
-        for x in range(img.width):
-            if not a_px[x, y] or e_px[x, y]:
-                continue
-            r, g, b, a = px[x, y]
-            if key == "green":
-                spill = g - max(r, b)
-                if spill > 0:
-                    px[x, y] = (r, g - spill, b, a)
-            else:
-                spill = min(r, b) - g
-                if spill > 0:
-                    px[x, y] = (r - spill, g, b - spill, a)
     return img
 
 
