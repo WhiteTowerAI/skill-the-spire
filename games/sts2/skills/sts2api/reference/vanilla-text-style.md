@@ -26,7 +26,17 @@ Build runs `text_style.py`: broken markup fails the Build, and style drift is li
 | `kinds` | Where the term comes from: `keyword`, `power`, `orb`, `enchantment`, `affliction`, `hover_tip`, or `observed` in rules text. |
 
 Search the glossary before writing any game term in either language. Never translate a
-vanilla term yourself, and never reuse a vanilla name for a different Mod concept.
+vanilla term yourself, and do not reuse a vanilla name for a different Mod concept by default:
+players read it as the vanilla mechanic.
+
+A **deliberate name collision** is the exception. When the user keeps such a name on purpose
+(for example 闪电 for a Mod effect that is not the Lightning Orb, because their theme calls it
+that), keep it, record it once in `DESIGN.md` § Decisions with the reason, and write it
+**plain** wherever it means the Mod concept: a highlight promises the vanilla term and its
+tooltip. A Mod-owned Keyword, Power, Orb, Enchantment, or Affliction with that title follows the
+next paragraph instead, since it has its own tooltip. Build keeps listing `term ... is not
+highlighted` for the plain uses; once the collision is recorded, those warnings are expected
+and need no fix.
 
 The Mod's own titled content is vocabulary too. A custom Keyword, Power, Orb, Enchantment, or
 Affliction keeps one exact name per language everywhere, and every *other* string that names
@@ -166,7 +176,8 @@ template's `RegisteredKeywordIds`. Record each tip in SPEC `presentation.hover t
 - Every named Power, keyword, or created Card has its hover tip.
 
 Build lists each remaining deviation in `.text-style.log`. Fix it, or record in `MEMORY.md`
-why the vanilla shape does not apply to that string.
+why the vanilla shape does not apply to that string. A deliberate name collision recorded in
+DESIGN (§ Vocabulary) already counts as recorded.
 
 ## Verification
 

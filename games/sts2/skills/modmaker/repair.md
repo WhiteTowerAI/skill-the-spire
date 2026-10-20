@@ -16,7 +16,8 @@ Mod without rebuilding it.
 - If the code does not implement the accepted SPEC, correct the code or SPEC detail without
   changing the intended result.
 - If the fix would change player-visible behavior, text, scope, or presentation, stop and obtain
-  acceptance; update DESIGN and SPEC before code.
+  acceptance; update DESIGN and SPEC before code. A choice DESIGN marks `(delegated)` is
+  yours: change it without asking, update DESIGN and SPEC, and report the change.
 - If a maintained route is absent, or runtime evidence contradicts it, implement the operation
   as a Mod-local route under `${STS2API_SKILL_DIR}/grounding.md` § Mod-local Routes and record
   the contradicted route in `MEMORY.md` as a pack defect. Never approximate it with ungrounded

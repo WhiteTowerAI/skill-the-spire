@@ -21,7 +21,8 @@ and Tier 2 all pass on a condition that never fires in a real run. Two checks, n
 - every Mod-owned counter or resource has both a source and a spend or reset.
 
 When one fails, ask the user one question with a recommended fix. Never silently change an
-accepted value.
+accepted value. Under delegation, fix a value marked `(delegated)` yourself, update DESIGN,
+and say so in the confirmation; a value the user stated still gets the question.
 
 ## Use the owner pages
 

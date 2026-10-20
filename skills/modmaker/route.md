@@ -15,6 +15,20 @@ Choose the smallest useful path and state it briefly:
 - **Resume:** the user requested no change and work is unfinished. Continue from the first
   incomplete stage without another interview.
 
+**Delegation** rides on any path. When the user hands the design choices to you ("you
+decide", "up to you", "你全权决定", "你看着办"), record `delegated: yes` and resolve every
+open creative, design, and numeric choice yourself with the option you would have recommended.
+Ask no co-design or clarification question about those choices. Three questions remain the
+user's even then:
+
+- spending money, including any paid image call (the art question in `interview.md` keeps its
+  placeholder default and its call count before paid generation);
+- dropping, shrinking, or substituting something the user explicitly asked for; and
+- an unsupported operation, handled as below.
+
+Delegation covers the choices the current request leaves open. A later request starts
+undelegated unless the user delegates again.
+
 Load only the design references that the current question needs:
 
 - Character/Foundation: `design/character-foundation.md`
@@ -35,6 +49,7 @@ Carry this compact handoff to Interview or DESIGN:
 
 ```text
 path: fast | co-design | revision | resume
+delegated: no | yes
 intent: <one player-facing sentence>
 settled: <facts and choices to preserve>
 open: none | <only material unresolved choices>

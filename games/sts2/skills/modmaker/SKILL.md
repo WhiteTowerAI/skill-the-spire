@@ -122,6 +122,9 @@ human idea
    change; use revision for a requested change.
 2. **Interview.** Ask only questions whose answers materially change behavior, scope, state,
    supported operations, or proof. The exact-content fast path asks zero questions when complete.
+   When the user hands you the design ("you decide"), follow the delegation rule in
+   `route.md`: choose instead of asking, except for money, cutting what they asked for, and
+   unsupported operations.
 3. **DESIGN.** Preserve intent, accepted decisions, current scope, and explicit not-now items in
    concise Markdown. Do not create IDs, ledgers, trace blocks, coherence contracts, completion
    claims, settlements, or impact queues.
@@ -139,6 +142,7 @@ human idea
 7. **Tier 1.** Launch normally and require the exact load marker with no fresh error block.
 8. **Tier 2.** Run `launch.py --self-test` (it parks other harness Mods and restores them), and require independently
    asserted structured post-state plus `selftest done`. A fired/used line is diagnostic only.
+   Rerun only what a change can reach, and stop per `verify.md` § Reruns and when to stop.
 9. **Headed review.** Use it only for selected image framing, UI, controller/mouse behavior,
    animation, or subjective experience that structured state cannot prove.
 10. **Finalize.** Read the actual Build, Tier 1, Tier 2, and human outcomes. State what passed,
