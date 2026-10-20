@@ -63,7 +63,12 @@ The project contains:
   a build-time input only — it stays in the project directory and is never deployed into
   `mods/<ModName>/`, because the game reads every `.json` there as a Mod manifest;
 - `<ModName>Code/MainFile.cs`, whose exact load marker records the loaded RitsuLib Runtime
-  module's version and `Sts2ApiCompat` assembly metadata.
+  module's version and `Sts2ApiCompat` assembly metadata, followed by the line that arms the
+  Tier 2 kit only under `--t2selftest`; and
+- `<ModName>Code/SelfTestKit.cs`, the fixed Tier 2 self-test kit
+  (`../sts2api/reference/selftest-harness.md`). Never edit it;
+  `scaffold.py --refresh-selftest-kit` rewrites it in an existing project, and the Mod's own
+  checks go in `SelfTestScenarios.cs`.
 
 RitsuLib remains a separate runtime Mod. Reuse the official Steam Workshop item
 `3747602295` when it is already installed; `build.py` checks the game `mods/` directory

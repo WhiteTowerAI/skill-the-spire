@@ -166,8 +166,8 @@ intent constructor and never hand-write intent text — it would desync from the
 
 ## Self-test driver body
 
-**enemy encounter** → the **`CombatEnemy`** variant in `reference/selftest-harness.md`: enter
-each current-SPEC reachable Encounter variant, then assert `NextMove.Id` before each driven turn
+**enemy encounter** → the **`CombatEnemy`** variant in `reference/selftest-harness.md`, as a
+`plan.Custom` scenario (§ Other hosts): enter each current-SPEC reachable Encounter variant, then assert `NextMove.Id` before each driven turn
 and the performed-move entry after. Exercise selected deterministic/conditional states and
 selected random outcomes; do not create one retained proof project per authorable family shape.
 

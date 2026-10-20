@@ -233,6 +233,12 @@ def main(argv: list[str]) -> int:
     run_lines = lines[load_index:] if load_index is not None else lines
     done_line = next((ln for ln in run_lines if done_marker in ln), None)
     failed_line = next((ln for ln in run_lines if failed_marker in ln), None)
+    # SelfTestKit run report: the scope line says whether --t2selftest=<names> narrowed it.
+    partial_line = next((ln for ln in run_lines if f"{MARKER} {mod} selftest scope: only=" in ln), None)
+    kit_lines = [ln for ln in run_lines
+                 if f"{MARKER} {mod} selftest summary:" in ln
+                 or f"{MARKER} {mod} selftest coverage:" in ln]
+    kit_failures = [ln for ln in run_lines if f"{MARKER} {mod} scenario FAILED:" in ln]
 
     # Tier-2 accepts only a harness state proof emitted after a concrete assertion.
     # Element hook logs are useful diagnostics but may also fire during previews.
@@ -279,6 +285,12 @@ def main(argv: list[str]) -> int:
         else:
             print(f"Tier-2 state proof  : NOT FOUND (pattern '{tier2_pattern}') -- asserted post-state not observed")
         print(f"Harness terminal     : {('FAILED => ' + failed_line) if failed_line else ('DONE => ' + done_line) if done_line else 'NOT FOUND'}")
+        for line in kit_lines:
+            print(f"Kit report           : {line.split(MARKER, 1)[-1].strip()}")
+        for line in kit_failures[:12]:
+            print(f"Kit scenario failure : {line.split('scenario FAILED:', 1)[-1].strip()}")
+        if len(kit_failures) > 12:
+            print(f"Kit scenario failure : ... {len(kit_failures) - 12} more in the log")
     print()
 
     if parsed_error_blocks:
@@ -299,7 +311,11 @@ def main(argv: list[str]) -> int:
     )
 
     if load_line and profile_ok and not parsed_error_blocks and tier2_ok:
-        if tier2_requested:
+        if tier2_requested and partial_line:
+            scope = partial_line.split("selftest scope:", 1)[-1].strip()
+            print(f"[PASS] Tier-2 partial run ({scope}): the selected scenarios passed. This is "
+                  "not the final Tier 2; run the full self-test on the build you deliver.")
+        elif tier2_requested:
             print(f"[PASS] Tier-2 verified: {mod} loaded AND asserted post-state matched.")
         else:
             print(f"[PASS] Tier-1 verified: {mod} loaded ok.")
@@ -321,7 +337,8 @@ def main(argv: list[str]) -> int:
                   "wrong. This is a behavior bug; classify it in repair.md.")
         elif kind == "budget":
             print("[FAIL] Harness scenario budget ran out before the scenario finished. "
-                  "Raise Budget in SelfTest.cs for a long scenario, or repair the stalled step.")
+                  "Raise that scenario's budgetSeconds (or Budget in an older SelfTest.cs) for a "
+                  "long scenario, or repair the stalled step.")
         else:
             print("[FAIL] Harness reported selftest FAILED. This is a setup/navigation miss; "
                   "use the manual fallback and report tier-1 only unless the effect is observed.")

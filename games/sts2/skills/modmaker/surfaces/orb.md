@@ -144,8 +144,8 @@ appear literally above. Only the `{Passive}`/`{Evoke}` values are substituted.
 
 ## Self-test driver body
 
-**orb** → `InCombat`, driven entirely through the real host: channel via the host, advance a
-turn so the passive fires on its own, then evoke.
+An orb gets a named `plan.Combat` scenario driven entirely through the real host: channel via
+the host, `await t.EndTurn()` so the passive fires on its own, then evoke.
 
 `OrbCmd.Channel<T>`, `OrbCmd.Passive`, and `OrbCmd.EvokeNext` are the host commands. Note
 that calling `OrbCmd.Passive` directly is a *diagnostic*, not the passive proof — see below.

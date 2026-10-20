@@ -28,6 +28,7 @@ macOS/Linux Steam roots and Godot user-data dir are best-effort -- override with
 Usage:
   python launch.py --mod-name ExampleMod                  # tier-1: load, verify, close
   python launch.py --self-test --mod-name ExampleMod      # tier-2: self-drive, poll
+  python launch.py --self-test --only "face.*,spark" --mod-name ExampleMod   # rerun a subset
 """
 from __future__ import annotations
 
@@ -362,10 +363,17 @@ def main(argv: list[str]) -> int:
                          f"{DEFAULT_WAIT_SECONDS['self-test']}s).")
     ap.add_argument("--self-test", action="store_true",
                     help="Append --t2selftest and poll for the harness done/FAILED marker.")
+    ap.add_argument("--only", default=None, metavar="NAME[,NAME...]",
+                    help="With --self-test: run only these SelfTestKit scenarios (a trailing * "
+                         "matches a prefix). A partial run is never the final Tier 2.")
     ap.add_argument("--mod-name", required=True,
                     help="Mod name (Mod.json 'id') whose markers are verified.")
     ap.add_argument("--log-path", default=None, help="godot.log location")
     args = ap.parse_args(argv)
+    if args.only is not None and not args.self_test:
+        ap.error("--only needs --self-test")
+    if args.only is not None and (not args.only.strip() or any(c.isspace() for c in args.only)):
+        ap.error("--only takes comma-separated scenario names without spaces")
 
     game_dir = Path(args.game_dir) if args.game_dir else default_game_dir()
     log_path = Path(args.log_path) if args.log_path else default_log_path()
@@ -408,8 +416,9 @@ def main(argv: list[str]) -> int:
             return 2
         if parked:
             print(f"[launch] parked other self-test Mods for this run: {', '.join(parked)}")
-        extra_args.append("--t2selftest")
-        print("[launch] SELF-TEST mode: passing --t2selftest; harness will self-drive its scenario")
+        gate = f"--{HARNESS_GATE}" + (f"={args.only}" if args.only else "")
+        extra_args.append(gate)
+        print(f"[launch] SELF-TEST mode: passing {gate}; harness will self-drive its scenario")
 
     print(f"[launch] starting {exe.name} ...")
     try:
@@ -459,8 +468,9 @@ def report_self_test_outcome(outcome: str, proc: subprocess.Popen, wait_seconds:
         print("[launch] harness reported: state proof FAILED (the scenario ran; the post-state "
               "was wrong) -- a behavior bug, classify it in repair.md", file=sys.stderr)
     elif outcome == "budget-exceeded":
-        print("[launch] harness reported: scenario budget exceeded -- raise Budget in "
-              "SelfTest.cs for a long scenario, or repair the stalled step", file=sys.stderr)
+        print("[launch] harness reported: scenario budget exceeded -- raise that scenario's "
+              "budgetSeconds (or Budget in an older SelfTest.cs) for a long scenario, or repair "
+              "the stalled step", file=sys.stderr)
     elif outcome == "failed":
         print("[launch] harness reported: selftest FAILED (couldn't reach/drive its scenario) -- "
               "verify.md: fall back to manual, report tier-1 only", file=sys.stderr)
@@ -469,7 +479,8 @@ def report_self_test_outcome(outcome: str, proc: subprocess.Popen, wait_seconds:
               "treat as harness/setup failure", file=sys.stderr)
     else:
         hint = ("rerun with a larger --wait-seconds" if explicit_wait
-                else "no harness budget line was seen; check the load marker and SelfTest.Arm")
+                else "no harness budget line was seen; check the load marker and the "
+                     "SelfTestKit.Arm line in MainFile.cs")
         print(f"[launch] TIMEOUT after {wait_seconds}s with no terminal marker -- the launcher "
               f"stopped waiting; this is not evidence about the Mod ({hint})", file=sys.stderr)
 

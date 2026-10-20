@@ -278,18 +278,29 @@ switching to an old template.
   When `<id>` carries the tested Mod's own prefix, it still fails: the Mod's Character did
   not register, so repair registration.
 
-### `selftest FAILED: timeout: scenario budget <N>s exceeded`
+### `selftest FAILED: timeout: ...`
 
-- **Cause:** the scenario was still running when the harness's own `Budget` ran out. A
-  whole Character content set can need 4-6 minutes; the default is 180 s.
-- **Fix:** if the breadcrumbs show steady progress, raise `Budget` in `SelfTest.cs` and
-  rebuild (`launch.py` follows the logged budget). If one step stalled, repair that step.
+- **Cause:** a scenario was still running when its own budget ran out (`scenario FAILED:
+  <name>: TIMEOUT: ... at '<step>'`), or the watchdog found it stuck at a step whose await
+  ignores cancellation (`scenario <name> stuck at '<step>'`). A Mod built before the kit reports
+  `scenario budget <N>s exceeded` from its whole-file `Budget`.
+- **Fix:** if the scenario is long and progressing, raise its `budgetSeconds` in
+  `SelfTestScenarios.cs` (or `Budget` in an older `SelfTest.cs`) and rebuild; `launch.py`
+  follows the logged budget. If one step stalled, repair that step.
+
+### `the action queue did not settle in 20s`
+
+- **Cause:** a scenario's action left the queue waiting, almost always a Card choice screen
+  that no scripted selector answers.
+- **Fix:** wrap the action in `using var choices = t.ScriptChoices(...)`.
 
 ### `selftest FAILED: state proof: <observation>`
 
-- **Cause:** the scenario ran and an asserted post-state was wrong.
-- **Fix:** treat it as a behavior bug: localize it with the diagnostic trigger lines, repair
-  the failed invariant, rebuild, and rerun Tier 2.
+- **Cause:** a scenario ran and an asserted post-state was wrong, or the scenario threw.
+- **Fix:** treat it as a behavior bug: localize it with the `scenario FAILED:` detail and its
+  `scenario trail:` lines, repair the failed invariant, rebuild, and rerun the failed scenarios
+  with `launch.py --only` before the final full run. Change an expectation only when it encoded
+  SPEC wrongly (`repair.md`).
 
 ### `selftest done` appears without the structured state proof
 

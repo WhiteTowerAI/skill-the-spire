@@ -99,8 +99,8 @@ See `../sts2api/recipes/keyword.md` for the exact registration call and JSON sha
 
 ## Self-test driver body
 
-A keyword has no scenario of its own. Use its host Card's `InCombat` driver
-(`surfaces/card.md`) and add the keyword assertions below to that run.
+A keyword has no scenario of its own. Use its host Card's scenario (`surfaces/card.md`) and
+add the keyword assertions below to it.
 
 ## Proof matrix
 

@@ -72,6 +72,38 @@ class GrepLogTests(unittest.TestCase):
         self.assertEqual(1, code)
         self.assertIn("state proof not found", output)
 
+    def test_partial_kit_run_passes_only_as_partial(self) -> None:
+        code, output = self.run_grep(
+            self.baseline()
+            + [
+                f"INFO [T2MOD-SELFTEST] {self.mod} selftest scope: only=face.* selected=4 of 8",
+                f"INFO [T2MOD-SELFTEST] {self.mod} state proof: kit summary passed=5/5 scope=partial",
+                f"INFO [T2MOD-SELFTEST] {self.mod} selftest summary: passed=5/5 scope=partial elapsed=20.0s",
+                f"INFO [T2MOD-SELFTEST] {self.mod} selftest done",
+            ],
+            "kit summary passed=",
+        )
+        self.assertEqual(0, code)
+        self.assertIn("[PASS] Tier-2 partial run (only=face.* selected=4 of 8)", output)
+        self.assertNotIn("[PASS] Tier-2 verified", output)
+        self.assertIn("Kit report           : ExampleMod selftest summary: passed=5/5", output)
+
+    def test_kit_scenario_failures_are_listed(self) -> None:
+        code, output = self.run_grep(
+            self.baseline()
+            + [
+                f"INFO [T2MOD-SELFTEST] {self.mod} selftest scope: all scenarios=2",
+                f"INFO [T2MOD-SELFTEST] {self.mod} state proof: face.Guard: base Block expected=6 observed=6",
+                f"INFO [T2MOD-SELFTEST] {self.mod} scenario FAILED: face.Strike: FAIL: "
+                "upgraded: Damage expected=10 observed=7 (2.9s)",
+                f"INFO [T2MOD-SELFTEST] {self.mod} selftest FAILED: state proof: 1 of 3 scenarios did not pass",
+            ],
+            "kit summary passed=.* scope=all",
+        )
+        self.assertEqual(1, code)
+        self.assertIn("Kit scenario failure : face.Strike: FAIL: upgraded: Damage expected=10 observed=7", output)
+        self.assertIn("behavior bug", output)
+
     def test_done_alone_is_not_state_proof(self) -> None:
         code, output = self.run_grep(
             self.baseline() + [f"INFO [T2MOD-SELFTEST] {self.mod} selftest done"],
@@ -452,6 +484,36 @@ class ParkingTests(unittest.TestCase):
             self.assertEqual([{"Target"}], seen)
             self.assertIn("behavior bug", output)
             self.assertEqual({"OtherHarness", "Target"}, {p.name for p in mods.iterdir()})
+
+    def test_only_narrows_the_harness_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp)
+            write_mod(game / "mods", "Target", True)
+            (game / launch.default_exe_name()).write_text("", encoding="utf-8")
+            log_path = game / "godot.log"
+            seen: list[list[str]] = []
+
+            def start_game(_exe, _game_dir, extra_args):
+                seen.append(list(extra_args))
+                log_path.write_text("\n".join([
+                    "[T2MOD-SELFTEST] Target loaded ok",
+                    "[T2MOD-SELFTEST] Target selftest done",
+                ]), encoding="utf-8")
+                return FakeGame()
+
+            with mock.patch.object(launch, "launch_process", start_game), \
+                    mock.patch.object(launch.time, "sleep"), \
+                    contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                code = launch.main([
+                    "--self-test", "--only", "face.*,spark", "--mod-name", "Target",
+                    "--game-dir", str(game), "--log-path", str(log_path), "--wait-seconds", "5",
+                ])
+            self.assertEqual(0, code)
+            self.assertEqual([["--t2selftest=face.*,spark"]], seen)
+
+    def test_only_requires_self_test(self) -> None:
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            launch.main(["--only", "face.*", "--mod-name", "Target"])
 
     def test_leftover_parked_mods_are_restored_first(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
