@@ -810,7 +810,8 @@ Lift button tiles), and the three-image Character pools:
 `character_select/`, `character_background/`, `character_icon/`, `character_combat/`, and
 `character_rest/`.
 The tool **auto-selects the matching visual family** and randomly samples three distinct
-images when the pool is larger. Character aliases are explicit: locked uses select,
+images when the pool is larger. A file named on its own in `--reference` is never sampled
+away: it is sent after the sampled style images. Character aliases are explicit: locked uses select,
 marker/energy use icon, merchant and the combat cue sheet use combat, and rest uses rest;
 background uses its own
 wide selection-scene pool. A missing

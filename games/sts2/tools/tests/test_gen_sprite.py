@@ -753,6 +753,29 @@ class GenSpriteTests(unittest.TestCase):
             self.assertEqual(chosen, references)
             factory.return_value.sample.assert_called_once_with(expected_pool, 3)
 
+    def test_named_reference_file_survives_the_style_sample(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pool = root / "card"
+            pool.mkdir()
+            style = []
+            for index in range(5):
+                path = pool / f"style-{index}.png"
+                path.touch()
+                style.append(path)
+            earlier = root / "earlier-portrait.png"
+            earlier.touch()
+            chosen = [style[3], style[0], style[2]]
+
+            with mock.patch.object(gen_sprite.random, "SystemRandom") as factory:
+                factory.return_value.sample.return_value = chosen
+                references = gen_sprite.resolve_references(
+                    f"{root},{earlier}", 3, lambda _message: None, spec="card"
+                )
+
+            self.assertEqual(chosen + [earlier], references)
+            factory.return_value.sample.assert_called_once_with(style, 3)
+
     def test_missing_named_reference_stops_before_generation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             present = Path(tmp) / "a.png"

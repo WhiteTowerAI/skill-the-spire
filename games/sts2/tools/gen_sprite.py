@@ -958,7 +958,10 @@ def resolve_references(
 
     `families` overrides the spec's one family for a sheet whose cells need different
     poses (body_sheet: combat and rest). The cap is then split evenly across the family
-    subdirs found, so random sampling never drops a cell's only pose examples."""
+    subdirs found, so random sampling never drops a cell's only pose examples.
+
+    The cap samples only images found in directories. A file named on its own (an earlier
+    portrait that fixes identity, say) is always sent, after the sampled style images."""
     IMG_EXT = (".png", ".jpg", ".jpeg", ".webp")
     def images_in(d: Path) -> list[Path]:
         return [f for f in sorted(d.iterdir()) if f.suffix.lower() in IMG_EXT]
@@ -973,6 +976,7 @@ def resolve_references(
     if not families and spec:
         families = (REFERENCE_FAMILIES.get(spec, spec),)
     paths: list[Path] = []
+    named: list[Path] = []
     pools: list[list[Path]] = []
     for token in str(ref_arg or "").split(","):
         token = token.strip()
@@ -992,7 +996,7 @@ def resolve_references(
             if not subdirs:
                 paths.extend(images_in(p))
         elif p.is_file():
-            paths.append(p)
+            named.append(p)
         else:
             # A named reference that is missing must stop before a paid call, not
             # silently weaken the style match.
@@ -1008,7 +1012,7 @@ def resolve_references(
         ] + [path for path in paths if path not in pooled]
     elif max_refs and len(paths) > max_refs:
         paths = random.SystemRandom().sample(paths, max_refs)
-    paths = list(dict.fromkeys(paths))
+    paths = list(dict.fromkeys(paths + named))
     if identity is not None:
         # The cue sheet's anchor goes first, as the real trials sent it ("the FIRST provided
         # image is the anchor"); every other identity image goes last.
@@ -1679,12 +1683,14 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--model", help="override the backend's model")
     g.add_argument("--size", type=parse_size, help="override WxH (required for unverified specs)")
     g.add_argument("--reference", help="few-shot STS2 style references: a dir (e.g. the "
-                   "sts2api art-samples/) or comma-separated image files. Sent to the "
+                   "sts2api art-samples/) or comma-separated image files; a named file "
+                   "is always sent, a dir is sampled by --max-refs. Sent to the "
                    "backend's /images/edits endpoint so output matches the game style. "
                    "Requires a backend that accepts reference images (e.g. gpt-image "
                    "edits or Gemini/nano-banana). Omit → plain text-to-image.")
     g.add_argument("--max-refs", type=int, default=3,
-                   help="randomly sample at most three style references; identity is added separately")
+                   help="randomly sample at most three style references from dirs; named files "
+                        "and identity are added separately")
     g.add_argument(
         "--identity-reference",
         help="the approved Character selection portrait, preferably its full-resolution source "
@@ -1709,7 +1715,8 @@ def build_parser() -> argparse.ArgumentParser:
     gs.add_argument("--reference", help="few-shot STS2 style references, as for generate")
     gs.add_argument("--max-refs", type=int, default=4,
                     help="style references to sample, split evenly across the sheet's reference "
-                         "families (body_sheet: two combat, two rest); identity is added separately")
+                         "families (body_sheet: two combat, two rest); named files and identity "
+                         "are added separately")
     gs.add_argument("--identity-reference",
                     help="the approved selection portrait's full-resolution source; "
                          "required for body_sheet, rejected for icon_sheet")
