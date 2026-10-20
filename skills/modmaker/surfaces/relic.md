@@ -192,22 +192,22 @@ selected.
 
 ## Self-test driver body
 
-**relic** → `BeforeCombat` (grant it, its combat-start hook fires on its own);
+A Relic gets a named `plan.Combat` scenario (`reference/selftest-harness.md` § relic). A
+combat-start trigger obtains the Relic in `beforeCombat`, so its hook fires as the combat
+starts, and the body asserts SPEC state; a trigger during combat obtains it in the body and
+drives the real source.
 
-The focused body is in `reference/selftest-harness.md` § relic: grant the relic in
-`BeforeCombat` before `EnterRoomDebug`, then assert SPEC state in `InCombat`.
-
-A Relic whose cadence crosses combats uses that reference's multi-combat variant.
+A Relic whose cadence crosses combats uses that reference's stateful-cadence recipe.
 Other bounded-state profiles derive only their selected transition/reset/persistence checks.
 
 ## Proof matrix
 
 - Assert the declared effect's exact expected/observed state plus its visible trigger.
-- **Assert the cadence.** The `InCombat` assertion alone runs inside turn 1, so it cannot
+- **Assert the cadence.** A combat-start assertion alone runs inside turn 1, so it cannot
   distinguish "once per combat" from "every turn": deleting the `TurnNumber <= 1` guard
   still passes it. Whenever `cadence` is not `every trigger`, advance past the boundary and
-  assert the value did **not** change again — one more turn for a per-combat relic, a second
-  combat for a per-run relic. A relic declaring `every trigger` records that and needs no
+  assert the value did **not** change again — one more turn (`t.EndTurn()`) for a per-combat
+  relic, a second combat (`t.StartNewCombat()`) for a per-run relic. A relic declaring `every trigger` records that and needs no
   extra case.
 - **Assert each declared keyword tip resolves.** A Relic gets no tooltip from merely naming a
   keyword, so a description naming one without a matching `RegisteredKeywordIds` entry leaves

@@ -104,39 +104,34 @@ The load marker proves Tier 1. The trigger marker stays for diagnosis, but it is
 Tier-2 proof: preview/calculation hooks may log without committing state. The harness in
 the next step independently asserts post-state and emits the only accepted proof marker.
 
-## 2.5 Emit the tier-2 self-test harness
+## 2.5 Write the Tier 2 scenarios
 
-This is what makes tier-2 automatic: the effect fires and is checked with no human at the
-keyboard. Follow `../sts2api/reference/selftest-harness.md`:
+This is what makes Tier 2 automatic: the effect fires and is checked with no human at the
+keyboard. The scaffold already generated `<ModName>Code/SelfTestKit.cs` and armed it in
+`MainFile.Initialize()`; never edit either line or file (Build rejects a changed kit). Follow
+`../sts2api/reference/selftest-harness.md` and write only
+`<ModName>Code/SelfTestScenarios.cs`, in the `<ModName>` namespace:
 
-1. Emit `<ModName>Code/SelfTest.cs` from that page. The arg gate, menu-to-run navigation,
-   timeout, catch, terminal markers, and ship-safety are shared; the hosted room entry is
-   scenario-specific. Keep it in the **same namespace as `MainFile.cs`**
-   (`<ModName>`; the scaffold writes `namespace <ModName>;`) so it reaches `MainFile.Logger`.
-2. Fill **exactly one** source driver body from the source element's surface page
-   § Self-test driver body. A **power**, **keyword**, or **enchantment** adds its assertions to
-   its host Card's run; an **orb** is driven through its channel host. For a multi-element SPEC,
-   use that source driver, then observe each dependent state in dependency order; there is no
-   `combo` element. Each selected capability (advanced targeting, calculated values, bounded
-   state, secondary resources, ordered buffers, Rest Site options, Rewards, Card Piles, Runtime
-   UI) adds only the cases SPEC selected, from its reference's proof matrix.
-3. In every driver, snapshot concrete state, drive the real source, assert the SPEC's exact
-   post-state, then call the shared `StateProof(...)`. Its structured
-   `[T2MOD-SELFTEST] <ModName> state proof:` line must include the selected framework,
-   framework version, host, compat target, expected value, and observed value. A broad
-   `played/fired/used` marker never qualifies.
-4. Add the **gated arm line** to `MainFile.Initialize()`, right after the load marker:
+1. Do nothing for registration and text: the kit's roll call checks every Card, Relic, Potion,
+   and Power in both languages on every run.
+2. Add one `plan.FaceCheck<TCard>()` line per simple Card from SPEC § Autotest. Write no
+   assertions for it.
+3. Add one named `plan.Combat` or `plan.Custom` scenario per remaining SPEC scenario, from the
+   source element's surface page § Self-test driver body. A **power**, **keyword**, or
+   **enchantment** adds its assertions to its host Card's scenario; an **orb** is driven through
+   its channel host. For a multi-element SPEC, drive the real source, then observe each
+   dependent state in dependency order; there is no `combo` element. Each selected capability
+   (advanced targeting, calculated values, bounded state, secondary resources, ordered buffers,
+   Rest Site options, Rewards, Card Piles, Runtime UI) adds only the cases SPEC selected, from
+   its reference's proof matrix.
+4. In every scenario, snapshot concrete state, drive the real source (`t.Play`, `t.UsePotion`,
+   a real room or button), and assert SPEC's exact post-state with `t.Proof(condition,
+   observation)`, naming the expected and observed values. A broad `played/fired/used` marker
+   never qualifies.
 
-```csharp
-if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();   // verification-only; dormant for end users
-```
-`using MegaCrit.Sts2.Core.Helpers;` for `CommandLineHelper`. The arg gate means a normal
-user launch never arms it — no menu driving, fully inert. It ships dormant inside the mod.
-
-**Grounding rule still holds:** the harness uses only the confirmed public Cmds in
-`selftest-harness.md` (`CardCmd.AutoPlay`, `PowerCmd.Apply`, `RelicCmd.Obtain`, potion
-`EnqueueManualUse`, …). Do **not** invent an API or try `NDevConsole…ProcessCommand(string)`
-— that path is unreachable (private field); the page explains why.
+**Grounding rule still holds:** scenarios use pinned public STS2/RitsuLib APIs, starting with the
+kit's own helpers. Do **not** invent an API or try `NDevConsole…ProcessCommand(string)`: that
+path is unreachable (private field); the reference names the public Cmds it wraps.
 
 ## 3. Write localization
 
@@ -266,8 +261,8 @@ Fix any mismatch now. This trace is not a check result and is never reported as 
 ## 5. Update state
 
 Record in `MEMORY.md`: the class name, the hook used, the exact loc keys written,
-any Cmd choices, the state lifetime/reset/persistence (when present), which DRIVER body
-the harness uses, and the **art outcome**
+any Cmd choices, the state lifetime/reset/persistence (when present), the scenario names in
+`SelfTestScenarios.cs`, and the **art outcome**
 (placeholder, or generated `<slug>.png`/`big/<slug>.png` — and if generate was chosen
 but fell back to placeholder, why). Mark `author and SelfTest` done in `PLAN.md`. Then go
 to `build.md`.

@@ -24,6 +24,9 @@ Before MSBuild, the tool verifies:
 - every rich-text tag is a vanilla tag, unparameterized, balanced, and correctly nested
   (failure), and every string is compared with the vanilla text style of
   `reference/vanilla-text-style.md` (warnings written to `<project>/.text-style.log`);
+- `<ModName>Code/SelfTestKit.cs`, when present, is the bundled kit of its version unchanged
+  (failure on a hand edit; a project without it, or with an older kit, passes with a note:
+  `scaffold.py --refresh-selftest-kit` updates it);
 - the installed host's `release_info.json` is stable `0.107.1`;
 - the game `mods/STS2-RitsuLib` directory or official Steam Workshop item `3747602295`
   is a complete RitsuLib 0.6 runtime folder: loader `STS2-RitsuLib.dll`, schema-2

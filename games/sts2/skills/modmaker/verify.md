@@ -11,17 +11,14 @@ bug when the cited shared route may be violating its own contract.
 
 Build preflight establishes the static localization half: required directories, table/key
 parity, nonempty values, SmartFormat variable parity, valid rich-text markup, and the static
-vanilla-style comparison in `.text-style.log`. Tier 2 owns the runtime half. Before
-driving the selected behavior, the generated harness snapshots `LocManager.Instance.Language`,
-switches through `eng` and `zhs` with the public `SetLanguage` route, and resolves every
-SPEC-required player-facing `LocString` through its real model/UI consumer. Compare against the
-exact text recorded for that language, reject raw keys and unresolved placeholders, and restore
-the original language in `finally`.
-
-Emit one structured `state proof:` naming both observed language codes only after both passes.
-One language resolving, static JSON parity, or a catalog lookup is not bilingual runtime proof.
-Use the reusable route in `reference/selftest-harness.md`; do not write the player's language
-setting or leave the verification language active after the check.
+vanilla-style comparison in `.text-style.log`. The exact wording is the authored table itself,
+checked against SPEC when you write it. Tier 2 owns the runtime half: on every self-test run the
+kit's roll call switches through `eng` and `zhs` with the public `SetLanguage` route, resolves
+every Card, Relic, Potion, and Power string through its real model consumer, rejects missing,
+empty, raw-key, and unresolved-placeholder values, and restores the player's language. Strings
+of other surfaces (Event pages, Ancient dialogue, Character text) are resolved the same way by
+their own scenario. One language resolving, static JSON parity, or a catalog lookup is not
+bilingual runtime proof. Translation quality, tone, clipping, and layout stay headed review.
 
 ## Tier-1 — does it load? (automated, guaranteed)
 
@@ -50,37 +47,35 @@ This is the guaranteed check: it proves "installs + loads + registered".
 
 ## Tier-2 — does the effect fire? (automated harness, the headline)
 
-**Tier-2 is unattended.** The mod ships an arg-gated in-process harness
-(`SelfTest.cs`, author.md step 2.5). Launched with `--self-test`, it drives itself from the
-main menu into the required hosted scenario and fires the effect — **no dev-console typing,
-no human triggering**. You then grep its independently asserted state proof.
+**Tier-2 is unattended.** The scaffold-generated kit (`SelfTestKit.cs`) and this Mod's
+`SelfTestScenarios.cs` (author.md step 2.5) are compiled in and dormant. Launched with
+`--self-test`, the kit runs the roll call, drives itself from the main menu into each hosted
+scenario, and fires the effects — **no dev-console typing, no human triggering**. You then grep
+its result.
 
 ```bash
 python ${GAME_TOOLS_DIR}/launch.py --self-test --mod-name <ModName>
-python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "<state-proof-pattern>"
+python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "kit summary passed=.* scope=all"
 ```
 
-The `--tier2-pattern` selects the SPEC invariant from structured
-`[T2MOD-SELFTEST] <ModName> state proof:` lines. Every proof also records
-`framework=RitsuLib`, the actual loaded version, and exact
-`host=0.107.1 compat=0.107.1`. Use concrete
-expected/observed vocabulary:
-`"card damage.*observed=6"`, `"counter.*6 -> 2"`,
-`"cadence cross-combat threshold.*observed=0/4"`,
-`"enemy attack.*observed=6"`, `"monster vocabulary complete.*observed=all"`,
-`"event gold.*observed=25"`,
-`"forcedFollowUp.*restored=True"`, or
-`"character foundation/static-presentation.*observed=all"`,
-`"resource UI complete.*observed=all"`, or
-`"ordered buffer complete.*observed=all"`, or
-`"reward complete.*observed=all"`, or
-`"custom card piles complete.*observed=all"`, or
-`"runtime UI complete.*observed=all"`. A Reward run follows `surfaces/reward.md` and proves
-claim/refusal, the selected presentation route, and pending-save reconstruction. A custom-pile run follows
-`reference/card-piles.md` and proves the consumers selected by SPEC; API support does
-not require a separate run for every documented public consumer. The verifier ignores all
-  ordinary `played/fired/used` hook logs, even if the regex matches them, and separately
-  requires the exact load marker and `selftest done`.
+The kit logs `state proof: kit summary passed=N/N scope=all` only when the roll call, every face
+check, and every scenario passed, followed by `selftest done`. `grep_log.py` prints the kit's
+coverage and summary lines and every `scenario FAILED:` line with its expected and observed
+values. To inspect one SPEC invariant, match its own line instead, for example
+`--tier2-pattern "lantern_combat_start_energy: .*observed=4"`. The verifier ignores all ordinary
+`played/fired/used` hook logs, even if the regex matches them, and separately requires the exact
+load marker and `selftest done`. A Reward run follows `surfaces/reward.md` and proves
+claim/refusal, the selected presentation route, and pending-save reconstruction; a custom-pile
+run follows `reference/card-piles.md` and proves the consumers selected by SPEC.
+
+While repairing, `--only` reruns just the named scenarios (a trailing `*` matches a prefix):
+
+```bash
+python ${GAME_TOOLS_DIR}/launch.py --self-test --only "face.*,lantern_combat_start_energy" --mod-name <ModName>
+```
+
+A filtered run logs `scope=partial`, and `grep_log.py` reports `[PASS] Tier-2 partial run`. That
+is never the Tier 2 you report (§ Reruns and when to stop).
 
 Derive the verification checklist only from the concrete variants selected in the current
 human-readable SPEC. Do not prebuild a nine-family matrix, claim omitted variants, or turn an
@@ -98,8 +93,8 @@ run actually proves it.
 > history/metrics: ... ModelNotFoundException`; `grep_log.py` ignores exactly that block
 > unless the missing model belongs to the Mod under test.
 
-- `launch.py --self-test` passes `--t2selftest` (which arms the harness — a normal launch
-  never does), then **polls the log** until the harness prints its terminal marker
+- `launch.py --self-test` passes `--t2selftest` (or `--t2selftest=<names>` with `--only`),
+  which arms the harness — a normal launch never does — then **polls the log** until the harness prints its terminal marker
   (`[T2MOD-SELFTEST] <ModName> selftest done` or `… selftest FAILED`). It waits for the
   harness's logged `selftest budget` plus boot time; `--wait-seconds N` overrides that.
   It exits 0 only for `done`; `FAILED`, a launcher timeout, or the game exiting before a
@@ -107,7 +102,8 @@ run actually proves it.
   read the fresh log.
 - `grep_log.py --tier2-pattern` applies the regex only to structured `state proof:` lines.
   It passes only if the exact load marker, an asserted state proof, and `selftest done` are
-  all present, with no `FAILED` or fresh-run error blocks → `[PASS] Tier-2 verified`.
+  all present, with no `FAILED` or fresh-run error blocks → `[PASS] Tier-2 verified`, or
+  `[PASS] Tier-2 partial run` after `--only`.
   Multiline/global errors after this mod's load marker fail even when the mod name appears
   only in stack context (or not at all).
 - For every selected surface and capability, follow the surface page § Proof matrix and the
@@ -146,16 +142,21 @@ separately. An unrun Tier 1 or Tier 2 check remains an explicit exception, never
 - `selftest done` but the matching state proof is **absent** → the harness reached its
   scenario, but no accepted post-state assertion passed → a **real tier-2 behavior bug** →
   classify in `repair.md` (ordinary trigger markers may still reveal where behavior diverged).
-- `selftest FAILED: state proof: <observation>` → the scenario ran and the post-state was
-  wrong → a **real tier-2 behavior bug** → classify in `repair.md`.
-- `selftest FAILED: timeout: scenario budget <N>s exceeded` → the scenario was still
-  running when its own budget ran out. If the scenario is long (a full content set), raise
-  `Budget` in `SelfTest.cs`, rebuild, and rerun; otherwise read the breadcrumbs for the
-  stalled step. Report it as a timeout, never as a navigation failure.
+- `selftest FAILED: state proof: <k> of <n> scenarios did not pass: ...` → those scenarios
+  ran and an assertion failed or the scenario threw; every other scenario still ran. Each
+  `scenario FAILED:` line names the expected and observed values, and its `scenario trail:`
+  lines show what the host did. A **real tier-2 behavior bug** in the Mod, or a scenario that
+  encoded SPEC wrongly → classify in `repair.md`. Fix every independent failure before the
+  next launch.
+- `selftest FAILED: timeout: ...` → a scenario ran out of its own budget, or the watchdog found
+  it stuck at the named step. For a long scenario, raise its `budgetSeconds` in
+  `SelfTestScenarios.cs`; otherwise repair the stalled step. Report it as a timeout, never as a
+  navigation failure.
 - `[launch] TIMEOUT` with no terminal marker → the launcher stopped waiting first. Rerun
   with a larger `--wait-seconds`; it is not evidence about the Mod.
-- any other `selftest FAILED: <stage>` → the **harness couldn't reach/drive its scenario**
-  (navigation — a setup problem, not your effect). Do **not** report a tier-2
+- `selftest FAILED: setup: ...` (or any other stage) → the **harness couldn't reach/drive its
+  scenario** (navigation, an unknown `--only` name, a scenario definition error — a setup
+  problem, not your effect). Do **not** report a tier-2
   failure of the mod or rewrite the element. Classify any harness navigation/timing repair as
   implementation-equivalent, or fall back to the **manual guide below**; if that is not
   feasible, report **tier-1 only** honestly.
@@ -207,14 +208,14 @@ Tier 1 has passed, a behavior rerun needs only the Tier 2 launch.
 |---|---|
 | Image files only: no code, csproj, resource-path, or localization change | Build, Tier 1, then the headed review that owns the image. The last Tier 2 pass still stands. |
 | Localization text only: same keys and variables | Build. Tier 2 can wait for the final run, where its bilingual proof checks the new text. |
-| Code, csproj, manifest, resource paths, or `SelfTest.cs` | Build, then Tier 2. |
+| Code, csproj, manifest, resource paths, or `SelfTestScenarios.cs` | Build, then Tier 2. While repairing, `--only` the affected scenarios. |
 
 When the last run or Build shows more than one independent defect, fix each one under
 `repair.md`, then share one launch. Do not launch once per fix.
 
-The Tier 2 you report must have run on the build you deliver. If code or localization changed
-after the last pass, run Tier 2 once more before the report; an image-only change does not
-need it.
+The Tier 2 you report must be an unfiltered run (`scope=all`) on the build you deliver. If code
+or localization changed after the last full pass, or the last passes were `--only` runs, run the
+full self-test once more before the report; an image-only change does not need it.
 
 Stop launching and report when any of these holds:
 
@@ -237,8 +238,10 @@ Build the user-facing report directly from observed results:
 
 - **Built:** name the generated Mod and artifact path only when Build passed.
 - **Tier 1:** quote the load-marker result and fresh-error result, or say it was not run/failed.
-- **Tier 2:** name the real host scenario and concrete structured state assertion, or say it was
-  not run, could not be reached, or failed. Never promote a fired/used log to proof.
+- **Tier 2:** quote the kit summary (`passed=N/N scope=all`), name the scenarios and face-checked
+  Cards with their asserted values, and quote the coverage line, including content it never
+  exercised; or say it was not run, could not be reached, or failed. Never promote a fired/used
+  log to proof.
 - **Headed review:** name only observations a human actually reported. Otherwise state that
   visual/UI/controller/animation/subjective review was not run.
 - **Not included:** summarize explicit DESIGN `Not Now` items and accepted placeholders when

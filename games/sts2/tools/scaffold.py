@@ -9,6 +9,7 @@ import shutil
 import sys
 from pathlib import Path
 
+import selftest_kit
 from launch import default_game_dir
 from ritsu_profile import (
     PROFILE,
@@ -203,6 +204,7 @@ def generate(
 '''
     source = f'''using System.Linq;
 using System.Reflection;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Modding;
 using STS2RitsuLib;
 
@@ -226,6 +228,8 @@ public static partial class MainFile
         var compat = frameworkAssembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(attribute => attribute.Key == "Sts2ApiCompat")?.Value ?? "<missing>";
         Logger.Info($"[T2MOD-SELFTEST] {{ModId}} loaded ok framework=RitsuLib frameworkVersion={{frameworkVersion}} compileFrameworkVersion={{CompileFrameworkVersion}} host={PROFILE.host_version} compat={{compat}}");
+        // Verification only: the Tier 2 kit stays dormant unless the game is launched with --t2selftest.
+        {selftest_kit.ARM_LINE}
     }}
 
     static partial void RegisterContent();
@@ -253,6 +257,7 @@ public static partial class MainFile
     _write(project_dir / "Sts2PathDiscovery.props", path_props)
     _write(project_dir / "mod_manifest.json", json.dumps(manifest, indent=2) + "\n")
     _write(project_dir / f"{mod_name}Code" / "MainFile.cs", source)
+    selftest_kit.write(project_dir, mod_name)
     _copy_bundled_godot_sdk(project_dir)
     if emit_override_manifest:
         write_empty_project_manifest(project_dir, mod_name)
@@ -299,6 +304,25 @@ def repin_runtime(project_dir: Path, mod_name: str, compile_profile: RuntimeComp
     return compile_profile.version
 
 
+def refresh_selftest_kit(project_dir: Path, mod_name: str) -> int:
+    try:
+        validate_project_contract(project_dir, mod_name)
+        path = selftest_kit.write(project_dir, mod_name)
+    except (OSError, RitsuProfileError, ValueError) as exc:
+        print(f"[scaffold] FAILED: {exc}", file=sys.stderr)
+        return 2
+    print(f"[scaffold] wrote {path} (SelfTestKit v{selftest_kit.template_version()})")
+    mainfile = project_dir / f"{mod_name}Code" / "MainFile.cs"
+    main_text = mainfile.read_text(encoding="utf-8")
+    if "SelfTestKit.Arm()" not in main_text:
+        print(f"[scaffold] NOTE: {mainfile.name} does not arm the kit. Add this after the load "
+              f"marker: {selftest_kit.ARM_LINE}")
+    if re.search(r"\bSelfTest\.Arm\(\)", main_text):
+        print(f"[scaffold] NOTE: {mainfile.name} still arms an older SelfTest.cs harness; arm only "
+              "one harness, or both run on --t2selftest")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Generate a minimal STS2/RitsuLib consumer project")
     parser.add_argument("--project-dir", required=True)
@@ -316,7 +340,15 @@ def main(argv: list[str]) -> int:
         help="Re-pin an existing project to the currently installed RitsuLib runtime instead "
         "of generating a new one.",
     )
+    parser.add_argument(
+        "--refresh-selftest-kit",
+        action="store_true",
+        help="Rewrite <ModName>Code/SelfTestKit.cs in an existing project from the bundled kit. "
+        "SelfTestScenarios.cs and every other source stay as they are.",
+    )
     args = parser.parse_args(argv)
+    if args.refresh_selftest_kit:
+        return refresh_selftest_kit(Path(args.project_dir), args.mod_name)
     try:
         game_dir = Path(args.game_dir) if args.game_dir else default_game_dir()
         validate_host_version(game_dir)

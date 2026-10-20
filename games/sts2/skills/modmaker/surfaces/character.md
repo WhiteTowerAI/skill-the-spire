@@ -217,12 +217,13 @@ dialogue keeps grammatical agreement.
 
 ## Self-test driver body
 
-**character** → the **`RunStart` + `CombatPlayer`** variant: locate the real custom
-character-select button, click it, then assert runtime identity in combat. The focused body is
-in `reference/selftest-harness.md`.
+**character** → the **`RunStart` + `CombatPlayer`** variant: set
+`plan.Character<TCharacter>()`, so the kit selects the real character-select button by model
+type, confirms it, and waits for the run UI and local Player; then assert runtime identity in a
+`plan.Custom` scenario that comes first in the plan. The focused body is in
+`reference/selftest-harness.md` § Other hosts.
 
-Find the button by its normalized icon resource path, click it and Confirm, and wait for
-`NRun.GlobalUi` before asserting runtime HP/pools/starter multisets. Enter combat, then assert
+Assert runtime HP/pools/starter multisets before any combat changes them. Enter combat, then assert
 designed `MaxEnergy` and the starter mechanic's independent state delta. When those profiles
 are selected, also enter the real RestSite and Shop hosts and assert background/rest/merchant/
 full-energy resources through `CharacterAssetProfile`. Never select the first unlocked vanilla

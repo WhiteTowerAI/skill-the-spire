@@ -89,7 +89,7 @@ Read each file from `../modmaker/` only when its stage begins:
 | `spec.md` | Write exact operations, support routes, and autotest scenarios |
 | `scaffold.md` | Create the pinned local-runtime project and manifest |
 | `quirks.md` | Preventive STS2/RitsuLib rules needed before C# |
-| `author.md` | Generate C#, localization, resources, markers, and `SelfTest.cs` |
+| `author.md` | Generate C#, localization, resources, markers, and `SelfTestScenarios.cs` |
 | `build.md` | Compile, validate, pack, and deploy |
 | `verify.md` | Tier 1, Tier 2, headed review, and direct final report |
 | `repair.md` | Bounded repair from compiler/log/state evidence |
@@ -109,7 +109,7 @@ human idea
   -> implementable SPEC with autotest scenarios
   -> capability_preflight.py (route existence + hook reachability only)
   -> scaffold
-  -> author C# + localization/resources + SelfTest.cs
+  -> author C# + localization/resources + SelfTestScenarios.cs
   -> build
   -> Tier 1 load proof
   -> Tier 2 real-host structured state proof
@@ -134,8 +134,9 @@ human idea
    else.
 5. **Scaffold and Author.** Resolve the local profile, create the project, translate only the
    current SPEC through its recipes, author bilingual localization when used, keep the
-   scaffold's load marker, and generate an arg-gated `SelfTest.cs` from
-   `reference/selftest-harness.md`. Art defaults to checked placeholders unless the SPEC
+   scaffold's load marker and self-test kit, and write `SelfTestScenarios.cs` from
+   `reference/selftest-harness.md`: face checks for simple Cards, a named scenario for every
+   other selected behavior. Art defaults to checked placeholders unless the SPEC
    selects a supported custom route.
 6. **Build.** `build.py` validates the pinned profile, compiles C#, validates manifest/resources/
    localization, packs a PCK when needed, and deploys only the Mod's own artifacts.

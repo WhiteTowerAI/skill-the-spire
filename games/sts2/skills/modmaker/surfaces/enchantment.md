@@ -122,8 +122,8 @@ See `${STS2API_SKILL_DIR}/recipes/enchantment.md` for the exact registration cal
 
 ## Self-test driver body
 
-An enchantment has no scenario of its own. Use its host Card's `InCombat` driver
-(`surfaces/card.md`) and add the enchantment assertions below to that run.
+An enchantment has no scenario of its own. Use its host Card's scenario (`surfaces/card.md`)
+and add the enchantment assertions below to it.
 
 ## Proof matrix
 

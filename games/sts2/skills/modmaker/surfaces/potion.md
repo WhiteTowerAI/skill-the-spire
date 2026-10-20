@@ -136,9 +136,8 @@ when `extra emphasis` is selected.
 
 ## Self-test driver body
 
-**potion** → `InCombat` (`TryToProcure` → `EnqueueManualUse`);
-
-The focused body is in `reference/selftest-harness.md` § potion.
+A Potion gets a named `plan.Combat` scenario that uses it with `t.UsePotion<TPotion>(target)`
+and asserts SPEC state (`reference/selftest-harness.md` § potion).
 
 ## Proof matrix
 
@@ -152,8 +151,8 @@ The focused body is in `reference/selftest-harness.md` § potion.
   the driver retargets and the effect assertion still passes. Assert that the resolved
   target matches the SPEC `effects.target` line — for `one enemy`, that an enemy took the effect and
   the player did not.
-- Assert the declared `usage` when it restricts availability. `EnqueueManualUse` is driven
-  directly from `InCombat`, so `CombatOnly` versus `AnyTime` is otherwise never observed.
+- Assert the declared `usage` when it restricts availability. `t.UsePotion` drives
+  `EnqueueManualUse` inside combat, so `CombatOnly` versus `AnyTime` is otherwise never observed.
 - **Assert each declared keyword tip resolves.** As with Relic, naming a keyword in the
   description surfaces nothing without an explicit `RegisteredKeywordIds` entry. Assert the
   registered id and its resolved title/description.

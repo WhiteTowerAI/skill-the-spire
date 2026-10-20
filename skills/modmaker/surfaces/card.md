@@ -176,7 +176,10 @@ and `reference/content-text-effects.md` only when `extra emphasis` is selected.
 
 ## Self-test driver body
 
-**card** → `InCombat` (`GainEnergy` → spawn into hand → `CardCmd.AutoPlay`);
+A simple Card (SPEC cites only its recipe and `reference/effect-primitives.md`, fixed numbers,
+no condition) takes `plan.FaceCheck<TCard>()` and needs no scenario of its own. Any other Card
+gets a named `plan.Combat` scenario that plays it with `t.Play`, the real manual-play
+lifecycle (`reference/selftest-harness.md`).
 
 A **calculated-value Card** uses the focused matrix in
 `reference/card-computed-values.md`: cover Damage/Block modifiers, zero and changing

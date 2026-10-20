@@ -32,7 +32,9 @@ from localization_contract import (
     LocalizationContractError,
     validate_project_localization,
 )
+import selftest_kit
 from pack_pck import PackError, pack_assets
+from selftest_kit import SelfTestKitError
 from ritsu_profile import (
     PROFILE,
     RitsuProfileError,
@@ -233,6 +235,7 @@ def main(argv: list[str]) -> int:
         print(f"[build] Ancient dialogue OK: {dialogue_summary}")
         override_summary = validate_project_override_manifest(project_dir, mod_name)
         print(f"[build] vanilla override manifest OK: {override_summary}")
+        print(f"[build] self-test kit OK: {selftest_kit.check(project_dir, mod_name)}")
         sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir")
         mods_root_text = get_msbuild_property(csproj, "ModsPath")
         if not sts2_dir_text or not mods_root_text:
@@ -260,6 +263,7 @@ def main(argv: list[str]) -> int:
         AncientDialogueValidationError,
         LocalizationContractError,
         RitsuProfileError,
+        SelfTestKitError,
         TextStyleError,
         VanillaOverrideError,
     ) as exc:

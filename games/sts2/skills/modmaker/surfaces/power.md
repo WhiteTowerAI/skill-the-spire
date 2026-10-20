@@ -148,8 +148,9 @@ selected.
 ## Self-test driver body
 
 A custom Power has no scenario of its own: it is driven through its real host. Use the
-host's driver — a Card host uses `InCombat` per `surfaces/card.md` — and add the Power
-assertions below to that run.
+host's scenario — a Card host plays it with `t.Play` per `surfaces/card.md` — and add the
+Power assertions below to that scenario. A Card that applies a custom Power never takes a face
+check alone.
 
 ## Proof matrix
 

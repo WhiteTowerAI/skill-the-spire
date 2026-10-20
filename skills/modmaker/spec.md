@@ -66,14 +66,24 @@ python ../modmaker/scripts/capability_preflight.py --spec SPEC.md
 
 ## Autotest
 
-Write concrete scenarios, not evidence placeholders. Each scenario names:
+Sort the content first (`../sts2api/reference/selftest-harness.md` § Which content
+gets which check):
 
+- registration and bilingual text of every Card, Relic, Potion, and Power: the self-test kit's
+  roll call checks them on every run; write nothing;
+- each **simple Card** (its Implementation cites only its recipe and
+  `reference/effect-primitives.md`, its numbers are fixed, and it has no condition): list it
+  under `Face checks:`; it gets no scenario; and
+- everything else: one concrete scenario per selected behavior, not an evidence placeholder.
+
+Each scenario names:
+
+- a unique `snake_case` name, which `launch.py --only` reruns;
 - `CombatPlayer`, `CombatEnemy`, `MapNode`, `RunStart`/Character, or the closest maintained host;
-- how SelfTest reaches and drives the real source interaction;
+- how it reaches and drives the real source interaction;
 - exact expected post-state values and object identities;
 - neutral, rejection, degenerate, reset, branch, or unrelated-entry preservation cases required
-  by the selected behavior;
-- the structured `state proof:` pattern emitted only after assertions pass; and
+  by the selected behavior; and
 - any headed mouse/controller/art/animation/subjective observation that remains separate.
 
 Tier 2 must assert state after the host processes the action. A hook-fired log, preview value,
@@ -99,11 +109,13 @@ model-only mutation, resource path, or successful Build is not a scenario pass.
 
 ## Autotest
 
-- `CombatPlayer`: add the real Card, play it against a live enemy, wait for queued commands,
-  assert exact HP loss after native modifiers and assert the Card is in Discard.
-- Emit `[T2MOD-SELFTEST] <ModName> state proof: card damage expected=9 observed=9; pile=Discard`
-  only after both assertions pass, then emit `selftest done`.
+- Face checks: Ember Step (Damage 9, upgraded 13; result pile Discard).
+- Scenarios: none; Ember Step is a simple Card.
 ```
+
+A Card that applied a custom Power, chose a Card, or counted turns would add a scenario instead,
+for example `ember_brand_burns_next_turn`: `CombatPlayer`, play the real Card, end the turn,
+assert 3 HP lost by every enemy at the start of the next player turn.
 
 ## Project state
 

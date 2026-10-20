@@ -1,810 +1,353 @@
-# Reference: the tier-2 self-test harness (`SelfTest.cs`)
+# Reference: the Tier 2 self-test kit
 
-> A copy-adaptable, **known-good** in-process harness that makes tier-2 ("the effect
-> actually fires") automatic — no human at the keyboard, no dev-console typing. Every
-> API here was confirmed against decompiled `sts2.dll` (M5 grounding) — not guessed.
+> Tier 2 runs inside the real game with nobody at the keyboard: the Mod drives itself from
+> the main menu into the hosted scenario, fires its own content, and asserts the exact
+> post-state. Every API here is public and pinned to STS2 `0.107.1` / RitsuLib `0.6.7`.
 >
-> **What it is:** one `SelfTest.cs` file compiled into the generated mod, **dormant
-> unless launched with `--t2selftest`**. When that arg is present, it drives the game
-> from the main menu into the hosted scenario required by the SPEC with zero interaction,
-> fires the element's effect, independently asserts a concrete post-effect state invariant,
-> then logs `[T2MOD-SELFTEST] <ModName> state proof: ...` with the observed before/after
-> values. `verify.md` accepts only that structured proof, never a hook/preview log.
+> **Two files.** `scaffold.py` generates `<ModName>Code/SelfTestKit.cs` and the arming line in
+> `MainFile.Initialize()`. The kit is fixed code: Build rejects a hand-edited copy, and
+> `scaffold.py --refresh-selftest-kit` rewrites it. You write only
+> `<ModName>Code/SelfTestScenarios.cs`, which lists this Mod's checks.
 >
-> **Ship-safety:** the arg gate (`CommandLineHelper.HasArg("t2selftest")`) means a normal
-> user launch never arms it — no menu or room driving and no scenario side effects. It is
-> inert.
+> **Ship-safety.** The kit stays dormant unless the game starts with `--t2selftest`; a normal
+> player launch never navigates, enters a room, or changes state.
 
-## Why in-process, and why it drives its own navigation
+## What the kit does on every run
 
-- **In-process (not keystroke injection / external MCP):** the harness *is* mod code, so
-  it calls the game's own public Cmds directly. No OS automation, no second process.
-- **It drives navigation itself** (main menu → run → hosted room), so it knows exactly
-  when the scenario is reachable. Combat drivers use the game's own **poll pattern** — the
-  same code `CombatRoomHandler` (MegaCrit's AutoSlay) uses — then wait for the **Play** phase
-  before acting. The `MapNode` event driver instead waits for the real `EventRoom` and
-  option UI. Both paths poll observable game state rather than guessing timing.
+1. **Roll call**, at the main menu, for every Card, Relic, Potion, and Power this Mod
+   registers: the title, description, flavor, selection prompt, and Power smart description
+   must exist and resolve in both `eng` and `zhs` through the real model consumer (the
+   Compendium's `GetDescriptionForPile(PileType.None)` for a Card), with no raw key, empty
+   value, or unresolved `{placeholder}`. It then restores the player's language and logs one
+   `roll call:` line per model with its id, pool, cost, type, rarity, target, base numbers,
+   and both titles; compare those lines with SPEC. A model that is missing from the roll call
+   was never registered.
+2. **Navigation**: abandons an open run, starts a singleplayer run as the selected Character
+   (`plan.Character<T>()`, matched by model type) or the first unlocked one, and waits for the
+   run UI and the local Player.
+3. **Scenarios in order.** Each has its own budget. A failed assertion, an exception, or a
+   timeout ends only that scenario: the kit logs its event trail and runs the next one.
+4. **One shared combat.** Combat scenarios share a `CorpseSlugsWeak` fight with 999 Plating on
+   the player. Before each one the kit removes the Cards it created from the Hand, returns the
+   deck's Hand Cards to the Draw Pile, removes the player's Powers except Plating, clears
+   Block, restores HP and Energy, and sets every enemy to 999/999 HP with no Powers or Block.
+   When the combat ended, and right after a `Custom` scenario, the kit starts a new combat and
+   applies the same reset, so every scenario starts alike whatever ran before it. A scenario
+   that asks for `freshCombat` or `beforeCombat` instead gets the new combat exactly as the
+   host started it (opening Hand, combat-start Energy and Powers), with only the enemies set
+   to 999 HP.
+5. **Real plays.** `Play` uses `CardModel.TryManualPlay`, the same validation, Energy and Star
+   payment, and play lifecycle as a player's click. Never use `CardCmd.AutoPlay` to prove a
+   played Card: it pays nothing and runs the auto-play hooks instead.
+6. **Settling, not sleeping.** After every action the kit waits until the action queue is
+   empty and idle for two frames (`Settle()`), so no scenario needs a `Task.Delay`.
+7. **Passive enemies.** `EndTurn()` stuns every enemy for that turn, so their moves (the
+   slugs' Frail, attacks) cannot change what you measure. Pass `enemiesAct: true` when the
+   scenario needs the enemy turn.
+8. **Event trail.** RitsuLib lifecycle events record every Card played, drawn, discarded, and
+   exhausted, Energy spent and gained, Relics obtained, and Potions procured during the
+   scenario (`t.Trail`). A failed scenario prints its trail.
+9. **Report.** A `selftest coverage:` line names any Mod Card never played, Relic never
+   obtained, Potion never procured, or Power never seen; a `selftest summary:` line lists every
+   scenario with its result and seconds. Only when all pass does it log
+   `state proof: kit summary passed=N/N scope=all` and `selftest done`.
+10. **Watchdog.** A step stuck past its scenario budget ends the run with
+    `selftest FAILED: timeout: scenario <name> stuck at '<step>'`.
 
-## The one correction that matters (do NOT regress)
+`launch.py --self-test --only a,b` passes `--t2selftest=a,b`: only the named scenarios run (a
+trailing `*` matches a prefix, `face.*` selects every face check), after the roll call. The
+summary then says `scope=partial` and `grep_log.py` reports a partial pass, which is never the
+final Tier 2.
 
-`NDevConsole.Instance` exists, but its inner `DevConsole` is a **private field** — so the
-string-in `ProcessCommand("fight …")` / `"card …"` path is **NOT reachable** from a mod
-assembly. Do not try to reflect into it. Instead the harness calls the **public Cmds**
-that each console command wraps (all confirmed `public static`, shipped in `sts2.dll`):
+## Which content gets which check
 
-| Console command | Public API the harness calls instead |
+Tier 2 does not need a hand-written scenario per Card. Split the SPEC's content like this:
+
+| Content | Check |
 |---|---|
-| `fight <id>` | `RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, encounter.ToMutable())` |
-| `event <id>` | `RunManager.Instance.EnterRoomDebug(RoomType.Event, MapPointType.Unknown, ModelDb.Event<T>())` |
-| `relic add <id>` | `RelicCmd.Obtain(relic.ToMutable(), player)` |
-| `card <ID>` | `CombatManager.Instance.DebugOnlyGetState().CreateCard(card, player)` + `CardPileCmd.Add(c, PileType.Hand)` |
-| `energy N` | `PlayerCmd.GainEnergy(3m, player)` |
-| `potion <ID>` | `PotionCmd.TryToProcure(potion.ToMutable(), player)` |
-| (play the card) | `CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target)` |
-| (use the potion) | `potion.EnqueueManualUse(target)` *(not a Cmd — a method on the model)* |
+| Every registered Card, Relic, Potion, and Power | roll call, automatic |
+| A **simple Card**: its SPEC Implementation cites only its recipe and `reference/effect-primitives.md`, its numbers are fixed (no calculated value, X cost, or condition), and its effects are damage, Block, Energy, Stars, Gold, healing, HP loss, Max HP, draw, or a stack of an existing Power | `plan.FaceCheck<TCard>()`: one line, no assertions to write |
+| Everything else: a custom Power, Keyword, Enchantment, or Orb; a `Hook:` or `Mod-local:` line; a condition, counter, or state across turns or combats; a Card choice; an interaction between elements; a Relic or Potion trigger | a named `plan.Combat(...)` scenario |
+| Events, Ancients, Rest Site options, Monster encounters, Character run start | a named `plan.Custom(...)` scenario (§ Other hosts) |
+| Images, layout, animation, mouse/controller, wording, feel | headed review, never Tier 2 |
 
-## The load-bearing timing gate (proven on the dev box, do NOT regress)
+A face check plays the Card once and, when it can upgrade, once upgraded, then compares every
+number on its face with what happened: `DamageVar` with the target's HP loss (each enemy for
+`AllEnemies`, the total for `RandomEnemy`, times a `RepeatVar`), `BlockVar` with Block,
+`EnergyVar` with Energy after payment, `CardsVar` with the Cards drawn, a Power variable
+(`PowerVar<T>`, keyed by the Power's class name) with that Power's stacks on the target
+(yourself for a `Self` Card), and `HealVar`, `HpLossVar`, `MaxHpVar`, `GoldVar`, `StarsVar`
+with the player's matching value. It also requires the played Card in the Discard Pile, or
+the Exhaust Pile when it has Exhaust. A variable it cannot read is listed as `not checked`;
+give that Card a scenario. A face check reads the expected numbers from the Card itself, so
+compare the roll call line with SPEC to catch a wrong base number.
 
-The first live end-to-end run exposed this race before combat;
-keep the gate below. Do **not** call `SaveManager.SetFtuesEnabled(false)`: tutorial state is
-not required for navigation, the call persists a user setting, and before profile setup its
-internal save reports a global error even if the caller catches an exception.
-
-**`IsInProgress` is NOT enough to call `EnterRoomDebug`.** `RunManager.Instance.
-   IsInProgress` flips at the **run-state** level, but `EnterRoomDebug` reaches into the run
-   **UI node** (`NRun.Instance.GlobalUi.TopBar.RoomIcon…`, and its `?.` only guards
-   `NRun.Instance`, not `GlobalUi`). `GlobalUi` is wired in `NRun._Ready`, which runs
-   **after** `IsInProgress` is already true. Entering a room in that window NREs *inside*
-   `EnterRoomDebug`. Gate on the UI node before entering:
-   `await WaitHelper.Until(() => NRun.Instance?.GlobalUi != null, …, "run UI not ready");`.
-   (The `fight` console command never hits this because a human types it only once the map
-   is visible — i.e. long after `_Ready`.)
-
-> Debugging tip proven useful: async PDB line numbers are unreliable across state-machine
-> resumes (the stack top can point at a `try/catch` line that cannot throw). If a harness
-> fails mid-flight, add a `Stage(string)` breadcrumb (`MainFile.Logger.Info` per step) and
-> read the trail — it tells you the exact step, which the stack trace won't.
-
-For a Character Foundation `RunStart` driver, keep one further ordering constraint:
-after character-select Confirm and `RunManager.Instance.IsInProgress`, wait for
-`NRun.Instance?.GlobalUi != null`, then continue polling until
-`LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState())` is non-null. A single read
-after the UI gate is still racy: an earlier focused proof reached a ready
-`GlobalUi` before the local Player was injected. The earlier Character proof likewise
-proved that the run-state flag can become true while the local player is unavailable.
-Locate the character-select button by model type (`button.Character is <CharacterName>`),
-never by its `%Icon` texture path: placeholder art keeps the fallback portrait, so a path
-match finds no button.
-
-## Proof and control signals for verify/repair
-
-The harness and element expose these signals so `verify.md`/`repair.md` can tell setup
-failure from a real effect bug:
-
-- `[T2MOD-SELFTEST] <ModName> state proof: <invariant>; observed <before> -> <after>` —
-  the harness independently compared real post-effect state with the SPEC and the assertion
-  passed. This is the **only** Tier-2 behavior proof accepted by `grep_log.py`.
-- `[T2MOD-SELFTEST] <ModName> selftest done` — the scenario driver completed after its
-  assertions. This terminal marker is necessary control flow, but is never behavior proof.
-- `[T2MOD-SELFTEST] <ModName> selftest budget: <N>s` — the whole-scenario budget, logged
-  first. `launch.py` waits at least this long plus boot time.
-- `[T2MOD-SELFTEST] <ModName> selftest FAILED: <stage>: <reason>`, classified by stage:
-  - `state proof: <observation>` — the scenario ran and an assertion failed. **This is a
-    real behavior bug**; classify it in `repair.md`.
-  - `timeout: scenario budget <N>s exceeded` — the scenario was still running when the
-    budget ran out. Raise `Budget` when the scenario is long; otherwise find the stalled
-    step from the breadcrumbs. Never report it as a navigation failure.
-  - any other stage (`AutoSlayTimeoutException: <step>`, a navigation exception) — the
-    harness couldn't reach or drive the scenario. **This is a harness/setup problem, NOT
-    an effect bug**; `verify.md` falls back to the manual guide and reports tier-1 only.
-- the element's own type-specific `[T2MOD-SELFTEST]` diagnostic marker (for example
-  `played:`, `attacked:`, or `option chosen:` from author.md step 2) — useful for locating
-  the trigger, but **not proof**: calculation/preview hooks can emit it without a committed
-  state change.
-
-## Bilingual localization driver
-
-Every generated harness with player-facing localization uses the public
-`MegaCrit.Sts2.Core.Localization.LocManager` route before its scenario driver. The harness
-arms during Mod initialization, when `NGame.Instance` already exists but Mod localization
-tables are not merged yet and `LocManager.Instance` is still null, so first wait for the
-main menu and the manager:
+## Writing `SelfTestScenarios.cs`
 
 ```csharp
-await WaitHelper.ForNode<Control>(root, "/root/Game/RootSceneContainer/MainMenu", ct, TimeSpan.FromSeconds(60));
-await WaitHelper.Until(() => LocManager.Instance != null, ct, TimeSpan.FromSeconds(30), "LocManager not ready");
-```
-
-Snapshot
-`LocManager.Instance.Language`; for `eng` and `zhs`, call `SetLanguage(language)` and resolve
-the SPEC's title/description/prompt/tip strings through the real model or UI consumer. Compare
-the returned formatted strings with that language's exact SPEC values and reject empty values,
-raw localization keys, and unresolved SmartFormat placeholders. Restore the original language
-in a `finally` block, matching the side-effect-free collector pattern in the pinned host.
-
-The generated helper receives surface-specific resolver functions rather than reading JSON
-directly. Reading the authored table would only prove the input file; resolving the real
-`LocString` proves that the packed table, public key, language switch, and consumer agree. Emit
-`state proof: bilingual localization expected=eng,zhs observed=eng,zhs` only after both passes.
-This proof establishes resolution, not translation quality; headed review remains the owner of
-tone, naturalness, clipping, and layout.
-
-## Gameplay-readability proof additions
-
-For a Card with hand emphasis, also read `reference/card-hand-emphasis.md`. A focused
-`CombatPlayer` driver must place the real Card in hand, mutate the actual condition state,
-and independently assert no-active, single-active, conflict winner, playability, and hand
-entry/exit states. Do not claim the outline color from predicate or model state alone; the
-real hand consumer remains a headed or exact live-node observation.
-
-For Relic/Power supplemental labels, also read `reference/extra-corner-labels.md`. The
-driver must assert the exact zero/one Power sequence and zero/one/bounded-multiple Relic
-sequence, visible text, selected safe corners, refresh source, removal condition, and
-unchanged native main amount. Provider data alone is not a presentation proof; exact
-live-node observation or headed review owns readability, overlap, and cleanup.
-
-When the user reserves headed review, build and deploy the focused proof but do not
-launch the game. Give the user the exact console setup and observation matrix. Record the
-reported visible result separately, and keep unrun structured checks as exceptions rather
-than converting manual observation into strict Tier 2.
-
-## Shared scaffold and scenario-specific room driver
-
-Emit this as `<ModName>Code/SelfTest.cs`. The arg gate, menu→run navigation, timeout, and
-terminal markers are shared. The scaffold below is the `CombatPlayer` baseline: its
-**`BeforeCombat` / `InCombat`** DRIVER bodies change per combat element. `CombatEnemy`
-replaces the encounter entry and combat driver; `MapNode` replaces combat entry entirely
-with the event room/UI driver documented below. `<ModName>` / `<PREFIX>-<SLUG>` are
-substituted exactly as elsewhere.
-
-```csharp
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Godot;
-using MegaCrit.Sts2.Core.AutoSlay.Helpers;   // UiHelper, WaitHelper (public, shipped)
-using MegaCrit.Sts2.Core.Combat;
-using MegaCrit.Sts2.Core.Commands;
-using MegaCrit.Sts2.Core.Context;
-using MegaCrit.Sts2.Core.Entities.CardRewardAlternatives;   // ScriptedSelector only
+using <ModName>.Cards;
+using <ModName>.Potions;
+using <ModName>.Powers;
+using <ModName>.Relics;
 using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.Entities.Powers;                   // PowerType (ClearDebuffs)
-using MegaCrit.Sts2.Core.Entities.Players;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Helpers;
-using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Encounters;
-using MegaCrit.Sts2.Core.Models.Powers;
-using MegaCrit.Sts2.Core.Nodes;
-using MegaCrit.Sts2.Core.Nodes.CommonUi;
-using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
-using MegaCrit.Sts2.Core.Nodes.Screens.CharacterSelect;
-using MegaCrit.Sts2.Core.Rooms;
-using MegaCrit.Sts2.Core.Runs;
 
-namespace <ModName>;   // SAME namespace as MainFile.cs (the scaffold writes `namespace <ModName>;`)
+namespace <ModName>;   // the same namespace as MainFile.cs
 
-// Verification-only. Dormant unless the game is launched with --t2selftest.
-// Gated in MainFile.Initialize(): if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();
-internal static class SelfTest
+internal static partial class SelfTestScenarios
 {
-    // Whole-scenario budget. Size it to the scenario: one element runs well inside 180 s; a
-    // full Character content set can take 4-6 minutes. launch.py reads the budget line below
-    // and waits for it, so never shorten the launcher wait instead.
-    private static readonly TimeSpan Budget = TimeSpan.FromSeconds(180);
-    private static bool _armed;
-
-    private sealed class StateProofFailed : Exception
+    static partial void Define(SelfTestPlan plan)
     {
-        public StateProofFailed(string observation) : base(observation) { }
+        plan.FaceCheck<EmberStrike>()
+            .FaceCheck<EmberGuard>();
+
+        plan.Combat("kindling_burns_all_enemies_next_turn", async t =>
+        {
+            await t.Play<Kindling>();
+            t.Proof(t.PowerAmount<KindlingPower>(t.Me) == 3,
+                $"kindling stacks expected=3 observed={t.PowerAmount<KindlingPower>(t.Me)}");
+            var before = t.Enemies.ToDictionary(enemy => enemy, enemy => enemy.CurrentHp);
+            await t.EndTurn();
+            var lost = before.Select(pair => pair.Value - pair.Key.CurrentHp).ToList();
+            t.Proof(lost.All(hp => hp == 3), $"turn-start damage expected=3 each observed={string.Join(",", lost)}");
+        });
     }
-
-    private static void StateProof(bool condition, string observation)
-    {
-        if (!condition)
-            throw new StateProofFailed(observation);
-        MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> state proof: {observation}");
-    }
-
-    public static void Arm()
-    {
-        if (_armed) return;
-        _armed = true;
-        _ = RunAsync();   // fire-and-forget; never blocks Initialize
-    }
-
-    private static async Task RunAsync()
-    {
-        MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> selftest budget: {(int)Budget.TotalSeconds}s");
-        using var cts = new CancellationTokenSource(Budget);
-        var ct = cts.Token;
-        try
-        {
-            await WaitHelper.Until(() => NGame.Instance != null, ct, TimeSpan.FromSeconds(30), "no NGame");
-            await NavigateToRunAsync(ct);
-            await WaitHelper.Until(() => RunManager.Instance.IsInProgress, ct, TimeSpan.FromSeconds(30), "run not in progress");
-
-            // IsInProgress flips at the RUN-STATE level, but EnterRoomDebug (below) touches
-            // the run UI node (NRun.Instance.GlobalUi.TopBar…), which is only wired in
-            // NRun._Ready — AFTER IsInProgress. Racing in here NREs inside EnterRoomDebug.
-            // Gate on the run UI node being ready before entering a room.
-            await WaitHelper.Until(() => NRun.Instance?.GlobalUi != null, ct, TimeSpan.FromSeconds(30), "run UI not ready");
-
-            // RELIC ONLY: grant before combat so AfterSideTurnStart fires at TurnNumber 1.
-            await BeforeCombat(ct);
-
-            var encounter = ModelDb.Encounter<CorpseSlugsWeak>().ToMutable();   // minimal 2-slug fight
-            await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MegaCrit.Sts2.Core.Map.MapPointType.Unassigned, encounter);
-            await WaitHelper.Until(() => CombatManager.Instance.IsInProgress, ct, TimeSpan.FromSeconds(30), "combat not started");
-
-            var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!);
-            var me = player!.Creature;
-            // Survivability so a slug can't kill us mid-test (AutoSlay does the same).
-            await PowerCmd.Apply<PlatingPower>(new ThrowingPlayerChoiceContext(), me, 999m, me, null);
-
-            // Wait until we're actually allowed to act.
-            await WaitHelper.Until(
-                () => player!.PlayerCombatState?.Phase == PlayerTurnPhase.Play || !CombatManager.Instance.IsInProgress,
-                ct, TimeSpan.FromSeconds(30), "play phase not reached");
-
-            await InCombat(player!, ct);
-
-            MainFile.Logger.Info("[T2MOD-SELFTEST] <ModName> selftest done");
-        }
-        catch (StateProofFailed e)
-        {
-            // The scenario ran and the post-state was wrong: a behavior bug, not setup.
-            MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> selftest FAILED: state proof: {e.Message}");
-        }
-        catch (OperationCanceledException) when (cts.IsCancellationRequested)
-        {
-            MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> selftest FAILED: timeout: scenario budget {(int)Budget.TotalSeconds}s exceeded");
-        }
-        catch (Exception e)
-        {
-            MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> selftest FAILED: {e.GetType().Name}: {e.Message}");
-        }
-    }
-
-    // Ported verbatim from AutoSlayer.PlayMainMenuAsync (node paths are version-sensitive;
-    // re-mine on a game version bump — same habit as build-constraints).
-    private static async Task NavigateToRunAsync(CancellationToken ct)
-    {
-        var root = ((SceneTree)Engine.GetMainLoop()).Root;
-        var mainMenu = await WaitHelper.ForNode<Control>(root, "/root/Game/RootSceneContainer/MainMenu", ct, TimeSpan.FromSeconds(30));
-
-        var abandon = mainMenu.GetNode<NButton>("MainMenuTextButtons/AbandonRunButton");
-        if (abandon.Visible)   // an old run is open — abandon it first
-        {
-            await UiHelper.Click(abandon);
-            await WaitHelper.Until(() => NModalContainer.Instance?.OpenModal != null, ct, TimeSpan.FromSeconds(10), "no abandon modal");
-            var modal = (Node)NModalContainer.Instance!.OpenModal!;
-            await UiHelper.Click(modal.GetNode<NButton>("VerticalPopup/YesButton"));
-            await WaitHelper.Until(() => NModalContainer.Instance.OpenModal == null, ct, TimeSpan.FromSeconds(10), "abandon modal stuck");
-        }
-
-        await UiHelper.Click(mainMenu.GetNode<NButton>("MainMenuTextButtons/SingleplayerButton"));
-
-        // Either the submenu ("Standard") or the character screen shows next.
-        Control? charSelect = null;
-        NButton? standard = null;
-        await WaitHelper.Until(() =>
-        {
-            charSelect = mainMenu.GetNodeOrNull<Control>("Submenus/CharacterSelectScreen");
-            standard = mainMenu.GetNodeOrNull<NButton>("Submenus/SingleplayerSubmenu/StandardButton");
-            return (charSelect?.Visible ?? false) || (standard?.Visible ?? false);
-        }, ct, TimeSpan.FromSeconds(10), "neither submenu nor char select");
-
-        if ((standard?.Visible ?? false) && !(charSelect?.Visible ?? false))
-        {
-            await UiHelper.Click(standard);
-            await WaitHelper.Until(() => mainMenu.GetNodeOrNull<Control>("Submenus/CharacterSelectScreen")?.Visible ?? false,
-                ct, TimeSpan.FromSeconds(10), "char select never showed");
-            charSelect = mainMenu.GetNode<Control>("Submenus/CharacterSelectScreen");
-        }
-
-        var buttonContainer = charSelect!.GetNode("CharSelectButtons/ButtonContainer");
-        var chars = UiHelper.FindAll<NCharacterSelectButton>(buttonContainer);
-        foreach (var b in chars) b.UnlockIfPossible();
-        var pick = chars.First(b => !b.IsLocked);   // deterministic: first unlocked
-        pick.Select();
-        await Task.Delay(100);
-
-        var confirm = await WaitHelper.ForNode<NButton>(mainMenu, "Submenus/CharacterSelectScreen/ConfirmButton", ct, TimeSpan.FromSeconds(10));
-        await UiHelper.Click(confirm);
-    }
-
-    // ===== DRIVER (per element type — fill exactly one of these two) =====
-    private static Task BeforeCombat(CancellationToken ct) => Task.CompletedTask;   // <see element table>
-    private static Task InCombat(Player player, CancellationToken ct) => Task.CompletedTask;   // <see element table>
 }
 ```
 
-### Baseline encounter debuffs
+Name each scenario after the SPEC behavior in `snake_case`; names must be unique, and
+`--only` uses them. Put every expected value from SPEC, never from an observed run. Each
+`t.Proof(condition, observation)` logs `state proof: <scenario>: <observation>` when it holds
+and fails the scenario when it does not, so write the observation with both the expected and
+the observed value.
 
-`CorpseSlugsWeak` is not inert. Its two slugs start on different moves, and `GOOP_MOVE`
-applies 2 `FrailPower` to the player, so from the first enemy turn on every Block
-assertion reads 25% low. `PlatingPower` only keeps the player alive. Any scenario that
-crosses an enemy turn (End Turn, a turn-N trigger, a multi-turn proof) must clear the
-player's debuffs after the wait and before it snapshots Damage or Block:
+### `SelfTestPlan`
+
+- `FaceCheck<TCard>()`: the face check above, scenario `face.<TCard>`.
+- `Combat(name, body, budgetSeconds = 30, freshCombat = false, beforeCombat = null)`: a
+  player-combat scenario. `beforeCombat` runs out of combat, before a fresh combat starts;
+  giving it implies `freshCombat`.
+- `Custom(name, body, budgetSeconds = 60)`: a scenario that enters its own room (§ Other hosts);
+  the kit first finishes any combat in progress.
+- `Character<TCharacter>()`: start the run as this Character.
+
+### `SelfTestRun t`
+
+- State: `t.Player`, `t.Me` (the player Creature), `t.Combat` (`PlayerCombatState`), `t.State`
+  (the combat state), `t.Enemies`, `t.Enemy` (the first hittable enemy), `t.Token`, `t.Trail`,
+  `t.PowerAmount<TPower>(creature)`.
+- `t.Proof(condition, observation)`.
+- `await t.AddToHand<TCard>(upgraded: false)` creates a live copy in the Hand;
+  `await t.Play(card, target)` plays a Hand Card; `await t.Play<TCard>(target, upgraded)` does
+  both. An `AnyEnemy` Card without a target uses `t.Enemy`. Play tops Energy up to the cost
+  when it is short, so assert Energy from `t.Trail.EnergySpent`, not from a raw before/after.
+- `await t.ObtainRelic<TRelic>()` and `await t.UsePotion<TPotion>(target)`; the kit removes a
+  scenario's Relics and leftover Potions when it ends.
+- `using var choices = t.ScriptChoices(offered => ...)` answers every Card choice until disposed;
+  `choices.OfferedCounts` and `choices.Picked` record what the host asked.
+- `await t.EndTurn(enemiesAct: false)` ends the turn and waits for the next player Play phase.
+- `await t.StartNewCombat()` finishes this combat and starts another, so turn 1 and
+  combat-start triggers fire again inside one scenario.
+- `await t.Settle()` and `await t.ClearDebuffs(creature)`.
+
+Any other public STS2 or RitsuLib API works inside a body: snapshot state, drive the real
+source, `await t.Settle()`, then assert.
+
+## Combat scenario recipes
+
+### relic — a combat-start trigger
+
+A combat-start hook (`AfterSideTurnStart` with `TurnNumber <= 1`, `AfterPlayerTurnStart`,
+`AfterRoomEntered`) fires only when the Relic is owned before combat starts, so obtain it in
+`beforeCombat`. When that hook asks for a Card choice, open `t.ScriptChoices` in
+`beforeCombat` and keep it until the body ends.
 
 ```csharp
-private static async Task ClearDebuffs(Creature creature)
+plan.Combat("lantern_combat_start_energy", t =>
 {
-    foreach (var power in creature.Powers.Where(p => p.Type == PowerType.Debuff).ToList())
-        await PowerCmd.Remove(power);
-}
-```
-
-Do not clear a debuff the SPEC itself applies or reads; assert that one explicitly instead.
-
-## The DRIVER bodies (fill per SPEC element type)
-
-Every driver must snapshot the SPEC's observable state, drive the real source element,
-assert the exact expected post-state, and call `StateProof` with concrete observed values.
-The element's own marker is diagnostic only: passive hooks such as damage modifiers can run
-during previews. Branch on SPEC's `element` and adapt the shown invariant to the effect:
-
-### relic — grant before combat, then just wait
-
-A relic's combat-start hook (`AfterRoomEntered`, `AfterPlayerTurnStart`, or
-`AfterSideTurnStart` with `TurnNumber <= 1`) fires on its own, so there's nothing to drive
-in-combat — grant it *before* `EnterRoomDebug` and let the existing wait-for-Play-phase give
-it time to fire. When that hook asks for a Card selection, it runs before the Play phase:
-keep the `CardSelectCmd.UseSelector` scope from § card that asks the player to choose open
-from `BeforeCombat` until the Play-phase wait returns, or combat never reaches Play.
-
-```csharp
-private static async Task BeforeCombat(CancellationToken ct)
-{
-    var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState());
-    var relic = ModelDb.AllRelics.First(r => r.Id.Entry == "<PREFIX>-<SLUG>");
-    await RelicCmd.Obtain(relic.ToMutable(), player);
-}
-private static Task InCombat(Player player, CancellationToken ct)
-{
-    // Energy-relic example. For another effect, assert its SPEC state instead.
-    int observed = player.PlayerCombatState!.Energy;
-    StateProof(observed == <EXPECTED_ENERGY>,
-        $"relic energy expected=<EXPECTED_ENERGY> observed={observed}");
+    t.Proof(t.Combat.Energy == t.Combat.MaxEnergy + 1,
+        $"combat-start energy expected={t.Combat.MaxEnergy + 1} observed={t.Combat.Energy}");
     return Task.CompletedTask;
-}
+}, beforeCombat: async t => await t.ObtainRelic<Lantern>());
 ```
 
-### stateful relic cadence — prove the lifetime, not only one trigger
+A Relic that reacts during combat (on Card played, on damage taken) is obtained inside the body
+instead, then driven by the real source.
 
-The normal relic DRIVER proves one combat-start effect. A stateful relic needs a
-multi-combat variant. Replace the scaffold's one `EnterRoomDebug` + `InCombat` block
-with a scenario that owns the live mutable relic, advances real player turns, finishes
-the first combat through the public combat flow, and enters a second combat. Add
-`using MegaCrit.Sts2.Core.Saves.Runs;` for the save round trip.
-
-Shared helpers:
+### potion
 
 ```csharp
-private static async Task EnterMinimalCombat(CancellationToken ct)
+plan.Combat("tonic_damage", async t =>
 {
-    var encounter = ModelDb.Encounter<CorpseSlugsWeak>().ToMutable();
-    await RunManager.Instance.EnterRoomDebug(RoomType.Monster,
-        MegaCrit.Sts2.Core.Map.MapPointType.Unassigned, encounter);
-    await WaitHelper.Until(() => CombatManager.Instance.IsInProgress, ct,
-        TimeSpan.FromSeconds(30), "combat not started");
-}
-
-private static async Task WaitForPlayTurn(Player player, int turn, CancellationToken ct)
-{
-    await WaitHelper.Until(
-        () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play &&
-              player.PlayerCombatState.TurnNumber == turn,
-        ct, TimeSpan.FromSeconds(45), $"player turn {turn} not reached");
-}
-
-private static async Task FinishCombat(CancellationToken ct)
-{
-    var enemies = CombatManager.Instance.DebugOnlyGetState()!.Enemies
-        .Where(enemy => enemy.IsAlive).ToList();
-    await CreatureCmd.Kill(enemies, force: true);
-    await CombatManager.Instance.CheckWinCondition();
-    await WaitHelper.Until(() => !CombatManager.Instance.IsInProgress, ct,
-        TimeSpan.FromSeconds(30), "first combat did not finish");
-}
+    var enemy = t.Enemy;
+    int hp = enemy.CurrentHp;
+    await t.UsePotion<Tonic>(enemy);
+    t.Proof(hp - enemy.CurrentHp == 10, $"potion damage expected=10 observed={hp - enemy.CurrentHp}");
+});
 ```
-
-**Run-persistent periodic counter (Happy Flower shape):** let the first combat
-advance the real `SavedAttachedState` progress to `N - 1`, verify no effect, serialize and
-fill a fresh mutable instance, then let turn 1 of the second combat cross the threshold.
-For `N=3` and an energy effect:
-
-```csharp
-var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!)
-    ?? throw new InvalidOperationException("local player missing");
-var live = await RelicCmd.Obtain<<RelicName>>(player);
-
-await EnterMinimalCombat(ct);             // turn 1: Progress 0 -> 1
-await WaitForPlayTurn(player, 1, ct);
-StateProof(live.Progress == 1,
-    $"cadence first event expected=1 observed={live.Progress}");
-
-PlayerCmd.EndTurn(player, canBackOut: false);
-await WaitForPlayTurn(player, 2, ct);      // turn 2: Progress 1 -> 2, no fire
-StateProof(live.Progress == 2 && player.PlayerCombatState!.Energy ==
-        player.PlayerCombatState.MaxEnergy,
-    $"cadence below threshold expected progress=2/no effect " +
-    $"observed={live.Progress}/{player.PlayerCombatState.Energy}");
-
-var saved = SavedProperties.From(live)
-    ?? throw new InvalidOperationException("saved counter missing");
-var restored = (<RelicName>)ModelDb.Relic<<RelicName>>().ToMutable();
-saved.Fill(restored);
-StateProof(restored.Progress == 2,
-    $"cadence save round trip expected=2 observed={restored.Progress}");
-
-await FinishCombat(ct);
-await EnterMinimalCombat(ct);             // new combat turn 1: Progress 2 -> 0, fire
-await WaitForPlayTurn(player, 1, ct);
-int expectedEnergy = player.PlayerCombatState!.MaxEnergy + <ENERGY_GAIN>;
-StateProof(live.Progress == 0 && player.PlayerCombatState.Energy == expectedEnergy,
-    $"cadence cross-combat threshold expected progress=0 energy={expectedEnergy} " +
-    $"observed={live.Progress}/{player.PlayerCombatState.Energy}");
-```
-
-For another threshold, advance real turns until `N - 1`; do not set `Progress` from the
-harness. Replace the energy observations with the SPEC's real HP/block/stack state.
-The save round trip and second combat are separate proofs and both are required.
-
-**Combat-local fixed/periodic turn (Stone Calendar shape):** in combat 1, assert no
-effect at turn 1, advance to the specified turn using `PlayerCmd.EndTurn`, and assert the
-exact effect delta. Finish combat, enter combat 2, wait for turn 1, then assert
-`TurnNumber == 1` and that the effect has not fired again. Read the game's turn number;
-do not mutate a custom counter to simulate reset. A diagnostic activation count may help
-localize the test, but Tier-2 still needs the actual gameplay delta.
-
-The live proof combined both relics and proved: run progress `1 -> 2 -> 0` across two
-combats, energy `3 -> 4` at the threshold, save restoration `2 -> 2`, combat-local turn-2
-Block, and a new-combat `TurnNumber=1` with no second activation. One structured proof per
-invariant makes a wrong lifetime distinguishable from a wrong effect.
-
-### card — spawn into hand, add energy, AutoPlay
-
-```csharp
-private static Task BeforeCombat(CancellationToken ct) => Task.CompletedTask;
-private static async Task InCombat(Player player, CancellationToken ct)
-{
-    await PlayerCmd.GainEnergy(3m, player);                       // headroom for cost
-    var model = ModelDb.AllCards.First(c => c.Id.Entry == "<PREFIX>-<SLUG>");
-    var card  = CombatManager.Instance.DebugOnlyGetState()!.CreateCard(model, player);
-    await CardPileCmd.Add(card, PileType.Hand);
-    Creature? target = card.TargetType == TargetType.AnyEnemy
-        ? card.CombatState?.HittableEnemies.FirstOrDefault()
-        : null;                                                   // Self/AllEnemies → null
-    // Attack example. Snapshot Block/Power/orb state instead for other card effects.
-    int hpBefore = target?.CurrentHp
-        ?? throw new InvalidOperationException("attack target missing");
-    await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
-    int hpAfter = target.CurrentHp;
-    StateProof(hpBefore - hpAfter == <EXPECTED_DAMAGE>,
-        $"card damage expected=<EXPECTED_DAMAGE> observed={hpBefore - hpAfter}; " +
-        $"target hp {hpBefore} -> {hpAfter}");
-}
-```
-(`TargetType` is `MegaCrit.Sts2.Core.Models` — already imported. For an attack the
-`card.CombatState.HittableEnemies` list is the slugs from the minimal encounter.)
 
 ### card that asks the player to choose — script the selection
 
-An effect that awaits `CardSelectCmd.FromHand`, `FromCombatPile`, `FromSimpleGrid`,
-`FromChooseACardScreen`, or a deck selection blocks on a screen nobody clicks. Install a
-scripted selector around the play instead. Every one of those commands checks
-`CardSelectCmd.Selector` first and, when one is set, skips the screen and asks it.
-
-Two public interfaces share the name `ICardSelector`. Implement
-`MegaCrit.Sts2.Core.TestSupport.ICardSelector`, the one `CardSelectCmd.UseSelector` takes.
-`MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.ICardSelector` belongs to the selection
-screen node and does not compile there. Write the namespace out in full.
+`CardSelectCmd.FromHand`, `FromCombatPile`, `FromSimpleGrid`, `FromChooseACardScreen`, and
+deck selections ask the selector the kit installs, so no screen waits for a click. The Hand
+starts empty (except in a `freshCombat` scenario): add every Card the choice needs. `FromHand` returns the whole filtered Hand
+without asking when it holds no more Cards than the minimum, so give a one-of choice at least
+two candidates and assert what was offered.
 
 ```csharp
-private sealed class ScriptedSelector : MegaCrit.Sts2.Core.TestSupport.ICardSelector
+plan.Combat("sift_exhausts_the_chosen_card", async t =>
 {
-    private readonly Func<IReadOnlyList<CardModel>, IEnumerable<CardModel>> _pick;
-    public readonly List<int> OfferedCounts = new();
-
-    public ScriptedSelector(Func<IReadOnlyList<CardModel>, IEnumerable<CardModel>> pick) => _pick = pick;
-
-    public Task<IEnumerable<CardModel>> GetSelectedCards(
-        IEnumerable<CardModel> options, int minSelect, int maxSelect)
-    {
-        var offered = options.ToList();
-        OfferedCounts.Add(offered.Count);
-        return Task.FromResult<IEnumerable<CardModel>>(_pick(offered).Take(maxSelect).ToList());
-    }
-
-    public MegaCrit.Sts2.Core.TestSupport.CardRewardSelection GetSelectedCardReward(
-        IReadOnlyList<CardCreationResult> options, IReadOnlyList<CardRewardAlternative> alternatives)
-        => new() { card = options.FirstOrDefault()?.Card };
-}
-
-// In InCombat, after the card is in hand:
-var chosen = PileType.Hand.GetPile(player).Cards.First(c => c != card);
-var selector = new ScriptedSelector(offered => offered.Where(c => c == chosen));
-using (CardSelectCmd.UseSelector(selector))
-{
-    await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
-}
-StateProof(selector.OfferedCounts.Count == 1 && <exact post-state of chosen>,
-    $"selection offered={string.Join(",", selector.OfferedCounts)}; ...");
+    var chosen = await t.AddToHand<Defend>();
+    var other = await t.AddToHand<Strike>();
+    var sift = await t.AddToHand<Sift>();
+    using var choices = t.ScriptChoices(offered => offered.Where(card => card == chosen));
+    await t.Play(sift);
+    t.Proof(choices.OfferedCounts.SequenceEqual(new[] { 2 }) && chosen.Pile?.Type == PileType.Exhaust
+            && other.Pile?.Type == PileType.Hand,
+        $"offered={string.Join(",", choices.OfferedCounts)} chosen={chosen.Pile?.Type} other={other.Pile?.Type}");
+});
 ```
 
-`UseSelector` throws when a selector is already active, and disposing the scope clears
-it, so keep exactly one `using` scope per play. Some commands return without asking when
-the pile is empty or holds no more cards than the minimum, so assert `OfferedCounts`
-along with the post-state. The selector skips the screen, so the prompt text and screen
-layout stay headed-review items.
+The selector skips the screen, so the prompt text and screen layout stay headed-review items.
+
+### custom Power and multi-element interactions
+
+There is no `combo` model. Drive the real source exactly as a player would, then walk SPEC's
+`interactions` in dependency order and assert each dependent state with its own `t.Proof`,
+so a broken edge is localized. A Power whose hook is `AfterSideTurnStart` for its owner's side
+fires at the start of the owner's next turn: play the source, `await t.EndTurn()`, then assert.
+When the dependent fires on the enemy's turn (an enemy-side debuff, a reaction to the enemy's
+attack), use `await t.EndTurn(enemiesAct: true)` so that turn runs as the host plays it.
+
+### stateful relic cadence — prove the lifetime, not only one trigger
+
+Use the live Relic instance from `ObtainRelic` and advance real turns and combats; never set the
+counter from the harness. A run-persistent counter (Happy Flower shape, `N = 3`): obtain the
+Relic in `beforeCombat`, assert progress after turn 1, `await t.EndTurn()` and assert the
+below-threshold state with no effect, round-trip the saved state into a fresh mutable copy
+(`SavedProperties.From(live)` then `saved.Fill(restored)`, `using MegaCrit.Sts2.Core.Saves.Runs;`),
+then `await t.StartNewCombat()` and assert the threshold effect at turn 1 of the new combat.
+A combat-local turn counter (Stone Calendar shape): assert no effect at turn 1, `EndTurn` to the
+specified turn and assert the exact delta, then `StartNewCombat` and assert `TurnNumber == 1`
+with no second activation. One `t.Proof` per invariant keeps a wrong lifetime distinguishable
+from a wrong effect.
+
+### State-consuming Counter interactions — test the amount domain
+
+A `consumes` edge for a nonnegative Counter runs three cases in one scenario, driving the real
+consumer each time: zero stacks (no instance is created), fewer than N (the amount is consumed
+and the Power removed at zero), and at least N (exactly N consumed, the remainder kept). Remove
+any existing instance first, `PowerCmd.Apply<TPower>(new ThrowingPlayerChoiceContext(), t.Me, 2m, t.Me, null)`
+to set up a case, `await t.Play<TConsumer>()`, and assert after every case that no negative
+amount exists. When N is 1, zero is also the only fewer-than-N case.
 
 ### calculated-value Card — preview, raw request, final state, and headed text
 
-Read `card-computed-values.md` and keep all cases in one disposable `CombatPlayer` suite.
-For each behavior case, set deterministic combat state, call
-`card.UpdateDynamicVarPreview(CardPreviewMode.Normal, target, card.DynamicVars)`, record the
-matching `PreviewValue`, then play the real hand Card and assert the exact HP, Block,
-Energy, Stars, or Power delta. Also inspect the raw execution request through the matching
-`Compute*Value` extension. This distinguishes a wrong formula from a hook applied zero or
-two times.
+Read `reference/card-computed-values.md` and keep all cases in one scenario. For each case set
+deterministic combat state, call `card.UpdateDynamicVarPreview(CardPreviewMode.Normal, target,
+card.DynamicVars)`, record the matching `PreviewValue`, then `await t.Play(card, target)` and
+assert the exact HP, Block, Energy, Stars, or Power delta. Also inspect the raw execution request
+through the matching `Compute*Value` extension, which tells a wrong formula from a hook applied
+zero or two times. Cover zero, positive, and changing inputs and an upgraded Card. Apply
+Strength/Vulnerable for Damage and Dexterity/Frail for Block, one modifier family at a time, and
+require the final preview to equal the observed result. For Power, obtain `SneckoSkull`, use raw
+Poison 2, and separately prove raw `ComputedPower<PoisonPower>` 2, amount-given preview 3, and
+final target Poison 3. A calculated Card never takes a face check.
 
-Cover zero/positive/changing inputs and an upgraded mutable Card. Apply
-Strength/Vulnerable for Damage and Dexterity/Frail for Block, one modifier family at a
-time, and require the final preview to equal the observed result. For Power, obtain
-`SneckoSkull`, use raw Poison 2, and separately prove raw `ComputedPower<PoisonPower>` 2,
-amount-given preview 3, and final target Poison 3. Neutral Energy/Stars cases assert the
-exact requested gain; their normal gain hooks are a separate effect boundary.
-
-The structured state proof does not establish presentation. In the same headed combat,
-the reviewer must inspect the real hand Card at zero, positive, changed, and upgraded
-states; confirm Energy 0 is `0` plus one Energy icon while Stars 0 is empty; inspect
-multiple icons, maximum-count reflow, no clipping/stale glyphs, localized variable tooltip,
-and the omitted-icon fallback. A mutable hand Card displaying the tooltip also exercises
-DynamicVar clone preservation. End only after all structured cases pass and the harness
-emits `selftest done`.
-
-### potion — procure, then EnqueueManualUse (NOT a Cmd)
-
-```csharp
-private static Task BeforeCombat(CancellationToken ct) => Task.CompletedTask;
-private static async Task InCombat(Player player, CancellationToken ct)
-{
-    var model  = ModelDb.AllPotions.First(p => p.Id.Entry == "<PREFIX>-<SLUG>");
-    var potion = model.ToMutable();
-    await PotionCmd.TryToProcure(potion, player);
-    var cs = player.Creature!.CombatState;
-    Creature? target = potion.TargetType switch
-    {
-        TargetType.AnyEnemy  => cs?.HittableEnemies.FirstOrDefault(),
-        TargetType.AnyAlly   => cs?.PlayerCreatures.FirstOrDefault(c => c.IsAlive),
-        TargetType.AnyPlayer => cs?.PlayerCreatures.FirstOrDefault(c => c.IsAlive),
-        TargetType.Self      => cs?.PlayerCreatures.FirstOrDefault(c => c.IsAlive),
-        _ => null,
-    };
-    // Damage-potion example. Snapshot the SPEC's concrete state for another effect.
-    int hpBefore = target?.CurrentHp
-        ?? throw new InvalidOperationException("potion target missing");
-    potion.EnqueueManualUse(target);        // drives the potion's OnUse → its used: marker
-    await Task.Delay(500, ct);              // let the enqueued use resolve before observing
-    int hpAfter = target.CurrentHp;
-    StateProof(hpBefore - hpAfter == <EXPECTED_DAMAGE>,
-        $"potion damage expected=<EXPECTED_DAMAGE> observed={hpBefore - hpAfter}; " +
-        $"target hp {hpBefore} -> {hpAfter}");
-}
-```
+The structured proof does not establish presentation. In the same headed combat the reviewer
+inspects the real hand Card at zero, positive, changed, and upgraded states; confirms Energy 0 is
+`0` plus one Energy icon while Stars 0 is empty; and checks multiple icons, maximum-count reflow,
+clipping, the localized variable tooltip, and the omitted-icon fallback.
 
 ### advanced Card/Potion targeting — prove each lifecycle separately
 
-Read `advanced-targeting.md` and keep its current three-consumer matrix in one disposable
-`CombatPlayer` proof: source-aware single Card, single Potion, and player-aware multi Card.
-Do not add a multi Potion or infer its lifecycle from another consumer.
+Read `advanced-targeting.md` and keep its three-consumer matrix in one scenario: source-aware
+single Card, single Potion, and player-aware multi Card. Do not add a multi Potion or infer its
+lifecycle from another consumer. Use at least two live enemies and establish zero/one/multiple
+candidate states through public combat Cmds. For each consumer assert the registered target kind,
+the resolved creature combat ids, before/after values, and the diagnostic target id. Snapshot
+Energy, Stars, Potion belt membership, and the source Card pile before boundary cases: a normal
+cancel and a target that turns invalid while queued leave payment and Potion state unchanged, and
+a successful Card reaches its result pile. Mouse and controller selection, invalid-target
+rejection, and multi reticles stay headed checks.
 
-Use at least two live enemies and establish deterministic zero/one/multiple candidate
-states through public combat Cmds. For each consumer, assert the exact registered target
-kind, resolved creature combat IDs, before/after values, and diagnostic target id. Drive a
-single Card/Potion with its selected creature; drive the multi Card once with `null` and
-assert one effect delta per `GetTargets()` result.
+### Gameplay readability, custom Card Piles, and other capabilities
 
-Snapshot Energy, Stars, Potion belt membership, and the source Card pile before boundary
-cases. Normal cancel and a queued target becoming invalid must leave payment/Potion state
-unchanged; a successful Card must reach its normal result pile. Predicate-only assertions,
-model-only `GetTargets()` output, and trigger logs are diagnostics, not the hosted behavior
-proof. Keep mouse and controller selection, invalid-target rejection, and multi reticles as
-the separate headed checks in `advanced-targeting.md`.
+Hand emphasis (`reference/card-hand-emphasis.md`): place the real Card in the Hand, change the
+actual condition state, and assert no-active, single-active, conflict winner, playability, and
+Hand entry/exit; the outline color itself is a headed or live-node observation. Relic/Power
+corner labels (`reference/extra-corner-labels.md`): assert the exact zero/one/bounded label
+sequence, visible text, safe corners, refresh source, removal, and the unchanged main amount.
+Custom Card Piles (`reference/card-piles.md`): assert each selected pile's identity, owner, exact
+Card instances and order, entry/exit outcomes, rejections, reset/save behavior, and any
+deterministic open/view/callback state; for manual ExtraHand play also assert payment, cancel
+restoration, the result pile, callback counts, and that the next Card can enter the same native
+play flow. Each capability reference names its own proof matrix; derive only the cases SPEC
+selected.
 
-### multi-element interactions — drive the real source type, then observe each edge
+When the user reserves headed review, build and deploy the focused proof, give them the exact
+console setup and observation matrix, and record their reported result separately.
 
-There is no `combo` model or DRIVER type. Drive the **source** exactly as its real element
-type above, then walk SPEC's `interactions` in dependency order and assert each dependent
-state invariant. Emit one `StateProof` per edge so a broken relationship is localized.
-For the live-verified card→custom-power shape, assert both application and the power's
-turn-start consequence; its own `fired:` log remains diagnostic:
+## Other hosts through `plan.Custom`
 
-```csharp
-private static async Task InCombat(Player player, CancellationToken ct)
-{
-    // Link 1 (source): play the card that applies the custom power (as `card` above).
-    await PlayerCmd.GainEnergy(3m, player);
-    var model = ModelDb.AllCards.First(c => c.Id.Entry == "<CARD_PREFIX>-<CARD_SLUG>");
-    var card  = CombatManager.Instance.DebugOnlyGetState()!.CreateCard(model, player);
-    await CardPileCmd.Add(card, PileType.Hand);
-    var target = card.CombatState?.HittableEnemies.FirstOrDefault()
-        ?? throw new InvalidOperationException("interaction target missing");
-    await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
-    int applied = target.GetPower<<PowerName>>()?.Amount ?? 0;
-    StateProof(applied == <EXPECTED_STACKS>,
-        $"card -> power expected=<EXPECTED_STACKS> observed={applied}");
+Events, Ancients, Rest Site options, Monster encounters, Acts, and Character run start do not
+use the kit's player combat yet. The dev console's string commands are not reachable from a Mod
+(`NDevConsole`'s inner console is private); call the public commands they wrap instead:
+`fight` is `RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned,
+encounter.ToMutable())`, `event` is `EnterRoomDebug(RoomType.Event, MapPointType.Unknown,
+ModelDb.Event<T>())`, `relic add` is `RelicCmd.Obtain`, `card` is `ICombatState.CreateCard` plus
+`CardPileCmd.Add`, and `potion` is `PotionCmd.TryToProcure`. Write each as `plan.Custom(name, async t => { ... })` with the
+host body from the sections below. Those bodies predate the kit, so read them with these
+substitutions:
 
-    // If the power fires at a SIDE's turn start (AfterSideTurnStart), it won't fire on
-    // OUR turn. End the turn, then assert the dependent's real state consequence.
-    int hpBefore = target.CurrentHp;
-    await Task.Delay(500, ct);
-    if (player.PlayerCombatState?.Phase == PlayerTurnPhase.Play)
-        PlayerCmd.EndTurn(player, canBackOut: false);   // returns void — do NOT await it
-    await Task.Delay(1500, ct);
-    int hpAfter = target.CurrentHp;
-    StateProof(hpBefore - hpAfter == <EXPECTED_POWER_DAMAGE>,
-        $"power trigger expected=<EXPECTED_POWER_DAMAGE> observed={hpBefore - hpAfter}; " +
-        $"target hp {hpBefore} -> {hpAfter}");
-}
-```
+- the kit owns the arm gate, budget, navigation, run-UI gate, terminal markers, and failure
+  classification: never copy them; a section's "replace the scaffold's room entry / `InCombat`"
+  means "put this code in the `Custom` body";
+- `StateProof(condition, observation)` is `t.Proof(condition, observation)`, `player` is
+  `t.Player`, `ct` is `t.Token`, and a `Task.Delay` after an action is `await t.Settle()`;
+- a Character scenario sets `plan.Character<TCharacter>()` and comes first in the plan, before
+  any combat changes the starting deck, Relics, or HP;
+- a `CombatEnemy` body enters its own encounter and applies no Plating, because the enemy's hit
+  must land; the next `Combat` scenario starts a fresh kit combat.
 
-> **Proven on the dev box (tier-2 PASS):** a debuff
-> power whose hook is `AfterSideTurnStart` fires at the **enemy's** turn start, so the
-> **required**, not optional — without it `Charge played:` appears but `Signal fired:` never
-> does. `PlayerCmd.EndTurn` returns `void` (awaiting it is a CS4008 compile error). If instead
-> the dependent power fires immediately on apply (not at a turn start), drop the `EndTurn` and
-> the second delay — the first `Task.Delay(500)` is enough.
-
-`verify.md` asks `grep_log.py` for the scenario's **state-proof** vocabulary, for example
-`--tier2-pattern "card damage.*observed=6"`. The verifier considers only structured
-`<ModName> state proof:` lines and separately requires `selftest done`. Broad
-`played|fired|used` logs plus the terminal marker therefore fail. A missing dependent proof
-localizes a broken interaction edge (the exact place raw-AI multi-element mods fail).
-
-## State-consuming Counter interactions — test the amount domain
-
-A `consumes` edge for a nonnegative Counter needs more than the normal happy path. The
-driver must exercise zero stacks, fewer than N, and at least N in the same hosted scenario,
-and reject any retained amount outside the SPEC domain after every case. A finite upper
-bound constrains the final hook-modified state, not merely the requested offset. Drive the
-real source each time; do not test a helper while bypassing the card/relic/potion that owns
-the consumption behavior.
-
-For a card that says "consume up to 4", factor the normal card DRIVER into
-`PlayConsumerCard`, then add this sequence (replace the type/id and adapt the numbers from
-SPEC). A damaging source may be played three times, so the setup gives all enemies enough
-Block to keep the hosted target alive; add `MegaCrit.Sts2.Core.ValueProps` for `ValueProp`.
-
-```csharp
-private static async Task PlayConsumerCard(Player player)
-{
-    await PlayerCmd.GainEnergy(10m, player);
-    var model = ModelDb.AllCards.First(c => c.Id.Entry == "<CARD_PREFIX>-<CARD_SLUG>");
-    var card = CombatManager.Instance.DebugOnlyGetState()!.CreateCard(model, player);
-    await CardPileCmd.Add(card, PileType.Hand);
-    Creature? target = card.TargetType == TargetType.AnyEnemy
-        ? card.CombatState?.HittableEnemies.FirstOrDefault()
-        : null;
-    await CardCmd.AutoPlay(new BlockingPlayerChoiceContext(), card, target);
-}
-
-private static async Task ExerciseConsumeBoundaries(Player player)
-{
-    var owner = player.Creature;
-    if (owner.GetPower<<PowerName>>() is { } initial)
-        await PowerCmd.Remove(initial); // establish the zero-stack precondition
-
-    foreach (var enemy in CombatManager.Instance.DebugOnlyGetState()!.HittableEnemies)
-        await CreatureCmd.GainBlock(enemy, 999m, ValueProp.Unpowered, null);
-
-    // 0 stacks: consuming is a no-op and must not create an instance.
-    await PlayConsumerCard(player);
-    var afterZero = owner.GetPower<<PowerName>>();
-    StateProof(afterZero is null,
-        $"counter zero consume expected=missing observed={afterZero?.Amount.ToString() ?? "missing"}");
-
-    // Fewer than N (2 < 4): consume the available amount and remove at zero.
-    await PowerCmd.Apply<<PowerName>>(new ThrowingPlayerChoiceContext(), owner,
-        2m, owner, null);
-    await PlayConsumerCard(player);
-    var afterFewer = owner.GetPower<<PowerName>>();
-    StateProof(afterFewer is null,
-        $"counter fewer-than-N 2 -> 0; observed={afterFewer?.Amount.ToString() ?? "missing"}");
-
-    // At least N (6 >= 4): consume exactly N and preserve the remainder.
-    await PowerCmd.Apply<<PowerName>>(new ThrowingPlayerChoiceContext(), owner,
-        6m, owner, null);
-    await PlayConsumerCard(player);
-    var remaining = owner.GetPower<<PowerName>>();
-    StateProof(remaining?.Amount == 2,
-        $"counter at-least-N 6 -> 2; observed={remaining?.Amount.ToString() ?? "missing"}");
-}
-```
-
-Call `ExerciseConsumeBoundaries(player)` from the source's `InCombat` body instead of
-playing the consumer only once. If N is 1, zero is also the only fewer-than-N integer case;
-keep the zero case plus an at-least-N remainder case. The successful terminal marker still
-comes only after all boundary assertions pass.
-
-## Custom Card Piles
-
-When SPEC declares custom piles, read `reference/card-piles.md` and extend the nearest
-combat/run host instead of inventing a separate support gate. The harness asserts every
-selected pile's qualified identity, combat/run owner, exact Card instances and order,
-awaited entry/exit outcomes, rejection invariants, reset/save behavior, and any deterministic
-visibility/open/view/callback state. Headed review owns the selected button, top-bar,
-custom-anchor, pile-screen, hotkey, and ExtraHand mouse/controller presentation.
-
-For manual ExtraHand play, the structured post-state records payment, source restoration on
-cancel, successful normal result pile, callback counts, and the next remaining Card's
-ability to enter the same native play flow. RitsuLib owns that play bridge, and the Card
-stays in its ExtraHand pile until the play resolves. The generated proof must not inspect
-private native fields or patch the lifecycle. End with
-the ordinary structured `state proof` and `selftest done` markers when strict Tier 2 is run.
+The kit's player combat stays the right host for anything a Card, Relic, Potion, or Power does.
 
 ## The `CombatEnemy` scenario (monster + encounter; one- and multi-move live)
 
 Enemy-side content (monster + encounter) does not fit the card/relic/potion drivers above:
 the harness must enter the **custom encounter**, confirm the **custom monster** spawned, make
 the enemy **act**, and observe a **state delta** — through the enemy, not the player. This is
-the first non-`CombatPlayer` scenario and reuses the same menu→run navigation
-(`NavigateToRunAsync`) and run-UI timing gate; only the room entered and the
-in-combat body differ.
+the first non-`CombatPlayer` scenario: the kit's navigation and run-UI gate stay, and a
+`plan.Custom` body enters the encounter and drives the turn.
 
-The `CombatEnemy` in-combat body (replaces the `InCombat` in the scaffold; do NOT apply
-`PlatingPower` — we WANT the enemy's hit to land so the delta is observable):
+The one-move `CombatEnemy` scenario enters the custom encounter instead of the kit's combat
+and applies no Plating, because the enemy's hit must land:
 
 ```csharp
-// SelfTest.RunAsync enters the CUSTOM encounter (not CorpseSlugsWeak):
-var encounter = ModelDb.Encounter<<Name>Encounter>().ToMutable();
-await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, encounter);
-await WaitHelper.Until(() => CombatManager.Instance.IsInProgress, ct, TimeSpan.FromSeconds(30), "combat not started");
-var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!);
-await InCombat(player!, ct);
-
-// ... and InCombat proves the four CombatEnemy signals:
-private static async Task InCombat(Player player, CancellationToken ct)
+plan.Custom("ember_hound_bites_for_6", async t =>
 {
-    var combatState = CombatManager.Instance.DebugOnlyGetState()!;
+    // ENTER: the custom monster spawned through its custom encounter.
+    var encounter = ModelDb.Encounter<<Name>Encounter>().ToMutable();
+    await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, encounter);
+    await WaitHelper.Until(() => CombatManager.Instance.IsInProgress &&
+            t.Player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
+        t.Token, TimeSpan.FromSeconds(30), "custom encounter did not reach the Play phase");
+    var mob = t.State.Enemies.FirstOrDefault(e => e.Monster is <Name>);
+    t.Proof(mob != null, $"monster present expected=<Name> observed={mob?.Monster?.Id.Entry ?? "missing"}");
 
-    // ENTER: the custom monster spawned via the custom encounter.
-    var mob = combatState.Enemies.FirstOrDefault(e => e.Monster is <Name>)
-        ?? throw new InvalidOperationException("<Name> not found in Enemies after entering <Name>Encounter");
-    MainFile.Logger.Info("[T2MOD-SELFTEST] <ModName> encounter started: custom encounter ok");
-    MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> monster present: <Name> hp={mob.CurrentHp}");
+    // DRIVE: end the player turn; the enemy takes its real move.
+    int hpBefore = t.Me.CurrentHp;
+    await t.EndTurn(enemiesAct: true);
 
-    await WaitHelper.Until(
-        () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play || !CombatManager.Instance.IsInProgress,
-        ct, TimeSpan.FromSeconds(30), "play phase not reached");
-    if (!CombatManager.Instance.IsInProgress) throw new InvalidOperationException("combat ended before player could act");
-
-    // DRIVE: end the player turn → the enemy takes its move.
-    int hpBefore = player.Creature.CurrentHp;
-    int turnBefore = player.PlayerCombatState!.TurnNumber;
-    PlayerCmd.EndTurn(player, canBackOut: false);   // returns void — do NOT await
-
-    // OBSERVE: wait for the player turn to resume (enemy has acted), then assert the delta.
-    await WaitHelper.Until(
-        () => (player.PlayerCombatState?.Phase == PlayerTurnPhase.Play &&
-               player.PlayerCombatState.TurnNumber > turnBefore) ||
-              !CombatManager.Instance.IsInProgress,
-        ct, TimeSpan.FromSeconds(45), "player play phase not resumed after enemy turn");
-    int hpAfter = player.Creature.CurrentHp;
-    int delta = hpBefore - hpAfter;
-    StateProof(delta == <EXPECTED_DAMAGE>,
-        $"enemy attack expected=<EXPECTED_DAMAGE> observed={delta}; " +
-        $"player hp {hpBefore} -> {hpAfter}");
-}
+    // OBSERVE: the delta through the enemy's action.
+    int delta = hpBefore - t.Me.CurrentHp;
+    t.Proof(delta == <EXPECTED_DAMAGE>,
+        $"enemy attack expected=<EXPECTED_DAMAGE> observed={delta}; player hp {hpBefore} -> {t.Me.CurrentHp}");
+});
 ```
 
-The monster's own move body still logs `attacked:` for diagnosis; verify uses the independent
-state proof, for example `"enemy attack.*observed=6"`.
+The monster's own move body still logs `attacked:` for diagnosis; it is never proof.
 
 ### Multi-turn move vocabulary
 
@@ -977,29 +520,24 @@ Adapt move ids, numbers, Power types, and branch setup to SPEC. The important in
 
 A character is not proven by `ModelDb` registration alone. The harness must select its
 real UI button, start a run as it, assert the starter ecosystem, then enter combat and
-prove one hosted mechanic. Replace the baseline's first-unlocked selection with:
+prove one hosted mechanic. `plan.Character<<CharacterName>>()` makes the kit select the real
+button by model type (placeholder art keeps the fallback `%Icon` texture, so a path match finds
+nothing) and confirm it; the setup fails when that button is missing or locked. The first
+scenario then asserts registration and run-start state, before any combat changes them:
 
 ```csharp
-var registered = ModelDb.AllCharacters.OfType<<CharacterName>>().ToList();
-StateProof(registered.Count == 1,
-    $"content-pack registration expected=1 observed={registered.Count}");
-var canonical = registered.Single();
-var buttons = UiHelper.FindAll<NCharacterSelectButton>(
-    charSelect!.GetNode("CharSelectButtons/ButtonContainer"));
-// Match by model type: placeholder art keeps the fallback %Icon texture.
-var pick = buttons.SingleOrDefault(button => button.Character is <CharacterName>);
-StateProof(pick != null && !pick.IsLocked,
-    $"character select expected=<CharacterName>/unlocked " +
-    $"observed={(pick == null ? "missing" : pick.Character.GetType().Name + "/locked=" + pick.IsLocked)}");
-pick!.UnlockIfPossible();
-pick.Select();
-await Task.Delay(100, ct);
-await UiHelper.Click(await WaitHelper.ForNode<NButton>(mainMenu,
-    "Submenus/CharacterSelectScreen/ConfirmButton", ct, TimeSpan.FromSeconds(10)));
+plan.Character<<CharacterName>>();
+plan.Custom("<character>_run_start", t =>
+{
+    var registered = ModelDb.AllCharacters.OfType<<CharacterName>>().ToList();
+    t.Proof(registered.Count == 1, $"content-pack registration expected=1 observed={registered.Count}");
+    // ... the run-start assertions below, with t.Player in place of player
+    return Task.CompletedTask;
+});
 ```
 
-After `IsInProgress`, wait for `NRun.Instance?.GlobalUi != null`, get the local player,
-and assert concrete runtime state rather than only canonical model declarations:
+The kit has already waited for the run UI and the local Player. Assert concrete runtime
+state rather than only canonical model declarations:
 
 ```csharp
 var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!)
@@ -1014,8 +552,9 @@ StateProof(character is <CharacterName> &&
 // AllPotions membership, then the exact player.Deck.Cards and player.Relics multisets.
 ```
 
-Enter the minimal combat as in `CombatPlayer`, wait for `PlayerTurnPhase.Play`, and
-assert both designed energy and the independent starter behavior. The live proof used
+Then a `plan.Combat(..., freshCombat: true)` scenario (a new kit combat in its Play phase,
+with the turn-1 starter effects intact) asserts both designed energy and the independent
+starter behavior. The live proof used
 a turn-1 starter relic:
 
 ```csharp
@@ -1380,7 +919,8 @@ advance with zero clicks. The click count therefore proves nothing about dialogu
 the `DialogueSet` assertion proves the data and headed review proves the display.
 
 Then resolve every SPEC string in both languages through the real consumers and restore the
-original language (§ Bilingual localization driver): `mutableEvent.Title`,
+original language (`LocManager.Instance.SetLanguage`, restored in `finally`, as the roll call
+does): `mutableEvent.Title`,
 `mutableEvent.Epithet`, and each button's `Option.Title`/`Option.Description`. Select a
 button by its stable `Option.TextKey` suffix (for example `.EndsWith(".BLESSING")`), not by
 English text, click it through `UiHelper.Click`, wait for the SPEC consequence plus
@@ -1432,29 +972,44 @@ observations. A model-generated list cannot prove them. When the user reserves t
 headed run, do not launch the game automatically; provide the exact console route and keep
 an unrun strict `selftest done` as an explicit verification exception.
 
+## Signals for verify and repair
+
+Every kit line starts `[T2MOD-SELFTEST] <ModName>`:
+
+- `selftest budget: <N>s` and `selftest scope: all scenarios=<n>` or
+  `selftest scope: only=<names> selected=<k> of <n>`, logged when the kit arms;
+- `stage: <name> t=<seconds>s` for the main menu, roll call, run start, and each new combat;
+- `roll call: <kind> <Type> id=... pool=... ...` per model;
+- `scenario start: <name>`, then `scenario PASS: <name> (<s>s)` or
+  `scenario FAILED: <name>: FAIL|ERROR|TIMEOUT: <detail> (<s>s)` followed by its
+  `scenario trail:` lines;
+- `state proof: <name>: <observation>` for each assertion that held;
+- `selftest coverage:` and `selftest summary:`;
+- the terminal line: `state proof: kit summary passed=<n>/<n> scope=all|partial` then
+  `selftest done`, or `selftest FAILED: <class>: ...`. The class is `state proof` when any
+  scenario failed an assertion or threw (a behavior bug, or a scenario that encoded SPEC
+  wrongly), `timeout` when only budgets ran out or a step stayed stuck, and `setup` when the
+  kit could not reach its first scenario (navigation, an unknown `--only` name, or a
+  definition error).
+
+`verify.md` checks the run with `grep_log.py --tier2-pattern "kit summary passed=.* scope=all"`.
+A scenario's own `played/fired/used` diagnostic log is never proof.
+
 ## Checklist
 
-- [ ] `SelfTest.cs` emitted in `<ModName>Code/`, in the same namespace as `MainFile.cs` (`<ModName>`) so `MainFile.Logger` resolves.
-- [ ] `MainFile.Initialize()` has, after the load marker: `if (CommandLineHelper.HasArg("t2selftest")) SelfTest.Arm();`
-- [ ] Exactly one source driver is filled per SPEC (relic → `BeforeCombat`; card/potion → `InCombat`; monster+encounter → `CombatEnemy`; event → `MapNode` real room + all independent option outcomes); a forced follow-up Event enters through one real Unknown MapPoint instead of direct canonical entry; multi-element interactions reuse that real source driver and add observations.
-- [ ] Native Event presentation proves the real Card/relic consumers, preference-aware
-      shake movement/return, settled text, exact built-in VFX placement/process mode, and
-      preview/VFX cleanup in one `MapNode` run.
-- [ ] `<PREFIX>-<SLUG>` ids match the element's real `Id.Entry` (SPEC's derived ids).
-- [ ] The element's own type-specific marker (author.md step 2) is present for diagnosis.
-- [ ] The harness snapshots concrete state, asserts the SPEC's exact post-state, and calls
-      `StateProof`; broad trigger/preview markers are never used as Tier-2 proof.
-- [ ] A multi-move `CombatEnemy` waits for `TurnNumber` to advance, asserts `NextMove`
-      intents + `MonsterPerformedMoveEntry`, and traverses every declared cycle/branch outcome.
-- [ ] Multi-hit proof counts `CreatureAttackedEntry.DamageResults`; self Power proof includes
-      its downstream changed result; Block/Heal/debuff assertions read exact live state.
-- [ ] A scenario that crosses an enemy turn clears the player's baseline debuffs (slug
-      Frail) before snapshotting Damage or Block.
-- [ ] A Card selection runs inside one `CardSelectCmd.UseSelector` scope with a
-      `MegaCrit.Sts2.Core.TestSupport.ICardSelector` and asserts what was offered.
-- [ ] Every nonnegative Counter `consumes` edge runs zero/fewer-than-N/at-least-N cases
-      and asserts after each that no negative instance exists.
-- [ ] `Budget` fits the whole scenario, and the budget line is logged before navigation.
-- [ ] Never claim tier-2 on a `selftest FAILED` line. Classify it by stage: `state proof:`
-      is a behavior bug, `timeout:` is an exhausted budget, anything else is a harness/setup
-      miss (report tier-1 + manual fallback).
+- [ ] `SelfTestKit.cs` is the scaffold's copy (Build checks it) and `MainFile.Initialize()`
+      arms it after the load marker; no older `SelfTest.cs` is armed beside it.
+- [ ] `SelfTestScenarios.cs` is in the `<ModName>` namespace and implements
+      `static partial void Define(SelfTestPlan plan)`.
+- [ ] Every simple Card from SPEC has a `FaceCheck`; every other behavior SPEC selected has a
+      named scenario; no scenario repeats what the roll call or a face check already proves.
+- [ ] Each scenario drives the real source, settles, and asserts SPEC's exact post-state with
+      expected and observed values; nothing is asserted from a preview, a log, or a model-only
+      mutation.
+- [ ] A combat-start Relic is obtained in `beforeCombat`; a Card choice runs inside
+      `ScriptChoices` with at least two candidates and asserts what was offered.
+- [ ] A Counter `consumes` edge runs zero/fewer-than-N/at-least-N and asserts no negative
+      instance after each.
+- [ ] A long scenario raises its own `budgetSeconds`.
+- [ ] The final run is unfiltered (`scope=all`); a `selftest FAILED` line is never reported as
+      Tier 2.
