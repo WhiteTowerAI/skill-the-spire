@@ -21,8 +21,9 @@ Settle and write:
 - layout/portrait/background/VFX, map and run-history icon pairs, optional procedural stage, ambient
   BGM, and explicit fallback. Placeholder mode is the checked Darv fallback profile in
   `recipes/ancient.md` § Required explicit fallback, never empty profiles; and
-- a real Ancient `MapNode` SelfTest (`reference/selftest-harness.md` § The Ancient `MapNode`
-  scenario) plus headed dialogue/options/icons/controller proof.
+- a real Ancient `MapNode` SelfTest, a `plan.Ancient<TAncient>` scenario
+  (`reference/selftest-harness.md` § The Ancient `MapNode` scenario), plus headed
+  dialogue/options/icons/controller proof.
 
 Ancient option bodies may use the same bounded public Event outcome routes, but a new Ancient is
 not an ordinary Event and must not be lowered through `recipes/event.md`. Settings, Progression,

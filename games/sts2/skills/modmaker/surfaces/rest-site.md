@@ -52,7 +52,9 @@ play, combat piles, Energy/Stars, or Orb queue; those primitives block instead o
 
 ## Proof matrix
 
-Follow the complete matrix in `reference/rest-site-options.md`: absent, disabled, enabled,
+Drive each case as a `plan.RestSite` scenario (`reference/selftest-harness.md` § Rest Site
+options), with the owner and Gold set up in `beforeEnter`. Follow the complete matrix in
+`reference/rest-site-options.md`: absent, disabled, enabled,
 render-then-invalidate rejection, exact success, option-history identity, keep/leave behavior,
 repeat edge, unrelated native option preservation, custom icon, native fallback, localization,
 and controller focus. Add owner-specific assertions:

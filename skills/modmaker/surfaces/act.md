@@ -49,15 +49,17 @@ surface rows.
 
 ## Proof matrix
 
-Use a fresh singleplayer run and the real transition into the selected slot:
+Use a fresh singleplayer run and the real transition into the selected slot: a `plan.Act<TAct>`
+scenario (`reference/selftest-harness.md` § The `Act` scenario) enters it through
+`RunManager.EnterAct`, where the entry rule resolves, and the world helpers enter its rooms:
 
 1. assert the canonical Act is registered once but the mutable run Act occupies only its selected
    slot after the declared force/pool rule resolves;
 2. drive eligible and ineligible contexts and, for force rules, priority/tie behavior; for uniform
    or weighted pools, inject deterministic supplied RNG and assert the selected candidate without
    claiming a statistical distribution from samples;
-3. assert the generated map has the declared floor and point counts and every runtime-required
-   Encounter/Ancient pool is nonempty;
+3. assert the generated map has the declared floor and point counts (the map also holds fixed
+   rows beyond `GetMapPointTypes`) and every runtime-required Encounter/Ancient pool is nonempty;
 4. enter representative weak, regular, elite, Boss, ordinary Event, Ancient, chest, and Rest Site
    nodes and assert their exact registered identities and post-state;
 5. save/load in the Act and assert the same mutable Act identity, room state, and no duplicate

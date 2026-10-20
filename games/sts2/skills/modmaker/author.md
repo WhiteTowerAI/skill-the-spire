@@ -117,8 +117,9 @@ keyboard. The scaffold already generated `<ModName>Code/SelfTestKit.cs` and arme
    resolves its text in both languages, on every run.
 2. Add one `plan.FaceCheck<TCard>()` line per simple Card from SPEC § Autotest. Write no
    assertions for it.
-3. Add one named `plan.Combat`, `plan.Encounter`, `plan.RunStart`, or `plan.Custom` scenario per
-   remaining SPEC scenario, from the source element's surface page § Self-test driver body. A **power**, **keyword**, or
+3. Add one named scenario per remaining SPEC scenario (`plan.Combat`, `plan.Encounter`,
+   `plan.RunStart`, `plan.Event`, `plan.Ancient`, `plan.RestSite`, `plan.Act`, or `plan.Custom`),
+   from the source element's surface page § Self-test driver body. A **power**, **keyword**, or
    **enchantment** adds its assertions to its host Card's scenario; an **orb** is driven through
    its channel host. For a multi-element SPEC, drive the real source, then observe each
    dependent state in dependency order; there is no `combo` element. Each selected capability

@@ -115,7 +115,8 @@ vanilla profile is the placeholder route; custom presentation remains headed pro
 
 ## SelfTest
 
-Follow `surfaces/act.md`. Registration/model lookup, calling an entry predicate, or inspecting a
-generated list cannot prove a playable Act. The real host must enter the selected slot, generate
+Follow `surfaces/act.md` with a `plan.Act<TAct>(name, body, slotIndex)` self-test scenario
+(`reference/selftest-harness.md` § The `Act` scenario). Registration/model lookup, calling an
+entry predicate, or inspecting a generated list cannot prove a playable Act. The real host must enter the selected slot, generate
 the map and all required room families, traverse representative consumers, verify deterministic
 selection and save/load identity, and keep the deferred Multiplayer route absent.
