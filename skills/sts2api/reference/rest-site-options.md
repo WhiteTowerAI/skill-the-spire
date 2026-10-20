@@ -277,8 +277,11 @@ fallback path from the custom `OptionId`, which has no built-in texture.
 
 ## Proof contract
 
-Use one focused real Rest Site run. Do not substitute a generated list, model-only state,
-or load marker for the native host.
+Use one real Rest Site per case, each a `plan.RestSite` self-test scenario that sets up the
+owner and Gold in `beforeEnter` and reads or clicks the native buttons through
+`t.RestSiteOptions()` and `t.ChooseRestSiteOption(id)` (`reference/selftest-harness.md`
+§ Rest Site options). Do not substitute a generated list, model-only state, or load marker for
+the native host.
 
 1. Enter without the owner: custom option absent.
 2. Obtain the owner with Gold below cost, then enter: option present, localized, gray,
@@ -300,9 +303,10 @@ or load marker for the native host.
 
 The pinned dev-console `gold` command ignores negative values; `gold -N` cannot construct
 the low-Gold or stale-button state. For manual review, spend Gold normally at a Shop before
-entering the Rest Site to check the gray state. Step 3 requires a narrow proof driver that
-uses a public Gold command after the button renders; if a human-led acceptance omits that
-literal stale-button transition, record it as an exception instead of claiming it ran.
+entering the Rest Site to check the gray state. Step 3 lowers Gold with a public command
+inside the scenario body, after the button rendered, then chooses the option; if a human-led
+acceptance omits that literal stale-button transition, record it as an exception instead of
+claiming it ran.
 
 Tier 1 still requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof plus `selftest done`; when the user performs the hosted

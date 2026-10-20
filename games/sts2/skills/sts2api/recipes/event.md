@@ -303,30 +303,22 @@ recipe.
 
 1. **Type:** clean build/package/load; `ModelDb.Event<T>()` resolves the custom event;
    exact load marker appears with no mod-named errors.
-2. **Scenario:** enter the real event room and click its real option UI:
+2. **Scenario:** a `plan.Event<<Name>>` self-test scenario enters the real event room, and
+   `t.ChooseEventOption("<OPTION_KEY>")` clicks its real option UI:
 
 ```csharp
-var canonical = ModelDb.Event<<Name>>();
-await RunManager.Instance.EnterRoomDebug(RoomType.Event, MapPointType.Unknown, canonical);
-
-var room = (EventRoom)RunManager.Instance.DebugOnlyGetState()!.CurrentRoom!;
-var mutableEvent = (<Name>)room.LocalMutableEvent;
-
-var choice = UiHelper.FindAll<NEventOptionButton>(NEventRoom.Instance!)
-    .Single(button =>
-        !button.Option.IsLocked
-        && button.Option.Title.GetFormattedText() == "<Option title>");
-var before = mutableEvent.Owner!.Gold;
-await UiHelper.Click(choice);
-
-await WaitHelper.Until(
-    () => mutableEvent.Owner!.Gold == before + <amount> && mutableEvent.IsFinished,
-    ct, TimeSpan.FromSeconds(30), "event option consequence not observed");
+plan.Event<<Name>>("<name>_option_gives_gold", async t =>
+{
+    int before = t.Player.Gold;
+    await t.ChooseEventOption("<OPTION_KEY>");
+    await t.WaitUntil(() => t.Event.IsFinished, "event did not finish");
+    t.Proof(t.Player.Gold - before == <amount>, $"event gold expected=<amount> observed={t.Player.Gold - before}");
+});
 ```
 
-The harness also reads the formatted title, option title/description, and result-page text,
-so registration plus a gold mutation cannot hide broken nested localization. See
-`reference/selftest-harness.md` section `MapNode` for the full driver contract.
+The kit's roll call resolves the Event's title and initial page in both languages, so
+registration plus a gold mutation cannot hide broken nested localization. See
+`reference/selftest-harness.md` § The `MapNode` scenario for the full driver contract.
 
 When SPEC selects native option presentation, extend that same headed `MapNode` run as
 specified in `reference/event-option-presentation.md`: focus and unfocus enabled typed

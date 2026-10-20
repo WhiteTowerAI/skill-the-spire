@@ -71,9 +71,15 @@ format genuinely cannot express the requested structure. Ship matching `eng` and
   "<ENTRY>.talk.firstVisitEver.0-0.ancient": "<line>",
   "<ENTRY>.talk.firstVisitEver.0-0.next": "<prompt>",
   "<ENTRY>.talk.firstVisitEver.0-1.ancient": "<last line>",
-  "<ENTRY>.talk.ANY.0-0.ancient": "<line>"
+  "<ENTRY>.talk.ANY.0-0r.ancient": "<line>",
+  "<ENTRY>.talk.ANY.0-visit": "0"
 }
 ```
+
+Keep at least one repeating group (the `r` suffix) that every Character can reach. The native
+room picks one valid dialogue per visit and throws when none is left, so a Mod with only
+first-visit and fixed-visit groups breaks after its scripted visits; the self-test kit's roll
+call reports it for every Character.
 
 `.next` is the button that advances to the following line, so only a non-terminal line has
 one; vanilla never puts `.next` on a dialogue's last line, and Build rejects it.
@@ -135,8 +141,8 @@ background and icons.
 
 No asset path, parsed dialogue key, or direct option call proves the native Ancient room. Follow
 `surfaces/ancient.md` for exact `MapNode`, choice-history, dialogue, controller, icon, audio, and
-cleanup proof. The SelfTest driver is `reference/selftest-harness.md` § The Ancient `MapNode`
-scenario.
+cleanup proof. The SelfTest driver is a `plan.Ancient` scenario:
+`reference/selftest-harness.md` § The Ancient `MapNode` scenario.
 
 Game-observed so far: one Shared Ancient with the Darv fallback profile, a two-line
 `firstVisitEver` plus one `ANY` dialogue, two initial options, and one Gold-gain option ending in

@@ -236,9 +236,9 @@ allowlisted `weak_short`/`strong_normal` screen shake, and `trial_noble` route t
 
 ## Self-test driver body
 
-**event** → the **`MapNode`** variant: enter the canonical custom event, then drive real
-option UI, as a `plan.Custom` scenario. The focused body is in
-`reference/selftest-harness.md` § The `MapNode` scenario, read through § Other hosts.
+**event** → the **`MapNode`** variant: a `plan.Event<TEvent>` scenario enters the canonical
+custom event and drives its real option UI with `t.ChooseEventOption(key)`. The focused body is in
+`reference/selftest-harness.md` § The `MapNode` scenario.
 
 ## Proof matrix
 

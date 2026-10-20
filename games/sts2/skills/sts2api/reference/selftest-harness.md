@@ -14,27 +14,33 @@
 
 ## What the kit does on every run
 
-1. **Roll call**, at the main menu. Every concrete model class in the Mod's assembly must be
-   registered. For every Card, Relic, Potion, Power, Character, Monster, and Encounter, the
-   player-facing text must exist and resolve in both `eng` and `zhs` through the real model
-   consumer (the Compendium's `GetDescriptionForPile(PileType.None)` for a Card), with no raw
-   key, empty value, or unresolved `{placeholder}`: titles, descriptions, flavor, selection
-   prompts, Power smart descriptions, all fourteen `characters.json` keys, Monster names, and
-   Encounter titles and loss lines. It restores the player's language and logs one `roll call:`
-   line per model (a Card's id, pool, cost, type, rarity, target, and base numbers; a
-   Character's HP, Gold, Energy, pools, starter deck, and Relics; a Monster's HP range; an
-   Encounter's room and roster), with both titles. Compare those lines with SPEC.
+1. **Roll call**, at the main menu. Every Card, Relic, Potion, Power, Character, Monster,
+   Encounter, Event, Ancient, Act, Orb, Enchantment, and Affliction class in the Mod's assembly
+   must be registered by its content pack: the game also discovers an unregistered class, but
+   gives it a vanilla-style id without the Mod's stem, so its text never resolves. For every
+   registered model the player-facing text must exist and resolve in both `eng` and `zhs`
+   through the real model consumer (the Compendium's `GetDescriptionForPile(PileType.None)` for
+   a Card), with no raw key, empty value, or unresolved `{placeholder}`: titles, descriptions,
+   flavor, selection prompts, Power smart descriptions, all fourteen `characters.json` keys,
+   Monster names, Encounter titles and loss lines, Event and Ancient titles and initial pages,
+   Ancient epithets, and Act titles. Every Mod Ancient must keep a valid dialogue for every
+   Character on a first visit and after many visits (the native room throws when none is
+   left). It restores the player's language and logs one `roll call:` line per model (a Card's
+   id, pool, cost, type, rarity, target, and base numbers; a Character's HP, Gold, Energy,
+   pools, starter deck, and Relics; a Monster's HP range; an Encounter's room and roster; an
+   Act's index and pool sizes), with both titles. Compare those lines with SPEC.
 2. **Navigation**: abandons an open run, starts a singleplayer run as the selected Character
    (`plan.Character<T>()`, matched by model type) or the first unlocked one, and waits for the
-   run UI and the local Player.
-3. **Scenarios in order**, except that `RunStart` scenarios run first. Each has its own budget. A failed assertion, an exception, or a
+   run UI, the local Player, and the run's first room (a room entered before that races the
+   game's own startup).
+3. **Scenarios in order**, except that `RunStart` scenarios run first and `Act` scenarios last. Each has its own budget. A failed assertion, an exception, or a
    timeout ends only that scenario: the kit logs its event trail and runs the next one.
 4. **One shared combat.** Combat scenarios share a `CorpseSlugsWeak` fight with 999 Plating on
    the player. Before each one the kit removes the Cards it created from the Hand, returns the
    deck's Hand Cards to the Draw Pile, removes the player's Powers except Plating, clears
    Block, restores HP and Energy, and sets every enemy to 999/999 HP with no Powers or Block.
-   When the combat ended, and right after an `Encounter` or `Custom` scenario, the kit starts a
-   new combat and applies the same reset, so every scenario starts alike whatever ran before it. A scenario
+   When the combat ended, and right after a scenario of another host, the kit starts a new
+   combat and applies the same reset, so every scenario starts alike whatever ran before it. A scenario
    that asks for `freshCombat` or `beforeCombat` instead gets the new combat exactly as the
    host started it (opening Hand, combat-start Energy and Powers), with only the enemies set
    to 999 HP.
@@ -50,8 +56,8 @@
    exhausted, Energy spent and gained, Relics obtained, and Potions procured during the
    scenario (`t.Trail`). A failed scenario prints its trail.
 9. **Report.** A `selftest coverage:` line names any Mod Card never played, Relic or Potion
-   never owned, Power never seen, Character never played, Monster never met, or Encounter never
-   entered; a `selftest summary:` line lists every scenario with its result and seconds. Only when all pass does it log
+   never owned, Power never seen, Character never played, Monster never met, or Encounter,
+   Event, Ancient, or Act never entered; a `selftest summary:` line lists every scenario with its result and seconds. Only when all pass does it log
    `state proof: kit summary passed=N/N scope=all` and `selftest done`.
 10. **Watchdog.** A step stuck past its scenario budget ends the run with
     `selftest FAILED: timeout: scenario <name> stuck at '<step>'`.
@@ -67,12 +73,16 @@ Tier 2 does not need a hand-written scenario per Card. Split the SPEC's content 
 
 | Content | Check |
 |---|---|
-| Every model class (registered), and every Card, Relic, Potion, Power, Character, Monster, and Encounter (text) | roll call, automatic |
+| Every content model class (registered), its text, and every Ancient's dialogue coverage | roll call, automatic |
 | A **simple Card**: its SPEC Implementation cites only its recipe and `reference/effect-primitives.md`, its numbers are fixed (no calculated value, X cost, or condition), and its effects are damage, Block, Energy, Stars, Gold, healing, HP loss, Max HP, draw, or a stack of an existing Power | `plan.FaceCheck<TCard>()`: one line, no assertions to write |
 | Everything else: a custom Power, Keyword, Enchantment, or Orb; a `Hook:` or `Mod-local:` line; a condition, counter, or state across turns or combats; a Card choice; an interaction between elements; a Relic or Potion trigger | a named `plan.Combat(...)` scenario |
 | A Monster and its Encounter | a named `plan.Encounter<TEncounter>(...)` scenario (§ The `CombatEnemy` scenario) |
 | A Character's starting state | `plan.Character<T>()` and a named `plan.RunStart(...)` scenario (§ The `RunStart` + `CombatPlayer` scenario) |
-| Events, Ancients, Rest Site options, Acts | a named `plan.Custom(...)` scenario (§ Other hosts) |
+| An Event | a named `plan.Event<TEvent>(...)` scenario (§ The `MapNode` scenario) |
+| An Ancient | a named `plan.Ancient<TAncient>(...)` scenario (§ The Ancient `MapNode` scenario) |
+| A Rest Site option | named `plan.RestSite(...)` scenarios (§ Rest Site options) |
+| An Act | a named `plan.Act<TAct>(..., slotIndex)` scenario (§ The `Act` scenario) |
+| Anything no host covers (a forced follow-up Event through a real Unknown map point) | a named `plan.Custom(...)` scenario (§ Other hosts) |
 | Images, layout, animation, mouse/controller, wording, feel | headed review, never Tier 2 |
 
 A face check plays the Card once and, when it can upgrade, once upgraded, then compares every
@@ -136,8 +146,17 @@ the observed value.
   started.
 - `Encounter<TEncounter>(name, body, budgetSeconds = 60, keepPlayerHp = false)`: enters the Mod's
   Encounter with its real roster; no Plating; the player at 999/999 HP unless `keepPlayerHp`.
-- `Custom(name, body, budgetSeconds = 60)`: a scenario that enters its own room (§ Other hosts);
-  the kit first finishes any combat in progress.
+- `Event<TEvent>(name, body, budgetSeconds = 60)`: enters the Event as an Unknown map point and
+  waits for its options.
+- `Ancient<TAncient>(name, body, budgetSeconds = 60)`: enters the Ancient as an Ancient map point
+  and advances its dialogue through the real hitbox until its options are enabled.
+- `RestSite(name, body, budgetSeconds = 60, beforeEnter = null)`: enters a Rest Site after
+  `beforeEnter` (the host generates the options on entry, so obtain their owner or change Gold
+  there).
+- `Act<TAct>(name, body, slotIndex, budgetSeconds = 120)`: enters slot `slotIndex` (0-2) through
+  `RunManager.EnterAct`, the transition the Mod's entry rule resolves in; runs last.
+- `Custom(name, body, budgetSeconds = 60)`: a scenario that enters its own room (§ Other hosts).
+  Every host except `Combat` and `RunStart` first finishes any combat in progress.
 - `Character<TCharacter>()`: start the run as this Character.
 
 ### `SelfTestRun t`
@@ -163,6 +182,14 @@ the observed value.
   `await t.EnemyTurn(monster, "MOVE_ID")` (§ The `CombatEnemy` scenario).
 - Run start: `t.DeckCounts()` (Card class name to count), `t.RelicNames()`, and
   `t.Describe(counts)` (`AxN,BxM` in name order).
+- World: `t.Run` (the `RunState`), `t.Act`, `t.MapPointCounts()`, `t.Event` (the room's mutable
+  Event), `t.EventOptions()` (shown options, locked included), `await t.ChooseEventOption(key)`
+  (a text key or its last segment, `"proceed"` for Proceed; waits until the host took it),
+  `t.RestSiteOptions()` (shown options, disabled included), `await t.ChooseRestSiteOption(id)`,
+  and the room entries `EnterEvent<T>()`, `EnterAncient<T>()`, `EnterRestSite()`,
+  `EnterTreasure()`, `Fight(encounter)`, `WinCombat()`, and `EnterAct(slot)` for use inside a body.
+- `await t.WaitUntil(condition, what, seconds = 15)` waits for any host consequence (a page, a
+  finished Event, a reward) inside the scenario budget.
 
 Any other public STS2 or RitsuLib API works inside a body: snapshot state, drive the real
 source, `await t.Settle()`, then assert.
@@ -588,8 +615,9 @@ Retained-card custom piles are not covered by this supported path.
 
 ## Other hosts through `plan.Custom`
 
-Events, Ancients, Rest Site options, and Acts have no kit host yet. Write each as
-`plan.Custom(name, async t => { ... })` with the host body from the sections below. The dev
+Use `plan.Custom(name, async t => { ... })` for a room no kit host enters the right way: the
+bounded forced follow-up Event, which must arrive through a real Unknown map point
+(§ Bounded forced follow-up Event variant), or a Shop. The dev
 console's string commands are not reachable from a Mod (`NDevConsole`'s inner console is
 private); call the public commands they wrap instead: `fight` is
 `RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned,
@@ -605,84 +633,37 @@ substitutions:
   `t.Player`, `ct` is `t.Token`, and a `Task.Delay` after an action is `await t.Settle()`;
 - the next `Combat` scenario after a `Custom` one starts a fresh kit combat.
 
-The kit's player combat stays the right host for anything a Card, Relic, Potion, or Power does,
-`plan.Encounter` for a Monster, and `plan.RunStart` for a Character's starting state.
+Every other content kind has its own host: the kit's player combat for anything a Card, Relic,
+Potion, or Power does, `plan.Encounter` for a Monster, `plan.RunStart` for a Character's starting
+state, `plan.Event`, `plan.Ancient`, `plan.RestSite`, and `plan.Act`.
 
-## The `MapNode` scenario (event / World Node)
+## The `MapNode` scenario (`plan.Event`)
 
-An event is not proven by registration alone. The harness must enter its real `EventRoom`,
-wait for the nested event UI, click an actual `NEventOptionButton`, and observe the option's
-run-state consequence. Reuse the fixed menu-to-run navigation and `NRun.GlobalUi` timing
-gate. Before debug-entering an Event, wait until the normal startup has generated its map
-and created its first room; this prevents terminal Event/combat paths from opening a half-
-initialized `NMapScreen`:
+An Event is not proven by registration alone. `plan.Event<TEvent>(name, body)` enters its real
+`EventRoom` as an Unknown map point, waits for the nested Event UI and its option buttons, and
+hands over. `t.ChooseEventOption(key)` clicks the real `NEventOptionButton` whose
+`Option.TextKey` is the key or ends with `.<key>` (never English text), and waits until the host
+took the option. Assert the option's run-state consequence and the page it leads to:
 
 ```csharp
-await WaitHelper.Until(
-    () => RunManager.Instance.DebugOnlyGetState()?.Map is not NullActMap &&
-          (NRun.Instance?.EventRoom?.Layout != null || NRun.Instance?.MapRoom != null),
-    ct, TimeSpan.FromSeconds(30), "initial map and room did not finish loading");
-
-var canonical = ModelDb.Event<<Name>>();
-await RunManager.Instance.EnterRoomDebug(RoomType.Event, MapPointType.Unknown, canonical);
-
-EventRoom? room = null;
-await WaitHelper.Until(() =>
+plan.Event<EmberShrine>("ember_shrine_offer_gives_25_gold", async t =>
 {
-    room = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom as EventRoom;
-    return room?.LocalMutableEvent is <Name> && NEventRoom.Instance?.Layout != null;
-}, ct, TimeSpan.FromSeconds(30), "custom event room not entered");
-
-var mutableEvent = (<Name>)room!.LocalMutableEvent;
-NEventOptionButton? choice = null;
-await WaitHelper.Until(() =>
-{
-    var eventRoomNode = NEventRoom.Instance;
-    if (eventRoomNode == null) return false;
-    choice = UiHelper.FindAll<NEventOptionButton>(eventRoomNode)
-        .SingleOrDefault(button =>
-            !button.Option.IsLocked
-            && button.Option.Title.GetFormattedText() == "<Option title>");
-    return choice is { IsEnabled: true, Visible: true };
-}, ct, TimeSpan.FromSeconds(30), "event option not available");
-
-// ENTER/LOC: prove title + nested option localization before driving the choice.
-var title = mutableEvent.Title.GetFormattedText();
-var optionTitle = choice!.Option.Title.GetFormattedText();
-var optionDescription = choice.Option.Description.GetFormattedText();
-if (title != "<Title>" || optionTitle != "<Option title>" || optionDescription.Length == 0)
-    throw new InvalidOperationException(
-        $"Nested event localization mismatch: title='{title}', option='{optionTitle}', description='{optionDescription}'");
-MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> event entered: title='{title}' option='{optionTitle}'");
-
-// DRIVE/OBSERVE: click the game's real option UI and assert the SPEC consequence.
-var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!)
-    ?? throw new InvalidOperationException("local player not found");
-var before = player.Gold;
-await UiHelper.Click(choice);
-await WaitHelper.Until(
-    () => player.Gold == before + <amount> && mutableEvent.IsFinished,
-    ct, TimeSpan.FromSeconds(30), "event option consequence not observed");
-
-var resultDescription = mutableEvent.Description?.GetFormattedText() ?? string.Empty;
-if (resultDescription.Length == 0)
-    throw new InvalidOperationException("result page localization missing");
-StateProof(player.Gold - before == <amount> && mutableEvent.IsFinished,
-    $"event gold expected=<amount> observed={player.Gold - before}; " +
-    $"gold {before} -> {player.Gold}; resultLoc={resultDescription.Length > 0}");
+    var keys = string.Join(",", t.EventOptions().Select(option => option.TextKey));
+    t.Proof(t.EventOptions().Count == 2, $"initial options expected=OFFER,BLESS observed={keys}");
+    int gold = t.Player.Gold;
+    await t.ChooseEventOption("OFFER");
+    await t.WaitUntil(() => t.Event.IsFinished, "shrine did not finish after OFFER");
+    t.Proof(t.Player.Gold - gold == 25, $"offer gold expected=+25 observed=+{t.Player.Gold - gold}");
+    await t.ChooseEventOption("proceed");
+});
 ```
 
-Required namespaces beyond the fixed scaffold: the event type; `MegaCrit.Sts2.Core.Map`;
-`MegaCrit.Sts2.Core.Nodes.Events`; `MegaCrit.Sts2.Core.Nodes.Rooms`; and
-`MegaCrit.Sts2.Core.Rooms`. `System.Linq` is already used by the navigation code.
-
-Select the button by the SPEC option's formatted title, not merely "the only unlocked
-option". The fast path drives one specified consequence; the extended path below drives
-each independent outcome family declared by SPEC.
-The event option method logs its own `option chosen:` marker **after** the Cmd changes run
-state. The harness independently asserts the same state and emits `state proof:`. Verify
-with a pattern such as `"event gold.*observed=25"`; the verifier still requires the exact
-load marker and `selftest done`.
+A page that presents another choice (`SetEventState`) is a second `ChooseEventOption` after
+`t.WaitUntil(() => t.EventOptions().Any(option => option.TextKey.EndsWith(".CONTINUE")), ...)`.
+The roll call already resolves the Event's title and initial page in both languages; resolve a
+later page's `t.Event.Description` and each option's `Title`/`Description` in the scenario when
+SPEC selects them. The fast path drives one specified consequence; the extended path below
+drives each independent outcome family declared by SPEC.
 
 ### Extended outcomes, special combat, VFX, and rich text
 
@@ -701,32 +682,18 @@ outcome. The supported combined shape is:
 Each mutable Event instance starts at most one special combat. This is a runtime boundary,
 not just a test simplification.
 
-Wait for the standard Event completion option by semantics, never localized English text:
-
-```csharp
-NEventOptionButton? proceed = null;
-await WaitHelper.Until(() =>
-{
-    var eventRoom = NEventRoom.Instance;
-    if (eventRoom == null)
-        return false;
-    proceed = UiHelper.FindAll<NEventOptionButton>(eventRoom)
-        .SingleOrDefault(button => button.Option.IsProceed);
-    return proceed is { IsEnabled: true, Visible: true };
-}, ct, TimeSpan.FromSeconds(30), "event proceed option not available");
-await UiHelper.Click(proceed!);
-```
+Take the standard Event completion option by semantics, never localized English text:
+`await t.ChooseEventOption("proceed")` clicks the option whose `IsProceed` is set.
 
 For a resumable combat, retain the first mutable Event reference as its concrete custom type
 (`mutableEvent`) and require all of the following. `ResumeCount` is the counter its `Resume`
 override increments (`reference/event-outcomes.md` § Resume the Event after combat):
 
 ```csharp
-await WaitHelper.Until(
-    () => RunManager.Instance.DebugOnlyGetState()?.CurrentRoom is EventRoom &&
-          NEventRoom.Instance?.Layout != null &&
-          mutableEvent.ResumeCount == 1,
-    ct, TimeSpan.FromSeconds(30), "event did not resume after special combat");
+var mutableEvent = (EmberShrine)t.Event;
+// ... choose the option that starts the special combat, then win it with t.WinCombat() ...
+await t.WaitUntil(() => t.Run.CurrentRoom is EventRoom && NEventRoom.Instance?.Layout != null &&
+                        mutableEvent.ResumeCount == 1, "event did not resume after special combat", 30);
 ```
 
 For a terminal branch, require an open map, zero resumes on the fresh Event instance, and
@@ -758,7 +725,8 @@ and the result page is readable. One marker may cover all selected profiles.
 ### Bounded forced follow-up Event variant
 
 When SPEC selects `reference/forced-followup-event.md`, replace direct canonical Event
-entry with one compact real-map proof. Reuse the same run/map startup gate above, then:
+entry with one compact real-map proof in a `plan.Custom` scenario (§ Other hosts); the kit has
+already waited for the run's map and first room:
 
 1. call `Hook.ModifyUnknownMapPointRoomTypes` and `Hook.ModifyNextEvent` without the Quest
    token and require unchanged inputs;
@@ -777,125 +745,126 @@ run and one structured marker. Required additional namespaces are
 `MegaCrit.Sts2.Core.Hooks`, `MegaCrit.Sts2.Core.Models.Events`, and the Quest Card/target
 Event types.
 
-## The Ancient `MapNode` scenario (new Mod-owned Ancient)
+## The Ancient `MapNode` scenario (`plan.Ancient`)
 
 A new `ModAncientEventTemplate` Ancient is not an ordinary Event: its room uses
-`NAncientEventLayout`, plays a dialogue, and is recorded as an Ancient map point. Reuse the
-fixed menu-to-run navigation, the `NRun.GlobalUi` gate, and the map-ready gate from the
-`MapNode` scenario above, then replace the Event driver with this one. It enters the room the
-same way the game's own `event <ID>` console command does for an Ancient, and advances
-dialogue the way the game's AutoSlay `EventRoomHandler` does.
-
-This driver passed Tier 2 on the pinned host for a Shared Ancient with a Gold option, and a
-headed run confirmed its dialogue displays.
+`NAncientEventLayout`, plays a dialogue, and is recorded as an Ancient map point.
+`plan.Ancient<TAncient>(name, body)` enters it the way the game's own `event <ID>` console
+command does for an Ancient (`MapPointType.Ancient`), confirms the layout, and advances the
+dialogue through the real `%DialogueHitbox` the way AutoSlay's `EventRoomHandler` does, until
+the options are enabled. The roll call already resolved its title, epithet, and initial page,
+and proved a valid dialogue remains for every Character on a first and a late visit.
 
 ```csharp
-// REGISTRATION: exactly one identity, in the set SPEC selected (Shared or the Act's set).
-var shared = ModelDb.AllSharedAncients.OfType<<Name>>().ToList();
-var all = ModelDb.AllAncients.OfType<<Name>>().ToList();
-StateProof(shared.Count == 1 && all.Count == 1,
-    $"ancient registration expected=shared:1/all:1 observed=shared:{shared.Count}/all:{all.Count}");
-var canonical = shared[0];
-
-// DIALOGUE DATA: the real localization consumer parsed every SPEC group.
-var dialogues = canonical.DialogueSet;
-int firstLines = dialogues.FirstVisitEverDialogue?.Lines.Count ?? 0;
-int anyCount = dialogues.AgnosticDialogues.Count;
-StateProof(firstLines == <first-visit line count> && anyCount == <ANY dialogue count>,
-    $"ancient dialogue expected=firstVisitEver:<n>/ANY:<m> observed=firstVisitEver:{firstLines}/ANY:{anyCount}");
-
-// ENTER as an Ancient map point (not MapPointType.Unknown).
-await RunManager.Instance.EnterRoomDebug(RoomType.Event, MapPointType.Ancient, canonical);
-EventRoom? room = null;
-await WaitHelper.Until(() =>
+plan.Ancient<EmberOracle>("ember_oracle_gift_gives_30_gold", async t =>
 {
-    room = RunManager.Instance.DebugOnlyGetState()?.CurrentRoom as EventRoom;
-    return room?.LocalMutableEvent is <Name> && NEventRoom.Instance?.Layout != null;
-}, ct, TimeSpan.FromSeconds(30), "custom ancient room not entered");
-var mutableEvent = (<Name>)room!.LocalMutableEvent;
-var layout = UiHelper.FindFirst<NAncientEventLayout>(NEventRoom.Instance!)
-    ?? throw new InvalidOperationException("room did not use NAncientEventLayout");
-
-// DIALOGUE UI: click the real dialogue hitbox until the options are enabled.
-int clicks = 0;
-while (clicks < 20)
-{
-    ct.ThrowIfCancellationRequested();
-    if (UiHelper.FindAll<NEventOptionButton>(layout).Any(b => b.IsEnabled && !b.Option.IsLocked))
-        break;
-    var hitbox = layout.GetNodeOrNull<NButton>("%DialogueHitbox");
-    if (hitbox == null || !hitbox.Visible || !hitbox.IsEnabled)
-    {
-        await Task.Delay(100, ct);
-        continue;
-    }
-    hitbox.EmitSignal(NClickableControl.SignalName.Released, hitbox);
-    clicks++;
-    await Task.Delay(500, ct);
-}
-await WaitHelper.Until(
-    () => UiHelper.FindAll<NEventOptionButton>(layout).Count(b => b.IsEnabled && !b.Option.IsLocked)
-          == <initial option count>,
-    ct, TimeSpan.FromSeconds(15), "ancient options did not appear after dialogue");
+    var shared = ModelDb.AllSharedAncients.OfType<EmberOracle>().Count();
+    t.Proof(shared == 1, $"ancient registration expected=shared:1 observed=shared:{shared}");
+    var open = t.EventOptions().Where(option => !option.IsLocked).Select(option => option.TextKey).ToList();
+    t.Proof(open.Count == 2, $"oracle options expected=GIFT,LEAVE observed={string.Join(",", open)}");
+    int gold = t.Player.Gold;
+    await t.ChooseEventOption("GIFT");
+    await t.WaitUntil(() => t.Event.IsFinished, "oracle did not finish after GIFT");
+    t.Proof(t.Player.Gold - gold == 30, $"gift gold expected=+30 observed=+{t.Player.Gold - gold}");
+});
 ```
 
-The options can be enabled while the dialogue is still on screen, so a passing run may
-advance with zero clicks. The click count therefore proves nothing about dialogue display:
-the `DialogueSet` assertion proves the data and headed review proves the display.
-
-Then resolve every SPEC string in both languages through the real consumers and restore the
-original language (`LocManager.Instance.SetLanguage`, restored in `finally`, as the roll call
-does): `mutableEvent.Title`,
-`mutableEvent.Epithet`, and each button's `Option.Title`/`Option.Description`. Select a
-button by its stable `Option.TextKey` suffix (for example `.EndsWith(".BLESSING")`), not by
-English text, click it through `UiHelper.Click`, wait for the SPEC consequence plus
-`mutableEvent.IsFinished` (or the next page), and finish with `StateProof`, for example
-`ancient blessing gold expected=25 observed={player.Gold - before}; finished={mutableEvent.IsFinished}`.
-
-Required namespaces beyond the fixed scaffold: the Ancient type; `MegaCrit.Sts2.Core.Localization`;
-`MegaCrit.Sts2.Core.Map`; `MegaCrit.Sts2.Core.Nodes.Events`;
-`MegaCrit.Sts2.Core.Nodes.GodotExtensions`; `MegaCrit.Sts2.Core.Nodes.Rooms`; and
-`MegaCrit.Sts2.Core.Rooms`.
+Assert the SPEC's `DialogueSet` shape when it selects dialogue (`((AncientEventModel)t.Event)
+.DialogueSet.FirstVisitEverDialogue?.Lines.Count`, `AgnosticDialogues.Count`). The options can be
+enabled while the dialogue is still on screen, so the kit may advance with zero clicks; the
+`DialogueSet` assertion proves the data and headed review proves the display.
 
 Headed review still owns: name/epithet banner, whether the dialogue displays and in which
 order, background, speech color, option layout and text colors, map and run-history icons,
 mouse/controller progression, and the return to the map. To reach the room by hand, start a
 run and enter `event <ENTRY>` in the dev console.
 
-## Relic-owned Rest Site option focused host
+## Rest Site options (`plan.RestSite`)
 
-Use `reference/rest-site-options.md` for the supported contract. This proof is not a
-`CombatPlayer` substitute: it must enter the real Rest Site through
-`RunManager.Instance.EnterRoomDebug(RoomType.RestSite, MapPointType.RestSite)` or the
-equivalent `room RESTSITE` dev-console command.
+Use `reference/rest-site-options.md` for the supported contract. `plan.RestSite(name, body,
+beforeEnter: ...)` enters the real Rest Site through
+`RunManager.Instance.EnterRoomDebug(RoomType.RestSite, MapPointType.RestSite)` after
+`beforeEnter`, and waits for its `NRestSiteButton`s. The host generates the options on entry, so
+the owner (a Relic, a deck Card) and the Gold for the case belong in `beforeEnter`; a Relic from
+`t.ObtainRelic` is removed when the scenario ends. `t.RestSiteOptions()` lists the shown
+options with `OptionId` and `IsEnabled`; `t.ChooseRestSiteOption(id)` clicks the real button and
+waits until the room responds.
 
-The focused proof Mod should expose diagnostic snapshots, but the reviewer drives the
-native buttons. Before each selection, record Gold, Current HP, Max HP, the owner's saved
-use flag, current option IDs, and current map-history Rest Site choices. After selection,
-emit one structured line only when all expected deltas match:
+```csharp
+plan.RestSite("temper_absent_without_whetstone", t =>
+{
+    var ids = t.RestSiteOptions().Select(option => option.OptionId).ToList();
+    t.Proof(!ids.Contains(Temper.StableOptionId), $"rest options expected=native only observed={string.Join(",", ids)}");
+    return Task.CompletedTask;
+});
 
-```text
-[T2MOD-SELFTEST] <ModName> state proof: framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1 expected=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden observed=rest-site gold=-30 maxHp=+5 history=1 repeat=hidden
+plan.RestSite("temper_gray_without_gold", t =>
+{
+    var temper = t.RestSiteOptions().FirstOrDefault(option => option.OptionId == Temper.StableOptionId);
+    t.Proof(temper is { IsEnabled: false }, "temper expected=present/disabled");
+    return Task.CompletedTask;
+}, beforeEnter: async t =>
+{
+    await t.ObtainRelic<Whetstone>();
+    if (t.Player.Gold > 0)
+        await PlayerCmd.LoseGold(t.Player.Gold, t.Player);
+});
+
+plan.RestSite("temper_spends_gold_for_max_hp", async t =>
+{
+    int gold = t.Player.Gold, maxHp = t.Me.MaxHp;
+    await t.ChooseRestSiteOption(Temper.StableOptionId);
+    t.Proof(gold - t.Player.Gold == 10 && t.Me.MaxHp - maxHp == 3,
+        $"temper expected gold=-10 maxHp=+3 observed gold=-{gold - t.Player.Gold} maxHp=+{t.Me.MaxHp - maxHp}");
+}, beforeEnter: async t =>
+{
+    await t.ObtainRelic<Whetstone>();
+    await PlayerCmd.GainGold(50m, t.Player);
+});
 ```
 
-The required matrix is:
+Derive the remaining cases from that reference's proof matrix: a stale enabled button whose
+Gold is lowered after rendering (lower it inside the body, then choose; Gold, Max HP, saved use,
+history, and options stay unchanged), keep-remaining versus normal leave, a second Rest Site visit
+for once-per-site or once-per-run, explicit non-singleplayer generation, and the missing-icon
+build. Button color, localization rendering, image framing, hover, and controller focus are
+headed observations.
 
-1. no owner produces no custom option;
-2. owner plus insufficient Gold produces one disabled option;
-3. an enabled button whose Gold becomes insufficient after rendering calls `OnSelect`,
-   returns false, and preserves Gold, Max HP, saved use, history, and every option ID;
-4. success produces exact fixed-Gold and deterministic-outcome deltas, one history entry,
-   and no second custom option in the rebuilt same-visit list;
-5. native options either clear normally or remain according to SPEC, with the selected
-   custom option removed in both cases;
-6. a second visit matches once-per-site or once-per-run semantics;
-7. explicit non-singleplayer generation produces no custom option;
-8. the custom-icon and missing-icon builds both preload without a fresh error.
+## The `Act` scenario (`plan.Act`)
 
-Button color, localization, image framing, hover, and controller focus are headed
-observations. A model-generated list cannot prove them. When the user reserves this
-headed run, do not launch the game automatically; provide the exact console route and keep
-an unrun strict `selftest done` as an explicit verification exception.
+`plan.Act<TAct>(name, body, slotIndex)` enters the selected slot through
+`RunManager.Instance.EnterAct(slotIndex)`, the real transition the Mod's force, uniform, or
+weighted entry rule resolves in (the dev console's `act <n>` takes the same path), and waits for
+the new map and room. It runs after every other scenario. Assert the entry, the generated map,
+and the runtime pools, then enter representative rooms with the world helpers:
+
+```csharp
+plan.Act<EmberWilds>("ember_wilds_takes_slot_two", async t =>
+{
+    t.Proof(t.Act is EmberWilds && t.Run.CurrentActIndex == 1,
+        $"slot 2 act expected=EmberWilds observed={t.Act.GetType().Name} index={t.Run.CurrentActIndex}");
+    var act = t.Act;
+    var map = t.MapPointCounts();
+    t.Proof(act.AllWeakEncounters.Any() && act.AllRegularEncounters.Any() && act.AllEliteEncounters.Any() &&
+            act.AllBossEncounters.Any() && act.AllEvents.Any() && act.AllAncients.Any(),
+        $"pools weak={act.AllWeakEncounters.Count()} boss={act.AllBossEncounters.Count()} " +
+        $"map={string.Join(",", map.Select(pair => $"{pair.Key}:{pair.Value}"))}");
+    await t.Fight(act.AllWeakEncounters.First());
+    await t.WinCombat();
+    await t.Fight(act.BossEncounter ?? act.AllBossEncounters.First());
+    await t.WinCombat();
+    await t.EnterTreasure();
+    await t.EnterRestSite();
+}, slotIndex: 1, budgetSeconds: 180);
+```
+
+`GetMapPointTypes` counts are generation targets: the generated map also holds the fixed rows (a
+probe declaring five Rest Sites showed seven), so assert the SPEC's counts against the map the
+kit reports, not against the declared numbers alone. Gate the entry rule's eligibility on
+`!ctx.IsMultiplayer`; a maintainer probe Act also gates it on `CommandLineHelper.HasArg("t2selftest")`
+so it never replaces a slot in a player's real runs. Save/load identity (`surfaces/act.md`
+§ Proof matrix 5) and the eligibility and priority cases beyond the selected slot remain
+separate scenarios; map, background, chest, music, and navigation are headed review.
 
 ## Signals for verify and repair
 
@@ -941,6 +910,11 @@ A scenario's own `played/fired/used` diagnostic log is never proof.
       reached through its real input, and the cycle is traversed far enough to show its order.
 - [ ] A Counter `consumes` edge runs zero/fewer-than-N/at-least-N and asserts no negative
       instance after each.
+- [ ] Every Event and Ancient outcome SPEC selects is driven through `t.ChooseEventOption` with
+      its text key, and its consequence and next page asserted; a Rest Site option runs its
+      absent, gray, and success cases in `plan.RestSite` scenarios with the owner set up in
+      `beforeEnter`; an Act asserts its slot, pools, and map in `plan.Act` and enters its
+      representative rooms.
 - [ ] A long scenario raises its own `budgetSeconds`.
 - [ ] The final run is unfiltered (`scope=all`); a `selftest FAILED` line is never reported as
       Tier 2.
