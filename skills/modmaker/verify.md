@@ -14,10 +14,11 @@ parity, nonempty values, SmartFormat variable parity, valid rich-text markup, an
 vanilla-style comparison in `.text-style.log`. The exact wording is the authored table itself,
 checked against SPEC when you write it. Tier 2 owns the runtime half: on every self-test run the
 kit's roll call switches through `eng` and `zhs` with the public `SetLanguage` route, resolves
-every Card, Relic, Potion, and Power string through its real model consumer, rejects missing,
+every Card, Relic, Potion, Power, Character, Monster, and Encounter string through its real
+model consumer, rejects missing,
 empty, raw-key, and unresolved-placeholder values, and restores the player's language. Strings
-of other surfaces (Event pages, Ancient dialogue, Character text) are resolved the same way by
-their own scenario. One language resolving, static JSON parity, or a catalog lookup is not
+of other surfaces (Event pages, Ancient dialogue) are resolved the same way by their own
+scenario. One language resolving, static JSON parity, or a catalog lookup is not
 bilingual runtime proof. Translation quality, tone, clipping, and layout stay headed review.
 
 ## Tier-1 — does it load? (automated, guaranteed)

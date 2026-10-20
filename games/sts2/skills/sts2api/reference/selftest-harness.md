@@ -14,25 +14,27 @@
 
 ## What the kit does on every run
 
-1. **Roll call**, at the main menu, for every Card, Relic, Potion, and Power this Mod
-   registers: the title, description, flavor, selection prompt, and Power smart description
-   must exist and resolve in both `eng` and `zhs` through the real model consumer (the
-   Compendium's `GetDescriptionForPile(PileType.None)` for a Card), with no raw key, empty
-   value, or unresolved `{placeholder}`. It then restores the player's language and logs one
-   `roll call:` line per model with its id, pool, cost, type, rarity, target, base numbers,
-   and both titles; compare those lines with SPEC. A model that is missing from the roll call
-   was never registered.
+1. **Roll call**, at the main menu. Every concrete model class in the Mod's assembly must be
+   registered. For every Card, Relic, Potion, Power, Character, Monster, and Encounter, the
+   player-facing text must exist and resolve in both `eng` and `zhs` through the real model
+   consumer (the Compendium's `GetDescriptionForPile(PileType.None)` for a Card), with no raw
+   key, empty value, or unresolved `{placeholder}`: titles, descriptions, flavor, selection
+   prompts, Power smart descriptions, all fourteen `characters.json` keys, Monster names, and
+   Encounter titles and loss lines. It restores the player's language and logs one `roll call:`
+   line per model (a Card's id, pool, cost, type, rarity, target, and base numbers; a
+   Character's HP, Gold, Energy, pools, starter deck, and Relics; a Monster's HP range; an
+   Encounter's room and roster), with both titles. Compare those lines with SPEC.
 2. **Navigation**: abandons an open run, starts a singleplayer run as the selected Character
    (`plan.Character<T>()`, matched by model type) or the first unlocked one, and waits for the
    run UI and the local Player.
-3. **Scenarios in order.** Each has its own budget. A failed assertion, an exception, or a
+3. **Scenarios in order**, except that `RunStart` scenarios run first. Each has its own budget. A failed assertion, an exception, or a
    timeout ends only that scenario: the kit logs its event trail and runs the next one.
 4. **One shared combat.** Combat scenarios share a `CorpseSlugsWeak` fight with 999 Plating on
    the player. Before each one the kit removes the Cards it created from the Hand, returns the
    deck's Hand Cards to the Draw Pile, removes the player's Powers except Plating, clears
    Block, restores HP and Energy, and sets every enemy to 999/999 HP with no Powers or Block.
-   When the combat ended, and right after a `Custom` scenario, the kit starts a new combat and
-   applies the same reset, so every scenario starts alike whatever ran before it. A scenario
+   When the combat ended, and right after an `Encounter` or `Custom` scenario, the kit starts a
+   new combat and applies the same reset, so every scenario starts alike whatever ran before it. A scenario
    that asks for `freshCombat` or `beforeCombat` instead gets the new combat exactly as the
    host started it (opening Hand, combat-start Energy and Powers), with only the enemies set
    to 999 HP.
@@ -47,9 +49,9 @@
 8. **Event trail.** RitsuLib lifecycle events record every Card played, drawn, discarded, and
    exhausted, Energy spent and gained, Relics obtained, and Potions procured during the
    scenario (`t.Trail`). A failed scenario prints its trail.
-9. **Report.** A `selftest coverage:` line names any Mod Card never played, Relic never
-   obtained, Potion never procured, or Power never seen; a `selftest summary:` line lists every
-   scenario with its result and seconds. Only when all pass does it log
+9. **Report.** A `selftest coverage:` line names any Mod Card never played, Relic or Potion
+   never owned, Power never seen, Character never played, Monster never met, or Encounter never
+   entered; a `selftest summary:` line lists every scenario with its result and seconds. Only when all pass does it log
    `state proof: kit summary passed=N/N scope=all` and `selftest done`.
 10. **Watchdog.** A step stuck past its scenario budget ends the run with
     `selftest FAILED: timeout: scenario <name> stuck at '<step>'`.
@@ -65,10 +67,12 @@ Tier 2 does not need a hand-written scenario per Card. Split the SPEC's content 
 
 | Content | Check |
 |---|---|
-| Every registered Card, Relic, Potion, and Power | roll call, automatic |
+| Every model class (registered), and every Card, Relic, Potion, Power, Character, Monster, and Encounter (text) | roll call, automatic |
 | A **simple Card**: its SPEC Implementation cites only its recipe and `reference/effect-primitives.md`, its numbers are fixed (no calculated value, X cost, or condition), and its effects are damage, Block, Energy, Stars, Gold, healing, HP loss, Max HP, draw, or a stack of an existing Power | `plan.FaceCheck<TCard>()`: one line, no assertions to write |
 | Everything else: a custom Power, Keyword, Enchantment, or Orb; a `Hook:` or `Mod-local:` line; a condition, counter, or state across turns or combats; a Card choice; an interaction between elements; a Relic or Potion trigger | a named `plan.Combat(...)` scenario |
-| Events, Ancients, Rest Site options, Monster encounters, Character run start | a named `plan.Custom(...)` scenario (§ Other hosts) |
+| A Monster and its Encounter | a named `plan.Encounter<TEncounter>(...)` scenario (§ The `CombatEnemy` scenario) |
+| A Character's starting state | `plan.Character<T>()` and a named `plan.RunStart(...)` scenario (§ The `RunStart` + `CombatPlayer` scenario) |
+| Events, Ancients, Rest Site options, Acts | a named `plan.Custom(...)` scenario (§ Other hosts) |
 | Images, layout, animation, mouse/controller, wording, feel | headed review, never Tier 2 |
 
 A face check plays the Card once and, when it can upgrade, once upgraded, then compares every
@@ -128,6 +132,10 @@ the observed value.
 - `Combat(name, body, budgetSeconds = 30, freshCombat = false, beforeCombat = null)`: a
   player-combat scenario. `beforeCombat` runs out of combat, before a fresh combat starts;
   giving it implies `freshCombat`.
+- `RunStart(name, body, budgetSeconds = 30)`: runs before any combat and sees the run as it
+  started.
+- `Encounter<TEncounter>(name, body, budgetSeconds = 60, keepPlayerHp = false)`: enters the Mod's
+  Encounter with its real roster; no Plating; the player at 999/999 HP unless `keepPlayerHp`.
 - `Custom(name, body, budgetSeconds = 60)`: a scenario that enters its own room (§ Other hosts);
   the kit first finishes any combat in progress.
 - `Character<TCharacter>()`: start the run as this Character.
@@ -150,6 +158,11 @@ the observed value.
 - `await t.StartNewCombat()` finishes this combat and starts another, so turn 1 and
   combat-start triggers fire again inside one scenario.
 - `await t.Settle()` and `await t.ClearDebuffs(creature)`.
+- Enemies: `t.Monster<TMonster>()` (the live Creature; the scenario fails when it is absent),
+  `t.NextMove(monster)` (its next `MoveState`, with `Intents`), and
+  `await t.EnemyTurn(monster, "MOVE_ID")` (§ The `CombatEnemy` scenario).
+- Run start: `t.DeckCounts()` (Card class name to count), `t.RelicNames()`, and
+  `t.Describe(counts)` (`AxN,BxM` in name order).
 
 Any other public STS2 or RitsuLib API works inside a body: snapshot state, drive the real
 source, `await t.Settle()`, then assert.
@@ -289,214 +302,100 @@ selected.
 When the user reserves headed review, build and deploy the focused proof, give them the exact
 console setup and observation matrix, and record their reported result separately.
 
-## Other hosts through `plan.Custom`
+## The `CombatEnemy` scenario (`plan.Encounter`)
 
-Events, Ancients, Rest Site options, Monster encounters, Acts, and Character run start do not
-use the kit's player combat yet. The dev console's string commands are not reachable from a Mod
-(`NDevConsole`'s inner console is private); call the public commands they wrap instead:
-`fight` is `RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned,
-encounter.ToMutable())`, `event` is `EnterRoomDebug(RoomType.Event, MapPointType.Unknown,
-ModelDb.Event<T>())`, `relic add` is `RelicCmd.Obtain`, `card` is `ICombatState.CreateCard` plus
-`CardPileCmd.Add`, and `potion` is `PotionCmd.TryToProcure`. Write each as `plan.Custom(name, async t => { ... })` with the
-host body from the sections below. Those bodies predate the kit, so read them with these
-substitutions:
+Enemy-side content (a Monster and the Encounter that spawns it) is proven through the enemy:
+enter the Mod's own Encounter, confirm its Monster spawned, let the enemy act, and observe the
+state it changed.
 
-- the kit owns the arm gate, budget, navigation, run-UI gate, terminal markers, and failure
-  classification: never copy them; a section's "replace the scaffold's room entry / `InCombat`"
-  means "put this code in the `Custom` body";
-- `StateProof(condition, observation)` is `t.Proof(condition, observation)`, `player` is
-  `t.Player`, `ct` is `t.Token`, and a `Task.Delay` after an action is `await t.Settle()`;
-- a Character scenario sets `plan.Character<TCharacter>()` and comes first in the plan, before
-  any combat changes the starting deck, Relics, or HP;
-- a `CombatEnemy` body enters its own encounter and applies no Plating, because the enemy's hit
-  must land; the next `Combat` scenario starts a fresh kit combat.
+`plan.Encounter<TEncounter>(name, body)` finishes any combat in progress, enters a fresh mutable
+copy of the Encounter with its real roster and HP, and waits for the player's Play phase. It
+applies no Plating, so the enemy's hits land, and raises the player to 999/999 HP so a long cycle
+cannot end the run; pass `keepPlayerHp: true` when a move reads the player's HP. The next `Combat`
+scenario starts a fresh kit combat. The roll call already lists every Mod Monster (`hp=min-max`)
+and every Encounter an Act or a scenario names, with its roster.
 
-The kit's player combat stays the right host for anything a Card, Relic, Potion, or Power does.
-
-## The `CombatEnemy` scenario (monster + encounter; one- and multi-move live)
-
-Enemy-side content (monster + encounter) does not fit the card/relic/potion drivers above:
-the harness must enter the **custom encounter**, confirm the **custom monster** spawned, make
-the enemy **act**, and observe a **state delta** — through the enemy, not the player. This is
-the first non-`CombatPlayer` scenario: the kit's navigation and run-UI gate stay, and a
-`plan.Custom` body enters the encounter and drives the turn.
-
-The one-move `CombatEnemy` scenario enters the custom encounter instead of the kit's combat
-and applies no Plating, because the enemy's hit must land:
+`await t.EnemyTurn(monster, "MOVE_ID")` drives one real enemy turn: it asserts the Monster's
+`NextMove.Id`, ends the player turn with enemies acting, waits for the next player Play phase,
+asserts from combat history (`MonsterPerformedMoveEntry`) that the Monster performed exactly that
+move, and returns `SelfTestEnemyTurn(MoveId, PlayerHpLost, Hits, UnblockedDamage)`. `Hits` counts
+the new `CreatureAttackedEntry.DamageResults`, so a multi-hit move is proven by its hit count,
+not by an HP total. Never call move bodies, `PerformMove`, `SetMoveImmediate`, or
+`ForceCurrentState` to prove a move; those bypass normal enemy turn selection.
 
 ```csharp
-plan.Custom("ember_hound_bites_for_6", async t =>
+plan.Encounter<EmberHoundEncounter>("ember_hound_bites_for_6", async t =>
 {
-    // ENTER: the custom monster spawned through its custom encounter.
-    var encounter = ModelDb.Encounter<<Name>Encounter>().ToMutable();
-    await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, encounter);
-    await WaitHelper.Until(() => CombatManager.Instance.IsInProgress &&
-            t.Player.PlayerCombatState?.Phase == PlayerTurnPhase.Play,
-        t.Token, TimeSpan.FromSeconds(30), "custom encounter did not reach the Play phase");
-    var mob = t.State.Enemies.FirstOrDefault(e => e.Monster is <Name>);
-    t.Proof(mob != null, $"monster present expected=<Name> observed={mob?.Monster?.Id.Entry ?? "missing"}");
-
-    // DRIVE: end the player turn; the enemy takes its real move.
-    int hpBefore = t.Me.CurrentHp;
-    await t.EndTurn(enemiesAct: true);
-
-    // OBSERVE: the delta through the enemy's action.
-    int delta = hpBefore - t.Me.CurrentHp;
-    t.Proof(delta == <EXPECTED_DAMAGE>,
-        $"enemy attack expected=<EXPECTED_DAMAGE> observed={delta}; player hp {hpBefore} -> {t.Me.CurrentHp}");
+    var hound = t.Monster<EmberHound>();          // fails the scenario when it did not spawn
+    var bite = await t.EnemyTurn(hound, "BITE");
+    t.Proof(bite.PlayerHpLost == 6 && bite.Hits == 1,
+        $"bite expected hp=6 hits=1 observed={bite.PlayerHpLost}/{bite.Hits}");
 });
 ```
 
-The monster's own move body still logs `attacked:` for diagnosis; it is never proof.
+The monster's own move body may log `attacked:` for diagnosis; it is never proof.
 
 ### Multi-turn move vocabulary
 
-The one-turn body above is the fast path for a one-move self-loop. For a multi-move SPEC,
-drive the real enemy turn repeatedly and use combat history to prove which move and how many
-hits actually resolved. Do not call move bodies, `PerformMove`, `SetMoveImmediate`, or
-`ForceCurrentState` from the harness; those bypass normal enemy turn selection.
-
-Add these namespaces:
+For a multi-move SPEC, drive the real enemy turn repeatedly and read each move's intents from
+`t.NextMove(monster).Intents` before its turn. For the representative cycle in
+`recipes/monster.md` (`MUSTER -> PRESSURE -> FLURRY -> HEALTH_BRANCH -> GUARD|RECOVER -> MUSTER`):
 
 ```csharp
-using MegaCrit.Sts2.Core.Combat.History.Entries;
-using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.Models.Powers;
-using MegaCrit.Sts2.Core.MonsterMoves.Intents;
-using MegaCrit.Sts2.Core.ValueProps;
-```
-
-Reusable turn driver:
-
-```csharp
-private readonly record struct EnemyTurnObservation(
-    string MoveId, int PlayerHpDelta, int HitCount, decimal UnblockedDamage);
-
-private static async Task<EnemyTurnObservation> DriveEnemyTurn(
-    Player player, Creature monster, string expectedMoveId, CancellationToken ct)
+plan.Encounter<<Name>Encounter>("<name>_cycle_and_branches", async t =>
 {
-    await WaitHelper.Until(
-        () => player.PlayerCombatState?.Phase == PlayerTurnPhase.Play ||
-              !CombatManager.Instance.IsInProgress,
-        ct, TimeSpan.FromSeconds(30), $"play phase not reached before {expectedMoveId}");
-    if (!CombatManager.Instance.IsInProgress)
-        throw new InvalidOperationException($"combat ended before {expectedMoveId}");
-    var monsterModel = monster.Monster
-        ?? throw new InvalidOperationException("enemy creature has no monster model");
+    var mob = t.Monster<<Name>>();
+    t.Proof(t.NextMove(mob).Intents.OfType<BuffIntent>().Count() == 1, "MUSTER intent expected=buff observed=match");
+    await t.EnemyTurn(mob, "MUSTER");
+    t.Proof(t.PowerAmount<<CustomBuff>>(mob) == 2,
+        $"self power expected=2 observed={t.PowerAmount<<CustomBuff>>(mob)}");
 
-    StateProof(monsterModel.NextMove.Id == expectedMoveId,
-        $"enemy next move expected={expectedMoveId} observed={monsterModel.NextMove.Id}");
+    var pressureIntents = t.NextMove(mob).Intents;
+    t.Proof(pressureIntents.OfType<SingleAttackIntent>().Count() == 1 &&
+            pressureIntents.OfType<DebuffIntent>().Count() == 1,
+        "PRESSURE intents expected=attack+debuff observed=match");
+    var pressure = await t.EnemyTurn(mob, "PRESSURE");
+    t.Proof(pressure.PlayerHpLost == 5 && t.PowerAmount<WeakPower>(t.Me) == 2,
+        $"attack+debuff expected=5/2 observed={pressure.PlayerHpLost}/{t.PowerAmount<WeakPower>(t.Me)}");
 
-    var history = CombatManager.Instance.History;
-    int movesBefore = history.Entries.OfType<MonsterPerformedMoveEntry>()
-        .Count(e => ReferenceEquals(e.Monster, monsterModel));
-    int attacksBefore = history.Entries.OfType<CreatureAttackedEntry>()
-        .Count(e => ReferenceEquals(e.Actor, monster));
-    int turnBefore = player.PlayerCombatState!.TurnNumber;
-    int hpBefore = player.Creature.CurrentHp;
+    var multi = t.NextMove(mob).Intents.OfType<MultiAttackIntent>().SingleOrDefault();
+    t.Proof(multi?.Repeats == 2, $"FLURRY repeats expected=2 observed={multi?.Repeats}");
+    var flurry = await t.EnemyTurn(mob, "FLURRY");
+    t.Proof(flurry.Hits == 2 && flurry.PlayerHpLost == 8,
+        $"multi-attack expected=2/8 observed={flurry.Hits}/{flurry.PlayerHpLost}");
 
-    PlayerCmd.EndTurn(player, canBackOut: false);   // void -- do NOT await
+    // At full health the branch must choose GUARD.
+    int blockBefore = mob.Block;
+    await t.EnemyTurn(mob, "GUARD");
+    t.Proof(mob.Block - blockBefore == 5, $"healthy branch block expected=+5 observed={mob.Block - blockBefore}");
 
-    // Phase alone can still be the old Play frame. TurnNumber must also advance.
-    await WaitHelper.Until(
-        () => (player.PlayerCombatState?.Phase == PlayerTurnPhase.Play &&
-               player.PlayerCombatState.TurnNumber > turnBefore) ||
-              !CombatManager.Instance.IsInProgress,
-        ct, TimeSpan.FromSeconds(45), $"player turn not resumed after {expectedMoveId}");
-    if (!CombatManager.Instance.IsInProgress)
-        throw new InvalidOperationException($"combat ended during {expectedMoveId}");
+    // Change the branch's real input through a public Cmd, without forcing a move state.
+    int woundedHp = Math.Max(1, mob.MaxHp / 2 - 1);
+    await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), mob, mob.CurrentHp - woundedHp,
+        ValueProp.Unblockable | ValueProp.Unpowered, t.Me, null);
+    t.Proof(mob.CurrentHp == woundedHp, $"branch setup hp expected={woundedHp} observed={mob.CurrentHp}");
 
-    var moves = history.Entries.OfType<MonsterPerformedMoveEntry>()
-        .Where(e => ReferenceEquals(e.Monster, monsterModel))
-        .Skip(movesBefore).ToList();
-    StateProof(moves.Count == 1 && moves[0].Move.Id == expectedMoveId,
-        $"enemy move history expected={expectedMoveId} " +
-        $"observed={string.Join(",", moves.Select(e => e.Move.Id))}");
+    // Traverse the cycle again. The stacked buff must change later attack damage.
+    await t.EnemyTurn(mob, "MUSTER");
+    t.Proof(t.PowerAmount<<CustomBuff>>(mob) == 4,
+        $"stacked self power expected=4 observed={t.PowerAmount<<CustomBuff>>(mob)}");
+    pressure = await t.EnemyTurn(mob, "PRESSURE");
+    t.Proof(pressure.PlayerHpLost == 7 && t.PowerAmount<WeakPower>(t.Me) == 2,
+        $"buffed attack+debuff expected=7/2 observed={pressure.PlayerHpLost}/{t.PowerAmount<WeakPower>(t.Me)}");
+    flurry = await t.EnemyTurn(mob, "FLURRY");
+    t.Proof(flurry.Hits == 2 && flurry.PlayerHpLost == 12,
+        $"buffed multi-attack expected=2/12 observed={flurry.Hits}/{flurry.PlayerHpLost}");
 
-    var attacks = history.Entries.OfType<CreatureAttackedEntry>()
-        .Where(e => ReferenceEquals(e.Actor, monster))
-        .Skip(attacksBefore).ToList();
-    int hitCount = attacks.Sum(e => e.DamageResults.Count);
-    decimal unblocked = attacks.SelectMany(e => e.DamageResults)
-        .Sum(r => r.UnblockedDamage);
-
-    return new EnemyTurnObservation(
-        expectedMoveId, hpBefore - player.Creature.CurrentHp, hitCount, unblocked);
-}
+    int hpBeforeRecover = mob.CurrentHp;
+    blockBefore = mob.Block;
+    await t.EnemyTurn(mob, "RECOVER");
+    t.Proof(mob.CurrentHp - hpBeforeRecover == 3 && mob.Block - blockBefore == 4,
+        $"wounded branch heal+block expected=3/4 observed={mob.CurrentHp - hpBeforeRecover}/{mob.Block - blockBefore}");
+}, budgetSeconds: 120);
 ```
 
-For the representative cycle in `recipes/monster.md` (`MUSTER -> PRESSURE -> FLURRY ->
-HEALTH_BRANCH -> GUARD|RECOVER -> MUSTER`), the driver body is:
-
-```csharp
-var monsterModel = mob.Monster
-    ?? throw new InvalidOperationException("enemy creature has no monster model");
-var musterIntent = monsterModel.NextMove.Intents.OfType<BuffIntent>().Count() == 1;
-StateProof(musterIntent, "monster MUSTER intent expected=buff observed=match");
-await DriveEnemyTurn(player, mob, "MUSTER", ct);
-var buff = mob.GetPower<<CustomBuff>>();
-StateProof(buff?.Amount == 2,
-    $"monster self power expected=2 observed={buff?.Amount.ToString() ?? "missing"}");
-
-var pressureIntents = monsterModel.NextMove.Intents;
-StateProof(pressureIntents.OfType<SingleAttackIntent>().Count() == 1 &&
-           pressureIntents.OfType<DebuffIntent>().Count() == 1,
-    "monster PRESSURE intents expected=attack+debuff observed=match");
-var pressure = await DriveEnemyTurn(player, mob, "PRESSURE", ct);
-var weak = player.Creature.GetPower<WeakPower>();
-StateProof(pressure.PlayerHpDelta == 5 && weak?.Amount == 2,
-    $"monster attack+debuff expected=5/2 observed={pressure.PlayerHpDelta}/" +
-    $"{weak?.Amount.ToString() ?? "missing"}");
-
-var multi = monsterModel.NextMove.Intents.OfType<MultiAttackIntent>().SingleOrDefault();
-StateProof(multi?.Repeats == 2,
-    $"monster FLURRY intent repeats expected=2 observed={multi?.Repeats.ToString() ?? "missing"}");
-var flurry = await DriveEnemyTurn(player, mob, "FLURRY", ct);
-StateProof(flurry.HitCount == 2 && flurry.PlayerHpDelta == 8,
-    $"monster multi-attack expected=2/8 observed={flurry.HitCount}/{flurry.PlayerHpDelta}");
-
-// At full health the branch must choose GUARD.
-int blockBefore = mob.Block;
-await DriveEnemyTurn(player, mob, "GUARD", ct);
-StateProof(mob.Block - blockBefore == 5,
-    $"monster healthy branch expected=GUARD block+5 observed={mob.Block - blockBefore}");
-
-// Change the branch's real input through a public Cmd, without forcing a move state.
-int woundedHp = Math.Max(1, mob.MaxHp / 2 - 1);
-int setupDamage = mob.CurrentHp - woundedHp;
-await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), mob, setupDamage,
-    ValueProp.Unblockable | ValueProp.Unpowered, player.Creature, null);
-StateProof(mob.CurrentHp == woundedHp,
-    $"monster branch setup expectedHp={woundedHp} observed={mob.CurrentHp}");
-
-// Traverse the explicit cycle again. The stacked buff must change later attack damage.
-await DriveEnemyTurn(player, mob, "MUSTER", ct);
-buff = mob.GetPower<<CustomBuff>>();
-StateProof(buff?.Amount == 4,
-    $"monster self power stacked expected=4 observed={buff?.Amount.ToString() ?? "missing"}");
-
-pressure = await DriveEnemyTurn(player, mob, "PRESSURE", ct);
-weak = player.Creature.GetPower<WeakPower>();
-StateProof(pressure.PlayerHpDelta == 7 && weak?.Amount == 2,
-    $"monster buff downstream+debuff expected=7/2 observed={pressure.PlayerHpDelta}/" +
-    $"{weak?.Amount.ToString() ?? "missing"}");
-
-flurry = await DriveEnemyTurn(player, mob, "FLURRY", ct);
-StateProof(flurry.HitCount == 2 && flurry.PlayerHpDelta == 12,
-    $"monster stacked multi-attack expected=2/12 observed={flurry.HitCount}/{flurry.PlayerHpDelta}");
-
-int hpBeforeRecover = mob.CurrentHp;
-blockBefore = mob.Block;
-await DriveEnemyTurn(player, mob, "RECOVER", ct);
-StateProof(mob.CurrentHp - hpBeforeRecover == 3 && mob.Block - blockBefore == 4,
-    $"monster wounded branch heal+block expected=3/4 observed=" +
-    $"{mob.CurrentHp - hpBeforeRecover}/{mob.Block - blockBefore}");
-
-StateProof(true,
-    "monster vocabulary complete expected=all observed=all; " +
-    "cycle=twice branches=GUARD,RECOVER");
-```
+The scenario needs `MegaCrit.Sts2.Core.MonsterMoves.Intents`, `MegaCrit.Sts2.Core.Models.Powers`,
+`MegaCrit.Sts2.Core.GameActions.Multiplayer`, and `MegaCrit.Sts2.Core.ValueProps`.
 
 Adapt move ids, numbers, Power types, and branch setup to SPEC. The important invariants are:
 
@@ -522,48 +421,49 @@ A character is not proven by `ModelDb` registration alone. The harness must sele
 real UI button, start a run as it, assert the starter ecosystem, then enter combat and
 prove one hosted mechanic. `plan.Character<<CharacterName>>()` makes the kit select the real
 button by model type (placeholder art keeps the fallback `%Icon` texture, so a path match finds
-nothing) and confirm it; the setup fails when that button is missing or locked. The first
-scenario then asserts registration and run-start state, before any combat changes them:
+nothing) and confirm it; the setup fails when that button is missing or locked. The roll call
+already resolves all fourteen `characters.json` keys in both languages and logs one
+`roll call: character` line with the canonical HP, Gold, Energy, pools with their sizes, starter
+deck, and starter Relics; compare it with SPEC.
+
+`plan.RunStart(name, body)` scenarios run first, whatever their position in the plan, and see the
+live run exactly as it started. Assert concrete runtime state rather than only the canonical
+declarations:
 
 ```csharp
 plan.Character<<CharacterName>>();
-plan.Custom("<character>_run_start", t =>
+plan.RunStart("<character>_run_start", t =>
 {
-    var registered = ModelDb.AllCharacters.OfType<<CharacterName>>().ToList();
-    t.Proof(registered.Count == 1, $"content-pack registration expected=1 observed={registered.Count}");
-    // ... the run-start assertions below, with t.Player in place of player
+    var player = t.Player;
+    t.Proof(player.Character is <CharacterName> && t.Me.CurrentHp == <HP> && t.Me.MaxHp == <HP> &&
+            player.Gold == <GOLD>,
+        $"run start expected=<CharacterName> hp=<HP>/<HP> gold=<GOLD> observed=" +
+        $"{player.Character.GetType().Name} hp={t.Me.CurrentHp}/{t.Me.MaxHp} gold={player.Gold}");
+    var deck = t.Describe(t.DeckCounts());      // "ClassNamexCount" in name order
+    t.Proof(deck == "<StarterDefend>x4,<StarterStrike>x4,<Signature>x1",
+        $"starter deck expected=<StarterDefend>x4,<StarterStrike>x4,<Signature>x1 observed={deck}");
+    t.Proof(t.RelicNames().SequenceEqual(new[] { "<StarterRelic>" }) && !player.Potions.Any(),
+        $"starter relics expected=<StarterRelic> potions=0 observed={string.Join(",", t.RelicNames())}");
+    // Also assert the concrete CardPool/RelicPool/PotionPool types and their membership.
     return Task.CompletedTask;
 });
 ```
 
-The kit has already waited for the run UI and the local Player. Assert concrete runtime
-state rather than only canonical model declarations:
-
-```csharp
-var player = LocalContext.GetMe(RunManager.Instance.DebugOnlyGetState()!)
-    ?? throw new InvalidOperationException("local player missing");
-var character = player.Character;
-StateProof(character is <CharacterName> &&
-           player.Creature.CurrentHp == <HP> && player.Creature.MaxHp == <HP>,
-    $"run start expected character=<CharacterName> hp=<HP>/<HP> " +
-    $"observed={character.GetType().Name} hp={player.Creature.CurrentHp}/{player.Creature.MaxHp}");
-
-// Also assert concrete CardPool/RelicPool/PotionPool types plus AllCards/AllRelics/
-// AllPotions membership, then the exact player.Deck.Cards and player.Relics multisets.
-```
-
 Then a `plan.Combat(..., freshCombat: true)` scenario (a new kit combat in its Play phase,
 with the turn-1 starter effects intact) asserts both designed energy and the independent
-starter behavior. The live proof used
-a turn-1 starter relic:
+starter behavior, here a turn-1 starter Relic:
 
 ```csharp
-var combat = player.PlayerCombatState!;
-StateProof(combat.MaxEnergy == 3 && combat.Energy == 4,
-    $"combat energy expected max/current=3/4 observed={combat.MaxEnergy}/{combat.Energy}");
-StateProof(true,
-    "character foundation/static-presentation expected=<selected-contract> observed=all");
+plan.Combat("<character>_combat_energy", t =>
+{
+    t.Proof(t.Combat.MaxEnergy == 3 && t.Combat.Energy == 4,
+        $"combat energy expected max/current=3/4 observed={t.Combat.MaxEnergy}/{t.Combat.Energy}");
+    return Task.CompletedTask;
+}, freshCombat: true);
 ```
+
+The Character's starter Cards are simple Cards like any other: give them face checks. A starter
+Relic that acts when a combat ends uses `t.StartNewCombat()`, which finishes the combat first.
 
 When static presentation is selected, do not stop at model properties. In the same run,
 assert the visible 132x195 selection portrait and 1920x1200 background; 512x512 non-Spine
@@ -628,6 +528,9 @@ assertions and selected headed observations pass.
 
 ## Advanced `CombatPlayer` capabilities
 
+Write these as `plan.Combat` scenarios; in the snippets below `StateProof` is `t.Proof` and
+`player` is `t.Player`.
+
 The Character Foundation checks still run for a generated character, but they do not
 replace each selected capability's own invariant. Read the capability page and add its
 driver after combat reaches `PlayerTurnPhase.Play`.
@@ -682,6 +585,28 @@ StateProof(true, "ordered buffer complete expected=all observed=all");
 Derive source/output identities, ordered values, capacity, generated-history count, formula,
 payment, payoff, reset state, and the composed terminal summary from the current `SPEC.md`.
 Retained-card custom piles are not covered by this supported path.
+
+## Other hosts through `plan.Custom`
+
+Events, Ancients, Rest Site options, and Acts have no kit host yet. Write each as
+`plan.Custom(name, async t => { ... })` with the host body from the sections below. The dev
+console's string commands are not reachable from a Mod (`NDevConsole`'s inner console is
+private); call the public commands they wrap instead: `fight` is
+`RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned,
+encounter.ToMutable())`, `event` is `EnterRoomDebug(RoomType.Event, MapPointType.Unknown,
+ModelDb.Event<T>())`, `relic add` is `RelicCmd.Obtain`, `card` is `ICombatState.CreateCard` plus
+`CardPileCmd.Add`, and `potion` is `PotionCmd.TryToProcure`. Those bodies predate the kit, so read them with these
+substitutions:
+
+- the kit owns the arm gate, budget, navigation, run-UI gate, terminal markers, and failure
+  classification: never copy them; a section's "replace the scaffold's room entry / `InCombat`"
+  means "put this code in the `Custom` body";
+- `StateProof(condition, observation)` is `t.Proof(condition, observation)`, `player` is
+  `t.Player`, `ct` is `t.Token`, and a `Task.Delay` after an action is `await t.Settle()`;
+- the next `Combat` scenario after a `Custom` one starts a fresh kit combat.
+
+The kit's player combat stays the right host for anything a Card, Relic, Potion, or Power does,
+`plan.Encounter` for a Monster, and `plan.RunStart` for a Character's starting state.
 
 ## The `MapNode` scenario (event / World Node)
 
@@ -979,7 +904,8 @@ Every kit line starts `[T2MOD-SELFTEST] <ModName>`:
 - `selftest budget: <N>s` and `selftest scope: all scenarios=<n>` or
   `selftest scope: only=<names> selected=<k> of <n>`, logged when the kit arms;
 - `stage: <name> t=<seconds>s` for the main menu, roll call, run start, and each new combat;
-- `roll call: <kind> <Type> id=... pool=... ...` per model;
+- `roll call: <kind> <Type> id=... ...` per model (`card`, `relic`, `potion`, `power`,
+  `character`, `monster`, `encounter`);
 - `scenario start: <name>`, then `scenario PASS: <name> (<s>s)` or
   `scenario FAILED: <name>: FAIL|ERROR|TIMEOUT: <detail> (<s>s)` followed by its
   `scenario trail:` lines;
@@ -1008,6 +934,11 @@ A scenario's own `played/fired/used` diagnostic log is never proof.
       mutation.
 - [ ] A combat-start Relic is obtained in `beforeCombat`; a Card choice runs inside
       `ScriptChoices` with at least two candidates and asserts what was offered.
+- [ ] A Character sets `plan.Character<T>()` and asserts its live starting state in a `RunStart`
+      scenario; its energy and starter behavior in a `freshCombat` scenario.
+- [ ] Every Monster move SPEC selects is driven by `t.EnemyTurn` in a `plan.Encounter` scenario,
+      with its intents read first; a multi-hit move asserts `Hits`; every advertised branch is
+      reached through its real input, and the cycle is traversed far enough to show its order.
 - [ ] A Counter `consumes` edge runs zero/fewer-than-N/at-least-N and asserts no negative
       instance after each.
 - [ ] A long scenario raises its own `budgetSeconds`.

@@ -406,17 +406,14 @@ skins are later extensions, not current gates.
 ## Type + Scenario proof (`CombatEnemy`)
 
 1. **Type:** clean build/package/load; monster + encounter register; loc keys present.
-2. **Scenario (`CombatEnemy`):** enter the custom encounter and observe the monster act:
-   - `RunManager.Instance.EnterRoomDebug(RoomType.Monster, MapPointType.Unassigned, ModelDb.Encounter<TEncounter>().ToMutable())`
-   - assert the monster spawned: `combatState.Enemies.FirstOrDefault(e => e.Monster is TMonster)` is non-null
-   - before every turn, assert `monster.NextMove.Id` and its intent types/repeat count
-   - snapshot combat history and creature HP/Block/Power state
-   - `PlayerCmd.EndTurn(player, canBackOut: false)` — **returns void, do NOT `await`**
-   - wait for `Play` with a larger player `TurnNumber` (enemy acted; do not accept the old
-     still-`Play` frame)
-   - require one new `MonsterPerformedMoveEntry` with the expected id
-   - assert each move's exact state contract; for multi-hit, count the new
-     `CreatureAttackedEntry.DamageResults`, not only total HP loss
+2. **Scenario (`CombatEnemy`):** a `plan.Encounter<TEncounter>` self-test scenario enters the
+   custom encounter with its real roster; observe the monster act:
+   - `t.Monster<TMonster>()` asserts the monster spawned
+   - before every turn, assert its intent types/repeat count from `t.NextMove(monster).Intents`
+   - `await t.EnemyTurn(monster, "MOVE_ID")` asserts `NextMove.Id`, ends the player turn,
+     waits for the next player turn, and requires one new `MonsterPerformedMoveEntry` with that id
+   - assert each move's exact state contract; for multi-hit, assert the returned `Hits` (new
+     `CreatureAttackedEntry.DamageResults`), not only total HP loss
    - force each conditional outcome by changing its real input state, then observe the
      selected move; never call the move body or `ForceCurrentState` as proof
 
