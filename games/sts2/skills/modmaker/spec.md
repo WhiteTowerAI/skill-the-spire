@@ -69,8 +69,8 @@ python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
 Sort the content first (`${STS2API_SKILL_DIR}/reference/selftest-harness.md` § Which content
 gets which check):
 
-- registration and bilingual text of every Card, Relic, Potion, and Power: the self-test kit's
-  roll call checks them on every run; write nothing;
+- registration and bilingual text of every Card, Relic, Potion, Power, Character, Monster, and
+  Encounter: the self-test kit's roll call checks them on every run; write nothing;
 - each **simple Card** (its Implementation cites only its recipe and
   `reference/effect-primitives.md`, its numbers are fixed, and it has no condition): list it
   under `Face checks:`; it gets no scenario; and

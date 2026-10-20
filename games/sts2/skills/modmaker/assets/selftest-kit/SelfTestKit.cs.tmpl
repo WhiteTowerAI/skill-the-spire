@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Godot;
 using MegaCrit.Sts2.Core.AutoSlay.Helpers;
 using MegaCrit.Sts2.Core.Combat;
+using MegaCrit.Sts2.Core.Combat.History.Entries;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.CardRewardAlternatives;
@@ -29,6 +30,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Encounters;
 using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine;
 using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
@@ -53,18 +55,36 @@ internal sealed class SelfTestProofFailed : Exception
     public SelfTestProofFailed(string observation) : base(observation) { }
 }
 
+internal enum SelfTestHost
+{
+    /// <summary>The kit's shared player combat.</summary>
+    Combat,
+    /// <summary>Right after the run starts, before any combat.</summary>
+    RunStart,
+    /// <summary>A Mod encounter the kit enters.</summary>
+    Encounter,
+    /// <summary>A room the body enters itself.</summary>
+    Custom,
+}
+
 internal sealed record SelfTestScenario(
     string Name,
+    SelfTestHost Host,
     Func<SelfTestRun, Task> Body,
     TimeSpan Budget,
-    bool FreshCombat,
-    Func<SelfTestRun, Task>? BeforeCombat,
-    bool Custom = false);
+    bool FreshCombat = false,
+    Func<SelfTestRun, Task>? BeforeCombat = null,
+    Func<EncounterModel>? Encounter = null,
+    bool KeepPlayerHp = false);
 
-/// <summary>The scenario list. Scenarios run in the order they are added.</summary>
+/// <summary>
+/// The scenario list. RunStart scenarios run first, before any combat; the rest run in the
+/// order they are added.
+/// </summary>
 internal sealed class SelfTestPlan
 {
     internal readonly List<SelfTestScenario> Scenarios = new();
+    internal readonly List<Func<EncounterModel>> EncounterModels = new();
     internal Func<NCharacterSelectButton, bool>? CharacterMatch;
     internal string CharacterLabel = "first unlocked";
 
@@ -77,6 +97,16 @@ internal sealed class SelfTestPlan
     }
 
     /// <summary>
+    /// A run-start scenario: the body sees the run exactly as it started (Character, HP, Gold,
+    /// deck, Relics, Potions, pools), before any combat or other scenario changes it.
+    /// </summary>
+    public SelfTestPlan RunStart(string name, Func<SelfTestRun, Task> body, int budgetSeconds = 30)
+    {
+        Add(new SelfTestScenario(name, SelfTestHost.RunStart, body, TimeSpan.FromSeconds(budgetSeconds)));
+        return this;
+    }
+
+    /// <summary>
     /// A player-combat scenario. It shares one combat with the previous scenario after a reset,
     /// unless <paramref name="freshCombat"/> is set or <paramref name="beforeCombat"/> is given:
     /// then the kit finishes the current combat, runs <paramref name="beforeCombat"/>, and starts
@@ -85,20 +115,34 @@ internal sealed class SelfTestPlan
     public SelfTestPlan Combat(string name, Func<SelfTestRun, Task> body, int budgetSeconds = 30,
         bool freshCombat = false, Func<SelfTestRun, Task>? beforeCombat = null)
     {
-        Add(new SelfTestScenario(name, body, TimeSpan.FromSeconds(budgetSeconds),
+        Add(new SelfTestScenario(name, SelfTestHost.Combat, body, TimeSpan.FromSeconds(budgetSeconds),
             freshCombat || beforeCombat != null, beforeCombat));
         return this;
     }
 
     /// <summary>
-    /// A scenario outside the kit's player combat (an Event, Rest Site, Ancient, Monster
-    /// encounter, or run-start check). The kit only navigates to the run; the body enters its
-    /// own room; the kit first finishes any combat in progress. The next Combat scenario after it
-    /// always starts a fresh combat.
+    /// An enemy scenario: the kit finishes any combat in progress, enters this encounter with its
+    /// real roster and HP, and waits for the player's Play phase. It applies no Plating, so enemy
+    /// hits land; unless <paramref name="keepPlayerHp"/> is set it raises the player to 999/999 HP
+    /// so a long fight cannot end the run. Drive enemy turns with <c>t.EnemyTurn</c>.
+    /// </summary>
+    public SelfTestPlan Encounter<TEncounter>(string name, Func<SelfTestRun, Task> body,
+        int budgetSeconds = 60, bool keepPlayerHp = false) where TEncounter : EncounterModel
+    {
+        Add(new SelfTestScenario(name, SelfTestHost.Encounter, body, TimeSpan.FromSeconds(budgetSeconds),
+            Encounter: () => ModelDb.Encounter<TEncounter>().ToMutable(), KeepPlayerHp: keepPlayerHp));
+        EncounterModels.Add(() => ModelDb.Encounter<TEncounter>());
+        return this;
+    }
+
+    /// <summary>
+    /// A scenario outside the kit's hosts (an Event, Rest Site, Ancient, Act transition). The
+    /// kit first finishes any combat in progress; the body enters its own room. The next Combat
+    /// scenario after it always starts a fresh combat.
     /// </summary>
     public SelfTestPlan Custom(string name, Func<SelfTestRun, Task> body, int budgetSeconds = 60)
     {
-        Add(new SelfTestScenario(name, body, TimeSpan.FromSeconds(budgetSeconds), false, null, Custom: true));
+        Add(new SelfTestScenario(name, SelfTestHost.Custom, body, TimeSpan.FromSeconds(budgetSeconds)));
         return this;
     }
 
@@ -108,8 +152,8 @@ internal sealed class SelfTestPlan
     /// </summary>
     public SelfTestPlan FaceCheck<TCard>() where TCard : CardModel
     {
-        Add(new SelfTestScenario("face." + typeof(TCard).Name, SelfTestFaceCheck.Run<TCard>,
-            TimeSpan.FromSeconds(20), false, null));
+        Add(new SelfTestScenario("face." + typeof(TCard).Name, SelfTestHost.Combat,
+            SelfTestFaceCheck.Run<TCard>, TimeSpan.FromSeconds(20)));
         return this;
     }
 
@@ -120,6 +164,9 @@ internal sealed class SelfTestPlan
         Scenarios.Add(scenario);
     }
 }
+
+/// <summary>What one driven enemy turn did, from combat history.</summary>
+internal sealed record SelfTestEnemyTurn(string MoveId, int PlayerHpLost, int Hits, int UnblockedDamage);
 
 /// <summary>What the host reported while one scenario ran (RitsuLib lifecycle events).</summary>
 internal sealed class SelfTestTrail
@@ -334,6 +381,53 @@ internal sealed class SelfTestRun
         foreach (var power in creature.Powers.Where(p => p.Type == PowerType.Debuff).ToList())
             await PowerCmd.Remove(power);
     }
+
+    /// <summary>The live enemy Creature whose Monster is <typeparamref name="TMonster"/>.</summary>
+    public Creature Monster<TMonster>() where TMonster : MonsterModel
+        => State.Enemies.FirstOrDefault(enemy => enemy.Monster is TMonster)
+           ?? throw new SelfTestProofFailed($"{typeof(TMonster).Name} is not in this combat; enemies: " +
+               string.Join(",", State.Enemies.Select(enemy => enemy.Monster?.Id.Entry ?? "?")));
+
+    /// <summary>The move this monster will perform on its next turn, with its intents.</summary>
+    public MoveState NextMove(Creature monster)
+        => (monster.Monster ?? throw new InvalidOperationException("creature has no monster model")).NextMove;
+
+    /// <summary>
+    /// Drive one real enemy turn: assert the monster's next move is <paramref name="expectedMoveId"/>,
+    /// end the player turn with enemies acting, assert from combat history that the monster
+    /// performed exactly that move, and return the player HP it cost and the hits it landed.
+    /// </summary>
+    public async Task<SelfTestEnemyTurn> EnemyTurn(Creature monster, string expectedMoveId)
+    {
+        var model = monster.Monster ?? throw new InvalidOperationException("creature has no monster model");
+        Proof(model.NextMove.Id == expectedMoveId,
+            $"{model.Id.Entry} next move expected={expectedMoveId} observed={model.NextMove.Id}");
+        var history = CombatManager.Instance.History;
+        int movesBefore = history.Entries.OfType<MonsterPerformedMoveEntry>().Count(e => ReferenceEquals(e.Monster, model));
+        int attacksBefore = history.Entries.OfType<CreatureAttackedEntry>().Count(e => ReferenceEquals(e.Actor, monster));
+        int hp = Me.CurrentHp;
+        await EndTurn(enemiesAct: true);
+        var performed = history.Entries.OfType<MonsterPerformedMoveEntry>()
+            .Where(e => ReferenceEquals(e.Monster, model)).Skip(movesBefore).Select(e => e.Move.Id).ToList();
+        Proof(performed.Count == 1 && performed[0] == expectedMoveId,
+            $"{model.Id.Entry} performed expected={expectedMoveId} observed={string.Join(",", performed)}");
+        var attacks = history.Entries.OfType<CreatureAttackedEntry>()
+            .Where(e => ReferenceEquals(e.Actor, monster)).Skip(attacksBefore).ToList();
+        return new SelfTestEnemyTurn(expectedMoveId, hp - Me.CurrentHp,
+            attacks.Sum(e => e.DamageResults.Count),
+            attacks.SelectMany(e => e.DamageResults).Sum(result => result.UnblockedDamage));
+    }
+
+    /// <summary>The Deck as Card class name to count, for run-start assertions.</summary>
+    public IReadOnlyDictionary<string, int> DeckCounts()
+        => Player.Deck.Cards.GroupBy(card => card.GetType().Name).ToDictionary(group => group.Key, group => group.Count());
+
+    /// <summary>The owned Relics' class names, in inventory order.</summary>
+    public IReadOnlyList<string> RelicNames() => Player.Relics.Select(relic => relic.GetType().Name).ToList();
+
+    /// <summary>"AxN,BxM" in name order, for observations.</summary>
+    public string Describe(IReadOnlyDictionary<string, int> counts)
+        => string.Join(",", counts.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => $"{pair.Key}x{pair.Value}"));
 }
 
 /// <summary>Plays a simple Card and compares each number on its face with the observed result.</summary>
@@ -497,6 +591,10 @@ internal static class SelfTestKit
     private static readonly HashSet<Type> SeenPowerTypes = new();
     private static readonly HashSet<Type> RelicTypes = new();
     private static readonly HashSet<Type> PotionTypes = new();
+    private static readonly HashSet<Type> CharacterTypes = new();
+    private static readonly HashSet<Type> MonsterTypes = new();
+    private static readonly HashSet<Type> EncounterTypes = new();
+    private static List<Type> KnownEncounters = new();
     private static HashSet<string>? _powerNames;
 
     internal static double Seconds => Clock.Elapsed.TotalSeconds;
@@ -568,7 +666,8 @@ internal static class SelfTestKit
             return;
         }
 
-        int budget = 120 + selected.Sum(s => (int)s.Budget.TotalSeconds) + 15 * selected.Count(s => s.FreshCombat);
+        int budget = 120 + selected.Sum(s => (int)s.Budget.TotalSeconds)
+            + 15 * selected.Count(s => s.FreshCombat || s.Host is SelfTestHost.Encounter or SelfTestHost.Custom);
         Log($"selftest budget: {budget}s");
         Log(filter.Length == 0
             ? $"selftest scope: all scenarios={selected.Count}"
@@ -663,7 +762,7 @@ internal static class SelfTestKit
             Log($"stage: main menu t={Seconds:F1}s");
 
             Step("roll call");
-            Outcomes.Add(RollCall());
+            Outcomes.Add(RollCall(plan));
             Log($"stage: roll call t={Seconds:F1}s");
 
             if (selected.Count > 0)
@@ -671,7 +770,13 @@ internal static class SelfTestKit
                 Step("navigating to a run");
                 var player = await NavigateToRunAsync(plan, ct);
                 Log($"stage: run started as {plan.CharacterLabel} t={Seconds:F1}s");
-                foreach (var scenario in selected)
+                if (IsMod(player.Character))
+                    CharacterTypes.Add(player.Character.GetType());
+                NoteOwned(player);
+                // RunStart scenarios see the run before any combat changes it.
+                var ordered = selected.Where(s => s.Host == SelfTestHost.RunStart)
+                    .Concat(selected.Where(s => s.Host != SelfTestHost.RunStart));
+                foreach (var scenario in ordered)
                 {
                     var outcome = await RunScenario(scenario, player, ct);
                     if (_finished)
@@ -705,11 +810,20 @@ internal static class SelfTestKit
         string result = "PASS", detail = "";
         try
         {
-            if (scenario.Custom)
+            if (scenario.Host == SelfTestHost.RunStart)
+            {
+                // Nothing to prepare: the run is exactly as it started.
+            }
+            else if (scenario.Host == SelfTestHost.Custom)
             {
                 _forceFreshCombat = true;
                 if (CombatManager.Instance.IsInProgress)
                     await FinishCombat(t);
+            }
+            else if (scenario.Host == SelfTestHost.Encounter)
+            {
+                _forceFreshCombat = true;
+                await EnterEncounter(t, scenario);
             }
             else if (scenario.FreshCombat)
             {
@@ -749,8 +863,13 @@ internal static class SelfTestKit
             _scenarioDeadline = null;
             _trail = null;
             foreach (var creature in CombatManager.Instance.DebugOnlyGetState()?.Creatures ?? Enumerable.Empty<Creature>())
+            {
                 foreach (var power in creature.Powers.Where(IsMod))
                     SeenPowerTypes.Add(power.GetType());
+                if (creature.Monster is { } monster && IsMod(monster))
+                    MonsterTypes.Add(monster.GetType());
+            }
+            NoteOwned(player);
             await Cleanup(t);
         }
         var seconds = watch.Elapsed.TotalSeconds;
@@ -796,6 +915,42 @@ internal static class SelfTestKit
         Step("preparing enemies");
         await PrepareEnemies(t);
         Log($"stage: combat ready for {t.Name} t={Seconds:F1}s");
+    }
+
+    // Starting Relics and Potions are owned without an obtain event.
+    private static void NoteOwned(Player player)
+    {
+        foreach (var relic in player.Relics.Where(IsMod))
+            RelicTypes.Add(relic.GetType());
+        foreach (var potion in player.PotionSlots)
+        {
+            if (potion is { } owned && IsMod(owned))
+                PotionTypes.Add(owned.GetType());
+        }
+    }
+
+    private static async Task EnterEncounter(SelfTestRun t, SelfTestScenario scenario)
+    {
+        if (CombatManager.Instance.IsInProgress)
+            await FinishCombat(t);
+        var encounter = scenario.Encounter!();
+        Step($"entering {encounter.Id.Entry}");
+        await RunManager.Instance.EnterRoomDebug(RoomType.Monster, MegaCrit.Sts2.Core.Map.MapPointType.Unassigned, encounter);
+        await WaitHelper.Until(() => CombatManager.Instance.IsInProgress, t.Token,
+            TimeSpan.FromSeconds(30), $"{encounter.Id.Entry} combat not started");
+        if (IsMod(encounter))
+            EncounterTypes.Add(encounter.GetType());
+        Step($"waiting for the Play phase in {encounter.Id.Entry}");
+        await WaitHelper.Until(
+            () => t.Player.PlayerCombatState?.Phase == PlayerTurnPhase.Play || !CombatManager.Instance.IsInProgress,
+            t.Token, TimeSpan.FromSeconds(30), "play phase not reached");
+        await t.Settle();
+        if (!scenario.KeepPlayerHp)
+        {
+            await CreatureCmd.SetMaxHp(t.Me, 999m);
+            await CreatureCmd.SetCurrentHp(t.Me, 999m);
+        }
+        Log($"stage: {encounter.Id.Entry} ready for {t.Name} t={Seconds:F1}s");
     }
 
     private static async Task FinishCombat(SelfTestRun t)
@@ -913,14 +1068,28 @@ internal static class SelfTestKit
 
     // ----- roll call: registration, pools, and text in both languages for every Mod model -----
 
-    private static Outcome RollCall()
+    private static Outcome RollCall(SelfTestPlan plan)
     {
         var watch = Stopwatch.StartNew();
         var cards = ModelDb.AllCards.Where(IsMod).ToList();
         var relics = ModelDb.AllRelics.Where(IsMod).ToList();
         var potions = ModelDb.AllPotions.Where(IsMod).ToList();
         var powers = ModelDb.AllPowers.Where(IsMod).ToList();
+        var characters = ModelDb.AllCharacters.Where(IsMod).ToList();
+        var monsters = ModelDb.Monsters.Where(IsMod).ToList();
+        // ModelDb.AllEncounters lists only Act encounters; add the ones scenarios name.
+        var encounters = ModelDb.AllEncounters.Where(IsMod)
+            .Concat(plan.EncounterModels.Select(model => model()))
+            .GroupBy(model => model.GetType()).Select(group => group.First()).ToList();
+        KnownEncounters = encounters.Select(model => model.GetType()).ToList();
         var problems = new List<string>();
+        // Every concrete model class this Mod defines must be registered.
+        foreach (var type in ModAssembly.GetTypes().Where(type =>
+                     !type.IsAbstract && !type.IsGenericTypeDefinition && typeof(AbstractModel).IsAssignableFrom(type)))
+        {
+            if (!ModelDb.Contains(type))
+                problems.Add($"{type.Name} is not registered (no content-pack step registers it)");
+        }
         var titles = new Dictionary<AbstractModel, List<string>>();
 
         var loc = LocManager.Instance;
@@ -941,7 +1110,7 @@ internal static class SelfTestKit
                             problems.Add($"{language} {model.Id.Entry}.{field} shows its raw key");
                         else if (value.Contains('{') || value.Contains('}'))
                             problems.Add($"{language} {model.Id.Entry}.{field} has an unresolved placeholder: {Clip(value)}");
-                        if (field == "title")
+                        if (field is "title" or "name")
                         {
                             if (!titles.TryGetValue(model, out var list))
                                 titles[model] = list = new List<string>();
@@ -952,6 +1121,14 @@ internal static class SelfTestKit
                     {
                         problems.Add($"{language} {model.Id.Entry}.{field} failed: {e.GetType().Name}: {e.Message}");
                     }
+                }
+                // Keys whose placeholders only their consumer fills ({character}, {encounter}).
+                void CheckRaw(string table, string key)
+                {
+                    if (!LocString.Exists(table, key))
+                        problems.Add($"{language} {table}/{key} is missing");
+                    else if (string.IsNullOrWhiteSpace(new LocString(table, key).GetRawText()))
+                        problems.Add($"{language} {table}/{key} is empty");
                 }
                 void CheckLoc(AbstractModel model, string field, LocString value)
                 {
@@ -985,6 +1162,20 @@ internal static class SelfTestKit
                 {
                     CheckLoc(potion, "title", potion.Title);
                     CheckLoc(potion, "description", potion.DynamicDescription);
+                }
+                foreach (var character in characters)
+                {
+                    CheckLoc(character, "title", character.Title);
+                    CheckLoc(character, "description", new LocString("characters", character.Id.Entry + ".description"));
+                    foreach (var suffix in CharacterKeys)
+                        CheckRaw("characters", character.Id.Entry + "." + suffix);
+                }
+                foreach (var monster in monsters)
+                    CheckLoc(monster, "name", new LocString("monsters", monster.Id.Entry + ".name"));
+                foreach (var encounter in encounters)
+                {
+                    CheckLoc(encounter, "title", new LocString("encounters", encounter.Id.Entry + ".title"));
+                    CheckRaw("encounters", encounter.Id.Entry + ".loss");
                 }
                 foreach (var power in powers)
                 {
@@ -1029,9 +1220,28 @@ internal static class SelfTestKit
         }
         foreach (var power in powers)
             Log($"roll call: power {power.GetType().Name} id={power.Id.Entry} type={power.Type} {Titles(power)}");
+        string Names(IEnumerable<AbstractModel> models) => string.Join(",", models
+            .GroupBy(model => model.GetType().Name).OrderBy(group => group.Key, StringComparer.Ordinal)
+            .Select(group => group.Count() > 1 ? $"{group.Key}x{group.Count()}" : group.Key));
+        foreach (var character in characters)
+        {
+            Log($"roll call: character {character.GetType().Name} id={character.Id.Entry} hp={character.StartingHp} " +
+                $"gold={character.StartingGold} energy={character.MaxEnergy} " +
+                $"cardPool={character.CardPool.GetType().Name}({character.CardPool.AllCards.Count()}) " +
+                $"relicPool={character.RelicPool.GetType().Name}({character.RelicPool.AllRelics.Count()}) " +
+                $"potionPool={character.PotionPool.GetType().Name}({character.PotionPool.AllPotions.Count()}) " +
+                $"deck={Names(character.StartingDeck)} relics={Names(character.StartingRelics)} {Titles(character)}");
+        }
+        foreach (var monster in monsters)
+            Log($"roll call: monster {monster.GetType().Name} id={monster.Id.Entry} " +
+                $"hp={monster.MinInitialHp}-{monster.MaxInitialHp} {Titles(monster)}");
+        foreach (var encounter in encounters)
+            Log($"roll call: encounter {encounter.GetType().Name} id={encounter.Id.Entry} room={encounter.RoomType} " +
+                $"monsters={Names(encounter.AllPossibleMonsters)} {Titles(encounter)}");
 
         var seconds = watch.Elapsed.TotalSeconds;
-        var summary = $"cards={cards.Count} relics={relics.Count} potions={potions.Count} powers={powers.Count} text=eng,zhs";
+        var summary = $"cards={cards.Count} relics={relics.Count} potions={potions.Count} powers={powers.Count} " +
+            $"characters={characters.Count} monsters={monsters.Count} encounters={encounters.Count} text=eng,zhs";
         if (problems.Count == 0)
         {
             Log($"state proof: rollcall: {summary}");
@@ -1043,6 +1253,14 @@ internal static class SelfTestKit
         return new Outcome("rollcall", "FAIL", detail, seconds);
     }
 
+    // The flat characters.json keys every Character ships (recipes/character.md).
+    private static readonly string[] CharacterKeys =
+    {
+        "title", "titleObject", "description", "pronounObject", "possessiveAdjective", "pronounPossessive",
+        "pronounSubject", "goldMonologue", "eventDeathPrevention", "aromaPrinciple", "cardsModifierTitle",
+        "cardsModifierDescription", "banter.alive.endTurnPing", "banter.dead.endTurnPing",
+    };
+
     private static string Clip(string text) => text.Length <= 80 ? text : text[..80] + "...";
 
     private static void Report(string? setupFailure)
@@ -1052,18 +1270,22 @@ internal static class SelfTestKit
         _finished = true;
         var outcomes = Outcomes;
         var scope = _partial ? "partial" : "all";
-        string Covered<T>(string label, IEnumerable<T> models, HashSet<Type> seen) where T : AbstractModel
+        string CoveredTypes(string label, IReadOnlyCollection<Type> mine, HashSet<Type> seen)
         {
-            var mine = models.Where(IsMod).Select(m => m.GetType()).ToList();
             var missing = mine.Where(type => !seen.Contains(type)).Select(type => type.Name).ToList();
             return $"{label} {mine.Count - missing.Count}/{mine.Count}" +
                 (missing.Count > 0 ? $" (not exercised: {string.Join(",", missing)})" : "");
         }
+        string Covered<T>(string label, IEnumerable<T> models, HashSet<Type> seen) where T : AbstractModel
+            => CoveredTypes(label, models.Where(IsMod).Select(m => m.GetType()).Distinct().ToList(), seen);
         Log("selftest coverage: " + string.Join("; ",
             Covered("cards played", ModelDb.AllCards, PlayedTypes),
-            Covered("relics obtained", ModelDb.AllRelics, RelicTypes),
-            Covered("potions procured", ModelDb.AllPotions, PotionTypes),
-            Covered("powers seen", ModelDb.AllPowers, SeenPowerTypes)));
+            Covered("relics owned", ModelDb.AllRelics, RelicTypes),
+            Covered("potions owned", ModelDb.AllPotions, PotionTypes),
+            Covered("powers seen", ModelDb.AllPowers, SeenPowerTypes),
+            Covered("characters played", ModelDb.AllCharacters, CharacterTypes),
+            Covered("monsters met", ModelDb.Monsters, MonsterTypes),
+            CoveredTypes("encounters entered", KnownEncounters, EncounterTypes)));
 
         int passed = outcomes.Count(o => o.Result == "PASS");
         Log($"selftest summary: passed={passed}/{outcomes.Count} scope={scope} elapsed={Seconds:F1}s " +
