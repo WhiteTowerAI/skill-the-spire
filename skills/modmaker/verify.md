@@ -196,6 +196,36 @@ If the console won't open or `add` says "Unable to create", match
 fallback may be reported as **manually observed** only when the user confirms the concrete
 state change; otherwise report tier-1 only.
 
+## Reruns and when to stop
+
+Every game launch costs minutes, and a full content-set harness takes four to six, so rerun only
+what the change can reach. A Tier 2 PASS already carries every Tier 1 fact: `grep_log.py`
+requires the exact load marker, the pinned profile, and no fresh error block for it. Once
+Tier 1 has passed, a behavior rerun needs only the Tier 2 launch.
+
+| Changed since the last passing run | Rerun |
+|---|---|
+| Image files only: no code, csproj, resource-path, or localization change | Build, Tier 1, then the headed review that owns the image. The last Tier 2 pass still stands. |
+| Localization text only: same keys and variables | Build. Tier 2 can wait for the final run, where its bilingual proof checks the new text. |
+| Code, csproj, manifest, resource paths, or `SelfTest.cs` | Build, then Tier 2. |
+
+When the last run or Build shows more than one independent defect, fix each one under
+`repair.md`, then share one launch. Do not launch once per fix.
+
+The Tier 2 you report must have run on the build you deliver. If code or localization changed
+after the last pass, run Tier 2 once more before the report; an image-only change does not
+need it.
+
+Stop launching and report when any of these holds:
+
+- Tier 2 passed on the current build and nothing it asserts has changed since. Never rerun
+  only to reconfirm a pass, and never rerun for polish structured state cannot observe: look,
+  layout, animation, wording, or feel.
+- `repair.md`'s bound is reached: three unsuccessful fixes at the same stage.
+- The next step needs the user's eyes, hands, or judgment: headed review, the manual fallback,
+  or whether something looks right, plays well, or has the right number. Hand it over with the
+  exact build, commands, and checks to make.
+
 ## Finalize
 
 Update the plain `PLAN.md` checklist only for stages that actually completed and record the

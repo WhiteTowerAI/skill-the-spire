@@ -46,6 +46,10 @@ A project with SPEC but no
 DESIGN may resume from its existing artifacts; create a compact DESIGN only when the user asks
 for a design change or the current intent cannot otherwise be recovered.
 
+Under delegation (`route.md`), mark each choice you made `(delegated)` in `## Decisions`, so a
+later revision knows the user never chose it.
+
 After DESIGN, write `SPEC.md`. Confirm the implementation in one concise message before
 scaffolding when the request involved material inferred choices; exact zero-question fast-path
-work may continue directly.
+work may continue directly. Under delegation, send that message as a report of the choices you
+made and continue without waiting; the user can still interrupt.

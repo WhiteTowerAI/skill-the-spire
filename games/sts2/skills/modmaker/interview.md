@@ -10,6 +10,10 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
 - **Follow the selected route.** Fast asks no question when complete and at most one compact
   round otherwise. Co-design resolves the smallest high-impact decision with materially
   different choices and trade-offs. Revision asks only about the requested delta.
+- **Honor delegation.** With `delegated: yes` from `route.md`, every rule below that asks,
+  offers, or presents choices becomes: pick the option you would recommend and state it at
+  confirmation. Ask only the questions `route.md` keeps for the user. For a Character, adopt
+  the recommended starter deck instead of offering it.
 - **Ask only material questions.** Everything else gets a sensible default that is stated
   later, not presented as another decision.
 - **Preserve settled decisions.** Anything already fixed by the prompt or project artifacts is
@@ -36,7 +40,9 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
   - Nothing resolves and the suggestions do not fit (a Slay the Spire 1 or other-Mod
     element): design it as a new element. Any recollection of it is an unverified draft
     the user confirms, never copied content. If it shares a name with a different STS2
-    element, suggest a new name.
+    element, suggest a new name once. If the user keeps the name (for example the term their
+    theme already uses), keep it and record the deliberate collision in
+    `DESIGN.md` § Decisions; `reference/vanilla-text-style.md` § Vocabulary says how its text renders.
 - **Plan only when routed.** Load only the mechanic, content-set, and balance references
   named by `route.md`. An exact narrow Card keeps the fast path and does not receive a
   general design review merely because it has numbers.
@@ -171,7 +177,10 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
 4. **Art: one question for the whole Mod.** Ask it once, in the same round as the other open
    questions, never per sprite. When the route would otherwise ask nothing, do not open a
    round just for art: use placeholder and say in the final report that art can be added
-   later with these choices. Offer the choices in the user's language and plain words:
+   later with these choices. Delegation never picks an art route for the user: unless
+   they named one, use placeholder and mention these choices in the confirmation without
+   waiting.
+   Offer the choices in the user's language and plain words:
    - **0. Placeholder art everywhere** — the default and the fastest way to a playable Mod;
      art can be added later.
    - **1. Your agent's own image tool** — no setup; uses the current subscription. List it
@@ -306,6 +315,7 @@ A compact intake you carry into `design.md` and `spec.md`. Prefix every intake w
 
 ```text
 path: fast | co-design | revision | resume
+delegated: no | yes
 intent: <one player-facing sentence>
 settled: <choices preserved from the request and project artifacts>
 defaults: <inferred values to state in the confirmation>
