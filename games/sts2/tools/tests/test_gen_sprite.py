@@ -170,6 +170,7 @@ class GenSpriteTests(unittest.TestCase):
     def test_shipped_m6_reference_pools_match_supported_profiles(self) -> None:
         root = TOOLS_DIR.parent / "skills" / "sts2api" / "reference" / "art-samples"
         expected = {
+            "card_ancient": (3, (606, 852)),
             "enchantment": (20, (64, 64)),
             "orb": (5, (100, 100)),
             "monster": (3, (512, 512)),
@@ -623,6 +624,7 @@ class GenSpriteTests(unittest.TestCase):
 
     def test_backend_request_size_follows_the_spec_orientation(self) -> None:
         self.assertEqual("1536x1024", gen_sprite.request_size_for(gen_sprite.resolve_size("card", None)))
+        self.assertEqual("1024x1536", gen_sprite.request_size_for(gen_sprite.resolve_size("card_ancient", None)))
         self.assertEqual("1536x1024", gen_sprite.request_size_for(gen_sprite.resolve_size("event", None)))
         self.assertEqual("1024x1536", gen_sprite.request_size_for(gen_sprite.resolve_size("character_select", None)))
         self.assertEqual("1024x1024", gen_sprite.request_size_for(gen_sprite.resolve_size("relic", None)))

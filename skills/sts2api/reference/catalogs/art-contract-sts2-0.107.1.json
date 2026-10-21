@@ -22,6 +22,18 @@
       "verified": true
     },
     {
+      "spec": "card_ancient",
+      "sub_path": "card_portraits",
+      "extra_sub_paths": [],
+      "size": [
+        606,
+        852
+      ],
+      "fit": "cover",
+      "chroma": false,
+      "verified": true
+    },
+    {
       "spec": "relic",
       "sub_path": "relics",
       "extra_sub_paths": [
@@ -670,5 +682,5 @@
     "total_frames": 24,
     "generation_calls": 1
   },
-  "catalog_sha256": "4a6ab14ec3f88f60bd65680a4f3b0be519925f86b6394be5a836713f0be5c9dd"
+  "catalog_sha256": "d37f598a547f20958e9108dac58d08d7a768805c49bc35b061ed54d50f8de1cd"
 }

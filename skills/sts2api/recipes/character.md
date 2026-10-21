@@ -231,6 +231,8 @@ includes either, register it on the same pack:
 - Touch of Orobas replaces the starter Relic. Give `<RefinedStarterRelic>`
   `RelicRarity.Starter`, as vanilla does with Black Blood, so it never enters an ordinary pool.
 - A second mapping for the same starter replaces the first with a warning; map each once.
+- Author each Ancient Card itself (Dusty Tome's and the transcended one) through
+  `reference/ancient-card.md`; its art is the full-card `card_ancient` portrait.
 
 ## Model shell
 

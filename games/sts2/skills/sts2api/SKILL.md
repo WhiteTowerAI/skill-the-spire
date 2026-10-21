@@ -108,6 +108,7 @@ Read one only when the SPEC selects that behavior.
 | `reference/card-computed-values.md` | calculated Card values or DynamicVar tooltips |
 | `reference/advanced-targeting.md` | a filtered custom Card/Potion target |
 | `reference/card-hand-emphasis.md` | conditional Card hand glow or outline |
+| `reference/ancient-card.md` | a Card with rarity `Ancient`: acquisition route, pool, full-card art, native rules |
 | `reference/extra-corner-labels.md` | extra value badges on a Relic or Power |
 | `reference/model-right-click.md` | a right-click or controller-cancel action on a Mod model |
 | `reference/card-piles.md` | the complete Custom Card Piles API |

@@ -14,7 +14,8 @@ Also read, only when SPEC selects it:
 - hand emphasis: `reference/card-hand-emphasis.md`;
 - extra colored words beyond the default style: `reference/content-text-effects.md`;
 - a raw hook rule: `reference/model-hook-participation.md`; bounded state:
-  `reference/stateful-mechanics.md`.
+  `reference/stateful-mechanics.md`;
+- rarity `Ancient`: `reference/ancient-card.md` (acquisition, pool, full-card art).
 
 Vanilla Cards to imitate: `StrikeIronclad` (single-target attack), `DefendIronclad` (self
 Block), `Inflame` (gain a Power), `Bash` (attack plus a debuff).
@@ -49,7 +50,7 @@ Event composition. Route it to `reference/forced-followup-event.md`; it gets no 
   - surface: card
   - logical id: <stable local stem, e.g. blade_dance>
   - kind: Attack | Skill | Power
-  - rarity: Basic | Common | Uncommon | Rare
+  - rarity: Basic | Common | Uncommon | Rare | Ancient
   - relations: <none | custom power/keyword/enchantment/orb dependencies>
   - keywords: none | <keyword name> — <the shared rule its tooltip states>
     native or mod: native | mod
@@ -151,7 +152,8 @@ RitsuLibFramework.CreateContentPack(ModId)
 
 Custom art uses an explicit profile; omit the override for the placeholder. Empty fields keep
 the template/base-game fallback, and custom art never blocks the pipeline. The normal portrait
-import is `1000×760` (`reference/art-contract.md`); Ancient-only full art is out of scope.
+import is `1000×760` (`reference/art-contract.md`); an Ancient-rarity Card imports `606×852`
+full-card art with `--spec card_ancient`.
 
 ```csharp
 public override CardAssetProfile AssetProfile => new()
@@ -221,7 +223,7 @@ public sealed class <CardName> : ModCardTemplate
 |---|---|---|
 | `cost` | `int` | Energy cost from SPEC (0/1/2/3…); `-1` for Energy-X. |
 | `type` | `CardType` | deals damage → `Attack`; Block/utility → `Skill`; permanent buff → `Power`. |
-| `rarity` | `CardRarity` | droppable default `Common`; `Basic` for starter Cards. |
+| `rarity` | `CardRarity` | droppable default `Common`; `Basic` for starter Cards; `Ancient` only through `reference/ancient-card.md`. |
 | `target` | `TargetType` | one enemy → **`AnyEnemy`**; all enemies → `AllEnemies`; self or no selection (Block, gain Strength) → **`Self`**. |
 
 A Card that targets the player uses `TargetType.Self`, never `AnyPlayer`: that one is for
