@@ -33,6 +33,8 @@ from localization_contract import (
     validate_project_localization,
 )
 import selftest_kit
+from api import ApiError
+from hook_reachability import HookReachabilityError, validate_built_mod
 from pack_pck import PackError, pack_assets
 from selftest_kit import SelfTestKitError
 from ritsu_profile import (
@@ -323,6 +325,12 @@ def main(argv: list[str]) -> int:
             validate_deployed_artifacts(project_dir, mod_name, mods_dir)
         except (OSError, PackError, RitsuProfileError) as exc:
             print(f"[build] artifact packaging FAILED: {exc}", file=sys.stderr)
+            return 1
+        try:
+            reachability = validate_built_mod(mods_dir / f"{mod_name}.dll", project_dir)
+            print(f"[build] hook reachability OK: {reachability}")
+        except (OSError, ApiError, HookReachabilityError) as exc:
+            print(f"[build] hook reachability FAILED: {exc}", file=sys.stderr)
             return 1
 
     print()

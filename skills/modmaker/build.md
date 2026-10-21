@@ -65,7 +65,9 @@ installation. Build never downloads a framework package and never substitutes a 
 RitsuLib version for the one scaffold recorded. After a Workshop update, re-pin explicitly
 with `scaffold.py --repin-runtime` (see `scaffold.md`).
 
-After the build it rejects a restore that reintroduced a framework package, copies the Mod's
+After the build it reads the compiled Mod's public metadata and fails any override of a
+cataloged model hook that the host never dispatches to that element's surface. It also
+rejects a restore that reintroduced a framework package, copies the Mod's
 DLL/manifest/PDB through the generated MSBuild target, packs
 `<project-dir>/<ModName>/` when resources exist, and rejects a generated directory that
 contains `STS2-RitsuLib.dll`, `BaseLib.dll`, or `BaseLib.pck`.
