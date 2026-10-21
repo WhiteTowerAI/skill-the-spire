@@ -109,6 +109,17 @@ switching to an old template.
 - **Fix:** fix the named semantic operation or generated source. Never relax the catalog and
   never swap in a guessed patch target.
 
+### `Mod source uses a forbidden route: <file>:<line>: ...`
+
+- **Cause:** a Mod source file uses `[Pool(...)]`, raw Harmony (`new Harmony`, `[HarmonyPatch]`,
+  `AccessTools`, a transpiler), member reflection (`BindingFlags`, `typeof(T).GetMethod(...)`),
+  a Publicizer, or an `IPatchMethod` target that is not a reviewed Adapter in the pinned
+  catalog.
+- **Fix:** rewrite that line with the public route its recipe or reference names: the
+  content-pack pool generic for availability, a public hook or command for behavior, and only
+  the Adapter targets the override references list. With no maintained route, follow
+  `grounding.md` § Mod-local Routes. Never move the code into `SelfTestKit.cs` to skip the scan.
+
 ### MSB1008 when passing MSBuild properties
 
 - **Cause:** `/p:Name=Value` was rewritten by the Windows shell/tool boundary.

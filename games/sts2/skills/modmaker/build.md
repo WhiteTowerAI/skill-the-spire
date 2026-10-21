@@ -24,6 +24,8 @@ Before MSBuild, the tool verifies:
 - every rich-text tag is a vanilla tag, unparameterized, balanced, and correctly nested
   (failure), and every string is compared with the vanilla text style of
   `reference/vanilla-text-style.md` (warnings written to `<project>/.text-style.log`);
+- the Mod's own `.cs` files and `.csproj` use no `[Pool(...)]`, raw Harmony, member
+  reflection, Publicizer, or patch target outside the pinned catalog's reviewed Adapters;
 - `<ModName>Code/SelfTestKit.cs`, when present, is the bundled kit of its version unchanged
   (failure on a hand edit; a project without it, or with an older kit, passes with a note:
   `scaffold.py --refresh-selftest-kit` updates it);

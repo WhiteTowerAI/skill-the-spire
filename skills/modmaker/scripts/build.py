@@ -47,6 +47,7 @@ from ritsu_profile import (
     validate_restore_assets,
     validate_runtime_asset,
 )
+from source_scan import SourceScanError, validate_project_sources
 from text_style import TextStyleError, validate_project_text_style
 from vanilla_overrides import VanillaOverrideError, validate_project_override_manifest
 
@@ -236,6 +237,7 @@ def main(argv: list[str]) -> int:
         override_summary = validate_project_override_manifest(project_dir, mod_name)
         print(f"[build] vanilla override manifest OK: {override_summary}")
         print(f"[build] self-test kit OK: {selftest_kit.check(project_dir, mod_name)}")
+        print(f"[build] source routes OK: {validate_project_sources(project_dir, mod_name)}")
         sts2_dir_text = get_msbuild_property(csproj, "Sts2Dir")
         mods_root_text = get_msbuild_property(csproj, "ModsPath")
         if not sts2_dir_text or not mods_root_text:
@@ -264,6 +266,7 @@ def main(argv: list[str]) -> int:
         LocalizationContractError,
         RitsuProfileError,
         SelfTestKitError,
+        SourceScanError,
         TextStyleError,
         VanillaOverrideError,
     ) as exc:
