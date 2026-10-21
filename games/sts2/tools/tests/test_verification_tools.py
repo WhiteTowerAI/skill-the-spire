@@ -389,6 +389,21 @@ class LaunchOutcomeTests(unittest.TestCase):
                 self.assertEqual(expected, launch.self_test_log_outcome(current, mod))
                 self.assertEqual(1, launch.self_test_exit_code(expected))
 
+    def test_main_menu_without_load_or_arming_fails_fast(self) -> None:
+        mod = "ExampleMod"
+        menu = "[INFO] [Startup] Time to main menu: 10,516ms"
+        loaded = f"[T2MOD-SELFTEST] {mod} loaded ok"
+        armed = f"[T2MOD-SELFTEST] {mod} selftest budget: 240s"
+        self.assertIsNone(launch.self_test_log_outcome("[INFO] Preloading assets", mod))
+        self.assertEqual("not-loaded", launch.self_test_log_outcome(menu, mod))
+        self.assertEqual("not-armed", launch.self_test_log_outcome(f"{loaded}\n{menu}", mod))
+        self.assertIsNone(launch.self_test_log_outcome(f"{loaded}\n{armed}\n{menu}", mod))
+        setup_failed = f"[T2MOD-SELFTEST] {mod} selftest FAILED: setup: ArgumentException: dup"
+        self.assertEqual("failed", launch.self_test_log_outcome(
+            f"{loaded}\n{setup_failed}\n{menu}", mod))
+        for outcome in ("not-loaded", "not-armed"):
+            self.assertEqual(1, launch.self_test_exit_code(outcome))
+
     def test_budget_is_read_after_this_launch_load_marker(self) -> None:
         mod = "ExampleMod"
         self.assertIsNone(launch.self_test_budget_seconds(
