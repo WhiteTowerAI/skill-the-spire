@@ -33,7 +33,8 @@ fires. Offering it there would manufacture exactly the silent failure this route
 prevent.
 
 Read `authorable_surfaces` for the hook and confirm your surface is in it. Do not infer
-reachability from the hook's name or from a vanilla implementor you found elsewhere.
+reachability from the hook's name or from a vanilla implementor you found elsewhere. Build
+reads the compiled Mod and fails any override whose surface the hook cannot reach.
 
 | Surface | Hooks it can receive | Shapes available |
 |---|---|---|

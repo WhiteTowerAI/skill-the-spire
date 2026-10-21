@@ -120,6 +120,14 @@ switching to an old template.
   the Adapter targets the override references list. With no maintained route, follow
   `grounding.md` § Mod-local Routes. Never move the code into `SelfTestKit.cs` to skip the scan.
 
+### `[build] hook reachability FAILED: <Type>.<Hook>: the host never dispatches this hook to a <surface>`
+
+- **Cause:** the compiled Mod overrides a cataloged model hook on an element the host never asks:
+  a run-scope hook on a Power, Orb, or Monster, or a general Block/Damage/play-count hook on an
+  Enchantment. It compiles and never fires.
+- **Fix:** move the rule to a surface the message lists (`reference/model-hook-participation.md`),
+  or on an Enchantment override the named `Enchant*` replacement. Then rebuild.
+
 ### MSB1008 when passing MSBuild properties
 
 - **Cause:** `/p:Name=Value` was rewritten by the Windows shell/tool boundary.
