@@ -144,12 +144,7 @@ def make_operation(
         "mode": mode,
         "surface": surface,
         "route": route
-        or {"class": "public", "id": "card.property.rarity", "fingerprint": None},
-        "expected_baseline": {
-            "category": "CARD",
-            "type": "MegaCrit.Sts2.Core.Models.Cards.LostWisp",
-            "properties": {"rarity": "Common"},
-        },
+        or {"class": "public", "id": "card.property.rarity"},
         "semantics": {"adjustment": adjustment, "value": "Rare"},
     }
 
@@ -235,35 +230,23 @@ def make_text_operation(
     target_id = "RELIC.LOST_WISP" if route_id.startswith("relic.") else "CARD.LOST_WISP"
     model = next(model for model in catalog["models"] if model["id"] == target_id)
     category = model["category"].lower()
-    baseline: dict = {"category": model["category"], "type": model["type"]}
     if route_id.endswith(".localization"):
         field = "title" if route_id == "card.title.localization" else "description"
         mode = "replace"
         surface = "card.title" if field == "title" else f"{category}.description_text"
         source = model[f"{field}_localization"]
-        baseline[f"{field}_localization"] = copy.deepcopy(
-            {
-                "key": source["key"],
-                f"localized_{field}s": source[f"localized_{field}s"],
-            }
-        )
         semantics = semantics or {
             "localization": {"table": source["table"], "key": source["key"]}
         }
     else:
         mode, surface = "adjust", f"{category}.dynamic_vars"
-        properties = {"dynamic_vars": model["properties"]["dynamic_vars"]}
-        if category == "card":
-            properties["upgrade_levels"] = model["properties"]["upgrade_levels"]
-        baseline["properties"] = copy.deepcopy(properties)
     return {
         "order": index,
         "operation_id": operation_id,
         "target_model_id": target_id,
         "mode": mode,
         "surface": surface,
-        "route": {"class": "public", "id": route_id, "fingerprint": None},
-        "expected_baseline": baseline,
+        "route": {"class": "public", "id": route_id},
         "semantics": copy.deepcopy(dict(semantics)),
     }
 
@@ -334,14 +317,6 @@ def vanilla_ref(model_id: str) -> dict:
     return {"source": "vanilla", "model_id": model_id}
 
 
-def adapter_dependencies(catalog: dict, *adapter_ids: str) -> list[dict]:
-    adapters = {adapter["id"]: adapter for adapter in catalog["adapters"]}
-    return [
-        {"id": adapter_id, "fingerprint": adapters[adapter_id]["il_sha256"]}
-        for adapter_id in sorted(adapter_ids)
-    ]
-
-
 def make_non_card_operation(
     catalog: dict,
     target_id: str,
@@ -351,15 +326,8 @@ def make_non_card_operation(
     mode: str,
     route_class: str,
     semantics: dict,
-    dependencies: tuple[str, ...] = (),
 ) -> dict:
     model = next(model for model in catalog["models"] if model["id"] == target_id)
-    baseline = {key: copy.deepcopy(model[key]) for key in ("category", "type")}
-    if route_id in overrides._NON_CARD_DATA_ROUTES:
-        property_name = overrides._NON_CARD_DATA_ROUTES[route_id]["property"]
-        baseline["properties"] = {
-            property_name: copy.deepcopy(model["properties"][property_name])
-        }
     return {
         "order": index,
         "operation_id": f"non-card.{index}.{target_id.lower().replace('_', '-')}",
@@ -370,13 +338,7 @@ def make_non_card_operation(
             if route_id in overrides._NON_CARD_OWNER_HOOK_ROUTES
             else route_id
         ),
-        "route": {
-            "class": route_class,
-            "id": route_id,
-            "fingerprint": None,
-            "dependencies": adapter_dependencies(catalog, *dependencies),
-        },
-        "expected_baseline": baseline,
+        "route": {"class": route_class, "id": route_id},
         "semantics": semantics,
     }
 
@@ -614,16 +576,7 @@ def make_availability_epoch_operation(
     route = {
         "class": "public" if route_id == overrides.AVAILABILITY_PUBLIC_EPOCH_ROUTE else "adapter",
         "id": route_id,
-        "fingerprint": None
-        if route_id == overrides.AVAILABILITY_PUBLIC_EPOCH_ROUTE
-        else AVAILABILITY_ADAPTER_HASHES[route_id],
     }
-    dependencies = overrides.AVAILABILITY_EPOCH_ADAPTER_DEPENDENCIES.get(route_id)
-    if dependencies is not None:
-        route["dependencies"] = [
-            {"id": adapter_id, "fingerprint": AVAILABILITY_ADAPTER_HASHES[adapter_id]}
-            for adapter_id in dependencies
-        ]
     return {
         "order": index,
         "operation_id": f"availability.epoch-{index}",
@@ -631,11 +584,6 @@ def make_availability_epoch_operation(
         "mode": "availability",
         "surface": f"{target['category'].lower()}.epoch_gate",
         "route": route,
-        "expected_baseline": {
-            "category": target["category"],
-            "type": target["type"],
-            "content_kind": target["content_kind"],
-        },
         "semantics": {
             "state": state,
             "epoch_id": "RELIC1_EPOCH" if state == "require_epoch" else None,
@@ -655,7 +603,6 @@ def make_pool_operation(
     source: str | None = None,
     destination: str | None = None,
 ) -> dict:
-    target = next(model for model in catalog["models"] if model["id"] == target_id)
     contract = overrides._pool_contract(route_id)
     assert contract is not None
     semantics = {
@@ -677,14 +624,6 @@ def make_pool_operation(
         "route": {
             "class": "public" if route_id in overrides.AVAILABILITY_PUBLIC_POOL_ROUTES else "adapter",
             "id": route_id,
-            "fingerprint": None
-            if route_id in overrides.AVAILABILITY_PUBLIC_POOL_ROUTES
-            else AVAILABILITY_ADAPTER_HASHES[route_id],
-        },
-        "expected_baseline": {
-            "category": target["category"],
-            "type": target["type"],
-            "sources": {contract["source_key"]: target["sources"][contract["source_key"]]},
         },
         "semantics": semantics,
     }
@@ -729,28 +668,10 @@ def make_ancient_operation(
     pages: list[dict] | None = None,
 ) -> dict:
     replacement = route_id.endswith("replace")
-    route = {
-        "class": "adapter" if replacement else "public",
-        "id": route_id,
-        "fingerprint": ANCIENT_ADAPTER_HASHES[route_id] if replacement else None,
-    }
+    route = {"class": "adapter" if replacement else "public", "id": route_id}
     selected_option = option or make_ancient_option(
         "take-the-road", "PROOF_ANCIENT_TAKE_THE_ROAD"
     )
-    required = set()
-    all_options = [selected_option]
-    for page in pages or []:
-        all_options.extend(page["options"])
-    for item in all_options:
-        if item["next"]["kind"] == "finish":
-            required.add("ancient.flow.finish")
-        elif item["next"]["kind"] == "page":
-            required.add("ancient.flow.set-state")
-    if required:
-        route["dependencies"] = [
-            {"id": adapter_id, "fingerprint": ANCIENT_ADAPTER_HASHES[adapter_id]}
-            for adapter_id in sorted(required)
-        ]
     target = next(model for model in catalog["models"] if model["id"] == "EVENT.DARV")
     return {
         "order": index,
@@ -759,11 +680,6 @@ def make_ancient_operation(
         "mode": "replace" if replacement else "compose",
         "surface": "ancient.initial_options",
         "route": route,
-        "expected_baseline": {
-            "category": target["category"],
-            "type": target["type"],
-            "content_kind": target["content_kind"],
-        },
         "semantics": {
             "condition": {
                 "kind": "character",
@@ -828,12 +744,7 @@ def make_visual_operation(
         "target_model_id": target["id"],
         "mode": "visual",
         "surface": route["surface"],
-        "route": {"class": "public", "id": route_id, "fingerprint": None},
-        "expected_baseline": {
-            "category": target["category"],
-            "type": target["type"],
-            "content_kind": target["content_kind"],
-        },
+        "route": {"class": "public", "id": route_id},
         "semantics": semantics,
     }
 
@@ -1115,7 +1026,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         summary = overrides.validate_override_manifest(nonempty, promoted)
         self.assertIn("operations=1", summary)
 
-    def test_manifest_host_catalog_and_expected_baseline_drift_fail(self) -> None:
+    def test_manifest_host_catalog_drift_and_copied_baseline_fail(self) -> None:
         catalog = make_catalog()
         wrong_host = overrides.create_empty_manifest("Proof", catalog)
         wrong_host["host_version"] = "0.999.0"
@@ -1128,8 +1039,8 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             overrides.validate_override_manifest(wrong_digest, catalog)
 
         operation = make_operation(0, "card.rarity")
-        operation["expected_baseline"]["properties"]["rarity"] = "Rare"
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "baseline drift"):
+        operation["expected_baseline"] = {"properties": {"rarity": "Common"}}
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "expected_baseline is not written"):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [operation]),
                 catalog,
@@ -1172,12 +1083,8 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 index,
                 operation_id,
                 surface="card.energy_cost",
-                route={"class": "public", "id": "card.cost.energy", "fingerprint": None},
+                route={"class": "public", "id": "card.cost.energy"},
             )
-            operation["expected_baseline"]["properties"] = {
-                "energy_cost": 1,
-                "energy_cost_x": False,
-            }
             operation["semantics"] = {"adjustment": adjustment, "value": value}
             return operation
 
@@ -1227,26 +1134,14 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             surface: str,
             mode: str,
             semantics: dict,
-            properties: dict | None = None,
-            *,
-            title: bool = False,
         ) -> dict:
-            baseline = {
-                "category": "CARD",
-                "type": card["type"],
-            }
-            if properties is not None:
-                baseline["properties"] = properties
-            if title:
-                baseline["title_localization"] = card["title_localization"]
             return {
                 "order": index,
                 "operation_id": operation_id,
                 "target_model_id": card["id"],
                 "mode": mode,
                 "surface": surface,
-                "route": {"class": "public", "id": route_id, "fingerprint": None},
-                "expected_baseline": baseline,
+                "route": {"class": "public", "id": route_id},
                 "semantics": semantics,
             }
 
@@ -1260,7 +1155,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 "card.type",
                 "adjust",
                 {"adjustment": "set", "value": "Power"},
-                {"card_type": "Skill"},
             ),
             operation(
                 1,
@@ -1269,7 +1163,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 "card.tags",
                 "compose",
                 {"action": "append", "values": ["Strike", "Shiv"]},
-                {"tags": []},
             ),
             operation(
                 2,
@@ -1278,7 +1171,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 "card.energy_cost",
                 "adjust",
                 {"adjustment": "set", "value": 0},
-                {"energy_cost": 1, "energy_cost_x": False},
             ),
             operation(
                 3,
@@ -1287,7 +1179,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 "card.playability",
                 "availability",
                 {"decision": False, "when": always},
-                {"energy_cost": 1, "star_cost": -1, "target_type": "Self"},
             ),
             operation(
                 4,
@@ -1304,7 +1195,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 "card.title",
                 "replace",
                 {"localization": {"table": "cards", "key": "LOST_WISP.title"}},
-                title=True,
             ),
             operation(
                 6,
@@ -1313,7 +1203,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 "card.description",
                 "compose",
                 {"localization": loc, "placement": "after_base"},
-                title=True,
             ),
             operation(
                 7,
@@ -1322,7 +1211,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 "card.type_text",
                 "compose",
                 {"composition": "wrap", "localization": loc},
-                title=True,
             ),
             operation(
                 8,
@@ -1366,7 +1254,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                         }
                     ]
                 },
-                {"dynamic_vars": card["properties"]["dynamic_vars"], "max_upgrade_level": 1},
             ),
             operation(
                 11,
@@ -1483,10 +1370,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             index=3,
             mode="replace",
             route_class="adapter",
-            dependencies=(
-                "non-card.owner-hook-stream.combat",
-                "non-card.owner-hook-stream.run",
-            ),
             semantics={
                 "complete": True,
                 "multiplayer": "singleplayer",
@@ -1505,11 +1388,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         conflict["operation_id"] = "non-card.replace-conflict"
         conflict["mode"] = "replace"
         conflict["route"]["class"] = "adapter"
-        conflict["route"]["dependencies"] = adapter_dependencies(
-            catalog,
-            "non-card.owner-hook-stream.combat",
-            "non-card.owner-hook-stream.run",
-        )
         conflict["semantics"] = {
             "complete": True,
             "multiplayer": "singleplayer",
@@ -1550,10 +1428,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         ]
         operations = []
         for index, (target, route_id, adjustment, value) in enumerate(cases):
-            contract = overrides._NON_CARD_DATA_ROUTES[route_id]
-            adapter_id = (
-                f"non-card.{target.lower().replace('_', '-')}.{contract['adapter']}"
-            )
             operations.append(
                 make_non_card_operation(
                     catalog,
@@ -1562,7 +1436,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                     index=index,
                     mode="adjust",
                     route_class="adapter",
-                    dependencies=(adapter_id,),
                     semantics={
                         "adjustment": adjustment,
                         "multiplayer": "singleplayer",
@@ -1679,7 +1552,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                     index=index,
                     mode="replace",
                     route_class="adapter",
-                    dependencies=tuple(dependencies),
                     semantics=semantics,
                 )
             )
@@ -1704,33 +1576,23 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 manifest_with(catalog, [invalid_affliction]), catalog
             )
 
-    def test_non_card_routes_fail_closed_on_package_category_and_fingerprint_drift(self) -> None:
+    def test_non_card_routes_fail_closed_on_package_category_and_copied_dependencies(self) -> None:
         catalog = overrides.load_catalog()
-        contract = overrides._NON_CARD_DATA_ROUTES["data.relic.rarity"]
         operation = make_non_card_operation(
             catalog,
             "RELIC.AKABEKO",
             "data.relic.rarity",
             mode="adjust",
             route_class="adapter",
-            dependencies=(
-                f"non-card.relic.akabeko.{contract['adapter']}",
-            ),
             semantics={"adjustment": "set", "multiplayer": "singleplayer", "value": "Rare"},
         )
-        drift = copy.deepcopy(operation)
-        drift["route"]["dependencies"][0]["fingerprint"] = "f" * 64
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "fingerprint drift"):
-            overrides.validate_override_manifest(manifest_with(catalog, [drift]), catalog)
+        copied = copy.deepcopy(operation)
+        copied["route"]["dependencies"] = [{"id": "non-card.relic.rarity", "fingerprint": "f" * 64}]
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "dependencies is not written"):
+            overrides.validate_override_manifest(manifest_with(catalog, [copied]), catalog)
 
         wrong_category = copy.deepcopy(operation)
         wrong_category["target_model_id"] = "POTION.BLOCK_POTION"
-        potion = next(model for model in catalog["models"] if model["id"] == "POTION.BLOCK_POTION")
-        wrong_category["expected_baseline"] = {
-            "category": potion["category"],
-            "type": potion["type"],
-            "properties": {"rarity": potion["properties"]["rarity"]},
-        }
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires a RELIC target"):
             overrides.validate_override_manifest(manifest_with(catalog, [wrong_category]), catalog)
 
@@ -1790,7 +1652,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 manifest_with(catalog, [unknown_epoch]), catalog
             )
 
-    def test_relic_and_potion_epoch_adapters_require_complete_fingerprints(self) -> None:
+    def test_relic_and_potion_epoch_adapters_require_their_catalog_dependencies(self) -> None:
         catalog = make_availability_catalog()
         relic = make_availability_epoch_operation(
             catalog,
@@ -1811,15 +1673,21 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             ),
         )
 
-        missing = copy.deepcopy(relic)
-        missing["route"]["dependencies"].pop()
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "dependencies must be exactly"):
-            overrides.validate_override_manifest(manifest_with(catalog, [missing]), catalog)
+        dropped = overrides.AVAILABILITY_EPOCH_ADAPTER_DEPENDENCIES[
+            "availability.relic.epoch-gate"
+        ][0]
+        missing = copy.deepcopy(catalog)
+        missing["adapters"] = [item for item in missing["adapters"] if item["id"] != dropped]
+        missing["catalog_sha256"] = overrides.catalog_digest(missing)
+        with self.assertRaisesRegex(
+            overrides.VanillaOverrideError, f"missing from the pinned catalog: {dropped}"
+        ):
+            overrides.validate_override_manifest(manifest_with(missing, [relic]), missing)
 
-        drifted = copy.deepcopy(relic)
-        drifted["route"]["dependencies"][0]["fingerprint"] = "f" * 64
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "fingerprint drift"):
-            overrides.validate_override_manifest(manifest_with(catalog, [drifted]), catalog)
+        copied = copy.deepcopy(relic)
+        copied["route"]["fingerprint"] = "f" * 64
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "fingerprint is not written"):
+            overrides.validate_override_manifest(manifest_with(catalog, [copied]), catalog)
 
         invalid_disabled = copy.deepcopy(potion)
         invalid_disabled["order"] = 0
@@ -1990,9 +1858,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         card = next(model for model in catalog["models"] if model["category"] == "CARD")
         wrong_category = copy.deepcopy(operation)
         wrong_category["target_model_id"] = card["id"]
-        wrong_category["expected_baseline"] = {
-            key: card[key] for key in ("category", "type", "content_kind")
-        }
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires a RELIC target"):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [wrong_category]), catalog
@@ -2005,9 +1870,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         )
         wrong_ancient = make_visual_operation(catalog, "visual.ancient.map-icon-path")
         wrong_ancient["target_model_id"] = ordinary_event["id"]
-        wrong_ancient["expected_baseline"] = {
-            key: ordinary_event[key] for key in ("category", "type", "content_kind")
-        }
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires content_kind ancient"):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [wrong_ancient]), catalog
@@ -2161,11 +2023,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
     def test_public_card_routes_reject_non_card_targets_and_forbidden_semantics(self) -> None:
         catalog = enable_card_family(make_catalog())
         non_card = make_operation(0, "relic.rarity", target="RELIC.LOST_WISP")
-        non_card["expected_baseline"] = {
-            "category": "RELIC",
-            "type": "MegaCrit.Sts2.Core.Models.Relics.LostWisp",
-            "properties": {"rarity": "Common"},
-        }
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires a CARD target"):
             overrides.validate_override_manifest(manifest_with(catalog, [non_card]), catalog)
 
@@ -2176,7 +2033,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
 
     def test_public_card_description_fragments_reject_replace_mode(self) -> None:
         catalog = enable_card_family(make_catalog())
-        card = next(model for model in catalog["models"] if model["id"] == "CARD.LOST_WISP")
         replacement = make_operation(
             0,
             "card.replace-description",
@@ -2185,14 +2041,8 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             route={
                 "class": "public",
                 "id": "card.description.fragments",
-                "fingerprint": None,
             },
         )
-        replacement["expected_baseline"] = {
-            "category": "CARD",
-            "type": card["type"],
-            "title_localization": card["title_localization"],
-        }
         replacement["semantics"] = {
             "localization": {
                 "table": "cards",
@@ -2209,8 +2059,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
 
     def test_public_card_behavior_rejects_recursive_or_unbound_semantics(self) -> None:
         catalog = enable_card_family(make_catalog())
-        card_type = "MegaCrit.Sts2.Core.Models.Cards.LostWisp"
-
         playability = {
             "order": 0,
             "operation_id": "card.recursive-playability",
@@ -2220,16 +2068,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             "route": {
                 "class": "public",
                 "id": "card.play-state.can-play",
-                "fingerprint": None,
-            },
-            "expected_baseline": {
-                "category": "CARD",
-                "type": card_type,
-                "properties": {
-                    "energy_cost": 1,
-                    "star_cost": -1,
-                    "target_type": "Self",
-                },
             },
             "semantics": {
                 "decision": False,
@@ -2245,8 +2083,7 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             "target_model_id": "CARD.LOST_WISP",
             "mode": "compose",
             "surface": "card.on_play",
-            "route": {"class": "public", "id": "card.play.on-play", "fingerprint": None},
-            "expected_baseline": {"category": "CARD", "type": card_type},
+            "route": {"class": "public", "id": "card.play.on-play"},
             "semantics": {
                 "timing": "before",
                 "run_after_replacement": False,
@@ -2361,12 +2198,8 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             manifest_with(catalog, [operation]), catalog
         )
         self.assertIn("operations=1", summary)
-        self.assertEqual(
-            ["ancient.flow.finish", "ancient.flow.set-state"],
-            [item["id"] for item in operation["route"]["dependencies"]],
-        )
 
-    def test_ancient_replacement_requires_exact_route_and_flow_fingerprints(self) -> None:
+    def test_ancient_replacement_needs_its_flow_adapters_in_the_catalog(self) -> None:
         catalog = make_ancient_catalog()
         initial = make_ancient_option(
             "replace-road",
@@ -2393,26 +2226,20 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             ),
         )
 
-        route_drift = copy.deepcopy(operation)
-        route_drift["route"]["fingerprint"] = "f" * 64
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "fingerprint drift"):
-            overrides.validate_override_manifest(
-                manifest_with(catalog, [route_drift]), catalog
-            )
+        copied = copy.deepcopy(operation)
+        copied["route"]["fingerprint"] = "f" * 64
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "fingerprint is not written"):
+            overrides.validate_override_manifest(manifest_with(catalog, [copied]), catalog)
 
-        dependency_drift = copy.deepcopy(operation)
-        dependency_drift["route"]["dependencies"][0]["fingerprint"] = "f" * 64
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "fingerprint drift"):
-            overrides.validate_override_manifest(
-                manifest_with(catalog, [dependency_drift]), catalog
-            )
-
-        missing_dependency = copy.deepcopy(operation)
-        missing_dependency["route"]["dependencies"].pop()
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "must be exactly"):
-            overrides.validate_override_manifest(
-                manifest_with(catalog, [missing_dependency]), catalog
-            )
+        missing = copy.deepcopy(catalog)
+        missing["adapters"] = [
+            item for item in missing["adapters"] if item["id"] != "ancient.flow.set-state"
+        ]
+        missing["catalog_sha256"] = overrides.catalog_digest(missing)
+        with self.assertRaisesRegex(
+            overrides.VanillaOverrideError, "missing from the pinned catalog: ancient.flow.set-state"
+        ):
+            overrides.validate_override_manifest(manifest_with(missing, [operation]), missing)
 
     def test_ancient_routes_reject_non_ancients_unsupported_flags_and_dead_pages(self) -> None:
         catalog = make_ancient_catalog()
@@ -2420,9 +2247,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         ordinary = next(model for model in catalog["models"] if model["id"] == "EVENT.ORDINARY")
         wrong_target = copy.deepcopy(operation)
         wrong_target["target_model_id"] = ordinary["id"]
-        wrong_target["expected_baseline"] = {
-            key: ordinary[key] for key in ("category", "type", "content_kind")
-        }
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "content_kind ancient"):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [wrong_target]), catalog
@@ -2548,10 +2372,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             route_id,
             mode="replace",
             route_class="adapter",
-            dependencies=(
-                f"{prefix}.behavior.initial-options",
-                "non-card.event.flow.finish",
-            ),
             semantics={
                 "complete": True,
                 "condition": {"kind": "always", "parameters": {}},
@@ -2581,12 +2401,12 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 overrides.validate_project_override_manifest(project, "Proof"),
             )
 
-    def test_probe_adapter_fingerprint_and_implementation_fields_fail_closed(self) -> None:
+    def test_probe_adapter_and_implementation_fields_fail_closed(self) -> None:
         catalog = make_catalog()
         probe = make_operation(
             0,
             "card.probe",
-            route={"class": "probe", "id": "candidate.route", "fingerprint": None},
+            route={"class": "probe", "id": "candidate.route"},
         )
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "unlisted probe"):
             overrides.validate_override_manifest(
@@ -2616,15 +2436,15 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         adapter = make_operation(
             0,
             "card.adapter",
-            route={"class": "adapter", "id": "card.on-play", "fingerprint": "d" * 64},
+            route={"class": "adapter", "id": "card.on-play", "fingerprint": "c" * 64},
         )
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "fingerprint drift"):
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "fingerprint is not written"):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [adapter]),
                 catalog,
                 allow_unlisted_operations=True,
             )
-        adapter["route"]["fingerprint"] = "c" * 64
+        del adapter["route"]["fingerprint"]
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "unknown adapter operation"):
             overrides.validate_override_manifest(
                 manifest_with(catalog, [adapter]),
@@ -2677,11 +2497,6 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "requires"):
             overrides.validate_override_manifest(manifest_with(catalog, [missing_delta]), catalog)
 
-        no_upgrades = copy.deepcopy(card)
-        no_upgrades["expected_baseline"]["properties"].pop("upgrade_levels")
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "upgrade_levels"):
-            overrides.validate_override_manifest(manifest_with(catalog, [no_upgrades]), catalog)
-
         second = copy.deepcopy(card)
         second["order"], second["operation_id"] = 1, "wisp.cards-again"
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "conflicting operations"):
@@ -2705,24 +2520,15 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "vanilla description key"):
             overrides.validate_override_manifest(manifest_with(catalog, [title_key]), catalog)
 
-        drifted = copy.deepcopy(card)
-        drifted["expected_baseline"]["description_localization"]["localized_descriptions"][
-            "eng"
-        ] = "Draw a card."
-        with self.assertRaisesRegex(overrides.VanillaOverrideError, "baseline drift"):
-            overrides.validate_override_manifest(manifest_with(catalog, [drifted]), catalog)
-
         twice = copy.deepcopy(card)
         twice["order"], twice["operation_id"] = 1, "wisp.text-again"
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "conflicting operations"):
             overrides.validate_override_manifest(manifest_with(catalog, [card, twice]), catalog)
 
         no_description = enable_card_family(make_catalog())
-        bare = copy.deepcopy(card)
-        bare["expected_baseline"].pop("description_localization")
         with self.assertRaisesRegex(overrides.VanillaOverrideError, "no vanilla description"):
             overrides.validate_override_manifest(
-                manifest_with(no_description, [bare]), no_description
+                manifest_with(no_description, [card]), no_description
             )
 
     def test_project_description_replacement_requires_resolvable_text(self) -> None:
@@ -2765,6 +2571,41 @@ class VanillaOverrideManifestTests(unittest.TestCase):
             write("fra", "")
             with self.assertRaisesRegex(overrides.VanillaOverrideError, "fra/cards.json"):
                 validate()
+
+    def test_vanilla_keys_in_project_tables_are_checked_without_an_operation(self) -> None:
+        """A shipped vanilla key replaces the vanilla text, declared or not."""
+        catalog = make_text_catalog()
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp)
+            catalog_path = project / "catalog.json"
+            catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+
+            def write(language: str, table: dict) -> None:
+                folder = project / "Proof" / "localization" / language
+                folder.mkdir(parents=True, exist_ok=True)
+                (folder / "cards.json").write_text(json.dumps(table), encoding="utf-8")
+
+            def validate() -> str:
+                return overrides.validate_project_override_manifest(
+                    project, "Proof", catalog_path=catalog_path
+                )
+
+            write("eng", {"PROOF_CARD.title": "Proof", "LOST_WISP.description": "Draw a card."})
+            write("zhs", {"PROOF_CARD.title": "证明"})
+            with self.assertRaisesRegex(
+                overrides.VanillaOverrideError, "vanilla description of CARD.LOST_WISP"
+            ):
+                validate()
+            write("zhs", {"PROOF_CARD.title": "证明", "LOST_WISP.description": "抽{Block}张牌。"})
+            with self.assertRaisesRegex(overrides.VanillaOverrideError, "cannot resolve: Block"):
+                validate()
+            write("zhs", {"PROOF_CARD.title": "证明", "LOST_WISP.description": "抽1张牌。"})
+            self.assertIn("text_replacements=1", validate())
+
+            manifest_path = project / overrides.MANIFEST_RELATIVE_PATH
+            manifest_path.parent.mkdir(parents=True)
+            manifest_path.write_text(json.dumps(manifest_with(catalog, [])), encoding="utf-8")
+            self.assertIn("text_replacements=1", validate())
 
 
     def test_title_replacement_uses_the_vanilla_title_key(self) -> None:
@@ -3026,12 +2867,11 @@ public static partial class MainFile
             summary = overrides.validate_project_override_manifest(project, "Proof")
             self.assertIn("operations=0", summary)
 
-    def test_projects_without_an_override_manifest_have_no_overrides(self) -> None:
+    def test_projects_without_an_override_manifest_have_no_override_operations(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            self.assertIn(
-                "no vanilla overrides",
-                overrides.validate_project_override_manifest(Path(tmp), "Proof"),
-            )
+            summary = overrides.validate_project_override_manifest(Path(tmp), "Proof")
+            self.assertIn("no vanilla override operations", summary)
+            self.assertIn("text_replacements=0", summary)
 
     def test_build_stops_before_msbuild_on_an_invalid_override_manifest(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

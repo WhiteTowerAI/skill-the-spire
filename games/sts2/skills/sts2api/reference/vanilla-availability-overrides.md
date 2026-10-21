@@ -37,8 +37,8 @@ own grounded route.
 
 ## Epoch manifest
 
-The public route uses category-specific surface `<category>.epoch_gate`, a null
-fingerprint, and state `require_epoch`:
+The public route uses category-specific surface `<category>.epoch_gate` and state
+`require_epoch`:
 
 ```json
 {
@@ -49,13 +49,7 @@ fingerprint, and state `require_epoch`:
   "surface": "card.epoch_gate",
   "route": {
     "class": "public",
-    "id": "availability.epoch.require",
-    "fingerprint": null
-  },
-  "expected_baseline": {
-    "category": "CARD",
-    "type": "MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad",
-    "content_kind": "card"
+    "id": "availability.epoch.require"
   },
   "semantics": {
     "state": "require_epoch",
@@ -89,23 +83,18 @@ filters below), never to the Mod-owned whole-pool helpers.
 
 Relic and Potion use the same semantic object, but their route class is `adapter`. State
 `require_epoch` carries a pinned `epoch_id`; state `disabled` requires `epoch_id: null`.
-The primary route fingerprint and all six sorted character/shared override dependencies
-must match the catalog. For example, a Relic route includes:
+The manifest names only the route, `{"class": "adapter", "id": "availability.relic.epoch-gate"}`;
+Build derives the six character/shared override Adapters it depends on and checks them
+against the catalog. The Relic primary and dependency ids are:
 
-```json
-{
-  "class": "adapter",
-  "id": "availability.relic.epoch-gate",
-  "fingerprint": "dca9123b8b3be8c27ce197513801232e0a640fa673f4ee314dbdeb3c39619ba1",
-  "dependencies": [
-    {"id": "availability.relic.epoch-gate.defect", "fingerprint": "b01ea54ca8727c2fe76cccd5f7ab6787bc8d029ba491443adfb96b0aff3ddc98"},
-    {"id": "availability.relic.epoch-gate.ironclad", "fingerprint": "a4e14f2271c3df24593bca6118137ceaaceb24dae34d1e2a0b71f895155c0b11"},
-    {"id": "availability.relic.epoch-gate.necrobinder", "fingerprint": "8b8c7559b12baadb0f5248c0649932e7081c39ce81ab605fff8536795054fce9"},
-    {"id": "availability.relic.epoch-gate.regent", "fingerprint": "5012519dcf514196cecd9565853ca78649d17fb6e02f2f56868fdef56b4d90cf"},
-    {"id": "availability.relic.epoch-gate.shared", "fingerprint": "37e2b57af7e86019b5af9923b946411fd0fa5b33d148d6ac9635611909358058"},
-    {"id": "availability.relic.epoch-gate.silent", "fingerprint": "60108f1b02458188337f1b5bb937b7afce9d535f923afe87553380e436eecef1"}
-  ]
-}
+```text
+availability.relic.epoch-gate
+availability.relic.epoch-gate.defect
+availability.relic.epoch-gate.ironclad
+availability.relic.epoch-gate.necrobinder
+availability.relic.epoch-gate.regent
+availability.relic.epoch-gate.shared
+availability.relic.epoch-gate.silent
 ```
 
 The Potion primary and dependency ids are:
@@ -171,8 +160,8 @@ and fail Mod load when `PatchAll()` fails. Do not add another host method from p
 
 ## Pool manifest
 
-Pool operations use `<category>.pool_membership`. `expected_baseline.sources` copies the
-complete original membership list from the catalog. `existing_instances` is always
+Pool operations use `<category>.pool_membership`. Build reads the target's original
+membership list from the catalog. `existing_instances` is always
 `preserve`; the route changes future pool enumeration and never removes a Card from a
 deck, a Relic from inventory, or a Potion from a belt/save.
 
@@ -187,13 +176,7 @@ Public add records only a destination:
   "surface": "card.pool_membership",
   "route": {
     "class": "public",
-    "id": "availability.card.pool-add",
-    "fingerprint": null
-  },
-  "expected_baseline": {
-    "category": "CARD",
-    "type": "MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad",
-    "sources": {"card_pools": ["CARD_POOL.IRONCLAD_CARD_POOL"]}
+    "id": "availability.card.pool-add"
   },
   "semantics": {
     "action": "add",
@@ -217,14 +200,9 @@ vanilla type: those registries prime Mod ownership and would corrupt the vanilla
 contract.
 
 Adapter `remove` has `source_pool_model_id`; `move` has both source and destination. Move
-lowers as the public destination add plus the fixed source filter. The route fingerprints
-are:
-
-```text
-availability.card.pool-membership   34a9ad59b7a7c2d05b312f2ba515969d3e78e09f903b0180025afeecb6a652d9
-availability.relic.pool-membership  3d6c4629d05021df4baeb0aed24b59c8af2d25bd8170194f28eac9fad9bd170b
-availability.potion.pool-membership c1ea2c083548614d1ec4a46c49c67a8db9720361d3826a67c8166a4b26cc967b
-```
+lowers as the public destination add plus the fixed source filter. The Adapter routes are
+`availability.card.pool-membership`, `availability.relic.pool-membership`, and
+`availability.potion.pool-membership`.
 
 Each fixed patch targets only `CardPoolModel.AllCards`, `RelicPoolModel.AllRelics`, or
 `PotionPoolModel.AllPotions` and filters a validated set of exact `(pool ModelId, content

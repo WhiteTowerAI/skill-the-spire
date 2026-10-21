@@ -7,7 +7,7 @@ availability.
 
 The checked catalog lists route family `non-card-data-behavior` as authorable. Its assembly identity
 is the one in `vanilla-overrides.md`; the catalog contains 1624 models and 4165 reviewed
-Adapter fingerprints. Of those Adapters, 4141 ground target-specific non-Card methods and
+Adapters. Of those, 4141 ground target-specific non-Card methods and
 four ground shared stream/flow boundaries. Every hook, data, and body operation is
 `multiplayer: singleplayer`.
 A prompt selects a
@@ -55,17 +55,17 @@ model, the same plan carries its text operation:
 
 `relic.description.localization` and `potion.description.localization` replace the vanilla
 `<ENTRY>.description` exactly like `card.description.localization`: `mode: replace`, surface
-`relic.description_text` or `potion.description_text`, baseline `category`, `type`, and
-`description_localization` with its key and vanilla `eng`/`zhs` text, and semantics
+`relic.description_text` or `potion.description_text`, and semantics
 `{"localization": {"table": "relics" | "potions", "key": "<ENTRY>.description"}}`. The Mod
 ships that key in `<ModName>/localization/<lang>/relics.json` or `potions.json` for `eng`,
 `zhs`, and every other shipped language. The text may reference the model's own
 `DynamicVars` and the variables the vanilla text already uses; Build rejects any other.
 The replacement is global, unshipped languages keep the vanilla text, and a later-loaded Mod
-replacing the same key wins.
+replacing the same key wins. As for Cards, shipping the key is the whole route; Build checks
+every vanilla key in the Mod's tables whether or not the manifest declares it.
 
 `relic.vars.base` sets one vanilla Relic variable: `mode: adjust`, surface
-`relic.dynamic_vars`, baseline `properties.dynamic_vars`, and semantics
+`relic.dynamic_vars`, and semantics
 `{"variable": "<Name>", "base_value": <number>}`. Assign it on the canonical Relic in a
 `ModelRegistryInitializedEvent` handler, as for Cards; every obtained Relic clones it:
 
@@ -136,8 +136,8 @@ are not substitutes for the ordinary global Orb hook methods in the list below.
 
 ### Hook rule manifest
 
-Every compose operation uses surface `<category>.owner_hooks`, a public route with no
-fingerprint, and one rule:
+Every compose operation uses surface `<category>.owner_hooks`, a public route, and one
+rule:
 
 ```json
 {
@@ -145,8 +145,7 @@ fingerprint, and one rule:
   "surface": "relic.owner_hooks",
   "route": {
     "class": "public",
-    "id": "behavior.relic.owner-hooks",
-    "fingerprint": null
+    "id": "behavior.relic.owner-hooks"
   },
   "semantics": {
     "multiplayer": "singleplayer",
@@ -191,7 +190,8 @@ Await every Cmd in an asynchronous callback and preserve the selected rule order
 
 `mode: replace` means the vanilla owner is removed from its run/combat hook streams and the
 generated capabilities become the complete selected rule set. It requires `complete: true`
-and a `rules` list. Relic and Potion require both shared dependencies:
+and a `rules` list. Build derives the shared Adapters it depends on; for Relic and Potion
+they are both streams:
 
 ```text
 non-card.owner-hook-stream.run
@@ -292,9 +292,9 @@ semantic id. Do not infer overloads from another STS2 version.
 
 ## Intrinsic data routes
 
-Every data operation uses `mode: adjust`, `surface` equal to its route id, a target-specific
-Adapter fingerprint, the cataloged current property in `expected_baseline.properties`, and
-`multiplayer: singleplayer`.
+Every data operation uses `mode: adjust`, `surface` equal to its route id, route class
+`adapter`, and `multiplayer: singleplayer`. Build reads the current property from the
+catalog.
 
 | Route | Values |
 |---|---|
@@ -321,14 +321,13 @@ because many concrete types inherit one base implementation, then dispatch by ex
 getter result. Pass every unselected model unchanged. Do not patch backing fields, mutate
 canonical instances, or assume one Adapter id means one unique CLR method.
 
-The validator checks the exact target-specific Adapter id:
-`non-card.<lowercase-model-id-with-dashes>.<route-suffix>`. Its fingerprint is copied from
-the catalog, never written from memory.
+The validator derives and checks the exact target-specific Adapter id,
+`non-card.<lowercase-model-id-with-dashes>.<route-suffix>`, against the catalog.
 
 ## Complete lifecycle and body replacement
 
-Every route below uses `mode: replace`, `complete: true`, exact target type/category
-baseline, and all target-specific dependencies named by the catalog.
+Every route below uses `mode: replace` and `complete: true` on a target of the listed
+category; Build derives the target-specific Adapters named by the catalog.
 
 | Route | Semantic body | Required target suffixes |
 |---|---|---|
@@ -382,7 +381,7 @@ preserves the complete vanilla initial body.
 
 Each option has visible/enabled conditions, one fixed Gold/HP/Max HP/no cost,
 `disable_on_chosen: true`, `is_proceed: false`, ordered outcomes, and `stay`, `page`, or
-`finish`. `page` requires the shared fingerprinted `SetEventState` dependency. `finish`
+`finish`. `page` uses the shared fixed `SetEventState` Adapter. `finish`
 requires `SetEventFinished`; use the selected option description as the final description
 and let the native method own cleanup. The complete graph must have no unreachable page
 and at least one finish path.

@@ -75,8 +75,8 @@ not invent a Monster route from `MonsterAssetProfile`, which belongs to new Mod 
 ## Manifest resources
 
 The checked catalog promotes `public-visual-overrides`. Every operation uses mode
-`visual`, the matrix surface, exact category/type/content-kind baseline, and one Mod-owned
-resource. For example:
+`visual`, the matrix surface, a target of the matrix category and content kind, and one
+Mod-owned resource. For example:
 
 ```json
 {
@@ -87,13 +87,7 @@ resource. For example:
   "surface": "relic.icon",
   "route": {
     "class": "public",
-    "id": "visual.relic.icon-texture",
-    "fingerprint": null
-  },
-  "expected_baseline": {
-    "category": "RELIC",
-    "type": "MegaCrit.Sts2.Core.Models.Relics.LostWisp",
-    "content_kind": "relic"
+    "id": "visual.relic.icon-texture"
   },
   "semantics": {
     "resource": {

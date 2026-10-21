@@ -2,7 +2,7 @@
 
 Use this reference after `vanilla-overrides.md` resolves an exact `EVENT.*` target with
 `content_kind: ancient`. They
-support both public initial-option append and one reviewed, fingerprinted initial-option
+support both public initial-option append and one reviewed, fixed initial-option
 replacement Adapter while preserving the vanilla model, room, dialogue, save identity,
 and Ancient choice-history lifecycle.
 
@@ -68,23 +68,7 @@ use `source: mod` for a model registered by the generated Mod.
   "surface": "ancient.initial_options",
   "route": {
     "class": "adapter",
-    "id": "ancient.initial-options.replace",
-    "fingerprint": "7645a9eea1118c340449e339ede4ce15169c72bed29a196990d8824bbdf12ca5",
-    "dependencies": [
-      {
-        "id": "ancient.flow.finish",
-        "fingerprint": "04fef98282aa7e01fbab7934c6f15ca5969b3029c32d4e83ae0ad3636dfcd060"
-      },
-      {
-        "id": "ancient.flow.set-state",
-        "fingerprint": "3a93f71ad25d06ad1470da740b5a4bc9095f8dbdb1c6f9d48fed397c0ce1c7b6"
-      }
-    ]
-  },
-  "expected_baseline": {
-    "category": "EVENT",
-    "type": "MegaCrit.Sts2.Core.Models.Events.Darv",
-    "content_kind": "ancient"
+    "id": "ancient.initial-options.replace"
   },
   "semantics": {
     "condition": {"kind": "always", "parameters": {}},
@@ -140,13 +124,11 @@ use `source: mod` for a model registered by the generated Mod.
 }
 ```
 
-Dependencies are semantic, not an escape hatch. Include exactly the sorted Adapter ids
-required by the selected next steps: `page` requires `ancient.flow.set-state`; `finish`
-requires `ancient.flow.finish`. Replacement additionally owns the route fingerprint.
-Omit `dependencies` only when every option stays on its current page. Do not add method
-names, patch bodies, reflection, or arbitrary IL to the manifest.
+Build derives the fixed flow Adapters from the selected next steps: `page` uses
+`ancient.flow.set-state` and `finish` uses `ancient.flow.finish`. Do not write them, method
+names, patch bodies, reflection, or arbitrary IL into the manifest.
 
-Append uses the same semantics with public class, null route fingerprint, `mode: compose`,
+Append uses the same semantics with public class, `mode: compose`,
 and public rule priority/dedup values. Replacement must use priority `0` and
 `skip_duplicate_text_keys: false`, because those fields belong to RitsuLib's append
 registry. Multiple append rules compose. One replacement conflicts with every append or
@@ -235,8 +217,8 @@ if (!patcher.PatchAll())
 ```
 
 This is the only generated Harmony route in the feature family. Do not derive another patch from
-prompt text. The manifest/catalog validator owns exact target, signature, IL fingerprint,
-operation name, and conflict checks before authoring.
+prompt text. The manifest/catalog validator owns exact target, route, flow Adapter, and
+conflict checks before authoring.
 
 ## Options, costs, and pages
 
@@ -287,7 +269,7 @@ private static extern void SetAncientState(
   BuildPageOptions(ancient))`;
 - `finish`: call `FinishAncient(ancient)` exactly once.
 
-These UnsafeAccessor calls are the two fingerprinted flow dependencies. They are fixed,
+These UnsafeAccessor calls are the two fixed flow Adapters. They are fixed,
 source-generated access to protected members, not reflection, Publicizer, retained method
 names from a prompt, or arbitrary IL.
 
@@ -346,8 +328,8 @@ private state. New Ancient models, global native dialogue replacement, line audi
 randomized outcomes/RNG rewrites, special combat, direct merchant/rest/treasure
 transitions, and multiplayer remain outside this route.
 
-A focused manifest/localization test, a static signature/fingerprint check, and a
-representative compile establish the manifest and the build, nothing more. Real Ancient room
+A focused manifest/localization test and a representative compile establish the manifest
+and the build, nothing more. Real Ancient room
 behavior, choice history, locked/tip/relic presentation, page selectors, reward overlays, and
 visual composition are proved only by observing them in a real Ancient room. An accepted
 manifest or a successful compilation is not real-host proof.
