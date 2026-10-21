@@ -99,9 +99,9 @@ except ImportError:
 #         per call with --chroma / --no-chroma.
 # ---------------------------------------------------------------------------
 # NOTE: RitsuLib's `CardAssetProfile.PortraitPath` resolves
-# card_portraits/<slug>.png. A normal card is 1000×760 landscape; 606×852 "full art" is
-# Ancient-rarity only
-# and we don't make Ancient cards (see reference/art-contract.md).
+# card_portraits/<slug>.png. A normal card is 1000×760 landscape (`card`). An Ancient-rarity
+# card uses the full-card layout and a 606×852 portrait (`card_ancient`), the size of every
+# vanilla Ancient portrait in the 0.107.1 PCK (see reference/art-contract.md).
 #
 # relic/power/potion: RitsuLib's asset profiles accept loose PNGs and retain checked
 # fallbacks. Relic and power use small + big icons; potion uses one 256×256 icon. A relic also
@@ -128,6 +128,7 @@ except ImportError:
 # Missing files retain RitsuLib's checked fallback. Power has no outline; beta paths stay null.
 SPECS: dict[str, dict] = {
     "card":       {"sub_path": "card_portraits",       "extra_sub_paths": [],             "size": (1000, 760), "verified": True,  "fit": "cover",   "chroma": False},
+    "card_ancient": {"sub_path": "card_portraits",     "extra_sub_paths": [],             "size": (606, 852),  "verified": True,  "fit": "cover",   "chroma": False},
     "relic":      {"sub_path": "relics",               "extra_sub_paths": ["relics/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "power":      {"sub_path": "powers",               "extra_sub_paths": ["powers/big"], "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},
     "potion":     {"sub_path": "potions",              "extra_sub_paths": [],             "size": (256, 256),  "verified": True,  "fit": "contain", "chroma": True},

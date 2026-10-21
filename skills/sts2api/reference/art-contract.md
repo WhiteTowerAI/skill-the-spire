@@ -82,23 +82,31 @@ res://<ModName>/images/<sub-path>/<slug>.png
   `.pck` rebuild (PckPacker / `build.py`) — a plain `dotnet build` of code alone won't
   pick it up. (Same rule as localization; see `../modmaker/build.md`.)
 
-## The contract — the ONE card portrait (read this carefully — the folder name lies)
+## The contract — one card portrait, sized by rarity (read this carefully — the folder name lies)
 
-**A card has exactly one portrait the game actually loads, and it is 1000×760.**
-Source-verified against the decompile after a live in-game run (do not re-derive):
+**A card has exactly one portrait the game actually loads. Its rarity picks the shape.**
+Source-verified against the decompile after live in-game runs (do not re-derive):
 
-- RitsuLib's `CardAssetProfile.PortraitPath` resolves the card texture path.
+- RitsuLib's `CardAssetProfile.PortraitPath` resolves the card texture path
   `images/card_portraits/<slug>.png`; omit the profile to retain the checked placeholder
-  fallback. A normal card's portrait is
-  **1000×760 landscape**. The 606×852 "full art" size is **Ancient-rarity only** (a
-  different card layout / UI slot — `NCard.cs` switches on `Rarity == CardRarity.Ancient`).
-  **We only make normal cards, so we only ever produce 1000×760.** Putting a 606×852
-  (portrait-shaped) image there feeds a vertical picture into a landscape slot → it looks
-  distorted in-game.
+  fallback.
+- Every rarity except Ancient uses the normal layout: a **1000×760 landscape** portrait in the
+  window above the text box (spec `card`).
+- `CardRarity.Ancient` switches `NCard` to the full-card layout: the portrait fills the whole
+  card face behind an Ancient border, title banner, and type-specific text background. All 18
+  vanilla Ancient portraits in the 0.107.1 PCK are **606×852**, and that is the only shape
+  to make for one (spec `card_ancient`). In-game, the title banner covers about the top 3-14%
+  of the image and a dark translucent text panel covers about 46-93%; the subject belongs in
+  the clear band between them. Its prompt template is § The Ancient card portrait prompt
+  template.
+- Make the shape the rarity asks for. A landscape image on an Ancient card is center-cropped
+  and loses about half its width; that is how the checked 1000×760 placeholder appears there,
+  and it is still the accepted no-art fallback. Never put a 606×852 image on a normal card.
 
 | spec | file(s) written (under `images/`) | size | notes |
 |------|-----------------------------------|------|-------|
-| `card` | `card_portraits/<slug>.png` | **1000×760 landscape** (profile contract) | **the only card portrait to make** — normal-rarity cards |
+| `card` | `card_portraits/<slug>.png` | **1000×760 landscape** (profile contract) | every card rarity except Ancient |
+| `card_ancient` | `card_portraits/<slug>.png` | **606×852 portrait** (verified live) | `CardRarity.Ancient` cards only; full-card art |
 | `relic` | `relics/<slug>.png` **+** `relics/<slug>_outline.png` **+** `relics/big/<slug>.png` | **256×256** | cut-out main/big icons plus deterministic outline; all three paths verified live |
 | `power` | `powers/<slug>.png` **+** `powers/big/<slug>.png` | **256×256** (verified live) | cut-out icon; **two files** — see below. No outline file |
 | `potion` | `potions/<slug>.png` | **256×256** (verified live) | cut-out icon; **ONE file** — bar/hover/use all reuse the same texture, no `big/`. Tilt ~45° right (see below) |
@@ -142,7 +150,7 @@ leaves the other on the placeholder:
   hosted headed run confirmed the custom framing and missing-art Heal fallback.
 `gen_sprite.py` writes the same normalized image to every path a spec needs, so you don't
 manage them by hand. The RitsuLib Card profile uses the single
-`card_portraits/<slug>.png` path.
+`card_portraits/<slug>.png` path for both card specs.
 
 **Why these icon specs take a loose `.png` (no `.tres` authoring).** Vanilla STS2 loads every icon
 family from Godot `.tres` sprite-atlases (`atlases/relic_atlas.sprites/…`, `power_atlas`,
@@ -156,7 +164,8 @@ Enchantment and Orb profiles likewise accept a loose PNG directly; omit the prof
 the checked fallback.
 
 **Sizes.** All 324 vanilla relic + 271 power + 63 potion icons extracted from the game are a
-uniform **256×256**. A normal card portrait is 1000×760, a normal enchantment icon 64×64, and
+uniform **256×256**. A normal card portrait is 1000×760, an Ancient card portrait 606×852, a
+normal enchantment icon 64×64, and
 a normal orb icon 100×100; the orb size does not cover a custom combat scene. Static monsters
 use a skill-the-spire **360×360 profile**: unlike the atlas-backed icons, this is a chosen
 consistent render footprint rather than an engine-mandated source size. RitsuLib renders it
@@ -175,9 +184,6 @@ reserves the same 8-pixel inset on the fitted dimension before deriving the outl
 the expansion stays inside the unchanged 256x256 canvas. The main and big files remain
 identical to each other and no acquisition call is made. RitsuLib checks the custom path and
 retains the template outline fallback when it is absent. `power` has no outline.
-
-Ancient-rarity full art (606×852) is intentionally **out of scope** — we don't make
-Ancient cards.
 
 ## Character art
 
@@ -341,8 +347,10 @@ style" are near-noise to it (it's a niche game). Getting a usable, non-jarring p
 needs the style supplied explicitly. Two layers, use both when possible:
 
 **Layer 1 — the style descriptor (always, text-only, zero dependencies).** Prepend this
-fixed descriptor to every card-portrait prompt. It encodes STS2's actual card art
-language (distilled from the game's own portraits):
+fixed descriptor to every normal card-portrait prompt (`card`). It encodes STS2's actual card art
+language (distilled from the game's own portraits). An Ancient card (`card_ancient`) has its own
+descriptor in § The Ancient card portrait prompt template, because its art differs in both
+shape and style:
 
 ```
 Original splash art for a deck-building card game. If reference images are provided,
@@ -371,7 +379,8 @@ border, card frame, UI, or watermark.
 **Layer 2 — few-shot reference images (when the acquisition route supports them, much
 stronger).**
 Pass `--reference <sts2api>/reference/art-samples` to `gen_sprite.py generate` — always the
-**root** samples dir, not a subdir. It contains `card/` (18 portraits), `relic/` (6 icons),
+**root** samples dir, not a subdir. It contains `card/` (18 portraits), `card_ancient/` (the
+Apotheosis, Forbidden Grimoire, and Meteor Shower full-card portraits), `relic/` (6 icons),
 `power/` (6 icons), `potion/` (6 icons), `enchantment/` (20 normal 64x64 icons), `orb/`
 (5 non-empty icons), `monster/` (the Axebot, Ceremonial Beast, and Crossbow Ruby Raider
 renders), `event/` (six reviewed wiki.gg previews), `rest_site_option/` (Rest, Smith, and
@@ -385,7 +394,7 @@ marker/energy use icon, merchant and the combat cue sheet use combat, and rest u
 background uses its own
 wide selection-scene pool. A missing
 same-name directory never falls back to another content family's images.
-Monster's fixed three are always all supplied.
+Monster's and Ancient card's fixed three are always all supplied.
 Never mix families merely to fill the reference list; their visual languages differ.
 
 The Images transport sends the selected files as multipart `image[]` inputs to
@@ -504,6 +513,63 @@ direction, distilled from the vanilla references:
   baseline and the entire silhouette inside the frame; fill about 85-90%. No floor, cast
   shadow, background prop, attack streak, spell burst, or other animation-like moment.
   This one still serves combat and bestiary.
+
+## The Ancient card portrait prompt template
+
+An Ancient card's art fills the whole card, so it is a tall poster, not the normal close-up.
+Vanilla Ancient art shows one legendary subject whole in the upper half of a simple, deep
+environment, painted as large flat color fields with a strong vertical gradient; the lower
+half sits under the text panel and stays quiet. Use the same three segments as the normal
+card, with these outer segments, and pass the root samples dir so the three `card_ancient/`
+references go with every call:
+
+```
+[① fixed Ancient style prefix]:
+   Original full-card splash art for the rarest cards of a deck-building card game: a tall
+   vertical poster, not a close-up. If reference images are provided, treat them as STYLE
+   REFERENCE ONLY — match their art style, rendering technique, palette logic, composition,
+   and energy precisely, but do NOT reuse their objects, characters, or layout; invent a new
+   subject.
+
+   Bold 2D game illustration with a mythic, monumental mood: big simplified shapes,
+   hard-edged cel shading, crisp dark outlines on the focal subject, high contrast and
+   saturated color. The subject is hand-painted, not flat vector clip art: it carries rich
+   material detail (feathers, scales, cracked stone, worn metal, cloth folds) and painted
+   highlight shapes, while the background stays simple. One legendary subject (a figure,
+   creature, relic, or force) is shown whole in a dramatic pose or motion, large enough to
+   span about two thirds of the width, placed high with its center about one third of the
+   way down, inside a simple stylized environment that gives depth: sky, distant peaks,
+   rock, a rift of light, or a ritual floor. The background is one dominant hue in a smooth vertical gradient or a few
+   large angular color fields, and it runs to every edge of the image; the subject and its
+   glow carry one or two accent colors. Angular shards, a radiating burst, or sweeping
+   curved shapes may frame the subject. The lower half continues the scene as darker,
+   low-detail ground or sky with no second subject.
+
+   NOT photorealistic, NOT a 3D render, NOT pixel art. No text, letters, runes, glyphs,
+   numbers, logos, border, card frame, UI, or watermark.
+[② generated subject]    ← the same name-to-picture rule as the normal card above
+[③ fixed structural/negative constraints]:
+   A single {subject}, shown whole and large in a tall portrait (about 5:7). Place it
+   high: its center is about one third of the way down from the top edge, and its key
+   part (head, face, blade, glowing core, point of impact) stays above the middle of the
+   image and away from the side edges. Nothing the picture needs sits below the middle.
+   The scene fills the entire canvas to every edge: no blank band, frame, or letterbox at
+   the top or bottom. The lower half is a quiet, darker continuation of the background
+   (ground, water, cloud, or shadow) with no important detail.
+   No text, no border, no card frame, no UI, no watermark.
+   NOT photorealistic, NOT 3D render, NOT pixel art.
+```
+
+Write segment ② as for a normal card, from the name, but as the legendary version of that
+subject and with its setting: *"A colossal sea-king of green bronze rises from black water,
+arms spread, a crown of drowned light above his head; teal fog rolls around him and a
+pale-green gradient sky fades to deep teal below."* (for **"Sunken Sovereign"**). Do not
+reuse the normal card's "large and close up, landscape ~4:3" wording: it pushes the subject
+off the card and into the text panel.
+
+`gen_sprite.py` requests the closest supported tall ratio and `cover`-crops it to 606×852.
+Judge an Ancient portrait in the real game, not as a flat image, because the title banner and
+text panel hide parts of it.
 
 ## The relic prompt template
 
@@ -794,6 +860,7 @@ python ../modmaker/scripts/gen_sprite.py import \
 # enchantment/orb/monster and transparent Character profiles) are keyed, card/event/
 # Rest Site/selection/background stay opaque. --chroma / --no-chroma override it.
 # Keep the raw source on a perfectly flat #FF00FF background until this import step.
+# An Ancient-rarity Card uses --spec card_ancient (606×852) in place of --spec card.
 # For each selected normal-event slot use --spec event; it writes events/<slot-slug>.png.
 
 # backend:<name> — after the batch approval that lists this asset (or a regeneration's
