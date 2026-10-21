@@ -22,7 +22,7 @@ Record a concrete failure as the smallest known limitation.
 
 ## Runtime Lookup Order
 
-1. Read the selected surface page and recipe.
+1. Read the selected element recipe.
 2. Read only the referenced mechanics, state, presentation, art, or self-test page, and the
    shipped catalogs under `reference/catalogs/` when they cover the symbol.
 3. Check `errors.md` for an exact failure signature.

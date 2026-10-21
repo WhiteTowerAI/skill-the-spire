@@ -58,13 +58,13 @@ identity. An ordinary operation needs no invented capability ID.
 
 ## Surface and capability ownership
 
-Read the selected page under `surfaces/` for its exact SPEC fields, authoring route, proof
-matrix, known limitations, and manual fallback. Use targeted `sts2api` references for the
+Read the selected recipe under `${STS2API_SKILL_DIR}/recipes/` for its exact SPEC fields,
+authoring route, proof matrix, known limitations, and manual fallback. Use targeted `sts2api` references for the
 selected operation. In particular:
 
 - Card, Relic, Potion, Power, Orb, Enchantment, Monster/Encounter, Event, Character, Keyword,
   Affliction, Modifier, Global Effect, Rest Site, Act, Ancient, Reward, Card Pile, and Runtime UI
-  inputs live in their matching surface page.
+  inputs live in their matching recipe.
 - Secondary resources use `reference/character-resource.md`.
 - Computed Card values use `reference/card-computed-values.md`.
 - Bounded state uses `reference/stateful-mechanics.md`.

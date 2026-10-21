@@ -1,28 +1,107 @@
 # Recipe: Custom Monsters and Encounters
 
-> A grounded pattern for fought enemies in STS2. Monsters and Encounters are separate
-> registered nodes joined by explicit roster edges. Author the selected reachable graph
-> together and prove only the concrete Encounter variants selected by the current SPEC through
-> `CombatEnemy`. A Monster that only registers proves too little.
+Everything selected fought enemies need: the SPEC graph, the classes, their text and art, and the
+`CombatEnemy` proof. Monsters and Encounters are separate registered nodes joined by explicit
+roster edges. Author the selected reachable graph as one slice and prove only the concrete
+Encounter variants the current SPEC selects. A Monster that only registers proves too little.
 
 ## Reachability graph
 
-The player never touches a `MonsterModel` directly. The reachable host is an **Encounter**:
-the map/room enters an Encounter, the Encounter generates its roster, and those Monsters take
-turns. One Monster may be reused by several Encounters, and one Encounter may spawn multiple
-or repeated Monster models. Register every selected node exactly once, list every canonical
-model that can appear in `AllPossibleMonsters`, and keep the current actual roster a nonempty
-subset. Registration without at least one grounded placement/roster edge is not reachability.
+The player never touches a `MonsterModel` directly. The reachable host is an **Encounter**: the
+map/room enters it, it generates its roster, and those Monsters take turns. One Monster may serve
+several Encounters, and one Encounter may spawn multiple or repeated Monster models. Register
+every selected node exactly once, list every canonical model that can appear in
+`AllPossibleMonsters`, and keep the actual roster a nonempty subset. A Monster without a grounded
+placement/roster edge is not reachable.
 
-## Registration (one explicit RitsuLib content pack)
+## SPEC fields
 
-- **Monster:** subclass `STS2RitsuLib.Scaffolding.Content.ModMonsterTemplate` and register
-  it once with `.Monster<TMonster>()`.
-- **Encounter:** subclass `ModEncounterTemplate`, override `RoomType`, and register it once
-  with `.ActEncounter<TAct,TEncounter>()` for one act or `.GlobalEncounter<TEncounter>()`
-  for every act. `IsValidForAct` remains the runtime filter for global registrations.
-- Put every step in the scaffold's single `RegisterContent()` content pack. Do not add a
-  pool attribute, constructor auto-registration, or a second registry call.
+The scenario is `CombatEnemy`, not `CombatPlayer`; the tables are `monsters` + `encounters`;
+generated art is one static body shared by combat and bestiary. One `content:` block declares
+both node kinds so the edges stay explicit; it does not force a one-to-one pair.
+
+```markdown
+# SPEC — <Mod Name>
+
+- **mod id**: <stable mod identity>
+- **author**: <author>
+- **content**:
+  - surface: enemy encounter
+  - monsters: <one or more logical ids, names, positive min/max HP, moves, and branches>
+  - encounters: <one or more logical ids with nonempty actual and all-possible rosters>
+  - relations: <encounter -> ordered roster entries; repeated Monster ids are explicit>
+- **registration**:
+  - availability: standalone
+  - ownership: enemy
+  - placement: <plain-language encounter placement rule>
+  - valid acts: all | <Glory | Hive | Overgrowth | Underdocks>
+- **localization**:
+  - languages: [eng, zhs]
+  - fields: monster `name`, one `moves.<MOVE_ID>.title` per declared move; encounter
+    `title` and `loss`
+  - table intent: monsters + encounters
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`): names and move titles
+    plain Title Case; encounter `loss` names the foe as `[gold]{encounter}[/gold]`
+- **effects**:
+  - trigger: encounter move
+  - target: <per move>
+  - moves:
+    - id: <UPPER_SNAKE>
+      display name: <shown in the bestiary move list>
+      intents: <attack N | multi N x R | buff | debuff | defend | heal; list every visible intent>
+      effect: <ordered game-term effects with exact numbers and targets>
+      next: <move id | branch id>
+  - branches: none | <conditional branch with exhaustive conditions> |
+    <random branch with positive fixed weight and successor per target>
+  - loop: <deterministic move/branch cycle; every move and branch has a reachable successor>
+  - scaling: <named values and bounds, or none>
+- **hook participation**: none | one or more; see § Hook participation below
+- **state**:
+  - lifetime: combat
+  - owner: the spawned monster
+  - advance/check: the declared move/branch cycle
+  - reset: combat end
+  - persistence: none
+  - visible state: native intent display (a plan, not behavior proof)
+- **presentation**:
+  - assets: static monster body; placeholder | generate: <one full creature in a neutral
+    combat-ready pose>
+  - art source: host-tool | backend:<name> | local-image (generate only)
+  - native presentation: combat body plus default bestiary entry
+  - art boundary: one checked 360x360 static body shared by combat and bestiary; no
+    Spine/attack/hurt/death animation or separate phobia body
+- **fallback**:
+  - missing asset: explicit built-in creature-visuals scene
+  - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
+- **proof**:
+  - scenario: CombatEnemy
+  - driver: enter the custom encounter and end the turns needed to traverse the cycle
+  - invariants:
+    - the spawned roster matches the selected encounter's actual roster exactly, including
+      repetitions, and each monster's HP lies inside its declared range
+    - every advertised move id executes in the declared order
+    - self buff/custom Power: exact monster Power amount plus a later changed attack/result
+    - player debuff: exact player Power amount immediately after application
+    - block/heal: exact monster Block and HP deltas from a wounded pre-state
+    - multi-attack: observed hit-result count equals the repeat count
+    - composite action: every effect from the same move is observed
+  - boundary cases: each advertised branch outcome is forced by its real condition and observed
+- **adapter output** (written to MEMORY after acceptance): resolved monster and encounter
+  content ids, localization keys, monster body asset role, and framework diagnostic record
+```
+
+A one-move enemy may keep one self-looping move. A multi-move enemy fills the compact move
+contract below before authoring. An intent label shows what the Monster *plans*; it is never
+evidence the move resolved.
+
+## Registration (one explicit content pack)
+
+- **Monster:** subclass `ModMonsterTemplate`, registered once with `.Monster<TMonster>()`.
+- **Encounter:** subclass `ModEncounterTemplate`, override `RoomType`, and register once with
+  `.ActEncounter<TAct,TEncounter>()` for one Act or `.GlobalEncounter<TEncounter>()` for every
+  Act; `IsValidForAct` stays the runtime filter for global registrations.
+- Every step goes in the scaffold's single `RegisterContent()` content pack. No pool attribute,
+  constructor auto-registration, or second registry call.
 
 ```csharp
 RitsuLibFramework.CreateContentPack(MainFile.ModId)
@@ -37,229 +116,18 @@ RitsuLibFramework.CreateContentPack(MainFile.ModId)
 ## Required overrides
 
 **Monster** (`ModMonsterTemplate`):
-- `public override int MinInitialHp` / `MaxInitialHp` — set both (equal = deterministic HP).
-- `protected override MonsterMoveStateMachine GenerateMoveStateMachine()` — the move AI.
+- `MinInitialHp` / `MaxInitialHp`: set both (equal for deterministic HP).
+- `protected override MonsterMoveStateMachine GenerateMoveStateMachine()`: the move AI.
 
 **Encounter** (`ModEncounterTemplate`):
-- `public override RoomType RoomType => RoomType.Monster` — declare the room type on the
-  RitsuLib template rather than inferring it from registration.
-- `public override bool IsValidForAct(ActModel act)` — which acts it can appear in. Acts:
-  `Glory`, `Hive`, `Overgrowth`, `Underdocks` (namespace `MegaCrit.Sts2.Core.Models.Acts`).
-  `=> true` makes it valid everywhere (fine for a test; scope it for shipped content).
-- `public override IEnumerable<MonsterModel> AllPossibleMonsters` — canonical models:
-  `ModelDb.Monster<T>()`.
-- `protected override IReadOnlyList<(MonsterModel, string?)> GenerateMonsters()` — the actual
-  spawn list: `ModelDb.Monster<T>().ToMutable()` paired with a slot name (`null` slot is valid
-  for a minimal single-monster encounter — no custom encounter scene required).
-
-## Optional shared capability routes
-
-Keep attacks and other move behavior in the move graph. For a separable passive/state bundle on
-the Monster, read `reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
-`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
-response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Monster
-or typed capability and keep combat-scope owner/source guards, neutral behavior, and cleanup.
-
-## SPEC `hook participation`: a passive rule that is not a move
-
-A move is the monster acting on its turn. When SPEC declares `hook participation`, the engine is
-instead asking the monster for a number or a decision while resolving someone else's event — so
-"attacks against this creature deal 25% less damage" is participation, not a move and not a Power.
-Read `reference/model-hook-participation.md`.
-
-A Monster reaches the combat-scope set only. Its own body is `Creature`, **not** `Owner`: there is
-no owning Player, so a subject guard compares against `Creature` directly.
-
-```csharp
-public override decimal ModifyDamageMultiplicative(
-    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
-{
-    if (target != Creature) return 1m;            // SPEC `subject`: damage I receive
-    if (!props.IsPoweredAttack()) return 1m;      // SPEC `condition`
-    return 0.75m;
-}
-```
-
-Keep it out of the move state machine. A participation rule has no intent, no move id, and no
-bestiary title, and adding a move to represent it makes the intent UI advertise something the
-monster never performs.
-
-## Move state machine
-
-A monster's behavior is a `MonsterMoveStateMachine` of `MonsterState`s. The workhorse state
-is `MoveState`:
-
-```csharp
-new MoveState(
-    string stateId,                              // e.g. "PECK"
-    Func<IReadOnlyList<Creature>, Task> onPerform,  // the move body; targets = player creatures
-    params AbstractIntent[] intents)             // e.g. new SingleAttackIntent(6)
-```
-
-Set `moveState.FollowUpState = moveState` to loop a single move indefinitely. For several
-moves, give every move an explicit successor. A branch is itself a registered
-`MonsterState`, not a move/turn:
-
-```csharp
-return new MonsterMoveStateMachine(new MonsterState[] { peck }, peck);  // states, initial
-```
-
-`SingleAttackIntent(int damage)` (namespace `MegaCrit.Sts2.Core.MonsterMoves.Intents`) is the
-telegraphed-attack intent. The `MoveState`/`MonsterMoveStateMachine` types live in
-`MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine`.
-
-### Compact move contract
-
-Before writing C#, record one row per move: **id, visible intent(s), ordered effect(s), next
-state**, plus every branch condition. Intents communicate the action; they do not execute it.
-Every visible effect therefore needs both the matching intent and a real Cmd in the body.
-
-| Player-visible action | Intent(s) | Grounded body |
-|---|---|---|
-| self buff/custom Power | `new BuffIntent()` | `PowerCmd.Apply<T>(..., Creature, amount, Creature, null)` |
-| player debuff | `new DebuffIntent()` (often beside an attack intent) | `PowerCmd.Apply<T>(..., targets, amount, Creature, null)` |
-| defend | `new DefendIntent()` | `CreatureCmd.GainBlock(Creature, amount, ValueProp.Move, null)` |
-| heal | `new HealIntent()` | `CreatureCmd.Heal(Creature, amount)` |
-| multi-attack | `new MultiAttackIntent(damage, repeats)` | `DamageCmd.Attack(damage).WithHitCount(repeats).FromMonster(this).Execute(null)` |
-| attack + effect | list both intents, e.g. `SingleAttackIntent` + `DebuffIntent` | await the attack, then await the Power/block/buff Cmd in the declared order |
-
-The table projects move callbacks onto `reference/effect-primitives.md`; that shared reference
-owns the command contracts. This recipe owns Monster intent parity, state-machine ordering,
-`Creature`/`targets`, and the `.FromMonster(this).Execute(null)` distinction.
-
-Use the monster's mutable `Creature`, not a canonical model. For a player-targeted Power,
-the `targets` passed to the move are the player creatures. `ValueProp.Move` is the vanilla
-monster block convention. A custom Power follows `recipes/power.md` (including all three
-`powers.json` keys and no `[Pool]`). Attachment alone does not prove a buff: Tier 2 must
-observe its downstream effect, such as a later powered attack changing by its `Amount`.
-
-### Explicit cycles, conditional branches, and fixed-weight random branches
-
-This complete state-machine shape covers a deterministic cycle with both sides of a
-half-health branch. Replace names/numbers from SPEC; do not add a branch the design did not
-ask for:
-
-```csharp
-protected override MonsterMoveStateMachine GenerateMoveStateMachine()
-{
-    var muster = new MoveState("MUSTER", Muster, new BuffIntent());
-    var pressure = new MoveState("PRESSURE", Pressure,
-        new SingleAttackIntent(3), new DebuffIntent());
-    var flurry = new MoveState("FLURRY", Flurry,
-        new MultiAttackIntent(2, 2));
-    var guard = new MoveState("GUARD", Guard, new DefendIntent());
-    var recover = new MoveState("RECOVER", Recover,
-        new DefendIntent(), new HealIntent());
-    var healthBranch = new ConditionalBranchState("HEALTH_BRANCH");
-
-    // Ordered, exhaustive predicates: the first true branch wins.
-    healthBranch.AddState(guard, () => Creature.CurrentHp >= Creature.MaxHp / 2);
-    healthBranch.AddState(recover, () => Creature.CurrentHp < Creature.MaxHp / 2);
-
-    muster.FollowUpState = pressure;
-    pressure.FollowUpState = flurry;
-    flurry.FollowUpState = healthBranch;
-    guard.FollowUpState = muster;
-    recover.FollowUpState = muster;
-
-    return new MonsterMoveStateMachine(
-        new MonsterState[] { muster, pressure, flurry, healthBranch, guard, recover },
-        muster);
-}
-```
-
-`ConditionalBranchState` evaluates its `AddState` predicates in order and selects the first
-true state. Make the cases exhaustive; overlapping predicates silently make later cases
-unreachable, while a gap throws `No valid next state found.` A `FollowUpState` cycle is the
-deterministic order contract.
-
-When SPEC explicitly selects a random branch, use `RandomBranchState` with positive fixed
-weights and declared successors. The state machine supplies its run `Rng`; do not call
-`System.Random`, capture mutable weight delegates, or derive weights from prompt-authored code:
-
-```csharp
-var random = new RandomBranchState("RANDOM_BRANCH");
-random.AddBranch(guard, MoveRepeatType.CanRepeatForever, 2f);
-random.AddBranch(pressure, MoveRepeatType.CanRepeatForever, 1f);
-guard.FollowUpState = random;
-pressure.FollowUpState = random;
-return new MonsterMoveStateMachine(
-    new MonsterState[] { random, guard, pressure }, random);
-```
-
-This admits only declared fixed weights. Verify exercises only the selected branch outcomes,
-never a probability distribution.
-
-Copyable move bodies for that machine:
-
-```csharp
-private async Task Muster(IReadOnlyList<Creature> targets)
-    => await PowerCmd.Apply<<CustomBuff>>(new ThrowingPlayerChoiceContext(),
-        Creature, 2m, Creature, null);
-
-private async Task Pressure(IReadOnlyList<Creature> targets)
-{
-    await DamageCmd.Attack(3m).FromMonster(this).Execute(null);
-    await PowerCmd.Apply<WeakPower>(new ThrowingPlayerChoiceContext(),
-        targets, 2m, Creature, null);
-}
-
-private async Task Flurry(IReadOnlyList<Creature> targets)
-    => await DamageCmd.Attack(2m).WithHitCount(2).FromMonster(this).Execute(null);
-
-private async Task Guard(IReadOnlyList<Creature> targets)
-    => await CreatureCmd.GainBlock(Creature, 5m, ValueProp.Move, null);
-
-private async Task Recover(IReadOnlyList<Creature> targets)
-{
-    await CreatureCmd.GainBlock(Creature, 4m, ValueProp.Move, null);
-    await CreatureCmd.Heal(Creature, 3m);
-}
-```
-
-Required namespaces beyond the basic skeleton: `MegaCrit.Sts2.Core.GameActions.Multiplayer`
-for `ThrowingPlayerChoiceContext`; `MegaCrit.Sts2.Core.Models.Powers` for vanilla Powers;
-and `MegaCrit.Sts2.Core.ValueProps` for `ValueProp.Move`.
-
-For a custom attack-scaling buff, use the same hook contract as vanilla Strength while
-keeping the type/loc/art rules from `recipes/power.md`:
-
-```csharp
-using MegaCrit.Sts2.Core.Entities.Creatures;
-using MegaCrit.Sts2.Core.Entities.Powers;
-using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.ValueProps;
-using STS2RitsuLib.Scaffolding.Content;
-
-public sealed class <CustomBuff> : <ModName>Power
-{
-    public override PowerType Type => PowerType.Buff;
-    public override PowerStackType StackType => PowerStackType.Counter;
-
-    public override decimal ModifyDamageAdditive(Creature? target, decimal amount,
-        ValueProp props, Creature? dealer, CardModel? cardSource)
-        => Owner == dealer && props.IsPoweredAttack() ? Amount : 0m;
-}
-```
-
-## ⚠️ The one correction that matters — monster attacks do NOT `.Targeting()`
-
-A **monster** move deals damage with `.FromMonster(this).Execute(null)` — the target is
-resolved automatically from the move's targets. It does **NOT** take `.Targeting(target)`:
-
-```csharp
-private async Task Peck(IReadOnlyList<Creature> targets)
-{
-    // CORRECT — vanilla SingleAttackMoveMonster pattern:
-    await DamageCmd.Attack(6m).FromMonster(this).Execute(null);
-
-    // WRONG — .Targeting() is the CARD pattern (DamageCmd.Attack(...).FromCard(this).Targeting(...)).
-    // On a monster it HANGS mid-move: the enemy turn never completes and the player's turn
-    // never resumes ("play phase not resumed after enemy turn").
-}
-```
-
-This is the top failure mode; the card recipe's `.Targeting()` does not transfer.
+- `public override RoomType RoomType => RoomType.Monster`, declared rather than inferred.
+- `public override bool IsValidForAct(ActModel act)`: Acts are `Glory`, `Hive`, `Overgrowth`,
+  `Underdocks` (`MegaCrit.Sts2.Core.Models.Acts`); scope shipped content rather than `=> true`.
+- `public override IEnumerable<MonsterModel> AllPossibleMonsters`: canonical
+  `ModelDb.Monster<T>()` models.
+- `protected override IReadOnlyList<(MonsterModel, string?)> GenerateMonsters()`: the actual
+  spawn list, `ModelDb.Monster<T>().ToMutable()` paired with a slot name (`null` is valid for a
+  minimal single-Monster Encounter; no custom Encounter scene is required).
 
 ## Skeleton
 
@@ -330,19 +198,221 @@ public sealed class <Name>Encounter : ModEncounterTemplate
 }
 ```
 
+## Monster attacks never use `.Targeting()`
+
+A **monster** move deals damage with `.FromMonster(this).Execute(null)`; the target comes from the
+move's targets. It never takes `.Targeting(target)`:
+
+```csharp
+private async Task Peck(IReadOnlyList<Creature> targets)
+{
+    // CORRECT — vanilla SingleAttackMoveMonster pattern:
+    await DamageCmd.Attack(6m).FromMonster(this).Execute(null);
+
+    // WRONG — .Targeting() is the CARD pattern (DamageCmd.Attack(...).FromCard(this).Targeting(...)).
+    // On a monster it HANGS mid-move: the enemy turn never completes and the player's turn
+    // never resumes ("play phase not resumed after enemy turn").
+}
+```
+
+This is the top Monster failure mode; the Card recipe's `.Targeting()` does not transfer.
+
+## Move state machine
+
+A Monster's behavior is a `MonsterMoveStateMachine` of `MonsterState`s
+(`MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine`). The workhorse is `MoveState`:
+
+```csharp
+new MoveState(
+    string stateId,                              // e.g. "PECK"
+    Func<IReadOnlyList<Creature>, Task> onPerform,  // the move body; targets = player creatures
+    params AbstractIntent[] intents)             // e.g. new SingleAttackIntent(6)
+```
+
+`moveState.FollowUpState = moveState` loops a single move. Several moves each get an explicit
+successor, and a branch is itself a registered `MonsterState`, not a move or turn.
+`SingleAttackIntent(int damage)` lives in `MegaCrit.Sts2.Core.MonsterMoves.Intents`.
+
+A move body receives `IReadOnlyList<Creature> targets`; the mutable Monster supplies `this` and
+its own `Creature`, with no owner Player or Card source. Lower effects through
+`reference/effect-primitives.md` and await them in the exact move order. Commands that need a
+choice context use a fresh `ThrowingPlayerChoiceContext` inside the move; player effects bind only
+to the live `targets`. Monster resource, Orb, and run-acquisition effects are blocked unless SPEC
+and the callback identify a receiving Player through a target Creature. Use the mutable
+`Creature`, never a canonical model.
+
+### Compact move contract
+
+Before writing C#, record one row per move: **id, visible intent(s), ordered effect(s), next
+state**, plus every branch condition. Intents communicate the action; they do not execute it, so
+every visible effect needs both its intent and a real Cmd in the body.
+
+| Player-visible action | Intent(s) | Grounded body |
+|---|---|---|
+| self buff/custom Power | `new BuffIntent()` | `PowerCmd.Apply<T>(..., Creature, amount, Creature, null)` |
+| player debuff | `new DebuffIntent()` (often beside an attack intent) | `PowerCmd.Apply<T>(..., targets, amount, Creature, null)` |
+| defend | `new DefendIntent()` | `CreatureCmd.GainBlock(Creature, amount, ValueProp.Move, null)` |
+| heal | `new HealIntent()` | `CreatureCmd.Heal(Creature, amount)` |
+| multi-attack | `new MultiAttackIntent(damage, repeats)` | `DamageCmd.Attack(damage).WithHitCount(repeats).FromMonster(this).Execute(null)` |
+| attack + effect | list both intents, e.g. `SingleAttackIntent` + `DebuffIntent` | await the attack, then the Power/Block/buff Cmd in the declared order |
+
+`ValueProp.Move` is the vanilla Monster Block convention. A custom Power follows
+`recipes/power.md` (all three `powers.json` keys, no `[Pool]`); attachment alone does not prove a
+buff, so Tier 2 observes its downstream effect, such as a later powered attack changing by its
+`Amount`.
+
+### Explicit cycles, conditional branches, and fixed-weight random branches
+
+This shape covers a deterministic cycle with both sides of a half-health branch. Take names and
+numbers from SPEC and add no branch the design did not ask for:
+
+```csharp
+protected override MonsterMoveStateMachine GenerateMoveStateMachine()
+{
+    var muster = new MoveState("MUSTER", Muster, new BuffIntent());
+    var pressure = new MoveState("PRESSURE", Pressure,
+        new SingleAttackIntent(3), new DebuffIntent());
+    var flurry = new MoveState("FLURRY", Flurry,
+        new MultiAttackIntent(2, 2));
+    var guard = new MoveState("GUARD", Guard, new DefendIntent());
+    var recover = new MoveState("RECOVER", Recover,
+        new DefendIntent(), new HealIntent());
+    var healthBranch = new ConditionalBranchState("HEALTH_BRANCH");
+
+    // Ordered, exhaustive predicates: the first true branch wins.
+    healthBranch.AddState(guard, () => Creature.CurrentHp >= Creature.MaxHp / 2);
+    healthBranch.AddState(recover, () => Creature.CurrentHp < Creature.MaxHp / 2);
+
+    muster.FollowUpState = pressure;
+    pressure.FollowUpState = flurry;
+    flurry.FollowUpState = healthBranch;
+    guard.FollowUpState = muster;
+    recover.FollowUpState = muster;
+
+    return new MonsterMoveStateMachine(
+        new MonsterState[] { muster, pressure, flurry, healthBranch, guard, recover },
+        muster);
+}
+```
+
+`ConditionalBranchState` evaluates its `AddState` predicates in order and selects the first true
+state. Make them exhaustive: overlapping predicates silently make later cases unreachable, and a
+gap throws `No valid next state found.` A `FollowUpState` cycle is the deterministic order
+contract.
+
+Only when SPEC selects a random branch, use `RandomBranchState` with positive fixed weights and
+declared successors. The state machine supplies its run `Rng`; never call `System.Random`,
+capture mutable weight delegates, or derive weights from prompt-authored code. Verify exercises
+only the selected branch outcomes, never a probability distribution.
+
+```csharp
+var random = new RandomBranchState("RANDOM_BRANCH");
+random.AddBranch(guard, MoveRepeatType.CanRepeatForever, 2f);
+random.AddBranch(pressure, MoveRepeatType.CanRepeatForever, 1f);
+guard.FollowUpState = random;
+pressure.FollowUpState = random;
+return new MonsterMoveStateMachine(
+    new MonsterState[] { random, guard, pressure }, random);
+```
+
+Copyable move bodies for that machine (`ThrowingPlayerChoiceContext` is in
+`MegaCrit.Sts2.Core.GameActions.Multiplayer`, vanilla Powers in `MegaCrit.Sts2.Core.Models.Powers`,
+`ValueProp` in `MegaCrit.Sts2.Core.ValueProps`):
+
+```csharp
+private async Task Muster(IReadOnlyList<Creature> targets)
+    => await PowerCmd.Apply<<CustomBuff>>(new ThrowingPlayerChoiceContext(),
+        Creature, 2m, Creature, null);
+
+private async Task Pressure(IReadOnlyList<Creature> targets)
+{
+    await DamageCmd.Attack(3m).FromMonster(this).Execute(null);
+    await PowerCmd.Apply<WeakPower>(new ThrowingPlayerChoiceContext(),
+        targets, 2m, Creature, null);
+}
+
+private async Task Flurry(IReadOnlyList<Creature> targets)
+    => await DamageCmd.Attack(2m).WithHitCount(2).FromMonster(this).Execute(null);
+
+private async Task Guard(IReadOnlyList<Creature> targets)
+    => await CreatureCmd.GainBlock(Creature, 5m, ValueProp.Move, null);
+
+private async Task Recover(IReadOnlyList<Creature> targets)
+{
+    await CreatureCmd.GainBlock(Creature, 4m, ValueProp.Move, null);
+    await CreatureCmd.Heal(Creature, 3m);
+}
+```
+
+A custom attack-scaling buff uses the same hook contract as vanilla Strength, with the type,
+text, and art rules of `recipes/power.md`:
+
+```csharp
+using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Powers;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.ValueProps;
+using STS2RitsuLib.Scaffolding.Content;
+
+public sealed class <CustomBuff> : ModPowerTemplate
+{
+    public override PowerType Type => PowerType.Buff;
+    public override PowerStackType StackType => PowerStackType.Counter;
+
+    public override decimal ModifyDamageAdditive(Creature? target, decimal amount,
+        ValueProp props, Creature? dealer, CardModel? cardSource)
+        => Owner == dealer && props.IsPoweredAttack() ? Amount : 0m;
+}
+```
+
+## Hook participation: a passive rule that is not a move
+
+A move is the Monster acting on its turn. A SPEC `hook participation` block has the engine ask the
+Monster for a number or decision while resolving someone else's event: "attacks against this
+creature deal 25% less damage" is participation, not a move and not a Power
+(`reference/model-hook-participation.md`). A Monster receives combat-scope hooks only (45 of 68);
+run-scope hooks never reach it, and Build rejects them. Its own body is `Creature`, **not**
+`Owner`: there is no owning Player.
+
+```csharp
+public override decimal ModifyDamageMultiplicative(
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+{
+    if (target != Creature) return 1m;            // SPEC `subject`: damage I receive
+    if (!props.IsPoweredAttack()) return 1m;      // SPEC `condition`
+    return 0.75m;
+}
+```
+
+Keep it out of the move state machine. A participation rule has no intent, move id, or bestiary
+title, and a move standing in for it makes the intent UI advertise something never performed.
+
+## Optional routes
+
+Keep attacks and other move behavior in the move graph. Read a route only when SPEC selects it,
+append only its SPEC block for independent passive behavior, and keep combat-scope owner/source
+guards, phase/order, the neutral case, lifetime/reset, cleanup, and a real `CombatEnemy`
+assertion. Never widen a Monster rule into a process-wide listener.
+
+- a separable passive/state bundle: `reference/model-capabilities.md`;
+- lifecycle/persistence, or deterministic random choices beyond the declared move graph:
+  `reference/lifecycle-state-rng.md`;
+- reachable per-hit attack, healing, Energy/Stars-gain response, or maximum hand size:
+  `reference/shared-effect-hooks.md`.
+
 ## Localization
 
-Two JSON loc tables in each required language (the `AdditionalFiles` glob in the csproj
-already picks up `localization/<lang>/*.json`). The `eng` and `zhs` tables use identical flat,
-prefixed keys derived by the same rule as every other type
+Two flat tables per required language, keyed by the usual derived entry
 (`Id.Entry = "<MOD>_<CATEGORY>_<TYPE>"`):
 
-- `monsters.json`: `<MOD>_MONSTER_<TYPE>.name` — **one key**.
-- `encounters.json`: `<MOD>_ENCOUNTER_<TYPE>.title` + `.loss` — **two keys**.
+- `monsters.json`: `<MOD>_MONSTER_<TYPE>.name` plus one `<MOD>_MONSTER_<TYPE>.moves.<MOVE_ID>.title`
+  per declared move;
+- `encounters.json`: `<MOD>_ENCOUNTER_<TYPE>.title` and `.loss`.
 
 ```json
 // monsters.json
-{ "EXAMPLE_MOD_MONSTER_CLOCKWORK_MITE.name": "Clockwork Mite" }
+{ "EXAMPLE_MOD_MONSTER_CLOCKWORK_MITE.name": "Clockwork Mite",
+  "EXAMPLE_MOD_MONSTER_CLOCKWORK_MITE.moves.PECK.title": "Peck" }
 // encounters.json
 { "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.title": "Clockwork Mite",
   "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.loss": "{character} was ground down by [gold]{encounter}[/gold]." }
@@ -350,92 +420,99 @@ prefixed keys derived by the same rule as every other type
 
 ```json
 // zhs
-{ "EXAMPLE_MOD_MONSTER_CLOCKWORK_MITE.name": "发条螨" }
+{ "EXAMPLE_MOD_MONSTER_CLOCKWORK_MITE.name": "发条螨",
+  "EXAMPLE_MOD_MONSTER_CLOCKWORK_MITE.moves.PECK.title": "啄击" }
 { "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.title": "发条螨",
   "EXAMPLE_MOD_ENCOUNTER_CLOCKWORK_MITE_ENCOUNTER.loss": "{character}被[gold]{encounter}[/gold]碾碎了。" }
 ```
 
-`.loss` is the run-summary line shown when the player dies to this Encounter, so it describes
-the player's defeat in the vanilla shape `{character} was <verb> by [gold]{encounter}[/gold].`
-Monster names, move titles, and Encounter titles stay plain Title Case
-(`reference/vanilla-text-style.md`).
+**Every move needs a bestiary title.** The bestiary move list looks up
+`<monster entry>.moves.<MOVE_ID>.title`; when it is missing the engine shows the raw state id
+(`PECK`, `MUSTER`). Give each move a SPEC `display name`. The **intent** label is different: the
+engine composes it from the move's real damage with live modifiers (Weak, Vulnerable, Strength).
+Pass the base number to the intent constructor and never hand-write intent text.
+
+`.loss` is the run-summary line when the player dies to this Encounter, in the vanilla shape
+`{character} was <verb> by [gold]{encounter}[/gold].` Monster names, move titles, and Encounter
+titles stay plain Title Case (`reference/vanilla-text-style.md`).
 
 ## Art contract (one static body; animation deferred)
 
-A normal generated monster owns one transparent `images/monsters/<slug>.png`, normalized
-to **360x360** with `contain` fit and chroma-key on. This is skill-the-spire's medium static-body
-profile, not a game-wide requirement: RitsuLib renders the texture one-to-one, so its pixel
-dimensions intentionally define the combat and bestiary footprint.
+A generated Monster owns one transparent `images/monsters/<slug>.png`, normalized to **360x360**
+with `contain` fit and chroma-key on. This is the pack's medium static-body profile: RitsuLib
+renders the texture one-to-one, so its pixels define the combat and bestiary footprint.
 
-Do not put the PNG in `MonsterAssetProfile.VisualsScenePath`; that field names a Godot
-scene. Override `TryCreateCreatureVisuals()` and use RitsuLib's public resource factory,
-while the profile retains the checked fallback scene:
+Never put the PNG in `MonsterAssetProfile.VisualsScenePath`, which names a Godot scene. The
+skeleton's `TryCreateCreatureVisuals()` loads the PNG through RitsuLib's public resource factory
+when it exists, creating a foot-aligned `Sprite2D`, `Bounds`, `%CenterPos`, and `IntentPos`;
+`NCreature` sees no Spine body and skips animator setup. When the PNG is absent it returns
+`null`, and the original loader resumes with `FallbackVisualPath` without probing a missing
+custom-id scene. Never leave the profile path null as the fallback strategy.
 
-```csharp
-public static string FallbackVisualPath =>
-    SceneHelper.GetScenePath("creature_visuals/fallback");
-public static string ModVisualPath =>
-    "res://<ModName>/images/monsters/<slug>.png";
+`MonsterModel.CreateVisuals()` feeds both combat and the default bestiary, so both reuse this one
+PNG. The generated layout is 396x396 with the intent anchor at `(0,-466)`; headed review checks
+floor alignment and no crop in both consumers.
 
-public override MonsterAssetProfile AssetProfile => new(FallbackVisualPath);
-public override bool HasDeathSfx => false;
-
-protected override NCreatureVisuals? TryCreateCreatureVisuals()
-    => ResourceLoader.Exists(ModVisualPath)
-        ? RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>(
-            ResourceLoader.Load<Texture2D>(ModVisualPath))
-        : null;
-```
-
-When the PNG exists, `RitsuGodotNodeFactories` creates a foot-aligned `Sprite2D`,
-`Bounds`, `%CenterPos`, and `IntentPos`. `NCreature` sees no Spine body and safely skips
-animator setup. When it is absent, `TryCreateCreatureVisuals()` returns `null`; the original
-loader resumes and uses `FallbackVisualPath` without probing a missing custom-id scene.
-Do **not** leave the profile path null as the fallback strategy.
-
-The same `MonsterModel.CreateVisuals()` path feeds combat and the default bestiary layout,
-so both reuse this one PNG. The generated factory layout is 396x396 with the intent anchor at
-`(0,-466)` above the body; headed review checks floor alignment and no crop in both consumers.
-
-This contract is deliberately static. Attack/hurt/death/cast triggers do not animate;
-death uses the game's non-Spine fade, and `HasDeathSfx => false` avoids a nonexistent
-custom-id death event. There is no separate phobia body, so phobia mode retains the same
-static texture. Spine skeleton/atlas/animation, animated move previews, and distinct phobia
-skins are later extensions, not current gates.
-
-## Type + Scenario proof (`CombatEnemy`)
-
-1. **Type:** clean build/package/load; monster + encounter register; loc keys present.
-2. **Scenario (`CombatEnemy`):** a `plan.Encounter<TEncounter>` self-test scenario enters the
-   custom encounter with its real roster; observe the monster act:
-   - `t.Monster<TMonster>()` asserts the monster spawned
-   - before every turn, assert its intent types/repeat count from `t.NextMove(monster).Intents`
-   - `await t.EnemyTurn(monster, "MOVE_ID")` asserts `NextMove.Id`, ends the player turn,
-     waits for the next player turn, and requires one new `MonsterPerformedMoveEntry` with that id
-   - assert each move's exact state contract; for multi-hit, assert the returned `Hits` (new
-     `CreatureAttackedEntry.DamageResults`), not only total HP loss
-   - force each conditional outcome by changing its real input state, then observe the
-     selected move; never call the move body or `ForceCurrentState` as proof
-
-See `reference/selftest-harness.md` § CombatEnemy for the driver shape.
+The contract is deliberately static: attack/hurt/death/cast triggers do not animate, death uses
+the game's non-Spine fade, and `HasDeathSfx => false` avoids a nonexistent custom-id death event.
+Phobia mode keeps the same texture. Spine skeleton/atlas/animation, animated move previews, and
+phobia skins are later extensions.
 
 ## Checklist
 
-- [ ] Monster: `ModMonsterTemplate`; `MinInitialHp`/`MaxInitialHp`/`GenerateMoveStateMachine`
-- [ ] Encounter: `ModEncounterTemplate`; explicit `RoomType.Monster`; `IsValidForAct`/
-      `AllPossibleMonsters`/`GenerateMonsters`
-- [ ] Every selected Monster and Encounter registered once; actual rosters are nonempty subsets
-      of `AllPossibleMonsters`, including intentional repeated Monster entries
-- [ ] Static visual checks `images/monsters/<slug>.png` in `TryCreateCreatureVisuals()` and uses
-      `RitsuGodotNodeFactories.CreateFromResource<NCreatureVisuals>` only when it exists
-- [ ] `MonsterAssetProfile` always names `creature_visuals/fallback`; missing PNG produces no
-      missing custom-id resource error
-- [ ] `HasDeathSfx => false`; static death uses the non-Spine fade without a missing audio event
-- [ ] Monster attack uses `.FromMonster(this).Execute(null)` — **never `.Targeting()`**
-- [ ] `monsters.json` (name) + `encounters.json` (title + loss) with derived ids
-- [ ] Every move has matching intent(s), awaited Cmd effect(s), and an explicit successor
-- [ ] Every conditional branch is ordered, exhaustive, reachable, and driven through each advertised outcome
-- [ ] Multi-hit intent repeat matches `.WithHitCount`; Tier 2 asserts history result count
-- [ ] Self buff/custom Power is observed on the monster and changes a later result
-- [ ] `CombatEnemy` proves encounter + monster plus every advertised move/branch state invariant
-- [ ] custom static body is checked in combat and bestiary; no Spine/animation/phobia claim
+- [ ] Monster: `ModMonsterTemplate` with `MinInitialHp`/`MaxInitialHp`/`GenerateMoveStateMachine`.
+- [ ] Encounter: `ModEncounterTemplate` with explicit `RoomType.Monster`, `IsValidForAct`,
+      `AllPossibleMonsters`, and `GenerateMonsters`.
+- [ ] Every selected node registered once; actual rosters are nonempty subsets of
+      `AllPossibleMonsters`, with intentional repeats explicit.
+- [ ] Monster attacks use `.FromMonster(this).Execute(null)`, **never `.Targeting()`**.
+- [ ] Every move has matching intent(s), awaited Cmd effect(s), and an explicit successor;
+      multi-hit intent repeats match `.WithHitCount`.
+- [ ] Every conditional branch is ordered, exhaustive, and reachable.
+- [ ] `monsters.json` (name plus one move title per move) and `encounters.json` (title + loss).
+- [ ] The static visual is existence-checked in `TryCreateCreatureVisuals()`; the profile always
+      names `creature_visuals/fallback`; `HasDeathSfx => false`.
+
+## Self-test driver body
+
+Use the **`CombatEnemy`** host in `reference/selftest-harness.md` § CombatEnemy: one
+`plan.Encounter<TEncounter>` scenario per selected reachable Encounter variant, entered with its
+real roster.
+
+- `t.Monster<TMonster>()` asserts the Monster spawned;
+- before every turn, assert intent types and repeat count from `t.NextMove(monster).Intents`;
+- `await t.EnemyTurn(monster, "MOVE_ID")` asserts `NextMove.Id`, ends the player turn, waits for
+  the next player turn, and requires one new `MonsterPerformedMoveEntry` with that id;
+- assert each move's exact state contract; for multi-hit, assert the returned `Hits` (new
+  `CreatureAttackedEntry.DamageResults`), not only total HP loss;
+- force each conditional outcome by changing its real input through a public Cmd, then observe the
+  selected move. Never call the move body, the predicate, or `ForceCurrentState` as proof.
+
+Exercise selected deterministic/conditional states and selected random outcomes; do not create a
+retained proof project per authorable shape.
+
+## Proof matrix
+
+- **Assert the spawned roster and HP.** Assert the enemy count, ordered identities, and
+  repetitions match `actual_roster`, and each Monster's current HP lies in its declared range,
+  as their own state proofs.
+- Assert every advertised move id executes in the declared order (`NextMove.Id` before, the
+  performed-move history after), and traverse the cycle far enough to prove it loops.
+- Drive every branch through each outcome by changing the real condition.
+- Assert each move's concrete consequence: Power amount plus a later changed attack for a self
+  buff; player Power amount for a debuff; Block/HP deltas from a wounded pre-state; hit-result
+  count for a multi-attack; every effect of a composite move. One HP delta is not enough for a
+  multi-move enemy.
+- **Hook participation: assert the neutral case outside the guard.** No move performs a passive
+  rule. Assert the modified value through a real attack, then drive one event the guard ignores
+  (an attack on another creature, or an excluded damage kind) and assert it unchanged.
+- In a headed pass, confirm the bestiary move list shows the shipped titles, and the static body
+  is aligned and uncropped in combat and bestiary.
+
+## Manual fallback (only when the harness cannot reach its scenario)
+
+Grant it: `fight <PREFIX>-<ENCOUNTER_SLUG>` enters the custom Encounter (run in progress); confirm
+the custom Monster spawned before ending the turn. Trigger it: end enough turns to traverse the
+selected graph, confirming every selected move's visible intent and exact HP/Block/Power change,
+and drive each selected conditional or random outcome without treating one sample as
+distribution proof.

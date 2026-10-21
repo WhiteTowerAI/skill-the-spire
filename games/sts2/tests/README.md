@@ -150,7 +150,9 @@ listed route is authorable; "unobserved" means no run has proved that exact shap
 | Relic hidden inventory presence | hide from `BeforeCombatStart` to `AfterCombatEnd`, Block still gained (Tier 2); no empty slot, flash, or stale tooltip (headed) | reward, choose-a-relic, run-history, unlock screens; save/resume while hidden |
 | Potion icon | 256x256 loose PNG in game | |
 | Monster weighted random moves | | any probability distribution |
-| New Ancient | one Shared Ancient, Darv fallback, `firstVisitEver` + `ANY` dialogue, two options, Gold option ending in `Done()` (Tier 2; headed dialogue) | Act-scoped registration, `IsValidForAct` rejection, page transitions, Character-specific dialogue, repeat visits, choice history, map/run-history icons |
+| New Ancient | one Shared Ancient, Darv fallback, `firstVisitEver` + `ANY` dialogue, two options, Gold option ending in `Done()` (Tier 2; headed dialogue and room) | Act-scoped registration, `IsValidForAct` rejection, page transitions, Character-specific dialogue, repeat visits, choice history, map/run-history icons (including the Darv fallback icons) |
+| Event portrait | one approved `seedream-5.0-lite` `21:9`/`2K` request with three random Event references, normalized to 3440x1613, rendered behind the real option UI (strict proof, no fresh error) | |
+| Event `portrait_halo` | headed: initial page, later page, combat cleanup, resumed page, Fast Mode | |
 | Character starter upgrades | Archaic Tooth and Touch of Orobas mappings (Tier 2; headed via `ancient OROBAS <TOUCH_OF_OROBAS\|ARCHAIC_TOOTH>`) | preserved enchantment, multiplayer |
 | Character presentation | nine static profiles, top icon/outline, card/UI theme, non-Spine cues, native Ancient/Architect dialogue | locked selection portrait, map marker |
 | Ordered card buffer | isolated two-combat mechanic and a generated Character composition | |

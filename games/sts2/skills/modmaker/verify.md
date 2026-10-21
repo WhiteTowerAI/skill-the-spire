@@ -69,7 +69,7 @@ coverage and summary lines and every `scenario FAILED:` line with its expected a
 values. To inspect one SPEC invariant, match its own line instead, for example
 `--tier2-pattern "lantern_combat_start_energy: .*observed=4"`. The verifier ignores all ordinary
 `played/fired/used` hook logs, even if the regex matches them, and separately requires the exact
-load marker and `selftest done`. A Reward run follows `surfaces/reward.md` and proves
+load marker and `selftest done`. A Reward run follows `${STS2API_SKILL_DIR}/recipes/reward.md` and proves
 claim/refusal, the selected presentation route, and pending-save reconstruction; a custom-pile
 run follows `reference/card-piles.md` and proves the consumers selected by SPEC.
 
@@ -111,7 +111,7 @@ run actually proves it.
   `[PASS] Tier-2 partial run` after `--only`.
   Multiline/global errors after this mod's load marker fail even when the mod name appears
   only in stack context (or not at all).
-- For every selected surface and capability, follow the surface page § Proof matrix and the
+- For every selected surface and capability, follow its recipe § Proof matrix and the
   selected reference's proof section; derive only the cases SPEC selected. Registration, direct
   method calls, model lookups, serialization, constructed Godot nodes, or a successful Build
   never prove behavior.
@@ -181,11 +181,9 @@ Ask the user to drive it by hand via the dev console:
 1. Start a run in STS2 (the mod is loaded — tier-1 confirmed it).
 2. Open the **dev console** with **`` ` `` (backtick)** (also `'`, `*`, `^`, `Shift+8`);
    close with `Esc`. Debug commands are auto-enabled because the game is running modded.
-3. Grant the element and 4. trigger it: each surface page owns both steps in its
-   § Manual fallback — `surfaces/card.md`, `surfaces/relic.md`, `surfaces/potion.md`,
-   `surfaces/monster.md`, `surfaces/event.md`, `surfaces/character.md`, `surfaces/act.md`,
-    `surfaces/ancient.md`, `surfaces/reward.md`, `surfaces/card-pile.md`, and
-    `surfaces/runtime-ui.md`. A Power, keyword, or
+3. Grant the element and 4. trigger it: each element recipe under
+   `${STS2API_SKILL_DIR}/recipes/` owns both steps in its § Manual fallback or § Proof
+   matrix. A Power, keyword, or
    enchantment has no route of its own and is driven through its host Card; an orb is driven
    through its declared channel host.
 

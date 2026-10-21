@@ -1,7 +1,28 @@
 # Recipe: Affliction
 
-Use for a new combat-only condition attached to a Card. Extend `ModAfflictionTemplate`, register
-once in the deferred content pack, and apply/remove only through the public Card commands.
+Use for a new combat-only condition attached to one concrete Card. An Affliction is not a run-wide
+curse, a deck-wide rule, or another name for an Enchantment: it is applied to a mutable Card during
+combat, participates while attached, and travels only with the host Card lifecycle the game
+provides. Extend `ModAfflictionTemplate`, register once in the deferred content pack, and
+apply/remove only through the public Card commands. The Affliction itself is the truthful owner;
+never register a process-wide listener or Global Effect to imitate a Card-attached condition.
+
+## DESIGN and SPEC vocabulary
+
+Settle and write:
+
+- identity and the Card types/keywords/states it may afflict;
+- stackable or single-application behavior and the integer amount meaning;
+- application source, selected Card or Card set, preview style, and rejection behavior;
+- attached triggers/effects, hook participation, and the exact owner guard;
+- `AfterApplied`, `BeforeRemoved`, and attached-Card `OnPlay` behavior when selected;
+- title, description, optional extra Card text, `{Amount}` use, hover tips, and overlay choice;
+- removal/reset expectations and every neutral or rejected case; and
+- `CombatPlayer` SelfTest plus headed Card-overlay/text review when presentation is selected.
+
+An Affliction is combat-only: never promise run persistence, deck acquisition, or a post-combat
+owner. The existing Affliction must be the same concrete type before stacking; another attached
+type is not a replacement route.
 
 ## Registration and model
 
@@ -32,7 +53,7 @@ public sealed class <AfflictionName> : ModAfflictionTemplate
 }
 ```
 
-Call `base.CanAfflict(card)` before adding restrictions. `Amount` is stored as `int`; do not
+Call `base.CanAfflict(card)` before adding restrictions. `Amount` is stored as `int`; never
 advertise fractional stacking even though the command parameter is decimal. One Card carries at
 most one Affliction type. A stackable second application of the same type increments `Amount` and
 does not call `AfterApplied` again.
@@ -48,18 +69,38 @@ IEnumerable<AfflictionName> appliedMany =
 CardCmd.ClearAffliction(card);
 ```
 
-`Afflict<T>` returns `null` for rejected application. `AfflictAndPreview` applies each Card, then
-previews only successful Cards; every Card must have the same owner when preview is enabled. Pick
-targets with the Mod-scoped RNG route in `reference/lifecycle-state-rng.md`, never `System.Random`.
-Use `CardCmd.ClearAffliction`; direct internal removal is not an authoring route.
+`Afflict<T>` returns `null` when combat/host checks or `CanAfflict` reject the application.
+`AfflictAndPreview` applies each Card, then previews only the successful ones; every Card must have
+the same owner when preview is enabled. Pick targets with the Mod-scoped RNG route in
+`reference/lifecycle-state-rng.md`, never `System.Random`. Remove only through
+`CardCmd.ClearAffliction`. Apply, preview, and clear are this recipe's specialized transaction,
+not ordinary Card creation or movement.
 
-The Card wrapper calls the attached Affliction's awaited `OnPlay` after the Card's own play body
-and Enchantment execution. `AfterApplied` and `BeforeRemoved` are synchronous `void`; keep them to
-immediate state changes and use an async lifecycle hook for commands.
+## The effect sequence
+
+The Card wrapper calls the attached Affliction's awaited
+`OnPlay(PlayerChoiceContext choiceContext, Creature? target)` after the Card's own play body and
+Enchantment execution; it is the only path that composes ordinary commands directly. It binds the
+host `Card`, `Card.Owner`, `Card.Owner.Creature`, `choiceContext`, and the nullable resolved
+`target`. Null-check the target when the primitive needs one, lower effects through
+`reference/effect-primitives.md`, and keep the host Card as `cardSource`. The callback does not
+receive the enclosing `CardPlay`: pass `cardPlay: null` where a primitive permits it and block any
+effect that requires it. `AfterApplied` and `BeforeRemoved` are synchronous `void`: keep them to
+immediate state changes and use an actual async lifecycle hook for commands.
+
+## Hook participation and optional routes
+
+Raw hooks use `reference/model-hook-participation.md` with `surface: affliction`; only
+combat-reachable hooks are admitted, and Build rejects the rest. The Affliction's `Card` is the
+exact owner, and its `CombatState` is valid only while attached in combat; guard other Cards and
+neutral subjects. Read `reference/model-capabilities.md` only when behavior is a separable component
+rather than the Affliction's identity, `reference/lifecycle-state-rng.md` for subscriptions,
+disposal, or deterministic target selection, and `reference/shared-effect-hooks.md` for the
+dedicated per-hit, heal, resource, and hand services.
 
 ## Text, hover tips, and overlay
 
-Use `afflictions.json` in `eng` and `zhs` once this surface has any localization:
+Use `afflictions.json` in `eng` and `zhs`:
 
 ```json
 {
@@ -77,20 +118,30 @@ Use `afflictions.json` in `eng` and `zhs` once this surface has any localization
 }
 ```
 
-Follow the Affliction row of `reference/vanilla-text-style.md`: plain title, `[blue]` amounts,
-`[gold]` glossary terms, Energy through `energyIcons()`.
+Follow the Affliction row of `reference/vanilla-text-style.md`: plain title, `[blue]{Amount}[/blue]`,
+`[gold]` glossary terms, Energy through `energyIcons()`; `.extraCardText` is one short Card-face
+sentence. A Card or Relic that applies the Affliction names it in `[gold]` and declares
+`HoverTipFactory.FromAffliction<T>()` in its `AdditionalHoverTips`.
 
-Set `HasExtraCardText` only when the key exists. `RegisteredKeywordIds` and
-`AdditionalHoverTips` add display tips; they do not implement keyword behavior. A selected custom
-overlay overrides `AssetProfile` with an existing PackedScene path. Omit it for the explicit empty
-profile; never claim a missing overlay is a visual fallback.
+Set `HasExtraCardText` only when the key exists. `RegisteredKeywordIds` and `AdditionalHoverTips`
+add display tips; they never implement keyword behavior. A selected custom overlay overrides
+`AssetProfile` with an existing PackedScene path; omit it for the explicit empty profile and never
+claim a missing overlay is a visual fallback.
 
-## Shared behavior and proof
+## Proof matrix
 
-Read `reference/model-hook-participation.md` for `surface: affliction`, plus the selected model
-capability/lifecycle/shared-effect references. The Affliction's `Card` is the exact owner and its
-`CombatState` is valid only while attached in combat. Guard other Cards and neutral subjects.
+Use a real mutable Card in a `CombatPlayer` scenario:
 
-SelfTest follows `surfaces/affliction.md`: rejected application, first apply, stack/reject,
-attached play/hook behavior, clear, and combat reset. Headed review separately owns localized
-extra text, hover tips, and overlay layout.
+1. reject every disallowed Card and assert no Affliction, history entry, preview, or side effect;
+2. apply to one allowed Card and assert the concrete type, exact integer amount, owner Card
+   identity, `AfterApplied` exactly once, localized text, and the selected overlay resource;
+3. for stackable behavior, apply again and assert the same attached instance/type and exact summed
+   amount; for non-stackable behavior, assert the second application is rejected;
+4. play the attached Card and assert `OnPlay` and selected hook effects after the real Card
+   wrapper, plus one unrelated Card or event that stays neutral;
+5. clear through `CardCmd.ClearAffliction`, assert `BeforeRemoved` exactly once and no further
+   participation, then cross the declared combat end/reset edge; and
+6. for multi-Card preview, use same-owner Cards and assert only successful Cards are previewed.
+
+Headed review separately owns localized extra text, hover tips, overlay layout, and
+mouse/controller quality. Source and Build establish neither attachment behavior nor visual proof.

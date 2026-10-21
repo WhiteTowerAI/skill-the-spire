@@ -862,7 +862,7 @@ plan.Act<EmberWilds>("ember_wilds_takes_slot_two", async t =>
 probe declaring five Rest Sites showed seven), so assert the SPEC's counts against the map the
 kit reports, not against the declared numbers alone. Gate the entry rule's eligibility on
 `!ctx.IsMultiplayer`; a maintainer probe Act also gates it on `CommandLineHelper.HasArg("t2selftest")`
-so it never replaces a slot in a player's real runs. Save/load identity (`surfaces/act.md`
+so it never replaces a slot in a player's real runs. Save/load identity (`recipes/act.md`
 § Proof matrix 5) and the eligibility and priority cases beyond the selected slot remain
 separate scenarios; map, background, chest, music, and navigation are headed review.
 

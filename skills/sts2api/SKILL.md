@@ -66,8 +66,7 @@ a title change unless the request asks for a new name.
 ## How to answer
 
 1. Find the element's recipe under `../sts2api/recipes/`, then read only the
-   references the table below names for the selected behavior. The caller's
-   `../modmaker/surfaces/<surface>.md` page names the same routes for its element.
+   references it and the table below name for the selected behavior.
 2. For error signatures, read `../sts2api/errors.md`.
 3. For a vanilla analog or realistic numbers, resolve the element with
    `python ../modmaker/scripts/vanilla_overrides.py resolve <name> --category <card|relic|potion|power>`
