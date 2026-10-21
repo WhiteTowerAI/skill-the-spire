@@ -36,8 +36,8 @@ not dump entire files into the response.
 
 ## Adapter routing
 
-For generated content, the semantic contract is the product-level source of truth:
-read `../modmaker/semantic-contract.md` before selecting an implementation.
+For generated content, the SPEC is the product-level source of truth
+(`../modmaker/spec.md`).
 Lazily read `reference/ritsulib-adapter.md` next. It
 maps each semantic surface to one public
 registration/template and asset profile, and owns the framework/version diagnostic
@@ -138,10 +138,9 @@ a title change unless the request asks for a new name.
 | `reference/shared-effect-hooks.md` | Owner-bound per-hit attack, healing, Energy/Stars gain, and maximum-hand-size effects with exact passes, guards, neutral results, and Global Effect boundary | Authoring those shared effects on a reachable model/capability or explicit Global Effect |
 | `reference/card-play-lifecycle.md` | Before/after Card OnPlay, suppression, free-play durations, transform listeners/carry-over, type-text composition, phase order, cleanup, and real-host proof | Authoring behavior around Card play rather than only the Card's ordinary OnPlay body |
 | `reference/effect-primitives.md` | Shared ordinary player-result lowering: exact commands, required context/owner/source/target, await order, result/rejection behavior, and lifecycle bounds; also in-combat Card choice, top-of-Draw-Pile placement, free-this-turn, and Stun | Authoring an ordered `effects.sequence` on a truthful executable surface |
-| `reference/model-hook-participation.md` | Raw model-hook participation: the three declaration shapes, per-surface owner property, guard/neutral body, and the declared capability list the preflight reads | A SPEC `Hook:` line |
+| `reference/model-hook-participation.md` | Raw model-hook participation: the three declaration shapes, per-surface owner property, and guard/neutral body | A raw hook rule in SPEC |
 | `reference/mechanics.md` | Cross-element foundations: DynamicVars, SmartFormat descriptions, shared enums (TargetType/CardType/rarities/…) | Before writing a card or power |
 | `reference/stateful-mechanics.md` | Bounded state schemas with exact owner/listener transitions, lifetime/reset/persistence, visibility, consumers/outputs, and selected proof derivation | Any effect that remembers progress, limits uses, or compares turns |
-| `reference/build-constraints.md` | Current pinned RitsuLib build/load, registration, localization, packaging, and runtime-variant constraints | Before writing resolved localization/registration output; on a build diagnostic |
 | `reference/selftest-harness.md` | The tier-2 self-test kit: what the scaffold-generated `SelfTestKit.cs` does (roll call, navigation, shared combat and reset, real manual play, settling, face checks, `--only`, report), which content gets which check, the `SelfTestScenarios.cs` API, combat scenario recipes, and the `CombatEnemy`, `MapNode`, Ancient, Rest Site, and Character `RunStart` hosts through `plan.Custom`. Public Cmds/UI only — `ProcessCommand(string)` is unreachable | Writing Tier 2 scenarios (author.md step 2.5); any tier-2 automation question |
 | `reference/art-contract.md` | Custom-sprite contract: exact paths/sizes for the eight established static families and nine promoted Character profiles; per-consumer file counts; checked fallbacks; animation boundaries; source-grounded prompts; source-independent import | The art sub-step (author.md §4); any custom-sprite path/size/style question |
 | `reference/art-samples/` | Type-matched real STS2 reference pools for card/relic/power/potion/enchantment/orb/monster/event (© Mega Crit, reference-only — see ATTRIBUTION.md); tools select the matching family and randomly sample three distinct images | Passed as the root `--reference` in the art step; never mix families |

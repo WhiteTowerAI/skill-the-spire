@@ -176,6 +176,6 @@ proof. In particular, a run-persistent relic counter uses RitsuLib
   routes to `stateful-mechanics.md` (§5); potion saved state is not implemented.
 
 When this file lacks a specific value or formatter, follow `grounding.md`: at runtime
-that means the rest of the pack (recipes, `build-constraints.md`, snapshots,
+that means the rest of the pack (recipes, catalogs,
 `errors.md`); if it's genuinely not in the pack, follow `grounding.md` § Mod-local
 Routes rather than guessing.

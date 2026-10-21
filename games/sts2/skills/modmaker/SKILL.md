@@ -86,13 +86,12 @@ Read each file from `${MODMAKER_SKILL_DIR}/` only when its stage begins:
 | `route.md` | Read state; choose fast, co-design, revision, or resume |
 | `interview.md` | Resolve only material open decisions |
 | `design.md` | Write concise human intent, decisions, scope, and not-now items |
-| `semantic-contract.md` | Rules for the human-readable implementation work order |
-| `spec.md` | Write exact operations, support routes, and autotest scenarios |
+| `spec.md` | Write the implementation work order, autotest scenarios, and project state |
 | `scaffold.md` | Create the pinned local-runtime project and manifest |
 | `quirks.md` | Preventive STS2/RitsuLib rules needed before C# |
 | `author.md` | Generate C#, localization, resources, markers, and `SelfTestScenarios.cs` |
 | `build.md` | Compile, validate, pack, and deploy |
-| `verify.md` | Tier 1, Tier 2, headed review, and direct final report |
+| `verify.md` | Tier 2 (with its Tier 1 load check), headed review, and the final report |
 | `repair.md` | Bounded repair from compiler/log/state evidence |
 
 Query `${STS2API_SKILL_DIR}` narrowly when a concrete API, recipe, capability, error, art, or
@@ -108,12 +107,10 @@ the pinned starter inventory and native-shaped defaults; it does not constrain o
 human idea
   -> concise DESIGN
   -> implementable SPEC with autotest scenarios
-  -> capability_preflight.py (route existence + hook reachability only)
   -> scaffold
   -> author C# + localization/resources + SelfTestScenarios.cs
-  -> build
-  -> Tier 1 load proof
-  -> Tier 2 real-host structured state proof
+  -> build (static checks, source routes, hook reachability)
+  -> Tier 2 real-host structured state proof (Tier 1 load check first)
   -> necessary headed human observation
   -> direct report from actual results
 ```
@@ -130,17 +127,17 @@ human idea
    concise Markdown. Do not create IDs, ledgers, trace blocks, coherence contracts, completion
    claims, settlements, or impact queues.
 4. **SPEC.** Write the sole implementation work order: exact behavior/state/text/presentation,
-   maintained support routes, and concrete SelfTest scenarios, then run the thin capability
-   preflight from Core commands. The compiler, Build, Tier 2, and human review own everything
-   else.
+   the recipes and references it uses, and concrete SelfTest scenarios. The compiler, Build,
+   Tier 2, and human review own everything else.
 5. **Scaffold and Author.** Resolve the local profile, create the project, translate only the
    current SPEC through its recipes, author bilingual localization when used, keep the
    scaffold's load marker and self-test kit, and write `SelfTestScenarios.cs` from
    `reference/selftest-harness.md`: face checks for simple Cards, a named scenario for every
    other selected behavior. Art defaults to checked placeholders unless the SPEC
    selects a supported custom route.
-6. **Build.** `build.py` validates the pinned profile, compiles C#, validates manifest/resources/
-   localization, packs a PCK when needed, and deploys only the Mod's own artifacts.
+6. **Build.** `build.py` validates the pinned profile, manifest, resources, localization, and
+   source routes, compiles C#, checks hook reachability, packs a PCK when needed, and deploys
+   only the Mod's own artifacts.
 7. **Tier 1.** The exact load marker with no fresh error block. The Tier 2 launch checks it
    first and stops with the Tier 1 verdict when the Mod did not load, so launch Tier 1 alone
    only to diagnose a load failure.
@@ -172,7 +169,6 @@ player-visible design change or missing shared capability.
 ## Core commands
 
 ```powershell
-python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
 python ${GAME_TOOLS_DIR}/api.py search <Type> [<member>]
 python ${GAME_TOOLS_DIR}/scaffold.py --project-dir <outer-dir> --mod-name <ModName> --author <Author>
 python ${GAME_TOOLS_DIR}/build.py --project-dir <outer-dir> --mod-name <ModName>

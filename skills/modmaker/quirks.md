@@ -15,7 +15,8 @@ not restate the other file's half — a diagnostic in two homes drifts.
   content hook; keywords use `.CardKeywordOwnedByLocNamespace(...)`. Call `.Apply()` once
   for the pack.
 - **Do not add `[Pool(...)]`.** The content-pack pool generic is the only availability
-  declaration. A second attribute/registration path risks duplicate ownership and ids.
+  declaration; a second path risks duplicate ownership and ids. Build rejects the attribute,
+  along with raw Harmony, member reflection, Publicizer, and unreviewed patch targets.
 - `Apply()` queues registration for RitsuLib's discovery window. It is normal for the
   actual `ModelDb` registration log to appear after the Mod initializer returns.
 

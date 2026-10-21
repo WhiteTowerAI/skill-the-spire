@@ -201,8 +201,8 @@ stay/leave behavior works. Use
 only, absent versus natively disabled, free or fixed Gold, and a fully preflightable outcome before
 the first mutation.
 
-Declaring either as raw hook participation is rejected. It would let a generated Mod bypass all
-four while looking like a supported declaration.
+Never override either as raw hook participation: that would bypass all four boundaries while
+looking like a supported declaration.
 
 ## Verification this route owes
 
@@ -220,64 +220,3 @@ list beforehand is still there afterwards.
 Reuse the nearest hosted scenario — `CombatPlayer` for damage, block, and card values,
 `CombatEnemy` for a Monster's own hooks, `RunStart` for run-scope rewards and map decisions. A
 model-only read proves registration, not participation: the hook must be driven by the engine.
-
-## Capability ids this route provides
-
-A SPEC Hook line names one of these capabilities, its selected surface and shape, and cites
-this page as its route. `capability_preflight.py` rejects an id this page does not declare.
-Each id is the hook's `semantic_id` in the catalog, and a test asserts this list equals the
-catalog's authorable set, so a hook cannot be documented here without being reachable.
-
-**Numeric modifiers** (26). The value the host is computing, adjusted. Neutral return per hook in the catalog.
-
-<!-- skillthespire-capabilities:
-modify_attack_hit_count modify_block_additive modify_block_multiplicative
-modify_card_play_count modify_card_reward_upgrade_odds modify_damage_additive
-modify_damage_cap modify_damage_multiplicative modify_energy_gain modify_gold_gained
-modify_hand_draw modify_hand_draw_late modify_hp_lost_after_osty
-modify_hp_lost_after_osty_late modify_hp_lost_before_osty modify_hp_lost_before_osty_late
-modify_max_energy modify_merchant_price modify_odds_increase_for_unrolled_room_type
-modify_orb_passive_trigger_counts modify_orb_value modify_power_amount_given_additive
-modify_power_amount_given_multiplicative modify_rest_site_heal_amount modify_summon_amount
-modify_x_value
--->
-
-**Decisions** (27). A `bool` the host consults before allowing something. Neutral is usually `true`.
-
-<!-- skillthespire-capabilities:
-should_add_to_deck should_afflict should_allow_ancient should_allow_free_travel
-should_allow_hitting should_allow_merchant_card_removal
-should_allow_selecting_more_card_rewards should_allow_targeting should_clear_block
-should_creature_be_removed_from_combat_after_death should_die should_die_late should_draw
-should_ethereal_trigger should_flush should_force_potion_reward should_gain_stars
-should_generate_treasure should_pay_excess_energy_cost_with_stars should_play
-should_player_reset_energy should_power_be_removed_on_death should_proceed_to_next_map_point
-should_procure_potion should_refill_merchant_entry should_stop_combat_from_ending
-should_take_extra_turn
--->
-
-**Out-parameter replacements** (6). `bool` plus an `out` value: the flag claims the replacement, the parameter carries it.
-
-<!-- skillthespire-capabilities:
-try_modify_card_being_added_to_deck try_modify_card_being_added_to_deck_late
-try_modify_energy_cost_in_combat try_modify_energy_cost_in_combat_late
-try_modify_power_amount_received try_modify_star_cost
--->
-
-**Collection edits** (7). A host-owned list you add to or remove from. Preserve every entry you did not come for.
-
-<!-- skillthespire-capabilities:
-try_modify_card_reward_alternatives try_modify_card_reward_options
-try_modify_card_reward_options_late try_modify_keywords_in_combat
-try_modify_rest_site_heal_rewards try_modify_rewards try_modify_rewards_late
--->
-
-**Enchantment replacements** (5). Available only on an Enchantment, and mandatory there instead of the general hook.
-
-<!-- skillthespire-capabilities:
-enchant_block_additive enchant_block_multiplicative enchant_damage_additive
-enchant_damage_multiplicative enchant_play_count
--->
-
-Total: 71 declared ids. The two Rest Site hooks are deliberately absent; they are
-declared by `reference/rest-site-options.md`.
