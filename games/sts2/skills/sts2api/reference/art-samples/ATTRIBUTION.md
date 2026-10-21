@@ -1,6 +1,6 @@
 # art-samples — attribution & purpose
 
-These 88 images are **© Mega Crit**, derived from *Slay the Spire 2* art. They are included
+These 91 images are **© Mega Crit**, derived from *Slay the Spire 2* art. They are included
 **solely as visual style references** for the art pipeline (`reference/art-contract.md` →
 `tools/gen_sprite.py --reference`): they are shown to a user-configured image model as
 few-shot examples so a generated custom sprite matches the game's art style. They are
@@ -27,6 +27,14 @@ consistency (the game's own art is not stylistically uniform):
 - Necrobinder: afterlife, blight_strike, bodyguard
 - Regent: astral_pulse, arsenal, alignment
 - Colorless: alchemize, beacon_of_hope, anointed
+
+## `card_ancient/` — 3 Ancient card portraits (native 606×852)
+The full-card art of Ancient-rarity cards, which differs from normal portraits in shape and
+style (a vertical poster with the subject in the upper half). Chosen for range: a figure
+(event `apotheosis`), an object on a ground plane (necrobinder `forbidden_grimoire`), and an
+energy burst (regent `meteor_shower`). Decoded by the maintainer from the WebP payload of each
+portrait's `.ctex` in the installed 0.107.1 `SlayTheSpire2.pck`; all 18 final Ancient
+portraits there are 606×852.
 
 ## `relic/` — 6 relic icons (native 256×256)
 Chosen for material/shape range (cut-out object on transparency): akabeko, anchor,
