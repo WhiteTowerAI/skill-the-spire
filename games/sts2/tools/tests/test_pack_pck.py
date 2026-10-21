@@ -86,6 +86,19 @@ class PackPckTests(unittest.TestCase):
 
             self.assertEqual(first.read_bytes(), second.read_bytes())
 
+    def test_stale_gen_sprite_log_never_ships(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            assets = Path(tmp) / "ExampleMod"
+            (assets / "images").mkdir(parents=True)
+            (assets / "scene.tscn").write_text("[gd_scene format=3]\n", encoding="utf-8")
+            (assets / "images" / ".gen_sprite.log").write_text(
+                "D:\\local\\art-sources\\generated\\card\\x.png\n", encoding="utf-8"
+            )
+
+            entries = [entry.path for entry in pack_pck.collect_entries(assets, "ExampleMod")]
+
+            self.assertEqual(["ExampleMod/scene.tscn"], entries)
+
     def test_shader_and_script_sources_remain_blocked(self) -> None:
         for suffix in sorted(pack_pck.UNSUPPORTED_SUFFIXES):
             with self.subTest(suffix=suffix), tempfile.TemporaryDirectory() as tmp:
