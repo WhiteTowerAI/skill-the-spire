@@ -26,8 +26,8 @@ a key the user set. No key is committed. A missing/invalid config makes `generat
 and a non-zero exit so the caller can fall back to the placeholder.
 
 Cross-platform (Windows/macOS/Linux). Depends on Pillow; HTTP uses stdlib urllib (no
-`requests` dep). Quiet output: detail to a .gen_sprite.log next to the output, one
-summary line to stdout, and the final image path as the LAST stdout line (callers parse
+`requests` dep). Quiet output: detail to <project>/art-sources/.gen_sprite.log (outside
+the packed Mod folder, since it holds local paths), one summary line to stdout, and the final image path as the LAST stdout line (callers parse
 it — same convention as build.py).
 
 Usage:
@@ -924,14 +924,28 @@ def _multipart(fields: list[tuple[str, str]], files: list[tuple[str, Path]]):
 
 # --- quiet logging (mirror build.py) ---------------------------------------
 
+LOG_NAME = ".gen_sprite.log"
+
+
+def project_root_for(images_root: Path) -> Path:
+    """<project> for --out <project>/<ModName>/images; the parent of any other --out."""
+    images_root = images_root.resolve()
+    return (images_root.parent.parent if images_root.name.lower() == "images"
+            else images_root.parent)
+
+
 def make_logger(out_dir: Path):
+    """Log beside the kept raw sources, never inside the packed Mod folder: the log holds
+    local absolute paths and pack_pck packs every file under <ModName>/."""
     lines: list[str] = []
+    log_path = project_root_for(out_dir) / "art-sources" / LOG_NAME
     def log(msg: str):
         lines.append(str(msg))
     def flush():
         try:
-            out_dir.mkdir(parents=True, exist_ok=True)
-            (out_dir / ".gen_sprite.log").write_text("\n".join(lines) + "\n", encoding="utf-8")
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            log_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            (out_dir / LOG_NAME).unlink(missing_ok=True)  # pre-fix location
         except OSError:
             pass
     return log, flush
@@ -1226,10 +1240,7 @@ def cmd_import_sheet(args: argparse.Namespace) -> int:
 def keep_generated_source(src: "Image.Image", spec: str, slug: str, images_root: Path) -> Path:
     """Save the raw paid source outside the packed Mod folder, so a failed or redone
     normalization never needs a second generation call."""
-    images_root = images_root.resolve()
-    project_root = (images_root.parent.parent if images_root.name.lower() == "images"
-                    else images_root.parent)
-    destination = project_root / "art-sources" / "generated" / spec / f"{slug}.png"
+    destination = project_root_for(images_root) / "art-sources" / "generated" / spec / f"{slug}.png"
     destination.parent.mkdir(parents=True, exist_ok=True)
     src.save(destination, "PNG")
     return destination

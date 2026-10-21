@@ -309,7 +309,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             Image.new("RGBA", (20, 30), (40, 160, 120, 255)).save(source)
 
             result = subprocess.run(
@@ -346,7 +346,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             image = Image.new("RGBA", (100, 100), (222, 27, 136, 255))
             ImageDraw.Draw(image).rectangle(
                 (35, 15, 64, 84), fill=(30, 80, 150, 255)
@@ -366,14 +366,14 @@ class GenSpriteTests(unittest.TestCase):
             with Image.open(out / "charui" / "rest.png") as normalized:
                 self.assertEqual(0, normalized.getpixel((0, 0))[3])
                 self.assertEqual(255, normalized.getpixel((256, 256))[3])
-            log = (out / ".gen_sprite.log").read_text(encoding="utf-8")
+            log = (root / "art-sources" / ".gen_sprite.log").read_text(encoding="utf-8")
             self.assertIn("edge-connected soft magenta", log)
 
     def test_magenta_subject_on_green_background_keeps_its_color(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             image = Image.new("RGBA", (100, 100), (0, 255, 0, 255))
             ImageDraw.Draw(image).ellipse((25, 25, 74, 74), fill=(200, 40, 200, 255))
             image.save(source)
@@ -391,14 +391,14 @@ class GenSpriteTests(unittest.TestCase):
             with Image.open(out / "relics" / "orchid.png") as normalized:
                 self.assertEqual(0, normalized.getpixel((0, 0))[3])
                 self.assertEqual((200, 40, 200, 255), normalized.getpixel((128, 128)))
-            log = (out / ".gen_sprite.log").read_text(encoding="utf-8")
+            log = (root / "art-sources" / ".gen_sprite.log").read_text(encoding="utf-8")
             self.assertIn("applied green chroma-key", log)
 
     def test_character_icon_drops_disconnected_debris_before_outline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             image = Image.new("RGBA", (100, 100), (222, 27, 136, 255))
             draw = ImageDraw.Draw(image)
             draw.rectangle((35, 15, 64, 84), fill=(30, 80, 150, 255))
@@ -423,8 +423,36 @@ class GenSpriteTests(unittest.TestCase):
             with Image.open(out / "charui" / "icon_outline.png") as outline:
                 self.assertEqual(0, outline.getpixel((0, 0))[3])
                 self.assertEqual(0, outline.getpixel((87, 87))[3])
-            log = (out / ".gen_sprite.log").read_text(encoding="utf-8")
+            log = (root / "art-sources" / ".gen_sprite.log").read_text(encoding="utf-8")
             self.assertIn("disconnected Character cut-out", log)
+
+    def test_log_stays_outside_the_packed_mod_folder(self) -> None:
+        import pack_pck
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            mod = root / "Mod"
+            out = mod / "images"
+            Image.new("RGBA", (64, 64), (30, 80, 150, 255)).save(source)
+            out.mkdir(parents=True)
+            (out / ".gen_sprite.log").write_text("stale D:\\local\\path\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    sys.executable, str(GEN_SPRITE), "import",
+                    "--spec", "relic", "--slug", "orchid",
+                    "--input", str(source), "--out", str(out),
+                ],
+                capture_output=True, text=True, encoding="utf-8", check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertTrue((root / "art-sources" / ".gen_sprite.log").is_file())
+            self.assertEqual([], list(mod.rglob(".gen_sprite.log")))
+            entries = [entry.path for entry in pack_pck.collect_entries(mod, "Mod")]
+            self.assertIn("Mod/images/relics/orchid.png.import", entries)
+            self.assertFalse([path for path in entries if path.endswith(".log")])
 
     def test_alpha_outline_uses_exact_proportional_white_expansion(self) -> None:
         image = Image.new("RGBA", (88, 88), (0, 0, 0, 0))
@@ -450,7 +478,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             image = Image.new("RGBA", (80, 100), (0, 0, 0, 0))
             ImageDraw.Draw(image).ellipse((10, 20, 69, 79), fill=(40, 160, 120, 255))
             image.save(source)
@@ -535,10 +563,10 @@ class GenSpriteTests(unittest.TestCase):
             draw.ellipse((20, 20, 79, 79), fill=(40, 40, 48))
             image.save(source)
 
-            result = self.run_import("relic", source, root / "images")
+            result = self.run_import("relic", source, root / "Mod" / "images")
 
             self.assertEqual(0, result.returncode, result.stderr)
-            with Image.open(root / "images" / "relics" / "keyed.png") as keyed:
+            with Image.open(root / "Mod" / "images" / "relics" / "keyed.png") as keyed:
                 tinted = [p for p in keyed.convert("RGBA").getdata()
                           if p[3] and min(p[0], p[2]) - p[1] > 40]
             self.assertEqual([], tinted)
@@ -551,10 +579,10 @@ class GenSpriteTests(unittest.TestCase):
             ImageDraw.Draw(image).rectangle((100, 100, 299, 299), fill=(30, 60, 200))
             image.save(source)
 
-            result = self.run_import("relic", source, root / "images", "--no-chroma",
+            result = self.run_import("relic", source, root / "Mod" / "images", "--no-chroma",
                                      "--crop", "100,100,200,200")
             self.assertEqual(0, result.returncode, result.stderr)
-            with Image.open(root / "images" / "relics" / "keyed.png") as placed:
+            with Image.open(root / "Mod" / "images" / "relics" / "keyed.png") as placed:
                 colors = {p[:3] for p in placed.convert("RGBA").getdata() if p[3]}
             self.assertTrue(all(b > r for r, _g, b in colors), colors)
 
@@ -593,7 +621,7 @@ class GenSpriteTests(unittest.TestCase):
             ImageDraw.Draw(image).rectangle((30, 20, 69, 99), fill=(40, 160, 120))  # hem cut at the bottom
             image.save(source)
 
-            result = self.run_import("relic", source, root / "images")
+            result = self.run_import("relic", source, root / "Mod" / "images")
 
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertIn("touches the bottom edge", result.stdout)
@@ -610,7 +638,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             image = Image.new("RGB", (100, 100), (30, 30, 60))
             ImageDraw.Draw(image).ellipse((20, 20, 79, 79), fill=(40, 160, 120))
             image.save(source)
@@ -655,7 +683,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             Image.new("RGB", (20, 10), (20, 80, 160)).save(source)
 
             result = subprocess.run(
@@ -679,7 +707,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             image = Image.new("RGB", (132, 195), (20, 80, 160))
             ImageDraw.Draw(image).rectangle(
                 (0, 0, 131, 194), outline=(240, 220, 40), width=3
@@ -707,7 +735,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             image = Image.new("RGBA", (240, 300), (0, 0, 0, 0))
             ImageDraw.Draw(image).rectangle(
                 (40, 0, 199, 299), fill=(80, 160, 120, 255)
@@ -879,7 +907,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             image = Image.new("RGBA", (100, 100), (255, 0, 255, 255))
             ImageDraw.Draw(image).rectangle((40, 40, 59, 59), fill=(40, 160, 120, 255))
             image.save(source)
@@ -904,7 +932,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             Image.new("RGBA", (80, 80), (40, 160, 120, 255)).save(source)
 
             for spec, slug, expected_size in (
@@ -927,7 +955,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             Image.new("RGBA", (20, 30), (230, 170, 40, 255)).save(source)
 
             result = subprocess.run(
@@ -962,7 +990,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             Image.new("RGBA", (20, 10), (90, 180, 230, 255)).save(source)
 
             result = subprocess.run(
@@ -996,7 +1024,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             Image.new("RGBA", (20, 10), (220, 180, 40, 255)).save(source)
 
             result = subprocess.run(
@@ -1030,7 +1058,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             Image.new("RGB", (20, 10), (20, 80, 160)).save(source)
 
             result = subprocess.run(
@@ -1064,7 +1092,7 @@ class GenSpriteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source = root / "source.png"
-            out = root / "images"
+            out = root / "Mod" / "images"
             Image.new("RGB", (40, 20), (90, 50, 30)).save(source)
 
             result = subprocess.run(

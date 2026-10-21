@@ -49,6 +49,8 @@ except ImportError:
 
 IMAGE_SUFFIX = ".png"
 UNSUPPORTED_SUFFIXES = {".gdextension", ".gdscript", ".gdshader"}
+# Tool logs hold local absolute paths; a stale one in the resource tree never ships.
+EXCLUDED_NAMES = {".gen_sprite.log"}
 PCK_MAGIC = b"GDPC"
 PCK_FORMAT_VERSION = 3
 ENGINE_VERSION = (4, 5, 1)
@@ -117,7 +119,10 @@ def collect_entries(source_dir: Path, res_prefix: str) -> list[PckEntry]:
     if not prefix:
         raise PackError("res prefix must not be empty")
 
-    files = sorted(path for path in source_dir.rglob("*") if path.is_file())
+    files = sorted(
+        path for path in source_dir.rglob("*")
+        if path.is_file() and path.name not in EXCLUDED_NAMES
+    )
     unsupported = [
         path.relative_to(source_dir).as_posix()
         for path in files
