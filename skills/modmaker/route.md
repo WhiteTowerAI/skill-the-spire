@@ -43,7 +43,7 @@ safe when it changes the core player experience.
 For contradictory input, name the conflict and ask one constrained resolution question. For
 an unsupported operation, name the exact missing public/fixed route before SPEC or scaffold.
 Offer a supported alternative only when it preserves the intent, and obtain explicit acceptance
-because the player-visible result changes. Never invent Harmony, reflection, Publicizer, or IL.
+because the player-visible result changes.
 
 Carry this compact handoff to Interview or DESIGN:
 

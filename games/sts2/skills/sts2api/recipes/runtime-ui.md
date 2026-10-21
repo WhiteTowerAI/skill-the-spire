@@ -5,8 +5,8 @@ notifications, runtime hotkeys, a capstone screen or floating window, a searchab
 fixed public Godot node attachments. Runtime UI owns the workflow's local interaction, node and
 handle lifetimes, localization, refresh, focus, close behavior, and headed proof. Select only the
 pieces SPEC names; every public piece below is authorable. Also read
-`reference/lifecycle-state-rng.md`, and `reference/build-constraints.md` for packaged icons, `.tscn`
-scenes, C# script registration, and bilingual localization.
+`reference/lifecycle-state-rng.md`, and `${MODMAKER_SKILL_DIR}/build.md` § Resources and packaging
+for packaged icons, `.tscn` scenes, and bilingual localization.
 
 Runtime UI does not own Card Piles, content-model presentation, or any deferred product family.
 Never add a Settings page or binding, a Progression or post-run Badge view, Telemetry consent, an

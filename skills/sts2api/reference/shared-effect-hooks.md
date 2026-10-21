@@ -20,8 +20,8 @@ accepted `Global Effect` surface when no truthful obtainable model owns the rule
   - state/text: <named state/DynamicVars/localized explanation or none>
 ```
 
-Every modifier must return the neutral value outside its guard. Do not add a raw Hook declaration
-for this route; `capability_preflight.py` owns only the cataloged model-hook dispatcher facts.
+Every modifier must return the neutral value outside its guard. These listener interfaces are not
+raw model hooks; `reference/model-hook-participation.md` and its catalog do not apply.
 
 ## Per-hit attack
 

@@ -75,7 +75,7 @@ Tier 2 does not need a hand-written scenario per Card. Split the SPEC's content 
 |---|---|
 | Every content model class (registered), its text, and every Ancient's dialogue coverage | roll call, automatic |
 | A **simple Card**: its SPEC Implementation cites only its recipe and `reference/effect-primitives.md`, its numbers are fixed (no calculated value, X cost, or condition), and its effects are damage, Block, Energy, Stars, Gold, healing, HP loss, Max HP, draw, or a stack of an existing Power | `plan.FaceCheck<TCard>()`: one line, no assertions to write |
-| Everything else: a custom Power, Keyword, Enchantment, or Orb; a `Hook:` or `Mod-local:` line; a condition, counter, or state across turns or combats; a Card choice; an interaction between elements; a Relic or Potion trigger | a named `plan.Combat(...)` scenario |
+| Everything else: a custom Power, Keyword, Enchantment, or Orb; a raw hook or a `Mod-local:` route; a condition, counter, or state across turns or combats; a Card choice; an interaction between elements; a Relic or Potion trigger | a named `plan.Combat(...)` scenario |
 | A Monster and its Encounter | a named `plan.Encounter<TEncounter>(...)` scenario (§ The `CombatEnemy` scenario) |
 | A Character's starting state | `plan.Character<T>()` and a named `plan.RunStart(...)` scenario (§ The `RunStart` + `CombatPlayer` scenario) |
 | An Event | a named `plan.Event<TEvent>(...)` scenario (§ The `MapNode` scenario) |

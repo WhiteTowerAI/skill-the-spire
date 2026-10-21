@@ -9,8 +9,7 @@
       "Bash(bash ./publish.sh:*)",
       "Bash(PYTHONUTF8=1 python -m unittest:*)",
       "Bash(python -m unittest:*)",
-      "Bash(python -m compileall -q games/sts2/tools scripts/publish)",
-      "Bash(python games/sts2/tools/capability_preflight.py:*)"
+      "Bash(python -m compileall -q games/sts2/tools scripts/publish)"
     ],
     "deny": [
       "Read(**/art-backend.json)"

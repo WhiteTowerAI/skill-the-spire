@@ -29,8 +29,8 @@ Mod without rebuilding it.
 2. Read the matching section of `${STS2API_SKILL_DIR}/errors.md`, or form one narrow hypothesis
    from the actual failing layer when no entry matches.
 3. Make one focused fix.
-4. Re-run the earliest meaningful check: preflight for a route/reachability change, Build for
-   source or resource changes, Tier 1 for load/registration, and Tier 2 for behavior.
+4. Re-run the earliest meaningful check: Build for source, resource, route, or hook changes,
+   Tier 1 for load/registration, and Tier 2 for behavior.
 5. Record the result. Stop after three unsuccessful fixes at the same stage.
 
 On success, update the simple `PLAN.md` checklist and continue. On exhaustion, leave the stage

@@ -15,25 +15,20 @@ The plugin ID, marketplace ID, and repository slug are `skill-the-spire`. The sh
 ## Workflow
 
 ```text
-idea -> DESIGN.md -> SPEC.md -> capability_preflight.py -> scaffold and author
-     -> Build -> Tier 1 -> Tier 2 / SelfTest -> headed review when needed
+idea -> DESIGN.md -> SPEC.md -> scaffold and author
+     -> Build -> Tier 2 / SelfTest (Tier 1 load check first) -> headed review when needed
      -> direct report from actual results
 ```
 
 `DESIGN.md` records intent, accepted decisions, current scope, and explicit `Not Now` items.
 `SPEC.md` is the implementation work order: exact content, behavior, values, state, bilingual
-text, presentation, selected support routes, and autotest scenarios. `PLAN.md` is a plain stage
-checklist. `MEMORY.md` stores technical facts, commands/results, and repair attempts.
+text, presentation, the recipes and references it uses, and autotest scenarios. `PLAN.md` is a
+plain stage checklist. `MEMORY.md` stores technical facts, commands/results, and repair attempts.
 
-Run one pre-Author checker:
-
-```powershell
-python ${GAME_TOOLS_DIR}/capability_preflight.py --spec SPEC.md
-```
-
-It checks selected route existence and raw model-hook identity, shape, ownership, and surface
-reachability. Do not turn it into a general Markdown, C#, manifest, localization, runtime, visual,
-or evidence validator.
+Rules a tool can check belong in the tool, not repeated in prose. Build owns the checkable
+authoring boundaries: forbidden source routes (`source_scan.py`) and model-hook reachability in
+the compiled Mod (`hook_reachability.py`), beside the profile, localization, text-style, and
+override checks. Do not turn them into general Markdown, runtime, visual, or evidence validators.
 
 ## Source Ownership
 

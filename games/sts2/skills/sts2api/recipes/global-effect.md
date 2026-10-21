@@ -49,14 +49,9 @@ public sealed class <EffectName> : HookedSingletonModel
 callbacks and reports `ShouldReceiveCombatHooks = true`. Never choose `None` for an effect,
 register raw `ModHelper` subscribers, or subscribe one singleton to two streams.
 
-For a raw hook, follow `reference/model-hook-participation.md`. A Run singleton declares
-`surface: global-effect-run` and a Combat singleton `surface: global-effect-combat`:
-
-```markdown
-- Hook: <capability> | surface: global-effect-run | shape: <shape> | route: reference/model-hook-participation.md
-```
-
-The catalog derives each surface from the hook's actual dispatcher. A stream that cannot receive
+For a raw hook, follow `reference/model-hook-participation.md`. A Run singleton is surface
+`global-effect-run` and a Combat singleton `global-effect-combat` in the catalog's
+`authorable_surfaces`, derived from each hook's actual dispatcher. A stream that cannot receive
 the hook is a compile-clean silent failure; Build reads the singleton's `HookType` and rejects it.
 
 ## The effect sequence

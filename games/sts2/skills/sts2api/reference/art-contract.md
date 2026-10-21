@@ -80,7 +80,7 @@ res://<ModName>/images/<sub-path>/<slug>.png
   write the same literal path in the PNG location and in the model's asset profile.
 - The image only reaches the game **through the `.pck`**, so any art change needs a
   `.pck` rebuild (PckPacker / `build.py`) — a plain `dotnet build` of code alone won't
-  pick it up. (Same rule as localization; see `build-constraints.md`.)
+  pick it up. (Same rule as localization; see `${MODMAKER_SKILL_DIR}/build.md`.)
 
 ## The contract — the ONE card portrait (read this carefully — the folder name lies)
 

@@ -16,7 +16,7 @@ Missing runtime observation does not automatically narrow a documented public ca
 Conversely, source, unit tests, or successful Build do not establish gameplay behavior.
 
 ```text
-request -> DESIGN -> SPEC -> thin capability preflight -> Author + SelfTest
+request -> DESIGN -> SPEC -> Author + SelfTest
         -> Build -> Tier 1 -> Tier 2 -> headed review when needed -> direct report
 ```
 
@@ -29,7 +29,7 @@ The suite under `games/sts2/tools/tests/` protects product behavior and artifact
 - rich-text markup validity and vanilla text-style drift against the generated glossary;
 - resource packaging and deterministic art normalization/catalog projection;
 - model-hook catalog extraction, declaration shape, route ownership, and dispatch reachability;
-- capability preflight in repository and published payload layouts;
+- forbidden source routes and compiled hook reachability, in repository and payload layouts;
 - vanilla target catalogs, fixed route manifests, generated sources, and focused compatibility;
 - launch/log parsing, Tier 1 markers, structured Tier 2 filtering, and terminal outcomes;
 - payload contents/layout and source-to-payload projection; and
