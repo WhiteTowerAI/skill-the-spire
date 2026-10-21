@@ -139,8 +139,9 @@ audio, shaders, or arbitrary custom-VFX routes from this one proof. The existing
 
 Reuse one headed `MapNode` run for every selected contract:
 
-1. enter the real normal Event, wait for description reveal/fade to settle, and capture
-   the `trial_noble` profile with readable title, body, and options;
+1. enter the real normal Event, wait until the description reaches full `VisibleRatio` and
+   opacity, assert the exact built-in scene parent, position, and inherited process mode, and
+   capture the `trial_noble` profile with readable title, body, and options;
 2. click the real enabled option and observe the matching native Card preview; assert the
    exact Card identity, successful deck result, and eventual preview/fly cleanup;
 3. assert the Relic inventory gained exactly one matching model and its native holder/icon

@@ -203,8 +203,11 @@ stack copies. Godot frees the owned tweens with their root node.
 
 The headed `MapNode` proof must inspect player-visible state, not only model/node presence:
 
-1. capture the initial page with title, description, options, portrait, and halo visible;
-2. observe an orbit rotation change unless Fast Mode is Instant;
+1. capture the initial page with title, description, options, portrait, and halo visible,
+   only after the option UI and room fade have settled: a node path or a near-black transition
+   frame is not visual evidence;
+2. assert the named root is visible and observe an orbit rotation change, or an intentionally
+   static halo when Fast Mode is Instant;
 3. transition to a later page and prove the prior named node is freed;
 4. enter special combat and prove no Event portrait VFX remains in-tree;
 5. if combat resumes the Event, capture the return page and its configured profile;

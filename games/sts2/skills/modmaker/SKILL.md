@@ -72,10 +72,13 @@ through Runtime UI, persistence, lifecycle, or another included owner.
 
 Stop only when the behavior requires private APIs, runtime patching, or decompilation, or cannot
 be given a verifiable lifecycle. Known unsupported areas include arbitrary behavior-bearing
-scenes/materials without a public host, global room replacement, arbitrary
-transactions/transitions/RNG rewrites, alternative Energy, retained played-Card zones,
-ungrounded disable/weighting surfaces, multiplayer integrations, and one-click Workshop
-publishing.
+scenes, materials, Event layouts, or VFX without a public host; global room or native-dialogue
+replacement; new-Ancient behavior outside its option/page/dialogue vocabulary; animation
+beyond packaged public resources; arbitrary transactions, RNG rewrites, or transitions,
+including direct merchant/rest/treasure transitions; alternative Energy; retained played-Card
+zones; ungrounded disable/weighting surfaces; multiplayer integrations and presentation,
+including remote-player Character resources/UI; and one-click Workshop publishing. Custom
+multi-target Potions keep a known limitation (`recipes/potion.md`).
 
 ## Read stages lazily
 

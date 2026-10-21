@@ -91,7 +91,7 @@ feel. When SPEC selects one of those, run the headed checks in its owning refere
 Rendered text is also a headed observation: when the user reviews a Card, Relic, Potion, Power, or
 Event, ask them to compare it with a similar vanilla one (gold terms, colored numbers, line breaks,
 the tooltip list, and the Chinese text after switching language). Custom art stays unverified until
-the real game visibly shows it, not the fallback, in every consumer `art-contract.md` lists; never
+the real game visibly shows it, not the fallback, in every consumer its art page lists; never
 infer it from a resource path or a `.pck` build. Give the user the exact build, dev-console
 commands, and check matrix, and record their observations separately.
 

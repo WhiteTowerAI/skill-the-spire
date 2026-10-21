@@ -144,8 +144,9 @@ a required resource stops before Build until the user supplies it.
 ### Generate (acquire one source, then deterministic `gen_sprite.py import`)
 
 1. Follow `reference/art-contract.md` for each spec's path, size, chroma, prompt template, and
-   import command. Character art also follows `reference/character-presentation.md` and
-   `reference/character-combat-cues.md`: normalize the selection portrait first, because it is the
+   import command. Character art follows `reference/art-character.md` and the slot table in
+   `reference/character-presentation.md` (plus `reference/character-combat-cues.md` for cues), and
+   a `backend:<name>` route reads `reference/art-backends.md`. Normalize the selection portrait first, because it is the
    only identity reference for later Character assets. Acquire only the slots of the SPEC's
    `character art tier`, and acquire bodies and icons as one sheet each. A slot outside the tier
    gets no wrapper scene and no profile path, so RitsuLib keeps the Ironclad fallback. Material,

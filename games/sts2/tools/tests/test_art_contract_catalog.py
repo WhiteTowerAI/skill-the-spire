@@ -11,7 +11,9 @@ contract:
 
 1. the committed catalog still equals what the code holds, so changing a size in code and
    forgetting to re-export fails here rather than shipping a stale catalog;
-2. every size stated in the three prose tables equals the catalog's; and
+2. every size stated in the prose tables equals the catalog's: content specs in
+   `art-contract.md`, Character slots in the one slot table in `character-presentation.md`,
+   and the cue sheet in `character-combat-cues.md`; and
 3. every spec in the catalog has a row in the prose, so a new spec cannot ship undocumented.
 
 Before this, `art-contract.md` asked a human to "keep them in sync" and nothing checked it.
@@ -21,7 +23,7 @@ prose copies and printed rows-first by `list-specs`, which for the only non-squa
 drift between the generated catalog and its authoritative code.
 
 What these tests do not establish: that any size is correct in-game. Sizes are grounded by
-the headed runs recorded in `art-contract.md`; this file only holds the copies together.
+headed runs; this file only holds the copies together.
 """
 from __future__ import annotations
 
@@ -39,6 +41,7 @@ REPO_ROOT = TOOLS_DIR.parents[2]
 STS2API_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "sts2api"
 CATALOG_PATH = STS2API_DIR / "reference" / "catalogs" / "art-contract-sts2-0.107.1.json"
 ART_CONTRACT_PATH = STS2API_DIR / "reference" / "art-contract.md"
+CHARACTER_ART_PATH = STS2API_DIR / "reference" / "art-character.md"
 PRESENTATION_PATH = STS2API_DIR / "reference" / "character-presentation.md"
 CUES_PATH = STS2API_DIR / "reference" / "character-combat-cues.md"
 
@@ -59,6 +62,7 @@ class ArtContractCatalogTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
         cls.art = ART_CONTRACT_PATH.read_text(encoding="utf-8")
+        cls.character_art = CHARACTER_ART_PATH.read_text(encoding="utf-8")
         cls.presentation = PRESENTATION_PATH.read_text(encoding="utf-8")
         cls.cues_page = CUES_PATH.read_text(encoding="utf-8")
 
@@ -93,18 +97,12 @@ class ArtContractCatalogTests(unittest.TestCase):
                     f"{spec} size {entry['size']} is not stated in art-contract.md",
                 )
 
-    def test_every_character_slot_size_and_spec_appears_in_both_prose_pages(self) -> None:
-        art_sizes = sizes_in(self.art)
+    def test_every_character_slot_size_and_spec_appears_in_the_slot_table(self) -> None:
         presentation_sizes = sizes_in(self.presentation)
         for slot in self.catalog["character_slots"]:
             size = tuple(slot["size"])
             with self.subTest(slot=slot["name"]):
-                self.assertIn(f"`{slot['spec']}`", self.art)
-                self.assertIn(
-                    size,
-                    art_sizes,
-                    f"{slot['name']} size {size} is not stated in art-contract.md",
-                )
+                self.assertIn(f"`{slot['spec']}`", self.presentation)
                 self.assertIn(
                     size,
                     presentation_sizes,
@@ -117,7 +115,7 @@ class ArtContractCatalogTests(unittest.TestCase):
         for slot in self.catalog["character_slots"]:
             name = Path(slot["output_path"]).name
             if re.fullmatch(r"orb_layer_[2-5]\.png", name):
-                # art-contract.md states these as the range `orb_layer_2.png` through
+                # The slot table states these as the range `orb_layer_1.png` through
                 # `orb_layer_5.png`; the endpoints are asserted, the interior is prose.
                 continue
             if name == "map_marker.png":
@@ -125,7 +123,7 @@ class ArtContractCatalogTests(unittest.TestCase):
                 # spec and size but deliberately does not advertise a filename to author.
                 continue
             with self.subTest(slot=slot["name"]):
-                self.assertIn(name, self.art)
+                self.assertIn(name, self.presentation)
 
     def test_cue_grid_geometry_is_named_and_consistent_everywhere(self) -> None:
         """columns x rows, 512px cells, and the same order in code, catalog, and prose."""
@@ -141,11 +139,12 @@ class ArtContractCatalogTests(unittest.TestCase):
                 self.assertTrue(all(0 <= cell < cells for cell in action["play_cells"]))
         grid = f"{sheet['columns']}x{sheet['rows']}"
         pixels = f"{sheet['sheet_px'][0]}x{sheet['sheet_px'][1]}"
-        for page, text in (("art-contract.md", self.art), ("character-combat-cues.md",
-                                                           self.cues_page)):
-            with self.subTest(page=page):
-                self.assertIn(grid, text, f"cue grid {grid} (cols x rows) is not in {page}")
-                self.assertIn(pixels, text, f"cue sheet {pixels} is not in {page}")
+        self.assertIn(grid, self.cues_page, f"cue grid {grid} (cols x rows) is not in "
+                      "character-combat-cues.md")
+        self.assertIn(pixels, self.cues_page, f"cue sheet {pixels} is not in "
+                      "character-combat-cues.md")
+        self.assertIn(f"exact {grid} grid", self.character_art,
+                      "the cue prompt in art-character.md must ask for the code's grid")
 
     def test_list_specs_prints_cue_sheets_width_first(self) -> None:
         result = subprocess.run(

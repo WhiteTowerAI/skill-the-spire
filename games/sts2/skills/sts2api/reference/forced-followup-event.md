@@ -199,11 +199,12 @@ when the scenario is reachable. Do not create one proof matrix per mapping famil
    `1 -> 0`; at terminal, call both hooks again to prove normal selection is restored;
 7. emit one structured marker containing all guards, then `selftest done`.
 
-Use the standard startup gate from `reference/selftest-harness.md` before
-`EnterMapPointInternal`; `RunManager.IsInProgress` alone races the initial map/room setup.
-The proof must enter through `MapPointType.Unknown`, not debug-enter the target canonical
-Event directly, because the room-type and Event-replacement hooks are the behavior under
-test.
+Write it as one `plan.Custom` scenario (`reference/selftest-harness.md` § Other hosts): the
+kit has already waited for the run's map and first room, which `RunManager.IsInProgress` alone
+would race. The proof must enter through `MapPointType.Unknown`, not debug-enter the target
+canonical Event directly, because the room-type and Event-replacement hooks are the behavior
+under test. It needs `MegaCrit.Sts2.Core.Hooks`, `MegaCrit.Sts2.Core.Models.Events`, and the
+Quest Card/target Event types.
 
 A passing run reports a structured line of this shape:
 

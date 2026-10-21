@@ -9,7 +9,7 @@ Character-wide theme (RitsuLib's public pool-material helper only). Load
 
 Also read, only when SPEC selects it:
 
-- static art: `reference/character-presentation.md` and `reference/art-contract.md`;
+- static art: `reference/character-presentation.md` and `reference/art-character.md`;
 - combat cues: `reference/character-combat-cues.md`;
 - a secondary resource: `reference/character-resource.md`; an ordered semantic buffer:
   `reference/ordered-card-buffer.md`;
@@ -532,43 +532,96 @@ absent, return `null` for the resolved profile fallback.
 
 ## Self-test driver body
 
-Use the **`RunStart` + `CombatPlayer`** host (`reference/selftest-harness.md` § The `RunStart` +
-`CombatPlayer` scenario). Set `plan.Character<CharacterName>()`: the kit locates the real
-character-select button by model type, unlocks it only for proof setup, selects that exact model,
-and waits for the run UI and local Player. Never match the `%Icon` texture path (placeholder art
-keeps the fallback portrait) and never choose the first unlocked Character.
+Use the **`RunStart` + `CombatPlayer`** host. Set `plan.Character<CharacterName>()`: the kit
+locates the real character-select button by model type, unlocks it only for proof setup, selects
+that exact model, and waits for the run UI and local Player; setup fails when the button is
+missing. Never match the `%Icon` texture path (placeholder art keeps the fallback portrait) and
+never choose the first unlocked Character. `plan.RunStart` scenarios run first, whatever their
+position in the plan, and see the live run exactly as it started.
 
-1. The roll call requires exactly one registered custom Character and logs its canonical HP, Gold,
-   Energy, pools, and starters.
+1. The roll call requires exactly one registered custom Character, resolves all fourteen
+   `characters.json` keys in both languages, and logs its canonical HP, Gold, Energy, pools with
+   their sizes, and starters. Compare that line with SPEC.
 2. When custom selection art is selected, prove the 132x195 portrait and 1920x1200 background in
    the visible select UI. In every case assert the button lies inside the 1920x1080 viewport,
    capture a settled screenshot, and click Confirm.
-3. In a `plan.RunStart` scenario (it runs before any combat), assert identity, exact HP/Max HP,
-   Gold, all three exact typed pool types and member sets, every supporting Power, and exact
-   starter deck/relic/potion multisets (`t.DeckCounts()`, `t.RelicNames()`). A non-starter pool
-   Card never leaks into the starter deck. Give the starter Cards face checks.
+3. In a `plan.RunStart` scenario, assert identity, exact HP/Max HP, Gold, all three exact typed
+   pool types and member sets, every supporting Power, and exact starter deck/relic/potion
+   multisets. A non-starter pool Card never leaks into the starter deck. Give the starter Cards
+   face checks.
+
+   ```csharp
+   plan.Character<<CharacterName>>();
+   plan.RunStart("<character>_run_start", t =>
+   {
+       var player = t.Player;
+       t.Proof(player.Character is <CharacterName> && t.Me.CurrentHp == <HP> && t.Me.MaxHp == <HP> &&
+               player.Gold == <GOLD>,
+           $"run start expected=<CharacterName> hp=<HP>/<HP> gold=<GOLD> observed=" +
+           $"{player.Character.GetType().Name} hp={t.Me.CurrentHp}/{t.Me.MaxHp} gold={player.Gold}");
+       var deck = t.Describe(t.DeckCounts());      // "ClassNamexCount" in name order
+       t.Proof(deck == "<StarterDefend>x4,<StarterStrike>x4,<Signature>x1",
+           $"starter deck expected=<StarterDefend>x4,<StarterStrike>x4,<Signature>x1 observed={deck}");
+       t.Proof(t.RelicNames().SequenceEqual(new[] { "<StarterRelic>" }) && !player.Potions.Any(),
+           $"starter relics expected=<StarterRelic> potions=0 observed={string.Join(",", t.RelicNames())}");
+       // Also assert the concrete CardPool/RelicPool/PotionPool types and their membership.
+       return Task.CompletedTask;
+   });
+   ```
 4. Orobas mappings: grant the vanilla `ArchaicTooth` or `TouchOfOrobas` Relic in `RunStart` and
    assert the exact deck Card or Relic replacement, including a preserved upgrade. Headed review
    opens Orobas with `ancient OROBAS <TOUCH_OF_OROBAS|ARCHAIC_TOOTH>` and confirms the offer and
    its text name the Mod Card or Relic.
-5. In a `plan.Combat(..., freshCombat: true)` scenario, assert native `MaxEnergy`, base Orb slots,
-   and the hosted starter mechanic's independent state delta. When those profiles are selected,
-   also assert all four theme colors, the frame shader target/brightness, the non-Spine 512x512
-   body, normal and outlined 88x88 top-panel icons under one real `NTopBarPortrait`, one
-   `NEnergyCounter` with all five 256x256 layers, a 256x256 large icon in a real hand
-   `NCard.%EnergyIcon`, the distinct 24x24 path in a real formatted description, and every
-   generated Relic's exact 256x256 main/outline pair under one real `NRelic`. For the body also
+5. In a `plan.Combat(..., freshCombat: true)` scenario (a new kit combat in its Play phase with
+   the turn-1 starter effects intact), assert native `MaxEnergy`, base Orb slots, and the hosted
+   starter mechanic's independent state delta. A starter Relic that acts when a combat ends uses
+   `t.StartNewCombat()`, which finishes the combat first.
+
+   ```csharp
+   plan.Combat("<character>_combat_energy", t =>
+   {
+       t.Proof(t.Combat.MaxEnergy == 3 && t.Combat.Energy == 4,
+           $"combat energy expected max/current=3/4 observed={t.Combat.MaxEnergy}/{t.Combat.Energy}");
+       return Task.CompletedTask;
+   }, freshCombat: true);
+   ```
+
+   When those profiles are selected, also assert all four theme colors, the frame shader
+   target/brightness, the non-Spine 512x512 body, normal and outlined 88x88 top-panel icons under
+   one real `NTopBarPortrait`, one `NEnergyCounter` with all five 256x256 layers, a 256x256 large
+   icon in a real hand `NCard.%EnergyIcon`, the distinct 24x24 path in a real formatted
+   description, and every generated Relic's exact 256x256 main/outline pair under one real
+   `NRelic`. Compare the CharacterModel main/outline texture properties to the same top-icon
+   paths so a decorative proof-only node cannot hide broken RitsuLib wiring. For the body also
    assert alpha bounds within `(26,26)-(486,486)`, baseline `486`, scale `0.80`, position
-   `(0,-184)`, screen bounds inside the viewport, and no overlap with top/bottom UI, the enemy
-   lane, or the turn banner.
-6. When combat cues are selected, prove Idle loops, Attack/Hit each return to Idle, shared
-   geometry stays fixed, the first combat's playback node is freed, and a fresh combat's Dead
-   sequence reaches and holds its last frame. Run the one-missing-frame fallback separately and
-   require static combat with no playback node or frame flash.
+   `(0,-184)`, `%Bounds` width equal to the opaque width times 0.80 within 2 px (the health bar
+   takes that width), screen bounds inside the viewport, and no overlap with top/bottom UI, the
+   enemy lane, or the turn banner. Emit `character theme expected=colors/frame/large-icon/text-icon
+   observed=all` only after every theme assertion passes; this automatic proof is required even
+   when the visual review is manual.
+6. When combat cues are selected, follow `reference/character-combat-cues.md` § Hosted proof,
+   with its own markers independent of the static/theme marker.
 7. When those profiles are selected, finish combat, enter RestSite and Shop, and assert the real
-   `NRestSiteCharacter` / `NMerchantCharacter`, exact 512x512 resources, and settled screenshots.
+   `NRestSiteCharacter` / `NMerchantCharacter` and exact 512x512 resources. Capture settled
+   selection, combat/top-panel/energy, RestSite, and Shop screenshots after a short settle delay:
+   structured state cannot see placement, and a real run whose node assertions all passed still
+   showed a spinning Energy ring, an oversized health bar, and a sunken merchant body.
+
+   ```csharp
+   private static void Capture(string name)
+   {
+       var directory = OS.GetUserDataDir() + "/<modname>_selftest";
+       DirAccess.MakeDirRecursiveAbsolute(directory);
+       var path = $"{directory}/{name}.png";
+       ((SceneTree)Engine.GetMainLoop()).Root.GetViewport().GetTexture().GetImage().SavePng(path);
+       MainFile.Logger.Info($"[T2MOD-SELFTEST] <ModName> screenshot: {path}");
+   }
+   ```
 8. Emit the final `character foundation/static-presentation ... observed=all` marker only after
    every assertion passes, followed by `selftest done` and a strict no-fresh-error check.
+
+A selected secondary resource or ordered buffer adds its own scenario from its reference; the
+Foundation checks do not replace that capability's invariant.
 
 ## Proof matrix
 

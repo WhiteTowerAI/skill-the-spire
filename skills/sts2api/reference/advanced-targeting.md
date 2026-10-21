@@ -214,6 +214,10 @@ the current supported matrix uses a source-aware single Card, a single Potion, a
 player-aware multi Card. The automated state proof records exact target creature IDs,
 before/after values, Card result pile, Card Energy/Stars, and Potion belt membership.
 
+Keep the three consumers in one `plan.Combat` scenario; do not add a multi Potion or infer its
+lifecycle from another consumer. Establish candidate states through public combat Cmds, and
+for each consumer also assert the registered target kind and the diagnostic target id.
+
 Cover these states without inferring one route from another:
 
 1. zero, one, and multiple legal candidates;

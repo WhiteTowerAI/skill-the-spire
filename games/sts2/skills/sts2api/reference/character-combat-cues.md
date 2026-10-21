@@ -4,7 +4,7 @@
 > animation pipeline.
 
 Use this page with `recipes/character.md`, `reference/character-presentation.md`, and
-`reference/art-contract.md` when a Character SPEC selects combat cues.
+`reference/art-character.md` when a Character SPEC selects combat cues.
 
 ## Cue contract
 
@@ -102,7 +102,7 @@ python ${GAME_TOOLS_DIR}/gen_sprite.py import --spec character_cues --slug cues 
   --input <sheet.png> --out <ModName>/images
 ```
 
-Use the fixed cue prompt in `reference/art-contract.md`. `import` takes an existing sheet (a
+Use the fixed cue prompt in `reference/art-character.md` § Character prompt templates. `import` takes an existing sheet (a
 host-tool output, the user's file, or a kept source) without a call and no identity
 reference. Either command stages the sheet at `<project>/art-sources/character-cues/sheet.png`
 and replaces `images/charui/cues/` only after the whole sheet passes.
