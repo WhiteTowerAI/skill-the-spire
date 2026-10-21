@@ -532,23 +532,30 @@ references go with every call:
    subject.
 
    Bold 2D game illustration with a mythic, monumental mood: big simplified shapes,
-   hard-edged cel shading with flat tones, crisp dark outlines on the focal subject, high
-   contrast. One legendary subject (a figure, creature, relic, or force) is shown whole,
-   centered in the upper half with open space around it, inside a simple stylized
-   environment that gives depth: sky, distant peaks, rock, a rift of light, or a ritual
-   floor. The background is one dominant hue in a smooth vertical gradient or a few large
-   angular color fields; the subject and its glow carry one or two accent colors. Angular
-   shards, a radiating burst, or sweeping curved shapes may frame the subject. The lower
-   half continues the scene as darker, low-detail ground or sky with no second subject.
+   hard-edged cel shading, crisp dark outlines on the focal subject, high contrast and
+   saturated color. The subject is hand-painted, not flat vector clip art: it carries rich
+   material detail (feathers, scales, cracked stone, worn metal, cloth folds) and painted
+   highlight shapes, while the background stays simple. One legendary subject (a figure,
+   creature, relic, or force) is shown whole in a dramatic pose or motion, large enough to
+   span about two thirds of the width, placed high with its center about one third of the
+   way down, inside a simple stylized environment that gives depth: sky, distant peaks,
+   rock, a rift of light, or a ritual floor. The background is one dominant hue in a smooth vertical gradient or a few
+   large angular color fields, and it runs to every edge of the image; the subject and its
+   glow carry one or two accent colors. Angular shards, a radiating burst, or sweeping
+   curved shapes may frame the subject. The lower half continues the scene as darker,
+   low-detail ground or sky with no second subject.
 
    NOT photorealistic, NOT a 3D render, NOT pixel art. No text, letters, runes, glyphs,
    numbers, logos, border, card frame, UI, or watermark.
 [② generated subject]    ← the same name-to-picture rule as the normal card above
 [③ fixed structural/negative constraints]:
-   A single {subject}, shown whole and centered in the upper half of a tall portrait
-   (about 5:7). Keep its key part (head, face, blade, core) between about 15% and 45% of
-   the height from the top and away from the side edges. The top strip stays simple. The
-   lower half is a quiet, darker continuation of the background with no important detail.
+   A single {subject}, shown whole and large in a tall portrait (about 5:7). Place it
+   high: its center is about one third of the way down from the top edge, and its key
+   part (head, face, blade, glowing core, point of impact) stays above the middle of the
+   image and away from the side edges. Nothing the picture needs sits below the middle.
+   The scene fills the entire canvas to every edge: no blank band, frame, or letterbox at
+   the top or bottom. The lower half is a quiet, darker continuation of the background
+   (ground, water, cloud, or shadow) with no important detail.
    No text, no border, no card frame, no UI, no watermark.
    NOT photorealistic, NOT 3D render, NOT pixel art.
 ```
