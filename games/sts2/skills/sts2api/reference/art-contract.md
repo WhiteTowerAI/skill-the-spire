@@ -328,9 +328,7 @@ The remaining boundaries are explicit:
 
 The promoted bounded VFX proof used only public/native pieces: `EventModel.OnRoomEnter`,
 `NEventLayout.AddVfxAnchoredToPortrait`, native `Node2D`/`Line2D`/`Polygon2D`, a looping
-`Tween`, Fast Mode handling, and explicit `QueueFreeSafely` cleanup. The real headed run
-observed rotation advance plus visible initial/page/resumed states, then proved cleanup on
-combat entry. RitsuLib exposes broader custom Event VFX/layout routes, but they remain
+`Tween`, Fast Mode handling, and explicit `QueueFreeSafely` cleanup. RitsuLib exposes broader custom Event VFX/layout routes, but they remain
 unlisted. `portrait_halo` is the only generated VFX profile; the
 separate exact built-in `trial_noble` profile is documented in
 `reference/event-native-presentation.md`. Arbitrary scenes, shaders, audio, or other

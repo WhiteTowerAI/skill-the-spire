@@ -83,8 +83,8 @@ Report a requested vanilla tag removal as unsupported. Do not lower it to
 
 ## Manifest contract
 
-Resolve the target first, copy the exact required baseline fields from the checked
-catalog, and preserve operation order. A rarity change is:
+Resolve the target first and preserve operation order. Build reads the target's catalog
+record itself, so the operation holds only the route and the change. A rarity change is:
 
 ```json
 {
@@ -95,13 +95,7 @@ catalog, and preserve operation order. A rarity change is:
   "surface": "card.rarity",
   "route": {
     "class": "public",
-    "id": "card.property.rarity",
-    "fingerprint": null
-  },
-  "expected_baseline": {
-    "category": "CARD",
-    "type": "MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad",
-    "properties": { "rarity": "Basic" }
+    "id": "card.property.rarity"
   },
   "semantics": { "adjustment": "set", "value": "Common" }
 }
@@ -134,8 +128,8 @@ A composed `OnPlay` operation records `timing` and `run_after_replacement`. The 
 be false for compose-before and is an explicit choice for compose-after. Owner lifecycle
 effects cannot select `play_target`, because those hooks have no `CardPlay` target.
 
-The build preflight rejects wrong route/mode/surface combinations, missing baseline fields,
-unknown enum values, malformed effects or predicates, non-Card targets, and unlisted
+The build preflight rejects wrong route/mode/surface combinations, a target the route does
+not fit, unknown enum values, malformed effects or predicates, non-Card targets, and unlisted
 routes. It also rejects a cost `set` after a delta. One set followed by ordered deltas is
 valid. Appended tags, fragments, tips, glow predicates, playability decisions, owner hooks,
 and composed effects retain manifest order. Multiple replacements of the same title,
@@ -143,8 +137,8 @@ type-text, description key, `OnPlay` surface, or vanilla variable conflict.
 
 ## Vanilla variable values
 
-`card.vars.base` sets one existing vanilla variable. The baseline copies the target's
-`properties.dynamic_vars` and `properties.upgrade_levels` from the catalog:
+`card.vars.base` sets one existing vanilla variable, named as in the resolved record's
+`properties.dynamic_vars`:
 
 ```json
 {
@@ -153,21 +147,7 @@ type-text, description key, `OnPlay` surface, or vanilla variable conflict.
   "target_model_id": "CARD.STRIKE_IRONCLAD",
   "mode": "adjust",
   "surface": "card.dynamic_vars",
-  "route": { "class": "public", "id": "card.vars.base", "fingerprint": null },
-  "expected_baseline": {
-    "category": "CARD",
-    "type": "MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad",
-    "properties": {
-      "dynamic_vars": [
-        { "name": "Damage", "type": "MegaCrit.Sts2.Core.Localization.DynamicVars.DamageVar", "base_value": 6 }
-      ],
-      "upgrade_levels": [
-        { "level": 1, "energy_cost": 1, "star_cost": -1, "dynamic_vars": [
-          { "name": "Damage", "type": "MegaCrit.Sts2.Core.Localization.DynamicVars.DamageVar", "base_value": 9 }
-        ] }
-      ]
-    }
-  },
+  "route": { "class": "public", "id": "card.vars.base" },
   "semantics": { "variable": "Damage", "base_value": 9, "upgrade_delta": 4 }
 }
 ```
@@ -206,10 +186,6 @@ The vanilla Card has a single upgrade level, and a downgrade re-clones the canon
 values, so this fixup needs no downgrade handler. This is the only owner-variable write a
 capability makes.
 
-Observed on the pinned host with Strike `Damage` 9 / `upgrade_delta` 4: canonical, new
-mutable copy, starter deck, upgraded copy 13, save round trip 13, downgrade 9, combat
-damage 9 and 13, and hand text `Deal 9 damage.` / `Deal 13 damage.` all followed.
-
 ## Rules text replacement
 
 `card.description.localization` replaces the Card's whole vanilla description. The game
@@ -223,18 +199,7 @@ wins, so the Mod ships the vanilla key itself:
   "target_model_id": "CARD.STRIKE_IRONCLAD",
   "mode": "replace",
   "surface": "card.description_text",
-  "route": { "class": "public", "id": "card.description.localization", "fingerprint": null },
-  "expected_baseline": {
-    "category": "CARD",
-    "type": "MegaCrit.Sts2.Core.Models.Cards.StrikeIronclad",
-    "description_localization": {
-      "key": "STRIKE_IRONCLAD.description",
-      "localized_descriptions": {
-        "eng": "Deal {Damage:diff()} damage.",
-        "zhs": "造成{Damage:diff()}点伤害。"
-      }
-    }
-  },
+  "route": { "class": "public", "id": "card.description.localization" },
   "semantics": { "localization": { "table": "cards", "key": "STRIKE_IRONCLAD.description" } }
 }
 ```
@@ -244,9 +209,9 @@ wins, so the Mod ships the vanilla key itself:
 <ModName>/localization/zhs/cards.json  {"STRIKE_IRONCLAD.description": "造成{Damage:diff()}点伤害。\n抽1张牌。"}
 ```
 
-The baseline's vanilla text is drift protection: a game update that rewrites the vanilla
-description fails the build instead of silently replacing new text. No C# is generated for
-this route. Do not also write the title key unless SPEC renames the Card.
+Shipping the key is the whole route: no C# is generated, and Build finds and checks every
+vanilla key in the Mod's tables whether or not the manifest declares the operation. Do not
+also write the title key unless SPEC renames the Card.
 
 The vanilla description is formatted before any capability runs, so it can reference only
 the Card's own `DynamicVars`, variables the vanilla text already uses, and the fixed Card
@@ -259,20 +224,15 @@ The replacement is global: the Card library and every view of the Card show it. 
 requires `eng` and `zhs`; every other language the Mod does not ship keeps the vanilla text,
 so report that. If another loaded Mod replaces the same key, the later-loaded Mod wins.
 
-Observed on the pinned host: a replaced Strike description resolved in `eng` and `zhs` with
-the vanilla title unchanged.
-
 ## Name replacement
 
 `card.title.localization` renames the Card the same way, through its vanilla
-`<ENTRY>.title` key: `mode: replace`, surface `card.title`, baseline `title_localization`
-with its key and vanilla `eng`/`zhs` titles, and semantics
+`<ENTRY>.title` key: `mode: replace`, surface `card.title`, and semantics
 `{"localization": {"table": "cards", "key": "<ENTRY>.title"}}`. Use it only when the user
 asked for a new name. Write the complete new name; the game still appends `+` to an
 upgraded Card. A title is formatted without variables, so Build rejects any `{...}` in it.
 Every consumer that reads the title key sees the new name, including the hover text of
-Powers and timeline entries that name the Card. Observed on the pinned host: Defend renamed
-`Brace`/`架势` resolved through `Title`, the raw title key, and the upgraded `Brace+`/`架势+`.
+Powers and timeline entries that name the Card.
 
 ## Registration
 
@@ -403,7 +363,7 @@ damage reads the owner's `Damage` variable, so a `card.vars.base` change reaches
 Capability-owned variables clone and save through RitsuLib. Apply their upgrade deltas in
 `OnOwnerCardUpgraded`. The default capability follows clones of the same target identity.
 It does not carry to a different transformed Card. On downgrade, rebuild capability-owned
-values from the manifest baseline and current owner upgrade level rather than subtracting
+values from their declared `base_value`/`upgrade_delta` and the owner's current upgrade level rather than subtracting
 from an unknown state.
 
 ## Localization and checks

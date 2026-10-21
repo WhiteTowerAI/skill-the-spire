@@ -101,13 +101,15 @@ switching to an old template.
   `reference/vanilla-text-style.md`, and rebuild. The Build still succeeds; record any
   deliberate exception in `MEMORY.md`.
 
-### `[vanilla-overrides]` with a target/route/page/localization/fingerprint detail
+### `[vanilla-overrides]` with a target/route/page/localization detail
 
-- **Cause:** the override manifest, generated flow, or `events.json` drifted from the pinned
-  catalog — unlisted operation, wrong baseline, same-Mod conflict, or a stale Adapter
-  fingerprint.
-- **Fix:** fix the named semantic operation or generated source. Never relax the catalog and
-  never swap in a guessed patch target.
+- **Cause:** the override manifest, generated flow, a shipped vanilla text key, or
+  `events.json` does not fit the pinned catalog — unlisted operation, a target the route does
+  not fit, a same-Mod conflict, or a vanilla key missing a language or using a variable the
+  vanilla text cannot resolve. `expected_baseline`, `fingerprint`, or `dependencies` in the
+  manifest is an old field: delete it.
+- **Fix:** fix the named semantic operation, table, or generated source. Never relax the
+  catalog and never swap in a guessed patch target.
 
 ### `Mod source uses a forbidden route: <file>:<line>: ...`
 

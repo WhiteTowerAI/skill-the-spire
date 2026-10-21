@@ -36,8 +36,8 @@ Act/shared source membership, and localized titles.
 Card, Relic, Potion, and Power records also carry `description_localization`: the English
 and Simplified Chinese rules-text template from the same table as the title
 (`<ENTRY>.description`), with its SmartFormat variables intact. It is reference text for
-"like vanilla X" lookups and the drift baseline of a rules-text replacement. Curse/Status
-Cards and some Powers have no description key and carry none.
+"like vanilla X" lookups and tells Build which variables a replaced description can use.
+Curse/Status Cards and some Powers have no description key and carry none.
 
 ## Exact target resolution
 
@@ -83,34 +83,33 @@ the project directory and is never deployed into `mods/<ModName>/`: the game par
 `.json` under a deployed Mod directory as a Mod manifest and logs a load error for each one
 without an `id`. The generated C# carries the accepted operations at runtime, so the
 deployed Mod needs only its own `mod_manifest.json`. `build.py` fails on any
-deployed non-manifest `.json`. A project without this file builds with no vanilla overrides.
+deployed non-manifest `.json`. A project without this file builds with no override
+operations; Build still checks any vanilla text key its tables ship (§ Fail-closed rules).
 
-Every authorable operation carries `order`, stable `operation_id`, resolved
-`target_model_id`, semantic `mode`, affected `surface`, selected route, expected catalog
-baseline, and semantic payload. The expected baseline is a recursive subset of the checked
-target record, for example:
+Every authorable operation carries exactly these fields:
 
 ```json
 {
-  "expected_baseline": {
-    "properties": {
-      "rarity": "Common"
-    }
-  }
+  "order": 0,
+  "operation_id": "strike.rarity",
+  "target_model_id": "CARD.STRIKE_IRONCLAD",
+  "mode": "adjust",
+  "surface": "card.rarity",
+  "route": { "class": "public", "id": "card.property.rarity" },
+  "semantics": { "adjustment": "set", "value": "Common" }
 }
 ```
 
-Types and values must match exactly. Missing or changed fields are baseline drift. Card
-operations include exact category/type baselines and the surface-specific fields in
-`vanilla-card-overrides.md`; a rules-text replacement also pins the vanilla
-`description_localization` text, so a game update that rewrites it is drift. Visual operations also require exact content kind and a
-checked Mod-local resource contract from `vanilla-visual-overrides.md`. No other operation
-is authorized merely because this generic shape can identify its target. Existing-Ancient
-operations additionally require exact `content_kind`, singleplayer semantics, Mod-local
-`events.json`, and every selected flow/route fingerprint from
-`vanilla-ancient-overrides.md`. Availability operations require the exact epoch or
-pool membership semantics, complete source baselines, fixed Adapter dependencies, and
-post-operation primary pool from `vanilla-availability-overrides.md`.
+`order` is the operation's index in the list, `operation_id` is stable and unique,
+`target_model_id` is the resolved `ModelId`, and `route` names the route class (`public` or
+`adapter`) and id from the family reference. Never copy catalog values into the manifest:
+Build reads the target's pinned catalog record itself and derives every fixed Adapter a
+route depends on, so there is no baseline, fingerprint, or dependency list to write. The
+family references define each route's `mode`, `surface`, and `semantics`; visual operations
+also name a checked Mod-local resource from `vanilla-visual-overrides.md`, and
+existing-Ancient operations name Mod-local `events.json` text from
+`vanilla-ancient-overrides.md`. No operation is authorized merely because this generic
+shape can identify its target.
 
 ## Fail-closed rules
 
@@ -118,9 +117,11 @@ Validation rejects:
 
 - wrong host/profile or a changed catalog digest;
 - unknown targets, ambiguous names, duplicate operation IDs, or out-of-order operations;
-- a baseline value/type that differs from the selected catalog model;
+- an `expected_baseline`, route `fingerprint`, or route `dependencies` field: delete it;
+- a target the route does not fit, such as a non-Card target on a Card route;
 - an unlisted `probe` route;
-- an unknown adapter or IL fingerprint that differs from its checked catalog record;
+- an unknown Adapter, or a route whose fixed Adapter dependencies are missing from the
+  pinned catalog;
 - an ordinary Event routed as an Ancient, unknown/unreachable Ancient page, replacement
   without a finish path, or missing/empty Mod-local Ancient option/page text;
 - a made-up epoch, an unfiltered act-owned Ancient, incomplete Relic/Potion override
@@ -131,9 +132,10 @@ Validation rejects:
 - visual paths outside exact `res://<ModId>/`, traversal/backslashes, script resources,
   wrong resource kinds, required project files that are absent, or unusable layer
   directories; and
-- a rules-text replacement whose key is not the target's vanilla description key, whose
-  shipped `eng`/`zhs` (or other shipped language) value is missing or empty, or whose text
-  references a variable the vanilla description cannot resolve; and
+- a vanilla title or description key in any shipped Mod table (declared or not) whose
+  `eng`/`zhs` (or other shipped language) value is missing or empty, or whose text
+  references a variable the vanilla text cannot resolve; a declared rules-text operation
+  must also name the target's own vanilla key; and
 - ambiguous same-Mod overlap on one target/surface.
 
 Ordered Card tag/text/tip/glow/playability/owner-hook and behavior composition is preserved.

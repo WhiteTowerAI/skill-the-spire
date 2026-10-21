@@ -1563,23 +1563,6 @@ def _scan_semantic_keys(value: Any, path: str = "semantics") -> None:
             _scan_semantic_keys(child, f"{path}[{index}]")
 
 
-def _validate_expected_subset(actual: Any, expected: Any, path: str) -> None:
-    if isinstance(expected, dict):
-        if not isinstance(actual, dict):
-            raise VanillaOverrideError(
-                f"baseline drift at {path}: expected an object, catalog has {type(actual).__name__}"
-            )
-        for key, child in expected.items():
-            if key not in actual:
-                raise VanillaOverrideError(f"baseline drift at {path}.{key}: field is absent")
-            _validate_expected_subset(actual[key], child, f"{path}.{key}")
-        return
-    if type(actual) is not type(expected) or actual != expected:
-        raise VanillaOverrideError(
-            f"baseline drift at {path}: expected {expected!r}, catalog has {actual!r}"
-        )
-
-
 def _require_integer(value: Any, label: str, *, minimum: int | None = None) -> int:
     if isinstance(value, bool) or not isinstance(value, int):
         raise VanillaOverrideError(f"{label} must be an integer")
@@ -1606,18 +1589,19 @@ def _require_choice(value: Any, choices: set[str], label: str) -> str:
     return text
 
 
-def _require_baseline_paths(
-    baseline: dict[str, Any],
+def _require_target_paths(
+    target_model: dict[str, Any],
     paths: tuple[tuple[str, ...], ...],
     operation_id: str,
 ) -> None:
     for path in paths:
-        current: Any = baseline
+        current: Any = target_model
         for part in path:
             if not isinstance(current, dict) or part not in current:
                 dotted = ".".join(path)
                 raise VanillaOverrideError(
-                    f"operation {operation_id} expected_baseline must include {dotted}"
+                    f"operation {operation_id} target {target_model.get('id')} has no "
+                    f"{dotted} in the pinned catalog"
                 )
             current = current[part]
 
@@ -1967,7 +1951,6 @@ def _validate_non_card_owner_hook_operation(
     surface: str,
     route_id: str,
     route: dict[str, Any],
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     models: dict[str, dict[str, Any]],
     adapters: dict[str, dict[str, Any]],
@@ -1983,7 +1966,7 @@ def _validate_non_card_owner_hook_operation(
             f"operation {operation_id} route {route_id} requires surface "
             f"{expected_surface} and compose/replace mode"
         )
-    _require_baseline_paths(baseline, (("category",), ("type",)), operation_id)
+    _require_target_paths(target_model, (("category",), ("type",)), operation_id)
     label = f"operation {operation_id} semantics"
     if mode == "compose":
         if route["class"] != "public":
@@ -1993,7 +1976,7 @@ def _validate_non_card_owner_hook_operation(
         hook = _validate_non_card_hook_rule(
             semantics.get("rule"), f"{label} rule", target_model, models
         )
-        _validate_route_dependencies(route, set(), adapters, f"operation {operation_id} route")
+        _require_route_dependencies(set(), adapters, f"operation {operation_id} route")
         return f"{surface}.{hook}"
 
     if route["class"] != "adapter":
@@ -2010,7 +1993,7 @@ def _validate_non_card_owner_hook_operation(
     required = {"non-card.owner-hook-stream.combat"}
     if category in {"POTION", "RELIC"}:
         required.add("non-card.owner-hook-stream.run")
-    _validate_route_dependencies(route, required, adapters, f"operation {operation_id} route")
+    _require_route_dependencies(required, adapters, f"operation {operation_id} route")
     return surface
 
 
@@ -2021,7 +2004,6 @@ def _validate_non_card_data_operation(
     surface: str,
     route_id: str,
     route: dict[str, Any],
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     adapters: dict[str, dict[str, Any]],
 ) -> None:
@@ -2037,8 +2019,8 @@ def _validate_non_card_data_operation(
     if route["class"] != "adapter":
         raise VanillaOverrideError(f"operation {operation_id} data adjustment requires an adapter")
     property_name = contract["property"]
-    _require_baseline_paths(
-        baseline, (("category",), ("type",), ("properties", property_name)), operation_id
+    _require_target_paths(
+        target_model, (("category",), ("type",), ("properties", property_name)), operation_id
     )
     label = f"operation {operation_id} semantics"
     _require_exact_keys(semantics, {"adjustment", "multiplayer", "value"}, label)
@@ -2058,7 +2040,7 @@ def _validate_non_card_data_operation(
             semantics.get("value"), f"{label} value", minimum=1 if adjustment == "set" else None
         )
     required = _non_card_dependency_ids(target_model, (contract["adapter"],))
-    _validate_route_dependencies(route, required, adapters, f"operation {operation_id} route")
+    _require_route_dependencies(required, adapters, f"operation {operation_id} route")
 
 
 def _validate_non_card_lifecycle_operation(
@@ -2068,7 +2050,6 @@ def _validate_non_card_lifecycle_operation(
     surface: str,
     route_id: str,
     route: dict[str, Any],
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     models: dict[str, dict[str, Any]],
     adapters: dict[str, dict[str, Any]],
@@ -2085,7 +2066,7 @@ def _validate_non_card_lifecycle_operation(
         )
     if route["class"] != "adapter":
         raise VanillaOverrideError(f"operation {operation_id} lifecycle replacement requires an adapter")
-    _require_baseline_paths(baseline, (("category",), ("type",)), operation_id)
+    _require_target_paths(target_model, (("category",), ("type",)), operation_id)
     label = f"operation {operation_id} semantics"
 
     effect_fields: tuple[str, ...] = ()
@@ -2135,7 +2116,7 @@ def _validate_non_card_lifecycle_operation(
     required = _non_card_dependency_ids(target_model, suffixes)
     if route_id == "behavior.event.options":
         required.update(_event_flow_dependencies(semantics))
-    _validate_route_dependencies(route, required, adapters, f"operation {operation_id} route")
+    _require_route_dependencies(required, adapters, f"operation {operation_id} route")
 
 
 def _validate_monster_intent(value: Any, label: str) -> None:
@@ -2682,38 +2663,16 @@ def _validate_ancient_option(
     return dependencies, pages
 
 
-def _validate_route_dependencies(
-    route: dict[str, Any],
+def _require_route_dependencies(
     required: set[str],
     adapters: dict[str, dict[str, Any]],
     label: str,
 ) -> None:
-    dependencies = route.get("dependencies", [])
-    if not isinstance(dependencies, list):
-        raise VanillaOverrideError(f"{label} dependencies must be a list")
-    observed: list[str] = []
-    for index, dependency in enumerate(dependencies):
-        dependency_label = f"{label} dependencies[{index}]"
-        if not isinstance(dependency, dict):
-            raise VanillaOverrideError(f"{dependency_label} must be an object")
-        _require_exact_keys(dependency, {"id", "fingerprint"}, dependency_label)
-        dependency_id = _require_text(dependency.get("id"), f"{dependency_label} id")
-        adapter = adapters.get(dependency_id)
-        if adapter is None:
-            raise VanillaOverrideError(
-                f"{dependency_label} selects unknown adapter {dependency_id}"
-            )
-        fingerprint = _require_sha256(
-            dependency.get("fingerprint"), f"{dependency_label} fingerprint"
-        )
-        if fingerprint != adapter["il_sha256"]:
-            raise VanillaOverrideError(f"{dependency_label} fingerprint drift")
-        observed.append(dependency_id)
-    if observed != sorted(set(observed)):
-        raise VanillaOverrideError(f"{label} dependencies must be unique and sorted by id")
-    if set(observed) != required:
+    """The route's fixed Adapters, derived from its semantics, must be in the catalog."""
+    missing = sorted(dependency for dependency in required if dependency not in adapters)
+    if missing:
         raise VanillaOverrideError(
-            f"{label} dependencies must be exactly {', '.join(sorted(required)) or 'empty'}"
+            f"{label} needs Adapters missing from the pinned catalog: {', '.join(missing)}"
         )
 
 
@@ -2724,7 +2683,6 @@ def _validate_ancient_operation(
     surface: str,
     route_id: str,
     route: dict[str, Any],
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     models: dict[str, dict[str, Any]],
     adapters: dict[str, dict[str, Any]],
@@ -2749,8 +2707,8 @@ def _validate_ancient_operation(
             f"operation {operation_id} route {route_id} requires surface "
             f"{route_contract['surface']} and mode {route_contract['mode']}"
         )
-    _require_baseline_paths(
-        baseline,
+    _require_target_paths(
+        target_model,
         (("category",), ("type",), ("content_kind",)),
         operation_id,
     )
@@ -2869,8 +2827,7 @@ def _validate_ancient_operation(
         raise VanillaOverrideError(
             f"{label} replacement must include at least one reachable finish path"
         )
-    _validate_route_dependencies(
-        route,
+    _require_route_dependencies(
         required_dependencies,
         adapters,
         f"operation {operation_id} route",
@@ -2939,7 +2896,6 @@ def _validate_public_visual_operation(
     mode: str,
     surface: str,
     route_id: str,
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     mod_id: str,
 ) -> None:
@@ -2960,8 +2916,8 @@ def _validate_public_visual_operation(
             f"operation {operation_id} route {route_id} requires surface "
             f"{route['surface']} and mode visual"
         )
-    _require_baseline_paths(
-        baseline,
+    _require_target_paths(
+        target_model,
         (("category",), ("type",), ("content_kind",)),
         operation_id,
     )
@@ -2995,7 +2951,6 @@ def _validate_public_visual_operation(
 def _validate_vanilla_text_operation(
     operation_id: str,
     target_model: dict[str, Any],
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     field: str,
 ) -> None:
@@ -3008,8 +2963,8 @@ def _validate_vanilla_text_operation(
             f"operation {operation_id} target {target_model['id']} has no vanilla "
             f"{field} key to replace"
         )
-    _require_baseline_paths(
-        baseline,
+    _require_target_paths(
+        target_model,
         (
             (source_key, "key"),
             (source_key, texts_key, "eng"),
@@ -3031,15 +2986,14 @@ def _validate_vanilla_text_operation(
 def _validate_base_var_operation(
     operation_id: str,
     target_model: dict[str, Any],
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     *,
     allow_upgrade_delta: bool,
 ) -> None:
-    baseline_paths: tuple[tuple[str, ...], ...] = (("properties", "dynamic_vars"),)
+    required_paths: tuple[tuple[str, ...], ...] = (("properties", "dynamic_vars"),)
     if allow_upgrade_delta:
-        baseline_paths += (("properties", "upgrade_levels"),)
-    _require_baseline_paths(baseline, baseline_paths, operation_id)
+        required_paths += (("properties", "upgrade_levels"),)
+    _require_target_paths(target_model, required_paths, operation_id)
     label = f"operation {operation_id} semantics"
     allowed = {"base_value", "upgrade_delta", "variable"} if allow_upgrade_delta else {
         "base_value",
@@ -3098,7 +3052,6 @@ def _validate_non_card_public_operation(
     mode: str,
     surface: str,
     route_id: str,
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
 ) -> None:
     category, expected_surface, expected_mode = _NON_CARD_PUBLIC_ROUTES[route_id]
@@ -3111,14 +3064,14 @@ def _validate_non_card_public_operation(
             f"operation {operation_id} route {route_id} requires surface "
             f"{expected_surface} and mode {expected_mode}"
         )
-    _require_baseline_paths(baseline, (("category",), ("type",)), operation_id)
+    _require_target_paths(target_model, (("category",), ("type",)), operation_id)
     if route_id in _DESCRIPTION_LOCALIZATION_ROUTES:
         _validate_vanilla_text_operation(
-            operation_id, target_model, baseline, semantics, "description"
+            operation_id, target_model, semantics, "description"
         )
     else:
         _validate_base_var_operation(
-            operation_id, target_model, baseline, semantics, allow_upgrade_delta=False
+            operation_id, target_model, semantics, allow_upgrade_delta=False
         )
 
 
@@ -3129,7 +3082,6 @@ def _validate_public_card_operation(
     mode: str,
     surface: str,
     route_id: str,
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     models: dict[str, dict[str, Any]],
 ) -> None:
@@ -3149,7 +3101,7 @@ def _validate_public_card_operation(
             f"operation {operation_id} route {route_id} requires surface {expected_surface} "
             f"and mode {sorted(modes)}"
         )
-    _require_baseline_paths(baseline, (("category",), ("type",)), operation_id)
+    _require_target_paths(target_model, (("category",), ("type",)), operation_id)
 
     label = f"operation {operation_id} semantics"
     if route_id.startswith("card.property.") and route_id != "card.property.tags":
@@ -3158,13 +3110,13 @@ def _validate_public_card_operation(
             "card.property.rarity": ("rarity", _CARD_RARITIES),
             "card.property.target": ("target_type", _TARGET_TYPES),
         }[route_id]
-        _require_baseline_paths(baseline, (("properties", property_name),), operation_id)
+        _require_target_paths(target_model, (("properties", property_name),), operation_id)
         _require_exact_keys(semantics, {"adjustment", "value"}, label)
         if semantics.get("adjustment") != "set":
             raise VanillaOverrideError(f"{label} adjustment must be 'set'")
         _require_choice(semantics.get("value"), choices, f"{label} value")
     elif route_id == "card.property.tags":
-        _require_baseline_paths(baseline, (("properties", "tags"),), operation_id)
+        _require_target_paths(target_model, (("properties", "tags"),), operation_id)
         _require_exact_keys(semantics, {"action", "values"}, label)
         if semantics.get("action") != "append":
             raise VanillaOverrideError(f"{label} action must be 'append'")
@@ -3176,8 +3128,8 @@ def _validate_public_card_operation(
             raise VanillaOverrideError(f"{label} values must not contain duplicate tags")
     elif route_id in {"card.cost.energy", "card.cost.stars"}:
         prefix = "energy" if route_id.endswith("energy") else "star"
-        _require_baseline_paths(
-            baseline,
+        _require_target_paths(
+            target_model,
             (("properties", f"{prefix}_cost"), ("properties", f"{prefix}_cost_x")),
             operation_id,
         )
@@ -3190,8 +3142,8 @@ def _validate_public_card_operation(
             minimum = -1
         _require_integer(semantics.get("value"), f"{label} value", minimum=minimum)
     elif route_id == "card.play-state.can-play":
-        _require_baseline_paths(
-            baseline,
+        _require_target_paths(
+            target_model,
             (
                 ("properties", "energy_cost"),
                 ("properties", "star_cost"),
@@ -3276,8 +3228,8 @@ def _validate_public_card_operation(
         _require_exact_keys(semantics, {"when"}, label)
         _validate_predicate(semantics.get("when"), f"{label} when")
     elif route_id == "card.capability.dynamic-vars":
-        _require_baseline_paths(
-            baseline,
+        _require_target_paths(
+            target_model,
             (("properties", "dynamic_vars"), ("properties", "max_upgrade_level")),
             operation_id,
         )
@@ -3337,15 +3289,15 @@ def _validate_public_card_operation(
         )
     elif route_id == "card.description.localization":
         _validate_vanilla_text_operation(
-            operation_id, target_model, baseline, semantics, "description"
+            operation_id, target_model, semantics, "description"
         )
     elif route_id == "card.title.localization":
         _validate_vanilla_text_operation(
-            operation_id, target_model, baseline, semantics, "title"
+            operation_id, target_model, semantics, "title"
         )
     elif route_id == "card.vars.base":
         _validate_base_var_operation(
-            operation_id, target_model, baseline, semantics, allow_upgrade_delta=True
+            operation_id, target_model, semantics, allow_upgrade_delta=True
         )
     elif route_id == "card.owner-hooks":
         _require_exact_keys(semantics, {"effects", "trigger", "when"}, label)
@@ -3386,7 +3338,6 @@ def _validate_availability_epoch_operation(
     surface: str,
     route_id: str,
     route: dict[str, Any],
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     adapters: dict[str, dict[str, Any]],
 ) -> None:
@@ -3401,8 +3352,8 @@ def _validate_availability_epoch_operation(
             f"operation {operation_id} epoch route requires surface "
             f"{expected_surface} and mode availability"
         )
-    _require_baseline_paths(
-        baseline,
+    _require_target_paths(
+        target_model,
         (("category",), ("type",), ("content_kind",)),
         operation_id,
     )
@@ -3438,8 +3389,7 @@ def _validate_availability_epoch_operation(
                 f"operation {operation_id} route {route_id} requires a "
                 f"{contract['category']} target and surface {contract['surface']}"
             )
-        _validate_route_dependencies(
-            route,
+        _require_route_dependencies(
             set(AVAILABILITY_EPOCH_ADAPTER_DEPENDENCIES[route_id]),
             adapters,
             f"operation {operation_id} route",
@@ -3490,7 +3440,6 @@ def _validate_availability_pool_operation(
     surface: str,
     route_id: str,
     route: dict[str, Any],
-    baseline: dict[str, Any],
     semantics: dict[str, Any],
     models: dict[str, dict[str, Any]],
 ) -> None:
@@ -3511,8 +3460,8 @@ def _validate_availability_pool_operation(
             f"operation {operation_id} route {route_id} requires surface "
             f"{contract['surface']} and mode availability"
         )
-    _require_baseline_paths(
-        baseline,
+    _require_target_paths(
+        target_model,
         (("category",), ("type",), ("sources", contract["source_key"])),
         operation_id,
     )
@@ -3639,6 +3588,11 @@ def _validate_operation(
     adapters: dict[str, dict[str, Any]],
     mod_id: str,
 ) -> tuple[str, str, str, str]:
+    if isinstance(operation, dict) and "expected_baseline" in operation:
+        raise VanillaOverrideError(
+            f"operation {index} expected_baseline is not written any more; delete it "
+            "(Build reads the target's pinned catalog record itself)"
+        )
     _require_exact_keys(
         operation,
         {
@@ -3648,7 +3602,6 @@ def _validate_operation(
             "mode",
             "surface",
             "route",
-            "expected_baseline",
             "semantics",
         },
         f"operation {index}",
@@ -3666,30 +3619,7 @@ def _validate_operation(
     if mode not in _MODES:
         raise VanillaOverrideError(f"operation {operation_id} has unsupported mode {mode}")
     surface = _require_text(operation.get("surface"), f"operation {operation_id} surface")
-    baseline = operation.get("expected_baseline")
     semantics = operation.get("semantics")
-    if not isinstance(baseline, dict) or not baseline:
-        raise VanillaOverrideError(f"operation {operation_id} expected_baseline must be non-empty")
-    unsupported_baseline_keys = sorted(
-        set(baseline)
-        - {
-            "id",
-            "category",
-            "entry",
-            "type",
-            "content_kind",
-            "title_localization",
-            "description_localization",
-            "properties",
-            "sources",
-        }
-    )
-    if unsupported_baseline_keys:
-        raise VanillaOverrideError(
-            f"operation {operation_id} expected_baseline contains unsupported fields: "
-            f"{', '.join(unsupported_baseline_keys)}"
-        )
-    _validate_expected_subset(target_model, baseline, f"operation {operation_id} expected_baseline")
     if not isinstance(semantics, dict) or not semantics:
         raise VanillaOverrideError(f"operation {operation_id} semantics must be non-empty")
     _scan_semantic_keys(semantics)
@@ -3697,26 +3627,17 @@ def _validate_operation(
     route = operation.get("route")
     if not isinstance(route, dict):
         raise VanillaOverrideError(f"operation {operation_id} route must be an object")
-    _require_exact_keys(
-        route,
-        {"class", "id", "fingerprint", "dependencies"},
-        f"operation {operation_id} route",
-    )
+    for derived in ("fingerprint", "dependencies"):
+        if derived in route:
+            raise VanillaOverrideError(
+                f"operation {operation_id} route {derived} is not written any more; delete "
+                "it (Build derives Adapter dependencies from the route and the catalog)"
+            )
+    _require_exact_keys(route, {"class", "id"}, f"operation {operation_id} route")
     route_class = _require_text(route.get("class"), f"operation {operation_id} route class").lower()
     if route_class not in _ROUTE_CLASSES:
         raise VanillaOverrideError(f"operation {operation_id} route class is invalid")
     route_id = _require_text(route.get("id"), f"operation {operation_id} route id")
-    dependency_routes = (
-        set(ANCIENT_ROUTES)
-        | set(AVAILABILITY_EPOCH_ADAPTER_DEPENDENCIES)
-        | set(_NON_CARD_OWNER_HOOK_ROUTES)
-        | set(_NON_CARD_DATA_ROUTES)
-        | set(_NON_CARD_LIFECYCLE_ROUTES)
-    )
-    if route_id not in dependency_routes and "dependencies" in route:
-        raise VanillaOverrideError(
-            f"operation {operation_id} route dependencies are not valid for {route_id}"
-        )
     if route_class == "probe":
         raise VanillaOverrideError(f"operation {operation_id} still selects an unlisted probe route")
     non_card_route = (
@@ -3724,19 +3645,8 @@ def _validate_operation(
         or route_id in _NON_CARD_DATA_ROUTES
         or route_id in _NON_CARD_LIFECYCLE_ROUTES
     )
-    if route_class == "adapter" and not non_card_route:
-        adapter = adapters.get(route_id)
-        if adapter is None:
-            raise VanillaOverrideError(f"operation {operation_id} selects unknown adapter {route_id}")
-        fingerprint = _require_sha256(
-            route.get("fingerprint"), f"operation {operation_id} adapter fingerprint"
-        )
-        if fingerprint != adapter["il_sha256"]:
-            raise VanillaOverrideError(f"operation {operation_id} adapter fingerprint drift")
-    elif route.get("fingerprint") is not None:
-        raise VanillaOverrideError(
-            f"operation {operation_id} public route must not declare an adapter fingerprint"
-        )
+    if route_class == "adapter" and not non_card_route and route_id not in adapters:
+        raise VanillaOverrideError(f"operation {operation_id} selects unknown adapter {route_id}")
     resolved_surface = surface
     if route_id in _NON_CARD_OWNER_HOOK_ROUTES:
         resolved_surface = _validate_non_card_owner_hook_operation(
@@ -3746,7 +3656,6 @@ def _validate_operation(
             surface,
             route_id,
             route,
-            baseline,
             semantics,
             models,
             adapters,
@@ -3759,7 +3668,6 @@ def _validate_operation(
             surface,
             route_id,
             route,
-            baseline,
             semantics,
             adapters,
         )
@@ -3771,7 +3679,6 @@ def _validate_operation(
             surface,
             route_id,
             route,
-            baseline,
             semantics,
             models,
             adapters,
@@ -3785,7 +3692,6 @@ def _validate_operation(
             surface,
             route_id,
             route,
-            baseline,
             semantics,
             models,
             adapters,
@@ -3802,7 +3708,6 @@ def _validate_operation(
             surface,
             route_id,
             route,
-            baseline,
             semantics,
             adapters,
         )
@@ -3814,7 +3719,6 @@ def _validate_operation(
             surface,
             route_id,
             route,
-            baseline,
             semantics,
             models,
         )
@@ -3827,7 +3731,6 @@ def _validate_operation(
                 mode,
                 surface,
                 route_id,
-                baseline,
                 semantics,
                 models,
             )
@@ -3838,7 +3741,6 @@ def _validate_operation(
                 mode,
                 surface,
                 route_id,
-                baseline,
                 semantics,
             )
         elif route_id in PUBLIC_VISUAL_ROUTES:
@@ -3848,7 +3750,6 @@ def _validate_operation(
                 mode,
                 surface,
                 route_id,
-                baseline,
                 semantics,
                 mod_id,
             )
@@ -4224,43 +4125,59 @@ def _allowed_text_variables(target_model: dict[str, Any], field: str) -> set[str
     return allowed
 
 
+def _vanilla_text_keys(
+    catalog: dict[str, Any],
+) -> dict[tuple[str, str], tuple[dict[str, Any], str]]:
+    """Every vanilla (table, key) a Mod table replaces just by shipping it."""
+    keys: dict[tuple[str, str], tuple[dict[str, Any], str]] = {}
+    for model in catalog["models"]:
+        for field in ("title", "description"):
+            source = model.get(f"{field}_localization")
+            if isinstance(source, dict):
+                keys[(source["table"], source["key"])] = (model, field)
+    return keys
+
+
 def _validate_project_text_localization(
     project_dir: Path,
     mod_name: str,
     operations: list[dict[str, Any]],
     catalog: dict[str, Any],
 ) -> str:
-    selected = [
-        operation
+    """Check every vanilla title/description key the Mod's tables ship.
+
+    The game merges each Mod table over the base table and the Mod value wins, so a vanilla
+    key in any shipped table is a text replacement whether or not the manifest declares it.
+    """
+    localization_root = project_dir / mod_name / "localization"
+    vanilla_keys = _vanilla_text_keys(catalog)
+    replaced: set[tuple[str, str]] = {
+        (operation["semantics"]["localization"]["table"],
+         operation["semantics"]["localization"]["key"])
         for operation in operations
         if operation["route"]["id"] in _VANILLA_TEXT_ROUTES
-    ]
-    if not selected:
-        return "text_replacements=0"
-
-    models = {model["id"]: model for model in catalog["models"]}
-    localization_root = project_dir / mod_name / "localization"
+    }
     languages = set(REQUIRED_LANGUAGES)
     if localization_root.is_dir():
         languages.update(path.name for path in localization_root.iterdir() if path.is_dir())
+        for path in sorted(localization_root.glob("*/*.json")):
+            replaced.update(
+                (path.stem, key) for key in _read_object(path) if (path.stem, key) in vanilla_keys
+            )
+    if not replaced:
+        return "text_replacements=0"
 
-    for operation in selected:
-        field = _VANILLA_TEXT_ROUTES[operation["route"]["id"]]
-        target_model = models[operation["target_model_id"]]
-        table_name = operation["semantics"]["localization"]["table"]
-        key = operation["semantics"]["localization"]["key"]
+    for table_name, key in sorted(replaced):
+        target_model, field = vanilla_keys[(table_name, key)]
         allowed = _allowed_text_variables(target_model, field)
         for language in sorted(languages):
             path = localization_root / language / f"{table_name}.json"
             label = f"{mod_name}/localization/{language}/{table_name}.json"
-            if not path.is_file():
-                raise VanillaOverrideError(
-                    f"operation {operation['operation_id']} requires {label} with key {key}"
-                )
-            value = _read_object(path).get(key)
+            value = _read_object(path).get(key) if path.is_file() else None
             if not isinstance(value, str) or not value.strip():
                 raise VanillaOverrideError(
-                    f"{label} must replace {key} with a non-empty string"
+                    f"{key} replaces the vanilla {field} of {target_model['id']}, so {label} "
+                    "must replace it too with a non-empty string"
                 )
             unknown = sorted(set(_SMART_FORMAT_VARIABLE_RE.findall(value)) - allowed)
             if unknown:
@@ -4269,7 +4186,7 @@ def _validate_project_text_localization(
                     f"{label} {key} references variables the vanilla {field} cannot "
                     f"resolve: {', '.join(unknown)}; usable variables: {usable}"
                 )
-    return f"text_replacements={len(selected)}"
+    return f"text_replacements={len(replaced)}"
 
 
 def validate_project_override_manifest(
@@ -4279,9 +4196,10 @@ def validate_project_override_manifest(
     catalog_path: Path | None = None,
 ) -> str:
     manifest_path = project_dir / MANIFEST_RELATIVE_PATH
-    if not manifest_path.is_file():
-        return "not present (no vanilla overrides)"
     catalog = load_catalog(catalog_path)
+    if not manifest_path.is_file():
+        text_summary = _validate_project_text_localization(project_dir, mod_name, [], catalog)
+        return f"manifest not present (no vanilla override operations) {text_summary}"
     manifest = _read_object(manifest_path)
     summary = validate_override_manifest(manifest, catalog, expected_mod_id=mod_name)
     resource_summary = _validate_project_visual_resources(project_dir, manifest["operations"])
