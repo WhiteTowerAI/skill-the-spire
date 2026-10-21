@@ -209,11 +209,14 @@ def self_test_log_outcome(current_launch_log: str, mod_name: str) -> str | None:
     """Read a terminal outcome only after this launch's exact mod-load marker.
 
     A FAILED line maps by its stage to `assertion-failed`, `budget-exceeded`, or `failed`
-    (setup/navigation).
+    (setup/navigation). Mod initializers, including the harness arming that logs its budget,
+    finish before the main menu, so reaching it without the load marker is `not-loaded` and
+    without the budget line is `not-armed`; neither waits out the whole budget.
     """
     load_index = current_launch_log.rfind(load_marker(mod_name))
+    at_main_menu = MAIN_MENU_MARKER in current_launch_log
     if load_index < 0:
-        return None
+        return "not-loaded" if at_main_menu else None
 
     after_load = current_launch_log[load_index:]
     fail_marker = f"{grep_log.MARKER} {mod_name} selftest FAILED"
@@ -223,6 +226,8 @@ def self_test_log_outcome(current_launch_log: str, mod_name: str) -> str | None:
             return FAILURE_OUTCOMES[grep_log.failure_kind(line, mod_name)]
     if done_marker in after_load:
         return "done"
+    if at_main_menu and self_test_budget_seconds(current_launch_log, mod_name) is None:
+        return "not-armed"
     return None
 
 
@@ -454,6 +459,10 @@ def main(argv: list[str]) -> int:
         restored_ok = restore_after_run(game_dir)
     if not restored_ok:
         return 2
+    if outcome == "not-loaded":
+        # The Tier 1 verdict names which of the three load failures this is.
+        grep_log.main(["--mod-name", args.mod_name, "--log-path", str(log_path)])
+        return 1
 
     print(f'[launch] done. Now run grep_log.py --mod-name {args.mod_name} '
           '--tier2-pattern "<state-proof-pattern>" to check the fresh log.')
@@ -474,6 +483,13 @@ def report_self_test_outcome(outcome: str, proc: subprocess.Popen, wait_seconds:
     elif outcome == "failed":
         print("[launch] harness reported: selftest FAILED (couldn't reach/drive its scenario) -- "
               "verify.md: fall back to manual, report tier-1 only", file=sys.stderr)
+    elif outcome == "not-loaded":
+        print("[launch] main menu reached without this Mod's load marker -- the Mod did not "
+              "load; the Tier 1 verdict below names the cause", file=sys.stderr)
+    elif outcome == "not-armed":
+        print("[launch] main menu reached but the harness never armed -- restore the "
+              "SelfTestKit.Arm line in MainFile.cs (scaffold.py --refresh-selftest-kit)",
+              file=sys.stderr)
     elif outcome == "process-exited":
         print(f"[launch] game exited with code {proc.returncode} before a harness terminal marker -- "
               "treat as harness/setup failure", file=sys.stderr)

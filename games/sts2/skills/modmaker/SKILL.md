@@ -141,7 +141,9 @@ human idea
    selects a supported custom route.
 6. **Build.** `build.py` validates the pinned profile, compiles C#, validates manifest/resources/
    localization, packs a PCK when needed, and deploys only the Mod's own artifacts.
-7. **Tier 1.** Launch normally and require the exact load marker with no fresh error block.
+7. **Tier 1.** The exact load marker with no fresh error block. The Tier 2 launch checks it
+   first and stops with the Tier 1 verdict when the Mod did not load, so launch Tier 1 alone
+   only to diagnose a load failure.
 8. **Tier 2.** Run `launch.py --self-test` (it parks other harness Mods and restores them), and require independently
    asserted structured post-state plus `selftest done`. A fired/used line is diagnostic only.
    Rerun only what a change can reach, and stop per `verify.md` § Reruns and when to stop.

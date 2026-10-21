@@ -23,6 +23,10 @@ bilingual runtime proof. Translation quality, tone, clipping, and layout stay he
 
 ## Tier-1 — does it load? (automated, guaranteed)
 
+A Tier 2 launch checks these load facts first: when the Mod did not load, it stops at the
+main menu and prints this Tier 1 verdict. After a Build, go straight to Tier 2; launch Tier 1
+alone only to diagnose a load failure or before the manual fallback.
+
 ```bash
 python ${GAME_TOOLS_DIR}/launch.py --mod-name <ModName>
 ```
@@ -42,7 +46,7 @@ error/exception block** means registration or runtime threw. Match the exact sig
 cause and fix; do not guess one.
 
 A code/csproj fix only reaches the game through a fresh build, so repair **rebuilds
-first**, then re-runs tier-1 — bounded to 3 attempts.
+first**, then reruns the earliest failing check under `repair.md`.
 
 This is the guaranteed check: it proves "installs + loads + registered".
 
@@ -153,6 +157,10 @@ separately. An unrun Tier 1 or Tier 2 check remains an explicit exception, never
   it stuck at the named step. For a long scenario, raise its `budgetSeconds` in
   `SelfTestScenarios.cs`; otherwise repair the stalled step. Report it as a timeout, never as a
   navigation failure.
+- `[launch] main menu reached without this Mod's load marker` → the Mod did not load; the
+  Tier 1 verdict printed next names which load failure it is.
+- `[launch] main menu reached but the harness never armed` → `MainFile.cs` lost the
+  `SelfTestKit.Arm` line; restore it with `scaffold.py --refresh-selftest-kit`.
 - `[launch] TIMEOUT` with no terminal marker → the launcher stopped waiting first. Rerun
   with a larger `--wait-seconds`; it is not evidence about the Mod.
 - `selftest FAILED: setup: ...` (or any other stage) → the **harness couldn't reach/drive its
@@ -202,8 +210,9 @@ state change; otherwise report tier-1 only.
 
 Every game launch costs minutes, and a full content-set harness takes four to six, so rerun only
 what the change can reach. A Tier 2 PASS already carries every Tier 1 fact: `grep_log.py`
-requires the exact load marker, the pinned profile, and no fresh error block for it. Once
-Tier 1 has passed, a behavior rerun needs only the Tier 2 launch.
+requires the exact load marker, the pinned profile, and no fresh error block for it, and a
+Tier 2 launch stops early with the Tier 1 verdict when the Mod does not load. A behavior run
+after Build needs only the Tier 2 launch.
 
 | Changed since the last passing run | Rerun |
 |---|---|
