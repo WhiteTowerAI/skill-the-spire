@@ -74,10 +74,8 @@ RitsuLibFramework.SubscribeLifecycle<ModelRegistryInitializedEvent>(_ =>
     ModelDb.Relic<Akabeko>().DynamicVars["VigorPower"].BaseValue = 10m);
 ```
 
-Observed on the pinned host: Akabeko `VigorPower` 10 reached the obtained Relic, the combat
-start Vigor amount, and its `eng`/`zhs` description, and a replaced Block Potion
-description resolved in both languages. Potion variables are not promoted: a
-mutable Potion does not clone its canonical `DynamicVars`, and the catalog records none.
+Potion variables are not promoted: a mutable Potion does not clone its canonical
+`DynamicVars`, and the catalog records none.
 
 ## Public owner-hook composition
 

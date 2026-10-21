@@ -186,10 +186,6 @@ The vanilla Card has a single upgrade level, and a downgrade re-clones the canon
 values, so this fixup needs no downgrade handler. This is the only owner-variable write a
 capability makes.
 
-Observed on the pinned host with Strike `Damage` 9 / `upgrade_delta` 4: canonical, new
-mutable copy, starter deck, upgraded copy 13, save round trip 13, downgrade 9, combat
-damage 9 and 13, and hand text `Deal 9 damage.` / `Deal 13 damage.` all followed.
-
 ## Rules text replacement
 
 `card.description.localization` replaces the Card's whole vanilla description. The game
@@ -228,9 +224,6 @@ The replacement is global: the Card library and every view of the Card show it. 
 requires `eng` and `zhs`; every other language the Mod does not ship keeps the vanilla text,
 so report that. If another loaded Mod replaces the same key, the later-loaded Mod wins.
 
-Observed on the pinned host: a replaced Strike description resolved in `eng` and `zhs` with
-the vanilla title unchanged.
-
 ## Name replacement
 
 `card.title.localization` renames the Card the same way, through its vanilla
@@ -239,8 +232,7 @@ the vanilla title unchanged.
 asked for a new name. Write the complete new name; the game still appends `+` to an
 upgraded Card. A title is formatted without variables, so Build rejects any `{...}` in it.
 Every consumer that reads the title key sees the new name, including the hover text of
-Powers and timeline entries that name the Card. Observed on the pinned host: Defend renamed
-`Brace`/`架势` resolved through `Title`, the raw title key, and the upgraded `Brace+`/`架势+`.
+Powers and timeline entries that name the Card.
 
 ## Registration
 
