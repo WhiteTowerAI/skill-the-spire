@@ -145,9 +145,36 @@ profile is the placeholder route; custom presentation needs headed proof.
 ## Proof matrix
 
 Use a fresh singleplayer run and the real transition into the selected slot: a
-`plan.Act<TAct>(name, body, slotIndex)` scenario (`reference/selftest-harness.md` § The `Act`
-scenario) enters it through `RunManager.EnterAct`, where the entry rule resolves, and the world
-helpers enter its rooms:
+`plan.Act<TAct>(name, body, slotIndex)` scenario enters it through
+`RunManager.Instance.EnterAct(slotIndex)`, the transition the entry rule resolves in (the dev
+console's `act <n>` takes the same path), waits for the new map and room, and runs after every
+other scenario. The world helpers enter its rooms:
+
+```csharp
+plan.Act<EmberWilds>("ember_wilds_takes_slot_two", async t =>
+{
+    t.Proof(t.Act is EmberWilds && t.Run.CurrentActIndex == 1,
+        $"slot 2 act expected=EmberWilds observed={t.Act.GetType().Name} index={t.Run.CurrentActIndex}");
+    var act = t.Act;
+    var map = t.MapPointCounts();
+    t.Proof(act.AllWeakEncounters.Any() && act.AllRegularEncounters.Any() && act.AllEliteEncounters.Any() &&
+            act.AllBossEncounters.Any() && act.AllEvents.Any() && act.AllAncients.Any(),
+        $"pools weak={act.AllWeakEncounters.Count()} boss={act.AllBossEncounters.Count()} " +
+        $"map={string.Join(",", map.Select(pair => $"{pair.Key}:{pair.Value}"))}");
+    await t.Fight(act.AllWeakEncounters.First());
+    await t.WinCombat();
+    await t.Fight(act.BossEncounter ?? act.AllBossEncounters.First());
+    await t.WinCombat();
+    await t.EnterTreasure();
+    await t.EnterRestSite();
+}, slotIndex: 1, budgetSeconds: 180);
+```
+
+`GetMapPointTypes` counts are generation targets: the generated map also holds the fixed rows (a
+probe declaring five Rest Sites showed seven), so assert SPEC's counts against the map the kit
+reports. Gate the entry rule's eligibility on `!ctx.IsMultiplayer`; a maintainer probe Act also
+gates it on `CommandLineHelper.HasArg("t2selftest")` so it never replaces a slot in a player's
+real runs. Prove:
 
 1. assert the canonical Act is registered once and the mutable run Act occupies only its selected
    slot after the declared force/pool rule resolves;

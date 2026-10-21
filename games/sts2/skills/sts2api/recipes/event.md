@@ -398,23 +398,34 @@ this recipe.
 
 ## Self-test driver body
 
-Use the **`MapNode`** host (`reference/selftest-harness.md` § The `MapNode` scenario): a
-`plan.Event<TEvent>` scenario enters the real Event room and `t.ChooseEventOption(key)` clicks the
-real option UI:
+Use the **`MapNode`** host: `plan.Event<TEvent>(name, body)` enters the real `EventRoom` as an
+Unknown map point, waits for the nested Event UI and its option buttons, and hands over.
+`t.ChooseEventOption(key)` clicks the real `NEventOptionButton` whose `Option.TextKey` is the key
+or ends with `.<key>` (never English text) and waits until the host took it; `"proceed"` clicks
+the option whose `IsProceed` is set. Assert each option's run-state consequence and the page it
+leads to:
 
 ```csharp
-plan.Event<<Name>>("<name>_option_gives_gold", async t =>
+plan.Event<EmberShrine>("ember_shrine_offer_gives_25_gold", async t =>
 {
-    int before = t.Player.Gold;
-    await t.ChooseEventOption("<OPTION_KEY>");
-    await t.WaitUntil(() => t.Event.IsFinished, "event did not finish");
-    t.Proof(t.Player.Gold - before == <amount>, $"event gold expected=<amount> observed={t.Player.Gold - before}");
+    var keys = string.Join(",", t.EventOptions().Select(option => option.TextKey));
+    t.Proof(t.EventOptions().Count == 2, $"initial options expected=OFFER,BLESS observed={keys}");
+    int gold = t.Player.Gold;
+    await t.ChooseEventOption("OFFER");
+    await t.WaitUntil(() => t.Event.IsFinished, "shrine did not finish after OFFER");
+    t.Proof(t.Player.Gold - gold == 25, $"offer gold expected=+25 observed=+{t.Player.Gold - gold}");
+    await t.ChooseEventOption("proceed");
 });
 ```
 
+A page that presents another choice (`SetEventState`) is a second `ChooseEventOption` after
+`t.WaitUntil(() => t.EventOptions().Any(option => option.TextKey.EndsWith(".CONTINUE")), ...)`.
 The kit's roll call resolves the Event's title and initial page in both languages, so broken
-nested localization cannot hide behind a Gold mutation. An Event with blocking overlays or special
-combat uses the extended driver from `reference/event-outcomes.md`.
+nested localization cannot hide behind a Gold mutation; resolve a later page's
+`t.Event.Description` and each option's `Title`/`Description` in the scenario when SPEC selects
+them. An Event with blocking overlays or special combat uses the extended driver in
+`reference/event-outcomes.md` § Verification contract; selected VFX, text effects, and native
+presentation extend the same run through their own references.
 
 ## Proof matrix
 

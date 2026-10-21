@@ -206,7 +206,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      the built-in backend names are `openai`, `gemini`, and `openrouter`. A newly set
      variable reaches only a newly started agent session. For any other endpoint or a local
      command, the user adds a named entry to `~/.skill-the-spire/art-backends.json` per
-     `art-contract.md` § Backend config; offer to write it with `api_key_env` instead of the
+     `${STS2API_SKILL_DIR}/reference/art-backends.md`; offer to write it with `api_key_env` instead of the
      key. Never ask the user to paste a key into the conversation. Then run
      `python ${GAME_TOOLS_DIR}/gen_sprite.py check --backend <name>` once (it requests no
      image). On success record `art source: backend:<name>`; on failure say what is missing

@@ -133,10 +133,10 @@ Reuse the owning `CombatPlayer` or Character suite and assert:
 7. rejected output payment changes neither resource nor payoff;
 8. combat 2 has a distinct attached state, empty route, reset resource, and reset UI.
 
-The maintained harness derives source/output identities, semantic order, capacity, formula,
-resource cost, payoff, and terminal summary from the current `SPEC.md`. It reaches
-`selftest done` only after every configured invariant above passes with the declared
-RitsuLib runtime dependency.
+Write it as a `plan.Combat` scenario that derives source/output identities, semantic order,
+capacity, formula, resource cost, payoff, and terminal summary from the current `SPEC.md`, then
+ends with `t.Proof(true, "ordered buffer complete expected=all observed=all")` only after every
+invariant above passes.
 
 ## Unsupported extensions
 

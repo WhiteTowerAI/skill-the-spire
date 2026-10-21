@@ -162,8 +162,32 @@ background and icons.
 
 ## Self-test driver body
 
-Use a `plan.Ancient<TAncient>` scenario (`reference/selftest-harness.md` § The Ancient `MapNode`
-scenario) that drives the real Ancient room.
+A new Ancient's room uses `NAncientEventLayout`, plays a dialogue, and is recorded as an Ancient
+map point. `plan.Ancient<TAncient>(name, body)` enters it the way the game's own `event <ID>`
+console command does for an Ancient (`MapPointType.Ancient`), confirms the layout, and advances the
+dialogue through the real `%DialogueHitbox` until the options are enabled. The roll call already
+resolved its title, epithet, and initial page, and proved a valid dialogue remains for every
+Character on a first and a late visit.
+
+```csharp
+plan.Ancient<EmberOracle>("ember_oracle_gift_gives_30_gold", async t =>
+{
+    var shared = ModelDb.AllSharedAncients.OfType<EmberOracle>().Count();
+    t.Proof(shared == 1, $"ancient registration expected=shared:1 observed=shared:{shared}");
+    var open = t.EventOptions().Where(option => !option.IsLocked).Select(option => option.TextKey).ToList();
+    t.Proof(open.Count == 2, $"oracle options expected=GIFT,LEAVE observed={string.Join(",", open)}");
+    int gold = t.Player.Gold;
+    await t.ChooseEventOption("GIFT");
+    await t.WaitUntil(() => t.Event.IsFinished, "oracle did not finish after GIFT");
+    t.Proof(t.Player.Gold - gold == 30, $"gift gold expected=+30 observed=+{t.Player.Gold - gold}");
+});
+```
+
+Assert the SPEC's `DialogueSet` shape when it selects dialogue (`((AncientEventModel)t.Event)
+.DialogueSet.FirstVisitEverDialogue?.Lines.Count`, `AgnosticDialogues.Count`). The options can be
+enabled while the dialogue is still on screen, so the kit may advance with zero clicks; the
+`DialogueSet` assertion proves the data and headed review proves the display. To reach the room
+by hand, start a run and enter `event <ENTRY>` in the dev console.
 
 ## Proof matrix
 

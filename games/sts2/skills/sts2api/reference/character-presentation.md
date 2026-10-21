@@ -5,32 +5,31 @@ bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and Characte
 native Ancient/Architect scenes. The Character proof does not reach the locked selection
 portrait or the map marker; report those two consumers as unverified.
 
-Use this page with `recipes/character.md` and `reference/art-contract.md`; also read
-`reference/character-combat-cues.md` when cues are selected. Treat every consumer
+Use this page with `recipes/character.md` and, for the art step, `reference/art-character.md`;
+also read `reference/character-combat-cues.md` when cues are selected. Treat every consumer
 independently: a valid path or successful PCK build is not render evidence.
 
 ## Profile and consumer matrix
 
-The sizes in this matrix are a readable view of the code-owned art contract, projected into
-`reference/catalogs/art-contract-sts2-0.107.1.json`. That catalog also carries each slot's
-output path, alpha policy, required/optional status, fallback, and generation-call budget.
-The status column below is this page's own: it records how strongly each consumer has been
-observed, which is not something the contract holds.
+This is the one table of Character art slots. Its specs, file names under `images/charui/`, and
+sizes are a readable view of the code-owned art contract, projected into
+`reference/catalogs/art-contract-sts2-0.107.1.json`; query that catalog for each slot's alpha
+policy, required/optional status, fallback, and generation-call budget.
 
-| profile | RitsuLib surface | real consumer | status |
-|---|---|---|---|
-| selection portrait, 132x195 | `AssetProfile.Ui.CharacterSelectIconPath` | `NCharacterSelectButton.%Icon` and selected panel | visible and screenshot-proven |
-| locked portrait, 132x195 | `AssetProfile.Ui.CharacterSelectLockedIconPath` | locked select view | grounded only |
-| top-panel main + outline, 88x88 each | `Ui.IconTexturePath`, `Ui.IconOutlineTexturePath`, and raw-scene `Ui.IconPath` | `NRun.GlobalUi.TopBar.Portrait` | main and derived outline visible and headed-review-proven |
-| map marker, 49x64 | `Ui.MapMarkerPath` | run map marker | grounded only |
-| select background, 1920x1200 | `Ui.CharacterSelectBgPath` | character-select background | visible raw-scene consumer |
-| combat body, 512x512 | existence-checked resource factory | player `NCreature.Visuals` | visible static non-Spine body with reviewed public style |
-| Idle/Attack/Hit/Dead cue bundle, 24x 512x512 | private set passed by `SetupCustomCombatAnimationStateMachine` | player `NCreature.Visuals` in combat only | full route and all-or-nothing fallback headed-review-proven |
-| rest body, 512x512 | `Scenes.RestSiteAnimPath` | `NRestSiteCharacter` | visible raw-scene consumer |
-| merchant body, 512x512 | `Scenes.MerchantAnimPath` | `NMerchantCharacter` | visible raw-scene consumer |
-| full energy, five 256x256 layers | `Scenes.EnergyCounterPath` | one native `NEnergyCounter` | all five layers visible |
-| large energy, 256x256 | pool `BigEnergyIconPath` | `EnergyIconHelper.GetPath` -> real hand `NCard.%EnergyIcon` | visible and headed-review-proven |
-| text energy, 24x24 | pool `TextEnergyIconPath` | `EnergyIconsFormatter` rich-text image | visible and headed-review-proven |
+| profile | spec | output under `images/charui/` | size | RitsuLib surface | real consumer |
+|---|---|---|---|---|---|
+| selection portrait | `character_select` | `select.png` | 132x195 | `AssetProfile.Ui.CharacterSelectIconPath` | `NCharacterSelectButton.%Icon` and selected panel |
+| locked portrait (optional; the template fallback is valid) | `character_select_locked` | `select_locked.png` | 132x195 | `AssetProfile.Ui.CharacterSelectLockedIconPath` | locked select view |
+| top-panel main + outline | `character_icon` | `icon.png` + derived `icon_outline.png` | 88x88 each | `Ui.IconTexturePath`, `Ui.IconOutlineTexturePath`, and raw-scene `Ui.IconPath` | `NRun.GlobalUi.TopBar.Portrait` |
+| map marker | `character_map_marker` | native/shared fallback | 49x64 | `Ui.MapMarkerPath` | run map marker |
+| select background | `character_background` | `background.png` | 1920x1200 | `Ui.CharacterSelectBgPath` through a raw-scene wrapper | character-select background |
+| combat body | `character_combat` | `combat.png` | 512x512 | existence-checked resource factory | player `NCreature.Visuals` |
+| Idle/Attack/Hit/Dead cues | `character_cues` | `cues/<action>/<00..>.png`, 24 frames | 512x512 each | private set passed by `SetupCustomCombatAnimationStateMachine` | player `NCreature.Visuals` in combat only |
+| rest body | `character_rest` | `rest.png` | 512x512 | `Scenes.RestSiteAnimPath` | `NRestSiteCharacter` |
+| merchant body | `character_merchant` | `merchant.png` | 512x512 | `Scenes.MerchantAnimPath` | `NMerchantCharacter` |
+| full energy (rendered from the theme, never generated) | `character_energy` | `orb_layer_1.png` through `orb_layer_5.png` | 256x256 each | `Scenes.EnergyCounterPath` | one native `NEnergyCounter` |
+| large energy | `character_energy_large` | `energy_large.png` | 256x256 | pool `BigEnergyIconPath` | `EnergyIconHelper.GetPath` -> real hand `NCard.%EnergyIcon` |
+| text energy | `character_energy_text` | `energy_text.png` | 24x24 | pool `TextEnergyIconPath` | `EnergyIconsFormatter` rich-text image |
 
 ## Asset profile
 

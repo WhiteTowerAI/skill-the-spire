@@ -233,17 +233,29 @@ reward vocabulary above, or report the room-transition request as unsupported.
 
 ## Verification contract
 
-One `MapNode` hosted suite can cover the independent invariants without one project per
-outcome. Drive only the branches required by SPEC and assert:
+One `plan.Event` scenario (`recipes/event.md` § Self-test driver body) covers the independent
+invariants without one project per outcome. Drive one real UI path per invariant SPEC requires,
+in this combined order:
 
-1. every real `NEventOptionButton` used by the scenario;
-2. exact Cmd post-state after blocking overlays finish;
-3. the expected page and localized option after `SetEventState`;
-4. custom encounter identity in special combat;
-5. `Resume` count/page for the resumable branch;
-6. open map and no Event resumption for the terminal branch;
-7. one structured marker listing expected and observed outcome families.
+1. immediate Cmd and `SetEventState`, then the expected page and localized option;
+2. a blocking `CardSelectCmd` overlay, then its exact deck mutation;
+3. a resumable special combat, then the named `Resume` page;
+4. a blocking `RewardsCmd.OfferCustom` overlay, then its exact reward state;
+5. `t.ChooseEventOption("proceed")`, and the real map opens;
+6. a fresh mutable Event instance for a terminal special-combat branch;
+7. finish that combat; the map opens without `Resume`.
 
-A hosted Event proof covered page Cmd, upgrade selection, resumable custom combat, custom Gold
-reward, terminal custom combat, and Event VFX cleanup in one final headed run. The marker
-was `event outcome vocabulary complete`; it reached `selftest done` with no fresh error.
+For the resumable branch, keep the first mutable Event as its concrete type and wait for the
+counter its `Resume` override increments (§ Resume the Event after combat):
+
+```csharp
+var mutableEvent = (EmberShrine)t.Event;
+// ... choose the option that starts the special combat, then win it with t.WinCombat() ...
+await t.WaitUntil(() => t.Run.CurrentRoom is EventRoom && NEventRoom.Instance?.Layout != null &&
+                        mutableEvent.ResumeCount == 1, "event did not resume after special combat", 30);
+```
+
+For a terminal branch, require an open map, zero resumes on the fresh Event instance, and no
+live `NEventRoom`. Identify every combat through its mutable custom encounter type; a generic
+`CombatRoom` is not proof of the requested fight. Finish with one structured marker listing
+expected and observed outcome families.

@@ -80,8 +80,48 @@ combat piles, Energy/Stars, or Orb queue; those primitives are blocked, never si
 
 ## Proof matrix
 
-Drive each case as a `plan.RestSite` scenario (`reference/selftest-harness.md` § Rest Site
-options) with the owner and Gold set up in `beforeEnter`. Follow the complete matrix in
+Drive each case as a `plan.RestSite(name, body, beforeEnter: ...)` scenario. It enters the real
+Rest Site through `RunManager.Instance.EnterRoomDebug(RoomType.RestSite, MapPointType.RestSite)`
+after `beforeEnter` and waits for its `NRestSiteButton`s. The host generates the options on
+entry, so the owner (a Relic, a deck Card) and the Gold for the case belong in `beforeEnter`; a
+Relic from `t.ObtainRelic` is removed when the scenario ends. `t.RestSiteOptions()` lists the
+shown options with `OptionId` and `IsEnabled`; `t.ChooseRestSiteOption(id)` clicks the real button
+and waits until the room responds.
+
+```csharp
+plan.RestSite("temper_absent_without_whetstone", t =>
+{
+    var ids = t.RestSiteOptions().Select(option => option.OptionId).ToList();
+    t.Proof(!ids.Contains(Temper.StableOptionId), $"rest options expected=native only observed={string.Join(",", ids)}");
+    return Task.CompletedTask;
+});
+
+plan.RestSite("temper_gray_without_gold", t =>
+{
+    var temper = t.RestSiteOptions().FirstOrDefault(option => option.OptionId == Temper.StableOptionId);
+    t.Proof(temper is { IsEnabled: false }, "temper expected=present/disabled");
+    return Task.CompletedTask;
+}, beforeEnter: async t =>
+{
+    await t.ObtainRelic<Whetstone>();
+    if (t.Player.Gold > 0)
+        await PlayerCmd.LoseGold(t.Player.Gold, t.Player);
+});
+
+plan.RestSite("temper_spends_gold_for_max_hp", async t =>
+{
+    int gold = t.Player.Gold, maxHp = t.Me.MaxHp;
+    await t.ChooseRestSiteOption(Temper.StableOptionId);
+    t.Proof(gold - t.Player.Gold == 10 && t.Me.MaxHp - maxHp == 3,
+        $"temper expected gold=-10 maxHp=+3 observed gold=-{gold - t.Player.Gold} maxHp=+{t.Me.MaxHp - maxHp}");
+}, beforeEnter: async t =>
+{
+    await t.ObtainRelic<Whetstone>();
+    await PlayerCmd.GainGold(50m, t.Player);
+});
+```
+
+Follow the complete matrix in
 `reference/rest-site-options.md`: absent, disabled, enabled, render-then-invalidate rejection,
 exact success, option-history identity, keep/leave behavior, repeat edge, unrelated native option
 preservation, custom icon, native fallback, localization, and controller focus. Add the

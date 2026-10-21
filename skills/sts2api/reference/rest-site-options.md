@@ -33,7 +33,7 @@ standalone ownership is supplied by RitsuLib's Run `HookedSingletonModel` subscr
 
 ## Semantic declaration
 
-Record these fields before selecting the adapter:
+Record these fields before writing code:
 
 ```markdown
 - **owned Rest Site option**:
@@ -278,8 +278,8 @@ fallback path from the custom `OptionId`, which has no built-in texture.
 
 Use one real Rest Site per case, each a `plan.RestSite` self-test scenario that sets up the
 owner and Gold in `beforeEnter` and reads or clicks the native buttons through
-`t.RestSiteOptions()` and `t.ChooseRestSiteOption(id)` (`reference/selftest-harness.md`
-§ Rest Site options). Do not substitute a generated list, model-only state, or load marker for
+`t.RestSiteOptions()` and `t.ChooseRestSiteOption(id)` (`recipes/rest-site.md` § Proof
+matrix). Do not substitute a generated list, model-only state, or load marker for
 the native host.
 
 1. Enter without the owner: custom option absent.

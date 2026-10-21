@@ -475,18 +475,97 @@ phobia skins are later extensions.
 
 ## Self-test driver body
 
-Use the **`CombatEnemy`** host in `reference/selftest-harness.md` § CombatEnemy: one
-`plan.Encounter<TEncounter>` scenario per selected reachable Encounter variant, entered with its
-real roster.
+Use the **`CombatEnemy`** host: one `plan.Encounter<TEncounter>(name, body)` scenario per selected
+reachable Encounter variant. It finishes any combat in progress, enters a fresh mutable copy of the
+Encounter with its real roster and HP, and waits for the player's Play phase. It applies no
+Plating, so the enemy's hits land, and raises the player to 999/999 HP so a long cycle cannot end
+the run; pass `keepPlayerHp: true` when a move reads the player's HP. The roll call already lists
+every Mod Monster (`hp=min-max`) and every Encounter an Act or a scenario names, with its roster.
 
-- `t.Monster<TMonster>()` asserts the Monster spawned;
+- `t.Monster<TMonster>()` returns the live Creature and fails the scenario when it did not spawn;
 - before every turn, assert intent types and repeat count from `t.NextMove(monster).Intents`;
-- `await t.EnemyTurn(monster, "MOVE_ID")` asserts `NextMove.Id`, ends the player turn, waits for
-  the next player turn, and requires one new `MonsterPerformedMoveEntry` with that id;
+- `await t.EnemyTurn(monster, "MOVE_ID")` asserts `NextMove.Id`, ends the player turn with enemies
+  acting, waits for the next player Play phase, requires one new `MonsterPerformedMoveEntry` with
+  that id, and returns `SelfTestEnemyTurn(MoveId, PlayerHpLost, Hits, UnblockedDamage)`;
 - assert each move's exact state contract; for multi-hit, assert the returned `Hits` (new
   `CreatureAttackedEntry.DamageResults`), not only total HP loss;
 - force each conditional outcome by changing its real input through a public Cmd, then observe the
-  selected move. Never call the move body, the predicate, or `ForceCurrentState` as proof.
+  selected move. Never call the move body, the predicate, `PerformMove`, `SetMoveImmediate`, or
+  `ForceCurrentState` as proof: they bypass normal enemy turn selection. A move body's own
+  `attacked:` log is diagnostic only.
+
+```csharp
+plan.Encounter<EmberHoundEncounter>("ember_hound_bites_for_6", async t =>
+{
+    var hound = t.Monster<EmberHound>();
+    var bite = await t.EnemyTurn(hound, "BITE");
+    t.Proof(bite.PlayerHpLost == 6 && bite.Hits == 1,
+        $"bite expected hp=6 hits=1 observed={bite.PlayerHpLost}/{bite.Hits}");
+});
+```
+
+The representative cycle above (`MUSTER -> PRESSURE -> FLURRY -> HEALTH_BRANCH -> GUARD|RECOVER ->
+MUSTER`) reads each move's intents before its turn, proves the self buff by a later changed
+attack, and reaches both branches through a real HP change:
+
+```csharp
+plan.Encounter<<Name>Encounter>("<name>_cycle_and_branches", async t =>
+{
+    var mob = t.Monster<<Name>>();
+    t.Proof(t.NextMove(mob).Intents.OfType<BuffIntent>().Count() == 1, "MUSTER intent expected=buff observed=match");
+    await t.EnemyTurn(mob, "MUSTER");
+    t.Proof(t.PowerAmount<<CustomBuff>>(mob) == 2,
+        $"self power expected=2 observed={t.PowerAmount<<CustomBuff>>(mob)}");
+
+    var pressureIntents = t.NextMove(mob).Intents;
+    t.Proof(pressureIntents.OfType<SingleAttackIntent>().Count() == 1 &&
+            pressureIntents.OfType<DebuffIntent>().Count() == 1,
+        "PRESSURE intents expected=attack+debuff observed=match");
+    var pressure = await t.EnemyTurn(mob, "PRESSURE");
+    t.Proof(pressure.PlayerHpLost == 5 && t.PowerAmount<WeakPower>(t.Me) == 2,
+        $"attack+debuff expected=5/2 observed={pressure.PlayerHpLost}/{t.PowerAmount<WeakPower>(t.Me)}");
+
+    var multi = t.NextMove(mob).Intents.OfType<MultiAttackIntent>().SingleOrDefault();
+    t.Proof(multi?.Repeats == 2, $"FLURRY repeats expected=2 observed={multi?.Repeats}");
+    var flurry = await t.EnemyTurn(mob, "FLURRY");
+    t.Proof(flurry.Hits == 2 && flurry.PlayerHpLost == 8,
+        $"multi-attack expected=2/8 observed={flurry.Hits}/{flurry.PlayerHpLost}");
+
+    // At full health the branch must choose GUARD.
+    int blockBefore = mob.Block;
+    await t.EnemyTurn(mob, "GUARD");
+    t.Proof(mob.Block - blockBefore == 5, $"healthy branch block expected=+5 observed={mob.Block - blockBefore}");
+
+    // Change the branch's real input through a public Cmd, without forcing a move state.
+    int woundedHp = Math.Max(1, mob.MaxHp / 2 - 1);
+    await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), mob, mob.CurrentHp - woundedHp,
+        ValueProp.Unblockable | ValueProp.Unpowered, t.Me, null);
+    t.Proof(mob.CurrentHp == woundedHp, $"branch setup hp expected={woundedHp} observed={mob.CurrentHp}");
+
+    // Traverse the cycle again. The stacked buff must change later attack damage.
+    await t.EnemyTurn(mob, "MUSTER");
+    t.Proof(t.PowerAmount<<CustomBuff>>(mob) == 4,
+        $"stacked self power expected=4 observed={t.PowerAmount<<CustomBuff>>(mob)}");
+    pressure = await t.EnemyTurn(mob, "PRESSURE");
+    t.Proof(pressure.PlayerHpLost == 7 && t.PowerAmount<WeakPower>(t.Me) == 2,
+        $"buffed attack+debuff expected=7/2 observed={pressure.PlayerHpLost}/{t.PowerAmount<WeakPower>(t.Me)}");
+    flurry = await t.EnemyTurn(mob, "FLURRY");
+    t.Proof(flurry.Hits == 2 && flurry.PlayerHpLost == 12,
+        $"buffed multi-attack expected=2/12 observed={flurry.Hits}/{flurry.PlayerHpLost}");
+
+    int hpBeforeRecover = mob.CurrentHp;
+    blockBefore = mob.Block;
+    await t.EnemyTurn(mob, "RECOVER");
+    t.Proof(mob.CurrentHp - hpBeforeRecover == 3 && mob.Block - blockBefore == 4,
+        $"wounded branch heal+block expected=3/4 observed={mob.CurrentHp - hpBeforeRecover}/{mob.Block - blockBefore}");
+}, budgetSeconds: 120);
+```
+
+That scenario needs `MegaCrit.Sts2.Core.MonsterMoves.Intents`, `MegaCrit.Sts2.Core.Models.Powers`,
+`MegaCrit.Sts2.Core.GameActions.Multiplayer`, and `MegaCrit.Sts2.Core.ValueProps`. Adapt move
+ids, numbers, Power types, and branch setup to SPEC. A move that hangs the enemy turn (usually a
+`.Targeting(target)` attack) fails with `selftest FAILED: player play phase not resumed after
+enemy turn`.
 
 Exercise selected deterministic/conditional states and selected random outcomes; do not create a
 retained proof project per authorable shape.

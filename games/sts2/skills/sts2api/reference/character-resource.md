@@ -203,10 +203,14 @@ or save round trip only when that selected policy needs it. Assert:
    overlap native Energy/Stars or another declared consumer;
 6. turn-start and combat/run persistence match SPEC, including save/resume only when claimed.
 
-The maintained harness derives the resource name, gain/spend amounts, payoff, and expected
-counter states from the current `SPEC.md`. It reaches `selftest done` only after the exact
-configured values, rejected-payment invariants, disjoint UI, and distinct combat-2 reset
-state pass.
+A generated explicit attachment also asserts the checked 24x24 icon or text-only fallback, the
+220x32 root, the 188x32 Label, the `(160,0)` offset, and non-intersection with native Energy;
+those dimensions are fixed while the resource values come from SPEC. Write it as a
+`plan.Combat` scenario that derives the resource name, gain/spend amounts, payoff, and expected
+counter states from the current `SPEC.md`, then ends with
+`t.Proof(true, "resource UI complete expected=all observed=all")` only after the exact
+configured values, rejected-payment invariants, disjoint UI, and distinct combat-2 reset state
+pass. Do not reuse an example Mod's state sequence.
 
 ## Unsupported extensions
 

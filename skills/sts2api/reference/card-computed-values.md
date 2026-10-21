@@ -216,6 +216,15 @@ Use one disposable `CombatPlayer` suite, not a fresh natural-language acceptance
 4. Tooltip: localized title/description, omitted-icon fallback, clone survival, and the
    real hand-Card hover consumer.
 
+In a generated Mod, keep all cases in one `plan.Combat` scenario; a calculated Card never takes a
+face check. For each case set deterministic combat state, call
+`card.UpdateDynamicVarPreview(CardPreviewMode.Normal, target, card.DynamicVars)`, record the
+matching `PreviewValue`, then `await t.Play(card, target)` and assert the exact HP, Block,
+Energy, Stars, or Power delta. Also inspect the raw execution request through the matching
+`Compute*Value` extension, which tells a wrong formula from a hook applied zero or two times.
+Apply one modifier family at a time and require the final preview to equal the observed result.
+In the headed pass, Energy 0 shows `0` plus one Energy icon while Stars 0 is empty.
+
 Behavior proof records structured expected/observed state and ends with `selftest done`.
 The headed reviewer separately confirms Card text, icons, reflow, and Hover Tips. A trigger
 or calculation log is diagnostic only and cannot replace either observation.
