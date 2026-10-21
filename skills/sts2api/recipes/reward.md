@@ -145,5 +145,5 @@ before any success keeps the set pending, while a later failure skips the rest a
 
 Follow `surfaces/reward.md`. Drive the real reward screen and the exact claim/refusal, insertion,
 linked-set, save/load, localization, and headed cases selected by SPEC. A round-tripped
-`SerializableReward`, direct `OnSelect` surrogate, or registration lookup is static/developer
-evidence only and does not make the Reward game-observed.
+`SerializableReward`, direct `OnSelect` surrogate, or registration lookup is not game
+observation.

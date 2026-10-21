@@ -1,5 +1,40 @@
 #!/usr/bin/env python3
-"""Maintainer workflow for the vanilla runtime and assembly catalog collectors."""
+"""Maintainer workflow for the vanilla runtime and assembly catalog collectors.
+
+Not shipped: `publish.sh` excludes this file, and generated Mods need only the checked catalog
+under `skills/sts2api/reference/vanilla-overrides/catalogs/` plus `vanilla_overrides.py`.
+
+The runtime collector subscribes once to `ModelPreloadingCompletedEvent`, reads `ModelDb`, and
+keeps only concrete model types from the game's `ModelDb` assembly, so a loaded Mod cannot add
+its own models. It reads each title in all 14 pinned languages through the public
+`LocManager.SetLanguage` route, restores the original language in a `finally` block, and
+refuses to write when `OverridesActive` reports local translation overrides. Run it with only
+the pinned framework and collector Mods.
+
+The offline collector reads PE metadata with `System.Reflection.Metadata` and never loads
+`sts2.dll`. For each reviewed target in `catalog_inputs/adapter-targets-0.107.1.json` it records
+the exact signature, signature hash, IL hash, metadata token, and method-body shape. Add no
+adapter target merely to make a prompt pass.
+
+    python games/sts2/tools/collect_vanilla_catalog.py create-runtime-project \
+      --project-dir <empty-outer-dir> --mod-name SkillTheSpireVanillaCatalog
+    python games/sts2/tools/collect_vanilla_catalog.py collect-assembly \
+      --assembly <sts2-data-dir>/sts2.dll --output <assembly-json>
+    python games/sts2/tools/collect_vanilla_catalog.py merge \
+      --runtime <runtime-json> --assembly <assembly-json> \
+      --authorable-family public-card-overrides --authorable-family public-visual-overrides \
+      --authorable-family existing-ancient-overrides --authorable-family availability-overrides \
+      --authorable-family non-card-data-behavior \
+      --output games/sts2/skills/sts2api/reference/vanilla-overrides/catalogs/sts2-0.107.1.json
+    python games/sts2/tools/collect_vanilla_catalog.py add-descriptions \
+      --sts2-dir <installed-game-dir> [--check]
+
+`merge` writes no descriptions; run `add-descriptions` after it. It reads the eng/zhs tables from
+`SlayTheSpire2.pck` and fails if the catalog identity would change; `--check` fails when the
+committed descriptions are stale. Supporting another STS2 version needs a new runtime snapshot,
+assembly snapshot, reviewed adapter-target file, merged catalog, and proof; never relabel an old
+catalog. A collector run proves the collector only, never a vanilla edit's behavior.
+"""
 from __future__ import annotations
 
 import argparse
@@ -29,14 +64,8 @@ TOOLS_DIR = Path(__file__).resolve().parent
 RUNTIME_TEMPLATE = TOOLS_DIR / "templates" / "vanilla_runtime_catalog_collector.cs.tmpl"
 ASSEMBLY_PROJECT = TOOLS_DIR / "assembly_catalog" / "SkillTheSpire.Sts2.AssemblyCatalog.csproj"
 POWERSHELL_ASSEMBLY_COLLECTOR = TOOLS_DIR / "assembly_catalog" / "Collect-AssemblyCatalog.ps1"
-DEFAULT_TARGETS = (
-    TOOLS_DIR.parent
-    / "skills"
-    / "sts2api"
-    / "reference"
-    / "vanilla-overrides"
-    / "adapter-targets-0.107.1.json"
-)
+# Collector input only: the shipped catalog carries every fingerprint a user's build needs.
+DEFAULT_TARGETS = TOOLS_DIR / "catalog_inputs" / "adapter-targets-0.107.1.json"
 
 NON_CARD_DATA_TARGETS: dict[str, tuple[tuple[str, str, str], ...]] = {
     "RELIC": (("rarity", "data.rarity", "get_Rarity"),),

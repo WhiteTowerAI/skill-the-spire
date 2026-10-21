@@ -1,6 +1,6 @@
 # Reference: model hook participation for custom content
 
-> Checked against the pinned STS2 `0.107.1` assembly and RitsuLib `0.6.7`. Every hook here is
+> Every hook here is
 > `public virtual` on `AbstractModel`, so a custom element overrides it directly — no Harmony,
 > reflection, Publicizer, or IL. The authoritative per-hook data is
 > `reference/catalogs/model-hooks-sts2-0.107.1.json`; this page states the rules, the catalog

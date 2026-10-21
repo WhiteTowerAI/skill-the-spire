@@ -54,5 +54,4 @@ Follow the selected matrix in `reference/card-piles.md`:
 6. headed review covers requested aspect ratios, custom anchors, neighboring controls, icon/text,
    animations, and controller behavior.
 
-Static registration and pile lookup are not UI, movement, persistence, or gameplay proof. Newly
-selected `0.6.7` variants remain game-unobserved until their exact real hosts run.
+Static registration and pile lookup are not UI, movement, persistence, or gameplay proof.

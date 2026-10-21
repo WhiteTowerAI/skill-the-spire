@@ -1,9 +1,7 @@
 # Ordered combat buffer and deterministic dynamic output
 
-Status: **implemented with RitsuLib on STS2 0.107.1**. Focused two-combat proofs established
-the isolated mechanic and final generated-Character composition. The buffer stores semantic
-values in combat-attached state while source cards use STS2's normal Play -> Discard
-lifecycle.
+The buffer stores semantic values in combat-attached state while source cards use STS2's
+normal Play -> Discard lifecycle.
 
 This page does not support retaining played card instances in a `CustomPile`. A model-only
 implementation misses overlapping/stale card views in real player use.

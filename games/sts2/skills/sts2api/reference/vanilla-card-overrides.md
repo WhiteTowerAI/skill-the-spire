@@ -1,7 +1,6 @@
 # Public overrides for existing vanilla Cards
 
-Use this reference after `vanilla-overrides.md` resolves an exact `CARD.*` target. This route
-is pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. It changes the existing Card in place
+Use this reference after `vanilla-overrides.md` resolves an exact `CARD.*` target. It changes the existing Card in place
 through three public mechanisms, never by registering a second Card or generating Harmony,
 reflection, Publicizer, or IL:
 

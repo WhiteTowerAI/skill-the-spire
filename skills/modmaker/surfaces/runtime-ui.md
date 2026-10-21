@@ -76,4 +76,4 @@ plain, and add rich-text tags only to Hover Tip descriptions, which render them 
    response to the active shell-theme snapshot.
 
 Compilation, direct callback invocation, registry lookup, or a constructed Godot node is not UI or
-input observation. This Runtime UI route remains game-unobserved until its real hosts run.
+input observation.

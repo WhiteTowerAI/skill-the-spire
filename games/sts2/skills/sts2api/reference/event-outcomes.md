@@ -1,6 +1,6 @@
 # Event Outcome Vocabulary
 
-Grounded against STS2 0.107.1 by inventorying all 68 vanilla `EventModel` classes. This page extends
+Grounded by inventorying all 68 vanilla `EventModel` classes. This page extends
 `recipes/event.md`; it does not change event registration, localization, or portrait rules.
 
 ## Supported outcome families

@@ -1,6 +1,6 @@
 # Recipe: Character Foundation
 
-> For the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile. This recipe covers exactly-once registration,
+> This recipe covers exactly-once registration,
 > typed pools, starters, localization, run entry, one hosted starter mechanic,
 > the nine promoted static presentation profiles, and the bounded non-Spine
 > Idle/Attack/Hit/Dead combat cues. Selected resource/buffer/UI
@@ -77,15 +77,10 @@ Relic into Circlet. When the design includes either upgrade, register it on the 
 - A second mapping for the same starter replaces the first with a warning; map each starter
   once.
 
-Game-observed so far: for a custom Character with both mappings, each vanilla
-`SetupForPlayer` offered its upgrade, Archaic Tooth turned the upgraded starter Card into the
-upgraded Ancient Card, and Touch of Orobas replaced the starter Relic (Tier 2). Headed review
-opened Orobas with the console `ancient OROBAS <TOUCH_OF_OROBAS|ARCHAIC_TOOTH>`, saw each
-offer name the Mod Relic or Card, and took it. A preserved enchantment and multiplayer remain
-unobserved. Tier 2 grants the vanilla `ArchaicTooth` or
-`TouchOfOrobas` Relic in `RunStart` and asserts the exact deck Card or Relic replacement,
-including a preserved upgrade. Headed review enters Orobas and confirms that the offer and its
-text name the Mod Card or Relic.
+Tier 2 grants the vanilla `ArchaicTooth` or `TouchOfOrobas` Relic in `RunStart` and asserts
+the exact deck Card or Relic replacement, including a preserved upgrade. Headed review opens
+Orobas with the console `ancient OROBAS <TOUCH_OF_OROBAS|ARCHAIC_TOOTH>` and confirms that the
+offer and its text name the Mod Card or Relic.
 
 The character extends the typed RitsuLib template. Fill every public abstract
 member explicitly; do not infer getter names from other templates:

@@ -1,6 +1,6 @@
 # Recipe: Custom Orb
 
-> A custom Orb under the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile.
+> A custom Orb.
 
 ## Contract and registration
 

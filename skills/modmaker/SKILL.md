@@ -32,7 +32,9 @@ real STS2 host. Contracts guide authoring; Build and host autotests establish re
 - Never edit an installed skill payload from a generated project. Maintainers edit source under
   `games/sts2/` and publish it.
 - Report only actual evidence. Build is not load, load is not behavior, trigger logs are not a
-  state proof, and automated state is not a visual or subjective observation.
+  state proof, and automated state is not a visual or subjective observation. Every route a
+  Mod uses, maintained or Mod-local, stays unverified for that Mod until its own Build, Tier 2,
+  and any required headed review pass.
 
 ## Supported product boundary
 
@@ -61,9 +63,8 @@ Current authoring includes:
 The nine generalized families remain authorable through their owner pages: secondary
 resources; Monster/Encounter composition and HP; Character starting fields; Card/Relic Rest
 Site options; computed Card values; bounded state; forced Event mappings; Card Star costs; and
-Event acquisition/shake profiles. Their newly generalized variants remain game-unobserved until
-a real current run proves them. Do not narrow a documented feature family merely because one consumer
-lacks focused proof.
+Event acquisition/shake profiles. Do not narrow a documented feature family merely because one
+consumer lacks focused proof.
 
 Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, and new integrations
 whose purpose is to connect another element to those families are deferred. Do not route one

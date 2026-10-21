@@ -1,6 +1,6 @@
 # Character combat cues
 
-> A bounded non-Spine frame-sequence contract on STS2 `0.107.1`, not a general Character
+> A bounded non-Spine frame-sequence contract, not a general Character
 > animation pipeline.
 
 Use this page with `recipes/character.md`, `reference/character-presentation.md`, and

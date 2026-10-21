@@ -187,8 +187,8 @@ return new MonsterMoveStateMachine(
     new MonsterState[] { random, guard, pressure }, random);
 ```
 
-This admits only declared fixed weights. It does not claim that any probability distribution
-was observed in-game; a future Verify stage exercises only the selected branch outcomes.
+This admits only declared fixed weights. Verify exercises only the selected branch outcomes,
+never a probability distribution.
 
 Copyable move bodies for that machine:
 

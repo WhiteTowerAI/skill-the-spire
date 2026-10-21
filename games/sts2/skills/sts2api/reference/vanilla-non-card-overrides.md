@@ -1,7 +1,6 @@
 # Existing vanilla non-Card data and behavior overrides
 
-Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. This route
-is pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. It covers existing Relic, Potion, Power,
+Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. It covers existing Relic, Potion, Power,
 Orb, Enchantment, Affliction, Monster, Encounter, and ordinary Event data or behavior
 while preserving the original model type, `ModelId`, save identity, ownership, assets, and
 availability.

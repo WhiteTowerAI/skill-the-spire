@@ -27,56 +27,17 @@ as far as needed to keep that text true. Each family reference names its text ro
 
 ## Pinned catalog
 
-The checked catalog is
-`reference/vanilla-overrides/catalogs/sts2-0.107.1.json` and has this identity:
-
-```text
-host: 0.107.1
-framework: RitsuLib 0.6.7
-profile: ritsulib-0.6.7-sts2-0.107.1
-sts2.dll SHA-256: a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52
-assembly MVID: 97f10687-c306-4798-ab75-8b9f23f34dfb
-runtime vanilla models: 1624
-model-namespace metadata types: 3883
-models with stable title localization sources: 1580
-models with English and Simplified Chinese titles: 1537 each
-catalog languages: deu, eng, esp, fra, ita, jpn, kor, pol, ptb, rus, spa, tha, tur, zhs
-catalog SHA-256: c56bbcf3ac07f06e8644b43e536f6180c20b3d318f742ef7945a73eeb1f6791f
-adapter targets: 20
-authorable route families: public-card-overrides,
-  public-visual-overrides, existing-ancient-overrides,
-  availability-overrides, non-card-data-behavior
-```
-
-The runtime collector subscribes once to `ModelPreloadingCompletedEvent`, reads `ModelDb`,
-and retains only concrete model types whose assembly is the game's `ModelDb` assembly. A
-loaded Mod therefore cannot add its own models to this vanilla inventory. It records stable
-IDs/types, category properties, Card base/upgrade costs and typed dynamic variables,
-Card/Relic/Potion pool membership, Act/shared source membership, and stable title
-localization table/key pairs from RitsuLib's public `ModelTitleExtensions` mappings.
+The checked catalog is `reference/vanilla-overrides/catalogs/sts2-0.107.1.json`, the
+inventory of every vanilla model in the pinned game. Read it only through
+`vanilla_overrides.py`. Each record carries the stable ID and type, category properties,
+Card base/upgrade costs and typed dynamic variables, Card/Relic/Potion pool membership,
+Act/shared source membership, and localized titles.
 
 Card, Relic, Potion, and Power records also carry `description_localization`: the English
 and Simplified Chinese rules-text template from the same table as the title
 (`<ENTRY>.description`), with its SmartFormat variables intact. It is reference text for
-"like vanilla X" lookups and the drift baseline of a rules-text replacement, and it is
-excluded from `catalog_sha256`, so the identity above and existing override manifests stay
-valid. Curse/Status Cards and some Powers have no description key and carry none.
-
-For title-bearing model families, the collector uses the game's public
-`LocManager.SetLanguage` route to read each local title in all 14 pinned languages. That
-API explicitly changes the runtime language temporarily without writing the player's
-settings. The collector restores the original language in a `finally` block and refuses to
-write a catalog when `OverridesActive` reports machine-local translation overrides. Run it
-with only the pinned framework and collector Mods; do not turn other Mods' localization
-contributions into vanilla catalog data.
-
-The offline collector reads PE metadata with `System.Reflection.Metadata`; it never loads
-`sts2.dll`. It records the assembly hash/MVID and the exact signature, signature hash, IL
-hash, metadata token, and method-body shape for each reviewed target in
-`adapter-targets-0.107.1.json`. The three existing-Ancient targets are the exact protected native
-Ancient finish/page-flow methods and the initial-options replacement boundary. The 17
-Availability targets cover the three cached pool getters plus Relic/Potion base and six concrete
-unlock-filter overrides per category. Add no adapter merely to make a prompt pass.
+"like vanilla X" lookups and the drift baseline of a rules-text replacement. Curse/Status
+Cards and some Powers have no description key and carry none.
 
 ## Exact target resolution
 
@@ -183,41 +144,5 @@ Ancient append rules compose with other appends; one same-target replacement con
 every append or replacement in the generated Mod.
 External Mod compatibility is not inferred from this same-Mod check.
 
-## Maintainer collection
-
-The collectors are maintainer tools, not generated-Mod runtime dependencies:
-
-```powershell
-python games/sts2/tools/collect_vanilla_catalog.py create-runtime-project `
-  --project-dir <empty-outer-dir> --mod-name SkillTheSpireVanillaCatalog
-
-python games/sts2/tools/collect_vanilla_catalog.py collect-assembly `
-  --assembly <sts2-data-dir>/sts2.dll --output <assembly-json>
-
-python games/sts2/tools/collect_vanilla_catalog.py merge `
-  --runtime <runtime-json> --assembly <assembly-json> `
-  --authorable-family public-card-overrides `
-  --authorable-family public-visual-overrides `
-  --authorable-family existing-ancient-overrides `
-  --authorable-family availability-overrides `
-  --authorable-family non-card-data-behavior `
-  --output games/sts2/skills/sts2api/reference/vanilla-overrides/catalogs/sts2-0.107.1.json
-
-python games/sts2/tools/collect_vanilla_catalog.py add-descriptions `
-  --sts2-dir <installed-game-dir> [--check]
-```
-
-`merge` writes no descriptions; run `add-descriptions` after it. It reads the eng/zhs
-localization tables from `SlayTheSpire2.pck` with the text-glossary reader and fails if the
-catalog identity would change. `--check` fails when the committed descriptions are stale.
-
-Supporting another STS2 version requires a new runtime snapshot, assembly snapshot,
-reviewed adapter-target file, merged catalog, and proof. Never change the version label on
-an old catalog.
-
-The collector's own development evidence established the exact profile, a repeatable
-localized 1624-model snapshot, an identical assembly hash, a structured state proof,
-`selftest done`, and no fresh collector error. That proves the collector, and nothing else.
-No collector result is headed or behavioral proof for a vanilla edit, and neither is source
-authoring plus focused checks on any override route: real-host behavior and presentation are
-proved only by observing them in the nearest real consumer.
+A vanilla edit's behavior and presentation are proved only in its nearest real consumer, never
+by the catalog or a successful Build.

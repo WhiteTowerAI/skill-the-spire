@@ -1,8 +1,8 @@
 # Relic and Power extra corner labels
 
 Use this reference when a Relic or custom Power SPEC selects supplemental player-readable
-values. The labels supplement the native main amount; they never replace it. This route is
-pinned to STS2 `0.107.1` and RitsuLib `0.6.7` and uses the public Extra Badges API.
+values. The labels supplement the native main amount; they never replace it. This route
+uses the public Extra Badges API.
 
 ## Generated bounds
 
@@ -99,9 +99,6 @@ Headed observation must inspect a crowded Relic row and crowded Power row at com
 ratios, then confirm that labels remain readable and do not overlap the native icon, main
 counter, tooltip, or adjacent labels. It must also confirm removal and cleanup after host
 destruction or combat transition.
-
-Game-observed so far: a human-led crowded-row review and Tier 1 passed for generated Relic
-and Power labels; strict Tier 2 is unrun.
 
 Intent badges are framework-expressible through the public Extra Badges API, but this pack
 has no Intent authoring route. Do not adapt this Relic/Power recipe to Intent. An accepted

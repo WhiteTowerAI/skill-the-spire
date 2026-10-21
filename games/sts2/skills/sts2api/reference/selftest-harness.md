@@ -2,7 +2,7 @@
 
 > Tier 2 runs inside the real game with nobody at the keyboard: the Mod drives itself from
 > the main menu into the hosted scenario, fires its own content, and asserts the exact
-> post-state. Every API here is public and pinned to STS2 `0.107.1` / RitsuLib `0.6.7`.
+> post-state. Every API here is public.
 >
 > **Two files.** `scaffold.py` generates `<ModName>Code/SelfTestKit.cs` and the arming line in
 > `MainFile.Initialize()`. The kit is fixed code: Build rejects a hand-edited copy, and

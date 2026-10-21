@@ -1,10 +1,5 @@
 # Lifecycle, state, and deterministic RNG
 
-Status: **authorable with RitsuLib 0.6.7 on STS2 0.107.1** for included gameplay/content
-owners. Typed subscriptions, attached/model/run/profile state, and Mod-scoped RNG compile against
-the pinned Compat assembly. Save/load, profile switching, and exact lifecycle delivery remain
-game-unobserved for new generated shapes until run in their real hosts.
-
 Use this page when behavior crosses one callback, combat, room, run, save, or profile boundary.
 Storage is not a product owner: the model, Card Pile, Runtime UI, or Global Effect that uses the
 state remains responsible for its semantics and proof.

@@ -2,7 +2,6 @@
 
 This page owns the bounded route for a standalone Rest Site action or for a generated Card,
 Relic, or selected Modifier to add an action to the native Rest Site.
-The route is grounded against STS2 `0.107.1` and RitsuLib `0.6.7`.
 
 
 ## Supported contract
@@ -311,6 +310,3 @@ claiming it ran.
 Tier 1 still requires the exact load marker and no fresh error block. Tier 2 requires a
 structured post-state proof plus `selftest done`; when the user performs the hosted
 matrix instead, record the unrun strict harness as an explicit exception, never a pass.
-
-Game-observed so far: the Relic-owned option in a real Rest Site. Standalone, Card, and
-Modifier owners remain game-unobserved.
