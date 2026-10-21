@@ -14,33 +14,10 @@ compat target: 0.107.1
 profile id: ritsulib-0.6.7-sts2-0.107.1
 ```
 
-Since 0.6.0 RitsuLib ships as modules: the root `STS2-RitsuLib.dll` is a loader, the
-per-host `STS2-RitsuLib` and `STS2-RitsuLib.Runtime` modules live in `compat/<host>/`, and the
-host-independent `STS2-RitsuLib.Shared`, `.Ui`, and `.Settings` modules live in `shared/`.
-The runtime must provide a `compat/0.107.1/` variant whose modules match the schema-2
-`ritsulib-variants.manifest` hashes. A default beta-facing package is a hard failure, not a
-fallback. `scaffold.py`, `ritsu_profile.py`, and `build.py` own that profile; surface
-recipes consume it and never regenerate dependency logic.
-
-Public types keep their `STS2RitsuLib.*` namespaces across the split, so generated `using`
-directives do not change. Code that enumerates types from a single RitsuLib assembly must
-account for the separate modules.
-
-Framework identity uses public or standard runtime metadata:
-
-- framework version: the loaded Runtime module's assembly version,
-  `typeof(STS2RitsuLib.RitsuLibFramework).Assembly.GetName().Version`. Do not use
-  `Const.Version`: it is a `const`, so the compiler inlines the compile-time value;
-- actual loaded compat target: `AssemblyMetadataAttribute` key `Sts2ApiCompat` on
-  `typeof(STS2RitsuLib.RitsuLibFramework).Assembly`. The shared modules carry a fixed value
-  that does not identify the selected variant;
-- host version: the build/launch profile validates the installed game's
-  `release_info.json` before packaging or launch.
-
-RitsuLib's own compat-label helper is internal. Do not call it through reflection or
-copy its implementation. Reading assembly metadata is a small diagnostics-only adapter
-and is also what prevents a compile-time `0.107.1` constant from hiding a wrong DLL at
-runtime.
+`scaffold.py`, `ritsu_profile.py`, and `build.py` own this profile, including the runtime
+module layout and the framework identity the load marker reports. Recipes never regenerate
+dependency or identity logic. Public types keep their `STS2RitsuLib.*` namespaces across
+RitsuLib's split modules, so generated `using` directives are the same in every module.
 
 ## Common entry points
 

@@ -220,4 +220,4 @@ snapshot and update only this Mod's live controls. Unregister on owner unload. N
 
 Follow `surfaces/runtime-ui.md`. Drive the real top bar, input router, capstone/window, Catalog,
 Toast host, and stable attachment; assert structured state separately from headed visual/controller
-review. No WP5 route is game-observed from compile or direct construction alone.
+review. Compile or direct construction alone is not game observation.

@@ -5,7 +5,7 @@ shape is one or more ordered rules on one generated Card type. Each rule has one
 player-facing meaning, a deterministic live-state condition, one fixed color, an integer
 priority, and an explicit unplayable-visibility choice.
 
-This route is pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. It uses the official Card
+It uses the official Card
 Hand Glow API without generating Harmony, reflection, Publicizer, or IL.
 
 ## Semantic and runtime contract
@@ -91,6 +91,3 @@ The headed observation must cover:
 
 If headed observation is delegated to the user, record their exact observation and
 keep every unrun automated or Tier 2 check as an exception rather than a pass.
-
-Game-observed so far: a human-led focused host review and Tier 1 passed for generated
-ordered fixed-color rules; strict Tier 2 is unrun.

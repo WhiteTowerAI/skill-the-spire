@@ -47,8 +47,8 @@ optional `selectionScreenPrompt`; art is a loose 256×256 PNG icon, like relic/p
     a subject guard compares against `Owner.Creature` and `Owner.Osty` where an Osty can act.
 - **state**: none (a Potion is single-use and the engine owns its removal)
 - **presentation**:
-  - assets: potion icon; placeholder | generate (a loose 256×256 PNG, generate-wired and
-    live-verified — same as relic/power; see `reference/art-contract.md`)
+  - assets: potion icon; placeholder | generate (a loose 256×256 PNG; see
+    `reference/art-contract.md`)
   - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: standard potion belt/tooltip display
   - hover tips: none | <each keyword, Power, Card, or Orb named in the description>

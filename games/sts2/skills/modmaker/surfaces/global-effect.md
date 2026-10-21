@@ -67,5 +67,4 @@ Drive the nearest real host:
 6. for saved run state, perform the exact save/fill round trip without confusing persistence with
    the singleton's canonical identity.
 
-Compile and catalog reachability are not game observation. Each selected global rule remains
-game-unobserved until this exact host sequence runs.
+Compile and catalog reachability are not game observation.

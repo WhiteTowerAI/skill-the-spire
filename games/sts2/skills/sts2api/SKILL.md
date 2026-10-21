@@ -39,7 +39,7 @@ not dump entire files into the response.
 For generated content, the semantic contract is the product-level source of truth:
 read `${MODMAKER_SKILL_DIR}/semantic-contract.md` before selecting an implementation.
 Lazily read `reference/ritsulib-adapter.md` next. It
-pins RitsuLib `0.6.7` against STS2 `0.107.1`, maps each semantic surface to one public
+maps each semantic surface to one public
 registration/template and asset profile, and owns the framework/version diagnostic
 record. Only then load the surface recipe or reference needed for the request.
 

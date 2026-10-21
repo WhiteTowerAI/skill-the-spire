@@ -1,6 +1,6 @@
 # Recipe: Relic
 
-> A copy-adaptable RitsuLib pattern for a single STS2 relic under the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile. The skill fills
+> A copy-adaptable RitsuLib pattern for a single STS2 relic. The skill fills
 > only the effect logic; `ModRelicTemplate`, content-pack registration, localization, and
 > `RelicAssetProfile` are adapter-owned.
 >
@@ -176,12 +176,8 @@ Call `RitsuLibFramework.RefreshRelicVisibility()` after every state change; it r
 active inventory and returns whether a holder was removed, added, or moved (`false` when nothing
 changed or no run inventory exists). Never read `Owner` in the
 getter: a canonical Relic has none. Hiding another Mod's or a vanilla Relic through the
-global `RegisterRelicVisibilityRule` is not part of this route. Game-observed so far: a Relic
-hidden from `BeforeCombatStart` until `AfterCombatEnd` lost its inventory holder with
-`RefreshRelicVisibility()` reporting a change, kept gaining Block while hidden, and returned
-after combat (Tier 2); headed review saw no empty slot, flash, or stale tooltip either way.
-Reward, choose-a-relic, run-history, and unlock screens and save/resume while hidden remain
-unobserved. Tier 2 asserts `RitsuLibFramework.IsRelicVisible(relic)` before and after
+global `RegisterRelicVisibilityRule` is not part of this route. Tier 2 asserts
+`RitsuLibFramework.IsRelicVisible(relic)` before and after
 each change, that `RefreshRelicVisibility()` reports a changed inventory, and that the
 Relic's effect still resolves while hidden. Headed review confirms that the holder leaves
 and returns with no empty slot, stale tooltip, or flash.

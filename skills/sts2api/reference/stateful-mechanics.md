@@ -1,7 +1,5 @@
 # Stateful mechanics - counters, phases, and persistence
 
-Status: **authorable with RitsuLib on STS2 0.107.1**.
-
 Use this page whenever an effect remembers progress, limits uses, compares turns, or
 changes behavior after a prior event. State is part of the mechanic, not an implementation
 detail.

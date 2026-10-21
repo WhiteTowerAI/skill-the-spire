@@ -1,10 +1,5 @@
 # Model capabilities - attachable model-owned behavior
 
-Status: **authorable with RitsuLib 0.6.7 on STS2 0.107.1**. The public registration,
-default-attachment, typed owner/state, collection, clone, and owner-hook routes compile against the
-pinned Compat assembly. These generalized shapes remain game-unobserved until their exact real-host
-scenario runs.
-
 Use this route when an effect is a separable behavior or state bundle owned by a Card, Relic,
 Potion, Power, Orb, Enchantment, Affliction, Monster, or Character. Keep behavior in the model
 itself when it is inseparable from that model. Do not register a process-wide listener merely to

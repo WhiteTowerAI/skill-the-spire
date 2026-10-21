@@ -1,6 +1,6 @@
 # Reference: computed Card values and variable tooltips
 
-> Pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. Use this page only when a
+> Use this page only when a
 > Card description contains a value calculated from live state. Static upgrade
 > values continue to use the ordinary `DamageVar`, `BlockVar`, or `PowerVar<T>`
 > patterns in `recipes/card.md`.

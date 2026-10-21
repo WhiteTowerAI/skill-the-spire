@@ -67,5 +67,4 @@ scenario (`reference/selftest-harness.md` § The `Act` scenario) enters it throu
 6. headed review checks map/background layering, path colors, chest, Rest Site, music/ambience,
    and mouse/controller navigation.
 
-Compile and model lookup establish neither Act entry nor usable rooms/assets. Until this matrix
-runs, new Act behavior and all presentation remain game-unobserved.
+Compile and model lookup establish neither Act entry nor usable rooms/assets.

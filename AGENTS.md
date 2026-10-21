@@ -86,6 +86,8 @@ limitation or boundary there, not in a separate inventory. Keep these facts dist
 - `skill-the-spire-authorable`: shipped recipes/references cover implementation and proof; and
 - `game-observed`: the exact shape ran successfully in the real host.
 
+Shipped pages state the first two; `game-observed` facts go in
+`games/sts2/tests/README.md` § Observation record, because a generated Mod proves its own routes.
 Missing runtime proof means unobserved, not automatically unsupported. A confirmed public/API or
 lifecycle problem is recorded as the smallest exact limitation. A missing maintained route does
 not block authoring: the generated Mod implements the operation as a Mod-local route from pinned

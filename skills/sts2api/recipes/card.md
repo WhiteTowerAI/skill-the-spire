@@ -1,6 +1,6 @@
 # Recipe: Card
 
-> A copy-adaptable RitsuLib pattern for a single STS2 card under the pinned STS2 `0.107.1` / RitsuLib `0.6.7` profile. Cards
+> A copy-adaptable RitsuLib pattern for a single STS2 card. Cards
 > lean harder on `reference/mechanics.md` than relics/potions do (scaling numbers,
 > upgrades, SmartFormat descriptions) — **read that first.** The skill fills only the
 > **effect logic**; `ModCardTemplate`, content-pack registration, localization, and
@@ -174,10 +174,8 @@ native `CardModel` lifecycle so playability, native cost UI, payment, auto-play,
 and replay see the same declarations. Never create a parallel Star amount/store or spend
 Stars manually inside `OnPlay` to imitate a Card cost.
 
-Reject simultaneous Energy-X and Star-X. Other new Energy/Star combinations are
-framework-expressible and authorable but game-unobserved; a future generated Mod verifies
-only the combination its SPEC selects. Payment rejection must leave both resources, Card
-state, and effect state unchanged.
+Reject simultaneous Energy-X and Star-X; every other Energy/Star combination is authorable.
+Payment rejection must leave both resources, Card state, and effect state unchanged.
 
 An advanced target does not lower to a vanilla enum. Use the stable registered value from
 `reference/advanced-targeting.md`. A single-target Card keeps `cardPlay.Target`; a
@@ -403,10 +401,7 @@ vanilla Card, use the existing `card.property.tags` append route in
 live Card: the tag set is shared with clones, is not saved, and becomes read-only once a
 capability contributes tags (`reference/vanilla-card-overrides.md` § Promoted public
 surface). A tag that changes during a run belongs to Mod-owned state, read by the effect
-that tests it. Game-observed so far: one `.CardTagOwned` tag resolved to its qualified id, was
-present on the canonical Mod Card and a new mutable copy and absent from an untagged Card, and a
-Card that counted tagged Cards in hand gained the expected Block (Tier 2). A Mod tag appended to
-a vanilla Card remains unobserved. Tier 2 asserts that the
+that tests it. Tier 2 asserts that the
 registered tag resolves, that the canonical Card and a new mutable copy both contain it, and
 that the counting effect produces the expected amount in `CombatPlayer`.
 

@@ -63,5 +63,3 @@ and controller focus. Add owner-specific assertions:
 - Card: zero/one/duplicate concrete deck instances;
 - Relic: exact owned instance and removal boundary; or
 - Modifier: selected/absent run and save/load restoration.
-
-No new owner profile is game-observed merely because the existing Relic proof passed.

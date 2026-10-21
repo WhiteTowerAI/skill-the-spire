@@ -143,10 +143,3 @@ No asset path, parsed dialogue key, or direct option call proves the native Anci
 `surfaces/ancient.md` for exact `MapNode`, choice-history, dialogue, controller, icon, audio, and
 cleanup proof. The SelfTest driver is a `plan.Ancient` scenario:
 `reference/selftest-harness.md` § The Ancient `MapNode` scenario.
-
-Game-observed so far: one Shared Ancient with the Darv fallback profile, a two-line
-`firstVisitEver` plus one `ANY` dialogue, two initial options, and one Gold-gain option ending in
-`Done()`. Its registration, parsed dialogue, both-language title/epithet/options, Gold, and
-completion passed Tier 2, and headed review saw the dialogue display. Act-scoped
-registration, `IsValidForAct` rejection, page transitions, Character-specific dialogue,
-repeat visits, choice history, and map/run-history icons remain game-unobserved.

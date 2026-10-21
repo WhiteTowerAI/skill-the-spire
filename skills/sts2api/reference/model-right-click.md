@@ -1,6 +1,6 @@
 # Reference: right-click actions on Mod models
 
-This page owns the right-click contract for STS2 `0.107.1` with RitsuLib `0.6.7`. Use it
+This page owns the right-click contract. Use it
 when a Mod Card, Relic, Power, Potion, or Orb does something when the player right-clicks
 it (or presses the controller `cancel` action on it while it has focus). The model owns the
 behavior; RitsuLib owns input, multiplayer-safe dispatch, and the action queue.
@@ -87,12 +87,6 @@ right-click term, so write the input word plain and style the effect per
   protocol blocks the request with one warning.
 
 ## Verification
-
-Game-observed so far: a Mod Card's action from the hand and from the combat Discard pile
-screen (Tier 2 dispatch and headed mouse right-click), the `CanExecuteRightClick` Energy guard
-(Tier 2 and headed), and refusal when the Card is not in the pile the trigger names (Tier 2).
-Relic, Potion, Power, and Orb hosts, the Draw, Exhaust, and Mod pile screens, the controller
-`cancel` action, and multiplayer remain unobserved.
 
 Tier 2 drives the real dispatch path without synthetic mouse input. Put the model in its host
 (for a Card, the hand), then call the public dispatcher with the matching source:

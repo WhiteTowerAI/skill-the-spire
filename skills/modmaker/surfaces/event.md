@@ -100,7 +100,6 @@ custom/Ancient scenes are not.
     consume at: <target for one-step | final sequence Event>
     progress: saved_card_index
     target pool rule: every sequence Event excluded from ordinary placement
-    save claim: game-unobserved
 - **forced-follow-up boundary**: solo; finite acyclic custom sequence; unchanged neutral
   return; no vanilla edits, duplicate-token rewards, fixed map node, cross-Mod composition,
   multiplayer, or observed save-roundtrip claim

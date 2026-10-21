@@ -74,4 +74,3 @@ Drive the real Ancient room:
    color, option layout, mouse/controller progression, ambient audio, and cleanup.
 
 Build, direct `GenerateInitialOptions()` calls, and localization parsing are not game observation.
-The new Ancient remains game-unobserved until its exact room and headed matrix run.

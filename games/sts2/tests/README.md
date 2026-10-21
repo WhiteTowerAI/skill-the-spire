@@ -127,12 +127,39 @@ Maintainers improve the shipped pack offline:
 5. Confirm build/load rules in `scaffold.py`, `ritsu_profile.py`, package metadata, and a
    focused hosted proof.
 6. Add the smallest reusable semantic/API result, narrow known limitations, and unsupported
-   boundary to the shipped recipe/reference/error entry that owns the feature, with its
-   version and verification facts.
+   boundary to the shipped recipe/reference/error entry that owns the feature. Record what a
+   real run observed in § Observation record below, not in the shipped page: a generated Mod
+   must prove its own routes anyway.
 
 The official tutorial checkout and other `baselines/` research are maintainer inputs only; only
 their reviewed distillations belong in the shipped pack, and shipped files never tell a user's
 runtime to read them.
+
+## Observation record
+
+What maintainer runs have and have not observed in the real host under STS2 `0.107.1`. Every
+listed route is authorable; "unobserved" means no run has proved that exact shape yet.
+
+| Feature | Observed | Unobserved |
+|---|---|---|
+| Generalized families (secondary resources, Monster/Encounter composition and HP, Character starting fields, Card/Relic Rest Site options, computed Card values, bounded state, forced Event mappings, Card Star costs, Event acquisition/shake) | | newly generalized variants |
+| Card Energy/Star costs | | new Energy/Star combinations, combined X replay |
+| Custom Card tags | `.CardTagOwned` resolves; present on canonical and mutable copies; counting Card gains Block (Tier 2) | a Mod tag appended to a vanilla Card |
+| Card-owned Rest Site option | | whole route |
+| Rest Site options | Relic-owned option in a real Rest Site | standalone, Card, and Modifier owners |
+| Relic hidden inventory presence | hide from `BeforeCombatStart` to `AfterCombatEnd`, Block still gained (Tier 2); no empty slot, flash, or stale tooltip (headed) | reward, choose-a-relic, run-history, unlock screens; save/resume while hidden |
+| Potion icon | 256x256 loose PNG in game | |
+| Monster weighted random moves | | any probability distribution |
+| New Ancient | one Shared Ancient, Darv fallback, `firstVisitEver` + `ANY` dialogue, two options, Gold option ending in `Done()` (Tier 2; headed dialogue) | Act-scoped registration, `IsValidForAct` rejection, page transitions, Character-specific dialogue, repeat visits, choice history, map/run-history icons |
+| Character starter upgrades | Archaic Tooth and Touch of Orobas mappings (Tier 2; headed via `ancient OROBAS <TOUCH_OF_OROBAS\|ARCHAIC_TOOTH>`) | preserved enchantment, multiplayer |
+| Character presentation | nine static profiles, top icon/outline, card/UI theme, non-Spine cues, native Ancient/Architect dialogue | locked selection portrait, map marker |
+| Ordered card buffer | isolated two-combat mechanic and a generated Character composition | |
+| Card hand emphasis | human-led host review and Tier 1 | strict Tier 2 |
+| Relic/Power extra corner labels | human-led crowded-row review and Tier 1 | strict Tier 2 |
+| Right-click actions | Mod Card from hand and combat Discard screen, Energy guard, wrong-pile refusal (Tier 2 and headed) | Relic, Potion, Power, Orb hosts; Draw, Exhaust, Mod pile screens; controller `cancel`; multiplayer |
+| Forced follow-up Event | | save claim |
+| Act, Affliction, Global Effect, Modifier, Reward, Runtime UI, Custom Card Pile variants | | new generated shapes |
+| Card play lifecycle, model capabilities, shared effect hooks, lifecycle/state/RNG | | new generated combinations; save/load and profile switching |
 
 ## Developer Commands
 

@@ -1,6 +1,6 @@
 # Vanilla Text Style
 
-Every player-facing string a generated Mod ships must read like the pinned STS2 `0.107.1`
+Every player-facing string a generated Mod ships must read like the
 game: the same names for shared terms, the same highlight colors, the same number
 presentation, the same line breaks, and native Simplified Chinese. This is the **default**
 for every surface, not an optional effect, and it needs no user request. A player notices a

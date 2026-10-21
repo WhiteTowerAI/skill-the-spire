@@ -1,7 +1,6 @@
 # Reference: custom Card Piles
 
-This page owns custom Card Piles authoring for STS2 `0.107.1` with official RitsuLib
-`0.6.7`. The official Custom Card Piles tutorial establishes the feature family. Every documented
+This page owns custom Card Piles authoring with official RitsuLib. The official Custom Card Piles tutorial establishes the feature family. Every documented
 public consumer present in the pinned profile is supported; a missing focused proof is a
 verification fact, not a reason to shrink the API boundary.
 

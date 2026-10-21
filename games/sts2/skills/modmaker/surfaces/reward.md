@@ -71,5 +71,4 @@ Use the real native rewards host selected by SPEC:
 7. headed review checks icon, description, focus, controller selection, cancellation, and continue
    flow.
 
-Compile and serialized JSON establish neither a displayed reward nor a successful claim. Until
-this matrix runs, custom Reward behavior and presentation remain game-unobserved.
+Compile and serialized JSON establish neither a displayed reward nor a successful claim.

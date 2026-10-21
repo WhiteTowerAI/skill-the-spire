@@ -1,7 +1,5 @@
 # Character resource - RitsuLib combat state, payment, and live counter
 
-Status: **authorable with RitsuLib on STS2 0.107.1**.
-
 Use this capability when Cards or other character-owned effects gain and spend one or more
 named nonnegative resources. It is a selected Character capability, not a new content type
 and not a replacement for native Energy or Stars.

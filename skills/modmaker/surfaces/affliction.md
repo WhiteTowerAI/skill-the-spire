@@ -75,5 +75,4 @@ Use a real mutable Card in `CombatPlayer`:
 6. for multi-Card preview, use same-owner Cards, assert only successful Cards are previewed, and
    never claim mouse/controller/text/overlay quality without headed review.
 
-Source/Build establishes neither attachment behavior nor visual proof. This new surface remains
-game-unobserved until its exact hosted matrix runs.
+Source/Build establishes neither attachment behavior nor visual proof.

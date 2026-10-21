@@ -54,7 +54,6 @@ Shared proof machinery stays in `verify.md`.
     - stars: none | fixed <nonnegative integer> | X
       upgrade: same | fixed delta <integer>
     - payment/UI: native
-    - combined X replay: game-unobserved
   - sequence: <ordered game-term effect with exact values>
   - scaling: <named base values, e.g. damage 6; block 5; strength 2>
   - upgrade: <named value deltas, e.g. damage +3>
@@ -199,8 +198,7 @@ separately proves text, icon reflow, and tooltip presentation.
 - **For a Card-owned Rest Site option — assert exact owner identity and multiplicity.** The
   option is absent with zero or duplicate matching Cards, present for exactly one, and then
   follows the shared native-room matrix for disabled/enabled, stale click rejection,
-  deterministic success, repeatability, stay/leave, and icon fallback. This route is
-  authorable but game-unobserved until that concrete generated Mod runs it.
+  deterministic success, repeatability, stay/leave, and icon fallback.
 - **For hook participation — assert the neutral case outside the guard.** Play assertions
   observe none of it, since participation is not the Card's play effect. Assert the modified
   value through the real path, then drive one event the guard should ignore and assert it is

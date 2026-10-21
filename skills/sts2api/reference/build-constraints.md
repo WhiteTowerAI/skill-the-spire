@@ -85,10 +85,3 @@ loader, a schema-2 variant manifest, `compat/0.107.1/` with its marker, `shared/
 `0.107.1` variant is the one that runs. A missing or mismatched variant is a hard actionable
 failure. Never skip runtime/host validation for
 Tier 1.
-
-## Re-Grounding
-
-When STS2 or RitsuLib changes, maintainers must re-check the package id/version, compat
-metadata, public template/registry signatures, manifest schema, localization consumers,
-runtime variant manifest, and one stable-host load proof. `$modmaker` sessions read this
-pack; they do not live-decompile assemblies or invent a replacement API.

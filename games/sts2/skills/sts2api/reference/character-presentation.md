@@ -1,10 +1,9 @@
 # Character static, combat-cue, and native presentation
 
-Status: **implemented for nine static profiles, deterministic top-icon/generated-
-Relic outlines, the bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and
-Character dialogue in native Ancient/Architect scenes on STS2 `0.107.1`**.
-
-Locked selection and map marker remain unverified consumers.
+This page covers nine static profiles, deterministic top-icon/generated-Relic outlines, the
+bounded card/UI theme, private non-Spine Idle/Attack/Hit/Dead cues, and Character dialogue in
+native Ancient/Architect scenes. The Character proof does not reach the locked selection
+portrait or the map marker; report those two consumers as unverified.
 
 Use this page with `recipes/character.md` and `reference/art-contract.md`; also read
 `reference/character-combat-cues.md` when cues are selected. Treat every consumer

@@ -1,7 +1,6 @@
 # Existing vanilla availability overrides
 
-Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. This route
-is pinned to STS2 `0.107.1` and RitsuLib `0.6.7`. It changes fresh unlock filtering or
+Use this reference after `vanilla-overrides.md` resolves an exact vanilla target. It changes fresh unlock filtering or
 Card/Relic/Potion pool membership while preserving the existing model type, `ModelId`,
 save identity, and already-created instances.
 
