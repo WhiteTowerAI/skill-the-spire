@@ -41,12 +41,11 @@ until every approved asset has landed or fallen back to placeholder.
 ## 0. Read before writing C#
 
 - Read `quirks.md` before writing any C#.
-- For each element in SPEC, read its `surfaces/<surface>.md`. Its "Author the element class",
-  "Authoring route", and "Shared capability routes" sections name the recipe and every
+- For each element in SPEC, read its recipe `../sts2api/recipes/<surface>.md`. It names every
   reference that element needs; the `sts2api` file table says when each reference applies.
 - For an ordered `effects.sequence` with an ordinary player-visible effect, read
   `reference/effect-primitives.md` once. Take command lowering and required inputs from it and
-  callback/context/owner/source/target bindings from the surface page, then emit each awaited
+  callback/context/owner/source/target bindings from the element recipe, then emit each awaited
   call in SPEC order. If the callback lacks a required input, stop and name that input plus the
   applicable specialized route; do not invent a substitute for a maintained primitive.
 - For a `Hook:` line, read `reference/model-hook-participation.md`. It owns the three
@@ -76,8 +75,8 @@ until every approved asset has landed or fallen back to placeholder.
 
 ## 1. Write the element classes
 
-Each surface page's "Author the element class" section owns the file path, base template,
-content-pack registration, and lowering rules for its element. Emit the selected Monster and
+Each element recipe owns the file path, base template, content-pack registration, and
+lowering rules for its element. Emit the selected Monster and
 Encounter nodes plus their exact roster edges, with no `[Pool]` on either.
 
 **Counter Power amount domain (applies to every source element).** Before writing any custom
@@ -119,7 +118,7 @@ keyboard. The scaffold already generated `<ModName>Code/SelfTestKit.cs` and arme
    assertions for it.
 3. Add one named scenario per remaining SPEC scenario (`plan.Combat`, `plan.Encounter`,
    `plan.RunStart`, `plan.Event`, `plan.Ancient`, `plan.RestSite`, `plan.Act`, or `plan.Custom`),
-   from the source element's surface page § Self-test driver body. A **power**, **keyword**, or
+   from the source element's recipe § Self-test driver body (or § Proof matrix). A **power**, **keyword**, or
    **enchantment** adds its assertions to its host Card's scenario; an **orb** is driven through
    its channel host. For a multi-element SPEC, drive the real source, then observe each
    dependent state in dependency order; there is no `combo` element. Each selected capability
@@ -206,7 +205,7 @@ Read the SPEC's one Mod-level art choice made at interview time. Do NOT re-ask h
 ### Placeholder (the default - do nothing)
 
 Leave the art file absent. Every surface's checked fallback applies, as listed in
-`../sts2api/reference/art-contract.md` and the surface page's `fallback` field. A
+`../sts2api/reference/art-contract.md` and the recipe's SPEC `fallback` field. A
 Character sets `PlaceholderCharacterId => "ironclad"` and leaves optional profile rows unset
 (`reference/character-presentation.md`). An existing vanilla visual override may use
 placeholder only when its manifest resource is optional; a required resource stops before

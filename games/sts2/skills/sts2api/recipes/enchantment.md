@@ -1,20 +1,35 @@
 # Recipe: Card Enchantment
 
-> A persistent Card modification.
+An Enchantment is persistent state attached to one Card. It is always host-scoped, so it has no
+standalone element; its SPEC, proof, and scenario ride on the host Card (`recipes/card.md`).
 
-## Contract and registration
+## SPEC fields
 
-An Enchantment is persistent state attached to one Card. Use the public template and
-register exactly once:
+Declare it inside the host Card's SPEC fields:
+
+```markdown
+  - enchantment: <name> — <what it adds to the host card>
+    amount: <value and bounds>
+    host restriction: <which cards may legally carry it>
+    stacking: replaces an existing enchantment | not stackable
+    hook participation: none | one or more (see § Hook participation)
+```
+
+The host Card's `localization` section records the exact English and Simplified Chinese
+title/description/optional `extraCardText`; the stable entry and SmartFormat variables are
+identical between languages. `host restriction` is required: it is the Enchantment's identity
+and the thing its proof must exercise.
+
+## Registration
+
+Register exactly once; never add `[Pool]`, depend on auto-discovery, or substitute a run-level
+Modifier. RitsuLib derives `MOD_ENCHANTMENT_TYPENAME`.
 
 ```csharp
 RitsuLibFramework.CreateContentPack(ModId)
     .Enchantment<<EnchantmentName>>()
     .Apply();
 ```
-
-Do not add `[Pool]`, depend on auto-discovery, or substitute a run-level Modifier.
-RitsuLib derives `MOD_ENCHANTMENT_TYPENAME`.
 
 ## Skeleton
 
@@ -46,33 +61,37 @@ public sealed class <EnchantmentName> : ModEnchantmentTemplate
 }
 ```
 
-Omit `AssetProfile` in placeholder mode. The supported custom icon is one checked 64x64
-PNG at `images/enchantments/<slug>.png`, shared by the Card tab and hover tooltip.
+Omit `AssetProfile` in placeholder mode. The supported custom icon is one checked 64x64 PNG at
+`images/enchantments/<slug>.png`, shared by the Card tab and the hover tooltip.
 
-Attach through the public game command:
+Attach through the public game command, then read `Amount` from the mutable instance:
 
 ```csharp
 CardCmd.Enchant<<EnchantmentName>>(card, amount);
 ```
 
-After attachment, assert `card.Enchantment is <EnchantmentName>` and read `Amount` from
-that mutable instance. Preserve base restrictions when overriding `CanEnchant`.
+Preserve the base restrictions when overriding `CanEnchant`: the engine already rejects
+Status/Curse/Quest Card types and `Unplayable` deck Cards, and a second Enchantment unless
+`IsStackable`. An override may **add** restrictions; removing one is out of contract.
 
-## Optional shared capability routes
+## The effect sequence
 
-For a separable Enchantment-owned behavior/state bundle, read `reference/model-capabilities.md`.
-For lifecycle/persistence/RNG, read `reference/lifecycle-state-rng.md`; for reachable per-hit
-attack, healing, Energy/Stars-gain response, or maximum hand size, read
-`reference/shared-effect-hooks.md`. Implement on the Enchantment or its typed capability, preserve
-the host Card's combat-pile reachability, and prove neutral plus cleanup cases. Process-wide
-registration is not an Enchantment route.
+The awaited attached callback is `OnPlay(PlayerChoiceContext choiceContext, CardPlay? cardPlay)`.
+It supplies `choiceContext`, the host Card `Card`, its owner `Card.Owner` and
+`Card.Owner.Creature`, and the nullable host `cardPlay`; use `cardPlay?.Target` only when the
+effect truly follows that target. Lower the sequence through `reference/effect-primitives.md`,
+keep the host Card as `cardSource`, pass the real `cardPlay` for Card-caused Block, and reject
+target-dependent effects when `cardPlay` or its target is absent. Synchronous
+attachment/restriction hooks cannot await commands.
 
-## SPEC `hook participation`: five hooks are replaced here
+## Hook participation: five hooks are replaced here
 
-An Enchantment reaches 61 of the 68 cataloged hooks at their ordinary `AbstractModel` signature.
-For damage, block, and card play count it must use `EnchantmentModel`'s own replacements instead.
-The pinned assembly documents each as "Enchantments MUST use this hook instead of" its
-counterpart, and each runs **before** every other modification hook for that value:
+An Enchantment reaches 61 of the 68 cataloged hooks at their ordinary `AbstractModel` signature
+(`reference/model-hook-participation.md`). For damage, Block, and Card play count it must use
+`EnchantmentModel`'s replacements; the assembly documents each as "Enchantments MUST use this
+hook instead of" its counterpart, and Build fails the general hook on an Enchantment. Each runs
+**before** every other modification hook for that value, so the Enchantment's contribution is
+applied first:
 
 ```csharp
 // Correct on an Enchantment. Two parameters, no subject guard.
@@ -87,30 +106,50 @@ public override decimal ModifyDamageMultiplicative(
     Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) { ... }
 ```
 
-The five, with their exact signatures and neutral returns:
+| Replacement | SPEC id | Signature | Return when not applying |
+|---|---|---|---|
+| `EnchantBlockAdditive` | `enchant_block_additive` | `decimal(decimal originalBlock)` | `0m` |
+| `EnchantBlockMultiplicative` | `enchant_block_multiplicative` | `decimal(decimal originalBlock)` | `1m` |
+| `EnchantDamageAdditive` | `enchant_damage_additive` | `decimal(decimal originalDamage, ValueProp props)` | `0m` |
+| `EnchantDamageMultiplicative` | `enchant_damage_multiplicative` | `decimal(decimal originalDamage, ValueProp props)` | `1m` |
+| `EnchantPlayCount` | `enchant_play_count` | `int(int originalPlayCount)` | `originalPlayCount` |
 
-| Replacement | Signature | Return when not applying |
-|---|---|---|
-| `EnchantBlockAdditive` | `decimal(decimal originalBlock)` | `0m` |
-| `EnchantBlockMultiplicative` | `decimal(decimal originalBlock)` | `1m` |
-| `EnchantDamageAdditive` | `decimal(decimal originalDamage, ValueProp props)` | `0m` |
-| `EnchantDamageMultiplicative` | `decimal(decimal originalDamage, ValueProp props)` | `1m` |
-| `EnchantPlayCount` | `int(int originalPlayCount)` | `originalPlayCount` |
+There is no subject guard: the hook is already scoped to this Enchantment's own Card, so it
+cannot reach any other Card; never write a cross-card rule here. Mind the neutral: additive
+returns `0m`, multiplicative `1m`, and a guard copied from the wrong row is a silent `x0` or a
+stray `+1`. `EnchantPlayCount` passes its argument through.
 
-There is no subject guard because the hook is already scoped to this enchantment's own card —
-which also means it cannot reach any other card, so do not try to write a cross-card rule here.
-Mind the neutral: additive returns `0m` and multiplicative returns `1m`, and a guard copied from
-the wrong row is a silent `x0` or a stray `+1`. `EnchantPlayCount` passes through its argument
-rather than a constant.
+Every other hook uses the ordinary shape. An Enchantment inherits its host Card's combat
+reachability: combat-scope hooks reach it only while the Card is in a combat pile.
 
-For every other hook, read `reference/model-hook-participation.md` and use the ordinary shape. An
-Enchantment inherits its host Card's combat reachability, so a rule meant to hold for all of
-combat does not apply while the enchanted Card sits outside the combat piles.
+## Optional routes
+
+Read a route only when SPEC selects it, append only its nested SPEC block, and preserve the five
+replacements, each service's phase/order, the unchanged neutral case, and removal/cleanup proof.
+The Enchantment or its typed capability stays the owner with the host Card's reachability.
+Process-wide registration is not an Enchantment route.
+
+- a separable behavior/state bundle: `reference/model-capabilities.md`;
+- lifecycle/persistence/RNG: `reference/lifecycle-state-rng.md`;
+- reachable per-hit attack, healing, Energy/Stars-gain response, or maximum hand size:
+  `reference/shared-effect-hooks.md`.
+
+## The engine writes `extraCardText` onto the host card
+
+When `HasExtraCardText` is true, the engine stamps the Enchantment's localized `extraCardText`
+into the host Card's rendered description and folds the Enchantment's Hover Tip into that Card's
+`HoverTips`. The Enchantment owns two strings and the host Card owns neither:
+
+- `.description`: the Enchantment's own hover text;
+- `.extraCardText`: what the engine appends to the host Card, emitted only when
+  `HasExtraCardText` is true.
+
+**Never write either string into the host Card's own description.** The example values below
+are near-duplicates by design; that is a localization shape, not a license for a third copy.
 
 ## Localization
 
-Ship matching `localization/eng/enchantments.json` and
-`localization/zhs/enchantments.json`:
+Ship matching `localization/eng/enchantments.json` and `localization/zhs/enchantments.json`:
 
 ```json
 {
@@ -128,15 +167,30 @@ Ship matching `localization/eng/enchantments.json` and
 }
 ```
 
-Both strings follow the Enchantment row of `reference/vanilla-text-style.md`. Any other text
-that names this Enchantment writes it in `[purple]`.
+Both strings follow the Enchantment row of `reference/vanilla-text-style.md`: plain title,
+`[blue]` numbers, `[gold]` glossary terms. Any other string that names the Enchantment wraps it in
+`[purple]`, as vanilla does (`[gold]Enchant[/gold] it with [purple]Instinct[/purple].`), and
+declares `HoverTipFactory.FromEnchantment<T>()` in its `AdditionalHoverTips`.
 
-Emit `.extraCardText` only when `HasExtraCardText` is true.
+## Self-test driver body
 
-## Verification
+An Enchantment has no scenario of its own. Add the assertions below to its host Card's scenario
+(`recipes/card.md`).
 
-The `CombatPlayer` proof must independently check registration/localization, attachment
-and amount, then drive the host Card and assert the changed outcome.
+## Proof matrix
 
-Custom icon support still requires a headed render in both the Card tab and hover tooltip;
-a path getter alone does not promote visual support.
+- Assert registration and localization resolve, then attachment: `card.Enchantment is
+  <EnchantmentName>` with the SPEC amount read from that mutable instance.
+- Drive the host Card and assert the changed outcome the Enchantment causes.
+- Assert the composed host-Card text contains the `extraCardText` exactly **once**.
+- **Assert the host restriction with an illegal host.** Attachment plus a changed outcome passes
+  for an Enchantment that attaches to anything, including Curses and `Unplayable` Cards. Attempt
+  one host the SPEC forbids and assert refusal with the Card unchanged.
+- When `stacking` is `not stackable`, attempt a second Enchantment on an enchanted Card and
+  assert the declared outcome, refusal or replacement.
+- **Hook participation: assert the neutral case outside the guard.** Assert the modified value
+  through the host Card, then drive one excluded case and assert it unchanged. For one of the
+  five replacements, also assert the value on an **unenchanted** Card of the same kind is
+  untouched, which proves the contribution is scoped to its own host.
+- A custom icon needs a headed render in both the Card tab and the hover tooltip; a path getter
+  alone is not visual proof.

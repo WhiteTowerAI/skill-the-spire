@@ -1,8 +1,52 @@
 # Recipe: Runtime UI
 
-Use this recipe for one local Mod-owned UI workflow. Select only the pieces named by SPEC, but every
-public piece below is authorable. Keep registration and callbacks in a coordinator with explicit
-cleanup; do not scatter static handles across generated content classes.
+Use for one Mod-owned local player workflow assembled from a top-bar entry point, short
+notifications, runtime hotkeys, a capstone screen or floating window, a searchable catalog, and
+fixed public Godot node attachments. Runtime UI owns the workflow's local interaction, node and
+handle lifetimes, localization, refresh, focus, close behavior, and headed proof. Select only the
+pieces SPEC names; every public piece below is authorable. Also read
+`reference/lifecycle-state-rng.md`, and `reference/build-constraints.md` for packaged icons, `.tscn`
+scenes, C# script registration, and bilingual localization.
+
+Runtime UI does not own Card Piles, content-model presentation, or any deferred product family.
+Never add a Settings page or binding, a Progression or post-run Badge view, Telemetry consent, an
+Update Check prompt, Multiplayer control or synchronization, or an integration to those families.
+
+## DESIGN and SPEC vocabulary
+
+Settle and write only the controls the accepted workflow selects:
+
+- stable workflow/button/hotkey/provider/attachment ids, the owning coordinator node, creation
+  time, cleanup time, and behavior before a player or UI host exists;
+- top-bar icon/fallback, order/offset, bilingual hover tip, click outcome, visibility,
+  selected/open state, and optional count; every per-frame provider is fast, pure, and
+  null-player safe;
+- Toast level, body/title/image, duration or persistence, click/dismiss action, progress, tracked
+  updates, terminal close, and what happens when no host is ready;
+- runtime hotkey binding(s), semantic action, text-input/dev-console suppression, input handling,
+  optional Steam Input action exposure, rebind policy, and disposal owner;
+- capstone screen content, local focus/backstop/close behavior, replacement by another capstone,
+  and `NetScreenType.None`; no remote-screen synchronization is authored;
+- floating-window title/content, fixed or movable/resizable behavior, min/initial/max geometry,
+  viewport constraint, ownership of detached/replaced content, and close/cleanup policy;
+- catalog list/grid and inline/drawer detail mode, stable unique items, filters, localized
+  search/empty/detail text, selection, quick actions, refresh, and controller focus;
+- optional search-expansion provider id, supported locale/text, deterministic bounded alternate
+  forms, local-data invalidation, and disposal; and
+- a node attachment's exact stable public parent type, factory/scene source, name/order,
+  derived-type policy, duplicate policy, add/setup timing, insertion point, lookup, and
+  parent-tree cleanup.
+
+Strings follow `reference/vanilla-text-style.md`: glossary names exactly in both languages, short
+plain buttons, titles, and Toast lines, and rich-text tags only in Hover Tip descriptions, which
+render them natively. Shell tokens are namespaced under the Mod and consumed only by the Mod's own
+UI; respond to the published snapshot through `OnApply`, never by changing the active global theme
+or styling unrelated controls.
+
+Keep registration and callbacks in one coordinator with explicit cleanup, never scattered static
+handles across content classes. Create and mutate Catalog, Window, Capstone, Toast, and Godot nodes
+only on the Godot main thread. Attach only to an exact public stable host this recipe documents;
+Node Attachment is never a generic patching escape hatch or a route to an internal/private node.
 
 ## Top bar and Toasts
 
@@ -47,8 +91,8 @@ proof. Close every persistent/owned tracked Toast on cancellation and owner clea
 
 ## Runtime hotkey
 
-The pinned signature takes `RuntimeHotkeyOptions`; the old guide's direct `id:` and `title:` named
-arguments do not compile against `0.6.7`.
+The pinned signature takes `RuntimeHotkeyOptions`; direct `id:` and `title:` named arguments do
+not compile.
 
 ```csharp
 IRuntimeHotkeyHandle handle = RuntimeHotkeyService.Register(
@@ -216,8 +260,27 @@ register only a Mod-namespaced branch such as `mods.<modid>` through
 snapshot and update only this Mod's live controls. Unregister on owner unload. Never call
 `ApplyThemeId` or use the token callback to restyle unrelated controls.
 
-## SelfTest
+## Proof matrix
 
-Follow `surfaces/runtime-ui.md`. Drive the real top bar, input router, capstone/window, Catalog,
-Toast host, and stable attachment; assert structured state separately from headed visual/controller
-review. Compile or direct construction alone is not game observation.
+Drive the real top bar, input router, capstone/window, Catalog, Toast host, and stable attachment;
+assert structured state separately from headed visual/controller review.
+
+1. Assert stable owned ids, one registration/attachment per declared owner, the duplicate policy,
+   and correct behavior before/after host and local-player availability.
+2. Drive the real top-bar button and hotkey through mouse, keyboard, and controller as applicable;
+   assert open/selected/count/visibility state, suppression, handled-input behavior, and disposal.
+3. Drive transient and tracked Toasts; assert exact click/update/progress/duration/close state and
+   that no stale Toast or callback survives its owner.
+4. Open/toggle/replace/close the real local capstone and floating window; assert focus, backstop,
+   content ownership, geometry bounds, viewport resizing, and cleanup.
+5. Populate the real Catalog with boundary and ordinary data; assert unique ids, search, every
+   filter, stable selection across refresh, details, quick actions, the empty state, and the
+   16,384-item and 512-character limits where relevant.
+6. Exercise every search-provider locale and invalidation/disposal case, including concurrent
+   calls, unsupported input, duplicate/over-limit expansions, and no network/file work.
+7. Headed review covers real layout at selected aspect ratios, icon/text readability, mouse and
+   controller focus/navigation, window drag/resize/constraint, Toast timing/animation, and visual
+   response to the active shell-theme snapshot.
+
+Compilation, direct callback invocation, registry lookup, or a constructed Godot node is not UI or
+input observation.

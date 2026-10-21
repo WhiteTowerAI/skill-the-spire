@@ -1,7 +1,7 @@
 # Spec - write the implementation work order
 
-Read `DESIGN.md`, `semantic-contract.md`, the selected `surfaces/<surface>.md` pages, and only
-the recipe/reference pages needed by the current request. Write `SPEC.md` at the outer project
+Read `DESIGN.md`, `semantic-contract.md`, the selected element recipes (`../sts2api/recipes/<surface>.md`),
+and only the reference pages needed by the current request. Write `SPEC.md` at the outer project
 root. This is the one artifact Author follows.
 
 ## Lower the accepted scope
@@ -26,8 +26,8 @@ and say so in the confirmation; a value the user stated still gets the question.
 
 ## Use the owner pages
 
-Each selected surface page owns its exact domain vocabulary and proof matrix. Every capability in
-`SKILL.md`'s supported product boundary stays authorable; use the selected surface pages and
+Each selected recipe owns its exact domain vocabulary and proof matrix. Every capability in
+`SKILL.md`'s supported product boundary stays authorable; use the selected recipes and
 `sts2api` references for its exact current limits. When no maintained route covers an operation,
 ground it under `../sts2api/grounding.md` § Mod-local Routes. A prompt is never
 authority to invent an ungrounded API.

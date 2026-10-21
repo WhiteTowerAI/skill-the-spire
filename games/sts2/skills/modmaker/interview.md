@@ -99,8 +99,8 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
 
 ## What to resolve (only if unclear from the sentence)
 
-1. **Surface.** Infer the element from the player's words, then read its page under
-   `surfaces/`:
+1. **Surface.** Infer the element from the player's words, then read its recipe under
+   `${STS2API_SKILL_DIR}/recipes/`:
    - a passive or triggered effect the player *has* -> `relic`;
    - something played from hand for a cost -> `card` (a shared rule several Cards use ->
      `keyword`; a persistent change attached to one Card -> `enchantment`; a buff/debuff no
@@ -125,7 +125,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
    text. Never rename the model, add a name marker, or touch another surface the user did not
    ask about. Do not ask whether the description should change with the effect; it does.
 
-2. **Open fields.** The selected surface page's SPEC fields (or "DESIGN and SPEC vocabulary")
+2. **Open fields.** The selected recipe's SPEC fields (or "DESIGN and SPEC vocabulary")
    list everything SPEC must settle. Ask only about a field the request leaves materially open;
    fill the rest from the defaults below and state them at confirmation. Never ask about
    classes, enums, hooks, keys, delegates, or APIs. Surface-specific question rules:
@@ -339,7 +339,7 @@ dominant-strategy check: none | <lines compared, concern, mitigation or none>
 open hypotheses: none | <unproven claim and evidence needed>
 ```
 
-Then list, in plain language, the selected surface page's SPEC fields for each element,
+Then list, in plain language, the selected recipe's SPEC fields for each element,
 omitting fields that do not apply. A vanilla override lists its target reference's operation
 fields instead, plus one `unchanged:` line naming the surfaces that stay vanilla (always the
 name, unless the user asked for a new one).

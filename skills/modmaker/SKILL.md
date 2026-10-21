@@ -38,7 +38,7 @@ real STS2 host. Contracts guide authoring; Build and host autotests establish re
 
 ## Supported product boundary
 
-The exact inventory and limitations live in the shipped surfaces and `sts2api` references.
+The exact inventory and limitations live in the shipped `sts2api` recipes and references.
 Current authoring includes:
 
 - Card, Relic, Potion, Power, Keyword, Enchantment, and Orb content;

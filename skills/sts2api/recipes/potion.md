@@ -1,24 +1,78 @@
 # Recipe: Potion
 
-> A single Potion.
+Everything one new Potion needs: the SPEC fields, the class, its text, and its proof. A Potion
+is a one-shot consumable: availability is one content-pack registration, behavior lives in
+`OnUse`, and art is one `PotionAssetProfile`. Read `reference/vanilla-text-style.md` for every
+string. Never add `[Pool]`, a per-Mod Potion base class, or a second registration path.
 
-## Contract
+Also read, only when SPEC selects it:
 
-A Potion is a one-shot consumable. Its availability belongs in one content-pack
-registration, its behavior belongs in `OnUse`, and its art belongs in one
-`PotionAssetProfile`. Do not add `[Pool]`, a per-Mod potion base class, or a second
-registration path.
+- a filtered live-creature target: `reference/advanced-targeting.md`. Only a custom
+  single-target Potion is supported; `potion + many` must stop authoring, because queued
+  zero-target execution cannot preserve the Potion;
+- extra colored words beyond the default style: `reference/content-text-effects.md`;
+- a raw hook rule: `reference/model-hook-participation.md`.
 
-When SPEC declares a filtered live-creature target, read
-`reference/advanced-targeting.md`. The pinned profile supports a custom single-target
-Potion only; `potion + many` must stop authoring because queued zero-target execution
-cannot preserve the Potion.
+Changing an existing vanilla Potion's availability or pool membership resolves the target
+through `reference/vanilla-overrides.md`, then `reference/vanilla-availability-overrides.md`;
+never replace the vanilla model or register it as Mod content.
 
-If the request changes an existing vanilla Potion's fresh availability or pool membership,
-resolve the target through `reference/vanilla-overrides.md` and then read
-`reference/vanilla-availability-overrides.md`. That reference owns the promoted
-singleplayer epoch-gate, pool-add, and pool-membership routes; do not replace the vanilla
-model or register it as Mod-owned content.
+## SPEC fields
+
+Usage and target replace the trigger line; the table is `potions` with no flavor and an
+optional `selectionScreenPrompt`; art is one loose 256×256 PNG icon.
+
+```markdown
+# SPEC — <Mod Name>
+
+- **mod id**: <stable mod identity>
+- **author**: <author>
+- **content**:
+  - name: <shown name>
+  - surface: potion
+  - logical id: <stable local stem, e.g. swift_brew>
+  - rarity: Common | Uncommon | Rare | Event | Token
+- **registration**:
+  - availability: shared | character:<name>
+  - ownership: player
+  - placement: <plain-language potion-pool rule>
+- **localization**:
+  - languages: [eng, zhs]
+  - fields: title=<shown name>; description=<hover text>; optional selectionScreenPrompt
+    (only if the effect prompts a choice)
+  - formatting: vanilla text style (`reference/vanilla-text-style.md`); dynamic value placeholders
+  - extra emphasis: none | <description phrase -> color the default style would not apply>
+  - displayed values: none | <value name -> declared scaling name; literal or placeholder>
+- **effects**:
+  - trigger: use
+  - usage: CombatOnly | AnyTime | Automatic
+  - target: self | one enemy | all enemies
+  - advanced target: none | see `reference/advanced-targeting.md`
+  - sequence: <precise game-terms effect with exact numbers>
+  - scaling: <named values and bounds, or none>
+- **hook participation**: none | one or more; see § Hook participation below
+- **state**: none (a Potion is single-use and the engine owns its removal)
+- **presentation**:
+  - assets: potion icon; placeholder | generate (a loose 256×256 PNG; see
+    `reference/art-contract.md`)
+  - art source: host-tool | backend:<name> | local-image (generate only)
+  - native presentation: standard potion belt/tooltip display
+  - hover tips: none | <each keyword, Power, Card, or Orb named in the description>
+- **fallback**:
+  - missing asset: checked template potion icon
+  - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
+- **proof**:
+  - scenario: CombatPlayer
+  - driver: procure the real Potion, then use it against its declared target
+  - invariants: <exact expected/observed state, belt consumption, and dependent effects>
+  - boundary cases: <resolved-target, usage-window, and dependent-element cases, or none;
+    a Potion has no upgrade>
+- **adapter output** (written to MEMORY after acceptance): resolved content id,
+  localization keys (`title`, `description`), potion icon asset role, and framework
+  diagnostic record
+```
+
+## Registration
 
 Register once from `MainFile.RegisterContent()`:
 
@@ -28,12 +82,13 @@ RitsuLibFramework.CreateContentPack(ModId)
     .Apply();
 ```
 
-`SharedPotionPool` is the default. Use a character pool only when SPEC makes the Potion
-character-specific. RitsuLib derives the public entry as `MOD_POTION_TYPENAME`, for
-example `ExampleMod` + `EmberDraft` becomes
-`EXAMPLE_MOD_POTION_EMBER_DRAFT`.
+`SharedPotionPool` is the default; use a Character pool only when SPEC makes the Potion
+Character-specific. RitsuLib derives the public entry `MOD_POTION_TYPENAME`, e.g. `ExampleMod` +
+`EmberDraft` becomes `EXAMPLE_MOD_POTION_EMBER_DRAFT`.
 
 ## Skeleton
+
+Add `<ModName>Code/Potions/<PotionName>.cs`:
 
 ```csharp
 using System.Collections.Generic;
@@ -76,47 +131,68 @@ public sealed class <PotionName> : ModPotionTemplate
 }
 ```
 
-Omit the `AssetProfile` override in placeholder mode. For generated art, use one checked
-256x256 PNG at `images/potions/<slug>.png`; `OutlinePath` may remain null so the original
-fallback stays available.
+`Rarity`, `Usage` (`CombatOnly`/`AnyTime`), and `TargetType` are the three abstract
+properties and the SPEC contract (§ Proof matrix). Omit `AssetProfile` in placeholder mode; for
+generated art use one checked 256x256 PNG at `images/potions/<slug>.png` and leave
+`OutlinePath` null so the original fallback stays available.
 
 ## Target and effect rules
 
-Read `reference/effect-primitives.md` for ordinary command lowering. `OnUse` supplies
-`choiceContext`, `Owner`, `Owner.Creature`, no Card source, and its nullable selected target; this
-recipe owns only Potion usage/target/lifecycle details.
+`OnUse(PlayerChoiceContext choiceContext, Creature? target)` supplies the real
+`choiceContext`, `Owner`, `Owner.Creature`, no Card source, and the nullable selected target.
+Call `AssertValidForTargetedPotion(target)` before a targeted sequence, then lower
+`effects.sequence` through `reference/effect-primitives.md` and await each command in SPEC
+order. A `used:` diagnostic line does not prove behavior.
 
 - Enemy damage uses `TargetType.AnyEnemy` and a non-null target.
-- Player buffs normally use `TargetType.AnyPlayer`; the selected target is a player
-  creature, unlike a self-targeting Card.
-- Room-wide effects use the matching all-target `CreatureCmd` overload.
-- A filtered single target uses the stable registered value and keeps
-  `AssertValidForTargetedPotion(target)`. RitsuLib revalidates it before removal; follow
-  `reference/advanced-targeting.md` for registration and mouse/controller proof.
-- Never lower a filtered many-target Potion to `AllEnemies`, restore it after removal, or
-  generate a patch. Report the pinned-profile gap.
+- A player buff uses `TargetType.AnyPlayer`, **not** `Self`: the selected target is a player
+  creature, unlike a self-targeting Card. Self effects bind `Owner.Creature`.
+- Room-wide effects use the matching all-target `CreatureCmd` overload over live targets.
 - Potion damage, Block, and Power effects normally use `ValueProp.Unpowered`.
-- `OnUse` must await every Cmd. A diagnostic `used:` line does not prove behavior.
+- A filtered single target uses the stable registered value and keeps
+  `AssertValidForTargetedPotion(target)`; RitsuLib revalidates it before removal. Never lower a
+  filtered many-target Potion to `AllEnemies`, restore it after removal, or generate a patch.
+- `AnyTime` does not promise combat context: reject draw, combat-pile, Orb, Energy/Stars, or
+  Creature-target effects when the use window cannot supply their live combat inputs.
 
-## Optional shared capability routes
+## Displayed values the engine keeps current
 
-Keep the drinking action in `OnUse`. For separable behavior/state while this Potion is held, read
-`reference/model-capabilities.md`; for lifecycle/persistence/RNG, read
-`reference/lifecycle-state-rng.md`; and for reachable per-hit attack, healing, Energy/Stars-gain
-response, or maximum hand size, read `reference/shared-effect-hooks.md`. Implement on the Potion
-or typed capability and prove owner guards, the unchanged neutral case, and cleanup after native
-removal. Do not register a Potion-owned rule process-wide.
+`PotionModel` runs the same SmartFormat/DynamicVar substitution as `RelicModel`, so a value in
+`CanonicalVars` renders live in native `[blue]`. Vanilla `FirePotion` declares
+`new DamageVar(20m, ValueProp.Unpowered)` against `Deal [blue]{Damage}[/blue] damage.` Read the
+effect amount from that same declared variable rather than repeating a literal in code and text.
+A literal is acceptable only when the value can never change and appears in exactly one place;
+record the choice in `localization.displayed values`.
 
-## SPEC `hook participation`
+## Keyword tips are not automatic here
 
-`OnUse` is the Potion being used. A SPEC `hook participation` block is different: the engine asks
-the Potion for a number or a decision while resolving someone else's event, **and it does so while
-the Potion is still sitting in the belt** — participation starts when the Potion is procured, not
-when it is drunk. Read `reference/model-hook-participation.md`.
+As with a Relic, a Potion gets no keyword tooltip from naming a keyword. `ModPotionTemplate`
+shows tips only through declared `RegisteredKeywordIds` and `AdditionalHoverTips`. Declare every
+keyword the description names, and add an `AdditionalHoverTips` entry for each Power, Card, or
+Orb it names.
 
-A Potion reaches both the run-scope and combat-scope sets. `Owner` is a `Player`, so a subject
-guard goes through `Owner.Creature`, and through `Owner.Osty` wherever the Osty can be the
-subject.
+## Hook participation
+
+`OnUse` is the Potion being used. A SPEC `hook participation` block has the engine ask the
+Potion for a number or decision while resolving someone else's event, **while the Potion still
+sits in the belt**: participation starts when it is procured, not when it is drunk. Follow
+`reference/model-hook-participation.md`. A held Potion reaches the same wide set as a Relic
+(66 of 68). `Owner` is a `Player`, so a subject guard goes through `Owner.Creature` and
+`Owner.Osty` wherever the Osty can be the subject.
+
+## Optional routes
+
+Keep the drinking action in `OnUse`. Read a route only when SPEC selects it, append only its SPEC
+block for behavior while the Potion is held, and specify phase/order, subject guard, neutral
+case, removal cleanup, and pre/post belt plus behavior assertions. State reachability ends when
+the native Potion lifecycle removes it unless SPEC says otherwise. Never register a
+Potion-owned rule process-wide.
+
+- separable behavior/state while held: `reference/model-capabilities.md`;
+- lifecycle/persistence/RNG: `reference/lifecycle-state-rng.md`;
+- reachable per-hit attack, healing, Energy/Stars-gain response, or maximum hand size:
+  `reference/shared-effect-hooks.md`;
+- a right-click action other than native use: `reference/model-right-click.md`.
 
 ## Localization
 
@@ -137,21 +213,43 @@ public-entry keys:
 }
 ```
 
-Add `.selectionScreenPrompt` only when the Potion opens a selector. Write the description in
-the Potion row of `reference/vanilla-text-style.md`: displayed numbers in `[blue]` from
+Add `.selectionScreenPrompt` only when the Potion opens a selector. Write the description in the
+Potion row of `reference/vanilla-text-style.md`: displayed numbers in `[blue]` from
 `CanonicalVars`, heals in `[green]`, glossary terms in `[gold]`
-(`Apply [blue]{WeakPower}[/blue] [gold]Weak[/gold].` / `给予[blue]{WeakPower}[/blue]层[gold]虚弱[/gold]。`),
-and a tip in `AdditionalHoverTips` for each Power, keyword, Card, or Orb it names.
+(`Apply [blue]{WeakPower}[/blue] [gold]Weak[/gold].` / `给予[blue]{WeakPower}[/blue]层[gold]虚弱[/gold]。`).
+Only when SPEC selects `extra emphasis`, read `reference/content-text-effects.md`.
 
-## Verification
+## Self-test driver body
 
-The `CombatPlayer` harness must:
+A Potion gets a named `plan.Combat` scenario that uses it with `t.UsePotion<TPotion>(target)`
+(procure the mutable Potion, drive `EnqueueManualUse(target)`, wait for the queued action) and
+asserts SPEC state (`reference/selftest-harness.md` § potion). A missing custom atlas sprite
+warning is expected in placeholder mode; a fresh error is not.
 
-1. resolve the Potion from `ModelDb.AllPotions` and check its title;
-2. call `PotionCmd.TryToProcure(potion.ToMutable(), player)`;
-3. drive `potion.EnqueueManualUse(target)` and wait for the queued action;
-4. assert the concrete post-state and emit one `state proof:` marker;
-5. reach `selftest done` with no fresh error.
+## Proof matrix
 
-A missing custom atlas sprite warning is expected in placeholder mode; a
-fresh error is not.
+- Assert the declared effect's exact expected/observed state.
+- **Assert belt consumption.** `PotionModel.OnUseWrapper` calls `RemoveBeforeUse()` before
+  `OnUse`, and the effect delta alone passes for a Potion that is never consumed or is silently
+  restored, so assert belt membership before/after, or `HasBeenRemovedFromState`, as its own
+  invariant.
+- **Assert the declared target, not the implemented one.** The driver derives its target from
+  `potion.TargetType`, so a `TargetType` contradicting SPEC still passes the effect assertion.
+  Assert the resolved target matches SPEC `effects.target`: for `one enemy`, an enemy took the
+  effect and the player did not.
+- Assert the declared `usage` when it restricts availability; `t.UsePotion` runs inside combat,
+  so `CombatOnly` versus `AnyTime` is otherwise never observed.
+- **Assert each declared keyword tip resolves**: the registered id and its title/description.
+- **Assert each declared displayed value renders live**: the rendered description contains the
+  current value, not an unresolved placeholder or a diverged literal.
+- **Hook participation: assert the neutral case outside the guard.** A held Potion changes the
+  run from the moment it enters the belt; drive one event the guard should ignore and assert the
+  host's value is unchanged. For a collection edit, assert that an entry placed beforehand
+  survives.
+- Advanced targeting follows `reference/advanced-targeting.md`: the single Potion is one of its
+  three required distinct real consumers.
+
+## Manual fallback (only when the harness cannot reach its scenario)
+
+Grant it: `potion <PREFIX>-<SLUG>` (**no `add`**, **exact** match; run in progress). Trigger it:
+use it (pick a target if targeted) and confirm the belt slot empties.
