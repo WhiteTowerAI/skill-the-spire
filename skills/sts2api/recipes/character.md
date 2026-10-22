@@ -74,7 +74,7 @@ pinned epoch only; no permanent disable, pool replacement, or registration as a 
   - assets: placeholder | generate (Character static profiles and optional combat cues;
     list each consumer and acquisition count)
   - art source: host-tool | backend:<name> | local-image (generate only)
-  - character art tier: minimal | standard | full (generate only; see the interview's art step)
+  - character art tier: minimal | standard | full (generate only; see `reference/art-setup.md`)
   - native presentation: character select screen + combat UI
   - character art bundle: one `CharacterArtBundle` row per selected slot; record
     required/optional, output path, dimensions, alpha policy, fallback, and real consumer

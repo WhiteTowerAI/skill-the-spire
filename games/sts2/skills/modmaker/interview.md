@@ -195,48 +195,12 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
    - **3. Images you already have** — the user supplies the files; import fits and places
      them.
 
-   No answer means 0. The supported specs and their boundaries live in
-   `${STS2API_SKILL_DIR}/reference/art-contract.md`; requests outside them (Spine,
-   animation, phobia variants, custom layouts) stay explicit gaps. Then set up only the
-   chosen route, never probe the others:
-   - **0**: record `art: placeholder`.
-   - **1**: record `art source: host-tool`.
-   - **2**: ask which service. For OpenAI, Gemini, or OpenRouter, the user sets
-     `OPENAI_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY` in their own environment;
-     the built-in backend names are `openai`, `gemini`, and `openrouter`. A newly set
-     variable reaches only a newly started agent session. For any other endpoint or a local
-     command, the user adds a named entry to `~/.skill-the-spire/art-backends.json` per
-     `${STS2API_SKILL_DIR}/reference/art-backends.md`; offer to write it with `api_key_env` instead of the
-     key. Never ask the user to paste a key into the conversation. Then run
-     `python ${GAME_TOOLS_DIR}/gen_sprite.py check --backend <name>` once (it requests no
-     image). On success record `art source: backend:<name>`; on failure say what is missing
-     and let the user fix it, pick another choice, or keep placeholder.
-   - **3**: ask which file belongs to which asset; record `art source: local-image`. When
-     the art sits inside a larger picture (a whole card with frame and text), crop it
-     with `gen_sprite.py grid` and `import --crop` per `art-contract.md`; anything beyond a
-     rectangular crop is the user's own edit.
-   - For 1 and 2, capture one overall subject/style note. `author.md` derives each asset's
-     subject from its SPEC. Before any paid route, show how many image calls it will spend.
-   - For a Character with 1 or 2, offer its art tier in the same message, with the call
-     counts from `character_art_tiers` in
-     `${STS2API_SKILL_DIR}/reference/catalogs/art-contract-sts2-0.107.1.json`:
-     **minimal** (selection portrait plus the combat, rest, and merchant bodies; everything
-     else keeps the base-game Ironclad art), **standard** (all static Character art, no
-     combat animation), or
-     **full** (standard plus combat animation: idle breathing, attack, hit, and death). No
-     answer means minimal.
-   - Whenever the user picks **full** or otherwise asks for the Character to move in
-     combat, tell them plainly before recording it: the animation is drawn as one large
-     image that must come back at 2048x2048, and a 1024x1024 result was rejected as too
-     blurry. Name whether their route can do it, from the list in
-     `${STS2API_SKILL_DIR}/reference/character-combat-cues.md` § Acquisition and
-     normalization (Codex's built-in `image_gen` can; the built-in `openai`, `gemini`, and
-     `openrouter` defaults cannot without a newer model and a config change). When it
-     cannot, offer **standard** or a route switch, and record what the user chooses. No
-     other Character art needs 2K: the selection background asks for 2K when the route
-     supports it but works from a smaller image.
-     Record `character art tier: <name>`. The locked selection portrait and map marker are
-     in no tier; generate them only when the user names them.
+   Choice 0, or no answer, records `art: placeholder`. The supported specs and their
+   boundaries live in `${STS2API_SKILL_DIR}/reference/art-contract.md`; requests outside
+   them (Spine, animation beyond a Character's combat cues, phobia variants, custom layouts)
+   stay explicit gaps. For 1, 2, or 3, set up only the chosen route per
+   `${STS2API_SKILL_DIR}/reference/art-setup.md`, which also holds the style note, the call
+   count, and a Character's art tier.
 
 ## Defaults (apply silently unless the user specified otherwise)
 

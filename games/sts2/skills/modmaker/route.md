@@ -22,7 +22,7 @@ Ask no co-design or clarification question about those choices. Three questions 
 user's even then:
 
 - spending money, including any paid image call (the art question in `interview.md` keeps its
-  placeholder default and its call count before paid generation);
+  placeholder default, and its setup shows the call count before paid generation);
 - dropping, shrinking, or substituting something the user explicitly asked for; and
 - an unsupported operation, handled as below.
 
