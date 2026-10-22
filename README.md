@@ -1,7 +1,6 @@
 # Skill the Spire
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Slay the Spire 2](https://img.shields.io/badge/Slay%20the%20Spire%202-0.107.1-8b0000)](https://store.steampowered.com/app/2868840/)
 [![RitsuLib](https://img.shields.io/badge/RitsuLib-%E2%89%A50.6.7-orange)](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-d97757)](#install)
 [![Codex plugin](https://img.shields.io/badge/Codex-plugin-black)](#install)
