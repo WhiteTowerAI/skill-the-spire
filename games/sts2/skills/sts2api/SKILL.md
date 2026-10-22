@@ -131,6 +131,7 @@ Read one only when the SPEC selects that behavior.
 | File | Read when |
 |---|---|
 | `reference/selftest-harness.md` | writing `SelfTestScenarios.cs`; any Tier 2 question. A non-combat host's driver lives in its recipe |
+| `reference/art-setup.md` | the user picked art choice 1, 2, or 3 at interview: route record, style note, call count, Character art tier |
 | `reference/art-contract.md` | the art step: paths, sizes, fallbacks, prompts, consent, and import |
 | `reference/art-character.md` | Character art: tiers, sheets, identity routing, and prompts |
 | `reference/art-backends.md` | the user selected a `backend:<name>` art route |
