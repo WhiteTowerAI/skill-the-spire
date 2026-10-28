@@ -10,7 +10,9 @@ Build checks, in order: the pinned project and manifest profile; `has_pck` again
 tree; bilingual localization parity (tables, keys, nonempty values, SmartFormat variables, live
 tokens); rich-text markup and vanilla text style; Ancient dialogue structure; the vanilla override
 manifest; the unchanged self-test kit; forbidden source routes (`[Pool(...)]`, raw Harmony, member
-reflection, Publicizer, unreviewed patch targets); the installed host and RitsuLib runtime; then
+reflection, Publicizer, unreviewed patch targets) and multiplayer lockstep breakers
+(process-local randomness or time, `LocalContext` player lookups and mutable statics in gameplay
+models); the installed host and RitsuLib runtime; then
 MSBuild, packing, deployment, and hook reachability in the compiled Mod. Each failure prints its
 own reason; you do not need to know the checks in advance. Build never downloads a framework
 package or substitutes another RitsuLib version for the one scaffold recorded.

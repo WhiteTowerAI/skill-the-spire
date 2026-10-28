@@ -123,6 +123,51 @@ class SourceScanTests(unittest.TestCase):
         root = self.project({}, csproj='<Project><PackageReference Include="Krafs.Publicizer" /></Project>')
         self.assertEqual(["Proof.csproj: a Publicizer: private members are off limits"], self.scan(root))
 
+    def test_multiplayer_nondeterminism_fails_outside_scenarios(self) -> None:
+        cases = [
+            "var r = new Random();",
+            "var r = new System.Random(3);",
+            "int n = Random.Shared.Next(4);",
+            "var f = GD.Randf();",
+            "var g = new RandomNumberGenerator();",
+            "var id = Guid.NewGuid();",
+            "if (DateTime.UtcNow.Second % 2 == 0) {}",
+            "var s = Stopwatch.StartNew();",
+            "int t = Environment.TickCount64;",
+        ]
+        for code in cases:
+            with self.subTest(code=code):
+                findings = self.scan(self.project({"Helper.cs": "\n" + code}))
+                self.assertEqual(1, len(findings), findings)
+                self.assertIn("ProofCode/Helper.cs:2: process-local randomness or time", findings[0])
+        scenarios = self.project({"SelfTestScenarios.cs": "var started = DateTime.UtcNow;"})
+        self.assertEqual([], self.scan(scenarios))
+
+    def test_local_player_and_static_state_fail_only_in_gameplay_models(self) -> None:
+        card = """
+public sealed class Spark : ModCardTemplate
+{
+    private static int _plays;
+    private static Dictionary<ulong, int> _byPlayer = new();
+    private static readonly Color Tint = new("ffffff");
+    private static RunSavedData<SparkRun> Data = null!;
+    public static int Shown => _plays;
+    private static int Twice(int x) => x * 2;
+    void Play() { var me = LocalContext.GetMe(RunState); var id = LocalContext.NetId; }
+    void Show() { if (LocalContext.IsMe(Owner)) { } }
+}
+"""
+        findings = self.scan(self.project({"Spark.cs": card}))
+        lines = sorted(int(f.split(":")[1]) for f in findings)
+        self.assertEqual([4, 5, 10, 10], lines, findings)
+        self.assertTrue(any("mutable static field" in f for f in findings), findings)
+        self.assertTrue(any("LocalContext names this machine's player" in f for f in findings), findings)
+        # The same code outside a gameplay model (a theme cache, a Runtime UI panel) passes.
+        ui = card.replace(": ModCardTemplate", ": Control")
+        self.assertEqual([], self.scan(self.project({"Panel.cs": ui})))
+        relic = "public sealed class Lamp : STS2RitsuLib.Scaffolding.Content.ModRelicTemplate\n{\n    static bool _lit;\n}"
+        self.assertEqual(1, len(self.scan(self.project({"Lamp.cs": relic}))))
+
     def test_validate_reports_findings(self) -> None:
         root = self.project({"Bad.cs": "[Pool(typeof(X))] class B {}"})
         with self.assertRaisesRegex(source_scan.SourceScanError, r"ProofCode/Bad.cs:1: `\[Pool"):
