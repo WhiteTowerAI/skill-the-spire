@@ -15,6 +15,18 @@ prohibitions less reliably than a failing Build. This scan runs before MSBuild o
   from the pinned vanilla catalog, so a fixed override route passes and a prompt-derived patch
   does not.
 
+Every Mod is multiplayer-safe: each peer runs the same actions and must reach the same state.
+Three lockstep breakers are checkable:
+
+- process-local nondeterminism (`System.Random`, Godot `GD.Rand*`/`RandomNumberGenerator`,
+  `Guid.NewGuid`, wall-clock time, `Stopwatch`, `Environment.TickCount`) anywhere outside
+  `SelfTestScenarios.cs`: gameplay draws from the game or Mod run RNG streams.
+- `LocalContext.GetMe`/`LocalContext.NetId` inside a gameplay model class: they name this
+  machine's player, not the model's `Owner`. `LocalContext.IsMe(Owner)` stays allowed as a
+  local-presentation guard.
+- a mutable static field in a gameplay model class: one process holds every player's models,
+  so static state leaks between players and is never synchronized.
+
 The fixed `SelfTestKit.cs` is checked separately by `selftest_kit.py` and skipped here. Reading
 the loaded framework's assembly metadata (as the scaffolded load marker does) is not member
 reflection and passes. The compiler and Tier 2 still own everything else.
@@ -49,6 +61,42 @@ RULES: tuple[tuple[re.Pattern[str], str], ...] = (
 )
 CSPROJ_RULE = (re.compile(r"Publiciz|IgnoresAccessChecksTo"),
                "a Publicizer: private members are off limits")
+
+# Peers diverge on any of these; SelfTestScenarios.cs (verification only) may read time.
+NONDETERMINISM_RULE = (
+    re.compile(r"\bSystem\s*\.\s*Random\b|\bnew\s+Random\s*\(|\bRandom\s*\.\s*Shared\b"
+               r"|\bGD\s*\.\s*Rand\w*\b|\bRandomNumberGenerator\b|\bGuid\s*\.\s*NewGuid\b"
+               r"|\bDateTime(?:Offset)?\s*\.\s*(?:Now|UtcNow|Today)\b|\bStopwatch\b"
+               r"|\bEnvironment\s*\.\s*TickCount"),
+    "process-local randomness or time differs per multiplayer peer: draw from the game or "
+    "Mod run RNG (reference/lifecycle-state-rng.md)",
+)
+SCENARIOS_FILE = "SelfTestScenarios.cs"
+
+# A class that ModelDb instantiates once per owning player.
+GAMEPLAY_MODEL_RE = re.compile(
+    r"\bclass\s+\w+(?:<[^>{]*>)?\s*:\s*(?:[\w.]+\.)?(?:Mod\w+Template|HookedSingletonModel|ModCustomReward"
+    r"|CardModel|RelicModel|PotionModel|PowerModel|OrbModel|EnchantmentModel|AfflictionModel"
+    r"|MonsterModel|EncounterModel|EventModel|AncientEventModel|ModifierModel)\b"
+)
+LOCAL_PLAYER_RULE = (
+    re.compile(r"\bLocalContext\s*\.\s*(?:GetMe\s*\(|NetId\b)"),
+    "LocalContext names this machine's player: gameplay uses the model's Owner "
+    "(LocalContext.IsMe(Owner) may only gate local presentation)",
+)
+# Handles registered once and keyed by run/player/model inside; never per-player state.
+STATIC_HANDLE_TYPES = ("RunSavedData", "PlayerRunSavedData", "ModelSavedData",
+                       "SavedAttachedState", "AttachedState")
+MUTABLE_STATIC_RE = re.compile(
+    r"^[ \t]*(?:(?:private|public|internal|protected|new|volatile)\s+)*static\s+"
+    r"(?!readonly\b|class\b|async\b|void\b|partial\b|extern\b|event\b)"
+    r"(?P<type>[\w.]+(?:<[^;=(){}]*>)?\??(?:\[\])?)\s+\w+\s*(?:=(?!>)|;)",
+    re.MULTILINE,
+)
+MUTABLE_STATIC_REASON = (
+    "a mutable static field in a gameplay model is shared by every player in this process and "
+    "never synchronized: keep state on the model or in a run/player saved-data slot"
+)
 
 PATCH_CLASS_RE = re.compile(r"\bIPatchMethod\b")
 # new(typeof(Type), nameof(Type.Method) | "Method", ...[, MethodType.Getter])
@@ -104,6 +152,26 @@ def reviewed_adapter_methods(catalog: dict) -> set[tuple[str, str]]:
     }
 
 
+def _multiplayer_findings(name: str, file_name: str, code: str) -> list[str]:
+    findings = []
+
+    def add(match: re.Match[str], reason: str) -> None:
+        findings.append(f"{name}:{code.count(chr(10), 0, match.start()) + 1}: {reason}")
+
+    if file_name != SCENARIOS_FILE:
+        pattern, reason = NONDETERMINISM_RULE
+        for match in pattern.finditer(code):
+            add(match, reason)
+    if GAMEPLAY_MODEL_RE.search(code):
+        pattern, reason = LOCAL_PLAYER_RULE
+        for match in pattern.finditer(code):
+            add(match, reason)
+        for match in MUTABLE_STATIC_RE.finditer(code):
+            if not match.group("type").startswith(STATIC_HANDLE_TYPES):
+                add(match, MUTABLE_STATIC_REASON)
+    return findings
+
+
 def scan(project_dir: Path, mod_name: str, *, catalog: dict | None = None) -> list[str]:
     """Return one finding per forbidden use; empty when the Mod source is clean."""
     findings: list[str] = []
@@ -115,6 +183,7 @@ def scan(project_dir: Path, mod_name: str, *, catalog: dict | None = None) -> li
             for match in pattern.finditer(code):
                 line = code.count("\n", 0, match.start()) + 1
                 findings.append(f"{name}:{line}: {reason}")
+        findings.extend(_multiplayer_findings(name, path.name, code))
         if PATCH_CLASS_RE.search(code):
             patch_files.append((path, code))
     for csproj in sorted(project_dir.glob("*.csproj")):

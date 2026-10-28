@@ -25,7 +25,8 @@ has landed or fallen back to placeholder.
 
 ## 0. Read before writing C#
 
-- Read `quirks.md`.
+- Read `quirks.md`, including § Multiplayer-safe by default: every Mod's gameplay code is
+  written for multiplayer, whatever mode the user plays.
 - For each element in SPEC, read its recipe `../sts2api/recipes/<surface>.md`. It names
   every reference that element needs; the `sts2api` file table says when each applies.
 - For an ordered `effects.sequence`, read `reference/effect-primitives.md` once. Take command

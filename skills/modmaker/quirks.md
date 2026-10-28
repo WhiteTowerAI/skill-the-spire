@@ -61,9 +61,29 @@ not restate the other file's half — a diagnostic in two homes drifts.
   combat hook. Capture once: `var combat = Owner.PlayerCombatState!;` then use
   `combat.Energy`, `combat.TurnNumber`. Outside that boundary, guard null explicitly.
 
+## Multiplayer-safe by default
+
+Every Mod is written for multiplayer; singleplayer is the one-player case of the same code. Each
+peer runs the same queued actions and must reach the same state, and the host checksums combat
+state after every action. Build rejects the checkable breakers (process-local randomness or
+time, `LocalContext` player lookups and mutable statics in gameplay models); follow the rest:
+
+- **Owner, not "me".** Gameplay reads the model's `Owner` (a Power: `Owner.Player`). `LocalContext`
+  names this machine's player; use `LocalContext.IsMe(Owner)` only to gate local presentation.
+- **Filter shared hooks.** Combat and run hooks fire for every player's models: guard with
+  `player == Owner` or `participants.Contains(Owner.Creature)` (§ Combat hooks).
+- **"All players" is explicit.** A run-level eligibility or effect that concerns the party
+  iterates `runState.Players` as vanilla does (`Players.All(...)`); text says "you" for the owner
+  and "all players"/"another player" only when the code targets them.
+- **State lives in synchronized places.** Model fields, `SavedProperties`, and run/player
+  saved-data slots travel with the run; a static, a process cache, or a UI node does not.
+- **Input that changes gameplay is an action.** A button, hotkey, or Runtime UI control that
+  changes run or combat state goes through a queued route (`reference/model-right-click.md`),
+  never a direct command from the UI callback. Purely local display needs no action.
+
 ## RNG
 
-- **Never `System.Random`** — it breaks determinism and seed sharing. Use
+- **Never `System.Random`** — it breaks determinism and seed sharing, and Build rejects it. Use
   `MegaCrit.Sts2.Core.Random.Rng`: `new Rng(Owner, base.Id)`; `.NextBool()` (50/50),
   `.NextInt(maxExcl)`. Add a mixin (`new Rng(Owner, base.Id, (uint)turn)`) if it may
   roll repeatedly and you want distinct results.
