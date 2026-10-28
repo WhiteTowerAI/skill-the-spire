@@ -217,6 +217,14 @@ private async Task Peck(IReadOnlyList<Creature> targets)
 
 This is the top Monster failure mode; the Card recipe's `.Targeting()` does not transfer.
 
+**Multiplayer** needs no Monster code. That untargeted attack hits every player, as vanilla
+attacks do. The host scales the Monster on its own: Max HP and powered move Block (`ValueProp.Move`)
+by `players x 1.1` in Act 1, `x 1.2` in Act 2, and `x 1.2` (`x 1.3` for a boss) in Act 3, and a
+self-applied Power by the same factor only when it sets `ShouldScaleInMultiplayer`
+(`recipes/power.md` § Multiplayer). A scenario that asserts Max HP or Block computes the
+expected value from `t.State.Players.Count`; `t.EnemyTurn` already reports only what reached
+the acting player.
+
 ## Move state machine
 
 A Monster's behavior is a `MonsterMoveStateMachine` of `MonsterState`s

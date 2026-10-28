@@ -393,6 +393,37 @@ one verified `rest_site_option` 256x169 image at `images/rest_site_options/<slug
 absence to the native Heal icon before building `RestSiteOptionAssetProfile`, never a missing
 custom path.
 
+## Multiplayer
+
+A Relic belongs to one player and every peer simulates it. Combat and run hooks fire for every
+player's models, so the owner guard in § Trigger hooks is what keeps a Relic from also firing for
+a teammate. Team effects are explicit:
+
+- **every player** iterates `combatState.GetTeammatesOf(Owner.Creature).Where(c => c.IsAlive &&
+  c.IsPlayer)` in combat, or `Owner.RunState.Players` outside it;
+- **when a teammate does something**, the hook's subject is another player
+  (`cardPlay.Card.Owner != Owner`, `player != Owner`); the effect still acts for the stated
+  receiver;
+- **multiplayer only** overrides `public override bool IsAllowed(IRunState runState) =>
+  runState.Players.Count > 1` (vanilla `MassiveScroll`; `== 1` for singleplayer only), which
+  keeps it out of the other mode's rewards, shops, and Neow; text names the receiver ("all
+  players", `所有玩家`).
+
+```csharp
+public override async Task AfterSideTurnStart(CombatSide side,
+    IReadOnlyList<Creature> participants, ICombatState combatState)
+{
+    if (!participants.Contains(Owner.Creature) || Owner.PlayerCombatState!.TurnNumber > 1)
+        return;
+    Flash();
+    foreach (var ally in combatState.GetTeammatesOf(Owner.Creature).Where(c => c.IsAlive && c.IsPlayer).ToList())
+        await CreatureCmd.GainBlock(ally, DynamicVars.Block.BaseValue, ValueProp.Unpowered, null);
+}
+```
+
+Its scenario asserts the value on every player (`t.State.Players`), so the same scenario passes
+with one player and with two.
+
 ## Rarity and pool
 
 `RelicRarity` (`MegaCrit.Sts2.Core.Entities.Relics`): `None, Starter, Common, Uncommon, Rare,

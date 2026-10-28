@@ -45,9 +45,12 @@ has landed or fallen back to placeholder.
   routes, write every accepted operation to `skillthespire/vanilla-overrides.json`, and never
   register a replacement vanilla model. Emit no operation for a surface SPEC lists as `unchanged`,
   in particular no title operation unless SPEC renames the model.
-- Never emit Settings, Progression, post-run Badge, Telemetry, Multiplayer, Update Check, or a
-  connection to one of them. Never substitute alternative-Energy patches, C/D access,
-  assembly-wide `PatchAll`, or `SkillTheSpire.Runtime`.
+- Never emit Settings, Progression, post-run Badge, Telemetry, Update Check, or a connection to
+  one of them. Multiplayer content follows its element recipe's § Multiplayer; never emit a
+  custom network message (RitsuLib Sidecar, a raw `INetMessage`, a hand-rolled managed net
+  action): the game's own action queue already synchronizes every Card, Potion, and hook.
+  Never substitute alternative-Energy patches, C/D access, assembly-wide `PatchAll`, or
+  `SkillTheSpire.Runtime`.
 - Make every `.cs` file namespace-complete on its own: copy the `using` for every symbol into the
   file that uses it, never relying on another snippet or a non-global import (for example
   `RegisterPatch<T>()` needs `using STS2RitsuLib.Patching.Core;` and `GoldLossType` needs

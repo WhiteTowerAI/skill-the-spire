@@ -27,6 +27,7 @@ Recommended shape:
 ## Decisions
 - <accepted behavior, value, theme, or trade-off>
 - Output player-facing text in English and Simplified Chinese.
+- Plays in singleplayer and multiplayer.
 
 ## Current Scope
 - <what this build includes>
@@ -48,6 +49,11 @@ for a design change or the current intent cannot otherwise be recovered.
 
 Under delegation (`route.md`), mark each choice you made `(delegated)` in `## Decisions`, so a
 later revision knows the user never chose it.
+
+Every Mod plays in both modes; never ask about it. Content that only makes sense with teammates
+(help another player, every player gains, a team relic) is multiplayer-only content, recorded as a
+decision ("multiplayer only"), and a request about co-op play may add such content. Ask only when
+the idea's own words leave open whether an effect is "you" or "every player".
 
 After DESIGN, write `SPEC.md`. Confirm the implementation in one concise message before
 scaffolding when the request involved material inferred choices; exact zero-question fast-path

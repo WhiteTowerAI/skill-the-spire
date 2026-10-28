@@ -100,6 +100,11 @@ the Exhaust Pile when it has Exhaust. A variable it cannot read is listed as `no
 give that Card a scenario. A face check reads the expected numbers from the Card itself, so
 compare the roll call line with SPEC to catch a wrong base number.
 
+A teammate Card reads `BlockVar`, `EnergyVar`, `HealVar`, and Power numbers on its receivers:
+the targeted teammate for `AnyAlly`, every player for `AllAllies` (labelled `Block@P<netId>`).
+A `MultiplayerOnly` Card's face check reports `SKIP` in singleplayer and runs in the
+multiplayer run; a `SingleplayerOnly` one the other way round.
+
 ## Writing `SelfTestScenarios.cs`
 
 ```csharp

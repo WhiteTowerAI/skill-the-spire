@@ -70,6 +70,12 @@ internal sealed class SelfTestProofFailed : Exception
     public SelfTestProofFailed(string observation) : base(observation) { }
 }
 
+/// <summary>The scenario cannot run in this mode (singleplayer or multiplayer); reported SKIP, never PASS.</summary>
+internal sealed class SelfTestSkipped : Exception
+{
+    public SelfTestSkipped(string reason) : base(reason) { }
+}
+
 internal enum SelfTestHost
 {
     /// <summary>The kit's shared player combat.</summary>
@@ -781,6 +787,10 @@ internal static class SelfTestFaceCheck
     internal static async Task Run<TCard>(SelfTestRun t) where TCard : CardModel
     {
         var canonical = ModelDb.AllCards.OfType<TCard>().First();
+        if (canonical.MultiplayerConstraint == CardMultiplayerConstraint.MultiplayerOnly && !SelfTestNet.Multiplayer)
+            throw new SelfTestSkipped("multiplayer-only Card; its face check runs in launch.py --self-test --multiplayer");
+        if (canonical.MultiplayerConstraint == CardMultiplayerConstraint.SingleplayerOnly && SelfTestNet.Multiplayer)
+            throw new SelfTestSkipped("singleplayer-only Card; its singleplayer face check is the proof");
         var parts = new List<string> { await Once<TCard>(t, upgraded: false) };
         if (canonical.IsUpgradable)
         {
@@ -795,14 +805,39 @@ internal static class SelfTestFaceCheck
         var label = upgraded ? "upgraded" : "base";
         var card = await t.AddToHand<TCard>(upgraded);
         var vars = card.DynamicVars.Values.ToList();
-        if (vars.Any(v => v.GetType() == typeof(HealVar)))
-            await t.Do(owner => CreatureCmd.SetCurrentHp(owner.Creature, Math.Max(1, owner.Creature.MaxHp - 40)), "wound for heal");
 
-        var target = card.TargetType == TargetType.AnyEnemy ? t.Enemy : null;
+        var target = card.TargetType switch
+        {
+            TargetType.AnyEnemy => t.Enemy,
+            TargetType.AnyAlly => t.Ally.Creature,
+            TargetType.AnyPlayer => t.Me,
+            _ => null,
+        };
+        // The players a Block, Energy, heal, or Power number on the face lands on.
+        var holders = card.TargetType switch
+        {
+            TargetType.AnyAlly or TargetType.AnyPlayer => new List<Creature> { target! },
+            TargetType.AllAllies => t.State.Players.Select(p => p.Creature).Where(c => c.IsAlive).ToList(),
+            _ => new List<Creature> { t.Me },
+        };
+        string On(Creature holder, string name)
+            => holders.Count > 1 || holder != t.Me ? $"{name}@P{holder.Player?.NetId}" : name;
+        if (vars.Any(v => v.GetType() == typeof(HealVar)))
+        {
+            await t.Do(async _ =>
+            {
+                foreach (var holder in holders)
+                    await CreatureCmd.SetCurrentHp(holder, Math.Max(1, holder.MaxHp - 40));
+            }, "wound for heal");
+        }
+
         var enemies = t.Enemies.ToList();
         var hpBefore = enemies.ToDictionary(e => e, e => e.CurrentHp);
         var powersBefore = Powers(t);
-        int block = t.Me.Block, hp = t.Me.CurrentHp, maxHp = t.Me.MaxHp, gold = t.Player.Gold;
+        var holderBlock = holders.ToDictionary(h => h, h => h.Block);
+        var holderHp = holders.ToDictionary(h => h, h => h.CurrentHp);
+        var holderEnergy = holders.ToDictionary(h => h, h => h.Player?.PlayerCombatState?.Energy ?? 0);
+        int hp = t.Me.CurrentHp, maxHp = t.Me.MaxHp, gold = t.Player.Gold;
         int stars = t.Combat.Stars;
         int cost = card.EnergyCost.GetResolved();
         await t.Do(async owner =>
@@ -850,13 +885,29 @@ internal static class SelfTestFaceCheck
                 }
             }
             else if (type == typeof(BlockVar))
-                Compare(v.Name, v.IntValue, t.Me.Block - block);
+            {
+                foreach (var holder in holders)
+                    Compare(On(holder, v.Name), v.IntValue, holder.Block - holderBlock[holder]);
+            }
             else if (type == typeof(EnergyVar))
-                Compare(v.Name, v.IntValue, t.Combat.Energy - (energy - (t.Trail.EnergySpent - spent)));
+            {
+                foreach (var holder in holders)
+                {
+                    int now = holder.Player?.PlayerCombatState?.Energy ?? 0;
+                    // The player who played the Card also paid its cost.
+                    int observed = holder == t.Me
+                        ? t.Combat.Energy - (energy - (t.Trail.EnergySpent - spent))
+                        : now - holderEnergy[holder];
+                    Compare(On(holder, v.Name), v.IntValue, observed);
+                }
+            }
             else if (type == typeof(CardsVar))
                 Compare($"{v.Name} drawn", v.IntValue, t.Trail.Drawn.Count - drawn);
             else if (type == typeof(HealVar))
-                Compare(v.Name, v.IntValue, t.Me.CurrentHp - hp);
+            {
+                foreach (var holder in holders)
+                    Compare(On(holder, v.Name), v.IntValue, holder.CurrentHp - holderHp[holder]);
+            }
             else if (type == typeof(HpLossVar))
                 Compare(v.Name, v.IntValue, hp - t.Me.CurrentHp);
             else if (type == typeof(MaxHpVar))
@@ -869,16 +920,19 @@ internal static class SelfTestFaceCheck
                 continue;
             else if (SelfTestKit.IsPowerName(v.Name))
             {
-                var holders = card.TargetType switch
+                var powerHolders = card.TargetType switch
                 {
                     TargetType.AnyEnemy => new List<Creature> { target! },
                     TargetType.AllEnemies => enemies,
-                    _ => new List<Creature> { t.Me },
+                    _ => holders,
                 };
-                foreach (var holder in holders)
+                foreach (var holder in powerHolders)
                 {
                     int delta = Amount(powersAfter, holder, v.Name) - Amount(powersBefore, holder, v.Name);
-                    Compare(holders.Count > 1 ? $"{v.Name}@{holder.Monster?.Id.Entry}" : v.Name, v.IntValue, delta);
+                    var where = holder.Monster != null
+                        ? (powerHolders.Count > 1 ? $"{v.Name}@{holder.Monster.Id.Entry}" : v.Name)
+                        : On(holder, v.Name);
+                    Compare(where, v.IntValue, delta);
                 }
             }
             else
@@ -1236,6 +1290,11 @@ internal static class SelfTestKit
             result = "FAIL";
             detail = e.Message;
         }
+        catch (SelfTestSkipped e)
+        {
+            result = "SKIP";
+            detail = e.Message;
+        }
         catch (OperationCanceledException) when (cts.IsCancellationRequested && !outer.IsCancellationRequested)
         {
             result = "TIMEOUT";
@@ -1263,6 +1322,8 @@ internal static class SelfTestKit
         var seconds = watch.Elapsed.TotalSeconds;
         if (result == "PASS")
             Log($"scenario PASS: {scenario.Name} ({seconds:F1}s)");
+        else if (result == "SKIP")
+            Log($"scenario SKIP: {scenario.Name}: {detail}");
         else
         {
             Log($"scenario FAILED: {scenario.Name}: {result}: {detail} ({seconds:F1}s)");
