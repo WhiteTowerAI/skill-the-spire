@@ -537,9 +537,10 @@ plan.Encounter<<Name>Encounter>("<name>_cycle_and_branches", async t =>
     t.Proof(mob.Block - blockBefore == 5, $"healthy branch block expected=+5 observed={mob.Block - blockBefore}");
 
     // Change the branch's real input through a public Cmd, without forcing a move state.
+    // t.Do runs it on every multiplayer peer (selftest-harness.md § Multiplayer Tier 2).
     int woundedHp = Math.Max(1, mob.MaxHp / 2 - 1);
-    await CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), mob, mob.CurrentHp - woundedHp,
-        ValueProp.Unblockable | ValueProp.Unpowered, t.Me, null);
+    await t.Do(owner => CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), mob, mob.CurrentHp - woundedHp,
+        ValueProp.Unblockable | ValueProp.Unpowered, owner.Creature, null), "wound for branch");
     t.Proof(mob.CurrentHp == woundedHp, $"branch setup hp expected={woundedHp} observed={mob.CurrentHp}");
 
     // Traverse the cycle again. The stacked buff must change later attack damage.

@@ -142,6 +142,7 @@ listed route is authorable; "unobserved" means no run has proved that exact shap
 
 | Feature | Observed | Unobserved |
 |---|---|---|
+| Multiplayer Tier 2 (two local instances, `--fastmp` ENet) | lobby, two-player run, kit steps through managed net actions; KitProbe face checks, Relic combat-start Energy, Potion, choose-a-Card, custom Power across turns, Monster cycle and branch, fresh combat: 12/12 on both peers, 11/11 equal digests, no divergence; `AnyAlly` Card and two `RandomEnemy` plays in `plan.Coop`; a client-only HP edit is detected as divergence (2026-10-28) | Event, Ancient, Rest Site, Act, Custom hosts in multiplayer; three or four players; Steam lobby transport |
 | Generalized families (secondary resources, Monster/Encounter composition and HP, Character starting fields, Card/Relic Rest Site options, computed Card values, bounded state, forced Event mappings, Card Star costs, Event acquisition/shake) | | newly generalized variants |
 | Card Energy/Star costs | | new Energy/Star combinations, combined X replay |
 | Custom Card tags | `.CardTagOwned` resolves; present on canonical and mutable copies; counting Card gains Block (Tier 2) | a Mod tag appended to a vanilla Card |

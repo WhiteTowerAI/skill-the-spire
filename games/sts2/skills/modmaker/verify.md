@@ -42,6 +42,18 @@ recipe's § Proof matrix and each selected reference's proof section. Registrati
 calls, model lookups, serialization, constructed Godot nodes, or a successful Build never prove
 behavior.
 
+**Multiplayer.** Every Mod is written for multiplayer (`quirks.md`), so after the singleplayer
+Tier 2 passes, run the same kit in a two-instance run on this machine:
+
+```bash
+python ${GAME_TOOLS_DIR}/launch.py --self-test --multiplayer --mod-name <ModName>
+```
+
+It needs no Steam lobby or second machine and takes about as long as the singleplayer run. It
+passes only when both peers log `selftest done`, every scenario's state digest is equal on both
+peers, and the game logged no `State divergence`; `plan.Coop` scenarios run only here. Read
+`${STS2API_SKILL_DIR}/reference/selftest-harness.md` § Multiplayer Tier 2 for what each peer does.
+
 **Bilingual text.** Build proves the static half (directories, table/key parity, nonempty values,
 variable parity, markup, vanilla-style warnings). On every run the roll call switches through
 `eng` and `zhs` with the public `SetLanguage` route, resolves every content model's strings
@@ -61,6 +73,9 @@ scenarios. Translation quality, tone, clipping, and layout stay headed review.
 | `[launch] main menu reached without this Mod's load marker` | The Mod did not load; the Tier 1 verdict printed next names the load failure. |
 | `[launch] main menu reached but the harness never armed` | `MainFile.cs` lost the `SelfTestKit.Arm` line; restore it with `scaffold.py --refresh-selftest-kit`. |
 | `[launch] TIMEOUT` with no terminal marker | The launcher stopped waiting first; rerun with a larger `--wait-seconds`. It is not evidence about the Mod. |
+| `[launch] multiplayer verdict: PASS` | **Multiplayer Tier 2 PASS**: both peers passed every scenario that ran there, with equal state. The `skipped in multiplayer:` lines name scenarios whose host has no multiplayer driver yet. |
+| `digest MISMATCH <scenario>` or `logged a state divergence` | The two simulations disagreed: a lockstep bug. A scenario body that changes state without `t.Do`, or Mod code that reads `LocalContext`, process time, or unseeded randomness, or keeps per-player state in a static. Classify in `repair.md`; the singleplayer result does not excuse it. |
+| `[launch] host: lobby-not-open` | The host never opened the local lobby; check its log (`godot-t2-host.log`) for the load marker and a setup failure. |
 
 Match each signature's cause and fix in `${STS2API_SKILL_DIR}/errors.md` § Verification, and
 § Behavior for a wrong observed value. A code or csproj fix reaches the game only through a fresh
@@ -151,6 +166,9 @@ failure. Build the user-facing report directly from observed results:
 - **Tier 2:** the kit summary (`passed=N/N scope=all`), the scenarios and face-checked Cards with
   their asserted values, and the coverage line including content it never exercised; or that it
   was not run, could not be reached, or failed. Never promote a fired/used log to proof.
+- **Multiplayer Tier 2:** the verdict, the digest count, and every scenario skipped in
+  multiplayer; or that it was not run. A Mod not run there is "singleplayer verified;
+  multiplayer not observed".
 - **Tier 1:** the load-marker and fresh-error result when Tier 2 did not run.
 - **Headed review:** only observations a human actually reported; otherwise say
   visual/UI/controller/animation/subjective review was not run.

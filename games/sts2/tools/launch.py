@@ -17,6 +17,11 @@ Two modes, both requiring --mod-name and bounded by --wait-seconds:
     harness's logged `selftest budget: <N>s` plus boot time unless --wait-seconds is given.
     Every other Mod folder with a t2selftest gate is parked outside mods/ for the run and
     restored afterwards; any launch first restores Mods that a killed run left parked.
+  --self-test --multiplayer : start two instances on this machine with the game's own local
+    multiplayer flags (host --fastmp=host_standard, client --fastmp=join --clientId=1001,
+    ENet on 127.0.0.1), each with its own --log-file. The kit gets --t2coop=host|client, both
+    peers run every scenario, and the verdict needs both `selftest done`, equal per-scenario
+    state digests, and no "State divergence" line in either log.
 
 The game dir is auto-detected by probing the local
 Steam libraries (registry/standard roots -> libraryfolders.vdf -> appmanifest_2868840),
@@ -29,6 +34,7 @@ Usage:
   python launch.py --mod-name ExampleMod                  # tier-1: load, verify, close
   python launch.py --self-test --mod-name ExampleMod      # tier-2: self-drive, poll
   python launch.py --self-test --only "face.*,spark" --mod-name ExampleMod   # rerun a subset
+  python launch.py --self-test --multiplayer --mod-name ExampleMod   # two-instance Tier 2
 """
 from __future__ import annotations
 
@@ -63,6 +69,12 @@ BUDGET_RE = re.compile(r"selftest budget: (?P<seconds>\d+)s")
 PARK_DIR_NAME = "mods-parked-by-skill-the-spire"
 HARNESS_GATE = "t2selftest"
 FAILURE_OUTCOMES = {"assertion": "assertion-failed", "budget": "budget-exceeded", "setup": "failed"}
+# Two-instance Tier 2. The host opens the local ENet lobby itself; the client joins 127.0.0.1.
+MULTIPLAYER_ROLES = ("host", "client")
+MULTIPLAYER_CLIENT_ID = "1001"
+MULTIPLAYER_LOBBY_SECONDS = 150
+DIGEST_RE = re.compile(r"selftest digest: (?P<scenario>[^:]+): (?P<digest>.*)$")
+DIVERGENCE_TEXT = "State divergence"
 
 
 class ParkError(RuntimeError):
@@ -358,6 +370,124 @@ def self_test_exit_code(outcome: str) -> int:
     return 0 if outcome == "done" else 1
 
 
+def multiplayer_log_paths(log_path: Path) -> dict[str, Path]:
+    """One fresh Godot log per instance, beside the normal godot.log."""
+    return {role: log_path.parent / f"godot-t2-{role}.log" for role in MULTIPLAYER_ROLES}
+
+
+def multiplayer_args(role: str, gate: str, log_file: Path) -> list[str]:
+    """Kit gate plus the game's own local-multiplayer flags; windows side by side."""
+    args = [gate, f"--t2coop={role}", "--log-file", str(log_file),
+            "--windowed", "--resolution", "1280x720",
+            "--position", "0,40" if role == "host" else "1290,40"]
+    if role == "host":
+        return args + ["--fastmp=host_standard"]
+    return args + ["--fastmp=join", f"--clientId={MULTIPLAYER_CLIENT_ID}"]
+
+
+def multiplayer_digests(log_text: str, mod_name: str) -> dict[str, str]:
+    """scenario -> state digest, as one peer logged them."""
+    needle = f"{grep_log.MARKER} {mod_name} selftest digest:"
+    digests: dict[str, str] = {}
+    for line in log_text.splitlines():
+        if needle in line:
+            match = DIGEST_RE.search(line)
+            if match:
+                digests[match.group("scenario")] = match.group("digest").strip()
+    return digests
+
+
+def multiplayer_verdict(texts: dict[str, str], outcomes: dict[str, str], mod_name: str) -> tuple[bool, list[str]]:
+    """Both peers done, the same scenarios digested with equal state, no divergence line."""
+    lines = [f"[launch] {role}: {outcomes.get(role, 'not started')}" for role in MULTIPLAYER_ROLES]
+    ok = all(outcomes.get(role) == "done" for role in MULTIPLAYER_ROLES)
+    host = multiplayer_digests(texts.get("host", ""), mod_name)
+    client = multiplayer_digests(texts.get("client", ""), mod_name)
+    for scenario in sorted(set(host) | set(client)):
+        if host.get(scenario) != client.get(scenario):
+            ok = False
+            lines.append(f"[launch] digest MISMATCH {scenario}:\n  host:   {host.get(scenario)}\n"
+                         f"  client: {client.get(scenario)}")
+    matched = sum(1 for scenario in host if host[scenario] == client.get(scenario))
+    lines.append(f"[launch] state digests equal on both peers: {matched}/{len(set(host) | set(client))}")
+    for role in MULTIPLAYER_ROLES:
+        hits = [line.strip() for line in texts.get(role, "").splitlines() if DIVERGENCE_TEXT in line]
+        if hits:
+            ok = False
+            lines.append(f"[launch] {role} logged a state divergence: {hits[0][:240]}")
+    skipped = [line.split("scenario SKIP:", 1)[1].strip() for line in texts.get("host", "").splitlines()
+               if f"{mod_name} scenario SKIP:" in line]
+    for entry in skipped:
+        lines.append(f"[launch] skipped in multiplayer: {entry}")
+    return ok, lines
+
+
+def run_multiplayer(exe: Path, game_dir: Path, gate: str, log_path: Path, mod_name: str,
+                    wait_seconds: int) -> int:
+    """Host first; the client once the host's lobby is open. Both closed at the end."""
+    logs = multiplayer_log_paths(log_path)
+    for path in logs.values():
+        path.unlink(missing_ok=True)
+    procs: dict[str, subprocess.Popen] = {}
+    outcomes: dict[str, str] = {}
+    lobby_marker = f"{grep_log.MARKER} {mod_name} selftest multiplayer lobby open"
+
+    def text(role: str) -> str:
+        try:
+            return read_shared(logs[role]) if logs[role].is_file() else ""
+        except OSError:
+            return ""
+
+    try:
+        print(f"[launch] MULTIPLAYER: starting host ({logs['host'].name})")
+        procs["host"] = launch_process(exe, game_dir, multiplayer_args("host", gate, logs["host"]))
+        started = time.monotonic()
+        while time.monotonic() - started < MULTIPLAYER_LOBBY_SECONDS:
+            host_text = text("host")
+            early = self_test_log_outcome(host_text, mod_name)
+            if lobby_marker in host_text or early or procs["host"].poll() is not None:
+                break
+            time.sleep(1)
+        host_text = text("host")
+        if lobby_marker not in host_text:
+            outcomes["host"] = (self_test_log_outcome(host_text, mod_name)
+                                or ("process-exited" if procs["host"].poll() is not None else "lobby-not-open"))
+        else:
+            print(f"[launch] host lobby open after {time.monotonic() - started:.0f}s; starting client "
+                  f"({logs['client'].name})")
+            procs["client"] = launch_process(exe, game_dir, multiplayer_args("client", gate, logs["client"]))
+            deadline = time.monotonic() + wait_seconds
+            budget_seen = False
+            while time.monotonic() < deadline and len(outcomes) < 2:
+                time.sleep(2)
+                if not budget_seen and (budget := self_test_budget_seconds(text("host"), mod_name)):
+                    budget_seen = True
+                    deadline = max(deadline, started + budget + 2 * SELF_TEST_BOOT_ALLOWANCE)
+                for role in MULTIPLAYER_ROLES:
+                    if role in outcomes:
+                        continue
+                    outcome = self_test_log_outcome(text(role), mod_name)
+                    if outcome is None and procs[role].poll() is not None:
+                        outcome = "process-exited"
+                    if outcome is not None:
+                        outcomes[role] = outcome
+                        print(f"[launch] {role}: {outcome} at {time.monotonic() - started:.0f}s")
+            for role in MULTIPLAYER_ROLES:
+                outcomes.setdefault(role, "timeout")
+    finally:
+        time.sleep(2)
+        for proc in procs.values():
+            stop_process(proc)
+    ok, lines = multiplayer_verdict({role: text(role) for role in MULTIPLAYER_ROLES}, outcomes, mod_name)
+    print("\n".join(lines))
+    print(f"[launch] logs: {logs['host']} | {logs['client']}")
+    print("[launch] multiplayer verdict: " + ("PASS" if ok else "FAILED"))
+    if ok:
+        print(f"[launch] now run grep_log.py --mod-name {mod_name} --log-path <each log> "
+              '--tier2-pattern "<state-proof-pattern>"')
+    return 0 if ok else 1
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description="Launch STS2 out-of-Steam for verification")
     ap.add_argument("--game-dir", default=None, help="STS2 install dir")
@@ -371,12 +501,17 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--only", default=None, metavar="NAME[,NAME...]",
                     help="With --self-test: run only these SelfTestKit scenarios (a trailing * "
                          "matches a prefix). A partial run is never the final Tier 2.")
+    ap.add_argument("--multiplayer", action="store_true",
+                    help="With --self-test: run two local instances (host and client) in one "
+                         "multiplayer run and compare their state.")
     ap.add_argument("--mod-name", required=True,
                     help="Mod name (Mod.json 'id') whose markers are verified.")
     ap.add_argument("--log-path", default=None, help="godot.log location")
     args = ap.parse_args(argv)
     if args.only is not None and not args.self_test:
         ap.error("--only needs --self-test")
+    if args.multiplayer and not args.self_test:
+        ap.error("--multiplayer needs --self-test")
     if args.only is not None and (not args.only.strip() or any(c.isspace() for c in args.only)):
         ap.error("--only takes comma-separated scenario names without spaces")
 
@@ -424,6 +559,12 @@ def main(argv: list[str]) -> int:
         gate = f"--{HARNESS_GATE}" + (f"={args.only}" if args.only else "")
         extra_args.append(gate)
         print(f"[launch] SELF-TEST mode: passing {gate}; harness will self-drive its scenario")
+        if args.multiplayer:
+            try:
+                code = run_multiplayer(exe, game_dir, gate, log_path, args.mod_name, wait_seconds)
+            finally:
+                restored_ok = restore_after_run(game_dir)
+            return code if restored_ok else 2
 
     print(f"[launch] starting {exe.name} ...")
     try:

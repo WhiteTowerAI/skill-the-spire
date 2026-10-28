@@ -147,6 +147,8 @@ human idea
 8. **Tier 2.** Run `launch.py --self-test` (it parks other harness Mods and restores them), and require independently
    asserted structured post-state plus `selftest done`. A fired/used line is diagnostic only.
    Rerun only what a change can reach, and stop per `verify.md` § Reruns and when to stop.
+   Then run `launch.py --self-test --multiplayer`: two local instances, both peers check every
+   scenario, and their state must stay equal (`verify.md` § Tier 2, Multiplayer).
 9. **Headed review.** Use it only for selected image framing, UI, controller/mouse behavior,
    animation, or subjective experience that structured state cannot prove.
 10. **Finalize.** Read the actual Build, Tier 1, Tier 2, and human outcomes. State what passed,
@@ -177,6 +179,7 @@ python ${GAME_TOOLS_DIR}/scaffold.py --project-dir <outer-dir> --mod-name <ModNa
 python ${GAME_TOOLS_DIR}/build.py --project-dir <outer-dir> --mod-name <ModName>
 python ${GAME_TOOLS_DIR}/launch.py --mod-name <ModName>
 python ${GAME_TOOLS_DIR}/launch.py --self-test --mod-name <ModName>
+python ${GAME_TOOLS_DIR}/launch.py --self-test --multiplayer --mod-name <ModName>
 python ${GAME_TOOLS_DIR}/grep_log.py --mod-name <ModName> --tier2-pattern "<structured proof>"
 ```
 

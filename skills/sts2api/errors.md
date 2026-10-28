@@ -121,7 +121,7 @@ switching to an old template.
   content-pack pool generic for availability, a public hook or command for behavior, and only
   the Adapter targets the override references list. With no maintained route, follow
   `grounding.md` § Mod-local Routes. Never move the code into `SelfTestKit.cs` to skip the scan.
-- **Multiplayer findings** name the three lockstep breakers in `modmaker/quirks.md`
+- **Multiplayer findings** name the three lockstep breakers in `../modmaker/quirks.md`
   § Multiplayer-safe by default: process-local randomness or time (draw from the game or Mod
   run RNG, `reference/lifecycle-state-rng.md`), `LocalContext.GetMe`/`NetId` in a gameplay model
   (use the model's `Owner`), or a mutable static field in a gameplay model (keep the value on the
