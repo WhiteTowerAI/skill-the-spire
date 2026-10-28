@@ -316,6 +316,56 @@ class LaunchOutcomeTests(unittest.TestCase):
             launch.steam_appid_path(game, "darwin"),
         )
 
+    def test_multiplayer_args_open_and_join_one_local_lobby(self) -> None:
+        log = Path("logs") / "godot-t2-host.log"
+        host = launch.multiplayer_args("host", "--t2selftest", log)
+        client = launch.multiplayer_args("client", "--t2selftest=a", log)
+        self.assertEqual(["--t2selftest", "--t2coop=host", "--log-file", str(log)], host[:4])
+        self.assertIn("--fastmp=host_standard", host)
+        self.assertIn("--fastmp=join", client)
+        self.assertIn(f"--clientId={launch.MULTIPLAYER_CLIENT_ID}", client)
+        self.assertIn("--t2coop=client", client)
+        paths = launch.multiplayer_log_paths(Path("logs") / "godot.log")
+        self.assertEqual({"host", "client"}, set(paths))
+        self.assertNotEqual(paths["host"], paths["client"])
+
+    def test_multiplayer_verdict_needs_equal_digests_and_no_divergence(self) -> None:
+        mod = "ExampleMod"
+
+        def log(*lines: str) -> str:
+            return "\n".join(f"[INFO] [T2MOD-SELFTEST] {mod} {line}" for line in lines)
+
+        digest = "selftest digest: spark: P1:hp=80/80;E0:SLUG,hp=990/999;"
+        done = {"host": "done", "client": "done"}
+        ok, _ = launch.multiplayer_verdict({"host": log(digest), "client": log(digest)}, done, mod)
+        self.assertTrue(ok)
+
+        other = "selftest digest: spark: P1:hp=80/80;E0:SLUG,hp=993/999;"
+        ok, lines = launch.multiplayer_verdict({"host": log(digest), "client": log(other)}, done, mod)
+        self.assertFalse(ok)
+        self.assertTrue(any("digest MISMATCH spark" in line for line in lines), lines)
+
+        ok, lines = launch.multiplayer_verdict({"host": log(digest), "client": ""}, done, mod)
+        self.assertFalse(ok, "a scenario digested on one peer only is a mismatch")
+
+        divergent = log(digest) + "\n[ERROR] State divergence detected! Checksum with ID 5"
+        ok, lines = launch.multiplayer_verdict({"host": divergent, "client": log(digest)}, done, mod)
+        self.assertFalse(ok)
+        self.assertTrue(any("host logged a state divergence" in line for line in lines), lines)
+
+        ok, _ = launch.multiplayer_verdict({"host": log(digest), "client": log(digest)},
+                                           {"host": "done", "client": "assertion-failed"}, mod)
+        self.assertFalse(ok)
+
+        skipped = log(digest, "scenario SKIP: shrine: the Event host has no multiplayer driver yet")
+        ok, lines = launch.multiplayer_verdict({"host": skipped, "client": log(digest)}, done, mod)
+        self.assertTrue(ok)
+        self.assertTrue(any("skipped in multiplayer: shrine" in line for line in lines), lines)
+
+    def test_multiplayer_needs_self_test(self) -> None:
+        with self.assertRaises(SystemExit):
+            launch.main(["--multiplayer", "--mod-name", "ExampleMod"])
+
     def test_done_is_success(self) -> None:
         self.assertEqual(0, launch.self_test_exit_code("done"))
 

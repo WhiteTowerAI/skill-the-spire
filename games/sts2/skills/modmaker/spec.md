@@ -100,6 +100,11 @@ Each scenario names:
   selected behavior requires; and
 - any headed mouse/controller/art/animation/subjective observation, kept separate.
 
+Every scenario runs in singleplayer and again in the two-instance multiplayer run with the same
+expected values. Behavior that needs two players (ally targeting, a multiplayer-only Card, a
+team effect) gets a `CoopPlayers` scenario instead, run only in multiplayer, naming what each
+player does and what each sees.
+
 Tier 2 asserts state after the host processes the action. A hook-fired log, preview value,
 model-only mutation, resource path, or successful Build is not a scenario pass. Mouse/controller
 UI, animation, image framing, and subjective experience stay headed human observations.

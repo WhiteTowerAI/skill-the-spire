@@ -11,6 +11,9 @@
 >
 > **Ship-safety.** The kit stays dormant unless the game starts with `--t2selftest`; a normal
 > player launch never navigates, enters a room, or changes state.
+>
+> **Both modes.** The same scenarios run in singleplayer (`launch.py --self-test`) and in a
+> two-instance multiplayer run (`--self-test --multiplayer`, § Multiplayer Tier 2).
 
 ## What the kit does on every run
 
@@ -29,7 +32,7 @@
    id, pool, cost, type, rarity, target, and base numbers; a Character's HP, Gold, Energy,
    pools, starter deck, and Relics; a Monster's HP range; an Encounter's room and roster; an
    Act's index and pool sizes), with both titles. Compare those lines with SPEC.
-2. **Navigation**: abandons an open run, starts a singleplayer run as the selected Character
+2. **Navigation** (singleplayer; multiplayer joins a local lobby, § Multiplayer Tier 2): abandons an open run, starts a singleplayer run as the selected Character
    (`plan.Character<T>()`, matched by model type) or the first unlocked one, and waits for the
    run UI, the local Player, and the run's first room (a room entered before that races the
    game's own startup).
@@ -58,7 +61,8 @@
 9. **Report.** A `selftest coverage:` line names any Mod Card never played, Relic or Potion
    never owned, Power never seen, Character never played, Monster never met, or Encounter,
    Event, Ancient, or Act never entered; a `selftest summary:` line lists every scenario with its result and seconds. Only when all pass does it log
-   `state proof: kit summary passed=N/N scope=all` and `selftest done`.
+   `state proof: kit summary passed=N/N skipped=K scope=all` and `selftest done`. A `SKIP`
+   scenario did not run in this mode and is never counted as a pass.
 10. **Watchdog.** A step stuck past its scenario budget ends the run with
     `selftest FAILED: timeout: scenario <name> stuck at '<step>'`.
 
@@ -157,6 +161,8 @@ the observed value.
   `RunManager.EnterAct`, the transition the Mod's entry rule resolves in; runs last.
 - `Custom(name, body, budgetSeconds = 60)`: a scenario that enters its own room (§ Other hosts).
   Every host except `Combat` and `RunStart` first finishes any combat in progress.
+- `Coop(name, body, budgetSeconds = 45, freshCombat = false)`: a two-player combat scenario that
+  runs only in a multiplayer run (singleplayer reports `SKIP`); § Multiplayer Tier 2.
 - `Character<TCharacter>()`: start the run as this Character.
 
 ### `SelfTestRun t`
@@ -190,9 +196,64 @@ the observed value.
   `EnterTreasure()`, `Fight(encounter)`, `WinCombat()`, and `EnterAct(slot)` for use inside a body.
 - `await t.WaitUntil(condition, what, seconds = 15)` waits for any host consequence (a page, a
   finished Event, a reward) inside the scenario budget.
+- `await t.Do(owner => <command>, "label")` runs a state change (a Cmd, a debug room entry)
+  as a step every multiplayer peer executes in order; singleplayer runs it at once.
+  `t.Relic<TRelic>()` reads the live Relic. `t.Multiplayer`, `t.Ally`, and `await t.Sync()` serve
+  multiplayer scenarios.
 
 Any other public STS2 or RitsuLib API works inside a body: snapshot state, drive the real
-source, `await t.Settle()`, then assert.
+source, `await t.Settle()`, then assert. A body that **changes** state does it through the
+kit helpers or `t.Do`, never with a direct call (§ Multiplayer Tier 2).
+
+## Multiplayer Tier 2
+
+```bash
+python ${GAME_TOOLS_DIR}/launch.py --self-test --multiplayer --mod-name <ModName>
+```
+
+The launcher starts two game instances on this machine with the game's own local-multiplayer
+flags: the host opens an ENet lobby (`--fastmp=host_standard`), the client joins `127.0.0.1`
+(`--fastmp=join --clientId=1001`), each with its own log (`godot-t2-host.log`,
+`godot-t2-client.log` beside `godot.log`). Both pick the plan's Character, ready up, and start
+one two-player run. No Steam lobby, second machine, or second account is needed.
+
+- **Both peers run every scenario; the host acts.** `t.Player` is the host's player on both
+  peers. The host plays the Cards and uses the Potions; the client waits for each interaction
+  and checks the same `t.Proof` against its own simulation. So every assertion is checked twice,
+  and the host's content is also exercised as a *remote* player's content on the client.
+- **Every state change is a step.** The kit helpers (`AddToHand`, `Play`'s Energy top-up,
+  `ObtainRelic`, `UsePotion`, `EndTurn`'s stun, combat entry, reset, cleanup) are already steps:
+  the host requests each through a RitsuLib managed net action, and every peer runs its own copy
+  of that code line in queue order. A direct `await PowerCmd.Apply(...)` in a body would run on
+  one peer only and desync the run; wrap it as `await t.Do(owner => PowerCmd.Apply(...))`.
+- **References after a room entry.** Entering any room rebuilds the remote players' Relics,
+  Potions, and Deck from synchronized state, so a model reference taken before a room entry is
+  stale on the client. Read it again after the entry (`t.Relic<TRelic>()`, `t.Player.Deck`).
+- **Monsters hit every player.** Vanilla monster attacks target the whole party, so
+  `t.EnemyTurn` reports only the HP and hits that reached the acting player: the same numbers as
+  singleplayer.
+- **`plan.Coop` scenarios** are for behavior that needs two players: ally targeting
+  (`TargetType.AnyAlly`/`AllAllies`), a multiplayer-only Card, or a team effect. Both peers run
+  the body *for their own player*: `t.Player` is the local player and `t.Ally` the other one.
+  Helpers act for the local player, and a `t.Do` body must reach models only through its
+  `owner` argument (the other peer runs it for its own player). `await t.Sync()` waits until
+  both players' interactions so far have resolved on this peer.
+
+  ```csharp
+  plan.Coop("shield_blocks_ally", async t =>
+  {
+      var card = await t.AddToHand<CoopShield>();
+      await t.Play(card, t.Ally.Creature);   // each player shields the other
+      t.Proof(t.Me.Block == 7 && t.Ally.Creature.Block == 7,
+          $"Block expected=7/7 observed me={t.Me.Block} ally={t.Ally.Creature.Block}");
+  });
+  ```
+- **Hosts without a multiplayer driver yet** (`Event`, `Ancient`, `RestSite`, `Act`, `Custom`)
+  report `SKIP` in a multiplayer run, naming the host; their singleplayer run stays the proof.
+- **Verdict.** The launcher passes only when both peers log `selftest done`, every scenario's
+  `selftest digest:` line (run and combat state at the same queue position) is equal on both
+  peers, and neither log contains the game's `State divergence` error. It prints each mismatch.
+  Then run `grep_log.py --log-path <each log>` as usual.
 
 ## Combat scenario recipes
 
