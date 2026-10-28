@@ -63,7 +63,8 @@ Current authoring includes:
   teammate content (another-player and every-player Cards, team Relics, any-player Potions,
   `multiplayer only` availability) is authorable. The two-instance multiplayer Tier 2 runs every
   scenario host (combat, Encounter, Event, Ancient, Rest Site, Act, Custom) and starts both
-  players as a Mod Character; how a teammate's Character looks is headed review.
+  players as a Mod Character; how a teammate's Character looks is headed review. Lobby options
+  (a host run rule or a per-player pick made on the Character select) are authorable.
 
 The nine generalized families remain authorable through their owner pages: secondary
 resources; Monster/Encounter composition and HP; Character starting fields; Card/Relic Rest
@@ -81,8 +82,8 @@ scenes, materials, Event layouts, or VFX without a public host; global room or n
 replacement; new-Ancient behavior outside its option/page/dialogue vocabulary; animation
 beyond packaged public resources; arbitrary transactions, RNG rewrites, or transitions,
 including direct merchant/rest/treasure transitions; alternative Energy; retained played-Card
-zones; ungrounded disable/weighting surfaces; custom network messages, multiplayer lobby
-options, and remote-player Character resources/UI; and one-click Workshop publishing. Custom
+zones; ungrounded disable/weighting surfaces; custom network messages and remote-player
+Character resources/UI; and one-click Workshop publishing. Custom
 multi-target Potions keep a known limitation (`recipes/potion.md`).
 
 ## Read stages lazily

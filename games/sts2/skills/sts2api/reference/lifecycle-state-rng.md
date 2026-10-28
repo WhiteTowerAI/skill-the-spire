@@ -18,7 +18,8 @@ state remains responsible for its semantics and proof.
 
 Do not put model-owned state into run/profile storage just because it is easier to reach. Do not
 use static dictionaries for owner state. Run/player slots use only their in-run accessors;
-the `Lobby` accessors and `SyncLobbyOnChange` are deferred with Multiplayer and must remain unused.
+the `Lobby` accessors and `SyncLobbyOnChange` are used only for a lobby option
+(`reference/lobby-options.md`).
 `ModDataStore` may persist an included feature, but it must not be used to author deferred
 Settings or Progression.
 

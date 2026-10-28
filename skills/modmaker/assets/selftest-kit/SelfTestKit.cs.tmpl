@@ -32,6 +32,7 @@ using MegaCrit.Sts2.Core.Entities.Multiplayer;
 using MegaCrit.Sts2.Core.GameActions;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Multiplayer.Game;
+using MegaCrit.Sts2.Core.Multiplayer.Game.Lobby;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
@@ -118,11 +119,24 @@ internal sealed class SelfTestPlan
     internal Func<NCharacterSelectButton, bool>? CharacterMatch;
     internal string CharacterLabel = "first unlocked";
 
+    internal Func<StartRunLobby, Task>? LobbyChoice;
+
     /// <summary>Start the run as this Character instead of the first unlocked one.</summary>
     public SelfTestPlan Character<TCharacter>() where TCharacter : CharacterModel
     {
         CharacterMatch = button => button.Character is TCharacter;
         CharacterLabel = typeof(TCharacter).Name;
+        return this;
+    }
+
+    /// <summary>
+    /// Make this Mod's lobby choices before the player readies, on every peer, in singleplayer and
+    /// multiplayer (<c>reference/lobby-options.md</c>). Call the same code the Mod's lobby control
+    /// calls; <c>RunStart</c> scenarios then assert the committed run values.
+    /// </summary>
+    public SelfTestPlan Lobby(Func<StartRunLobby, Task> choose)
+    {
+        LobbyChoice = choose;
         return this;
     }
 
@@ -1645,6 +1659,11 @@ internal static class SelfTestKit
             throw new InvalidOperationException($"character {plan.CharacterLabel} has no unlocked select button");
         pick.Select();
         await NextFrame();
+        if (plan.LobbyChoice != null && charSelect is NCharacterSelectScreen { Lobby: { } spLobby })
+        {
+            Step("making the lobby choices");
+            await plan.LobbyChoice(spLobby);
+        }
         await UiHelper.Click(await WaitHelper.ForNode<NButton>(mainMenu, "Submenus/CharacterSelectScreen/ConfirmButton", ct, TimeSpan.FromSeconds(10)));
 
         await WaitHelper.Until(() => RunManager.Instance.IsInProgress, ct, TimeSpan.FromSeconds(30), "run not in progress");
@@ -1692,6 +1711,14 @@ internal static class SelfTestKit
             throw new InvalidOperationException($"character {plan.CharacterLabel} has no unlocked select button");
         pick.Select();
         await NextFrame();
+        if (plan.LobbyChoice != null)
+        {
+            Step("making the lobby choices");
+            await plan.LobbyChoice(lobby);
+            // Let the lobby contribution reach the host before this player readies.
+            for (int frame = 0; frame < 30; frame++)
+                await NextFrame();
+        }
         await UiHelper.Click(await WaitHelper.ForNode<NButton>(screen, "ConfirmButton", ct, TimeSpan.FromSeconds(10)));
         await WaitHelper.Until(() => lobby.LocalPlayer.isReady || RunManager.Instance.IsInProgress, ct,
             TimeSpan.FromSeconds(10), "Confirm did not ready the local player");
