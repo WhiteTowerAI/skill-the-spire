@@ -61,9 +61,9 @@ Current authoring includes:
 - cataloged model-hook participation on only the custom surfaces the host dispatches to; and
 - multiplayer: every Mod plays in singleplayer and multiplayer from the same code, and
   teammate content (another-player and every-player Cards, team Relics, any-player Potions,
-  `multiplayer only` availability) is authorable. Combat content is verified by the
-  two-instance multiplayer Tier 2; Event, Ancient, Rest Site, Act, and Custom-host scenarios
-  are still verified in singleplayer only.
+  `multiplayer only` availability) is authorable. The two-instance multiplayer Tier 2 verifies
+  combat, Event, Ancient, Rest Site, and Custom-host scenarios; Act scenarios are still verified
+  in singleplayer only.
 
 The nine generalized families remain authorable through their owner pages: secondary
 resources; Monster/Encounter composition and HP; Character starting fields; Card/Relic Rest

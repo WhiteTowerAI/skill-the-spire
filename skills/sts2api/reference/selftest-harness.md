@@ -253,8 +253,15 @@ one two-player run. No Steam lobby, second machine, or second account is needed.
           $"Block expected=7/7 observed me={t.Me.Block} ally={t.Ally.Creature.Block}");
   });
   ```
-- **Hosts without a multiplayer driver yet** (`Event`, `Ancient`, `RestSite`, `Act`, `Custom`)
-  report `SKIP` in a multiplayer run, naming the host; their singleplayer run stays the proof.
+- **Rooms outside combat.** `Event`, `Ancient`, `RestSite`, and `Custom` scenarios run in both
+  modes. Every player has its own copy of an Event or Ancient, so `t.Event` and
+  `t.EventOptions()` read the acting player's copy; the host clicks the option and the client
+  waits until its copy of the host's Event shows the choice (both peers vote in a shared Event).
+  `t.RestSiteOptions()` reads the acting player's list, and the client waits for the host's
+  choice to arrive as the game's Rest Site message. Vanilla adds Mend to every multiplayer Rest
+  Site.
+- **The `Act` host** has no multiplayer driver yet and reports `SKIP` in a multiplayer run; its
+  singleplayer run stays the proof.
 - **Verdict.** The launcher passes only when both peers log `selftest done`, every scenario's
   `selftest digest:` line (run and combat state at the same queue position) is equal on both
   peers, and neither log contains the game's `State divergence` error. It prints each mismatch.
@@ -378,7 +385,10 @@ substitutions:
   means "put this code in the `Custom` body";
 - `StateProof(condition, observation)` is `t.Proof(condition, observation)`, `player` is
   `t.Player`, `ct` is `t.Token`, and a `Task.Delay` after an action is `await t.Settle()`;
-- the next `Combat` scenario after a `Custom` one starts a fresh kit combat.
+- the next `Combat` scenario after a `Custom` one starts a fresh kit combat;
+- every room entry and command in the body goes through `t.Do`
+  (`await t.Do(_ => RunManager.Instance.EnterRoomDebug(...), "enter shop")`), so a multiplayer
+  run enters the same room on both peers.
 
 Every other content kind has its own host: the kit's player combat for anything a Card, Relic,
 Potion, or Power does, `plan.Encounter` for a Monster, `plan.RunStart` for a Character's starting

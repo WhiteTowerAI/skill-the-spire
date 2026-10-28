@@ -106,7 +106,7 @@ Event composition. Route it to `reference/forced-followup-event.md`; it gets no 
   - outcome: <ordered deterministic preflightable operations>
   - after success: leave | keep remaining options available
   - icon: checked native fallback | generate
-  - multiplayer: singleplayer only
+  - multiplayer: both
 - **presentation**:
   - assets: card portrait; placeholder | generate
   - art source: host-tool | backend:<name> | local-image (generate only)

@@ -11,7 +11,9 @@ The authorable slice is deliberately bounded:
 - the owner is one standalone Run singleton, exactly one concrete generated-Mod-local Card in
   the deck, one concrete generated-Mod-local Relic in the run, or one selected mutable Modifier
   in `RunState.Modifiers`;
-- the run is singleplayer; multiplayer and replay hide the option and fail closed;
+- every player's Rest Site asks every Mod owner for that player, on every peer, and the game's
+  Rest Site synchronizer replays each choice for its player, so the option works in
+  singleplayer and multiplayer alike (§ Multiplayer);
 - the cost is free or one fixed nonnegative Gold amount;
 - the outcome is deterministic and preflightable, using public commands with no player
   selection after payment;
@@ -21,8 +23,7 @@ The authorable slice is deliberately bounded:
 - a custom icon is optional and falls back to the checked native Heal icon.
 
 Variable or non-Gold costs, post-payment choices, arbitrary transactional outcomes,
-remote-player ownership, multiplayer synchronization, and repeated successful use in one Rest
-Site are unsupported.
+and repeated successful use in one Rest Site are unsupported.
 Do not generate Harmony, reflection, or UI patches to extend this boundary.
 
 Card reachability is pinned rather than inferred: both Rest Site hooks dispatch through
@@ -48,7 +49,7 @@ Record these fields before writing code:
   - outcome: <ordered deterministic game-term operations and exact values>
   - after success: leave | keep remaining options available
   - icon: checked native fallback | generate
-  - multiplayer: singleplayer only
+  - multiplayer: both
 ```
 
 Absence and disabled state are different. `eligibility` decides whether the option exists;
@@ -87,7 +88,7 @@ compatibility value rather than display text.
 
 The generated owner separates three questions:
 
-- `ShouldOffer(player)`: correct owner, exact singleplayer mode, eligibility, and unused
+- `ShouldOffer(player)`: correct owner, eligibility, and unused
   once-per-run state;
 - `CanPay(player)`: `ShouldOffer` plus the fixed Gold predicate;
 - `TryModifyRestSiteOptions`: `ShouldOffer`, duplicate-ID rejection, then one insertion.
@@ -113,7 +114,6 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Entities.RestSite;
 using MegaCrit.Sts2.Core.Localization;
-using MegaCrit.Sts2.Core.Multiplayer.Game;
 using MegaCrit.Sts2.Core.Runs;
 using STS2RitsuLib.Scaffolding.Content;
 using STS2RitsuLib.Utils;
@@ -134,7 +134,6 @@ public sealed class <OwnerName> : <ModCardOrRelicTemplate>
 
     internal bool ShouldOffer(Player player) =>
         player == Owner &&
-        RunManager.Instance.NetService.Type == NetGameType.Singleplayer &&
         <exact-owner-presence-and-multiplicity-guard> &&
         !UsedState[this];
 
@@ -238,6 +237,15 @@ rollback/transaction composition is outside this slice.
 `ShouldDisableRemainingRestSiteOptions` is a global hook and defaults to `true` on every
 model. The one-shot flag above returns `false` only immediately after this option's success
 and is consumed by that query. Never return `false` unconditionally from the owner.
+
+## Multiplayer
+
+No mode gate: in a multiplayer Rest Site every player's option list is built on every peer by
+calling each owner's `TryModifyRestSiteOptions(player, ...)`, so the `player == Owner` guard in
+`ShouldOffer` is what keeps the option on its owner's list only. A chosen option reaches the other
+peers as the game's Rest Site message and runs its outcome there for the same player, so the
+outcome stays deterministic and preflightable exactly as in singleplayer. Vanilla also adds
+Mend to every list in multiplayer; never count on a fixed native option set.
 
 ## Localization and icon
 

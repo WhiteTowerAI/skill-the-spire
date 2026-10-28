@@ -11,8 +11,8 @@ completely. Card, Relic, and Modifier owners keep their own identities and use t
 Settle and write:
 
 - owner: standalone, one concrete Card, one concrete Relic, or one selected Modifier;
-- availability versus enabled/affordability, the exact singleplayer boundary, and the duplicate-id
-  rule;
+- availability versus enabled/affordability, the owner guard (`player == Owner`, which also
+  keeps a teammate's Rest Site clean in multiplayer), and the duplicate-id rule;
 - free or one fixed nonnegative Gold cost;
 - every failure-prone preflight check before the first mutation;
 - the ordered deterministic outcome, repeatability once per site or once per run, and leave
@@ -23,7 +23,7 @@ Settle and write:
 - the real Rest Site state matrix plus headed mouse/controller/icon review.
 
 The route never promises variable or non-Gold costs, a player choice after payment, arbitrary
-rollback, same-visit successful repeat, or multiplayer.
+rollback, or same-visit successful repeat.
 
 ## Owner selection
 
@@ -104,8 +104,12 @@ plan.RestSite("temper_gray_without_gold", t =>
 }, beforeEnter: async t =>
 {
     await t.ObtainRelic<Whetstone>();
-    if (t.Player.Gold > 0)
-        await PlayerCmd.LoseGold(t.Player.Gold, t.Player);
+    // t.Do: every multiplayer peer spends the same Gold (selftest-harness.md § Multiplayer Tier 2).
+    await t.Do(async owner =>
+    {
+        if (owner.Gold > 0)
+            await PlayerCmd.LoseGold(owner.Gold, owner);
+    }, "spend all gold");
 });
 
 plan.RestSite("temper_spends_gold_for_max_hp", async t =>
@@ -117,7 +121,7 @@ plan.RestSite("temper_spends_gold_for_max_hp", async t =>
 }, beforeEnter: async t =>
 {
     await t.ObtainRelic<Whetstone>();
-    await PlayerCmd.GainGold(50m, t.Player);
+    await t.Do(owner => PlayerCmd.GainGold(50m, owner), "gain 50 gold");
 });
 ```
 

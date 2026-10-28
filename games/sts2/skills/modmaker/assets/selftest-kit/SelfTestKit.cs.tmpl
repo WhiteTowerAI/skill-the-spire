@@ -630,9 +630,18 @@ internal sealed class SelfTestRun
     /// <summary>Kill every enemy and wait until the combat has ended.</summary>
     public Task WinCombat() => SelfTestKit.FinishCombat(this);
 
-    /// <summary>The mutable Event of the Event room the run is in.</summary>
-    public EventModel Event => (Run.CurrentRoom as EventRoom)?.LocalMutableEvent
-        ?? throw new InvalidOperationException("the run is not in an Event room");
+    /// <summary>
+    /// The acting player's mutable Event in the Event room the run is in. In multiplayer every
+    /// player has its own copy; the client reads the host's copy, which the host's choices drive.
+    /// </summary>
+    public EventModel Event => SelfTestNet.Multiplayer
+        ? RunManager.Instance.EventSynchronizer.GetEventForPlayer(Player)
+        : (Run.CurrentRoom as EventRoom)?.LocalMutableEvent
+          ?? throw new InvalidOperationException("the run is not in an Event room");
+
+    /// <summary>A room entry every peer makes at the same queue position.</summary>
+    internal Task SharedStep(string label, Func<Task> body)
+        => SelfTestNet.Step<object?>(label, Player, async _ => { await body(); return null; }, false, Token);
 
     /// <summary>Enter this Event as an Unknown map point and wait for its options.</summary>
     public Task EnterEvent<TEvent>() where TEvent : EventModel
@@ -642,6 +651,14 @@ internal sealed class SelfTestRun
     public async Task EnterAncient<TAncient>() where TAncient : AncientEventModel
     {
         await EnterEventRoom(ModelDb.AncientEvent<TAncient>(), MapPointType.Ancient, typeof(TAncient), waitForOptions: false);
+        if (SelfTestNet.Multiplayer && !SelfTestNet.IsHost)
+        {
+            // The dialogue is local UI; the client mirrors the host's Ancient through its model.
+            await WaitUntil(() => Event.CurrentOptions.Any(option => !option.IsLocked),
+                $"{typeof(TAncient).Name} has no open option on the host's copy", 30);
+            await Sync("ancient options");
+            return;
+        }
         SelfTestKit.Step($"{Name}: advancing Ancient dialogue");
         NAncientEventLayout? layout = null;
         await WaitUntil(() => (layout = UiHelper.FindFirst<NAncientEventLayout>(NEventRoom.Instance!)) != null,
@@ -659,6 +676,8 @@ internal sealed class SelfTestRun
         await WaitUntil(() => EventButtons().Any(b => b.IsEnabled && !b.Option.IsLocked),
             $"{typeof(TAncient).Name} options did not appear after its dialogue", 30);
         await Settle();
+        if (SelfTestNet.Multiplayer)
+            await Sync("ancient options");
     }
 
     private async Task EnterEventRoom(EventModel canonical, MapPointType pointType, Type eventType, bool waitForOptions = true)
@@ -667,7 +686,7 @@ internal sealed class SelfTestRun
         // The run's own map and first room must exist before a debug room entry.
         await WaitUntil(() => Run.Map is not NullActMap && Run.CurrentRoom != null,
             () => $"the run map did not finish loading (map={Run.Map.GetType().Name}, room={Run.CurrentRoom?.GetType().Name ?? "none"})", 30);
-        await RunManager.Instance.EnterRoomDebug(RoomType.Event, pointType, canonical);
+        await SharedStep($"enter {canonical.Id.Entry}", () => RunManager.Instance.EnterRoomDebug(RoomType.Event, pointType, canonical));
         await WaitUntil(() => (Run.CurrentRoom as EventRoom)?.LocalMutableEvent?.GetType() == eventType &&
                               NEventRoom.Instance?.Layout != null, $"{canonical.Id.Entry} room not entered", 30);
         if (waitForOptions)
@@ -682,8 +701,10 @@ internal sealed class SelfTestRun
             ? UiHelper.FindAll<NEventOptionButton>(room).Where(button => button.Visible).ToList()
             : new List<NEventOptionButton>();
 
-    /// <summary>The options the Event room shows now, locked ones included.</summary>
-    public IReadOnlyList<EventOption> EventOptions() => EventButtons().Select(button => button.Option).ToList();
+    /// <summary>The options the Event room shows now, locked ones included (the acting player's in multiplayer).</summary>
+    public IReadOnlyList<EventOption> EventOptions() => SelfTestNet.Multiplayer
+        ? Event.CurrentOptions.ToList()
+        : EventButtons().Select(button => button.Option).ToList();
 
     /// <summary>
     /// Click the shown Event option whose text key is <paramref name="key"/> or ends with ".<paramref name="key"/>"
@@ -695,6 +716,29 @@ internal sealed class SelfTestRun
         bool Matches(EventOption option) => key == "proceed"
             ? option.IsProceed
             : option.TextKey == key || option.TextKey.EndsWith("." + key, StringComparison.Ordinal);
+        if (SelfTestNet.Multiplayer)
+        {
+            // A choice travels as the game's own event message, not through the action queue.
+            // The host clicks; the client watches its copy of the host's Event. In a shared
+            // Event every player votes, so both click.
+            var ev = Event;
+            EventOption? mirrored = null;
+            await WaitUntil(() => (mirrored = ev.CurrentOptions.FirstOrDefault(Matches)) != null || ev.IsFinished,
+                $"Event option {key} is not on the host's Event; shown: " +
+                string.Join(",", ev.CurrentOptions.Select(o => o.TextKey)));
+            if (SelfTestNet.IsHost || ev.IsShared)
+                await ClickEventOption(key, Matches);
+            await WaitUntil(() => (mirrored?.WasChosen ?? true) || ev.IsFinished,
+                $"Event option {key} was not chosen on this peer's copy");
+            await RunManager.Instance.EventSynchronizer.AwaitPendingOptionTasks();
+            await Sync($"event option {key}");
+            return;
+        }
+        await ClickEventOption(key, Matches);
+    }
+
+    private async Task ClickEventOption(string key, Func<EventOption, bool> Matches)
+    {
         NEventOptionButton? button = null;
         await WaitUntil(() => (button = EventButtons().FirstOrDefault(b => Matches(b.Option))) is { IsEnabled: true },
             $"Event option {key} is not shown and enabled; shown: " +
@@ -715,13 +759,19 @@ internal sealed class SelfTestRun
     public async Task EnterRestSite()
     {
         SelfTestKit.Step($"{Name}: entering a Rest Site");
-        await RunManager.Instance.EnterRoomDebug(RoomType.RestSite, MapPointType.RestSite);
+        await SharedStep("enter rest site", () =>
+        {
+            SelfTestNet.RestSiteChoices.Clear();
+            return RunManager.Instance.EnterRoomDebug(RoomType.RestSite, MapPointType.RestSite);
+        });
         await WaitUntil(() => RestSiteButtons().Count > 0, "Rest Site options did not appear", 30);
         await Settle();
     }
 
-    /// <summary>The options the Rest Site shows now, disabled ones included.</summary>
-    public IReadOnlyList<RestSiteOption> RestSiteOptions() => RestSiteButtons().Select(button => button.Option).ToList();
+    /// <summary>The options the Rest Site shows now, disabled ones included (the acting player's in multiplayer).</summary>
+    public IReadOnlyList<RestSiteOption> RestSiteOptions() => SelfTestNet.Multiplayer
+        ? RunManager.Instance.RestSiteSynchronizer.GetOptionsForPlayer(Player).ToList()
+        : RestSiteButtons().Select(button => button.Option).ToList();
 
     /// <summary>
     /// Click the shown Rest Site option with this <c>OptionId</c> and wait until the room responds
@@ -730,6 +780,18 @@ internal sealed class SelfTestRun
     public async Task ChooseRestSiteOption(string optionId)
     {
         SelfTestKit.Step($"{Name}: choosing Rest Site option {optionId}");
+        if (SelfTestNet.Multiplayer && !SelfTestNet.IsHost)
+        {
+            // The host's choice reaches this peer as the game's Rest Site message.
+            if (RestSiteOptions().All(option => option.OptionId != optionId))
+                throw new SelfTestProofFailed($"Rest Site option {optionId} is not on the host's list; shown: " +
+                    string.Join(",", RestSiteOptions().Select(option => option.OptionId)));
+            await WaitUntil(() => SelfTestNet.RestSiteChoices.Contains((Player.NetId, optionId)),
+                $"the host's Rest Site option {optionId} did not reach this peer");
+            await Settle();
+            await Sync($"rest site option {optionId}");
+            return;
+        }
         var button = RestSiteButtons().FirstOrDefault(b => b.Option.OptionId == optionId)
             ?? throw new SelfTestProofFailed($"Rest Site option {optionId} is not shown; shown: " +
                 string.Join(",", RestSiteButtons().Select(b => b.Option.OptionId)));
@@ -742,13 +804,15 @@ internal sealed class SelfTestRun
                 !GodotObject.IsInstanceValid(button),
             $"Rest Site option {optionId} did not respond");
         await Settle();
+        if (SelfTestNet.Multiplayer)
+            await Sync($"rest site option {optionId}");
     }
 
     /// <summary>Enter a Treasure room (the Act's chest) and wait until it is the current room.</summary>
     public async Task EnterTreasure()
     {
         SelfTestKit.Step($"{Name}: entering a Treasure room");
-        await RunManager.Instance.EnterRoomDebug(RoomType.Treasure, MapPointType.Treasure);
+        await SharedStep("enter treasure", () => RunManager.Instance.EnterRoomDebug(RoomType.Treasure, MapPointType.Treasure));
         await WaitUntil(() => Run.CurrentRoom?.RoomType == RoomType.Treasure, "Treasure room not entered", 30);
         await Settle();
     }
@@ -761,7 +825,7 @@ internal sealed class SelfTestRun
     {
         SelfTestKit.Step($"{Name}: entering Act slot {slotIndex}");
         NMapScreen.Instance?.SetTravelEnabled(true);
-        await RunManager.Instance.EnterAct(slotIndex);
+        await SharedStep($"enter act {slotIndex}", () => RunManager.Instance.EnterAct(slotIndex));
         await WaitUntil(() => Run.CurrentActIndex == slotIndex && Run.Map is not NullActMap && Run.CurrentRoom != null,
             $"Act slot {slotIndex} map did not finish loading", 60);
         if (SelfTestKit.CurrentActType() is { } act)
@@ -1513,9 +1577,8 @@ internal static class SelfTestKit
     {
         if (scenario.Coop && !SelfTestNet.Multiplayer)
             return "multiplayer only; run launch.py --self-test --multiplayer";
-        if (SelfTestNet.Multiplayer && scenario.Host is SelfTestHost.Event or SelfTestHost.Ancient
-                or SelfTestHost.RestSite or SelfTestHost.Act or SelfTestHost.Custom)
-            return $"the {scenario.Host} host has no multiplayer driver yet; its singleplayer run is the proof";
+        if (SelfTestNet.Multiplayer && scenario.Host is SelfTestHost.Act)
+            return "the Act host has no multiplayer driver yet; its singleplayer run is the proof";
         return null;
     }
 
@@ -1647,6 +1710,8 @@ internal static class SelfTestKit
         var me = SelfTestNet.LocalPlayer();
         var actor = SelfTestNet.IsHost ? me : players.First(p => p != me);
         SelfTestNet.HostNetId = actor.NetId;
+        RunManager.Instance.RestSiteSynchronizer.AfterPlayerOptionChosen += (option, _, playerId) =>
+            SelfTestNet.RestSiteChoices.Add((playerId, option.OptionId));
         Log($"stage: multiplayer run players={string.Join(",", players.Select(p => $"{p.NetId}:{p.Character.Id.Entry}"))} " +
             $"me={me.NetId} actor={actor.NetId}");
         return actor;
@@ -1978,6 +2043,8 @@ internal static class SelfTestNet
     internal static bool Multiplayer => Role != null;
     internal static bool IsHost => Role == "host";
     internal static ulong HostNetId { get; set; }
+    /// <summary>(player, option id) for every Rest Site option this peer saw chosen in the current room.</summary>
+    internal static readonly HashSet<(ulong Player, string OptionId)> RestSiteChoices = new();
     /// <summary>True while the queue holds a step this peer's scenario code has not reached yet.</summary>
     internal static bool AwaitingRegistration { get; private set; }
     /// <summary>Step keys restart per scenario phase, so one peer's failure cannot shift the next phase.</summary>
