@@ -169,6 +169,8 @@ the observed value.
 - `Coop(name, body, budgetSeconds = 45, freshCombat = false)`: a two-player combat scenario that
   runs only in a multiplayer run (singleplayer reports `SKIP`); § Multiplayer Tier 2.
 - `Character<TCharacter>()`: start the run as this Character.
+- `Lobby(lobby => ...)`: make this Mod's lobby choices on every peer before the player readies
+  (`reference/lobby-options.md`); a `RunStart` scenario asserts the committed values.
 
 ### `SelfTestRun t`
 
