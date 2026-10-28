@@ -1577,8 +1577,6 @@ internal static class SelfTestKit
     {
         if (scenario.Coop && !SelfTestNet.Multiplayer)
             return "multiplayer only; run launch.py --self-test --multiplayer";
-        if (SelfTestNet.Multiplayer && scenario.Host is SelfTestHost.Act)
-            return "the Act host has no multiplayer driver yet; its singleplayer run is the proof";
         return null;
     }
 

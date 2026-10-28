@@ -16,8 +16,9 @@ Also read, only when SPEC selects it:
 - Character dialogue on vanilla Ancients or richer Architect dialogue:
   `reference/ancient-dialogue.md`.
 
-Ancient models, Spine, Cast, trails, arbitrary custom materials, multiplayer presentation, and
-audio are not promoted here. A pinned existing vanilla Character's fresh unlock gate goes through
+Ancient models, Spine, Cast, trails, arbitrary custom materials, and audio are not promoted here.
+A Mod Character is selectable in the multiplayer lobby and plays as a teammate with no extra code
+(§ Multiplayer); how a teammate's Character looks on another player's screen is headed review. A pinned existing vanilla Character's fresh unlock gate goes through
 `reference/vanilla-overrides.md` and `reference/vanilla-availability-overrides.md` (singleplayer
 pinned epoch only; no permanent disable, pool replacement, or registration as a Mod Character).
 
@@ -513,6 +514,19 @@ from `SetupCustomCombatAnimationStateMachine`. Never set `CharacterAssetProfile.
 RitsuLib also uses that global fallback in merchant/rest playback. One missing or invalid frame
 disables all cues, creates no playback node, and selects the static `combat.png`; if that is also
 absent, return `null` for the resolved profile fallback.
+
+## Multiplayer
+
+A registered Mod Character appears on the multiplayer Character select like a vanilla one, and
+two players may both pick it. Its starter deck, Relics, HP, Gold, Energy, and pools belong to each
+player who picked it, and its Cards and Relics follow their recipes' § Multiplayer. The
+multiplayer Tier 2 starts both peers as `plan.Character<T>()`, so the same scenarios prove a
+two-player run of the Character.
+
+Not part of this route: a secondary resource's teammate panel
+(`RegisterMultiplayerPlayerStateUi` exists in RitsuLib but has no maintained recipe), and how
+the Character's portrait, top-bar icon, and combat body look on a teammate's screen, which only
+headed review observes.
 
 ## Checklist
 
