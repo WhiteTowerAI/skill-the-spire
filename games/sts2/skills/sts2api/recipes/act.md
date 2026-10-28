@@ -8,8 +8,8 @@ which a singleplayer run enters it.
 Registration and reachability are separate. `.Act<T>()` adds the model to `ModelDb` but never
 makes a run enter it (the template defaults `AllowInRandomActList` to `false`), so every Act also
 selects exactly one supported entry policy. Lifecycle and supplied-RNG rules are in
-`reference/lifecycle-state-rng.md`; never use `System.Random`, process-local randomness, a
-Progression route, or a Multiplayer route.
+`reference/lifecycle-state-rng.md`; never use `System.Random`, process-local randomness, or a
+Progression route.
 
 ## DESIGN and SPEC vocabulary
 
@@ -32,9 +32,11 @@ Settle and write:
 - a real Act-transition SelfTest that reaches map, weak/regular/elite/Boss combat, Event,
   Ancient, chest, and Rest Site consumers.
 
-Every authored entry predicate rejects `ctx.IsMultiplayer`. Keep `AllowInRandomActList == false`:
-the organic vanilla random-list opt-in has no singleplayer predicate and would create a deferred
-Multiplayer interaction.
+An entry rule needs no mode gate: every peer resolves the same deterministic rule from the same
+run state, and RitsuLib re-syncs the map selection after it replaces an Act, so a forced, uniform,
+or weighted Act works in singleplayer and multiplayer alike. Use `ctx.IsMultiplayer` only when
+SPEC makes the Act mode-specific. Keep `AllowInRandomActList == false`: the organic vanilla
+random-list opt-in is a separate placement this route does not prove.
 
 ## Registration and entry
 
@@ -46,7 +48,7 @@ ModContentPackBuilder.For(MainFile.ModId)
     .ActEnterForce<<ActName>>(
         slotIndex: <0|1|2>,
         priority: <integer>,
-        eligibility: static ctx => !ctx.IsMultiplayer && <plain condition>)
+        eligibility: static ctx => <plain condition>)
     .Apply();
 ```
 
@@ -55,7 +57,7 @@ Uniform selection includes the existing chapter automatically:
 ```csharp
 .ActEnterUniformPool(<slot>)
 .ActEnterUniformPoolCandidate<<ActName>>(
-    <slot>, static ctx => !ctx.IsMultiplayer && <condition>)
+    <slot>, static ctx => <condition>)
 ```
 
 Weighted selection also includes the existing chapter at fixed weight 1; only candidate weights
@@ -66,7 +68,7 @@ the pool first, then its candidates; non-finite or nonpositive weights are ignor
 .ActEnterWeightedPool(<slot>)
 .ActEnterWeightedPoolCandidate<<ActName>>(
     <slot>,
-    static ctx => !ctx.IsMultiplayer && <condition>,
+    static ctx => <condition>,
     static ctx => <positive double>)
 ```
 
@@ -78,7 +80,7 @@ chapter, force a weighted candidate set:
 .ActEnterForcePool(
     slotIndex: <slot>,
     priority: <integer>,
-    eligibility: static ctx => !ctx.IsMultiplayer && <condition>,
+    eligibility: static ctx => <condition>,
     (typeof(<ActA>), <positive double>),
     (typeof(<ActB>), <positive double>))
 ```
@@ -172,8 +174,7 @@ plan.Act<EmberWilds>("ember_wilds_takes_slot_two", async t =>
 
 `GetMapPointTypes` counts are generation targets: the generated map also holds the fixed rows (a
 probe declaring five Rest Sites showed seven), so assert SPEC's counts against the map the kit
-reports. Gate the entry rule's eligibility on `!ctx.IsMultiplayer`; a maintainer probe Act also
-gates it on `CommandLineHelper.HasArg("t2selftest")` so it never replaces a slot in a player's
+reports. A maintainer probe Act gates its entry rule on `CommandLineHelper.HasArg("t2selftest")` so it never replaces a slot in a player's
 real runs. Prove:
 
 1. assert the canonical Act is registered once and the mutable run Act occupies only its selected

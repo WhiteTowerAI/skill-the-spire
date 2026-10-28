@@ -259,9 +259,9 @@ one two-player run. No Steam lobby, second machine, or second account is needed.
   waits until its copy of the host's Event shows the choice (both peers vote in a shared Event).
   `t.RestSiteOptions()` reads the acting player's list, and the client waits for the host's
   choice to arrive as the game's Rest Site message. Vanilla adds Mend to every multiplayer Rest
-  Site.
-- **The `Act` host** has no multiplayer driver yet and reports `SKIP` in a multiplayer run; its
-  singleplayer run stays the proof.
+  Site. `Act` scenarios enter the slot on both peers, which generate the same map.
+- **Characters.** Both peers pick `plan.Character<T>()`, so a Character Mod's scenarios run as a
+  two-player run of that Character.
 - **Verdict.** The launcher passes only when both peers log `selftest done`, every scenario's
   `selftest digest:` line (run and combat state at the same queue position) is equal on both
   peers, and neither log contains the game's `State divergence` error. It prints each mismatch.
