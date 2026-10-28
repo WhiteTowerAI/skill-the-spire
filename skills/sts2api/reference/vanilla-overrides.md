@@ -86,6 +86,11 @@ deployed Mod needs only its own `mod_manifest.json`. `build.py` fails on any
 deployed non-manifest `.json`. A project without this file builds with no override
 operations; Build still checks any vanilla text key its tables ship (§ Fail-closed rules).
 
+An override changes the shared vanilla model the same way on every peer, so it applies in
+singleplayer and multiplayer alike. Families whose semantics carry a `multiplayer` field write
+`both`; manifests from before multiplayer support wrote `singleplayer`, which Build still
+accepts with the same meaning.
+
 Every authorable operation carries exactly these fields:
 
 ```json

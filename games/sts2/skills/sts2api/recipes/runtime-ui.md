@@ -10,7 +10,10 @@ for packaged icons, `.tscn` scenes, and bilingual localization.
 
 Runtime UI does not own Card Piles, content-model presentation, or any deferred product family.
 Never add a Settings page or binding, a Progression or post-run Badge view, Telemetry consent, an
-Update Check prompt, Multiplayer control or synchronization, or an integration to those families.
+Update Check prompt, or an integration to those families. Runtime UI is local to one player's
+screen: in multiplayer every peer draws its own, so a control shows or opens things but never
+changes run or combat state (a state change belongs to a Card, Relic, Potion, or
+`reference/model-right-click.md` action, which the game's queue synchronizes).
 
 ## DESIGN and SPEC vocabulary
 

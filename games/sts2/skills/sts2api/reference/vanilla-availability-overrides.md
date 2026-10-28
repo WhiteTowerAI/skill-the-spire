@@ -5,7 +5,7 @@ Card/Relic/Potion pool membership while preserving the existing model type, `Mod
 save identity, and already-created instances.
 
 The checked catalog lists route family `availability-overrides` as authorable. Every operation is
-`mode: availability` and `multiplayer: singleplayer`. The generated Mod must install all
+`mode: availability` and `multiplayer: both`. The generated Mod must install all
 registrations and fixed patches before `ModelDb` pool caches are read. Prompts select only
 the semantic routes below; they never supply a method name, Harmony body, reflection,
 Publicizer, or IL.
@@ -54,7 +54,7 @@ The public route uses category-specific surface `<category>.epoch_gate` and stat
   "semantics": {
     "state": "require_epoch",
     "epoch_id": "IRONCLAD2_EPOCH",
-    "multiplayer": "singleplayer"
+    "multiplayer": "both"
   }
 }
 ```
@@ -183,7 +183,7 @@ Public add records only a destination:
     "destination_pool_model_id": "CARD_POOL.SILENT_CARD_POOL",
     "expected_primary_pool_model_id": "CARD_POOL.IRONCLAD_CARD_POOL",
     "existing_instances": "preserve",
-    "multiplayer": "singleplayer"
+    "multiplayer": "both"
   }
 }
 ```
@@ -231,6 +231,6 @@ Do not infer primary from manifest order.
 
 A focused manifest/catalog/document-route test establishes the manifest, nothing more. Cache
 timing, unlock UI, fresh rewards, seeded order/RNG, duplicate absence, existing-save
-survival, and singleplayer real-host behavior are proved only by observing them in a real
+survival, and real-host behavior in either mode are proved only by observing them in a real
 run. Pool membership does not prove source weighting, and an automated manifest pass is not
 headed availability proof.

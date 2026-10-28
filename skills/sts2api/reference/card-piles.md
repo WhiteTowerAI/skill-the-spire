@@ -230,6 +230,7 @@ the selected UI and lifecycle:
 The API creates new Mod-owned piles. It does not by itself replace vanilla piles,
 change unrelated Cards' result locations, or authorize ungrounded Harmony, reflection,
 Publicizer, or IL generation. Use only the selected public Card Piles API and normal game
-commands. This route does not design, add, or claim verification for Multiplayer behavior or a
-Card Pile-to-Multiplayer integration. Record any newly confirmed API/lifecycle defect as the
+commands. In multiplayer each player owns its own copy of every Mod pile and moves it through
+its own queued Card commands; a pile in a multiplayer run is unobserved, and a teammate's pile UI
+is not part of this route. Record any newly confirmed API/lifecycle defect as the
 smallest affected consumer limitation rather than retracting the whole route.

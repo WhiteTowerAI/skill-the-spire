@@ -9,7 +9,7 @@ The checked catalog lists route family `non-card-data-behavior` as authorable. I
 is the one in `vanilla-overrides.md`; the catalog contains 1624 models and 4165 reviewed
 Adapters. Of those, 4141 ground target-specific non-Card methods and
 four ground shared stream/flow boundaries. Every hook, data, and body operation is
-`multiplayer: singleplayer`.
+`multiplayer: both`.
 A prompt selects a
 semantic route and exact model only. It never supplies a method name, patch body, private
 field, reflection expression, Publicizer request, or IL.
@@ -146,7 +146,7 @@ rule:
     "id": "behavior.relic.owner-hooks"
   },
   "semantics": {
-    "multiplayer": "singleplayer",
+    "multiplayer": "both",
     "rule": {
       "kind": "effect",
       "hook": "after_side_turn_start",
@@ -291,7 +291,7 @@ semantic id. Do not infer overloads from another STS2 version.
 ## Intrinsic data routes
 
 Every data operation uses `mode: adjust`, `surface` equal to its route id, route class
-`adapter`, and `multiplayer: singleplayer`. Build reads the current property from the
+`adapter`, and `multiplayer: both`. Build reads the current property from the
 catalog.
 
 | Route | Values |
@@ -302,7 +302,7 @@ catalog.
 | `data.potion.usage` | set `AnyTime/Automatic/CombatOnly` |
 | `data.power.allow-negative` | set boolean |
 | `data.power.type` | set `Buff/Debuff` |
-| `data.power.scales-in-multiplayer` | set boolean; still singleplayer |
+| `data.power.scales-in-multiplayer` | set boolean (stacks applied to an enemy scale with the party; `recipes/power.md` § Multiplayer) |
 | `data.power.stack-type` | set `Counter/None/Single` |
 | `data.enchantment.stackable` | set boolean |
 | `data.affliction.can-afflict-unplayable` | set boolean |
