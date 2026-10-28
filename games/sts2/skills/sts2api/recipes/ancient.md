@@ -8,7 +8,8 @@ A new Ancient's option bodies may use the bounded public Event outcome and prese
 references for typed Hover Tips, costs, Cmds, page effects, or acquisitions, but it is not an
 ordinary Event and never goes through `recipes/event.md`. Read `reference/lifecycle-state-rng.md`
 when state crosses callbacks or an option is randomized. Settings, Progression, Telemetry,
-Multiplayer, post-run Badge, and Update Check integrations are deferred. Global replacement of
+post-run Badge, and Update Check integrations are deferred. In multiplayer every player meets
+the Ancient in its own copy and chooses for itself, as vanilla Ancients do. Global replacement of
 native Ancient dialogue or the Ancient room, behavior outside the public
 option/page/dialogue/presentation vocabulary, direct merchant/rest/treasure transitions, and
 multiplayer presentation are unsupported.

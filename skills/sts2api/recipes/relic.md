@@ -104,7 +104,7 @@ standalone, exactly-one Card, and selected Modifier owners through their own rec
   - outcome: <ordered deterministic game-term operations and exact values>
   - after success: leave | keep remaining options available
   - icon: checked native fallback | generate
-  - multiplayer: singleplayer only
+  - multiplayer: both
   - proof: absent owner; present disabled/enabled; stale-render failed payment with no
     mutation; exact successful cost/outcome/history; no duplicate; stay/leave; second visit;
     custom icon and missing-icon fallback
@@ -442,7 +442,7 @@ otherwise. The pool is the first generic argument of `.Relic<TPool,TRelic>()`
 - [ ] Stateful: event/threshold/phase/lifetime/reset/persistence match SPEC; run state uses a
       Mod-qualified `SavedAttachedState<SpecificRelic, int/bool>`; combat turns use
       `PlayerCombatState.TurnNumber`.
-- [ ] A Rest Site action has the singleplayer guard, stable namespaced id, duplicate check,
+- [ ] A Rest Site action has the owner guard, stable namespaced id, duplicate check,
       shared offer/payment predicate, click-time recheck, success-only repeatability,
       declared stay/leave, and native Heal icon fallback (`reference/rest-site-options.md`).
 - [ ] Every `Cmd`/RNG call is awaited; `Flash()` and the diagnostic marker fire on trigger.
@@ -486,7 +486,7 @@ checks.
 - A Rest Site option follows `reference/rest-site-options.md` in the real native room:
   absent/disabled/enabled states, click-time payment rejection with no deltas, exact
   Gold/outcome/history deltas, no duplicate after rebuild, declared stay/leave and second-visit
-  repeatability, explicit singleplayer mode, custom icon, and missing-icon fallback.
+  repeatability, custom icon, and missing-icon fallback, in both modes.
   Model-generated option lists are diagnostics, not hosted proof.
 
 ## Manual fallback (only when the harness cannot reach its scenario)

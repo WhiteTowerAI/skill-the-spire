@@ -149,6 +149,13 @@ registration; an Event that enters special combat sets `IsShared => true`. Overr
 `IsAllowed(IRunState)` only for run-state eligibility. The test scenario enters the Event
 directly by canonical model, so map RNG cannot make the proof flaky.
 
+**Multiplayer.** By default (`IsShared` false) every player gets its own copy of the Event and
+chooses for itself; an option's effects act on `Owner`, the player whose copy it is. With
+`IsShared => true` the players vote and the winning option runs for every player. Run-level
+eligibility in `IsAllowed` is about the party: write it as vanilla does,
+`runState.Players.All(p => <condition>)`. The multiplayer Tier 2 drives the host's choice and
+the client checks the host's copy; a shared Event's vote is cast by both peers.
+
 A forced follow-up target deliberately overrides natural placement: it returns false from
 `IsAllowed`, and the carried Quest Card replaces an Unknown room roll and the following Event
 pull. Follow `reference/forced-followup-event.md` exactly: one unplayable Quest Card per mapping
