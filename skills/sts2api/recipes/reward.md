@@ -29,7 +29,9 @@ Settle and write:
   save/load reconstruction.
 
 The selection outcome and the reconstructed payload describe the same deterministic reward.
-Multiplayer synchronization and host-authoritative side effects are deferred.
+In multiplayer each player claims its own rewards and the game's reward synchronizer replays the
+claim on every peer, so a reward's claim effect acts on its own player only. Multiplayer claiming
+of a Mod reward is unobserved, and host-authoritative side effects are deferred.
 
 ## Registration and identity
 

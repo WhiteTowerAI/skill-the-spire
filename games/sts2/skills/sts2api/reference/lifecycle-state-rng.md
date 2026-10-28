@@ -13,7 +13,7 @@ state remains responsible for its semantics and proof.
 | saved value owned by one serialized model | `ModelCapability` JSON or `ModelSavedData<TModel,T>` | clone policy, write policy, schema/migration, save/fill |
 | bounded legacy Card/Relic/Enchantment scalar | `SavedAttachedState<TModel,bool/int/string>` | owner must pass through normal `SavedProperties`; stable Mod-qualified name |
 | value owned by the run | `RunSavedData<T>` | early stable slot registration, write policy, real save/load |
-| value owned separately by each player | `PlayerRunSavedData<T>` | exact player/net-id identity; no lobby or multiplayer claim |
+| value owned separately by each player | `PlayerRunSavedData<T>` | exact player/net-id identity; one value per player, saved with the run in both modes |
 | Mod feature data outside a run | `ModDataStore` Global/Profile/InMemory | explicit save, profile invalidation, migrations as selected |
 
 Do not put model-owned state into run/profile storage just because it is easier to reach. Do not

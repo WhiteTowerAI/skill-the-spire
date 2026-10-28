@@ -13,8 +13,9 @@ Never reduce this surface to the ExtraHand case: `headless`, `TopBarDeck`, `Bott
 `BottomRight`, and `ExtraHand`; every documented preset or custom anchor; default/capstone open
 routes; vanilla/deck-like/explicit views; sorting, inspection, upgrade preview, visibility, hover,
 hotkeys, flight positions, and ExtraHand layouts/callbacks are all authorable when selected. Never
-add deferred Settings, Multiplayer, Telemetry, Update Check, Progression, or Badge integrations
-through a pile control.
+add deferred Settings, Telemetry, Update Check, Progression, or Badge integrations through a pile
+control. In multiplayer every player has its own copy of each Mod pile, moved by that player's
+queued Card commands like the native piles; a teammate's pile UI is not shown.
 
 ## DESIGN and SPEC vocabulary
 

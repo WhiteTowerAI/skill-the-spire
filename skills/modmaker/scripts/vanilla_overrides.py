@@ -21,6 +21,9 @@ CATALOG_SCHEMA = "skillthespire.sts2.vanilla-catalog/v2"
 RUNTIME_SCHEMA = "skillthespire.sts2.vanilla-runtime-catalog/v2"
 ASSEMBLY_SCHEMA = "skillthespire.sts2.vanilla-assembly-catalog/v1"
 MANIFEST_SCHEMA = "skillthespire.sts2.vanilla-overrides/v1"
+# An override changes the shared vanilla model on every peer alike, so it applies in every run.
+# "singleplayer" is the value manifests wrote before multiplayer support; it means the same.
+MULTIPLAYER_MODES = {"both", "singleplayer"}
 CATALOG_RELATIVE_PATH = Path("reference/vanilla-overrides/catalogs/sts2-0.107.1.json")
 MANIFEST_RELATIVE_PATH = Path("skillthespire/vanilla-overrides.json")
 PUBLIC_CARD_OVERRIDE_FAMILY = "public-card-overrides"
@@ -1972,7 +1975,7 @@ def _validate_non_card_owner_hook_operation(
         if route["class"] != "public":
             raise VanillaOverrideError(f"operation {operation_id} compose owner hooks use the public route")
         _require_exact_keys(semantics, {"multiplayer", "rule"}, label)
-        _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+        _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
         hook = _validate_non_card_hook_rule(
             semantics.get("rule"), f"{label} rule", target_model, models
         )
@@ -1984,7 +1987,7 @@ def _validate_non_card_owner_hook_operation(
     _require_exact_keys(semantics, {"complete", "multiplayer", "rules"}, label)
     if semantics.get("complete") is not True:
         raise VanillaOverrideError(f"{label} complete must be true")
-    _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+    _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
     rules = semantics.get("rules")
     if not isinstance(rules, list):
         raise VanillaOverrideError(f"{label} rules must be a list")
@@ -2024,7 +2027,7 @@ def _validate_non_card_data_operation(
     )
     label = f"operation {operation_id} semantics"
     _require_exact_keys(semantics, {"adjustment", "multiplayer", "value"}, label)
-    _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+    _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
     if "choices" in contract:
         if semantics.get("adjustment") != "set":
             raise VanillaOverrideError(f"{label} adjustment must be 'set'")
@@ -2089,7 +2092,7 @@ def _validate_non_card_lifecycle_operation(
         )
         if semantics.get("complete") is not True:
             raise VanillaOverrideError(f"{label} complete must be true")
-        _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+        _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
         for field in effect_fields:
             if route_id == "behavior.affliction.lifecycle" and field in {
                 "after_applied",
@@ -2145,7 +2148,7 @@ def _validate_monster_replacement(
     _require_exact_keys(semantics, {"complete", "initial_state", "multiplayer", "states"}, label)
     if semantics.get("complete") is not True:
         raise VanillaOverrideError(f"{label} complete must be true")
-    _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+    _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
     initial = _require_text(semantics.get("initial_state"), f"{label} initial_state")
     states = semantics.get("states")
     if not isinstance(states, list) or not states:
@@ -2199,7 +2202,7 @@ def _validate_encounter_replacement(
     _require_exact_keys(semantics, {"complete", "monsters", "multiplayer"}, label)
     if semantics.get("complete") is not True:
         raise VanillaOverrideError(f"{label} complete must be true")
-    _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+    _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
     monsters = semantics.get("monsters")
     if not isinstance(monsters, list) or not monsters:
         raise VanillaOverrideError(f"{label} monsters must be a non-empty list")
@@ -2259,7 +2262,7 @@ def _validate_event_replacement(
     )
     if semantics.get("complete") is not True:
         raise VanillaOverrideError(f"{label} complete must be true")
-    _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+    _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
     _validate_ancient_condition(semantics.get("condition"), f"{label} condition", models)
     options = semantics.get("options")
     pages = semantics.get("pages")
@@ -2726,7 +2729,7 @@ def _validate_ancient_operation(
         label,
     )
     _require_choice(
-        semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer"
+        semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer"
     )
     _require_integer(semantics.get("priority"), f"{label} priority")
     if not isinstance(semantics.get("skip_duplicate_text_keys"), bool):
@@ -3359,7 +3362,7 @@ def _validate_availability_epoch_operation(
     )
     label = f"operation {operation_id} semantics"
     _require_exact_keys(semantics, {"epoch_id", "multiplayer", "state"}, label)
-    _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+    _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
     state = _require_choice(
         semantics.get("state"), {"disabled", "require_epoch"}, f"{label} state"
     )
@@ -3483,7 +3486,7 @@ def _validate_availability_pool_operation(
     _require_choice(
         semantics.get("existing_instances"), {"preserve"}, f"{label} existing_instances"
     )
-    _require_choice(semantics.get("multiplayer"), {"singleplayer"}, f"{label} multiplayer")
+    _require_choice(semantics.get("multiplayer"), MULTIPLAYER_MODES, f"{label} multiplayer")
 
     if route_id in AVAILABILITY_PUBLIC_POOL_ROUTES:
         if route.get("class") != "public" or action != "add":

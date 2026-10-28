@@ -1605,6 +1605,21 @@ class VanillaOverrideManifestTests(unittest.TestCase):
                 manifest_with(unlisted, [unlisted_operation]), unlisted
             )
 
+    def test_multiplayer_mode_accepts_both_and_the_older_singleplayer_value(self) -> None:
+        catalog = make_availability_catalog()
+        for mode in ("both", "singleplayer"):
+            with self.subTest(mode=mode):
+                operation = make_availability_epoch_operation(catalog, "CARD.LOST_WISP")
+                operation["semantics"]["multiplayer"] = mode
+                self.assertIn(
+                    "operations=1",
+                    overrides.validate_override_manifest(manifest_with(catalog, [operation]), catalog),
+                )
+        operation = make_availability_epoch_operation(catalog, "CARD.LOST_WISP")
+        operation["semantics"]["multiplayer"] = "host_only"
+        with self.assertRaisesRegex(overrides.VanillaOverrideError, "multiplayer"):
+            overrides.validate_override_manifest(manifest_with(catalog, [operation]), catalog)
+
     def test_availability_public_epoch_route_covers_grounded_vanilla_hosts(self) -> None:
         catalog = make_availability_catalog()
         operations = [

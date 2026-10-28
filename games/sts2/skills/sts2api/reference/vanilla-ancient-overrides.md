@@ -13,7 +13,7 @@ and Ancient choice-history lifecycle.
 | `ancient.initial-options.append` | public | `compose` | One `ModAncientOptionRule` that returns zero or more initial options, with condition, priority, and duplicate-text handling |
 | `ancient.initial-options.replace` | adapter | `replace` | The complete initial option list for one exact Ancient type; later public option rules from other Mods may still append |
 
-Both routes use surface `ancient.initial_options`, require `multiplayer: singleplayer`, and
+Both routes use surface `ancient.initial_options`, require `multiplayer: both`, and
 accept ordered custom pages and consequences. The catalog route is
 `existing-ancient-overrides`.
 
@@ -72,7 +72,7 @@ use `source: mod` for a model registered by the generated Mod.
   },
   "semantics": {
     "condition": {"kind": "always", "parameters": {}},
-    "multiplayer": "singleplayer",
+    "multiplayer": "both",
     "priority": 0,
     "skip_duplicate_text_keys": false,
     "options": [
