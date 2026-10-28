@@ -72,9 +72,10 @@ Event composition. Route it to `reference/forced-followup-event.md`; it gets no 
   - variable tooltips: none | <value name -> localized title; description; optional icon>
   - engine-composed text: none | <each native keyword, mod keyword, or enchantment
     `extraCardText` the engine appends to this card's rendered description>
+- **multiplayer**: both | multiplayer only | singleplayer only (§ Multiplayer; default both)
 - **effects**:
   - trigger: play
-  - target: one enemy | all enemies | self
+  - target: one enemy | all enemies | self | another player | every player
   - advanced target: none | see `reference/advanced-targeting.md`
   - native costs:
     - energy: fixed <nonnegative integer> | X
@@ -224,7 +225,7 @@ public sealed class <CardName> : ModCardTemplate
 | `cost` | `int` | Energy cost from SPEC (0/1/2/3…); `-1` for Energy-X. |
 | `type` | `CardType` | deals damage → `Attack`; Block/utility → `Skill`; permanent buff → `Power`. |
 | `rarity` | `CardRarity` | droppable default `Common`; `Basic` for starter Cards; `Ancient` only through `reference/ancient-card.md`. |
-| `target` | `TargetType` | one enemy → **`AnyEnemy`**; all enemies → `AllEnemies`; self or no selection (Block, gain Strength) → **`Self`**. |
+| `target` | `TargetType` | one enemy → **`AnyEnemy`**; all enemies → `AllEnemies`; self or no selection (Block, gain Strength) → **`Self`**; another player → `AnyAlly`; every player, you included → `AllAllies` (§ Multiplayer). |
 
 A Card that targets the player uses `TargetType.Self`, never `AnyPlayer`: that one is for
 Potions (`DefendIronclad` and `Inflame` use `Self`).
@@ -470,7 +471,11 @@ The pool is the first generic argument of `.Card<TPool,TCard>()`
 - [ ] `public sealed` class extending `ModCardTemplate`, registered exactly once with
       `.Card<TPool,TCard>()` in `MainFile.Content.cs`.
 - [ ] Constructor passes `cost, CardType, CardRarity, TargetType`; `TargetType` matches the
-      effect (`AnyEnemy`, `Self` not `AnyPlayer`, `AllEnemies`).
+      effect (`AnyEnemy`, `Self` not `AnyPlayer`, `AllEnemies`, `AnyAlly`, `AllAllies`).
+- [ ] An `AnyAlly` Card, or one whose effect needs a teammate, overrides
+      `MultiplayerConstraint => CardMultiplayerConstraint.MultiplayerOnly`; effects reach
+      players through `cardPlay.Target` or `CombatState.GetTeammatesOf(Owner.Creature)`, never
+      `LocalContext`.
 - [ ] Energy/Star cost kinds match SPEC (`CanonicalStarCost` or `HasStarCostX`, never both
       X kinds); cost upgrades use `EnergyCost.UpgradeBy` / `UpgradeStarCostBy`.
 - [ ] An advanced target follows `reference/advanced-targeting.md`: one stable registration,
@@ -490,6 +495,50 @@ The pool is the first generic argument of `.Card<TPool,TCard>()`
 - [ ] A Quest Card exists only for the bounded forced-follow-up contract: cost `-1`, Quest
       rarity/type, unplayable, no upgrades, one finite prioritized mapping, exact terminal
       consumption.
+
+## Multiplayer
+
+Every Card plays in a multiplayer run unchanged: the owner is `base.Owner`, each player's
+copy runs on every peer through the game's action queue, and an `AnyEnemy`/`AllEnemies`/`Self`
+Card needs nothing more. Monster HP and Block scale with the party on their own.
+
+Help for teammates uses the vanilla targets:
+
+| SPEC | Shape (vanilla analog) | Code |
+|---|---|---|
+| another player | `TargetType.AnyAlly` (`DemonicShield`, `Intercept`) | `ArgumentNullException.ThrowIfNull(cardPlay.Target)`, then act on `cardPlay.Target` (its player: `cardPlay.Target.Player!`) |
+| every player, you included | `TargetType.AllAllies` (`EnergySurge`, `HuddleUp`) | `foreach (var c in base.CombatState.GetTeammatesOf(base.Owner.Creature).Where(c => c.IsAlive && c.IsPlayer))` |
+
+`multiplayer only` overrides `MultiplayerConstraint => CardMultiplayerConstraint.MultiplayerOnly`
+(`singleplayer only` uses `SingleplayerOnly`): the host's Card factory then leaves the Card out
+of rewards, shops, and pools of the other mode. An `AnyAlly` Card is always `multiplayer only`,
+because with no teammate it has no legal target. Text names the receiver: "Another player
+gains...", "All players gain..." (`另一名玩家`, `所有玩家`).
+
+```csharp
+public sealed class ShareGuard : ModCardTemplate
+{
+    public override CardMultiplayerConstraint MultiplayerConstraint => CardMultiplayerConstraint.MultiplayerOnly;
+    public override bool GainsBlock => true;
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+        new DynamicVar[] { new BlockVar(7m, ValueProp.Move) };
+
+    public ShareGuard() : base(1, CardType.Skill, CardRarity.Uncommon, TargetType.AnyAlly) { }
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        ArgumentNullException.ThrowIfNull(cardPlay.Target, "cardPlay.Target");
+        await CreatureCmd.GainBlock(cardPlay.Target, base.DynamicVars.Block, cardPlay);
+    }
+
+    protected override void OnUpgrade() => base.DynamicVars.Block.UpgradeValueBy(3m);
+}
+```
+
+A face check reads `AnyAlly` numbers on the targeted teammate and `AllAllies` numbers on every
+player; a `multiplayer only` Card's face check reports `SKIP` in singleplayer and runs in
+`launch.py --self-test --multiplayer`. Behavior that needs each player to act (both play, or one
+reacts to the other) takes a `plan.Coop` scenario.
 
 ## Self-test driver body
 

@@ -203,6 +203,20 @@ That is vanilla `VulnerablePower`. Keep three things straight:
 An **Enchantment** never uses `ModifyDamageMultiplicative` or the other four redirected hooks;
 see `recipes/enchantment.md`.
 
+## Multiplayer
+
+A Power on a player belongs to that player (`Owner.Player`); a hook that reacts to "you" guards
+`player == Owner.Player` exactly as in singleplayer. A Power given to an enemy is shared by the
+whole party: every player's attacks see it.
+
+`ShouldScaleInMultiplayer => true` makes the host multiply the stacks applied to an **enemy**
+by the party factor (`players x 1.1`-`1.3`, as Monster HP; `recipes/monster.md` § Multiplayer).
+Vanilla sets it only on enemy defenses that the party wears down together (`PlatingPower`,
+`ArtifactPower`, `CurlUpPower`, `HardenedShellPower`). Set it for a Monster's own defensive
+Power when SPEC says it should keep pace with more players; leave it `false` (the default) for
+everything else. Scaling applies only when the target is an enemy and the run has more than one
+player.
+
 ## Optional routes
 
 Read a route only when SPEC selects it, append only its SPEC block, and preserve amount/duration

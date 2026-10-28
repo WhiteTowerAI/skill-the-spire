@@ -146,7 +146,11 @@ order. A `used:` diagnostic line does not prove behavior.
 
 - Enemy damage uses `TargetType.AnyEnemy` and a non-null target.
 - A player buff uses `TargetType.AnyPlayer`, **not** `Self`: the selected target is a player
-  creature, unlike a self-targeting Card. Self effects bind `Owner.Creature`.
+  creature, unlike a self-targeting Card. Self effects bind `Owner.Creature`. In multiplayer the
+  user may pick a teammate, so act on `target` (its player: `target.Player!`), never on `Owner`,
+  and write "a player"/"target player" rather than "you" (vanilla `BloodPotion`). A Potion
+  meant for teammates only is still `AnyPlayer`; a party-wide one iterates
+  `Owner.Creature.CombatState!.GetTeammatesOf(Owner.Creature)` filtered to living players.
 - Room-wide effects use the matching all-target `CreatureCmd` overload over live targets.
 - Potion damage, Block, and Power effects normally use `ValueProp.Unpowered`.
 - A filtered single target uses the stable registered value and keeps

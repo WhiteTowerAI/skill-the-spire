@@ -57,8 +57,13 @@ Current authoring includes:
   dialogue, secondary resources, and ordered semantic buffers;
 - standalone/Card/Relic/Modifier Rest Site options, bounded state, readability aids,
   and supported static art;
-- grounded vanilla Card, visual, Ancient, availability, and non-Card overrides; and
-- cataloged model-hook participation on only the custom surfaces the host dispatches to.
+- grounded vanilla Card, visual, Ancient, availability, and non-Card overrides;
+- cataloged model-hook participation on only the custom surfaces the host dispatches to; and
+- multiplayer: every Mod plays in singleplayer and multiplayer from the same code, and
+  teammate content (another-player and every-player Cards, team Relics, any-player Potions,
+  `multiplayer only` availability) is authorable. Combat content is verified by the
+  two-instance multiplayer Tier 2; Event, Ancient, Rest Site, Act, and Custom-host scenarios
+  are still verified in singleplayer only.
 
 The nine generalized families remain authorable through their owner pages: secondary
 resources; Monster/Encounter composition and HP; Character starting fields; Card/Relic Rest
@@ -66,7 +71,7 @@ Site options; computed Card values; bounded state; forced Event mappings; Card S
 Event acquisition/shake profiles. Do not narrow a documented feature family merely because one
 consumer lacks focused proof.
 
-Progression, post-run Badge, Settings, Telemetry, Multiplayer, Update Check, and new integrations
+Progression, post-run Badge, Settings, Telemetry, Update Check, and new integrations
 whose purpose is to connect another element to those families are deferred. Do not route one
 through Runtime UI, persistence, lifecycle, or another included owner.
 
@@ -76,8 +81,8 @@ scenes, materials, Event layouts, or VFX without a public host; global room or n
 replacement; new-Ancient behavior outside its option/page/dialogue vocabulary; animation
 beyond packaged public resources; arbitrary transactions, RNG rewrites, or transitions,
 including direct merchant/rest/treasure transitions; alternative Energy; retained played-Card
-zones; ungrounded disable/weighting surfaces; multiplayer integrations and presentation,
-including remote-player Character resources/UI; and one-click Workshop publishing. Custom
+zones; ungrounded disable/weighting surfaces; custom network messages, multiplayer lobby
+options, and remote-player Character resources/UI; and one-click Workshop publishing. Custom
 multi-target Potions keep a known limitation (`recipes/potion.md`).
 
 ## Read stages lazily
