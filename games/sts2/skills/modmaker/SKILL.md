@@ -83,7 +83,8 @@ replacement; new-Ancient behavior outside its option/page/dialogue vocabulary; a
 beyond packaged public resources; arbitrary transactions, RNG rewrites, or transitions,
 including direct merchant/rest/treasure transitions; alternative Energy; retained played-Card
 zones; ungrounded disable/weighting surfaces; custom network messages and remote-player
-Character resources/UI; and one-click Workshop publishing. Custom
+Character resources/UI; background music, ambience, and generated audio
+(`${STS2API_SKILL_DIR}/reference/audio.md`); and one-click Workshop publishing. Custom
 multi-target Potions keep a known limitation (`recipes/potion.md`).
 
 ## Read stages lazily

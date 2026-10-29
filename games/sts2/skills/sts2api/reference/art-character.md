@@ -80,8 +80,8 @@ rule under "The card portrait prompt template"). The normalizer writes only loos
 the tiny raw `.tscn` wrappers for icon/background/rest/merchant/energy, and `build.py` packs them
 without Godot/MegaDot. Full energy references all five layers from that one energy scene.
 The optional non-Spine cue contract is limited to the four tabled cues. Cast, Spine,
-phobia, trails, audio, animated merchant/rest bodies, and multiplayer views remain outside
-the contract. Read `reference/character-combat-cues.md` for runtime ownership and fallback.
+phobia, trails, animated merchant/rest bodies, and multiplayer views remain outside the art
+contract; the Character's sounds follow `reference/audio.md`. Read `reference/character-combat-cues.md` for runtime ownership and fallback.
 
 ## CharacterArtBundle and reference routing
 
