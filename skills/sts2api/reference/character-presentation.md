@@ -143,7 +143,8 @@ The set is deliberately private to `SetupCustomCombatAnimationStateMachine`, whi
 it directly to `ModAnimStateMachines.StandardCue`. Leave
 `CharacterAssetProfile.VisualCues` unset. That profile-level value is also consulted by
 RitsuLib for merchant/rest playback and can incorrectly replace those static textures with
-combat frames. Cast, Spine, trails, audio, and animated world-host bodies stay unsupported.
+combat frames. Cast, Spine, trails, and animated world-host bodies stay unsupported; the
+Character's sounds follow `reference/audio.md`.
 
 ## Raw scene contract
 
