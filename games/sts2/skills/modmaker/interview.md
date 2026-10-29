@@ -133,8 +133,7 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      turns", "once per combat"), ask only if the reset boundary is genuinely ambiguous:
      "Should progress continue into the next fight, or restart each fight?"
    - **Potion:** resolve usage window and target only when the effect leaves them ambiguous. A
-     filtered single target is supported; a filtered many-target Potion is a pinned-profile gap,
-     so offer a filtered single-target Potion or a filtered many-target Card instead.
+     filtered target, one or many, follows `${STS2API_SKILL_DIR}/reference/advanced-targeting.md`.
    - **Card:** resolve cost, type, and target only when ambiguous. For a filtered target, ask
      only the missing game rule. Vanilla text coloring is automatic
      (`reference/vanilla-text-style.md`); never ask about it. Only when the user asks for extra
