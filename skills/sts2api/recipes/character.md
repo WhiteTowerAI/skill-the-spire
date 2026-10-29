@@ -16,7 +16,8 @@ Also read, only when SPEC selects it:
 - Character dialogue on vanilla Ancients or richer Architect dialogue:
   `reference/ancient-dialogue.md`.
 
-Ancient models, Spine, Cast, trails, arbitrary custom materials, and audio are not promoted here.
+Ancient models, Spine, Cast, trails, and arbitrary custom materials are not promoted here. The
+user's own sounds for the profile's five audio slots follow `reference/audio.md`; music does not.
 A Mod Character is selectable in the multiplayer lobby and plays as a teammate with no extra code
 (§ Multiplayer); how a teammate's Character looks on another player's screen is headed review. A pinned existing vanilla Character's fresh unlock gate goes through
 `reference/vanilla-overrides.md` and `reference/vanilla-availability-overrides.md` (singleplayer
@@ -120,7 +121,7 @@ pinned epoch only; no permanent disable, pool replacement, or registration as a 
       on the strike
     - geometry: shared 512x512 content box/baseline/style and Bounds/Intent/Center/Orb/Talk anchors
     - fallback: one missing or invalid frame disables all cues and uses static combat body
-    - explicit gaps: Cast, Spine, trails, audio, animated merchant/rest bodies
+    - explicit gaps: Cast, Spine, trails, animated merchant/rest bodies
 - **fallback**:
   - missing asset: Foundation-only template; selected profiles fill only their matched fields;
     Energy uses `ironclad_energy_counter.tscn`, `EnergyIconHelper.GetPath("ironclad")`
@@ -149,7 +150,8 @@ pinned epoch only; no permanent disable, pool replacement, or registration as a 
         `None|Player|Architect|Both`
   - native priority: preserve the global first-visit-ever introduction before Character
     exact-visit and repeating dialogue
-  - explicit gaps: custom Ancient/model/background/layout/options/rewards/audio/multiplayer
+  - line sounds: native | the user's files per `reference/audio.md`
+  - explicit gaps: custom Ancient/model/background/layout/options/rewards/multiplayer
 - **native design basis**:
   - grammar profile: `design/character-foundation.md @ STS2 0.107.1`
   - pinned facts used: <exact native identities/values used in the proposal>
@@ -466,8 +468,8 @@ agreement.
 RitsuLib's registered population patch reads the generated flat table and appends only this
 Character's dialogue to native sets; the generated Mod emits no Harmony or reflection injection.
 `reference/ancient-dialogue.md` owns catalog, visit, repeat, prompt, attacker, validation, and
-hosted-proof rules. Custom Ancient models, backgrounds/layouts, options/rewards, line audio, and
-multiplayer stay unsupported.
+hosted-proof rules. Custom Ancient models, backgrounds/layouts, options/rewards, and multiplayer
+stay unsupported.
 
 ## Static presentation
 
@@ -543,7 +545,7 @@ headed review observes.
       acquisition call.
 - [ ] Selected combat cues use the fixed private four-action set with all-or-nothing fallback;
       `CharacterAssetProfile.VisualCues` stays unset.
-- [ ] Locked/map/custom-Ancient/Cast/Spine/trail/arbitrary-material/multiplayer/audio boundaries
+- [ ] Locked/map/custom-Ancient/Cast/Spine/trail/arbitrary-material/multiplayer/music boundaries
       stay explicit.
 
 ## Self-test driver body

@@ -94,9 +94,10 @@ The existing Character Foundation shape with one repeating Architect dialogue an
 
 Line text may use only the balanced vanilla Ancient subset observed in `0.107.1`:
 `aqua`, `b`, `font_size=22`, `i`, `jitter`, `orange`, `red`, `sine`, and `thinky_dots`.
-Transition prompts are plain text. Do not emit `.sfx`, user-supplied raw markup, custom
-colors, tag parameters other than `font_size=22`, or empty strings. Shipped languages use
-identical structural keys; line-level Ancient dialogue SFX is unsupported.
+Transition prompts are plain text. Do not emit user-supplied raw markup, custom colors, tag
+parameters other than `font_size=22`, or empty strings. Shipped languages use identical
+structural keys. A spoken line may name the user's own sound with a `.sfx` key beside it
+(`reference/audio.md`); never on a `.next` prompt.
 
 ## RitsuLib route
 
@@ -151,7 +152,7 @@ python ${GAME_TOOLS_DIR}/ancient_dialogue.py --project-dir <outer-dir> --mod-nam
 
 The validator rejects unknown catalog ids, wrong Character entries, index gaps, duplicate
 speakers, mixed repeat modes, missing/orphan prompts, invalid visit/attacker metadata,
-line SFX, unsupported or unbalanced markup, language-key drift, and incomplete Architect
+a `.sfx` beside no spoken line or naming no `event:/` path, unsupported or unbalanced markup, language-key drift, and incomplete Architect
 win coverage.
 
 Contract proof parses every authored target and asserts group count, line order/speaker,
@@ -167,5 +168,4 @@ Architect, also confirm start/end attacks, every selected Character attack VFX, 
 run completion after Proceed.
 
 This promotes only custom-Character dialogue in native Ancient scenes. Custom Ancient
-models, backgrounds/layouts, options/rewards, line audio, arbitrary VFX, global dialogue
-replacement, and multiplayer presentation remain unsupported.
+models, backgrounds/layouts, options/rewards, arbitrary VFX, global dialogue replacement, and multiplayer presentation remain unsupported.

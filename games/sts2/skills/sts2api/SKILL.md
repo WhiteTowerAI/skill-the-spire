@@ -126,6 +126,7 @@ Read one only when the SPEC selects that behavior.
 | `reference/content-text-effects.md` | requested colored words on Card, relic, potion, or power text beyond the default style |
 | `reference/forced-followup-event.md` | a delayed or conditional Quest Card follow-up Event |
 | `reference/lobby-options.md` | a choice made in the start-run lobby (a host run rule or a per-player pick) |
+| `reference/audio.md` | the user supplied an audio file for a sound: slots, files, registration, proof |
 
 ## Verification, art, and repair
 

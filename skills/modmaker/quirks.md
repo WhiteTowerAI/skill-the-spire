@@ -37,7 +37,8 @@ not restate the other file's half — a diagnostic in two homes drifts.
 
 - A custom Orb icon is not its combat body. `ContentAssetProfiles.Orb("frost_orb")`
   preserves the Frost icon/Spine fallback, and the protected `ChannelSfx` must name the
-  verified Frost event until a custom scene/audio contract is separately proven.
+  verified Frost event or a registered virtual event for the user's own sound
+  (`../sts2api/reference/audio.md`).
 
 ## Combat hooks
 

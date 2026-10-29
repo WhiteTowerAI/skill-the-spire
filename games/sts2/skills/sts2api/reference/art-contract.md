@@ -29,7 +29,7 @@
 > enchantment must check its mod path and return `null` when absent so the original getter
 > reaches `MissingIconPath`. Never return a missing custom path directly.
 > A concrete orb must check its custom icon and return a matched vanilla icon when absent;
-> it must also declare a vanilla Spine scene and channel-SFX fallback. The raster tool owns
+> it must also declare a vanilla Spine scene and a channel SFX (`reference/audio.md`). The raster tool owns
 > only the orb icon, never its combat scene.
 > A concrete monster must check its static PNG in `TryCreateCreatureVisuals()` and pass its
 > texture to RitsuLib's `RitsuGodotNodeFactories`; `MonsterAssetProfile` retains the explicit

@@ -28,6 +28,7 @@ from ancient_dialogue import (
     AncientDialogueValidationError,
     validate_project_ancient_dialogue,
 )
+from audio_assets import AudioAssetError, validate_project_audio
 from localization_contract import (
     LocalizationContractError,
     validate_project_localization,
@@ -236,6 +237,7 @@ def main(argv: list[str]) -> int:
         report_text_style(project_dir, mod_name)
         dialogue_summary = validate_project_ancient_dialogue(project_dir, mod_name)
         print(f"[build] Ancient dialogue OK: {dialogue_summary}")
+        print(f"[build] audio OK: {validate_project_audio(project_dir, mod_name)}")
         override_summary = validate_project_override_manifest(project_dir, mod_name)
         print(f"[build] vanilla override manifest OK: {override_summary}")
         print(f"[build] self-test kit OK: {selftest_kit.check(project_dir, mod_name)}")
@@ -265,6 +267,7 @@ def main(argv: list[str]) -> int:
     except (
         OSError,
         AncientDialogueValidationError,
+        AudioAssetError,
         LocalizationContractError,
         RitsuProfileError,
         SelfTestKitError,

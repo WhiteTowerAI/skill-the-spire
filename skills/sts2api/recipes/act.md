@@ -104,7 +104,8 @@ member:
 - discovery: `ApplyActDiscoveryOrderModifications(UnlockState)`, empty unless SPEC defines a
   non-Progression ordering rule;
 - map: `MapTraveledColor`, `MapUntraveledColor`, and `MapBgColor`;
-- audio: `BgMusicOptions`, `MusicBankPaths`, `AmbientSfx`, and `ChestOpenSfx`; and
+- audio: `BgMusicOptions`, `MusicBankPaths`, `AmbientSfx`, and `ChestOpenSfx` (only the chest
+  sound may play the user's own file, `reference/audio.md`); and
 - chest: `ChestSpineSkinNameNormal` and `ChestSpineSkinNameStroke`, plus the profile's exact
   `ChestSpineResourcePath`.
 

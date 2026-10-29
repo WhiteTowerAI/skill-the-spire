@@ -251,8 +251,9 @@ switching to an old template.
 
 ### Custom Orb logs missing channel audio
 
-- **Cause:** a custom/default audio id was inferred without a registered asset.
-- **Fix:** retain the verified Frost channel-SFX fallback until the audio track is opened.
+- **Cause:** an empty `ChannelSfx`, or an event path no virtual event registered.
+- **Fix:** name the verified Frost channel event, or register the user's file once in
+  `ModAudio.Register()` per `reference/audio.md`.
 
 ### Character Shop or card reward cannot generate a valid rarity
 

@@ -51,7 +51,8 @@ entries rather than one sequence.
   - art source: host-tool | backend:<name> | local-image (generate only)
   - native presentation: smart tooltip plus trigger flash
 - **fallback**:
-  - missing asset: checked Frost orb icon; the Frost Spine body and channel SFX remain
+  - missing asset: checked Frost orb icon; the Frost Spine body and, unless the user supplied
+    one (`reference/audio.md`), the Frost channel SFX remain
   - unavailable seam: preserve behavior or stop with an explicit unsupported boundary
 - **proof**:
   - scenario: CombatPlayer
@@ -132,7 +133,8 @@ public sealed class <Name>Orb : ModOrbTemplate
 combat scene. A generated 100x100 icon (shared by the smart tooltip and trigger flash) may
 replace only `IconPath`; it never promotes a custom combat body. Keep the explicit native
 `ChannelSfx`: channeling always plays one, and an empty custom value probes a missing
-debug-audio file.
+debug-audio file. The user's own channel, passive, or evoke sound replaces it per
+`reference/audio.md`.
 
 ## The three behaviors
 

@@ -85,6 +85,12 @@ class AncientDialogueTests(unittest.TestCase):
         self.assertTrue(group.is_repeating)
         self.assertEqual("Both", group.end_attackers)
 
+    def test_line_sfx_beside_a_spoken_line_passes(self) -> None:
+        table = complete_table()
+        table[f"DARV.talk.{CHARACTER}.0-0.char.sfx"] = "event:/mods/Proof/line"
+        groups = parse_ancient_dialogue_table(table, {CHARACTER})
+        self.assertEqual(groups, parse_ancient_dialogue_table(complete_table(), {CHARACTER}))
+
     def test_vanilla_ancient_rich_text_subset_is_validated(self) -> None:
         table = complete_table()
         table[f"DARV.talk.{CHARACTER}.0-0.char"] = (
@@ -127,8 +133,14 @@ class AncientDialogueTests(unittest.TestCase):
             "bad attacker": lambda table: table.__setitem__(
                 f"THE_ARCHITECT.talk.{CHARACTER}.0-endattack", "Everyone"
             ),
-            "line sfx": lambda table: table.__setitem__(
-                f"DARV.talk.{CHARACTER}.0-0.char.sfx", "event:/not-supported"
+            "orphan line sfx": lambda table: table.__setitem__(
+                f"DARV.talk.{CHARACTER}.0-9.char.sfx", "event:/mods/Proof/line"
+            ),
+            "prompt sfx": lambda table: table.__setitem__(
+                f"DARV.talk.{CHARACTER}.0-0.next.sfx", "event:/mods/Proof/line"
+            ),
+            "line sfx file path": lambda table: table.__setitem__(
+                f"DARV.talk.{CHARACTER}.0-0.char.sfx", "res://Proof/audio/line.ogg"
             ),
         }
         for label, mutate in mutations.items():
