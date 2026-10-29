@@ -13,15 +13,7 @@ custom target type for other Mods to consume.
 | Card | one | supported by this recipe | selected creature, revalidated before payment |
 | Card | many | supported by this recipe | one play with `null`; call `GetTargets()` in `OnPlay` |
 | Potion | one | supported by this recipe | selected creature, revalidated before removal |
-| Potion | many | supported API with a known lifecycle limitation | stop authoring |
-
-`potion + many` is not a generated fallback. On the pinned host, a queued multi-target
-Potion has a valid `null` target and `UsePotionAction` does not recheck
-`PassesCustomUsabilityCheck`. If all candidates disappear after enqueue, `OnUseWrapper`
-removes the Potion before its effect sees an empty `GetTargets()` result. Do not promise
-zero-target retention, restore a consumed Potion after the fact, or emit Harmony,
-reflection, IL, or Publicizer code. Report the known limitation and offer a
-single-target Potion or multi-target Card instead.
+| Potion | many | supported by this recipe | one use with `null`; call `GetTargets()` in `OnUse` |
 
 ## Semantic input
 
@@ -184,11 +176,11 @@ Card then follows its normal result pile and play hooks.
 
 ## Potion consumers
 
-Only `mode: one` is supported. Pass the registered value from `TargetType`, retain the
-normal `AssertValidForTargetedPotion(target)` guard, and execute the ordinary Potion
-effect. RitsuLib routes mouse/controller selection and `PotionModel.IsValidTarget` through
-the predicate. The selected creature is revalidated before the Potion is removed by
-`OnUseWrapper`; an invalid target cancels the `UsePotionAction`.
+Pass the registered value from `TargetType`. For `mode: one`, retain the normal
+`AssertValidForTargetedPotion(target)` guard and execute the ordinary Potion effect. RitsuLib
+routes mouse/controller selection and `PotionModel.IsValidTarget` through the predicate. The
+selected creature is revalidated before the Potion is removed by `OnUseWrapper`; an invalid
+target cancels the `UsePotionAction`.
 
 ```csharp
 public override TargetType TargetType => ModTargetTypes.BlockingEnemy;
@@ -203,19 +195,37 @@ protected override async Task OnUse(
 }
 ```
 
-`PotionModelTargetingExtensions.GetTargets(potion, selectedTarget)` is available when one
-effect implementation intentionally shares a target-resolution helper with another
-consumer. It is not permission to author the limited `potion + many` combination.
+For `mode: many`, the Potion resolves once with a null target. Disable the use button when no
+candidate is legal through `PassesCustomUsabilityCheck`, then resolve the live list inside
+`OnUse` through `PotionModelTargetingExtensions.GetTargets`:
+
+```csharp
+using STS2RitsuLib.Combat.CardTargeting;
+
+public override TargetType TargetType => ModTargetTypes.BlockingEnemies;
+
+public override bool PassesCustomUsabilityCheck => this.GetTargets().Count > 0;
+
+protected override async Task OnUse(
+    PlayerChoiceContext choiceContext, Creature? target)
+{
+    foreach (Creature enemy in this.GetTargets())
+    {
+        await CreatureCmd.Damage(
+            choiceContext, enemy, 4m, ValueProp.Unpowered,
+            Owner.Creature, null);
+    }
+}
+```
 
 ## Verification contract
 
-Use one disposable `CombatPlayer` proof with at least two enemies. A complete proof for
-the current supported matrix uses a source-aware single Card, a single Potion, and a
-player-aware multi Card. The automated state proof records exact target creature IDs,
+Use one disposable `CombatPlayer` proof with at least two enemies that covers every selected
+consumer. The automated state proof records exact target creature IDs,
 before/after values, Card result pile, Card Energy/Stars, and Potion belt membership.
 
-Keep the three consumers in one `plan.Combat` scenario; do not add a multi Potion or infer its
-lifecycle from another consumer. Establish candidate states through public combat Cmds, and
+Keep the selected consumers in one `plan.Combat` scenario; never infer one consumer's lifecycle
+from another. Establish candidate states through public combat Cmds, and
 for each consumer also assert the registered target kind and the diagnostic target id.
 
 Cover these states without inferring one route from another:

@@ -50,7 +50,7 @@ Current authoring includes:
 - local Mod-owned Runtime UI workflows using selected top-bar, Toast, runtime-hotkey, local
   Capstone, Catalog, floating-window, search-expansion, fixed node-attachment, and shell-token APIs;
 - computed Card Damage/Block/Energy/Star/Power values under one preview/execution formula;
-- deterministic advanced Card/Potion targeting with its pinned multi-target Potion limitation;
+- deterministic advanced Card/Potion targeting;
 - Monster move graphs and Encounter rosters;
 - ordinary Events, bounded native presentation, and Quest Card forced follow-up Events;
 - playable Character Foundation, static presentation, bounded combat cues, native-scene
@@ -84,8 +84,7 @@ beyond packaged public resources; arbitrary transactions, RNG rewrites, or trans
 including direct merchant/rest/treasure transitions; alternative Energy; retained played-Card
 zones; ungrounded disable/weighting surfaces; custom network messages and remote-player
 Character resources/UI; background music, ambience, and generated audio
-(`${STS2API_SKILL_DIR}/reference/audio.md`); and one-click Workshop publishing. Custom
-multi-target Potions keep a known limitation (`recipes/potion.md`).
+(`${STS2API_SKILL_DIR}/reference/audio.md`); and one-click Workshop publishing.
 
 ## Read stages lazily
 

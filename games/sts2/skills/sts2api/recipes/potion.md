@@ -7,9 +7,7 @@ string. Never add `[Pool]`, a per-Mod Potion base class, or a second registratio
 
 Also read, only when SPEC selects it:
 
-- a filtered live-creature target: `reference/advanced-targeting.md`. Only a custom
-  single-target Potion is supported; `potion + many` must stop authoring, because queued
-  zero-target execution cannot preserve the Potion;
+- a filtered live-creature target: `reference/advanced-targeting.md`;
 - extra colored words beyond the default style: `reference/content-text-effects.md`;
 - a raw hook rule: `reference/model-hook-participation.md`.
 
@@ -153,9 +151,9 @@ order. A `used:` diagnostic line does not prove behavior.
   `Owner.Creature.CombatState!.GetTeammatesOf(Owner.Creature)` filtered to living players.
 - Room-wide effects use the matching all-target `CreatureCmd` overload over live targets.
 - Potion damage, Block, and Power effects normally use `ValueProp.Unpowered`.
-- A filtered single target uses the stable registered value and keeps
-  `AssertValidForTargetedPotion(target)`; RitsuLib revalidates it before removal. Never lower a
-  filtered many-target Potion to `AllEnemies`, restore it after removal, or generate a patch.
+- A filtered target uses the stable registered value; a single target keeps
+  `AssertValidForTargetedPotion(target)`. Never lower a filtered many-target Potion to
+  `AllEnemies`.
 - `AnyTime` does not promise combat context: reject draw, combat-pile, Orb, Energy/Stars, or
   Creature-target effects when the use window cannot supply their live combat inputs.
 
