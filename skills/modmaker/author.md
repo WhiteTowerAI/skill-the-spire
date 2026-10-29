@@ -173,6 +173,12 @@ a required resource stops before Build until the user supplies it.
    route. Never silently choose a paid backend or retry a possibly charged generation. Record only
    the route and outcome in `MEMORY.md`, never account or credit output.
 
+### Sound (only when SPEC lists the user's audio files)
+
+Copy each file to `<work dir>/<ModName>/audio/<slug>.<ext>` and wire it per
+`../sts2api/reference/audio.md`. A slot without a file keeps its vanilla sound; never
+fetch, generate, or transcode audio.
+
 ## 4.5 Trace each Autotest scenario before Build
 
 A failed Tier 2 costs a full game launch. Before Build, walk every `## Autotest` scenario through

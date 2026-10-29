@@ -19,7 +19,8 @@ fields. For each content element or existing-content change, state the applicabl
 - exact English and Simplified Chinese player-facing text in the vanilla style of
   `reference/vanilla-text-style.md`, including table/key intent, DynamicVar/SmartFormat names,
   variable parity, and hover tips for every named term;
-- presentation, art choice, native consumers, and checked fallback; and
+- presentation, art choice, the user's sound files (`reference/audio.md`), native consumers, and
+  checked fallback; and
 - one or more autotest scenarios (§ Autotest).
 
 Omit fields that do not apply rather than writing `none` into a generic schema. Never copy DESIGN

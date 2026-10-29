@@ -271,6 +271,9 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
   combat wording resets at the boundary it names. Ask one carry-over question only when
   the phrase could reasonably mean either behavior.
 - **Art**: placeholder unless the user picks another choice in step 4.
+- **Sound**: vanilla, and not a question. When the user asks for a sound of their own or hands
+  over audio files, record each slot and file per `../sts2api/reference/audio.md`;
+  music, ambience, and generated audio go under `not now`.
 - **Author**: reuse the project's configured author, else "SkillTheSpire".
 
 ## Output

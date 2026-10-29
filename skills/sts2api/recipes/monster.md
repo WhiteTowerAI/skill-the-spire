@@ -463,6 +463,7 @@ floor alignment and no crop in both consumers.
 
 The contract is deliberately static: attack/hurt/death/cast triggers do not animate, death uses
 the game's non-Spine fade, and `HasDeathSfx => false` avoids a nonexistent custom-id death event.
+The user's own death, hurt, or attack sounds follow `reference/audio.md`.
 Phobia mode keeps the same texture. Spine skeleton/atlas/animation, animated move previews, and
 phobia skins are later extensions.
 
@@ -479,7 +480,8 @@ phobia skins are later extensions.
 - [ ] Every conditional branch is ordered, exhaustive, and reachable.
 - [ ] `monsters.json` (name plus one move title per move) and `encounters.json` (title + loss).
 - [ ] The static visual is existence-checked in `TryCreateCreatureVisuals()`; the profile always
-      names `creature_visuals/fallback`; `HasDeathSfx => false`.
+      names `creature_visuals/fallback`; `HasDeathSfx => false` unless a supplied death sound
+      overrides `DeathSfx`.
 
 ## Self-test driver body
 

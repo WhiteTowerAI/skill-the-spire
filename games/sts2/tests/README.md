@@ -166,6 +166,7 @@ listed route is authorable; "unobserved" means no run has proved that exact shap
 | Character starter upgrades | Archaic Tooth and Touch of Orobas mappings (Tier 2; headed via `ancient OROBAS <TOUCH_OF_OROBAS\|ARCHAIC_TOOTH>`) | preserved enchantment, multiplayer |
 | Character presentation | nine static profiles, top icon/outline, card/UI theme, non-Spine cues, native Ancient/Architect dialogue | locked selection portrait, map marker |
 | Ordered card buffer | isolated two-combat mechanic and a generated Character composition | |
+| User sound files (`reference/audio.md`) | | whole route: virtual one-shot from a raw `.pck` file, each slot, Ancient line `.sfx` |
 | Event outcome vocabulary | page Cmd, upgrade selection, resumable custom combat, custom Gold reward, terminal custom combat, and Event VFX cleanup in one headed run (Tier 2) | |
 | Card hand emphasis | human-led host review and Tier 1 | strict Tier 2 |
 | Relic/Power extra corner labels | human-led crowded-row review and Tier 1 | strict Tier 2 |

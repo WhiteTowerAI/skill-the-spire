@@ -308,6 +308,19 @@ def _parse_group(
     )
 
 
+def _validate_line_sfx(table: dict[str, object], key: str, value: str) -> None:
+    """A line's `.sfx` names the event played when that spoken line appears."""
+    line_key = key[: -len(".sfx")]
+    if not line_key.endswith((".ancient", ".char")) or line_key not in table:
+        raise AncientDialogueValidationError(
+            f"{key}: .sfx must sit beside an existing .ancient or .char line key"
+        )
+    if not value.startswith("event:/"):
+        raise AncientDialogueValidationError(
+            f"{key}: .sfx value must be an event path such as event:/mods/<ModName>/<slug>"
+        )
+
+
 def parse_ancient_dialogue_table(
     table: dict[str, object],
     character_entries: Iterable[str] | None = None,
@@ -317,10 +330,9 @@ def parse_ancient_dialogue_table(
 
     for key, raw_value in table.items():
         value = _nonempty_string(raw_value, key)
-        if ".sfx" in key:
-            raise AncientDialogueValidationError(
-                f"{key}: line-level Ancient dialogue SFX is unsupported"
-            )
+        if key.endswith(".sfx"):
+            _validate_line_sfx(table, key, value)
+            continue
         if ".talk." not in key:
             raise AncientDialogueValidationError(f"{key}: unsupported ancients.json key")
         ancient_entry, remainder = key.split(".talk.", 1)
@@ -449,6 +461,7 @@ def parse_mod_ancient_table(
                 f"{key}: dialogue group must be firstVisitEver, ANY, or a Character entry"
             )
         if MOD_ANCIENT_SFX_RE.fullmatch(suffix):
+            _validate_line_sfx(table, key, value)
             continue
         line_match = LINE_KEY_RE.fullmatch(suffix)
         metadata_match = METADATA_KEY_RE.fullmatch(suffix)

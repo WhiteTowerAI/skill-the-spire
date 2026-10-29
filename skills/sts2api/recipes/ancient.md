@@ -114,7 +114,8 @@ vanilla never puts `.next` on a dialogue's last line, and Build rejects it.
 
 Character dialogue uses `<ENTRY>.talk.<CHARACTER_ENTRY>.<dialogue>-<line>.<ancient|char>`.
 Dialogue and line indices start at zero and stay contiguous; an `r` after the line index marks a
-repeating dialogue, consistently for every line in it. Add optional `.sfx` beside a line key. The
+repeating dialogue, consistently for every line in it. Add optional `.sfx` beside a spoken line key,
+naming the user's own sound per `reference/audio.md`. The
 loader uses the first `firstVisitEver` sequence, then exact Character groups, then `ANY`.
 Override `AnyCharacterDialogueBlacklist` only for explicitly excluded canonical Characters.
 

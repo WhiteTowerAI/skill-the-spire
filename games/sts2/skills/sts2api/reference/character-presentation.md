@@ -456,10 +456,10 @@ passed with no fresh error.
 - custom Character Spine animation, trails, and animated transitions;
 - arbitrary custom materials/shaders and their lifecycle beyond the bounded pool-frame helper;
 - remote-player hands, identity, ownership, rebuild, and Character UI;
-- custom audio registration, mix, fallback, and cleanup;
+- Character audio beyond the profile's five one-shot slots (`reference/audio.md`), including
+  music, mixing, and loops;
 - arbitrary top-bar or retained-card-zone UI;
 - custom Ancient models, backgrounds, layouts, options/rewards, global dialogue
-  replacement, line audio, arbitrary VFX, and multiplayer presentation.
+  replacement, arbitrary VFX, and multiplayer presentation.
 
-Production animation, materials, multiplayer presentation, and audio remain separate later
-tracks. None is implied by the bounded frame-sequence support.
+Production animation, materials, and multiplayer presentation remain separate later tracks. None is implied by the bounded frame-sequence support.
