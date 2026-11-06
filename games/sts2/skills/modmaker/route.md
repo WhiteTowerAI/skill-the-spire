@@ -35,6 +35,8 @@ Load only the design references that the current question needs:
 - unclear mechanic or loop: `design/mechanic-planning.md`
 - Character, archetype, or content set: `design/content-set-planning.md`
 - material numeric/economy question: `design/balance-planning.md`
+- Monster, Encounter, or Act fights with open difficulty, moves, or numbers:
+  `design/encounter-planning.md`
 
 Do not ask for game, catalog, API, localization-key, or resource-path facts that the shipped
 pack owns. Do not ask about optional polish the user did not request. A default stops being

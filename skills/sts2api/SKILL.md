@@ -53,6 +53,7 @@ playtest results.
 | `design/mechanic-planning.md` | a mechanic, resource, stateful loop, risk/reward structure, or interacting system lacks an exact core decision |
 | `design/content-set-planning.md` | a Character card pool, archetype, multi-element set, or other content ecosystem |
 | `design/balance-planning.md` | balance, a resource economy, a formula, or materially unresolved values are a design question |
+| `design/encounter-planning.md` | Monsters, Encounters, or an Act's fights whose difficulty, moves, or numbers are still open |
 
 ## New content
 
