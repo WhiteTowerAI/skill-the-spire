@@ -64,9 +64,10 @@ to complete only the relevant parts of the capsule below.
   mechanic.
 - **Content set:** assign real proposed content nodes the smallest useful roles across
   Foundation, access, payoff, consistency, defense, scaling, bridge/off-ramp, and release
-  valve. Record directed source-to-dependent relationships; flag isolated nodes, circular
-  prerequisites, coverage gaps, unsupported edges, and an archetype that receives easier
-  access, safer setup, and a higher ceiling at once.
+  valve, and mark each node staple or build-around. Record directed source-to-dependent
+  relationships; flag isolated nodes, a node with neither a real floor nor a real ceiling,
+  circular prerequisites, coverage gaps, unsupported edges, and an archetype that receives
+  easier access, safer setup, and a higher ceiling at once.
 - **Balance/economy:** name the output unit, deterministic formula, variables, timing,
   assumptions, constraints, comparison basis, every source and sink, opportunity cost,
   low/working/high sensitivity, and the evidence status. Default to a generous working
