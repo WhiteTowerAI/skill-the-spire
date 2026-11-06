@@ -28,9 +28,10 @@ grep_log = load_module("open_mod_grep_log", TOOLS_DIR / "grep_log.py")
 class GrepLogTests(unittest.TestCase):
     mod = "ExampleMod"
 
-    def run_grep(self, lines: list[str], pattern: str | None = None) -> tuple[int, str]:
+    def run_grep(self, lines: list[str], pattern: str | None = None,
+                 log_name: str = "godot.log") -> tuple[int, str]:
         with tempfile.TemporaryDirectory() as tmp:
-            log_path = Path(tmp) / "godot.log"
+            log_path = Path(tmp) / log_name
             log_path.write_text("\n".join(lines), encoding="utf-8")
             argv = ["--mod-name", self.mod, "--log-path", str(log_path)]
             if pattern is not None:
@@ -270,6 +271,58 @@ class GrepLogTests(unittest.TestCase):
         )
         self.assertEqual(1, code)
         self.assertIn("Fresh-run error block", output)
+
+    def peer_progress_save(self, file: str = "progress.save.tmp", combat_end: bool = True) -> list[str]:
+        # Observed 2026-11-06 on the host of a two-instance multiplayer self-test.
+        lines = [
+            "[ERROR] Failed to save progress: MegaCrit.Sts2.Core.Exceptions.SaveException: "
+            "Failed to open file for writing. "
+            rf"path='user://steam/76561198000000000/modded/profile1\saves\{file}' error=FileCantOpen",
+            "   at MegaCrit.Sts2.Core.Saves.GodotFileIo.WriteFile(String path, String content)",
+            "   at MegaCrit.Sts2.Core.Saves.Managers.ProgressSaveManager.SaveProgress_Patch1(ProgressSaveManager this)",
+            "   at MegaCrit.Sts2.Core.Saves.SaveManager.SaveProgressFile_Patch1(SaveManager this)",
+        ]
+        if combat_end:
+            lines.append("   at MegaCrit.Sts2.Core.Combat.CombatManager.EndCombatInternal()")
+        return lines
+
+    def peer_progress_mirror(self) -> list[str]:
+        # Observed 2026-11-06 on the client of the same run; RitsuLib restores the mirror next.
+        return [
+            "[ERROR] [com.ritsukage.sts2-RitsuLib] [ProgressMirror] Failed to open file "
+            "'user://steam/76561198000000000/mod_data/com.ritsukage.sts2-RitsuLib/modded/profile1/"
+            "progress_records_mirror.save.tmp' for writing (Error: FileCantOpen)",
+            "[INFO] [com.ritsukage.sts2-RitsuLib] [ProgressMirror] Restored 'user://steam/76561198000000000/"
+            "mod_data/com.ritsukage.sts2-RitsuLib/modded/profile1/progress_records_mirror.save' from backup",
+        ]
+
+    def test_peer_log_names_match_launch_multiplayer_logs(self) -> None:
+        for path in launch.multiplayer_log_paths(Path("logs") / "godot.log").values():
+            self.assertRegex(path.name, grep_log.MULTIPLAYER_PEER_LOG_RE)
+
+    def test_two_instance_save_contention_is_ignored_in_peer_logs(self) -> None:
+        for name, block in {"progress save": self.peer_progress_save(),
+                            "progress mirror": self.peer_progress_mirror()}.items():
+            for log_name in ("godot-t2-host.log", "godot-t2-client.log"):
+                with self.subTest(case=name, log=log_name):
+                    code, output = self.run_grep(self.baseline() + block, log_name=log_name)
+                    self.assertEqual(0, code, output)
+                    self.assertIn("Known verification cleanup noise: IGNORED", output)
+
+    def test_save_contention_still_fails_outside_peer_logs_and_on_near_misses(self) -> None:
+        cases = {
+            "singleplayer log": (self.peer_progress_save(), "godot.log"),
+            "singleplayer mirror": (self.peer_progress_mirror(), "godot.log"),
+            "run save file": (self.peer_progress_save(file="current_run.save.tmp"), "godot-t2-host.log"),
+            "not at combat end": (self.peer_progress_save(combat_end=False), "godot-t2-host.log"),
+            "mirror with a stack": (self.peer_progress_mirror()[:1] + [f"   at {self.mod}.Save()"],
+                                    "godot-t2-client.log"),
+        }
+        for name, (block, log_name) in cases.items():
+            with self.subTest(case=name):
+                code, output = self.run_grep(self.baseline() + block, log_name=log_name)
+                self.assertEqual(1, code, output)
+                self.assertIn("[FAIL] Fresh-run error block", output)
 
     def test_unrelated_error_before_fresh_load_boundary_is_ignored(self) -> None:
         code, output = self.run_grep(

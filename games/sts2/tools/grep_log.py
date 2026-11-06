@@ -54,6 +54,18 @@ SENTRY_SHUTDOWN_RE = re.compile(
     r"^\s*ERROR:\s+Sentry: Failed to close native SDK cleanly\. Error code: 1\s*$",
     re.IGNORECASE,
 )
+# launch.py --multiplayer writes one log per local instance under these names.
+MULTIPLAYER_PEER_LOG_RE = re.compile(r"^godot-t2-(?:host|client)\.log$", re.IGNORECASE)
+PEER_PROGRESS_SAVE_RE = re.compile(
+    r"^\s*\[ERROR\]\s+Failed to save progress: MegaCrit\.Sts2\.Core\.Exceptions\.SaveException: "
+    r"Failed to open file for writing\. path='user://steam/\d+/modded/profile\d+[\\/]saves[\\/]"
+    r"progress\.save\.tmp' error=FileCantOpen\s*$",
+)
+PEER_PROGRESS_MIRROR_RE = re.compile(
+    r"^\s*\[ERROR\]\s+\[com\.ritsukage\.sts2-RitsuLib\] \[ProgressMirror\] Failed to open file "
+    r"'user://steam/\d+/mod_data/com\.ritsukage\.sts2-RitsuLib/modded/profile\d+[\\/]"
+    r"progress_records_mirror\.save\.tmp' for writing \(Error: FileCantOpen\)\s*$",
+)
 PROFILE_FIELDS = (
     "framework=RitsuLib",
     f"host={PROFILE.host_version}",
@@ -147,7 +159,8 @@ def _model_from_mod(model_id: str, mod: str | None) -> bool:
     return entry.startswith(re.sub(r"[^A-Z0-9]", "", mod.upper()))
 
 
-def is_known_verification_cleanup(block: list[str], mod: str | None = None) -> bool:
+def is_known_verification_cleanup(block: list[str], mod: str | None = None,
+                                  multiplayer_peer: bool = False) -> bool:
     """Match only grounded base-game noise caused by the verification lifecycle.
 
     STS2's abandon path unconditionally removes a backup; on Windows/Godot a missing
@@ -158,11 +171,26 @@ def is_known_verification_cleanup(block: list[str], mod: str | None = None) -> b
     RitsuLib's post-run unlock patch cannot find the model. That is ignored only when
     the missing model is not the Mod under test's own. Require each exact header plus
     its cleanup stack so similarly worded mod/runtime errors still fail.
+
+    The two-instance multiplayer run starts both games under one Steam account, so
+    both write the same profile files when a combat ends and one of them can find a
+    ``.tmp`` file still open. That is ignored only in a multiplayer peer log, and
+    only for the progress save (during combat end) and RitsuLib's progress mirror.
     """
     if not block:
         return False
     header = block[0]
     context = "\n".join(block)
+    if multiplayer_peer and PEER_PROGRESS_SAVE_RE.match(header):
+        return all(
+            frame in context
+            for frame in (
+                "ProgressSaveManager.SaveProgress",
+                "CombatManager.EndCombatInternal()",
+            )
+        )
+    if multiplayer_peer and PEER_PROGRESS_MIRROR_RE.match(header):
+        return len(block) == 1
     missing_model = ABANDON_MISSING_MODEL_RE.match(header)
     if missing_model:
         return not _model_from_mod(missing_model.group("model"), mod) and all(
@@ -263,11 +291,14 @@ def main(argv: list[str]) -> int:
         parsed_error_blocks = [
             block for block in parsed_error_blocks if mod in "\n".join(block)
         ]
+    multiplayer_peer = MULTIPLAYER_PEER_LOG_RE.match(log_path.name) is not None
     ignored_cleanup_blocks = [
-        block for block in parsed_error_blocks if is_known_verification_cleanup(block, mod)
+        block for block in parsed_error_blocks
+        if is_known_verification_cleanup(block, mod, multiplayer_peer)
     ]
     parsed_error_blocks = [
-        block for block in parsed_error_blocks if not is_known_verification_cleanup(block, mod)
+        block for block in parsed_error_blocks
+        if not is_known_verification_cleanup(block, mod, multiplayer_peer)
     ]
 
     modded = any("RUNNING MODDED" in ln for ln in lines)
