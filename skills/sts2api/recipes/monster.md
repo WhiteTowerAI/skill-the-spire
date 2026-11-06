@@ -91,7 +91,8 @@ both node kinds so the edges stay explicit; it does not force a one-to-one pair.
 ```
 
 A one-move enemy may keep one self-looping move. A multi-move enemy fills the compact move
-contract below before authoring. An intent label shows what the Monster *plans*; it is never
+contract below before authoring. When the fight's HP, moves, or difficulty are still open,
+design it with `design/encounter-planning.md` first. An intent label shows what the Monster *plans*; it is never
 evidence the move resolved.
 
 ## Registration (one explicit content pack)

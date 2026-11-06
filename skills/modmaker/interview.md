@@ -43,8 +43,8 @@ defaults, delta, and gaps forward. The user is a non-programmer; keep it plain.
     element, suggest a new name once. If the user keeps the name (for example the term their
     theme already uses), keep it and record the deliberate collision in
     `DESIGN.md` § Decisions; `reference/vanilla-text-style.md` § Vocabulary says how its text renders.
-- **Plan only when routed.** Load only the mechanic, content-set, and balance references
-  named by `route.md`. An exact narrow Card keeps the fast path and does not receive a
+- **Plan only when routed.** Load only the mechanic, content-set, balance, and encounter
+  references named by `route.md`. An exact narrow Card keeps the fast path and does not receive a
   general design review merely because it has numbers.
 - **Check cross-surface consistency only when needed.** For multiple intentional expressive
   surfaces, explicit theme/narrative/presentation work, or an identity-changing revision,
@@ -74,6 +74,9 @@ to complete only the relevant parts of the capsule below.
   hypothesis that is modestly stronger in its intended state, but repair any value that
   erases choices, bypasses setup/cost, trivializes ordinary opposition, or becomes
   deterministic, self-funding, or unbounded. Never invent a fixed power percentage.
+- **Encounter:** name the Act, tier, and the one question the fight tests; give each enemy a
+  job, a truthful telegraphed cycle with relief after the big hit, and an escalation clock;
+  place HP, biggest hit, and peak turn against the native band; and run the fairness review.
 
 Ask only about an unresolved choice whose answers change player behavior or the current
 supported implementation. Offer two or three structures rather than number-only variants
@@ -144,7 +147,9 @@ keep/change/reverify summary forward; do not create a queue or edit every downst
      just after?" For hand highlights or Relic/Power extra badges, capture meaning, condition,
      color, and priority; the limits live in their references.
    - **Monster:** capture each Monster's HP, visible moves, and successor order. Default to the
-     stated repeating order and never invent randomness. Intent extra badges have no
+     stated repeating order and never invent randomness. When HP, moves, or difficulty are
+     open, propose a complete fight from `../sts2api/design/encounter-planning.md`
+     (its Act and tier band and native rhythm) instead of asking for numbers. Intent extra badges have no
      maintained route; treat them as a Mod-local route under
      `../sts2api/grounding.md` § Mod-local Routes.
    - **Event:** capture the opening, each option's exact consequence, and whether it finishes,
@@ -287,7 +292,7 @@ intent: <one player-facing sentence>
 settled: <choices preserved from the request and project artifacts>
 defaults: <inferred values to state in the confirmation>
 native grammar: none | <loaded native grammar and pinned profile>
-planning references: none | <loaded mechanic/content-set/balance references>
+planning references: none | <loaded mechanic/content-set/balance/encounter references>
 revision delta: none | <keep/change/reverify summary>
 current scope: <requested now>
 not now: none | <placeholder, deferred, unsupported, or explicitly excluded work>
@@ -301,6 +306,7 @@ rules/edge cases: none | <accepted exact rules and boundaries>
 content roles: none | <real content nodes and selected roles>
 interaction graph: none | <directed source -> dependent relationships and gaps>
 formula/economy: none | <formula contract, sources/sinks, assumptions, sensitivity>
+encounter: none | <Act/tier, question, roster jobs, move cycle, numbers vs band, fairness>
 tuning knobs: none | <independent values and the behavior each changes>
 dominant-strategy check: none | <lines compared, concern, mitigation or none>
 open hypotheses: none | <unproven claim and evidence needed>
