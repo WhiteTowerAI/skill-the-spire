@@ -37,7 +37,9 @@ before it can compile.
   in both languages, and rebuild; record in `MEMORY.md` any line where the vanilla shape
   deliberately does not apply;
 - `[build] source routes OK` and `[build] hook reachability OK`;
-- profile lines with the scaffold-pinned compile version and `host=0.111.1`, `compat=0.111.0`;
+- profile lines with the scaffold-pinned compile version and `host=0.111.1`, `compat=0.111.0`.
+  On a later `0.111.x` patch Build prints `host WARNING` and continues; Tier 2 on that game is
+  then the proof, and the final report names the patch version;
 - the deployed files above, with RitsuLib still separate in `mods/` or its Workshop item.
 
 ## On failure

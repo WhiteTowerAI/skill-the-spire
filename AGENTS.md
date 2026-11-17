@@ -66,8 +66,13 @@ agent-neutral.
   API baseline.
 - A project scaffolded for an older profile moves with `scaffold.py --migrate-profile`; Build
   refuses it until then.
+- The host may be the pinned `0.111.1` or a later patch on the same `0.111.x` line: Build and
+  scaffold warn on a patch, a Mod's own Tier 2 on that patch is its proof, and Build refuses
+  fixed vanilla-override Adapters when `sts2.dll` differs from the cataloged build. A newer
+  minor, an older patch, or a RitsuLib whose loader would leave `0.111.0` is refused. The
+  catalog collectors run only on the exact pinned host.
 - Runtime discovery accepts a validated game-local install or official Workshop item
-  `3747602295`, with exact host/Compat identity checks.
+  `3747602295`, with exact Compat identity checks.
 - Generated projects have no framework `PackageReference` and no BaseLib dependency.
 - Maintainer research and decompiled code are never generated-project inputs and are never copied,
   compiled, packaged, or shipped.

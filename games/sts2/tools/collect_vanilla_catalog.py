@@ -54,7 +54,7 @@ from ritsu_profile import (
     local_mods_dir,
     resolve_runtime_asset,
     resolve_runtime_compile_profile,
-    validate_host_version,
+    check_host,
 )
 from scaffold import generate, repin_runtime
 from vanilla_overrides import (
@@ -259,9 +259,15 @@ def build_runtime_collector(project_dir: Path, mod_name: str, game_dir: Path | N
     profile check plus MSBuild is the whole build.
     """
     game = game_dir or default_game_dir()
-    validate_host_version(game)
+    host = check_host(game)
+    if not host.exact:
+        # The catalog it produces is pinned to one exact game build; a patch needs a new profile.
+        raise VanillaOverrideError(
+            f"the collector runs only on the exact pinned STS2 {PROFILE.host_version}; found "
+            f"{host.version}. Move the profile to {host.version} first"
+        )
     runtime = resolve_runtime_asset(game, local_mods_dir(game))
-    compile_profile = resolve_runtime_compile_profile(runtime.path)
+    compile_profile = resolve_runtime_compile_profile(runtime.path, host.version)
     repin_runtime(project_dir, mod_name, compile_profile)
     log = project_dir / ".build.log"
     result = subprocess.run(

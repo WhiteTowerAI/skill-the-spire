@@ -18,6 +18,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -34,6 +35,7 @@ from localization_contract import (
     validate_project_localization,
 )
 import selftest_kit
+import api
 from api import ApiError
 from hook_reachability import HookReachabilityError, validate_built_mod
 from pack_pck import PackError, pack_assets
@@ -44,7 +46,7 @@ from ritsu_profile import (
     find_manifest,
     resolve_runtime_asset,
     resolve_runtime_compile_profile,
-    validate_host_version,
+    check_host,
     validate_project_contract,
     validate_project_runtime_profile,
     validate_restore_assets,
@@ -52,7 +54,12 @@ from ritsu_profile import (
 )
 from source_scan import SourceScanError, validate_project_sources
 from text_style import TextStyleError, validate_project_text_style
-from vanilla_overrides import VanillaOverrideError, validate_project_override_manifest
+from vanilla_overrides import (
+    VanillaOverrideError,
+    load_catalog,
+    project_adapter_dependencies,
+    validate_project_override_manifest,
+)
 
 DIAG_RE = re.compile(r"error|warning|错误|警告|CS\d|MSB\d", re.IGNORECASE)
 
@@ -190,6 +197,29 @@ def validate_deployed_artifacts(project_dir: Path, mod_name: str, mods_dir: Path
     validate_no_phantom_manifests(mods_dir, deployed_manifest)
 
 
+def check_patch_host_adapters(project_dir: Path, sts2_dir: Path) -> str:
+    """On a patch host, refuse fixed Adapters unless the game assembly is the cataloged one.
+
+    Public routes are checked by the compiler and proved by Tier 2. A fixed Adapter was
+    reviewed against one exact vanilla method body, so a different game build voids that review.
+    """
+    adapters = project_adapter_dependencies(project_dir)
+    if not adapters:
+        return "patch host: no vanilla override uses a fixed Adapter"
+    catalog_sha = load_catalog()["assembly"]["sha256"]
+    installed = api.game_data_dir(sts2_dir) / "sts2.dll"
+    installed_sha = hashlib.sha256(installed.read_bytes()).hexdigest()
+    if installed_sha == catalog_sha:
+        return f"patch host: sts2.dll matches the catalog; {len(adapters)} fixed Adapter(s) OK"
+    raise VanillaOverrideError(
+        f"this game build's sts2.dll differs from the {PROFILE.host_version} build the vanilla "
+        f"catalog was taken from, and the Mod's overrides use fixed Adapters that were reviewed "
+        f"against that exact build ({', '.join(sorted(adapters))}). Build them on "
+        f"{PROFILE.host_version}, or wait for a Skill the Spire release for this game version; "
+        "public override routes are unaffected"
+    )
+
+
 def report_text_style(project_dir: Path, mod_name: str) -> None:
     """Fail on broken rich-text markup; list vanilla-style drift without failing the Build."""
     summary, warnings = validate_project_text_style(project_dir, mod_name)
@@ -248,7 +278,12 @@ def main(argv: list[str]) -> int:
             raise RitsuProfileError(
                 "MSBuild did not resolve Sts2Dir/ModsPath; set Sts2Dir in local.props"
             )
-        print(f"[build] host OK: {validate_host_version(Path(sts2_dir_text))}")
+        host = check_host(Path(sts2_dir_text))
+        if host.exact:
+            print(f"[build] host OK: {host.release_info}: {host.version}")
+        else:
+            print(f"[build] host WARNING: {host.warning()}")
+            print(f"[build] {check_patch_host_adapters(project_dir, Path(sts2_dir_text))}")
         runtime = resolve_runtime_asset(
             Path(sts2_dir_text),
             Path(mods_root_text),
@@ -261,9 +296,9 @@ def main(argv: list[str]) -> int:
                 f"using {runtime.source} and ignoring {alternatives}"
             )
         print(f"[build] runtime source: {runtime.source} -> {runtime.path}")
-        compile_runtime = resolve_runtime_compile_profile(runtime.path)
+        compile_runtime = resolve_runtime_compile_profile(runtime.path, host.version)
         validate_project_runtime_profile(project_dir, mod_name, compile_runtime)
-        print(f"[build] runtime OK: {validate_runtime_asset(runtime.path)}")
+        print(f"[build] runtime OK: {validate_runtime_asset(runtime.path, host.version)}")
     except (
         OSError,
         AncientDialogueValidationError,

@@ -17,8 +17,8 @@ from ritsu_profile import (
     RuntimeCompileProfile,
     local_mods_dir,
     resolve_runtime_asset,
+    check_host,
     resolve_runtime_compile_profile,
-    validate_host_version,
     validate_project_contract,
 )
 from vanilla_overrides import repin_project_manifest, write_empty_project_manifest
@@ -447,13 +447,15 @@ def main(argv: list[str]) -> int:
         return refresh_selftest_kit(Path(args.project_dir), args.mod_name)
     try:
         game_dir = Path(args.game_dir) if args.game_dir else default_game_dir()
-        validate_host_version(game_dir)
+        host = check_host(game_dir)
+        if host.warning():
+            print(f"[scaffold] WARNING: {host.warning()}")
         runtime = resolve_runtime_asset(
             game_dir,
             local_mods_dir(game_dir),
             Path(args.runtime_dir) if args.runtime_dir else None,
         )
-        compile_profile = resolve_runtime_compile_profile(runtime.path)
+        compile_profile = resolve_runtime_compile_profile(runtime.path, host.version)
         if args.migrate_profile:
             for line in migrate_profile(Path(args.project_dir), args.mod_name, compile_profile):
                 print(f"[scaffold] {line}")

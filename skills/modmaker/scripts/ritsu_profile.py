@@ -490,7 +490,7 @@ def _directory_files(root: Path) -> _RuntimeFiles:
     return _RuntimeFiles(str(root), read)
 
 
-def _check_runtime_manifest(data: dict) -> str:
+def _check_runtime_manifest(data: dict, host_version: str) -> str:
     if data.get("id") != PROFILE.runtime_mod_id:
         raise RitsuProfileError("RitsuLib runtime manifest has an unexpected id")
     version = str(data.get("version", "")).strip()
@@ -499,9 +499,9 @@ def _check_runtime_manifest(data: dict) -> str:
             f"RitsuLib runtime manifest version {version!r} is older than the required "
             f"minimum {PROFILE.framework_version}"
         )
-    if _version_key(str(data.get("min_game_version", ""))) > _version_key(PROFILE.host_version):
+    if _version_key(str(data.get("min_game_version", ""))) > _version_key(host_version):
         raise RitsuProfileError(
-            f"RitsuLib runtime manifest min_game_version is newer than {PROFILE.host_version}"
+            f"RitsuLib runtime manifest min_game_version is newer than {host_version}"
         )
     if data.get("dependencies") not in ([], None):
         raise RitsuProfileError("RitsuLib runtime manifest unexpectedly declares dependencies")
@@ -523,8 +523,14 @@ def _manifest_module_hashes(entries: object, expected: tuple[str, ...], where: s
     return hashes
 
 
-def _check_runtime_payload(files: _RuntimeFiles) -> tuple[str, tuple[RuntimeAssembly, ...]]:
-    runtime_version = _check_runtime_manifest(files.json("mod_manifest.json"))
+def _check_runtime_payload(
+    files: _RuntimeFiles, host_version: str | None = None
+) -> tuple[str, tuple[RuntimeAssembly, ...]]:
+    """Check one runtime layout. `host_version` is the installed game (the pinned host when
+    unknown): RitsuLib's loader chooses the variant from it, so a patch host can only differ
+    from the pin while the loader still lands on the pinned compat target."""
+    host_version = host_version or PROFILE.host_version
+    runtime_version = _check_runtime_manifest(files.json("mod_manifest.json"), host_version)
     if not files.read(PROFILE.runtime_dll).startswith(b"MZ"):
         raise RitsuProfileError(f"{files.label}/{PROFILE.runtime_dll} is not a loader assembly")
 
@@ -547,15 +553,15 @@ def _check_runtime_payload(files: _RuntimeFiles) -> tuple[str, tuple[RuntimeAsse
     if entry is None:
         raise RitsuProfileError(
             f"runtime {files.label} has no {PROFILE.compat_target} RitsuLib variant for STS2 "
-            f"{PROFILE.host_version}; refusing to compile against another game version's API"
+            f"{host_version}; refusing to compile against another game version's API"
         )
     loaded = loader_compat_target(
-        [str(item.get("compatTarget")) for item in targets], PROFILE.host_version
+        [str(item.get("compatTarget")) for item in targets], host_version
     )
     if loaded != PROFILE.compat_target:
         raise RitsuProfileError(
             f"runtime {files.label} would load its {loaded} variant on STS2 "
-            f"{PROFILE.host_version}, not the pinned {PROFILE.compat_target}; this RitsuLib "
+            f"{host_version}, not the pinned {PROFILE.compat_target}; this RitsuLib "
             "release needs a newer Skill the Spire"
         )
     marker = files.text(f"{PROFILE.compat_dir}/compat-target.txt").strip()
@@ -590,7 +596,9 @@ def _runtime_root(path: Path) -> Path:
     return root
 
 
-def resolve_runtime_compile_profile(path: Path) -> RuntimeCompileProfile:
+def resolve_runtime_compile_profile(
+    path: Path, host_version: str | None = None
+) -> RuntimeCompileProfile:
     """Return the exact local compat and shared assemblies used to compile a generated Mod."""
     if path.suffix.lower() == ".zip":
         raise RitsuProfileError(
@@ -598,11 +606,11 @@ def resolve_runtime_compile_profile(path: Path) -> RuntimeCompileProfile:
             "install its checked folder first"
         )
     root = _runtime_root(path)
-    version, assemblies = _check_runtime_payload(_directory_files(root))
+    version, assemblies = _check_runtime_payload(_directory_files(root), host_version)
     return RuntimeCompileProfile(version, root, assemblies)
 
 
-def validate_runtime_asset(path: Path) -> str:
+def validate_runtime_asset(path: Path, host_version: str | None = None) -> str:
     """Validate an installed RitsuLib folder or release zip without loading a DLL."""
     if path.suffix.lower() == ".zip":
         if not path.is_file():
@@ -614,10 +622,10 @@ def validate_runtime_asset(path: Path) -> str:
                 name = names.get(relative)
                 return archive.read(name) if name is not None else None
 
-            version, _ = _check_runtime_payload(_RuntimeFiles(path.name, read))
+            version, _ = _check_runtime_payload(_RuntimeFiles(path.name, read), host_version)
         return f"{path.name}: RitsuLib {version}, compat {PROFILE.compat_target}"
 
-    profile = resolve_runtime_compile_profile(path)
+    profile = resolve_runtime_compile_profile(path, host_version)
     return (
         f"{profile.root}: RitsuLib {profile.version}, compat {PROFILE.compat_target}, "
         f"assembly set {profile.assembly_set_sha256[:12]}"
@@ -636,7 +644,43 @@ def _host_mismatch_hint(reported: str | None) -> str:
     return "Update the game in Steam (default branch, no beta selected)."
 
 
-def validate_host_version(sts2_dir: Path) -> str:
+@dataclass(frozen=True)
+class HostCheck:
+    """The installed game version and how it relates to the pinned host."""
+
+    version: str
+    release_info: Path
+
+    @property
+    def exact(self) -> bool:
+        return self.version == PROFILE.host_version
+
+    def warning(self) -> str | None:
+        if self.exact:
+            return None
+        return (
+            f"STS2 {self.version} is a newer patch of the pinned {PROFILE.host_version}. Building "
+            f"continues against RitsuLib's {PROFILE.compat_target} variant, but the shipped "
+            f"vanilla catalogs describe {PROFILE.host_version}: only this Mod's own Tier 2 on "
+            f"{self.version} shows it works there, and a newer Skill the Spire release may follow."
+        )
+
+
+def is_patch_of_pinned_host(version: str) -> bool:
+    """A later patch on the pinned major.minor line (0.111.2 for a 0.111.1 pin).
+
+    The game only promises API stability per release line, so a newer minor (0.113) is a new
+    profile. An older patch is refused too: the Mod manifest's min_game_version would stop the
+    game from loading the Mod anyway.
+    """
+    try:
+        found, pinned = _version_key(version), _version_key(PROFILE.host_version)
+    except RitsuProfileError:
+        return False
+    return found[:2] == pinned[:2] and found > pinned
+
+
+def _release_version(sts2_dir: Path) -> tuple[Path, str | None]:
     candidates = [
         sts2_dir / "release_info.json",
         sts2_dir / "data_sts2_windows_x86_64" / "game" / "release_info.json",
@@ -650,14 +694,25 @@ def validate_host_version(sts2_dir: Path) -> str:
                 value = json.loads(path.read_text(encoding="utf-8")).get("version")
             except (OSError, json.JSONDecodeError) as exc:
                 raise RitsuProfileError(f"cannot read host release metadata {path}: {exc}") from exc
-            normalized = str(value).removeprefix("v") if value is not None else None
-            if normalized != PROFILE.host_version:
-                raise RitsuProfileError(
-                    f"STS2 host at {sts2_dir} reports {value!r}; required stable "
-                    f"{PROFILE.host_version}. {_host_mismatch_hint(normalized)}"
-                )
-            return f"{path}: {PROFILE.host_version}"
+            return path, (str(value).removeprefix("v") if value is not None else None)
     raise RitsuProfileError(
         f"could not find release_info.json under STS2 directory {sts2_dir}; "
         f"refusing to claim the stable {PROFILE.host_version} host"
     )
+
+
+def check_host(sts2_dir: Path) -> HostCheck:
+    """Accept the pinned host and later patches of its release line; refuse everything else."""
+    path, version = _release_version(sts2_dir)
+    if version == PROFILE.host_version or (version and is_patch_of_pinned_host(version)):
+        return HostCheck(version, path)
+    raise RitsuProfileError(
+        f"STS2 host at {sts2_dir} reports {version!r}; required stable {PROFILE.host_version} "
+        f"or a later {'.'.join(PROFILE.host_version.split('.')[:2])}.x patch. "
+        f"{_host_mismatch_hint(version)}"
+    )
+
+
+def validate_host_version(sts2_dir: Path) -> str:
+    host = check_host(sts2_dir)
+    return f"{host.release_info}: {host.version}"
