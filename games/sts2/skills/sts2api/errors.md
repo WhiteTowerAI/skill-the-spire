@@ -44,12 +44,26 @@ switching to an old template.
 - **Cause:** the project predates the RitsuLib 0.6 module split and references one DLL.
 - **Fix:** scaffold a new project and move the authored sources, resources, and SPEC across.
 
-### Host version is not `0.111.1`
+### Host version is not `0.111.1` or a later `0.111.x` patch
 
-- **Cause:** Steam updated/downgraded STS2 or the project points at another installation. The
-  message says which side is newer.
-- **Fix:** an older game: update it in Steam on the default branch. A newer game: this Skill
-  the Spire release does not support it yet; stop rather than editing the pin.
+- **Cause:** Steam updated/downgraded STS2 to another release line, or the project points at
+  another installation. The message says which side is newer.
+- **Fix:** an older game: update it in Steam on the default branch. A newer release line: this
+  Skill the Spire release does not support it yet; stop rather than editing the pin.
+
+### `[build] host WARNING: STS2 0.111.x is a newer patch`
+
+- **Cause:** Steam installed a hotfix after this release. Build continues against the same
+  RitsuLib variant; the shipped vanilla catalogs still describe `0.111.1`.
+- **Fix:** nothing to repair. Run the Mod's Tier 2 on the installed game before reporting it as
+  working, and say in the report that it ran on the patch.
+
+### `sts2.dll differs from the 0.111.1 build ... fixed Adapters`
+
+- **Cause:** the Mod overrides vanilla content through a fixed Adapter, which was reviewed
+  against the exact `0.111.1` method body, and the installed hotfix changed the game build.
+- **Fix:** do not work around it. Keep the override for a release that supports this patch, or
+  use a public override route the family reference offers for the same change.
 
 ### `this project was scaffolded for ritsulib-0.6.7-sts2-0.107.1`
 

@@ -144,8 +144,8 @@ to a playable mod. You can add real art at the start or later:
 - Complex animation (Spine), custom shaders, or brand-new scenes and music systems.
 - Publishing to the Steam Workshop in one click. You can still share the finished mod folder
   by hand. Players also need RitsuLib.
-- Game versions other than **0.111.1**. If Steam updates the game, a newer Skill the Spire
-  release may be needed. A mod made with an earlier release can be moved to this version; ask
+- Game versions outside **0.111.x**. A small hotfix such as 0.111.2 keeps working, with a
+  warning; a bigger update needs a newer Skill the Spire release. A mod made with an earlier release can be moved to this version; ask
   the agent to migrate it.
 
 If a request needs something the game doesn't allow mods to do safely, it tells you plainly
@@ -302,7 +302,7 @@ npx skills add WhiteTowerAI/skill-the-spire
 - Mod 设置菜单、成就或解锁进度、数据统计。
 - 复杂动画（Spine）、自定义着色器，或全新的场景和音乐系统。
 - 一键发布到创意工坊。你仍然可以手动分享做好的 Mod 文件夹，对方也需要安装 RitsuLib。
-- **0.111.1** 以外的游戏版本。如果 Steam 更新了游戏，可能需要等 Skill the Spire 出新版本。用旧版本做的 Mod 可以迁移到这个版本，让智能体帮你迁移即可。
+- **0.111.x** 以外的游戏版本。像 0.111.2 这样的小补丁仍可继续使用（会给出提示）；更大的版本更新需要等 Skill the Spire 出新版本。用旧版本做的 Mod 可以迁移到这个版本，让智能体帮你迁移即可。
 
 如果某个需求需要游戏不允许 Mod 安全做到的事，它会直接告诉你，而不是糊弄过去。
 

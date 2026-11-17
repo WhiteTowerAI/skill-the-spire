@@ -2669,6 +2669,10 @@ def _validate_ancient_option(
     return dependencies, pages
 
 
+# While override_adapter_dependencies() runs, every fixed Adapter a route resolves to lands here.
+_ADAPTERS_IN_USE: set[str] | None = None
+
+
 def _require_route_dependencies(
     required: set[str],
     adapters: dict[str, dict[str, Any]],
@@ -2680,6 +2684,8 @@ def _require_route_dependencies(
         raise VanillaOverrideError(
             f"{label} needs Adapters missing from the pinned catalog: {', '.join(missing)}"
         )
+    if _ADAPTERS_IN_USE is not None:
+        _ADAPTERS_IN_USE.update(required)
 
 
 def _validate_ancient_operation(
@@ -3653,6 +3659,8 @@ def _validate_operation(
     )
     if route_class == "adapter" and not non_card_route and route_id not in adapters:
         raise VanillaOverrideError(f"operation {operation_id} selects unknown adapter {route_id}")
+    if route_class == "adapter" and _ADAPTERS_IN_USE is not None:
+        _ADAPTERS_IN_USE.add(route_id)
     resolved_surface = surface
     if route_id in _NON_CARD_OWNER_HOOK_ROUTES:
         resolved_surface = _validate_non_card_owner_hook_operation(
@@ -4193,6 +4201,30 @@ def _validate_project_text_localization(
                     f"resolve: {', '.join(unknown)}; usable variables: {usable}"
                 )
     return f"text_replacements={len(replaced)}"
+
+
+def override_adapter_dependencies(
+    manifest: dict[str, Any], catalog: dict[str, Any]
+) -> set[str]:
+    """Validate the manifest and return every fixed Adapter its operations depend on.
+
+    A fixed Adapter was reviewed against one exact vanilla method body (`il_sha256` in the
+    catalog), so it is only known to be right on the game build the catalog was taken from.
+    """
+    global _ADAPTERS_IN_USE
+    _ADAPTERS_IN_USE = set()
+    try:
+        validate_override_manifest(manifest, catalog)
+        return set(_ADAPTERS_IN_USE)
+    finally:
+        _ADAPTERS_IN_USE = None
+
+
+def project_adapter_dependencies(project_dir: Path, *, catalog_path: Path | None = None) -> set[str]:
+    manifest_path = project_dir / MANIFEST_RELATIVE_PATH
+    if not manifest_path.is_file():
+        return set()
+    return override_adapter_dependencies(_read_object(manifest_path), load_catalog(catalog_path))
 
 
 def validate_project_override_manifest(

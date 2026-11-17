@@ -16,6 +16,7 @@ from ritsu_profile import (  # noqa: E402
     RitsuProfileError,
     RuntimeAssembly,
     RuntimeCompileProfile,
+    check_host,
     find_manifest,
     loader_compat_target,
     local_mods_dir,
@@ -489,6 +490,47 @@ class RitsuProfileTests(unittest.TestCase):
             self.assertEqual("mods directory", resolve_runtime_asset(game, mods).source)
             (local / "mod_manifest.json").write_text("not json", encoding="utf-8")
             self.assertEqual("mods directory", resolve_runtime_asset(game, mods).source)
+
+    def test_later_patch_of_the_pinned_line_is_accepted_with_a_warning(self) -> None:
+        major, minor, patch = PROFILE.host_version.split(".")
+        later = f"{major}.{minor}.{int(patch) + 1}"
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp) / "game"
+            game.mkdir()
+            release = game / "release_info.json"
+            release.write_text(json.dumps({"version": "v" + PROFILE.host_version}), encoding="utf-8")
+            pinned = check_host(game)
+            self.assertTrue(pinned.exact)
+            self.assertIsNone(pinned.warning())
+
+            release.write_text(json.dumps({"version": "v" + later}), encoding="utf-8")
+            patch_host = check_host(game)
+            self.assertFalse(patch_host.exact)
+            self.assertEqual(later, patch_host.version)
+            self.assertIn("newer patch", patch_host.warning())
+
+            if int(patch) > 0:
+                earlier = f"{major}.{minor}.{int(patch) - 1}"
+                release.write_text(json.dumps({"version": earlier}), encoding="utf-8")
+                with self.assertRaisesRegex(RitsuProfileError, "Update the game"):
+                    check_host(game)
+            release.write_text(json.dumps({"version": f"{major}.{int(minor) + 2}.0"}), encoding="utf-8")
+            with self.assertRaisesRegex(RitsuProfileError, "newer than this Skill the Spire release"):
+                check_host(game)
+
+    def test_patch_host_runtime_must_still_load_the_pinned_variant(self) -> None:
+        major, minor, patch = PROFILE.host_version.split(".")
+        later = f"{major}.{minor}.{int(patch) + 1}"
+        with tempfile.TemporaryDirectory() as tmp:
+            usual = write_runtime(Path(tmp) / "a" / "STS2-RitsuLib", runtime_payload())
+            self.assertIn(PROFILE.compat_target, validate_runtime_asset(usual, later))
+            # A RitsuLib that ships a variant for the patch itself would load that one instead.
+            closer = write_runtime(
+                Path(tmp) / "b" / "STS2-RitsuLib",
+                runtime_payload(targets=(PROFILE.compat_target, later)),
+            )
+            with self.assertRaisesRegex(RitsuProfileError, f"would load its {later} variant"):
+                validate_runtime_asset(closer, later)
 
     def test_host_newer_than_the_pin_points_at_the_plugin(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

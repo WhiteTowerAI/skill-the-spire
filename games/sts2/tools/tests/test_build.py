@@ -24,6 +24,31 @@ class BuildTests(unittest.TestCase):
             )
             self.assertEqual(env, run.call_args.kwargs["env"])
 
+    def test_patch_host_refuses_fixed_adapters_only_on_a_different_game_build(self) -> None:
+        import hashlib
+
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp) / "game"
+            data = game / "data_sts2_windows_x86_64"
+            data.mkdir(parents=True)
+            (data / "sts2.dll").write_bytes(b"MZ patched build")
+            patched_sha = hashlib.sha256(b"MZ patched build").hexdigest()
+            project = Path(tmp) / "project"
+            with mock.patch.object(build, "project_adapter_dependencies", return_value=set()):
+                self.assertIn("no vanilla override", build.check_patch_host_adapters(project, game))
+            with mock.patch.object(
+                build, "project_adapter_dependencies", return_value={"ancient.flow.finish"}
+            ):
+                with mock.patch.object(
+                    build, "load_catalog", return_value={"assembly": {"sha256": "0" * 64}}
+                ):
+                    with self.assertRaisesRegex(build.VanillaOverrideError, "ancient.flow.finish"):
+                        build.check_patch_host_adapters(project, game)
+                with mock.patch.object(
+                    build, "load_catalog", return_value={"assembly": {"sha256": patched_sha}}
+                ):
+                    self.assertIn("matches the catalog", build.check_patch_host_adapters(project, game))
+
     def test_deployed_mod_rejects_any_ritsulib_module(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "project"

@@ -2218,6 +2218,33 @@ class VanillaOverrideManifestTests(unittest.TestCase):
         )
         self.assertIn("operations=1", summary)
 
+    def test_adapter_dependencies_are_reported_for_patch_host_checks(self) -> None:
+        catalog = make_ancient_catalog()
+        self.assertEqual(
+            set(), overrides.override_adapter_dependencies(manifest_with(catalog, []), catalog)
+        )
+        # A public route can still depend on a fixed Adapter: appending an Ancient option
+        # finishes through the reviewed flow boundary.
+        public = make_ancient_operation(catalog)
+        self.assertEqual(
+            {"ancient.flow.finish"},
+            overrides.override_adapter_dependencies(manifest_with(catalog, [public]), catalog),
+        )
+        initial = make_ancient_option(
+            "replace-road", "PROOF_ANCIENT_REPLACE_ROAD", next_step={"kind": "page", "page": "REPLACED"}
+        )
+        page = {
+            "id": "REPLACED",
+            "description_key": "PROOF_ANCIENT_REPLACED",
+            "options": [make_ancient_option("replace-end", "PROOF_ANCIENT_REPLACE_END")],
+        }
+        replacement = make_ancient_operation(
+            catalog, route_id="ancient.initial-options.replace", option=initial, pages=[page]
+        )
+        used = overrides.override_adapter_dependencies(manifest_with(catalog, [replacement]), catalog)
+        self.assertIn("ancient.initial-options.replace", used)
+        self.assertIsNone(overrides._ADAPTERS_IN_USE)
+
     def test_ancient_replacement_needs_its_flow_adapters_in_the_catalog(self) -> None:
         catalog = make_ancient_catalog()
         initial = make_ancient_option(

@@ -59,8 +59,9 @@ python games/sts2/tools/launch.py --mod-name <ModName>
 `launch.py` polls until the main menu, closes the game, and prints the `grep_log.py` verdict.
 
 Tier 1 requires the exact `[T2MOD-SELFTEST] <ModName> loaded ok` marker with
-`framework=RitsuLib`, actual framework version `>=0.6.14`, exact `host=0.111.1`, exact
-`compat=0.111.0`, and no fresh error/exception block.
+`framework=RitsuLib`, actual framework version `>=0.6.14`, exact `host=0.111.1` (the pinned
+profile the Mod was built for, also on a later `0.111.x` patch), exact `compat=0.111.0`, and no
+fresh error/exception block.
 
 ### Tier 2 / SelfTest
 
