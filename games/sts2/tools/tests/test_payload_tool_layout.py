@@ -16,7 +16,8 @@ SOURCE_SKILLS = TOOLS_DIR.parent / "skills"
 class PayloadLayoutTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp.name) / "skills"
+        # resolve(): runner temp dirs can be 8.3 short paths, and the tool resolves __file__.
+        self.root = Path(self.temp.name).resolve() / "skills"
         self.scripts = self.root / "modmaker" / "scripts"
         catalogs = self.root / "sts2api" / "reference" / "catalogs"
         catalogs.mkdir(parents=True)
@@ -44,6 +45,18 @@ class PayloadLayoutTests(unittest.TestCase):
         count, path = result.stdout.split(maxsplit=1)
         self.assertEqual("68", count)
         self.assertTrue(Path(path.strip()).is_relative_to(self.root))
+
+
+class PluginManifestTests(unittest.TestCase):
+    def test_both_plugins_ship_the_same_version(self) -> None:
+        import json
+
+        publish = TOOLS_DIR.parents[2] / "scripts" / "publish"
+        versions = {
+            name: json.loads((publish / name).read_text(encoding="utf-8"))["version"]
+            for name in ("claude-plugin.json", "codex-plugin.json")
+        }
+        self.assertEqual(1, len(set(versions.values())), versions)
 
 
 if __name__ == "__main__":
