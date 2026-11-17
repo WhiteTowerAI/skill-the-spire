@@ -39,7 +39,7 @@ must reuse that same successful add result and must not grant a second Card.
 
 ## Why this works
 
-STS2 0.107.1 exposes the complete runtime chain through public model hooks:
+STS2 0.111.1 exposes the complete runtime chain through public model hooks:
 
 1. `UnknownMapPointOdds.Roll` calls `Hook.ModifyUnknownMapPointRoomTypes` before choosing
    the Unknown room type.

@@ -70,7 +70,7 @@ list:
   If the callback cannot supply a primitive's required context, owner, source, or target, record
   the exact unsupported combination instead of changing the accepted result.
 - For a raw model hook, name the hook, its owning element, and its catalog shape from
-  `reference/catalogs/model-hooks-sts2-0.107.1.json`, and state the subject guard, condition,
+  `reference/catalogs/model-hooks-sts2-0.111.1.json`, and state the subject guard, condition,
   value or edit, neutral result, DynamicVar text binding, and ordering in the operation above.
   Build fails an override whose surface the hook never reaches. Ordinary recipe behavior needs no
   Hook line.

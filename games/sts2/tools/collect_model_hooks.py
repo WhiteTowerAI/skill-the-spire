@@ -40,8 +40,8 @@ from ritsu_profile import PROFILE
 
 
 SCHEMA = "skillthespire.sts2.model-hooks/v1"
-HOST_VERSION = "0.107.1"
-CATALOG_RELATIVE_PATH = Path("reference/catalogs/model-hooks-sts2-0.107.1.json")
+HOST_VERSION = PROFILE.host_version
+CATALOG_RELATIVE_PATH = Path("reference/catalogs") / f"model-hooks-{PROFILE.catalog_suffix}"
 
 TOOLS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = TOOLS_DIR.parents[2]
@@ -550,7 +550,7 @@ def build_catalog() -> dict:
         "framework_profile": PROFILE.profile_id,
         "source": {
             "definition": (
-                "pinned STS2 0.107.1 decompile: Core/Models/AbstractModel.cs declarations, "
+                f"pinned STS2 {HOST_VERSION} decompile: Core/Models/AbstractModel.cs declarations, "
                 "Core/Hooks/Hook.cs dispatchers, Core/Models/** vanilla overrides"
             ),
             "projection": "python collect_model_hooks.py extract",

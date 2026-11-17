@@ -39,7 +39,7 @@ await CreatureCmd.LoseMaxHp(
     new ThrowingPlayerChoiceContext(), owner.Creature, maxHpLoss, isFromCard: false);
 await CreatureCmd.Damage(
     new ThrowingPlayerChoiceContext(), owner.Creature, hpLoss,
-    ValueProp.Unblockable | ValueProp.Unpowered, null, null);
+    ValueProp.Unblockable | ValueProp.Unpowered, dealer: null, cardSource: null, cardPlay: null);
 ```
 
 For a known card, create it through the run and add it to the real deck:

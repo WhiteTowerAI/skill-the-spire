@@ -143,7 +143,7 @@ protected override async Task OnPlay(
     Creature? target = cardPlay.Target;
     ArgumentNullException.ThrowIfNull(target);
     await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-        .FromCard(this)
+        .FromCard(this, cardPlay)
         .Targeting(target)
         .Execute(choiceContext);
 }
@@ -164,7 +164,7 @@ protected override async Task OnPlay(
     foreach (Creature target in this.GetTargets())
     {
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-            .FromCard(this)
+            .FromCard(this, cardPlay)
             .Targeting(target)
             .Execute(choiceContext);
     }
@@ -190,8 +190,7 @@ protected override async Task OnUse(
 {
     AssertValidForTargetedPotion(target);
     await CreatureCmd.Damage(
-        choiceContext, target, 4m, ValueProp.Unpowered,
-        Owner.Creature, null);
+        choiceContext, target, 4m, ValueProp.Unpowered, Owner.Creature);
 }
 ```
 
@@ -212,8 +211,7 @@ protected override async Task OnUse(
     foreach (Creature enemy in this.GetTargets())
     {
         await CreatureCmd.Damage(
-            choiceContext, enemy, 4m, ValueProp.Unpowered,
-            Owner.Creature, null);
+            choiceContext, enemy, 4m, ValueProp.Unpowered, Owner.Creature);
     }
 }
 ```

@@ -103,7 +103,8 @@ public override decimal EnchantDamageMultiplicative(decimal originalDamage, Valu
 
 // WRONG on an Enchantment: compiles, and the framework's own docs forbid it.
 public override decimal ModifyDamageMultiplicative(
-    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource) { ... }
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource,
+    CardPlay? cardPlay) { ... }
 ```
 
 | Replacement | SPEC id | Signature | Return when not applying |

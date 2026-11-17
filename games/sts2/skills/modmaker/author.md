@@ -120,7 +120,7 @@ Each element recipe's Localization section gives its table, its flat keys under 
 RitsuLib entry, and examples. Keys are flat strings, never nested JSON (`quirks.md`).
 
 **Every string follows `reference/vanilla-text-style.md`.** Look up each game term in
-`reference/catalogs/text-glossary-sts2-0.107.1.json` and use its exact `eng`/`zhs` name and
+`reference/catalogs/text-glossary-sts2-0.111.1.json` and use its exact `eng`/`zhs` name and
 color; give each surface its vanilla number color and line breaks (Card `:diff()` numbers
 uncolored and one effect per line; Relic/Potion/Power/Event numbers `[blue]`, heals `[green]`,
 Event costs `[red]`); write Chinese with full-width punctuation, no spaces, and the vanilla

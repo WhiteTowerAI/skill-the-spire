@@ -21,7 +21,7 @@ from ritsu_profile import (
     validate_host_version,
     validate_project_contract,
 )
-from vanilla_overrides import write_empty_project_manifest
+from vanilla_overrides import repin_project_manifest, write_empty_project_manifest
 
 
 NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -66,6 +66,79 @@ def _copy_bundled_godot_sdk(project_dir: Path) -> None:
     shutil.copytree(source, target)
 
 
+def _csproj_text(compile_version: str, compile_digest: str) -> str:
+    """The scaffold-owned project file. It names no Mod: MSBuild takes that from the file name."""
+    ritsu_assemblies = [
+        (name, "$(RitsuLibRuntimeRoot)\\" + relative.replace("/", "\\"), relative)
+        for name, relative in PROFILE.assembly_relative_paths()
+    ]
+    ritsu_references = "\n".join(
+        f'    <Reference Include="{name}" HintPath="{hint}" Private="false" />'
+        for name, hint, _ in ritsu_assemblies
+    )
+    ritsu_reference_checks = "\n".join(
+        f"    <Error Condition=\"!Exists('{hint}')\" "
+        f'Text="The checked local RitsuLib runtime is missing {relative}." />'
+        for _, hint, relative in ritsu_assemblies
+    )
+
+    sdk_root = f"skillthespire\\sdk\\Godot.NET.Sdk.{GODOT_SDK_VERSION}\\Sdk"
+
+    csproj = f'''<Project>
+  <Import Project="{sdk_root}\\Sdk.props" />
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>true</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Sts2ApiCompat>{PROFILE.compat_target}</Sts2ApiCompat>
+    <RitsuLibProfile>{PROFILE.profile_id}</RitsuLibProfile>
+    <RitsuLibCompileVersion>{compile_version}</RitsuLibCompileVersion>
+    <RitsuLibCompileAssemblySetSha256>{compile_digest}</RitsuLibCompileAssemblySetSha256>
+    <RitsuLibAutoCopy>false</RitsuLibAutoCopy>
+    <RitsuLibDeployDir></RitsuLibDeployDir>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GodotDisabledSourceGenerators>GodotPluginsInitializer</GodotDisabledSourceGenerators>
+    <DisableImplicitGodotGeneratorReferences>true</DisableImplicitGodotGeneratorReferences>
+    <DisableImplicitGodotSharpReferences>true</DisableImplicitGodotSharpReferences>
+    <AppOutputBase>$(MSBuildProjectDirectory)\\</AppOutputBase>
+    <PathMap>$(AppOutputBase)=.\\</PathMap>
+  </PropertyGroup>
+  <ItemGroup Condition="Exists('$(Sts2DataDir)')">
+    <Reference Include="sts2" HintPath="$(Sts2DataDir)\\sts2.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(Sts2DataDir)\\0Harmony.dll" Private="false" />
+    <Reference Include="GodotSharp" HintPath="$(Sts2DataDir)\\GodotSharp.dll" Private="false" />
+    <Reference Include="System.IO.Hashing" HintPath="$(Sts2DataDir)\\System.IO.Hashing.dll" Private="false" />
+{ritsu_references}
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mod_manifest.json" />
+    <None Include="skillthespire\\vanilla-overrides.json" Condition="Exists('skillthespire\\vanilla-overrides.json')" />
+    <None Include="Directory.Build.props" />
+    <None Include="Sts2PathDiscovery.props" />
+  </ItemGroup>
+  <Target Name="CheckRitsuLibProfile" BeforeTargets="Build">
+    <Error Condition="'$(Sts2ApiCompat)' != '{PROFILE.compat_target}'" Text="RitsuLib profile requires Sts2ApiCompat={PROFILE.compat_target}." />
+    <Error Condition="'$(RitsuLibAutoCopy)' != 'false'" Text="RitsuLib consumer projects must not deploy the framework DLL." />
+    <Error Condition="'$(Sts2DataDir)' == '' or !Exists('$(Sts2DataDir)\\sts2.dll')" Text="STS2 stable {PROFILE.host_version} data not found. Set Sts2Dir in local.props." />
+    <Error Condition="!Exists('$(Sts2DataDir)\\0Harmony.dll')" Text="The local STS2 data directory is missing 0Harmony.dll." />
+    <Error Condition="!Exists('$(Sts2DataDir)\\GodotSharp.dll')" Text="The local STS2 data directory is missing GodotSharp.dll." />
+    <Error Condition="!Exists('$(Sts2DataDir)\\System.IO.Hashing.dll')" Text="The local STS2 data directory is missing System.IO.Hashing.dll." />
+    <Error Condition="'$(RitsuLibRuntimeRoot)' == ''" Text="The checked local RitsuLib {compile_version} runtime folder was not resolved by build.py." />
+{ritsu_reference_checks}
+  </Target>
+  <Target Name="CopySkillTheSpireArtifacts" AfterTargets="Build">
+    <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\\mod_manifest.json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+  </Target>
+  <Import Project="{sdk_root}\\Sdk.targets" />
+</Project>
+'''
+    return csproj
+
+
 def generate(
     project_dir: Path,
     mod_name: str,
@@ -99,74 +172,7 @@ def generate(
     compile_digest = (
         compile_profile.assembly_set_sha256 if compile_profile else UNRESOLVED_COMPILE_HASH
     )
-    ritsu_assemblies = [
-        (name, "$(RitsuLibRuntimeRoot)\\" + relative.replace("/", "\\"), relative)
-        for name, relative in PROFILE.assembly_relative_paths()
-    ]
-    ritsu_references = "\n".join(
-        f'    <Reference Include="{name}" HintPath="{hint}" Private="false" />'
-        for name, hint, _ in ritsu_assemblies
-    )
-    ritsu_reference_checks = "\n".join(
-        f"    <Error Condition=\"!Exists('{hint}')\" "
-        f'Text="The checked local RitsuLib runtime is missing {relative}." />'
-        for _, hint, relative in ritsu_assemblies
-    )
-
-    sdk_root = f"skillthespire\\sdk\\Godot.NET.Sdk.{GODOT_SDK_VERSION}\\Sdk"
-
-    csproj = f'''<Project>
-  <Import Project="{sdk_root}\\Sdk.props" />
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>true</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Sts2ApiCompat>{PROFILE.host_version}</Sts2ApiCompat>
-    <RitsuLibProfile>{PROFILE.profile_id}</RitsuLibProfile>
-    <RitsuLibCompileVersion>{compile_version}</RitsuLibCompileVersion>
-    <RitsuLibCompileAssemblySetSha256>{compile_digest}</RitsuLibCompileAssemblySetSha256>
-    <RitsuLibAutoCopy>false</RitsuLibAutoCopy>
-    <RitsuLibDeployDir></RitsuLibDeployDir>
-    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <GodotDisabledSourceGenerators>GodotPluginsInitializer</GodotDisabledSourceGenerators>
-    <DisableImplicitGodotGeneratorReferences>true</DisableImplicitGodotGeneratorReferences>
-    <DisableImplicitGodotSharpReferences>true</DisableImplicitGodotSharpReferences>
-    <AppOutputBase>$(MSBuildProjectDirectory)\\</AppOutputBase>
-    <PathMap>$(AppOutputBase)=.\\</PathMap>
-  </PropertyGroup>
-  <ItemGroup Condition="Exists('$(Sts2DataDir)')">
-    <Reference Include="sts2" HintPath="$(Sts2DataDir)\\sts2.dll" Private="false" />
-    <Reference Include="0Harmony" HintPath="$(Sts2DataDir)\\0Harmony.dll" Private="false" />
-    <Reference Include="GodotSharp" HintPath="$(Sts2DataDir)\\GodotSharp.dll" Private="false" />
-    <Reference Include="System.IO.Hashing" HintPath="$(Sts2DataDir)\\System.IO.Hashing.dll" Private="false" />
-{ritsu_references}
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="mod_manifest.json" />
-    <None Include="skillthespire\\vanilla-overrides.json" Condition="Exists('skillthespire\\vanilla-overrides.json')" />
-    <None Include="Directory.Build.props" />
-    <None Include="Sts2PathDiscovery.props" />
-  </ItemGroup>
-  <Target Name="CheckRitsuLibProfile" BeforeTargets="Build">
-    <Error Condition="'$(Sts2ApiCompat)' != '{PROFILE.host_version}'" Text="RitsuLib profile requires Sts2ApiCompat={PROFILE.host_version}." />
-    <Error Condition="'$(RitsuLibAutoCopy)' != 'false'" Text="RitsuLib consumer projects must not deploy the framework DLL." />
-    <Error Condition="'$(Sts2DataDir)' == '' or !Exists('$(Sts2DataDir)\\sts2.dll')" Text="STS2 stable {PROFILE.host_version} data not found. Set Sts2Dir in local.props." />
-    <Error Condition="!Exists('$(Sts2DataDir)\\0Harmony.dll')" Text="The local STS2 data directory is missing 0Harmony.dll." />
-    <Error Condition="!Exists('$(Sts2DataDir)\\GodotSharp.dll')" Text="The local STS2 data directory is missing GodotSharp.dll." />
-    <Error Condition="!Exists('$(Sts2DataDir)\\System.IO.Hashing.dll')" Text="The local STS2 data directory is missing System.IO.Hashing.dll." />
-    <Error Condition="'$(RitsuLibRuntimeRoot)' == ''" Text="The checked local RitsuLib {compile_version} runtime folder was not resolved by build.py." />
-{ritsu_reference_checks}
-  </Target>
-  <Target Name="CopySkillTheSpireArtifacts" AfterTargets="Build">
-    <MakeDir Directories="$(ModsPath)$(MSBuildProjectName)" />
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\\mod_manifest.json" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" />
-    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModsPath)$(MSBuildProjectName)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
-  </Target>
-  <Import Project="{sdk_root}\\Sdk.targets" />
-</Project>
-'''
+    csproj = _csproj_text(compile_version, compile_digest)
     directory_props = '''<Project>
   <Import Project="local.props" Condition="Exists('local.props')" />
   <Import Project="Sts2PathDiscovery.props" Condition="Exists('Sts2PathDiscovery.props')" />
@@ -304,6 +310,90 @@ def repin_runtime(project_dir: Path, mod_name: str, compile_profile: RuntimeComp
     return compile_profile.version
 
 
+_PROFILE_RE = re.compile(r"<RitsuLibProfile>([^<]*)</RitsuLibProfile>")
+_MAINFILE_HOST_RE = re.compile(r"(\bhost=)\d+(?:\.\d+)+(?= compat=)")
+
+
+def migrate_profile(
+    project_dir: Path, mod_name: str, compile_profile: RuntimeCompileProfile
+) -> list[str]:
+    """Move a project scaffolded for an older pinned profile onto the current one.
+
+    Only what scaffold owns is rewritten: the project file, the manifest's game and RitsuLib
+    floors, the load marker's host and compile version, the self-test kit, the bundled build
+    SDK, and the override manifest's catalog pin. Authored sources, resources, and planning
+    documents stay as they are, so the next Build reports every call the new game API changed.
+    """
+    csproj = project_dir / f"{mod_name}.csproj"
+    mainfile = project_dir / f"{mod_name}Code" / "MainFile.cs"
+    manifest_path = project_dir / "mod_manifest.json"
+    for required in (csproj, mainfile, manifest_path):
+        if not required.is_file():
+            raise ValueError(f"not a scaffolded project: {required} is missing")
+    recorded = _PROFILE_RE.findall(csproj.read_text(encoding="utf-8"))
+    if len(recorded) != 1:
+        raise ValueError(f"{csproj.name} does not record exactly one RitsuLibProfile")
+    previous = recorded[0]
+    if previous == PROFILE.profile_id:
+        raise ValueError(
+            f"{csproj.name} is already on {PROFILE.profile_id}; use --repin-runtime when only "
+            "the installed RitsuLib changed"
+        )
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid manifest JSON in {manifest_path}: {exc}") from exc
+    if not isinstance(manifest, dict):
+        raise ValueError(f"manifest root must be an object: {manifest_path}")
+
+    changed = [csproj.name]
+    _write(csproj, _csproj_text(compile_profile.version, compile_profile.assembly_set_sha256))
+
+    manifest["min_game_version"] = PROFILE.host_version
+    manifest["dependencies"] = [
+        {"id": PROFILE.runtime_mod_id, "min_version": PROFILE.framework_version}
+    ]
+    _write(manifest_path, json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+    changed.append(manifest_path.name)
+
+    notes: list[str] = []
+    main_text = mainfile.read_text(encoding="utf-8")
+    main_text, hosts = _MAINFILE_HOST_RE.subn(
+        lambda match: f"{match.group(1)}{PROFILE.host_version}", main_text
+    )
+    main_text, versions = _MAINFILE_VERSION_RE.subn(
+        lambda match: f"{match.group(1)}{compile_profile.version}{match.group(2)}", main_text
+    )
+    if hosts == 1 and versions == 1:
+        _write(mainfile, main_text)
+        changed.append(mainfile.name)
+    else:
+        notes.append(
+            f"{mainfile.name} does not hold the scaffold's load marker; copy the marker lines "
+            "from a freshly scaffolded project so Tier 1 can read the new profile"
+        )
+
+    if selftest_kit.kit_path(project_dir, mod_name).is_file():
+        selftest_kit.write(project_dir, mod_name)
+        changed.append(f"{selftest_kit.KIT_FILE} (v{selftest_kit.template_version()})")
+    else:
+        notes.append(
+            "this project predates the self-test kit; its own harness must be repaired by hand "
+            "or replaced through --refresh-selftest-kit"
+        )
+
+    sdk_dir = project_dir / "skillthespire" / "sdk" / f"Godot.NET.Sdk.{GODOT_SDK_VERSION}"
+    if not sdk_dir.is_dir():
+        _copy_bundled_godot_sdk(project_dir)
+        changed.append(f"skillthespire/sdk/{sdk_dir.name}")
+
+    if repin_project_manifest(project_dir) is not None:
+        changed.append("skillthespire/vanilla-overrides.json (catalog pin)")
+
+    validate_project_contract(project_dir, mod_name)
+    return [f"{previous} -> {PROFILE.profile_id}", "rewrote " + ", ".join(changed), *notes]
+
+
 def refresh_selftest_kit(project_dir: Path, mod_name: str) -> int:
     try:
         validate_project_contract(project_dir, mod_name)
@@ -346,6 +436,12 @@ def main(argv: list[str]) -> int:
         help="Rewrite <ModName>Code/SelfTestKit.cs in an existing project from the bundled kit. "
         "SelfTestScenarios.cs and every other source stay as they are.",
     )
+    parser.add_argument(
+        "--migrate-profile",
+        action="store_true",
+        help="Move an existing project that was scaffolded for an older game version onto the "
+        "current pinned profile. Authored sources stay as they are.",
+    )
     args = parser.parse_args(argv)
     if args.refresh_selftest_kit:
         return refresh_selftest_kit(Path(args.project_dir), args.mod_name)
@@ -358,7 +454,10 @@ def main(argv: list[str]) -> int:
             Path(args.runtime_dir) if args.runtime_dir else None,
         )
         compile_profile = resolve_runtime_compile_profile(runtime.path)
-        if args.repin_runtime:
+        if args.migrate_profile:
+            for line in migrate_profile(Path(args.project_dir), args.mod_name, compile_profile):
+                print(f"[scaffold] {line}")
+        elif args.repin_runtime:
             repin_runtime(Path(args.project_dir), args.mod_name, compile_profile)
         else:
             generate(
@@ -370,7 +469,9 @@ def main(argv: list[str]) -> int:
     except (OSError, RitsuProfileError, ValueError) as exc:
         print(f"[scaffold] FAILED: {exc}", file=sys.stderr)
         return 2
-    action = "re-pinned" if args.repin_runtime else "generated"
+    action = (
+        "migrated" if args.migrate_profile else "re-pinned" if args.repin_runtime else "generated"
+    )
     print(
         f"[scaffold] {action} {PROFILE.profile_id}, local runtime {compile_profile.version} "
         f"-> {Path(args.project_dir).resolve()}"

@@ -11,7 +11,7 @@ recommendation logic, user choices, and boundaries are preserved.
 
 - **Lazy grounding:** load the Character Foundation grammar for Character work and no unrelated
   reference.
-- **Evidence labels:** distinguish pinned `0.107.1` facts, observed native conventions, and
+- **Evidence labels:** distinguish pinned `0.111.1` facts, observed native conventions, and
   creative decisions.
 - **Actionable default:** recommend one exact deck with names, counts, base effects, upgrades,
   total, and a Starter relic lesson before asking for deck details.

@@ -86,7 +86,7 @@ time, `LocalContext` player lookups and mutable statics in gameplay models); fol
 
 - **Never `System.Random`** — it breaks determinism and seed sharing, and Build rejects it. Use
   `MegaCrit.Sts2.Core.Random.Rng`: `new Rng(Owner, base.Id)`; `.NextBool()` (50/50),
-  `.NextInt(maxExcl)`. Add a mixin (`new Rng(Owner, base.Id, (uint)turn)`) if it may
+  `.NextInt(maxExcl)`. Add a mixin (`new Rng(Owner, base.Id, (ulong)turn)`) if it may
   roll repeatedly and you want distinct results.
 
 ## Build / toolchain

@@ -1,6 +1,6 @@
 {
  "schema": "skillthespire.sts2.text-glossary/v1",
- "host": "0.107.1",
+ "host": "0.111.1",
  "terms": [
   {
    "eng": "A Thousand Cuts",
@@ -112,6 +112,19 @@
    "zhs_plain": 0
   },
   {
+   "eng": "Ambergris",
+   "zhs": "龙涎香",
+   "color": "gold",
+   "kinds": [
+    "observed",
+    "power"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
    "eng": "Ancient",
    "zhs": "先古之民",
    "color": "gold",
@@ -205,9 +218,9 @@
     "observed"
    ],
    "eng_colored": 2,
-   "eng_plain": 64,
+   "eng_plain": 63,
    "zhs_colored": 3,
-   "zhs_plain": 98
+   "zhs_plain": 100
   },
   {
    "eng": "Automation",
@@ -289,10 +302,10 @@
     "hover_tip",
     "observed"
    ],
-   "eng_colored": 229,
+   "eng_colored": 237,
    "eng_plain": 0,
-   "zhs_colored": 229,
-   "zhs_plain": 24,
+   "zhs_colored": 237,
+   "zhs_plain": 27,
    "zhs_measure": "点"
   },
   {
@@ -408,6 +421,18 @@
    "zhs_plain": 0
   },
   {
+   "eng": "Cacophony",
+   "zhs": "不谐合曲",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
    "eng": "Calamity",
    "zhs": "劫难",
    "color": "gold",
@@ -452,9 +477,8 @@
    ],
    "eng_colored": 0,
    "eng_plain": 0,
-   "zhs_colored": 2,
-   "zhs_plain": 24,
-   "zhs_measure": "次"
+   "zhs_colored": 0,
+   "zhs_plain": 26
   },
   {
    "eng": "Chains of Binding",
@@ -477,9 +501,9 @@
     "observed"
    ],
    "eng_colored": 37,
-   "eng_plain": 0,
+   "eng_plain": 1,
    "zhs_colored": 39,
-   "zhs_plain": 17
+   "zhs_plain": 23
   },
   {
    "eng": "Channeled",
@@ -491,7 +515,7 @@
    "eng_colored": 2,
    "eng_plain": 0,
    "zhs_colored": 4,
-   "zhs_plain": 72
+   "zhs_plain": 74
   },
   {
    "eng": "Child of the Stars",
@@ -559,6 +583,18 @@
    "color": "gold",
    "kinds": [
     "hover_tip"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Concoct",
+   "zhs": "调制",
+   "color": "gold",
+   "kinds": [
+    "power"
    ],
    "eng_colored": 0,
    "eng_plain": 0,
@@ -841,7 +877,7 @@
    ],
    "eng_colored": 8,
    "eng_plain": 0,
-   "zhs_colored": 8,
+   "zhs_colored": 7,
    "zhs_plain": 0,
    "zhs_measure": "个"
   },
@@ -901,9 +937,9 @@
     "hover_tip",
     "observed"
    ],
-   "eng_colored": 109,
+   "eng_colored": 113,
    "eng_plain": 1,
-   "zhs_colored": 110,
+   "zhs_colored": 114,
    "zhs_plain": 7
   },
   {
@@ -1022,27 +1058,15 @@
     "observed",
     "power"
    ],
-   "eng_colored": 33,
+   "eng_colored": 34,
    "eng_plain": 1,
-   "zhs_colored": 33,
+   "zhs_colored": 34,
    "zhs_plain": 1,
    "zhs_measure": "点"
   },
   {
    "eng": "Dexterity Down",
    "zhs": "敏捷下降",
-   "color": "gold",
-   "kinds": [
-    "power"
-   ],
-   "eng_colored": 0,
-   "eng_plain": 0,
-   "zhs_colored": 0,
-   "zhs_plain": 0
-  },
-  {
-   "eng": "Diamond Diadem",
-   "zhs": "钻石头冠",
    "color": "gold",
    "kinds": [
     "power"
@@ -1072,9 +1096,9 @@
     "hover_tip",
     "observed"
    ],
-   "eng_colored": 26,
+   "eng_colored": 27,
    "eng_plain": 0,
-   "zhs_colored": 26,
+   "zhs_colored": 27,
    "zhs_plain": 2
   },
   {
@@ -1121,9 +1145,9 @@
     "observed",
     "power"
    ],
-   "eng_colored": 38,
+   "eng_colored": 41,
    "eng_plain": 1,
-   "zhs_colored": 38,
+   "zhs_colored": 41,
    "zhs_plain": 1,
    "zhs_measure": "层"
   },
@@ -1164,6 +1188,18 @@
    "zhs_plain": 0
   },
   {
+   "eng": "Dowsing",
+   "zhs": "探寻",
+   "color": "gold",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 2,
+   "eng_plain": 0,
+   "zhs_colored": 2,
+   "zhs_plain": 0
+  },
+  {
    "eng": "Draw Cards Next Turn",
    "zhs": "下回合抽牌",
    "color": "gold",
@@ -1183,9 +1219,9 @@
     "hover_tip",
     "observed"
    ],
-   "eng_colored": 66,
+   "eng_colored": 69,
    "eng_plain": 0,
-   "zhs_colored": 65,
+   "zhs_colored": 68,
    "zhs_plain": 4
   },
   {
@@ -1198,7 +1234,7 @@
    "eng_colored": 0,
    "eng_plain": 0,
    "zhs_colored": 0,
-   "zhs_plain": 17
+   "zhs_plain": 21
   },
   {
    "eng": "Echo Form",
@@ -1283,7 +1319,7 @@
    "eng_colored": 0,
    "eng_plain": 8,
    "zhs_colored": 0,
-   "zhs_plain": 276
+   "zhs_plain": 274
   },
   {
    "eng": "Energy",
@@ -1404,9 +1440,9 @@
     "keyword",
     "observed"
    ],
-   "eng_colored": 19,
+   "eng_colored": 20,
    "eng_plain": 0,
-   "zhs_colored": 20,
+   "zhs_colored": 21,
    "zhs_plain": 0
   },
   {
@@ -1466,9 +1502,9 @@
     "keyword",
     "observed"
    ],
-   "eng_colored": 30,
+   "eng_colored": 29,
    "eng_plain": 1,
-   "zhs_colored": 43,
+   "zhs_colored": 42,
    "zhs_plain": 7
   },
   {
@@ -1478,9 +1514,9 @@
    "kinds": [
     "observed"
    ],
-   "eng_colored": 6,
+   "eng_colored": 7,
    "eng_plain": 0,
-   "zhs_colored": 6,
+   "zhs_colored": 7,
    "zhs_plain": 0
   },
   {
@@ -1490,9 +1526,9 @@
    "kinds": [
     "observed"
    ],
-   "eng_colored": 14,
+   "eng_colored": 13,
    "eng_plain": 2,
-   "zhs_colored": 43,
+   "zhs_colored": 42,
    "zhs_plain": 7
   },
   {
@@ -1504,7 +1540,7 @@
    ],
    "eng_colored": 0,
    "eng_plain": 0,
-   "zhs_colored": 6,
+   "zhs_colored": 7,
    "zhs_plain": 0
   },
   {
@@ -1761,9 +1797,9 @@
     "observed",
     "orb"
    ],
-   "eng_colored": 9,
+   "eng_colored": 13,
    "eng_plain": 0,
-   "zhs_colored": 9,
+   "zhs_colored": 11,
    "zhs_plain": 0,
    "zhs_measure": "个"
   },
@@ -1865,8 +1901,8 @@
    ],
    "eng_colored": 74,
    "eng_plain": 3,
-   "zhs_colored": 75,
-   "zhs_plain": 2
+   "zhs_colored": 74,
+   "zhs_plain": 3
   },
   {
    "eng": "Goopy",
@@ -1929,6 +1965,18 @@
    "zhs_plain": 0
   },
   {
+   "eng": "Guilty",
+   "zhs": "愧疚",
+   "color": "red",
+   "kinds": [
+    "observed"
+   ],
+   "eng_colored": 3,
+   "eng_plain": 0,
+   "zhs_colored": 3,
+   "zhs_plain": 0
+  },
+  {
    "eng": "Hailstorm",
    "zhs": "冰雹风暴",
    "color": "gold",
@@ -1959,10 +2007,10 @@
    "kinds": [
     "observed"
    ],
-   "eng_colored": 185,
+   "eng_colored": 188,
    "eng_plain": 1,
-   "zhs_colored": 186,
-   "zhs_plain": 12
+   "zhs_colored": 190,
+   "zhs_plain": 10
   },
   {
    "eng": "Hang",
@@ -2109,6 +2157,18 @@
    "zhs_plain": 0
   },
   {
+   "eng": "Hibernate",
+   "zhs": "休眠",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 1
+  },
+  {
    "eng": "High Voltage",
    "zhs": "高电压",
    "color": "gold",
@@ -2168,6 +2228,18 @@
    "eng_plain": 1,
    "zhs_colored": 2,
    "zhs_plain": 1
+  },
+  {
+   "eng": "Imitation Learning",
+   "zhs": "模仿学习",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
   },
   {
    "eng": "Improvement",
@@ -2288,9 +2360,9 @@
     "observed",
     "power"
    ],
-   "eng_colored": 7,
+   "eng_colored": 6,
    "eng_plain": 0,
-   "zhs_colored": 7,
+   "zhs_colored": 6,
    "zhs_plain": 0,
    "zhs_measure": "层"
   },
@@ -2508,9 +2580,9 @@
     "observed"
    ],
    "eng_colored": 3,
-   "eng_plain": 49,
+   "eng_plain": 50,
    "zhs_colored": 2,
-   "zhs_plain": 49
+   "zhs_plain": 50
   },
   {
    "eng": "Mayhem",
@@ -2791,6 +2863,18 @@
    "zhs_plain": 0
   },
   {
+   "eng": "One for All",
+   "zhs": "一心化万",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
    "eng": "One-Two Punch",
    "zhs": "连环拳",
    "color": "gold",
@@ -2861,7 +2945,7 @@
    "eng_colored": 3,
    "eng_plain": 5,
    "zhs_colored": 4,
-   "zhs_plain": 72
+   "zhs_plain": 74
   },
   {
    "eng": "Osty",
@@ -2886,18 +2970,6 @@
    "eng_plain": 0,
    "zhs_colored": 33,
    "zhs_plain": 1
-  },
-  {
-   "eng": "Outbreak",
-   "zhs": "毒性爆发",
-   "color": "gold",
-   "kinds": [
-    "power"
-   ],
-   "eng_colored": 0,
-   "eng_plain": 0,
-   "zhs_colored": 0,
-   "zhs_plain": 0
   },
   {
    "eng": "Pagestorm",
@@ -3079,9 +3151,9 @@
     "observed",
     "power"
    ],
-   "eng_colored": 29,
+   "eng_colored": 31,
    "eng_plain": 1,
-   "zhs_colored": 29,
+   "zhs_colored": 31,
    "zhs_plain": 2,
    "zhs_measure": "层"
   },
@@ -3118,8 +3190,8 @@
    ],
    "eng_colored": 5,
    "eng_plain": 1,
-   "zhs_colored": 7,
-   "zhs_plain": 26
+   "zhs_colored": 17,
+   "zhs_plain": 18
   },
   {
    "eng": "Potion Slot",
@@ -3131,7 +3203,7 @@
    "eng_colored": 0,
    "eng_plain": 0,
    "zhs_colored": 0,
-   "zhs_plain": 5
+   "zhs_plain": 7
   },
   {
    "eng": "Potions",
@@ -3140,10 +3212,10 @@
    "kinds": [
     "observed"
    ],
-   "eng_colored": 2,
-   "eng_plain": 2,
-   "zhs_colored": 7,
-   "zhs_plain": 26
+   "eng_colored": 8,
+   "eng_plain": 1,
+   "zhs_colored": 17,
+   "zhs_plain": 18
   },
   {
    "eng": "Prep Time",
@@ -3212,9 +3284,9 @@
    "kinds": [
     "observed"
    ],
-   "eng_colored": 3,
+   "eng_colored": 4,
    "eng_plain": 2,
-   "zhs_colored": 3,
+   "zhs_colored": 4,
    "zhs_plain": 3
   },
   {
@@ -3482,9 +3554,9 @@
     "keyword",
     "observed"
    ],
-   "eng_colored": 19,
+   "eng_colored": 17,
    "eng_plain": 0,
-   "zhs_colored": 20,
+   "zhs_colored": 18,
    "zhs_plain": 2
   },
   {
@@ -3705,7 +3777,7 @@
    ],
    "eng_colored": 10,
    "eng_plain": 0,
-   "zhs_colored": 26,
+   "zhs_colored": 27,
    "zhs_plain": 0
   },
   {
@@ -3717,7 +3789,7 @@
    ],
    "eng_colored": 9,
    "eng_plain": 0,
-   "zhs_colored": 26,
+   "zhs_colored": 27,
    "zhs_plain": 0
   },
   {
@@ -3802,7 +3874,7 @@
    "eng_colored": 3,
    "eng_plain": 5,
    "zhs_colored": 3,
-   "zhs_plain": 44
+   "zhs_plain": 43
   },
   {
    "eng": "Skittish",
@@ -3993,9 +4065,9 @@
    "kinds": [
     "observed"
    ],
-   "eng_colored": 10,
+   "eng_colored": 15,
    "eng_plain": 2,
-   "zhs_colored": 14,
+   "zhs_colored": 20,
    "zhs_plain": 2
   },
   {
@@ -4016,6 +4088,18 @@
    "color": "purple",
    "kinds": [
     "enchantment"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Soulbound",
+   "zhs": "灵魂绑定",
+   "color": "gold",
+   "kinds": [
+    "power"
    ],
    "eng_colored": 0,
    "eng_plain": 0,
@@ -4236,9 +4320,9 @@
     "observed",
     "power"
    ],
-   "eng_colored": 92,
+   "eng_colored": 94,
    "eng_plain": 2,
-   "zhs_colored": 92,
+   "zhs_colored": 94,
    "zhs_plain": 2,
    "zhs_measure": "点"
   },
@@ -4682,7 +4766,7 @@
    "eng_colored": 26,
    "eng_plain": 2,
    "zhs_colored": 24,
-   "zhs_plain": 9
+   "zhs_plain": 10
   },
   {
    "eng": "Trash to Treasure",
@@ -4711,6 +4795,18 @@
   {
    "eng": "Tyranny",
    "zhs": "暴政",
+   "color": "gold",
+   "kinds": [
+    "power"
+   ],
+   "eng_colored": 0,
+   "eng_plain": 0,
+   "zhs_colored": 0,
+   "zhs_plain": 0
+  },
+  {
+   "eng": "Underworld",
+   "zhs": "幽冥之界",
    "color": "gold",
    "kinds": [
     "power"
@@ -4837,7 +4933,7 @@
    ],
    "eng_colored": 51,
    "eng_plain": 0,
-   "zhs_colored": 59,
+   "zhs_colored": 60,
    "zhs_plain": 1
   },
   {
@@ -4847,9 +4943,9 @@
    "kinds": [
     "observed"
    ],
-   "eng_colored": 9,
+   "eng_colored": 10,
    "eng_plain": 0,
-   "zhs_colored": 59,
+   "zhs_colored": 60,
    "zhs_plain": 1
   },
   {

@@ -6,8 +6,8 @@ dispatches through iterators whose listener sets differ, and the run-scope set c
 Powers, Orbs, or Monsters. A hook overridden outside its dispatching set compiles, ships,
 and never fires. These tests prevent that silent behavior gap.
 
-`reference/catalogs/model-hooks-sts2-0.107.1.json` is a generated projection of the pinned
-`0.107.1` decompile, written by `collect_model_hooks.py`. Unlike the art contract, the source
+`reference/catalogs/model-hooks-sts2-0.111.1.json` is a generated projection of the pinned
+`0.111.1` decompile, written by `collect_model_hooks.py`. Unlike the art contract, the source
 is maintainer-only and gitignored, so `--check` cannot run in a clean checkout. These tests
 therefore validate the *committed* catalog's internal consistency and its agreement with the
 shipped prose, and skip the freshness re-extraction when the decompile is absent.
@@ -31,7 +31,7 @@ COLLECTOR = TOOLS_DIR / "collect_model_hooks.py"
 REPO_ROOT = TOOLS_DIR.parents[2]
 STS2API_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "sts2api"
 CATALOG_PATH = (
-    STS2API_DIR / "reference" / "catalogs" / "model-hooks-sts2-0.107.1.json"
+    STS2API_DIR / "reference" / "catalogs" / "model-hooks-sts2-0.111.1.json"
 )
 NON_CARD_PATH = STS2API_DIR / "reference" / "vanilla-non-card-overrides.md"
 DECOMP_ROOT = REPO_ROOT / "baselines" / "decomp" / "sts2_full"
@@ -95,7 +95,7 @@ class ModelHookCatalogTests(unittest.TestCase):
 
     def test_schema_and_counts(self) -> None:
         self.assertEqual(collect_model_hooks.SCHEMA, self.catalog["schema"])
-        self.assertEqual("0.107.1", self.catalog["host_version"])
+        self.assertEqual("0.111.1", self.catalog["host_version"])
         counts = self.catalog["counts"]
         # Counted from the pinned assembly, not chosen. The 26 and 28 also appear in
         # `vanilla-non-card-overrides.md`, which the pairing test below holds to them.

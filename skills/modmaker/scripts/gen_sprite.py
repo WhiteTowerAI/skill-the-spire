@@ -1426,9 +1426,7 @@ def cmd_import(args: argparse.Namespace) -> int:
 # table. `export-contract` writes it; test_art_contract_catalog.py asserts the committed
 # file still equals what the code holds, so a code change with no re-export fails.
 ART_CONTRACT_SCHEMA = "skillthespire.sts2.art-contract/v1"
-ART_CONTRACT_RELATIVE_PATH = Path(
-    "reference/catalogs/art-contract-sts2-0.107.1.json"
-)
+ART_CONTRACT_RELATIVE_PATH = Path("reference/catalogs") / f"art-contract-{PROFILE.catalog_suffix}"
 
 
 def _canonical_json(value) -> bytes:
@@ -1508,7 +1506,7 @@ def build_art_contract_catalog() -> dict:
 
     catalog: dict = {
         "schema": ART_CONTRACT_SCHEMA,
-        "host_version": "0.107.1",
+        "host_version": PROFILE.host_version,
         "framework_profile": PROFILE.profile_id,
         "source": {
             # Name the modules, not a repo path: this catalog ships inside both payloads,

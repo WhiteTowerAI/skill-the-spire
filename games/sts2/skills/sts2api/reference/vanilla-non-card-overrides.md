@@ -208,8 +208,8 @@ surface in the generated Mod. Multiple compose rules may coexist in manifest ord
 
 ### Complete public hook lists
 
-The effect allowlist is all 100 asynchronous public `AbstractModel` callbacks in pinned
-`0.107.1`:
+The effect allowlist is all 101 asynchronous public `AbstractModel` callbacks in pinned
+`0.111.1`:
 
 ```text
 after_act_entered, after_add_to_deck_prevented, after_attack,
@@ -226,7 +226,7 @@ after_damage_received_late, after_death, after_died_to_doom, after_energy_reset,
 after_energy_reset_late, after_energy_spent, after_flush, after_forge,
 after_gold_gained, after_hand_emptied, after_item_purchased, after_map_generated,
 after_modifying_block_amount, after_modifying_card_play_count,
-after_modifying_card_play_result_pile_or_position,
+after_modifying_card_play_result_location,
 after_modifying_card_reward_options, after_modifying_damage_amount,
 after_modifying_energy_gain, after_modifying_gold_gained,
 after_modifying_hand_draw, after_modifying_hp_lost_after_osty,
@@ -242,7 +242,8 @@ after_side_turn_end, after_side_turn_end_late, after_side_turn_start,
 after_side_turn_start_late, after_stars_gained, after_stars_spent, after_summon,
 after_taking_extra_turn, after_targeting_blocked_vfx, before_attack,
 before_block_gained, before_card_auto_played, before_card_played,
-before_card_removed, before_combat_start, before_combat_start_late,
+before_card_removed, before_combat_reward_offered, before_combat_start,
+before_combat_start_late,
 before_damage_received, before_death, before_flush, before_flush_late,
 before_hand_draw, before_hand_draw_late, before_potion_used,
 before_power_amount_changed, before_room_entered, before_side_turn_end,
@@ -396,7 +397,7 @@ operations and contain no behavior scripts. Option and page text follows the Eve
 - One complete replacement conflicts with every same-target operation on that replacement
   surface. Data getter sets/deltas also use the normal same-surface conflict rules.
 - Public owner-hook composition never grants an Encounter or Event owner-hook route; those
-  model families do not enter the owner streams in pinned `0.107.1`.
+  model families do not enter the owner streams in pinned `0.111.1`.
 - Replacement preserves normal wrappers outside the exact body: Potion payment/use wrapper,
   Power application command, Orb queue/trigger host, Card enchantment/affliction wrapper,
   combat creation, Event room lifecycle, save identity, and history remain native.

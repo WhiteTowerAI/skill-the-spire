@@ -27,7 +27,7 @@ as far as needed to keep that text true. Each family reference names its text ro
 
 ## Pinned catalog
 
-The checked catalog is `reference/vanilla-overrides/catalogs/sts2-0.107.1.json`, the
+The checked catalog is `reference/vanilla-overrides/catalogs/sts2-0.111.1.json`, the
 inventory of every vanilla model in the pinned game. Read it only through
 `vanilla_overrides.py`. Each record carries the stable ID and type, category properties,
 Card base/upgrade costs and typed dynamic variables, Card/Relic/Potion pool membership,
@@ -71,8 +71,8 @@ Every new scaffold contains `skillthespire/vanilla-overrides.json`:
 {
   "schema": "skillthespire.sts2.vanilla-overrides/v1",
   "mod_id": "ExampleMod",
-  "profile": "ritsulib-0.6.7-sts2-0.107.1",
-  "host_version": "0.107.1",
+  "profile": "ritsulib-0.6.14-sts2-0.111.1",
+  "host_version": "0.111.1",
   "catalog_sha256": "c56bbcf3ac07f06e8644b43e536f6180c20b3d318f742ef7945a73eeb1f6791f",
   "operations": []
 }

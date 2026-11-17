@@ -52,7 +52,7 @@ from ritsu_profile import game_executable_dir, local_mods_dir
 
 APPID = "2868840"
 GAME_FOLDER = "Slay the Spire 2"
-# STS2 0.107.1 logs this once the main menu is up. Mod initializers run before it, so a
+# STS2 logs this once the main menu is up. Mod initializers run before it, so a
 # load marker that has not appeared by then never will.
 MAIN_MENU_MARKER = "[Startup] Time to main menu"
 TIER1_SETTLE_SECONDS = 5

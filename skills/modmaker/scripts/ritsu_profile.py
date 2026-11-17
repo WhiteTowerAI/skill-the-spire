@@ -19,8 +19,12 @@ class RitsuProfileError(ValueError):
 
 @dataclass(frozen=True)
 class RitsuProfile:
-    framework_version: str = "0.6.7"
-    host_version: str = "0.107.1"
+    framework_version: str = "0.6.14"
+    host_version: str = "0.111.1"
+    # RitsuLib builds one API variant per game API tier, named after the first game version
+    # of that tier, and its loader picks the highest tier that is not newer than the host.
+    # STS2 0.111.1 therefore runs the `0.111.0` variant, so host and compat target differ.
+    compat_target: str = "0.111.0"
     godot_sdk_version: str = "4.5.1"
     runtime_mod_id: str = "STS2-RitsuLib"
     # Since RitsuLib 0.6.0 the root DLL is only a loader. The API lives in per-host compat
@@ -43,7 +47,12 @@ class RitsuProfile:
 
     @property
     def compat_dir(self) -> str:
-        return f"compat/{self.host_version}"
+        return f"compat/{self.compat_target}"
+
+    @property
+    def catalog_suffix(self) -> str:
+        """Suffix of every pinned catalog file name, e.g. `model-hooks-sts2-0.111.1.json`."""
+        return f"sts2-{self.host_version}.json"
 
     def assembly_relative_paths(self) -> tuple[tuple[str, str], ...]:
         """Return every compile assembly as (name, runtime-root-relative POSIX path)."""
@@ -113,6 +122,19 @@ def _version_key(value: object) -> tuple[int, ...]:
     return parts + (0,) * (4 - len(parts))
 
 
+def loader_compat_target(targets: Iterable[str], host_version: str) -> str | None:
+    """The variant RitsuLib's loader picks for a host: the highest target not newer than it."""
+    usable: list[tuple[tuple[int, ...], str]] = []
+    for target in targets:
+        try:
+            key = _version_key(target)
+        except RitsuProfileError:
+            continue
+        if key <= _version_key(host_version):
+            usable.append((key, target))
+    return max(usable)[1] if usable else None
+
+
 def is_supported_runtime_version(value: object) -> bool:
     try:
         return _version_key(value) >= _version_key(PROFILE.framework_version)
@@ -138,12 +160,26 @@ def workshop_runtime_dir(sts2_dir: Path) -> Path | None:
     )
 
 
+def _installed_runtime_version(path: Path) -> tuple[int, ...] | None:
+    """The version an installed runtime folder declares, or None when it cannot be read."""
+    try:
+        data = json.loads((path / "mod_manifest.json").read_text(encoding="utf-8-sig"))
+        return _version_key(data.get("version", "")) if isinstance(data, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
 def resolve_runtime_asset(
     sts2_dir: Path,
     mods_root: Path,
     explicit: Path | None = None,
 ) -> RuntimeAssetSelection:
-    """Select the runtime path using the same local-before-Workshop source order as STS2."""
+    """Select the runtime folder the game itself would load.
+
+    When the same Mod sits in both `mods/` and the Steam Workshop, STS2 0.111 loads the
+    Workshop copy only if its version is strictly greater, and the local copy otherwise
+    (also when either version cannot be read). Earlier hosts always preferred the local copy.
+    """
     if explicit is not None:
         return RuntimeAssetSelection(explicit, "explicit")
 
@@ -162,6 +198,11 @@ def resolve_runtime_asset(
             f"Steam Workshop item {PROFILE.workshop_item_id}; searched: {searched}"
         )
 
+    if len(installed) == 2:
+        local_version = _installed_runtime_version(installed[0][1])
+        workshop_version = _installed_runtime_version(installed[1][1])
+        if local_version and workshop_version and workshop_version > local_version:
+            installed.reverse()
     source, selected = installed[0]
     return RuntimeAssetSelection(
         selected,
@@ -278,10 +319,17 @@ def validate_project_contract(project_dir: Path, mod_name: str | None = None) ->
             "generated consumer project is missing local assembly references: "
             + ", ".join(missing_references)
         )
-    compat = _property_values(root, "Sts2ApiCompat")
-    if PROFILE.host_version not in compat:
+    scaffolded_for = _property_values(root, "RitsuLibProfile")
+    if scaffolded_for and PROFILE.profile_id not in scaffolded_for:
         raise RitsuProfileError(
-            f"Sts2ApiCompat must be {PROFILE.host_version}; found {compat or ['<unset>']}"
+            f"this project was scaffolded for {scaffolded_for[0]}, and this tool builds "
+            f"{PROFILE.profile_id}; move it to the current game version with "
+            "`scaffold.py --migrate-profile`, then repair what the compiler reports"
+        )
+    compat = _property_values(root, "Sts2ApiCompat")
+    if PROFILE.compat_target not in compat:
+        raise RitsuProfileError(
+            f"Sts2ApiCompat must be {PROFILE.compat_target}; found {compat or ['<unset>']}"
         )
     autocopy = _property_values(root, "RitsuLibAutoCopy")
     if any(value.lower() != "false" for value in autocopy):
@@ -487,21 +535,31 @@ def _check_runtime_payload(files: _RuntimeFiles) -> tuple[str, tuple[RuntimeAsse
             f"profile reads the RitsuLib 0.6 schema {PROFILE.variant_manifest_schema} layout"
         )
     variants = manifest.get("variants")
+    targets = [
+        item
+        for item in (variants if isinstance(variants, list) else [])
+        if isinstance(item, dict)
+    ]
     entry = next(
-        (
-            item
-            for item in (variants if isinstance(variants, list) else [])
-            if isinstance(item, dict) and str(item.get("compatTarget")) == PROFILE.host_version
-        ),
+        (item for item in targets if str(item.get("compatTarget")) == PROFILE.compat_target),
         None,
     )
     if entry is None:
         raise RitsuProfileError(
-            f"runtime {files.label} has no matching {PROFILE.host_version} RitsuLib variant; "
-            "refusing to compile against another game version's API"
+            f"runtime {files.label} has no {PROFILE.compat_target} RitsuLib variant for STS2 "
+            f"{PROFILE.host_version}; refusing to compile against another game version's API"
+        )
+    loaded = loader_compat_target(
+        [str(item.get("compatTarget")) for item in targets], PROFILE.host_version
+    )
+    if loaded != PROFILE.compat_target:
+        raise RitsuProfileError(
+            f"runtime {files.label} would load its {loaded} variant on STS2 "
+            f"{PROFILE.host_version}, not the pinned {PROFILE.compat_target}; this RitsuLib "
+            "release needs a newer Skill the Spire"
         )
     marker = files.text(f"{PROFILE.compat_dir}/compat-target.txt").strip()
-    if marker != PROFILE.host_version:
+    if marker != PROFILE.compat_target:
         raise RitsuProfileError(f"runtime marker {PROFILE.compat_dir}/compat-target.txt is {marker!r}")
 
     expected = {
@@ -557,13 +615,25 @@ def validate_runtime_asset(path: Path) -> str:
                 return archive.read(name) if name is not None else None
 
             version, _ = _check_runtime_payload(_RuntimeFiles(path.name, read))
-        return f"{path.name}: RitsuLib {version}, compat {PROFILE.host_version}"
+        return f"{path.name}: RitsuLib {version}, compat {PROFILE.compat_target}"
 
     profile = resolve_runtime_compile_profile(path)
     return (
-        f"{profile.root}: RitsuLib {profile.version}, compat {PROFILE.host_version}, "
+        f"{profile.root}: RitsuLib {profile.version}, compat {PROFILE.compat_target}, "
         f"assembly set {profile.assembly_set_sha256[:12]}"
     )
+
+
+def _host_mismatch_hint(reported: str | None) -> str:
+    """Say which side is behind, so the user knows whether to update the game or the plugin."""
+    try:
+        newer = _version_key(reported) > _version_key(PROFILE.host_version)
+    except RitsuProfileError:
+        return "Check that this is a Steam install of Slay the Spire 2."
+    if newer:
+        return ("The game is newer than this Skill the Spire release supports; update the "
+                "plugin, or wait for a release that targets this game version.")
+    return "Update the game in Steam (default branch, no beta selected)."
 
 
 def validate_host_version(sts2_dir: Path) -> str:
@@ -583,10 +653,11 @@ def validate_host_version(sts2_dir: Path) -> str:
             normalized = str(value).removeprefix("v") if value is not None else None
             if normalized != PROFILE.host_version:
                 raise RitsuProfileError(
-                    f"STS2 host at {sts2_dir} reports {value!r}; required stable {PROFILE.host_version}"
+                    f"STS2 host at {sts2_dir} reports {value!r}; required stable "
+                    f"{PROFILE.host_version}. {_host_mismatch_hint(normalized)}"
                 )
             return f"{path}: {PROFILE.host_version}"
     raise RitsuProfileError(
         f"could not find release_info.json under STS2 directory {sts2_dir}; "
-        "refusing to claim the stable 0.107.1 host"
+        f"refusing to claim the stable {PROFILE.host_version} host"
     )

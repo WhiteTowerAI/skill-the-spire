@@ -14,7 +14,7 @@ Build runs `text_style.py`: broken markup fails the Build, and style drift is li
 
 ## Vocabulary: look terms up, never invent them
 
-`reference/catalogs/text-glossary-sts2-0.107.1.json` is extracted from the game's own
+`reference/catalogs/text-glossary-sts2-0.111.1.json` is extracted from the game's own
 `eng`/`zhs` localization. Each row gives:
 
 | Field | Meaning |

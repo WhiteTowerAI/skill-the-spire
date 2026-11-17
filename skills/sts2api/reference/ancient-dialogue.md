@@ -5,7 +5,7 @@ cataloged vanilla Ancient. It preserves the vanilla Event model, scene, backgrou
 options, rewards, progression, and selection rules. It is not custom Ancient creation or
 a vanilla override replacement.
 
-## Pinned STS2 0.107.1 catalog
+## Pinned STS2 0.111.1 catalog
 
 Resolve the user's natural-language target through this catalog. Use
 `ancient_dialogue.py --list-targets` for the machine-owned copy; never guess an entry id.
@@ -101,7 +101,7 @@ structural keys. A spoken line may name the user's own sound with a `.sfx` key b
 
 ## RitsuLib route
 
-RitsuLib `0.6.7` registers `AncientDialoguePopulateLocKeysPatch`. Its prefix appends
+RitsuLib `0.6.14` registers `AncientDialoguePopulateLocKeysPatch`. Its prefix appends
 localization-defined groups for registered Mod Characters once, before the native
 `AncientDialogueSet.PopulateLocKeys` call. Generated Mods only provide `ancients.json`;
 they do not emit Harmony, reflection, IL, Publicizer, a second injection patch, or another

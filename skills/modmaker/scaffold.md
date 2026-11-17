@@ -59,6 +59,26 @@ Re-pinning rewrites only the recorded compile version and module digest, never t
 authored sources, or the player's minimum dependency. Build and Tier 2 run again before the Mod is
 reported as working on the new runtime.
 
+## When the project was made for an older game version
+
+Build stops with `this project was scaffolded for <old profile>` when a project comes from an
+earlier Skill the Spire release. Move it onto the current profile:
+
+```powershell
+python ../modmaker/scripts/scaffold.py `
+  --project-dir <existing-project-directory> `
+  --mod-name <ModName> `
+  --game-dir <STS2-install-directory> `
+  --migrate-profile
+```
+
+It rewrites only what scaffold owns: the csproj, the manifest's game and RitsuLib floors (the
+Mod's own version, name, and `has_pck` stay), the load marker's host and compile version, the
+self-test kit, and the override manifest's catalog pin. Authored sources, resources, and planning
+documents stay as they are. Build then names every call the new game API changed; fix each with
+`../sts2api/errors.md` § Game API changes in 0.111, and run Tier 2 again before
+reporting the Mod as working on the new version.
+
 ## Record state
 
 Write the project path and profile to `MEMORY.md` § Project (template in `spec.md`), mark

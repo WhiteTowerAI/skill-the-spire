@@ -3,7 +3,7 @@
 > Every hook here is
 > `public virtual` on `AbstractModel`, so a custom element overrides it directly — no Harmony,
 > reflection, Publicizer, or IL. The authoritative per-hook data is
-> `reference/catalogs/model-hooks-sts2-0.107.1.json`; this page states the rules, the catalog
+> `reference/catalogs/model-hooks-sts2-0.111.1.json`; this page states the rules, the catalog
 > holds the values. Never hand-edit the catalog.
 
 ## What this route is for
@@ -70,7 +70,8 @@ player's Osty swings.
 
 ```csharp
 public override decimal ModifyDamageMultiplicative(
-    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource,
+    CardPlay? cardPlay)
 {
     if (target != Owner) return 1m;              // not my subject
     if (!props.IsPoweredAttack()) return 1m;      // not my damage type

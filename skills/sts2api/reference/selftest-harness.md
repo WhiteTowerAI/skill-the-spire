@@ -233,6 +233,8 @@ one two-player run. No Steam lobby, second machine, or second account is needed.
   the host requests each through a RitsuLib managed net action, and every peer runs its own copy
   of that code line in queue order. A direct `await PowerCmd.Apply(...)` in a body would run on
   one peer only and desync the run; wrap it as `await t.Do(owner => PowerCmd.Apply(...))`.
+  Combat entry ends with a barrier: neither peer goes on until both have reached the play phase,
+  because the game drains the action queue before it starts a combat.
 - **References after a room entry.** Entering any room rebuilds the remote players' Relics,
   Potions, and Deck from synchronized state, so a model reference taken before a room entry is
   stale on the client. Read it again after the entry (`t.Relic<TRelic>()`, `t.Player.Deck`).

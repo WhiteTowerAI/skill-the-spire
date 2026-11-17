@@ -21,10 +21,10 @@ class PayloadLayoutTests(unittest.TestCase):
         catalogs = self.root / "sts2api" / "reference" / "catalogs"
         catalogs.mkdir(parents=True)
         self.scripts.mkdir(parents=True)
-        for tool in ("hook_reachability.py", "api.py"):
+        for tool in ("hook_reachability.py", "api.py", "ritsu_profile.py"):
             shutil.copy(TOOLS_DIR / tool, self.scripts)
         shutil.copy(
-            SOURCE_SKILLS / "sts2api" / "reference" / "catalogs" / "model-hooks-sts2-0.107.1.json",
+            SOURCE_SKILLS / "sts2api" / "reference" / "catalogs" / "model-hooks-sts2-0.111.1.json",
             catalogs,
         )
 

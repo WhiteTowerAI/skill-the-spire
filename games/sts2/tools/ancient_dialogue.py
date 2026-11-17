@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Iterable
 
 from localization_contract import REQUIRED_LANGUAGES
+from ritsu_profile import PROFILE
 
 
 class AncientDialogueValidationError(ValueError):
@@ -339,7 +340,7 @@ def parse_ancient_dialogue_table(
         target = TARGET_BY_ENTRY.get(ancient_entry)
         if target is None:
             raise AncientDialogueValidationError(
-                f"{key}: target is not in the pinned STS2 0.107.1 Ancient catalog"
+                f"{key}: target is not in the pinned STS2 {PROFILE.host_version} Ancient catalog"
             )
         try:
             character_entry, suffix = remainder.split(".", 1)

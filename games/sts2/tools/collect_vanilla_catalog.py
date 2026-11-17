@@ -6,18 +6,21 @@ under `skills/sts2api/reference/vanilla-overrides/catalogs/` plus `vanilla_overr
 
 The runtime collector subscribes once to `ModelPreloadingCompletedEvent`, reads `ModelDb`, and
 keeps only concrete model types from the game's `ModelDb` assembly, so a loaded Mod cannot add
-its own models. It reads each title in all 14 pinned languages through the public
+its own models. It reads each title in every pinned language through the public
 `LocManager.SetLanguage` route, restores the original language in a `finally` block, and
 refuses to write when `OverridesActive` reports local translation overrides. Run it with only
 the pinned framework and collector Mods.
 
 The offline collector reads PE metadata with `System.Reflection.Metadata` and never loads
-`sts2.dll`. For each reviewed target in `catalog_inputs/adapter-targets-0.107.1.json` it records
+`sts2.dll`. For each reviewed target in `catalog_inputs/adapter-targets-<host>.json` it records
 the exact signature, signature hash, IL hash, metadata token, and method-body shape. Add no
 adapter target merely to make a prompt pass.
 
     python games/sts2/tools/collect_vanilla_catalog.py create-runtime-project \
       --project-dir <empty-outer-dir> --mod-name SkillTheSpireVanillaCatalog
+    python games/sts2/tools/collect_vanilla_catalog.py build-runtime-project \
+      --project-dir <that-dir> --mod-name SkillTheSpireVanillaCatalog
+    python games/sts2/tools/launch.py --mod-name SkillTheSpireVanillaCatalog  # writes the snapshot
     python games/sts2/tools/collect_vanilla_catalog.py collect-assembly \
       --assembly <sts2-data-dir>/sts2.dll --output <assembly-json>
     python games/sts2/tools/collect_vanilla_catalog.py merge \
@@ -25,7 +28,7 @@ adapter target merely to make a prompt pass.
       --authorable-family public-card-overrides --authorable-family public-visual-overrides \
       --authorable-family existing-ancient-overrides --authorable-family availability-overrides \
       --authorable-family non-card-data-behavior \
-      --output games/sts2/skills/sts2api/reference/vanilla-overrides/catalogs/sts2-0.107.1.json
+      --output games/sts2/skills/sts2api/reference/vanilla-overrides/catalogs/sts2-<host>.json
     python games/sts2/tools/collect_vanilla_catalog.py add-descriptions \
       --sts2-dir <installed-game-dir> [--check]
 
@@ -45,8 +48,15 @@ from pathlib import Path
 
 from collect_text_glossary import GlossaryError, read_localization
 from localization_contract import REQUIRED_LANGUAGES
-from ritsu_profile import PROFILE
-from scaffold import generate
+from launch import default_game_dir
+from ritsu_profile import (
+    PROFILE,
+    local_mods_dir,
+    resolve_runtime_asset,
+    resolve_runtime_compile_profile,
+    validate_host_version,
+)
+from scaffold import generate, repin_runtime
 from vanilla_overrides import (
     VanillaOverrideError,
     catalog_digest,
@@ -65,7 +75,7 @@ RUNTIME_TEMPLATE = TOOLS_DIR / "templates" / "vanilla_runtime_catalog_collector.
 ASSEMBLY_PROJECT = TOOLS_DIR / "assembly_catalog" / "SkillTheSpire.Sts2.AssemblyCatalog.csproj"
 POWERSHELL_ASSEMBLY_COLLECTOR = TOOLS_DIR / "assembly_catalog" / "Collect-AssemblyCatalog.ps1"
 # Collector input only: the shipped catalog carries every fingerprint a user's build needs.
-DEFAULT_TARGETS = TOOLS_DIR / "catalog_inputs" / "adapter-targets-0.107.1.json"
+DEFAULT_TARGETS = TOOLS_DIR / "catalog_inputs" / f"adapter-targets-{PROFILE.host_version}.json"
 
 NON_CARD_DATA_TARGETS: dict[str, tuple[tuple[str, str, str], ...]] = {
     "RELIC": (("rarity", "data.rarity", "get_Rarity"),),
@@ -239,6 +249,36 @@ def create_runtime_collector(project_dir: Path, mod_name: str, author: str) -> N
     manifest["description"] = "Skill the Spire no-op vanilla runtime catalog collector"
     manifest["affects_gameplay"] = False
     _write(manifest_path, json.dumps(manifest, indent=2) + "\n")
+
+
+def build_runtime_collector(project_dir: Path, mod_name: str, game_dir: Path | None) -> Path:
+    """Pin the collector to the installed runtime, compile it, and deploy it to `mods/`.
+
+    `build.py` cannot build the collector on a new game version: it validates the very catalog
+    this run produces. The collector has no resources, localization, or overrides, so the
+    profile check plus MSBuild is the whole build.
+    """
+    game = game_dir or default_game_dir()
+    validate_host_version(game)
+    runtime = resolve_runtime_asset(game, local_mods_dir(game))
+    compile_profile = resolve_runtime_compile_profile(runtime.path)
+    repin_runtime(project_dir, mod_name, compile_profile)
+    log = project_dir / ".build.log"
+    result = subprocess.run(
+        [
+            "dotnet", "build", str(project_dir / f"{mod_name}.csproj"), "-c", "Release",
+            "-p:RestoreIgnoreFailedSources=true", "-p:NuGetAudit=false",
+            f"-p:RitsuLibRuntimeRoot={compile_profile.root.resolve().as_posix()}",
+        ],
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+    )
+    log.write_text((result.stdout or "") + (result.stderr or ""), encoding="utf-8")
+    if result.returncode != 0:
+        raise VanillaOverrideError(f"collector build failed with exit {result.returncode}; see {log}")
+    deployed = local_mods_dir(game) / mod_name
+    if not (deployed / f"{mod_name}.dll").is_file():
+        raise VanillaOverrideError(f"collector build did not deploy {deployed}; see {log}")
+    return deployed
 
 
 def collect_assembly(assembly: Path, targets: Path, output: Path) -> None:
@@ -426,6 +466,11 @@ def main(argv: list[str] | None = None) -> int:
     runtime.add_argument("--mod-name", default="SkillTheSpireVanillaCatalog")
     runtime.add_argument("--author", default="SkillTheSpire")
 
+    build_runtime = subparsers.add_parser("build-runtime-project")
+    build_runtime.add_argument("--project-dir", required=True)
+    build_runtime.add_argument("--mod-name", default="SkillTheSpireVanillaCatalog")
+    build_runtime.add_argument("--game-dir", default=None)
+
     assembly = subparsers.add_parser("collect-assembly")
     assembly.add_argument("--assembly", required=True)
     assembly.add_argument("--targets", default=str(DEFAULT_TARGETS))
@@ -466,6 +511,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "create-runtime-project":
             create_runtime_collector(Path(args.project_dir), args.mod_name, args.author)
             print(f"[catalog] runtime collector -> {Path(args.project_dir).resolve()}")
+        elif args.command == "build-runtime-project":
+            deployed = build_runtime_collector(
+                Path(args.project_dir),
+                args.mod_name,
+                Path(args.game_dir) if args.game_dir else None,
+            )
+            print(f"[catalog] runtime collector deployed -> {deployed}")
         elif args.command == "collect-assembly":
             collect_assembly(Path(args.assembly), Path(args.targets), Path(args.output))
         elif args.command == "collect-assembly-powershell":

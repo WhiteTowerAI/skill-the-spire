@@ -58,8 +58,26 @@ SENTRY_SHUTDOWN_RE = re.compile(
 MULTIPLAYER_PEER_LOG_RE = re.compile(r"^godot-t2-(?:host|client)\.log$", re.IGNORECASE)
 PEER_PROGRESS_SAVE_RE = re.compile(
     r"^\s*\[ERROR\]\s+Failed to save progress: MegaCrit\.Sts2\.Core\.Exceptions\.SaveException: "
-    r"Failed to open file for writing\. path='user://steam/\d+/modded/profile\d+[\\/]saves[\\/]"
-    r"progress\.save\.tmp' error=FileCantOpen\s*$",
+    r"(?:Failed to open file for writing\. path='user://steam/\d+/modded/profile\d+[\\/]saves[\\/]"
+    r"progress\.save\.tmp' error=FileCantOpen"
+    # STS2 0.111 writes a temp file and renames it; the other instance can win the rename.
+    r"|Failed to rename file\. error=Failed source=user://steam/\d+/modded/profile\d+[\\/]saves[\\/]"
+    r"progress\.save\.tmp destination=user://steam/\d+/modded/profile\d+[\\/]saves[\\/]"
+    r"progress\.save source_exists=\w+ destination_exists=\w+)\s*$",
+)
+# Godot's C# script bridge sometimes reports a stale worker-pool task while it loads a script for
+# a scene. Seen at random points of a launch (main menu, singleplayer submenu, lobby join) with no
+# Mod frame; every line of such a block must be one of these.
+ENGINE_TASK_ID_LINES = (
+    re.compile(r"^ERROR: Invalid Task ID$"),
+    re.compile(r"^at: wait_for_task_completion \(core/object/worker_thread_pool\.cpp:\d+\)$"),
+    re.compile(r"^C# backtrace \(most recent call first\):$"),
+    re.compile(r"^\[\d+\] void Godot\.(?:Bridge|NativeInterop)\.[\w.]+\(.*\)$"),
+)
+# The vanilla Ceremonial Beast boss background sets a "ringing" music parameter that the playing
+# music event lacks when the self-test enters that boss room directly instead of over the map.
+CEREMONIAL_BEAST_RINGING_RE = re.compile(
+    r"^\s*ERROR: Cannot set parameter ringing to value [\d.]+.*fmod_event\.cpp\d+\s*$"
 )
 PEER_PROGRESS_MIRROR_RE = re.compile(
     r"^\s*\[ERROR\]\s+\[com\.ritsukage\.sts2-RitsuLib\] \[ProgressMirror\] Failed to open file "
@@ -69,12 +87,12 @@ PEER_PROGRESS_MIRROR_RE = re.compile(
 PROFILE_FIELDS = (
     "framework=RitsuLib",
     f"host={PROFILE.host_version}",
-    f"compat={PROFILE.host_version}",
+    f"compat={PROFILE.compat_target}",
 )
 FRAMEWORK_VERSION_RE = re.compile(r"(?:^|\s)frameworkVersion=(?P<version>[^\s]+)")
 PROFILE_EXPECTATION = (
     f"framework=RitsuLib frameworkVersion>={PROFILE.framework_version} "
-    f"host={PROFILE.host_version} compat={PROFILE.host_version}"
+    f"host={PROFILE.host_version} compat={PROFILE.compat_target}"
 )
 
 
@@ -176,6 +194,10 @@ def is_known_verification_cleanup(block: list[str], mod: str | None = None,
     both write the same profile files when a combat ends and one of them can find a
     ``.tmp`` file still open. That is ignored only in a multiplayer peer log, and
     only for the progress save (during combat end) and RitsuLib's progress mirror.
+
+    Two engine/base-game blocks seen on STS2 0.111.1 are ignored only in their exact shape: Godot's
+    stale worker-pool task ID while its C# bridge loads a script (engine frames only), and the
+    Ceremonial Beast background's missing ``ringing`` music parameter (no Mod frame).
     """
     if not block:
         return False
@@ -186,8 +208,18 @@ def is_known_verification_cleanup(block: list[str], mod: str | None = None,
             frame in context
             for frame in (
                 "ProgressSaveManager.SaveProgress",
-                "CombatManager.EndCombatInternal()",
+                "CombatManager.EndCombatInternal(",
             )
+        )
+    lines = [line.strip() for line in block if line.strip()]
+    if lines[0] == "ERROR: Invalid Task ID":
+        return all(any(rule.match(line) for rule in ENGINE_TASK_ID_LINES) for line in lines)
+    if CEREMONIAL_BEAST_RINGING_RE.match(header):
+        errors = [line for line in lines if line.startswith("ERROR:")]
+        return (
+            all(CEREMONIAL_BEAST_RINGING_RE.match(line) for line in errors)
+            and "NCeremonialBeastBgVfx.UpdateRingingSfx" in context
+            and (not mod or mod not in context)
         )
     if multiplayer_peer and PEER_PROGRESS_MIRROR_RE.match(header):
         return len(block) == 1

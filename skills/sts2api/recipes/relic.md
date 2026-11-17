@@ -309,7 +309,8 @@ and through `Owner.Osty` wherever the Osty can be the subject. Vanilla `PenNib` 
 
 ```csharp
 public override decimal ModifyDamageMultiplicative(
-    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource,
+    CardPlay? cardPlay)
 {
     if (!props.IsPoweredAttack()) return 1m;                        // SPEC `condition`
     if (dealer != Owner.Creature && dealer != Owner.Osty) return 1m; // SPEC `subject`

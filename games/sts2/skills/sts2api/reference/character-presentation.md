@@ -13,7 +13,7 @@ independently: a valid path or successful PCK build is not render evidence.
 
 This is the one table of Character art slots. Its specs, file names under `images/charui/`, and
 sizes are a readable view of the code-owned art contract, projected into
-`reference/catalogs/art-contract-sts2-0.107.1.json`; query that catalog for each slot's alpha
+`reference/catalogs/art-contract-sts2-0.111.1.json`; query that catalog for each slot's alpha
 policy, required/optional status, fallback, and generation-call budget.
 
 | profile | spec | output under `images/charui/` | size | RitsuLib surface | real consumer |

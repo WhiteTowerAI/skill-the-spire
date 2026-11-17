@@ -12,7 +12,7 @@ All four cues come from **one** generated sheet of **4x4** cells (columns x rows
 512x512, so the sheet is **2048x2048**. One image keeps one style, light, and body scale
 across every action; four separate action sheets did not, and switching cues then read as a
 different person in headed review. The same values are queryable under `character_cues` in
-`reference/catalogs/art-contract-sts2-0.107.1.json`.
+`reference/catalogs/art-contract-sts2-0.111.1.json`.
 
 Cells are numbered 1-16 in reading order (the catalog's `play_cells` count from 0):
 

@@ -1,9 +1,9 @@
 {
   "schema": "skillthespire.sts2.model-hooks/v1",
-  "host_version": "0.107.1",
-  "framework_profile": "ritsulib-0.6.7-sts2-0.107.1",
+  "host_version": "0.111.1",
+  "framework_profile": "ritsulib-0.6.14-sts2-0.111.1",
   "source": {
-    "definition": "pinned STS2 0.107.1 decompile: Core/Models/AbstractModel.cs declarations, Core/Hooks/Hook.cs dispatchers, Core/Models/** vanilla overrides",
+    "definition": "pinned STS2 0.111.1 decompile: Core/Models/AbstractModel.cs declarations, Core/Hooks/Hook.cs dispatchers, Core/Models/** vanilla overrides",
     "projection": "python collect_model_hooks.py extract",
     "note": "Generated projection of a maintainer-only decompile; never hand-edit it. The decompile's DLL provenance sidecar was not retained, so recheck any fact against the pinned assembly or installed game before promoting it into authoring instruction."
   },
@@ -353,13 +353,14 @@
       "semantic_id": "modify_damage_additive",
       "family": "numeric",
       "return_type": "decimal",
-      "signature": "decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)",
+      "signature": "decimal ModifyDamageAdditive(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)",
       "parameters": [
         "Creature? target",
         "decimal amount",
         "ValueProp props",
         "Creature? dealer",
-        "CardModel? cardSource"
+        "CardModel? cardSource",
+        "CardPlay? cardPlay"
       ],
       "neutral_default": "0m",
       "declaration_shape": "scalar-return",
@@ -394,7 +395,7 @@
         "relic"
       ],
       "vanilla_implementors": {
-        "powers": 7,
+        "powers": 8,
         "relics": 4
       },
       "enchantment_redirect": "EnchantDamageAdditive"
@@ -404,12 +405,13 @@
       "semantic_id": "modify_damage_cap",
       "family": "numeric",
       "return_type": "decimal",
-      "signature": "decimal ModifyDamageCap(Creature? target, ValueProp props, Creature? dealer, CardModel? cardSource)",
+      "signature": "decimal ModifyDamageCap(Creature? target, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)",
       "parameters": [
         "Creature? target",
         "ValueProp props",
         "Creature? dealer",
-        "CardModel? cardSource"
+        "CardModel? cardSource",
+        "CardPlay? cardPlay"
       ],
       "neutral_default": "decimal.MaxValue",
       "declaration_shape": "scalar-return",
@@ -453,13 +455,14 @@
       "semantic_id": "modify_damage_multiplicative",
       "family": "numeric",
       "return_type": "decimal",
-      "signature": "decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)",
+      "signature": "decimal ModifyDamageMultiplicative(Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)",
       "parameters": [
         "Creature? target",
         "decimal amount",
         "ValueProp props",
         "Creature? dealer",
-        "CardModel? cardSource"
+        "CardModel? cardSource",
+        "CardPlay? cardPlay"
       ],
       "neutral_default": "1m",
       "declaration_shape": "scalar-return",
@@ -494,7 +497,7 @@
         "relic"
       ],
       "vanilla_implementors": {
-        "powers": 22,
+        "powers": 21,
         "relics": 3
       },
       "enchantment_redirect": "EnchantDamageMultiplicative"
@@ -635,8 +638,8 @@
         "relic"
       ],
       "vanilla_implementors": {
-        "powers": 8,
-        "relics": 9
+        "powers": 7,
+        "relics": 11
       }
     },
     {
@@ -681,9 +684,7 @@
         "power",
         "relic"
       ],
-      "vanilla_implementors": {
-        "relics": 1
-      }
+      "vanilla_implementors": {}
     },
     {
       "hook": "ModifyHpLostAfterOsty",
@@ -1996,7 +1997,7 @@
         "relic"
       ],
       "vanilla_implementors": {
-        "powers": 1,
+        "powers": 2,
         "relics": 2
       }
     },
@@ -2503,7 +2504,7 @@
         "relic"
       ],
       "vanilla_implementors": {
-        "powers": 1,
+        "powers": 2,
         "relics": 1
       }
     },
@@ -3112,5 +3113,5 @@
       "out_parameter": "out decimal modifiedCost"
     }
   ],
-  "catalog_sha256": "5e04b69006bc49a6a0d5f082da7a34989047386ea63003b9a259dd5c7cfeb56a"
+  "catalog_sha256": "8366a51defa543ec2a474d8b7349f737c28b38f8f53b7fed254e75519d5c3002"
 }

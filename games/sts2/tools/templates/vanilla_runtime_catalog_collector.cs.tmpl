@@ -83,7 +83,7 @@ internal static class RuntimeCatalogCollector
             id.ToString(),
             type.FullName ?? type.Name,
             ContentKind(model),
-            IsDebug(type, id),
+            IsDebug(model, type, id),
             titleLocalizations.GetValueOrDefault(id.ToString()),
             CollectProperties(model),
             sources.GetValueOrDefault(id.ToString()) ?? new(StringComparer.Ordinal));
@@ -314,10 +314,13 @@ internal static class RuntimeCatalogCollector
         _ => Regex.Replace(model.GetType().BaseType?.Name ?? "model", "Model$", "").ToLowerInvariant()
     };
 
-    private static bool IsDebug(Type type, ModelId id)
+    private static bool IsDebug(AbstractModel model, Type type, ModelId id)
     {
+        // The game marks its own test content (Mock models, the Deprived test Character and
+        // its pool) with IsMock; the name checks keep anything it leaves unmarked.
         var ns = type.Namespace ?? "";
-        return ns.Contains(".Mocks", StringComparison.Ordinal) ||
+        return model.IsMock ||
+               ns.Contains(".Mocks", StringComparison.Ordinal) ||
                type.Name.StartsWith("Mock", StringComparison.Ordinal) ||
                id.Entry.StartsWith("MOCK_", StringComparison.Ordinal);
     }
