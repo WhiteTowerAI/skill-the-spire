@@ -6,7 +6,7 @@
 >
 > The exact values live in code: `gen_sprite.py`'s `SPECS` and `character_art.py`'s
 > `CHARACTER_ART_BUNDLE`. They are projected into
-> `reference/catalogs/art-contract-sts2-0.107.1.json` by
+> `reference/catalogs/art-contract-sts2-0.111.1.json` by
 > `python ${GAME_TOOLS_DIR}/gen_sprite.py export-contract`, so you can read every path,
 > size, fit, chroma, and fallback as data instead of executing anything. Query that catalog
 > when you need a value the tables below do not spell out.

@@ -121,8 +121,7 @@ public sealed class <PotionName> : ModPotionTemplate
         AssertValidForTargetedPotion(target);
         DamageVar damage = DynamicVars.Damage;
         await CreatureCmd.Damage(
-            choiceContext, target, damage.BaseValue, damage.Props,
-            Owner.Creature, null);
+            choiceContext, target, damage.BaseValue, damage.Props, Owner.Creature);
         MainFile.Logger.Info(
             $"[T2MOD-SELFTEST] <ModName> <PotionName> used: damage={damage.BaseValue}");
     }

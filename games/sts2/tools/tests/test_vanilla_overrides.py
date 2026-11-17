@@ -32,6 +32,7 @@ LOCALIZATION_LANGUAGES = [
     "eng",
     "esp",
     "fra",
+    "ind",
     "ita",
     "jpn",
     "kor",
@@ -42,6 +43,7 @@ LOCALIZATION_LANGUAGES = [
     "tha",
     "tur",
     "zhs",
+    "zht",
 ]
 
 
@@ -287,29 +289,29 @@ def enable_visual_family(catalog: dict) -> dict:
 
 
 ANCIENT_ADAPTER_HASHES = {
-    "ancient.flow.finish": "04fef98282aa7e01fbab7934c6f15ca5969b3029c32d4e83ae0ad3636dfcd060",
-    "ancient.flow.set-state": "3a93f71ad25d06ad1470da740b5a4bc9095f8dbdb1c6f9d48fed397c0ce1c7b6",
-    "ancient.initial-options.replace": "7645a9eea1118c340449e339ede4ce15169c72bed29a196990d8824bbdf12ca5",
+    "ancient.flow.finish":  "4b7204bb033cd171cd64f469c4aac0e59e2f5eab5d7be97e36d21a1a40f8b8fb",
+    "ancient.flow.set-state":  "9259822210e5274f566451f4b1a0416dfe67e9e14c313dc0cdccaa89206ffc1a",
+    "ancient.initial-options.replace":  "0bbdaca7f2de6c0297fe691b4cfa08d71657152d4c6955c1dd5ce31b205c0e5a",
 }
 
 AVAILABILITY_ADAPTER_HASHES = {
-    "availability.card.pool-membership": "34a9ad59b7a7c2d05b312f2ba515969d3e78e09f903b0180025afeecb6a652d9",
-    "availability.potion.epoch-gate": "2a4b5bb09b4e4e5e5b2c5895702a58a74cb79bde037c0a6d0908eef72607ce1a",
-    "availability.potion.epoch-gate.defect": "f5122e44da2c313ab1accbc7af48967fb9761ed82b14615d412974c358aa9d05",
-    "availability.potion.epoch-gate.ironclad": "e81f8255da2985e4c13234266af3286972ac1d16ea32d2114d8a5e0699cdc020",
-    "availability.potion.epoch-gate.necrobinder": "efd1874a39de7fd19f5169de72429f89ff135256682840e14be77ccb15b107f8",
-    "availability.potion.epoch-gate.regent": "5656947407b9a0e8785b01485ac42014ce082bc42b39aba0ff6b1f7e02307323",
-    "availability.potion.epoch-gate.shared": "d35b374e4ceb12fa30dd114e030c72dc46c8e1be7f059856c3e90d5c9c1ad2f1",
-    "availability.potion.epoch-gate.silent": "441e6df085104d62ce17e9ebcb287b3d29a1e3a734882acb499daf43e813382c",
-    "availability.potion.pool-membership": "c1ea2c083548614d1ec4a46c49c67a8db9720361d3826a67c8166a4b26cc967b",
-    "availability.relic.epoch-gate": "dca9123b8b3be8c27ce197513801232e0a640fa673f4ee314dbdeb3c39619ba1",
-    "availability.relic.epoch-gate.defect": "b01ea54ca8727c2fe76cccd5f7ab6787bc8d029ba491443adfb96b0aff3ddc98",
-    "availability.relic.epoch-gate.ironclad": "a4e14f2271c3df24593bca6118137ceaaceb24dae34d1e2a0b71f895155c0b11",
-    "availability.relic.epoch-gate.necrobinder": "8b8c7559b12baadb0f5248c0649932e7081c39ce81ab605fff8536795054fce9",
-    "availability.relic.epoch-gate.regent": "5012519dcf514196cecd9565853ca78649d17fb6e02f2f56868fdef56b4d90cf",
-    "availability.relic.epoch-gate.shared": "37e2b57af7e86019b5af9923b946411fd0fa5b33d148d6ac9635611909358058",
-    "availability.relic.epoch-gate.silent": "60108f1b02458188337f1b5bb937b7afce9d535f923afe87553380e436eecef1",
-    "availability.relic.pool-membership": "3d6c4629d05021df4baeb0aed24b59c8af2d25bd8170194f28eac9fad9bd170b",
+    "availability.card.pool-membership":  "24a7d7709b9875b98e9228359987258f4d77b4860fabb9e5358cd174253bf1cc",
+    "availability.potion.epoch-gate":  "c750300a27844891b9fdc08ed1bfec5bb7897ed4c1e0b0cd37798a2fdf4f443f",
+    "availability.potion.epoch-gate.defect":  "2878e214e1aebb3a45ffc1ec86a1e01d37d8e6bffb8d50b5cb5cb904a26b4f6b",
+    "availability.potion.epoch-gate.ironclad":  "e738c382c3d6c2b494414e432aa8bc3b3303b3986a766ded4c35b7c243ed97e5",
+    "availability.potion.epoch-gate.necrobinder":  "f43a9ad28c5749629fe925433f6ebe4da4c7ee51bc598093764693eac52e744c",
+    "availability.potion.epoch-gate.regent":  "941261f443db42073ea8ae290301b80171912ed9d14a9648549f206c2e38f9a9",
+    "availability.potion.epoch-gate.shared":  "3d80a5d653c5d995f791b918d20d19f7bb827df39ba8b4f892d8d489a9ada1bb",
+    "availability.potion.epoch-gate.silent":  "5cefba84e0dccdb717f8c7f7b29e3c3168bff092f2f2c35b80c8f809152ec706",
+    "availability.potion.pool-membership":  "6434a897ad578d1fd7e26d53937195186a9a9795738779d9feaba6a29ca63a73",
+    "availability.relic.epoch-gate":  "f3a6a63f88693988206bc995f84e28e08b91a50a9c88f30433691f0805cdd3b1",
+    "availability.relic.epoch-gate.defect":  "d31ce644ecf76513d35051ca051bd0a28a884bffd1d3b75829acaeb1c51970e7",
+    "availability.relic.epoch-gate.ironclad":  "634b32e1aad0ce385978d4068aac8bbb4ed5739b62dff91822a9e1439658772c",
+    "availability.relic.epoch-gate.necrobinder":  "266bb6c2cfc45cadc9dc56375f1be85632cc8670e17181719bc558a248a84e96",
+    "availability.relic.epoch-gate.regent":  "1c318fb5cd992d5dbbaf8a85dd0087a90e6e00857cdd84748ac90bf7c752fc55",
+    "availability.relic.epoch-gate.shared":  "f8deb8365f7b999bfb95a791b25e469ddf1ebec911b43bff7ff9e095d4b1a44a",
+    "availability.relic.epoch-gate.silent":  "1c126c776a1fe6985b1f21eb5100fe6c3549f0f89386ce39ca7441ab6b8225d4",
+    "availability.relic.pool-membership":  "62097bd207890fb00bfc4be19db44164c8a897bc90c05cca0a72bdedc629e753",
 }
 
 
@@ -814,8 +816,8 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
             targets = document["targets"]
             non_card = [target for target in targets if target["id"].startswith("non-card.")]
             self.assertEqual("skillthespire.sts2.adapter-targets/v1", document["schema"])
-            self.assertEqual(4165, len(targets))
-            self.assertEqual(4145, len(non_card))
+            self.assertEqual(4257, len(targets))
+            self.assertEqual(4237, len(non_card))
             self.assertEqual(
                 [target["id"] for target in targets],
                 sorted(target["id"] for target in targets),
@@ -840,35 +842,37 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
     def test_checked_real_catalog_has_pinned_host_identity(self) -> None:
         catalog = overrides.load_catalog()
 
-        self.assertEqual("0.107.1", catalog["host_version"])
-        self.assertEqual("0.6.7", catalog["framework_version"])
+        self.assertEqual("0.111.1", catalog["host_version"])
+        self.assertEqual("0.6.14", catalog["framework_version"])
         self.assertEqual(
-            "a1f9e653f1e28e4076558fee1e60d218619cb7e057b887c6417f62c62c6d7a52",
+            "3fb1fa1bf0249087b706a5d0f062a60579e2f5b08df4ee477ddd6f2607f654d5",
             catalog["assembly"]["sha256"],
         )
-        self.assertEqual(1624, len(catalog["models"]))
-        self.assertEqual(3883, catalog["assembly"]["model_namespace_type_count"])
+        self.assertEqual(1660, len(catalog["models"]))
+        self.assertEqual(3973, catalog["assembly"]["model_namespace_type_count"])
         self.assertEqual(LOCALIZATION_LANGUAGES, catalog["localization_languages"])
         self.assertEqual(
-            "c56bbcf3ac07f06e8644b43e536f6180c20b3d318f742ef7945a73eeb1f6791f",
+            "f51d12ef10bddb8b6c6eb02d1476bbb97403f44d926b546290f9106792efedbf",
             catalog["catalog_sha256"],
         )
         adapter_hashes = {
             adapter["id"]: adapter["il_sha256"] for adapter in catalog["adapters"]
         }
-        self.assertEqual(4165, len(adapter_hashes))
+        self.assertEqual(4257, len(adapter_hashes))
         self.assertLessEqual(
             (ANCIENT_ADAPTER_HASHES | AVAILABILITY_ADAPTER_HASHES).items(),
             adapter_hashes.items(),
         )
         self.assertEqual(
-            [
-                overrides.PUBLIC_CARD_OVERRIDE_FAMILY,
-                overrides.PUBLIC_VISUAL_OVERRIDE_FAMILY,
-                overrides.ANCIENT_OVERRIDE_FAMILY,
-                overrides.AVAILABILITY_OVERRIDE_FAMILY,
-                overrides.NON_CARD_OVERRIDE_FAMILY,
-            ],
+            sorted(
+                [
+                    overrides.PUBLIC_CARD_OVERRIDE_FAMILY,
+                    overrides.PUBLIC_VISUAL_OVERRIDE_FAMILY,
+                    overrides.ANCIENT_OVERRIDE_FAMILY,
+                    overrides.AVAILABILITY_OVERRIDE_FAMILY,
+                    overrides.NON_CARD_OVERRIDE_FAMILY,
+                ]
+            ),
             catalog["authorable_route_families"],
         )
         self.assertEqual(57, len(overrides.VANILLA_EPOCH_IDS))
@@ -895,9 +899,9 @@ class VanillaOverrideCatalogTests(unittest.TestCase):
                 self.assertLessEqual(non_debug_pool_ids, set(pool_order))
                 self.assertLessEqual(set(pool_order), catalog_pool_ids)
         title_models = [model for model in catalog["models"] if model["title_localization"]]
-        self.assertEqual(1580, len(title_models))
+        self.assertEqual(1615, len(title_models))
         self.assertEqual(
-            1537,
+            1566,
             sum("zhs" in model["title_localization"]["localized_titles"] for model in title_models),
         )
         strike = next(model for model in catalog["models"] if model["id"] == "CARD.STRIKE_IRONCLAD")

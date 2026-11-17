@@ -13,14 +13,14 @@ INVENTORY_PATH = (
     STS2API_DIR
     / "design"
     / "catalogs"
-    / "character-foundation-sts2-0.107.1.json"
+    / "character-foundation-sts2-0.111.1.json"
 )
 VANILLA_CATALOG_PATH = (
     STS2API_DIR
     / "reference"
     / "vanilla-overrides"
     / "catalogs"
-    / "sts2-0.107.1.json"
+    / "sts2-0.111.1.json"
 )
 RESEARCH_CHARACTERS_PATH = (
     REPO_ROOT / "baselines" / "spire-codex" / "data" / "characters.json"
@@ -72,7 +72,7 @@ class CharacterFoundationContractTests(unittest.TestCase):
         cls.catalog = json.loads(VANILLA_CATALOG_PATH.read_text(encoding="utf-8"))
 
     def test_checked_character_inventory_matches_pinned_identity(self) -> None:
-        self.assertEqual("0.107.1", self.inventory["host_version"])
+        self.assertEqual("0.111.1", self.inventory["host_version"])
         self.assertEqual(self.catalog["profile"], self.inventory["framework_profile"])
         self.assertEqual(
             self.catalog["assembly"]["sha256"],

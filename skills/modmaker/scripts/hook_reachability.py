@@ -18,8 +18,9 @@ import re
 from pathlib import Path
 
 import api
+from ritsu_profile import PROFILE
 
-HOOK_CATALOG_NAME = "model-hooks-sts2-0.107.1.json"
+HOOK_CATALOG_NAME = f"model-hooks-{PROFILE.catalog_suffix}"
 
 # The first base type outside the Mod assembly decides the surface.
 SURFACE_BASES = {

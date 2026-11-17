@@ -3,7 +3,7 @@
 The art contract's exact values live in queryable code:
 code -- `gen_sprite.SPECS` and `character_art.CHARACTER_ART_BUNDLE` -- because `fit`,
 `chroma`, and the visible footprints are behavior, not documentation. The catalog at
-`reference/catalogs/art-contract-sts2-0.107.1.json` is a generated projection of that code,
+`reference/catalogs/art-contract-sts2-0.111.1.json` is a generated projection of that code,
 so a reader gets the data without executing Python.
 
 Projection alone would just add a fourth copy. These tests are what make it a single
@@ -39,7 +39,7 @@ TOOLS_DIR = Path(__file__).resolve().parents[1]
 GEN_SPRITE = TOOLS_DIR / "gen_sprite.py"
 REPO_ROOT = TOOLS_DIR.parents[2]
 STS2API_DIR = REPO_ROOT / "games" / "sts2" / "skills" / "sts2api"
-CATALOG_PATH = STS2API_DIR / "reference" / "catalogs" / "art-contract-sts2-0.107.1.json"
+CATALOG_PATH = STS2API_DIR / "reference" / "catalogs" / "art-contract-sts2-0.111.1.json"
 ART_CONTRACT_PATH = STS2API_DIR / "reference" / "art-contract.md"
 CHARACTER_ART_PATH = STS2API_DIR / "reference" / "art-character.md"
 PRESENTATION_PATH = STS2API_DIR / "reference" / "character-presentation.md"
@@ -73,7 +73,7 @@ class ArtContractCatalogTests(unittest.TestCase):
     def test_catalog_declares_its_generated_projection_status(self) -> None:
         """The catalog must say it is generated, so nobody hand-edits it into a rival source."""
         self.assertEqual("skillthespire.sts2.art-contract/v1", self.catalog["schema"])
-        self.assertEqual("0.107.1", self.catalog["host_version"])
+        self.assertEqual("0.111.1", self.catalog["host_version"])
         source = self.catalog["source"]
         self.assertIn("gen_sprite.py", source["definition"])
         self.assertIn("character_art.py", source["definition"])

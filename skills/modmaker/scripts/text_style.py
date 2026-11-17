@@ -11,7 +11,7 @@ same keys and SmartFormat tokens. This module proves the text will render like t
   in a color its `:diff()` formatter already owns, several Card effects on one line, or
   Western punctuation/spacing inside Simplified Chinese text.
 
-The vocabulary comes from `reference/catalogs/text-glossary-sts2-0.107.1.json`, extracted
+The vocabulary comes from the pinned `reference/catalogs/text-glossary-sts2-<host>.json`, extracted
 from the game's own localization, plus the Mod's own Power, keyword, Orb, Enchantment, and
 Affliction titles. The house style itself lives in `reference/vanilla-text-style.md`.
 """
@@ -24,8 +24,10 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from ritsu_profile import PROFILE
 
-GLOSSARY_NAME = "text-glossary-sts2-0.107.1.json"
+
+GLOSSARY_NAME = f"text-glossary-{PROFILE.catalog_suffix}"
 REQUIRED_LANGUAGES = ("eng", "zhs")
 
 # Every authored tag observed in the pinned vanilla localization. Anything else is an error.

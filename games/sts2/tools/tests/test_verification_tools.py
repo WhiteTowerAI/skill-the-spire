@@ -45,7 +45,7 @@ class GrepLogTests(unittest.TestCase):
         return [
             "RUNNING MODDED",
             f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.6.14 host=0.111.1 compat=0.111.0",
         ]
 
     def test_tier2_pass_requires_state_proof_and_done(self) -> None:
@@ -143,7 +143,7 @@ class GrepLogTests(unittest.TestCase):
         code, output = self.run_grep([
             "RUNNING MODDED",
             f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.6.8 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.6.15 host=0.111.1 compat=0.111.0",
         ])
         self.assertEqual(0, code)
         self.assertIn("Framework profile   : MATCH", output)
@@ -152,10 +152,10 @@ class GrepLogTests(unittest.TestCase):
         code, output = self.run_grep([
             "RUNNING MODDED",
             f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.6.6 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.6.13 host=0.111.1 compat=0.111.0",
         ])
         self.assertEqual(1, code)
-        self.assertIn("frameworkVersion>=0.6.7", output)
+        self.assertIn("frameworkVersion>=0.6.14", output)
 
     def test_mod_named_exception_fails(self) -> None:
         code, output = self.run_grep(
@@ -283,8 +283,69 @@ class GrepLogTests(unittest.TestCase):
             "   at MegaCrit.Sts2.Core.Saves.SaveManager.SaveProgressFile_Patch1(SaveManager this)",
         ]
         if combat_end:
-            lines.append("   at MegaCrit.Sts2.Core.Combat.CombatManager.EndCombatInternal()")
+            lines.append("   at MegaCrit.Sts2.Core.Combat.CombatManager.EndCombatInternal(CombatTurnState turnState)")
         return lines
+
+    def peer_progress_rename(self) -> list[str]:
+        # Observed 2026-11-17 on the host of a two-instance run on STS2 0.111.1.
+        return [
+            "[ERROR] Failed to save progress: MegaCrit.Sts2.Core.Exceptions.SaveException: Failed to rename "
+            "file. error=Failed source=user://steam/76561198000000000/modded/profile1/saves/progress.save.tmp "
+            "destination=user://steam/76561198000000000/modded/profile1/saves/progress.save "
+            "source_exists=False destination_exists=False",
+            "   at MegaCrit.Sts2.Core.Saves.GodotFileIo.RenameFile(String sourcePath, String destinationPath)",
+            "   at MegaCrit.Sts2.Core.Saves.Managers.ProgressSaveManager.SaveProgress_Patch1(ProgressSaveManager this)",
+            "   at MegaCrit.Sts2.Core.Combat.CombatManager.EndCombatInternal(CombatTurnState turnState)",
+        ]
+
+    def engine_task_id(self, frame: str = "void Godot.Bridge.ScriptManagerBridge.GetOrLoadOrCreateScriptForType"
+                                           "(System.Type, Godot.NativeInterop.godot_ref*)") -> list[str]:
+        # Observed 2026-11-16/17 at random points of STS2 0.111.1 launches.
+        return [
+            "ERROR: Invalid Task ID",
+            "   at: wait_for_task_completion (core/object/worker_thread_pool.cpp:418)",
+            "ERROR: Invalid Task ID",
+            "   at: wait_for_task_completion (core/object/worker_thread_pool.cpp:418)",
+            "   C# backtrace (most recent call first):",
+            f"       [0] {frame}",
+            "       [1] void Godot.NativeInterop.NativeFuncs.godotsharp_internal_reload_registered_script(nint)",
+        ]
+
+    def ceremonial_beast_ringing(self, extra: str = "") -> list[str]:
+        # Observed 2026-11-17 on both peers when the self-test entered the Ceremonial Beast boss.
+        lines = [
+            "ERROR: Cannot set parameter ringing to value 0.000000void __cdecl godot::FmodEvent::"
+            "set_parameter_by_name(const class godot::String &,float) constsrc\\studio\\fmod_event.cpp69",
+            "   at: push_error (core/variant/variant_utility.cpp:1024)",
+            "   GDScript backtrace (most recent call first):",
+            "       [0] update_music_parameter (res://src/gdscript/music_controller_proxy.gd:31)",
+            "   C# backtrace (most recent call first):",
+            "       [0] void MegaCrit.Sts2.Core.Nodes.Vfx.Backgrounds.NCeremonialBeastBgVfx.UpdateRingingSfx"
+            "(MegaCrit.Sts2.Core.Combat.CombatState)",
+        ]
+        return lines + ([extra] if extra else [])
+
+    def test_engine_and_base_game_noise_is_ignored_only_in_its_exact_shape(self) -> None:
+        ignored = {
+            "rename contention": (self.peer_progress_rename(), "godot-t2-host.log"),
+            "engine task id": (self.engine_task_id(), "godot.log"),
+            "ringing": (self.ceremonial_beast_ringing(), "godot-t2-client.log"),
+        }
+        for name, (block, log_name) in ignored.items():
+            with self.subTest(ignored=name):
+                code, output = self.run_grep(self.baseline() + block, log_name=log_name)
+                self.assertEqual(0, code, output)
+                self.assertIn("Known verification cleanup noise: IGNORED", output)
+        failing = {
+            "rename outside peer log": (self.peer_progress_rename(), "godot.log"),
+            "task id with a Mod frame": (self.engine_task_id(f"void {self.mod}.Cards.Jab.OnPlay()"), "godot.log"),
+            "ringing from a Mod": (self.ceremonial_beast_ringing(f"       [1] void {self.mod}.Boom()"), "godot.log"),
+        }
+        for name, (block, log_name) in failing.items():
+            with self.subTest(failing=name):
+                code, output = self.run_grep(self.baseline() + block, log_name=log_name)
+                self.assertEqual(1, code, output)
+                self.assertIn("[FAIL] Fresh-run error block", output)
 
     def peer_progress_mirror(self) -> list[str]:
         # Observed 2026-11-06 on the client of the same run; RitsuLib restores the mirror next.
@@ -338,10 +399,10 @@ class GrepLogTests(unittest.TestCase):
         code, output = self.run_grep(
             [
                 f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-                "framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1",
+                "framework=RitsuLib frameworkVersion=0.6.14 host=0.111.1 compat=0.111.0",
                 "[ERROR] failure from the previous appended run",
                 f"INFO [T2MOD-SELFTEST] {self.mod} loaded ok "
-                "framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1",
+                "framework=RitsuLib frameworkVersion=0.6.14 host=0.111.1 compat=0.111.0",
             ]
         )
         self.assertEqual(0, code)
@@ -716,7 +777,7 @@ class Tier1CommandTests(unittest.TestCase):
         return [
             "RUNNING MODDED",
             f"[INFO] [T2MOD-SELFTEST] {self.mod} loaded ok "
-            "framework=RitsuLib frameworkVersion=0.6.7 host=0.107.1 compat=0.107.1",
+            "framework=RitsuLib frameworkVersion=0.6.14 host=0.111.1 compat=0.111.0",
             "[INFO] [Startup] Time to main menu: 10,516ms",
         ]
 

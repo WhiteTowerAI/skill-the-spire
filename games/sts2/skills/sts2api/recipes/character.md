@@ -153,7 +153,7 @@ pinned epoch only; no permanent disable, pool replacement, or registration as a 
   - line sounds: native | the user's files per `reference/audio.md`
   - explicit gaps: custom Ancient/model/background/layout/options/rewards/multiplayer
 - **native design basis**:
-  - grammar profile: `design/character-foundation.md @ STS2 0.107.1`
+  - grammar profile: `design/character-foundation.md @ STS2 0.111.1`
   - pinned facts used: <exact native identities/values used in the proposal>
   - observed convention: <native shape used as the recommendation>
   - creative decision: <exact selected deck shape and teaching intent>

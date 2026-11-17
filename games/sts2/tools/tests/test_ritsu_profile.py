@@ -17,6 +17,7 @@ from ritsu_profile import (  # noqa: E402
     RuntimeAssembly,
     RuntimeCompileProfile,
     find_manifest,
+    loader_compat_target,
     local_mods_dir,
     resolve_runtime_asset,
     resolve_runtime_compile_profile,
@@ -24,7 +25,7 @@ from ritsu_profile import (  # noqa: E402
     validate_project_contract,
     validate_runtime_asset,
 )
-from scaffold import generate, repin_runtime  # noqa: E402
+from scaffold import generate, migrate_profile, repin_runtime  # noqa: E402
 
 
 def _assembly_bytes(name: str) -> bytes:
@@ -33,7 +34,7 @@ def _assembly_bytes(name: str) -> bytes:
 
 def runtime_payload(
     version: str = PROFILE.framework_version,
-    targets: tuple[str, ...] = (PROFILE.host_version,),
+    targets: tuple[str, ...] = (PROFILE.compat_target,),
 ) -> dict[str, bytes]:
     """Return a RitsuLib 0.6-style schema-2 runtime layout keyed by relative POSIX path."""
     files: dict[str, bytes] = {
@@ -83,7 +84,7 @@ def write_runtime(root: Path, files: dict[str, bytes]) -> Path:
     return root
 
 
-def fixture_compile_profile(root: Path, version: str = "0.6.8") -> RuntimeCompileProfile:
+def fixture_compile_profile(root: Path, version: str = "0.6.15") -> RuntimeCompileProfile:
     return RuntimeCompileProfile(
         version,
         root,
@@ -130,7 +131,7 @@ class RitsuProfileTests(unittest.TestCase):
             )
             summary = validate_project_contract(project, "EmptyRitsu")
             self.assertIn(PROFILE.profile_id, summary)
-            self.assertIn("local compile runtime 0.6.8", summary)
+            self.assertIn("local compile runtime 0.6.15", summary)
             manifest = json.loads(
                 (project / "mod_manifest.json").read_text(encoding="utf-8")
             )
@@ -156,7 +157,7 @@ class RitsuProfileTests(unittest.TestCase):
                 "$(Sts2Dir)/SlayTheSpire2.app/Contents/MacOS/mods/</ModsPath>",
                 path_props,
             )
-            self.assertIn("<RitsuLibCompileVersion>0.6.8</RitsuLibCompileVersion>", csproj)
+            self.assertIn("<RitsuLibCompileVersion>0.6.15</RitsuLibCompileVersion>", csproj)
             self.assertIn(
                 "<RitsuLibCompileAssemblySetSha256>"
                 f"{compile_hash}</RitsuLibCompileAssemblySetSha256>",
@@ -172,7 +173,7 @@ class RitsuProfileTests(unittest.TestCase):
             ):
                 self.assertIn(f'<Reference Include="{reference}"', csproj)
             self.assertIn(
-                f'HintPath="$(RitsuLibRuntimeRoot)\\compat\\{PROFILE.host_version}'
+                f'HintPath="$(RitsuLibRuntimeRoot)\\compat\\{PROFILE.compat_target}'
                 '\\STS2-RitsuLib.Runtime.dll"',
                 csproj,
             )
@@ -198,7 +199,7 @@ class RitsuProfileTests(unittest.TestCase):
             self.assertIn("public static partial class MainFile", main)
             self.assertIn("static partial void RegisterContent();", main)
             self.assertIn("RitsuLibFramework.CreateLogger(ModId)", main)
-            self.assertIn('CompileFrameworkVersion = "0.6.8"', main)
+            self.assertIn('CompileFrameworkVersion = "0.6.15"', main)
             # The loaded version and compat come from the per-host Runtime module, not from
             # the compile-time Const.Version constant.
             self.assertIn("typeof(RitsuLibFramework).Assembly", main)
@@ -245,9 +246,9 @@ class RitsuProfileTests(unittest.TestCase):
 
     def test_runtime_directory_and_zip_are_checked(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            files = runtime_payload(targets=(PROFILE.host_version, "0.109.0"))
+            files = runtime_payload(targets=(PROFILE.compat_target, "0.109.0"))
             root = write_runtime(Path(tmp) / "STS2-RitsuLib", files)
-            self.assertIn(PROFILE.host_version, validate_runtime_asset(root))
+            self.assertIn(PROFILE.compat_target, validate_runtime_asset(root))
             compile_profile = resolve_runtime_compile_profile(root)
             self.assertEqual(PROFILE.framework_version, compile_profile.version)
             self.assertEqual(root, compile_profile.root)
@@ -255,7 +256,7 @@ class RitsuProfileTests(unittest.TestCase):
                 [relative for _, relative in PROFILE.assembly_relative_paths()],
                 [item.relative_path for item in compile_profile.assemblies],
             )
-            runtime_dll = f"compat/{PROFILE.host_version}/STS2-RitsuLib.Runtime.dll"
+            runtime_dll = f"compat/{PROFILE.compat_target}/STS2-RitsuLib.Runtime.dll"
             self.assertIn(
                 hashlib.sha256(files[runtime_dll]).hexdigest(),
                 [item.sha256 for item in compile_profile.assemblies],
@@ -265,7 +266,7 @@ class RitsuProfileTests(unittest.TestCase):
             with zipfile.ZipFile(archive, "w") as zf:
                 for relative, data in files.items():
                     zf.writestr(relative, data)
-            self.assertIn(PROFILE.host_version, validate_runtime_asset(archive))
+            self.assertIn(PROFILE.compat_target, validate_runtime_asset(archive))
 
     def test_assembly_set_digest_tracks_every_module(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -301,9 +302,9 @@ class RitsuProfileTests(unittest.TestCase):
 
     def test_newer_runtime_version_is_accepted_but_older_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = write_runtime(Path(tmp) / "new" / "STS2-RitsuLib", runtime_payload("0.6.8"))
-            self.assertIn("RitsuLib 0.6.8", validate_runtime_asset(root))
-            old = write_runtime(Path(tmp) / "old" / "STS2-RitsuLib", runtime_payload("0.6.6"))
+            root = write_runtime(Path(tmp) / "new" / "STS2-RitsuLib", runtime_payload("0.6.15"))
+            self.assertIn("RitsuLib 0.6.15", validate_runtime_asset(root))
+            old = write_runtime(Path(tmp) / "old" / "STS2-RitsuLib", runtime_payload("0.6.13"))
             with self.assertRaisesRegex(RitsuProfileError, "older than the required minimum"):
                 validate_runtime_asset(old)
 
@@ -349,7 +350,7 @@ class RitsuProfileTests(unittest.TestCase):
             root = write_runtime(
                 Path(tmp) / "STS2-RitsuLib", runtime_payload(targets=("0.109.0",))
             )
-            with self.assertRaisesRegex(RitsuProfileError, "no matching"):
+            with self.assertRaisesRegex(RitsuProfileError, "has no .* RitsuLib variant"):
                 validate_runtime_asset(root)
 
     def test_pre_0_6_project_pin_is_rejected(self) -> None:
@@ -369,23 +370,133 @@ class RitsuProfileTests(unittest.TestCase):
     def test_repin_updates_only_the_compile_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             project = Path(tmp) / "empty-outer"
-            old = fixture_compile_profile(Path(tmp) / "runtime", "0.6.7")
+            old = fixture_compile_profile(Path(tmp) / "runtime", "0.6.14")
             generate(project, "EmptyRitsu", "SkillTheSpire", compile_profile=old)
             manifest_before = (project / "mod_manifest.json").read_text(encoding="utf-8")
-            root = write_runtime(Path(tmp) / "STS2-RitsuLib", runtime_payload("0.6.9"))
+            root = write_runtime(Path(tmp) / "STS2-RitsuLib", runtime_payload("0.6.16"))
             new = resolve_runtime_compile_profile(root)
 
-            self.assertEqual("0.6.9", repin_runtime(project, "EmptyRitsu", new))
+            self.assertEqual("0.6.16", repin_runtime(project, "EmptyRitsu", new))
             csproj = (project / "EmptyRitsu.csproj").read_text(encoding="utf-8")
             main = (project / "EmptyRitsuCode" / "MainFile.cs").read_text(encoding="utf-8")
-            self.assertIn("<RitsuLibCompileVersion>0.6.9</RitsuLibCompileVersion>", csproj)
+            self.assertIn("<RitsuLibCompileVersion>0.6.16</RitsuLibCompileVersion>", csproj)
             self.assertIn(new.assembly_set_sha256, csproj)
             self.assertNotIn(old.assembly_set_sha256, csproj)
-            self.assertIn('CompileFrameworkVersion = "0.6.9"', main)
+            self.assertIn('CompileFrameworkVersion = "0.6.16"', main)
             self.assertEqual(
                 manifest_before, (project / "mod_manifest.json").read_text(encoding="utf-8")
             )
-            self.assertIn("local compile runtime 0.6.9", validate_project_contract(project))
+            self.assertIn("local compile runtime 0.6.16", validate_project_contract(project))
+
+    def test_migrate_profile_moves_an_older_project_and_keeps_authored_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "empty-outer"
+            generate(project, "EmptyRitsu", "SkillTheSpire")
+            csproj = project / "EmptyRitsu.csproj"
+            manifest = project / "mod_manifest.json"
+            main = project / "EmptyRitsuCode" / "MainFile.cs"
+            kit = project / "EmptyRitsuCode" / "SelfTestKit.cs"
+            overrides = project / "skillthespire" / "vanilla-overrides.json"
+            authored = project / "EmptyRitsuCode" / "Cards" / "Jab.cs"
+            authored.parent.mkdir()
+            authored.write_text("// authored\n", encoding="utf-8")
+
+            # Rewind every scaffold-owned pin to the previous release's profile.
+            old_profile = "ritsulib-0.6.7-sts2-0.107.1"
+            for path, pairs in (
+                (csproj, ((PROFILE.profile_id, old_profile), (PROFILE.compat_target, "0.107.1"))),
+                (main, ((f"host={PROFILE.host_version}", "host=0.107.1"),)),
+                (kit, (("// SelfTestKit", "// SelfTestKit 1 old\n// SelfTestKit"),)),
+            ):
+                text = path.read_text(encoding="utf-8")
+                for current, previous in pairs:
+                    self.assertIn(current, text)
+                    text = text.replace(current, previous)
+                path.write_text(text, encoding="utf-8")
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+            data.update(min_game_version="0.107.1", version="1.2.3", has_pck=True)
+            data["dependencies"] = [{"id": PROFILE.runtime_mod_id, "min_version": "0.6.7"}]
+            manifest.write_text(json.dumps(data), encoding="utf-8")
+            pinned = json.loads(overrides.read_text(encoding="utf-8"))
+            catalog_sha256 = pinned["catalog_sha256"]
+            pinned.update(profile=old_profile, host_version="0.107.1", catalog_sha256="0" * 64)
+            overrides.write_text(json.dumps(pinned), encoding="utf-8")
+
+            with self.assertRaisesRegex(RitsuProfileError, "--migrate-profile"):
+                validate_project_contract(project, "EmptyRitsu")
+            runtime = fixture_compile_profile(Path(tmp) / "runtime", "0.6.15")
+            notes = migrate_profile(project, "EmptyRitsu", runtime)
+
+            self.assertIn(f"{old_profile} -> {PROFILE.profile_id}", notes[0])
+            self.assertIn("local compile runtime 0.6.15", validate_project_contract(project))
+            csproj_text = csproj.read_text(encoding="utf-8")
+            self.assertIn(f"<Sts2ApiCompat>{PROFILE.compat_target}</Sts2ApiCompat>", csproj_text)
+            self.assertNotIn("0.107.1", csproj_text)
+            migrated = json.loads(manifest.read_text(encoding="utf-8"))
+            self.assertEqual(PROFILE.host_version, migrated["min_game_version"])
+            self.assertEqual(PROFILE.framework_version, migrated["dependencies"][0]["min_version"])
+            self.assertEqual(("1.2.3", True), (migrated["version"], migrated["has_pck"]))
+            main_text = main.read_text(encoding="utf-8")
+            self.assertIn(f"host={PROFILE.host_version} compat=", main_text)
+            self.assertIn('CompileFrameworkVersion = "0.6.15"', main_text)
+            self.assertNotIn("SelfTestKit 1 old", kit.read_text(encoding="utf-8"))
+            repinned = json.loads(overrides.read_text(encoding="utf-8"))
+            self.assertEqual(
+                (PROFILE.profile_id, PROFILE.host_version, catalog_sha256),
+                (repinned["profile"], repinned["host_version"], repinned["catalog_sha256"]),
+            )
+            self.assertEqual("// authored\n", authored.read_text(encoding="utf-8"))
+
+            with self.assertRaisesRegex(ValueError, "already on"):
+                migrate_profile(project, "EmptyRitsu", runtime)
+
+    def test_runtime_whose_loader_would_pick_another_variant_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            # A variant for exactly the pinned host outranks the pinned compat target.
+            root = write_runtime(
+                Path(tmp) / "STS2-RitsuLib",
+                runtime_payload(targets=(PROFILE.compat_target, PROFILE.host_version)),
+            )
+            with self.assertRaisesRegex(RitsuProfileError, "would load its"):
+                validate_runtime_asset(root)
+            self.assertEqual(
+                PROFILE.compat_target,
+                loader_compat_target(["0.107.1", PROFILE.compat_target, "0.113.0"], PROFILE.host_version),
+            )
+            self.assertIsNone(loader_compat_target(["0.113.0"], PROFILE.host_version))
+
+    def test_workshop_runtime_wins_only_with_a_strictly_greater_version(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            steamapps = Path(tmp) / "steamapps"
+            game = steamapps / "common" / "Slay the Spire 2"
+            mods = game / "mods"
+            local = mods / PROFILE.runtime_mod_id
+            workshop = (
+                steamapps / "workshop" / "content" / PROFILE.steam_app_id / PROFILE.workshop_item_id
+            )
+            for folder, version in ((local, "0.6.14"), (workshop, "0.6.15")):
+                folder.mkdir(parents=True)
+                (folder / "mod_manifest.json").write_text(
+                    json.dumps({"id": PROFILE.runtime_mod_id, "version": version}), encoding="utf-8"
+                )
+            selected = resolve_runtime_asset(game, mods)
+            self.assertEqual(("Steam Workshop", workshop), (selected.source, selected.path))
+            self.assertEqual((local,), selected.alternates)
+
+            (workshop / "mod_manifest.json").write_text(
+                json.dumps({"id": PROFILE.runtime_mod_id, "version": "0.6.14"}), encoding="utf-8"
+            )
+            self.assertEqual("mods directory", resolve_runtime_asset(game, mods).source)
+            (local / "mod_manifest.json").write_text("not json", encoding="utf-8")
+            self.assertEqual("mods directory", resolve_runtime_asset(game, mods).source)
+
+    def test_host_newer_than_the_pin_points_at_the_plugin(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp) / "game"
+            game.mkdir()
+            (game / "release_info.json").write_text(json.dumps({"version": "v9.0.0"}), encoding="utf-8")
+            with self.assertRaisesRegex(RitsuProfileError, "newer than this Skill the Spire release"):
+                validate_host_version(game)
 
     def test_host_release_version_is_explicit(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -397,7 +508,7 @@ class RitsuProfileTests(unittest.TestCase):
             )
             self.assertIn(PROFILE.host_version, validate_host_version(game))
             (release / "release_info.json").write_text(json.dumps({"version": "0.108.0"}), encoding="utf-8")
-            with self.assertRaisesRegex(RitsuProfileError, "stable 0.107.1"):
+            with self.assertRaisesRegex(RitsuProfileError, "required stable .*Update the game"):
                 validate_host_version(game)
 
     def test_host_release_version_accepts_macos_bundle_metadata(self) -> None:

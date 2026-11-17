@@ -183,7 +183,8 @@ The shape is a guard, then the value, with the hook's neutral default on every o
 
 ```csharp
 public override decimal ModifyDamageMultiplicative(
-    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource,
+    CardPlay? cardPlay)
 {
     if (target != Owner) return 1m;               // SPEC `subject`: incoming, not outgoing
     if (!props.IsPoweredAttack()) return 1m;      // SPEC `condition`: attack damage only

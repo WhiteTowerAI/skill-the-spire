@@ -35,7 +35,7 @@ damage only for an effect that is explicitly not an attack.
 
 ```csharp
 AttackCommand attack = await DamageCmd.Attack(amount)
-    .FromCard(cardSource)
+    .FromCard(cardSource, cardPlay)
     .Targeting(target)
     .Execute(choiceContext);
 
@@ -43,13 +43,13 @@ ICombatState combatState = cardSource.CombatState ??
     throw new InvalidOperationException("Card attack requires a live combat state.");
 
 AttackCommand allTargetAttack = await DamageCmd.Attack(amount)
-    .FromCard(cardSource)
+    .FromCard(cardSource, cardPlay)
     .TargetingAllOpponents(combatState)
     .Execute(choiceContext);
 
 AttackCommand randomMultiHitAttack = await DamageCmd.Attack(amount)
     .WithHitCount(hitCount)
-    .FromCard(cardSource)
+    .FromCard(cardSource, cardPlay)
     .TargetingRandomOpponents(combatState)
     .Execute(choiceContext);
 
@@ -57,12 +57,21 @@ AttackCommand monsterAttack = await DamageCmd.Attack(amount)
     .FromMonster(monster)
     .Execute(null);
 
+// A Card's own direct damage: the dealer, the Card, and the play that caused it.
 IEnumerable<DamageResult> results = await CreatureCmd.Damage(
-    choiceContext, target, amount, props, sourceCreature, cardSource);
+    choiceContext, target, amount, props, sourceCreature, cardSource, cardPlay);
+
+// Any other owner (Relic, Potion, Power, Event): the dealer only.
+IEnumerable<DamageResult> ownerResults = await CreatureCmd.Damage(
+    choiceContext, target, amount, props, sourceCreature);
 ```
 
 For Card attacks, use the Card's declared `DamageVar`/computed raw damage, `FromCard` preserves
-Card provenance, and the selected Card target must be non-null. For declared all-enemy or random
+Card provenance, and the selected Card target must be non-null. `FromCard(card, cardPlay)` and
+the Card overload of `CreatureCmd.Damage` take the `CardPlay` that `OnPlay` received, so damage
+hooks can tell which play dealt it; pass `null` only when the Card deals damage outside a play
+(from one of its own hooks). A non-Card owner has no `CardPlay` and calls the dealer-only
+overload: with a trailing `null` the compiler picks the Card overload and rejects the dealer. For declared all-enemy or random
 attacks, require the acting Card's live `cardSource.CombatState` (inside the Card template,
 `base.CombatState`) and pass that `ICombatState` to `TargetingAllOpponents` or
 `TargetingRandomOpponents`; do not substitute a `PlayerCombatState` or continue outside combat.
@@ -85,7 +94,7 @@ count, target, or damage outcome rather than assuming the requested attack fully
 ```csharp
 decimal modifiedBlock = await CreatureCmd.GainBlock(
     target, amount, props, cardPlay);
-await CreatureCmd.LoseBlock(target, amount);
+await CreatureCmd.LoseBlock(choiceContext, target, amount, remover);
 await CreatureCmd.Heal(target, amount);
 await CreatureCmd.GainMaxHp(target, amount);
 await CreatureCmd.LoseMaxHp(choiceContext, target, amount, isFromCard);
@@ -96,7 +105,8 @@ await CreatureCmd.LoseMaxHp(choiceContext, target, amount, isFromCard);
 - `GainBlock` clamps the hook-modified request to zero and returns that modified amount. Combat
   ending returns zero; current Block before/after remains the observed state delta.
 - `LoseBlock` is neutral for nonpositive amounts, dead targets, or over/ending combat and cannot
-  remove more Block than exists.
+  remove more Block than exists. `remover` is the Creature that strips the Block, or `null`;
+  breaking the last Block runs `AfterBlockBroken(choiceContext, target, remover)`.
 - `Heal` caps current HP at Max HP and runs native presentation/history/hooks. A nonpositive heal
   is not a damage route. Use before/after current HP for the actual healed amount.
 - Max HP gain/loss requires a nonnegative amount. Gain also heals by the actual Max HP increase.

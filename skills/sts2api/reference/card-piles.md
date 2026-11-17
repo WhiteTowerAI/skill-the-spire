@@ -70,7 +70,7 @@ existing shared global ID. Normal generated content uses Mod-owned IDs.
 `AllPiles`/combat-pile behavior, and discards it with that combat.
 
 `ModCardPileScope.RunPersistent` attaches the pile to `Player`, includes it in
-`Player.Piles`, persists across combats, and is serialized by RitsuLib `0.6.7` run-save
+`Player.Piles`, persists across combats, and is serialized by RitsuLib `0.6.14` run-save
 data. Save/load, existing-save behavior, and run-end cleanup are verification obligations
 for a generated Mod that actually uses this scope; they are not separate support gates.
 

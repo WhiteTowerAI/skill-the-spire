@@ -19,7 +19,7 @@ CATALOG_PATH = (
     / "sts2api"
     / "reference"
     / "catalogs"
-    / "model-hooks-sts2-0.107.1.json"
+    / "model-hooks-sts2-0.111.1.json"
 )
 
 

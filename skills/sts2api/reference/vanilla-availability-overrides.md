@@ -74,7 +74,7 @@ Do not call `SetEpochRequirementsIgnoredForMod`; vanilla types have no generated
 to which that bypass should apply.
 
 Do not substitute the public `RequireAllCardsInPool`, `RequireAllRelicsInPool`, or
-`RequireAllPotionsInPool` content-pack helpers. Their pinned `0.6.7` implementation reads
+`RequireAllPotionsInPool` content-pack helpers. Their pinned `0.6.14` implementation reads
 `ModContentRegistry.GetRegisteredModelsInPool(context.ModId, poolType)`, so it intentionally
 sees only types registered to the current Mod. Making a vanilla type visible there would
 require the forbidden ownership-changing content registration. Whole-vanilla-pool gating

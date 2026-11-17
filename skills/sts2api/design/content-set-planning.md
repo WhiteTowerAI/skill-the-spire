@@ -9,14 +9,14 @@ questions are material.
 ## Boundary and evidence
 
 Content-set structure is a creative recommendation unless a checked reference supplies an
-exact native fact. A vanilla analogy must resolve against the pinned `0.107.1` catalog
+exact native fact. A vanilla analogy must resolve against the pinned `0.111.1` catalog
 before being named as fact. Do not copy another Mod's content, source, or assets.
 
 The Character recipe's `2 non-Basic Attacks / 2 Skills / 1 Power` merchant floor is a
 technical minimum for the selected host, not evidence of a complete, varied, or balanced
 card pool.
 
-Pinned fact (`reference/vanilla-overrides/catalogs/sts2-0.107.1.json`, Card `card_pools`):
+Pinned fact (`reference/vanilla-overrides/catalogs/sts2-0.111.1.json`, Card `card_pools`):
 every native Character pool holds 20 Common, 36 Uncommon, and 26 Rare Cards, plus 3-4 Basic
 and 2 Ancient Cards, and no native Common is a Power. That is the shape of a complete
 shipped Character, not a target size for a Mod set; there is no native archetype count.

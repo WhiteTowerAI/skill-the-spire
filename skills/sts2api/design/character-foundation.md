@@ -8,9 +8,9 @@ route and never overrides the shipped recipes and references.
 
 Exact starter inventories come from direct
 inspection of the five Character types in the pinned `sts2.dll` and are recorded in
-`design/catalogs/character-foundation-sts2-0.107.1.json`. Exact Card identities,
+`design/catalogs/character-foundation-sts2-0.111.1.json`. Exact Card identities,
 localized titles, costs, tags, and values come from
-`reference/vanilla-overrides/catalogs/sts2-0.107.1.json`.
+`reference/vanilla-overrides/catalogs/sts2-0.111.1.json`.
 
 `baselines/spire-codex/data/characters.json` and `cards.json` are useful corroborating
 research, not independent authority. Recheck the pinned assembly/catalog before promoting

@@ -30,10 +30,12 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from ritsu_profile import PROFILE
+
 
 SCHEMA = "skillthespire.sts2.text-glossary/v1"
-HOST_VERSION = "0.107.1"
-GLOSSARY_RELATIVE_PATH = Path("reference/catalogs/text-glossary-sts2-0.107.1.json")
+HOST_VERSION = PROFILE.host_version
+GLOSSARY_RELATIVE_PATH = Path("reference/catalogs") / f"text-glossary-{PROFILE.catalog_suffix}"
 TOOLS_DIR = Path(__file__).resolve().parent
 API_ROOT = TOOLS_DIR.parent / "skills" / "sts2api"
 LANGUAGES = ("eng", "zhs")

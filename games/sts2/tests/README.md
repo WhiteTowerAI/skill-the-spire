@@ -59,8 +59,8 @@ python games/sts2/tools/launch.py --mod-name <ModName>
 `launch.py` polls until the main menu, closes the game, and prints the `grep_log.py` verdict.
 
 Tier 1 requires the exact `[T2MOD-SELFTEST] <ModName> loaded ok` marker with
-`framework=RitsuLib`, actual framework version `>=0.6.7`, exact `host=0.107.1`, exact
-`compat=0.107.1`, and no fresh error/exception block.
+`framework=RitsuLib`, actual framework version `>=0.6.14`, exact `host=0.111.1`, exact
+`compat=0.111.0`, and no fresh error/exception block.
 
 ### Tier 2 / SelfTest
 
@@ -123,7 +123,7 @@ Maintainers improve the shipped pack offline:
    membership. Its repository targets `public-beta`, so do not use it as stable-version
    signature authority.
 3. Query a local spire-codex data dump or its attributed API for content facts.
-4. Inspect the pinned STS2 `0.107.1` and RitsuLib `0.6.7` code for exact signatures.
+4. Inspect the pinned STS2 `0.111.1` and RitsuLib `0.6.14` code for exact signatures.
 5. Confirm build/load rules in `scaffold.py`, `ritsu_profile.py`, package metadata, and a
    focused hosted proof.
 6. Add the smallest reusable semantic/API result, narrow known limitations, and unsupported
@@ -137,15 +137,18 @@ runtime to read them.
 
 ## Observation record
 
-What maintainer runs have and have not observed in the real host under STS2 `0.107.1`. Every
-listed route is authorable; "unobserved" means no run has proved that exact shape yet.
+What maintainer runs have and have not observed in the real host. Rows dated before 2026-11-16
+ran on STS2 `0.107.1`; the 0.111.1 row lists what was rerun on STS2 `0.111.1` with RitsuLib
+`0.6.14`. Every listed route is authorable; "unobserved" means no run has proved that exact
+shape yet.
 
 | Feature | Observed | Unobserved |
 |---|---|---|
+| STS2 0.111.1 rerun (2026-11-17) | Seven probe Mods moved with `scaffold.py --migrate-profile`, then Build and singleplayer Tier 2: KitProbe 20/20, CoopProbe 8/8 (4 multiplayer-only SKIP), SlimProbe 5/5, SoundProbe 5/5, Tollhorn 4/4, LanternKeeper 13/13, AncientProbe 10/10; multiplayer Tier 2: KitProbe 19/19 equal digests, CoopProbe 11/11, no divergence. Two-player Mod Monster move Block is now exactly x2 (5 -> 10), Max HP still x1.1 per player (30 -> 66) | headed review of any surface on 0.111.1; the rows below that the probes do not cover |
 | Lobby options (CoopProbe) | a host run rule (shared `RunSavedData`, the host's value wins) and a per-player pick (`PlayerRunSavedData`) set through the lobby accessors with `SyncLobbyOnChange`, committed into the run: singleplayer 8/8, multiplayer 12/12 on both peers with both picks visible to both, 11/11 digests (2026-10-28); the attached `NCharacterSelectScreen` toggle shows on both peers without covering native controls and toggles (headed, 2026-10-28) | a rule that changes after the run starts |
 | Act and Character in multiplayer | ProbeWilds forced into slot 2 with no mode gate: same map on both peers, weak and boss combats, Treasure, Rest Site (KitProbe, 1/1 digests); LanternKeeper Character picked by both players: run start, combat Energy, face checks, Relic heal, 13/13 on both peers, 12/12 digests (2026-10-28); headed on both peers: the teammate shows as the Mod Character in the lobby, the multiplayer player panel, the top bar, the map, and combat (body and Energy icon), and the teammate's Card plays display normally (2026-10-28) | secondary-resource teammate panel; organic random Act list |
 | Vanilla overrides in multiplayer (SlimProbe) | Strike Damage 9 upgrading to 12, Strike title in both languages, Burning Blood icon replaced while Anchor stays vanilla: 5/5 on both peers, 4/4 equal digests (2026-10-28) | non-Card, Ancient, and availability override families in multiplayer |
-| Teammate content (CoopProbe, multiplayer Tier 2) | `AnyAlly` Block Card and `AllAllies` Energy Card face checks on the receiving players; team Relic Block on both players; `AnyPlayer` heal Potion used on the teammate; Mod Monster Max HP 30 -> 66 and move Block 5 -> 11 with two players in Act 1; `MultiplayerOnly` face checks SKIP in singleplayer: 11/11 on both peers, 10/10 equal digests (2026-10-28) | `ShouldScaleInMultiplayer` on a Mod Power; teammate-reaction hooks; `SingleplayerOnly` Cards; pool exclusion by `MultiplayerConstraint`/`IsAllowed` in real rewards |
+| Teammate content (CoopProbe, multiplayer Tier 2) | `AnyAlly` Block Card and `AllAllies` Energy Card face checks on the receiving players; team Relic Block on both players; `AnyPlayer` heal Potion used on the teammate; Mod Monster Max HP 30 -> 66 and move Block 5 -> 11 with two players in Act 1 (0.107.1; 5 -> 10 on 0.111.1); `MultiplayerOnly` face checks SKIP in singleplayer: 11/11 on both peers, 10/10 equal digests (2026-10-28) | `ShouldScaleInMultiplayer` on a Mod Power; teammate-reaction hooks; `SingleplayerOnly` Cards; pool exclusion by `MultiplayerConstraint`/`IsAllowed` in real rewards |
 | Multiplayer Tier 2 (two local instances, `--fastmp` ENet) | lobby, two-player run, kit steps through managed net actions; KitProbe face checks, Relic combat-start Energy, Potion, choose-a-Card, custom Power across turns, Monster cycle and branch, fresh combat, a two-page Event, an Ancient option, a Relic-owned Rest Site option (absent, disabled, paid) with no mode gate, and a Custom room: 19/19 on both peers, 18/18 equal digests, no divergence; `AnyAlly` Card and two `RandomEnemy` plays in `plan.Coop`; a client-only HP edit is detected as divergence (2026-10-28) | shared (voted) Events; three or four players; Steam lobby transport |
 | Generalized families (secondary resources, Monster/Encounter composition and HP, Character starting fields, Card/Relic Rest Site options, computed Card values, bounded state, forced Event mappings, Card Star costs, Event acquisition/shake) | | newly generalized variants |
 | Card Energy/Star costs | | new Energy/Star combinations, combined X replay |

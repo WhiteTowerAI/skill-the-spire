@@ -106,15 +106,16 @@ public sealed class <Name>Orb : ModOrbTemplate
     public override OrbAssetProfile AssetProfile =>
         ContentAssetProfiles.Orb("frost_orb");
 
+    // The turn callback goes through TriggerPassive, never straight to Passive.
     public override Task BeforeTurnEndOrbTrigger(PlayerChoiceContext choiceContext) =>
-        Passive(choiceContext, null);
+        TriggerPassive(choiceContext, null);
 
     public override async Task Passive(
         PlayerChoiceContext choiceContext, Creature? target)
     {
         if (target is not null)
             throw new InvalidOperationException("This Orb does not target creatures");
-        Trigger();
+        ActivatePassive();
         await CreatureCmd.GainBlock(
             Owner.Creature, PassiveVal, ValueProp.Unpowered, null);
     }
@@ -122,9 +123,11 @@ public sealed class <Name>Orb : ModOrbTemplate
     public override async Task<IEnumerable<Creature>> Evoke(
         PlayerChoiceContext choiceContext)
     {
+        Creature[] affected = { Owner.Creature };
+        ActivateEvoke(affected);
         await CreatureCmd.GainBlock(
             Owner.Creature, EvokeVal, ValueProp.Unpowered, null);
-        return new[] { Owner.Creature };
+        return affected;
     }
 }
 ```
@@ -145,6 +148,16 @@ behavior through `reference/effect-primitives.md` (which also owns channel, evok
 signatures) and return the exact Creatures `Evoke` affected. The host Card/Relic/Power owns the
 `OrbCmd.Channel<T>` call and its own bindings; never channel from the Orb itself. A direct
 `OrbCmd.Passive` call is diagnostic only, never a substitute for the native turn callback.
+
+Three calls keep the Orb on the native path, and each compiles when left out:
+
+- `BeforeTurnEndOrbTrigger` (or `AfterTurnStartOrbTrigger` for a start-of-turn Orb) calls
+  `TriggerPassive`, which asks the trigger-count hook how many times the passive fires and then
+  calls `Passive` that many times. Calling `Passive` there directly ignores every effect that
+  adds or removes passive triggers.
+- `Passive` starts with `ActivatePassive()`: the Orb's passive flash.
+- `Evoke` calls `ActivateEvoke(affected)` with the Creatures it is about to affect: the Orb's
+  evoke presentation.
 
 ## Hook participation
 
@@ -211,10 +224,10 @@ a diagnostic, not the passive proof.
   from the queue after evoke.
 - **Prove all three behaviors, not one.** An Orb that channels and evokes correctly but whose
   passive never fires is a different design.
-- **Fire the passive through the real per-turn path.** The engine triggers passives from the
-  turn-end queue walk, which consults a public trigger-count hook; a direct `OrbCmd.Passive`
-  bypasses it, so a passive the game would never trigger still passes. Advance a real turn and
-  assert the resulting state.
+- **Fire the passive through the real per-turn path.** The engine walks the Orb queue at turn
+  end and calls each Orb's turn callback; `TriggerPassive` then applies the public trigger-count
+  hook. A direct `OrbCmd.Passive` skips both by default, so a passive the game would never
+  trigger still passes. Advance a real turn and assert the resulting state.
 - Assert the declared slot bounds and the full-slot case: channeling into full slots evokes the
   oldest Orb first. Under `engine default`, assert that observed order rather than assuming it.
 - **Hook participation: assert the neutral case outside the guard.** The three behavior

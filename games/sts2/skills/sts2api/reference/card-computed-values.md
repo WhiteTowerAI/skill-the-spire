@@ -112,7 +112,7 @@ ArgumentNullException.ThrowIfNull(cardPlay.Target, "cardPlay.Target");
 decimal rawDamage = base.DynamicVars.ComputeDynamicValue(
     "Damage", target: cardPlay.Target);
 await DamageCmd.Attack(rawDamage)
-    .FromCard(this)
+    .FromCard(this, cardPlay)
     .Targeting(cardPlay.Target)
     .WithHitFx("vfx/vfx_attack_slash")
     .Execute(choiceContext);

@@ -31,7 +31,7 @@ spend.
 ## Character art tier (choices 1 and 2)
 
 For a Character, offer its art tier in the same message as the style note, with the call
-counts from `character_art_tiers` in `reference/catalogs/art-contract-sts2-0.107.1.json`:
+counts from `character_art_tiers` in `reference/catalogs/art-contract-sts2-0.111.1.json`:
 
 - **minimal**: selection portrait plus the combat, rest, and merchant bodies; everything
   else keeps the base-game Ironclad art;

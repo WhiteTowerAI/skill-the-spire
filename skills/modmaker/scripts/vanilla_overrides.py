@@ -24,7 +24,7 @@ MANIFEST_SCHEMA = "skillthespire.sts2.vanilla-overrides/v1"
 # An override changes the shared vanilla model on every peer alike, so it applies in every run.
 # "singleplayer" is the value manifests wrote before multiplayer support; it means the same.
 MULTIPLAYER_MODES = {"both", "singleplayer"}
-CATALOG_RELATIVE_PATH = Path("reference/vanilla-overrides/catalogs/sts2-0.107.1.json")
+CATALOG_RELATIVE_PATH = Path("reference/vanilla-overrides/catalogs") / PROFILE.catalog_suffix
 MANIFEST_RELATIVE_PATH = Path("skillthespire/vanilla-overrides.json")
 PUBLIC_CARD_OVERRIDE_FAMILY = "public-card-overrides"
 PUBLIC_VISUAL_OVERRIDE_FAMILY = "public-visual-overrides"
@@ -132,7 +132,7 @@ _NON_CARD_EFFECT_HOOKS = {
     "after_map_generated",
     "after_modifying_block_amount",
     "after_modifying_card_play_count",
-    "after_modifying_card_play_result_pile_or_position",
+    "after_modifying_card_play_result_location",
     "after_modifying_card_reward_options",
     "after_modifying_damage_amount",
     "after_modifying_energy_gain",
@@ -176,6 +176,7 @@ _NON_CARD_EFFECT_HOOKS = {
     "before_card_auto_played",
     "before_card_played",
     "before_card_removed",
+    "before_combat_reward_offered",
     "before_combat_start",
     "before_combat_start_late",
     "before_damage_received",
@@ -936,6 +937,7 @@ _LOCALIZATION_LANGUAGES = (
     "eng",
     "esp",
     "fra",
+    "ind",
     "ita",
     "jpn",
     "kor",
@@ -946,6 +948,7 @@ _LOCALIZATION_LANGUAGES = (
     "tha",
     "tur",
     "zhs",
+    "zht",
 )
 
 
@@ -4224,6 +4227,28 @@ def write_empty_project_manifest(
     catalog = load_catalog(catalog_path)
     manifest_path = project_dir / MANIFEST_RELATIVE_PATH
     _write_object(manifest_path, create_empty_manifest(mod_name, catalog))
+    return manifest_path
+
+
+def repin_project_manifest(
+    project_dir: Path,
+    *,
+    catalog_path: Path | None = None,
+) -> Path | None:
+    """Point a project's override manifest at the current pinned catalog.
+
+    Used when a project moves to a newer game version. The operations stay as authored; Build
+    then validates each one against the new catalog and names any target that changed.
+    """
+    manifest_path = project_dir / MANIFEST_RELATIVE_PATH
+    if not manifest_path.is_file():
+        return None
+    manifest = _read_object(manifest_path)
+    catalog = load_catalog(catalog_path)
+    manifest["profile"] = PROFILE.profile_id
+    manifest["host_version"] = PROFILE.host_version
+    manifest["catalog_sha256"] = catalog["catalog_sha256"]
+    _write_object(manifest_path, manifest)
     return manifest_path
 
 

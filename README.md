@@ -1,7 +1,7 @@
 # Skill the Spire
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![RitsuLib](https://img.shields.io/badge/RitsuLib-%E2%89%A50.6.7-orange)](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)
+[![RitsuLib](https://img.shields.io/badge/RitsuLib-%E2%89%A50.6.14-orange)](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-d97757)](#install)
 [![Codex plugin](https://img.shields.io/badge/Codex-plugin-black)](#install)
 
@@ -70,7 +70,7 @@ Copy one of these to try it out:
 
 You need these once:
 
-1. **Slay the Spire 2** on Steam, version **0.107.1**.
+1. **Slay the Spire 2** on Steam, version **0.111.1**.
 2. **RitsuLib**, the mod framework every generated mod uses. The easiest way is to
    [subscribe on the Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295).
 3. **[.NET SDK 9](https://dotnet.microsoft.com/download/dotnet/9.0)** and
@@ -144,8 +144,9 @@ to a playable mod. You can add real art at the start or later:
 - Complex animation (Spine), custom shaders, or brand-new scenes and music systems.
 - Publishing to the Steam Workshop in one click. You can still share the finished mod folder
   by hand. Players also need RitsuLib.
-- Game versions other than **0.107.1**. If Steam updates the game, a newer Skill the Spire
-  release may be needed.
+- Game versions other than **0.111.1**. If Steam updates the game, a newer Skill the Spire
+  release may be needed. A mod made with an earlier release can be moved to this version; ask
+  the agent to migrate it.
 
 If a request needs something the game doesn't allow mods to do safely, it tells you plainly
 instead of faking it.
@@ -171,7 +172,7 @@ are documented per feature in the shipped pack, starting from
 Bug reports and focused pull requests are welcome at
 [`WhiteTowerAI/skill-the-spire`](https://github.com/WhiteTowerAI/skill-the-spire).
 
-Current version `0.2.0` targets Slay the Spire 2 `0.107.1` and RitsuLib `0.6.7`.
+Current version `0.3.0` targets Slay the Spire 2 `0.111.1` and RitsuLib `0.6.14`.
 
 ### License
 
@@ -236,7 +237,7 @@ Spire 会帮你设计、编写、构建，在真实游戏里测试，再告诉�
 
 以下只需准备一次：
 
-1. Steam 上的**《杀戮尖塔 2》**，版本 **0.107.1**。
+1. Steam 上的**《杀戮尖塔 2》**，版本 **0.111.1**。
 2. **RitsuLib**，所有生成的 Mod 都依赖这个 Mod 框架。最简单的方法是
    [在创意工坊订阅](https://steamcommunity.com/sharedfiles/filedetails/?id=3747602295)。
 3. **[.NET SDK 9](https://dotnet.microsoft.com/download/dotnet/9.0)** 和
@@ -301,7 +302,7 @@ npx skills add WhiteTowerAI/skill-the-spire
 - Mod 设置菜单、成就或解锁进度、数据统计。
 - 复杂动画（Spine）、自定义着色器，或全新的场景和音乐系统。
 - 一键发布到创意工坊。你仍然可以手动分享做好的 Mod 文件夹，对方也需要安装 RitsuLib。
-- **0.107.1** 以外的游戏版本。如果 Steam 更新了游戏，可能需要等 Skill the Spire 出新版本。
+- **0.111.1** 以外的游戏版本。如果 Steam 更新了游戏，可能需要等 Skill the Spire 出新版本。用旧版本做的 Mod 可以迁移到这个版本，让智能体帮你迁移即可。
 
 如果某个需求需要游戏不允许 Mod 安全做到的事，它会直接告诉你，而不是糊弄过去。
 
@@ -322,7 +323,7 @@ npx skills add WhiteTowerAI/skill-the-spire
 欢迎在 [`WhiteTowerAI/skill-the-spire`](https://github.com/WhiteTowerAI/skill-the-spire)
 提交问题和范围明确的 Pull Request。
 
-当前版本 `0.2.0` 面向《杀戮尖塔 2》`0.107.1` 和 RitsuLib `0.6.7`。
+当前版本 `0.3.0` 面向《杀戮尖塔 2》`0.111.1` 和 RitsuLib `0.6.14`。
 
 ### 许可证
 

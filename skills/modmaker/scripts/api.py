@@ -873,6 +873,8 @@ def match_types(assemblies: list[Assembly], query: str) -> list[TypeInfo]:
 
 
 def base_chain(info: TypeInfo, by_full: dict[str, TypeInfo]) -> list[TypeInfo]:
+    """Base types, nearest first. `by_full` is keyed by `TypeInfo.full`, which keeps the generic
+    arity: `ModelCapability` and `ModelCapability<TModel>` are different bases."""
     chain = []
     current = info
     while current.base is not None and len(chain) < 20:
@@ -883,9 +885,9 @@ def base_chain(info: TypeInfo, by_full: dict[str, TypeInfo]) -> list[TypeInfo]:
             base = spec.args[0] if spec.kind == "generic" else spec
         if base.kind not in ("def", "ref"):
             break
-        ns, display, _ = asm.named(base)
-        parent = by_full.get(f"{ns}.{display}" if ns else display)
-        if parent is None:
+        ns, _, doc = asm.named(base)
+        parent = by_full.get(f"{ns}.{doc}" if ns else doc)
+        if parent is None or parent is current:
             break
         chain.append(parent)
         current = parent
@@ -916,7 +918,7 @@ def cmd_search(assemblies: list[Assembly], type_query: str, member_query: str | 
     if not types:
         print(f"[api] no public type matches '{type_query}'")
         return 1
-    by_full = {t.display_full: t for a in assemblies for t in a.types}
+    by_full = {t.full: t for a in assemblies for t in a.types}
     shown_types = types[:MAX_TYPES]
     any_member = False
     for info in shown_types:

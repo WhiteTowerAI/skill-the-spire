@@ -28,7 +28,7 @@ Do not generate Harmony, reflection, or UI patches to extend this boundary.
 
 Card reachability is pinned rather than inferred: both Rest Site hooks dispatch through
 `runState.IterateHookListeners(null)`, whose fixed listener set includes deck Cards; the
-`0.107.1` catalog marks Card authorable, and vanilla `ByrdonisEgg` implements
+`0.111.1` catalog marks Card authorable, and vanilla `ByrdonisEgg` implements
 `TryModifyRestSiteOptions`. Modifier reachability is equally pinned by the run listener set;
 standalone ownership is supplied by RitsuLib's Run `HookedSingletonModel` subscription.
 

@@ -758,28 +758,76 @@
       "signature_label": "pinned {declaring_type}.get_RoomType for ENCOUNTER.AXEBOTS_NORMAL data.room-type"
     },
     {
-      "id": "non-card.encounter.battleworn-dummy-event-encounter.behavior.all-possible-monsters",
-      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventEncounter",
+      "id": "non-card.encounter.battleworn-dummy-event-v1-encounter.behavior.all-possible-monsters",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV1Encounter",
       "method": "get_AllPossibleMonsters",
-      "signature_label": "pinned {declaring_type}.get_AllPossibleMonsters for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_ENCOUNTER behavior.all-possible-monsters"
+      "signature_label": "pinned {declaring_type}.get_AllPossibleMonsters for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V1_ENCOUNTER behavior.all-possible-monsters"
     },
     {
-      "id": "non-card.encounter.battleworn-dummy-event-encounter.behavior.monster-roster",
-      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventEncounter",
+      "id": "non-card.encounter.battleworn-dummy-event-v1-encounter.behavior.monster-roster",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV1Encounter",
       "method": "GenerateMonsters",
-      "signature_label": "pinned {declaring_type}.GenerateMonsters for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_ENCOUNTER behavior.monster-roster"
+      "signature_label": "pinned {declaring_type}.GenerateMonsters for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V1_ENCOUNTER behavior.monster-roster"
     },
     {
-      "id": "non-card.encounter.battleworn-dummy-event-encounter.data.is-weak",
-      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventEncounter",
+      "id": "non-card.encounter.battleworn-dummy-event-v1-encounter.data.is-weak",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV1Encounter",
       "method": "get_IsWeak",
-      "signature_label": "pinned {declaring_type}.get_IsWeak for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_ENCOUNTER data.is-weak"
+      "signature_label": "pinned {declaring_type}.get_IsWeak for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V1_ENCOUNTER data.is-weak"
     },
     {
-      "id": "non-card.encounter.battleworn-dummy-event-encounter.data.room-type",
-      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventEncounter",
+      "id": "non-card.encounter.battleworn-dummy-event-v1-encounter.data.room-type",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV1Encounter",
       "method": "get_RoomType",
-      "signature_label": "pinned {declaring_type}.get_RoomType for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_ENCOUNTER data.room-type"
+      "signature_label": "pinned {declaring_type}.get_RoomType for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V1_ENCOUNTER data.room-type"
+    },
+    {
+      "id": "non-card.encounter.battleworn-dummy-event-v2-encounter.behavior.all-possible-monsters",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV2Encounter",
+      "method": "get_AllPossibleMonsters",
+      "signature_label": "pinned {declaring_type}.get_AllPossibleMonsters for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V2_ENCOUNTER behavior.all-possible-monsters"
+    },
+    {
+      "id": "non-card.encounter.battleworn-dummy-event-v2-encounter.behavior.monster-roster",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV2Encounter",
+      "method": "GenerateMonsters",
+      "signature_label": "pinned {declaring_type}.GenerateMonsters for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V2_ENCOUNTER behavior.monster-roster"
+    },
+    {
+      "id": "non-card.encounter.battleworn-dummy-event-v2-encounter.data.is-weak",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV2Encounter",
+      "method": "get_IsWeak",
+      "signature_label": "pinned {declaring_type}.get_IsWeak for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V2_ENCOUNTER data.is-weak"
+    },
+    {
+      "id": "non-card.encounter.battleworn-dummy-event-v2-encounter.data.room-type",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV2Encounter",
+      "method": "get_RoomType",
+      "signature_label": "pinned {declaring_type}.get_RoomType for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V2_ENCOUNTER data.room-type"
+    },
+    {
+      "id": "non-card.encounter.battleworn-dummy-event-v3-encounter.behavior.all-possible-monsters",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV3Encounter",
+      "method": "get_AllPossibleMonsters",
+      "signature_label": "pinned {declaring_type}.get_AllPossibleMonsters for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V3_ENCOUNTER behavior.all-possible-monsters"
+    },
+    {
+      "id": "non-card.encounter.battleworn-dummy-event-v3-encounter.behavior.monster-roster",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV3Encounter",
+      "method": "GenerateMonsters",
+      "signature_label": "pinned {declaring_type}.GenerateMonsters for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V3_ENCOUNTER behavior.monster-roster"
+    },
+    {
+      "id": "non-card.encounter.battleworn-dummy-event-v3-encounter.data.is-weak",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV3Encounter",
+      "method": "get_IsWeak",
+      "signature_label": "pinned {declaring_type}.get_IsWeak for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V3_ENCOUNTER data.is-weak"
+    },
+    {
+      "id": "non-card.encounter.battleworn-dummy-event-v3-encounter.data.room-type",
+      "type": "MegaCrit.Sts2.Core.Models.Encounters.BattlewornDummyEventV3Encounter",
+      "method": "get_RoomType",
+      "signature_label": "pinned {declaring_type}.get_RoomType for ENCOUNTER.BATTLEWORN_DUMMY_EVENT_V3_ENCOUNTER data.room-type"
     },
     {
       "id": "non-card.encounter.bowlbugs-normal.behavior.all-possible-monsters",
@@ -6584,6 +6632,30 @@
       "signature_label": "pinned {declaring_type}.Passive for ORB.MOCK_COMBAT_CLEANUP_ORB lifecycle.passive"
     },
     {
+      "id": "non-card.orb.mock-turn-end-suspend-orb.lifecycle.after-turn-start",
+      "type": "MegaCrit.Sts2.Core.Models.Orbs.Mock.MockTurnEndSuspendOrb",
+      "method": "AfterTurnStartOrbTrigger",
+      "signature_label": "pinned {declaring_type}.AfterTurnStartOrbTrigger for ORB.MOCK_TURN_END_SUSPEND_ORB lifecycle.after-turn-start"
+    },
+    {
+      "id": "non-card.orb.mock-turn-end-suspend-orb.lifecycle.before-turn-end",
+      "type": "MegaCrit.Sts2.Core.Models.Orbs.Mock.MockTurnEndSuspendOrb",
+      "method": "BeforeTurnEndOrbTrigger",
+      "signature_label": "pinned {declaring_type}.BeforeTurnEndOrbTrigger for ORB.MOCK_TURN_END_SUSPEND_ORB lifecycle.before-turn-end"
+    },
+    {
+      "id": "non-card.orb.mock-turn-end-suspend-orb.lifecycle.evoke",
+      "type": "MegaCrit.Sts2.Core.Models.Orbs.Mock.MockTurnEndSuspendOrb",
+      "method": "Evoke",
+      "signature_label": "pinned {declaring_type}.Evoke for ORB.MOCK_TURN_END_SUSPEND_ORB lifecycle.evoke"
+    },
+    {
+      "id": "non-card.orb.mock-turn-end-suspend-orb.lifecycle.passive",
+      "type": "MegaCrit.Sts2.Core.Models.Orbs.Mock.MockTurnEndSuspendOrb",
+      "method": "Passive",
+      "signature_label": "pinned {declaring_type}.Passive for ORB.MOCK_TURN_END_SUSPEND_ORB lifecycle.passive"
+    },
+    {
       "id": "non-card.orb.plasma-orb.lifecycle.after-turn-start",
       "type": "MegaCrit.Sts2.Core.Models.Orbs.PlasmaOrb",
       "method": "AfterTurnStartOrbTrigger",
@@ -6618,6 +6690,30 @@
       "type": "MegaCrit.Sts2.Core.Runs.RunState",
       "method": "IterateHookListeners",
       "signature_label": "pinned RunState.IterateHookListeners owner-stream boundary"
+    },
+    {
+      "id": "non-card.potion.ambergris.data.rarity",
+      "type": "MegaCrit.Sts2.Core.Models.Potions.Ambergris",
+      "method": "get_Rarity",
+      "signature_label": "pinned {declaring_type}.get_Rarity for POTION.AMBERGRIS data.rarity"
+    },
+    {
+      "id": "non-card.potion.ambergris.data.target-type",
+      "type": "MegaCrit.Sts2.Core.Models.Potions.Ambergris",
+      "method": "get_TargetType",
+      "signature_label": "pinned {declaring_type}.get_TargetType for POTION.AMBERGRIS data.target-type"
+    },
+    {
+      "id": "non-card.potion.ambergris.data.usage",
+      "type": "MegaCrit.Sts2.Core.Models.Potions.Ambergris",
+      "method": "get_Usage",
+      "signature_label": "pinned {declaring_type}.get_Usage for POTION.AMBERGRIS data.usage"
+    },
+    {
+      "id": "non-card.potion.ambergris.lifecycle.use",
+      "type": "MegaCrit.Sts2.Core.Models.Potions.Ambergris",
+      "method": "OnUse",
+      "signature_label": "pinned {declaring_type}.OnUse for POTION.AMBERGRIS lifecycle.use"
     },
     {
       "id": "non-card.potion.ashwater.data.rarity",
@@ -8390,6 +8486,48 @@
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.AGGRESSION_POWER lifecycle.before-applied"
     },
     {
+      "id": "non-card.power.ambergris-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.AmbergrisPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.AMBERGRIS_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.ambergris-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.AmbergrisPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.AMBERGRIS_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.ambergris-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.AmbergrisPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.AMBERGRIS_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.ambergris-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.AmbergrisPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.AMBERGRIS_POWER data.type"
+    },
+    {
+      "id": "non-card.power.ambergris-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.AmbergrisPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.AMBERGRIS_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.ambergris-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.AmbergrisPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.AMBERGRIS_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.ambergris-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.AmbergrisPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.AMBERGRIS_POWER lifecycle.before-applied"
+    },
+    {
       "id": "non-card.power.anticipate-power.data.allow-negative",
       "type": "MegaCrit.Sts2.Core.Models.Powers.AnticipatePower",
       "method": "get_AllowNegative",
@@ -9146,6 +9284,48 @@
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.BURST_POWER lifecycle.before-applied"
     },
     {
+      "id": "non-card.power.cacophony-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.CacophonyPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.CACOPHONY_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.cacophony-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.CacophonyPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.CACOPHONY_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.cacophony-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.CacophonyPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.CACOPHONY_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.cacophony-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.CacophonyPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.CACOPHONY_POWER data.type"
+    },
+    {
+      "id": "non-card.power.cacophony-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.CacophonyPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.CACOPHONY_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.cacophony-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.CacophonyPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.CACOPHONY_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.cacophony-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.CacophonyPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.CACOPHONY_POWER lifecycle.before-applied"
+    },
+    {
       "id": "non-card.power.calamity-power.data.allow-negative",
       "type": "MegaCrit.Sts2.Core.Models.Powers.CalamityPower",
       "method": "get_AllowNegative",
@@ -9438,6 +9618,48 @@
       "type": "MegaCrit.Sts2.Core.Models.Powers.ColossusPower",
       "method": "BeforeApplied",
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.COLOSSUS_POWER lifecycle.before-applied"
+    },
+    {
+      "id": "non-card.power.concoct-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ConcoctPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.CONCOCT_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.concoct-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ConcoctPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.CONCOCT_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.concoct-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ConcoctPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.CONCOCT_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.concoct-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ConcoctPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.CONCOCT_POWER data.type"
+    },
+    {
+      "id": "non-card.power.concoct-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ConcoctPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.CONCOCT_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.concoct-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ConcoctPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.CONCOCT_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.concoct-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ConcoctPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.CONCOCT_POWER lifecycle.before-applied"
     },
     {
       "id": "non-card.power.confused-power.data.allow-negative",
@@ -10574,48 +10796,6 @@
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.DEXTERITY_POWER lifecycle.before-applied"
     },
     {
-      "id": "non-card.power.diamond-diadem-power.data.allow-negative",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.DiamondDiademPower",
-      "method": "get_AllowNegative",
-      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.DIAMOND_DIADEM_POWER data.allow-negative"
-    },
-    {
-      "id": "non-card.power.diamond-diadem-power.data.scales-in-multiplayer",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.DiamondDiademPower",
-      "method": "get_ShouldScaleInMultiplayer",
-      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.DIAMOND_DIADEM_POWER data.scales-in-multiplayer"
-    },
-    {
-      "id": "non-card.power.diamond-diadem-power.data.stack-type",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.DiamondDiademPower",
-      "method": "get_StackType",
-      "signature_label": "pinned {declaring_type}.get_StackType for POWER.DIAMOND_DIADEM_POWER data.stack-type"
-    },
-    {
-      "id": "non-card.power.diamond-diadem-power.data.type",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.DiamondDiademPower",
-      "method": "get_Type",
-      "signature_label": "pinned {declaring_type}.get_Type for POWER.DIAMOND_DIADEM_POWER data.type"
-    },
-    {
-      "id": "non-card.power.diamond-diadem-power.lifecycle.after-applied",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.DiamondDiademPower",
-      "method": "AfterApplied",
-      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.DIAMOND_DIADEM_POWER lifecycle.after-applied"
-    },
-    {
-      "id": "non-card.power.diamond-diadem-power.lifecycle.after-removed",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.DiamondDiademPower",
-      "method": "AfterRemoved",
-      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.DIAMOND_DIADEM_POWER lifecycle.after-removed"
-    },
-    {
-      "id": "non-card.power.diamond-diadem-power.lifecycle.before-applied",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.DiamondDiademPower",
-      "method": "BeforeApplied",
-      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.DIAMOND_DIADEM_POWER lifecycle.before-applied"
-    },
-    {
       "id": "non-card.power.die-for-you-power.data.allow-negative",
       "type": "MegaCrit.Sts2.Core.Models.Powers.DieForYouPower",
       "method": "get_AllowNegative",
@@ -11202,6 +11382,48 @@
       "type": "MegaCrit.Sts2.Core.Models.Powers.EscapeArtistPower",
       "method": "BeforeApplied",
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.ESCAPE_ARTIST_POWER lifecycle.before-applied"
+    },
+    {
+      "id": "non-card.power.fade-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.FadePower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.FADE_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.fade-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.FadePower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.FADE_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.fade-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.FadePower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.FADE_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.fade-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.FadePower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.FADE_POWER data.type"
+    },
+    {
+      "id": "non-card.power.fade-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.FadePower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.FADE_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.fade-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.FadePower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.FADE_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.fade-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.FadePower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.FADE_POWER lifecycle.before-applied"
     },
     {
       "id": "non-card.power.fan-of-knives-power.data.allow-negative",
@@ -12716,6 +12938,48 @@
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.HEX_POWER lifecycle.before-applied"
     },
     {
+      "id": "non-card.power.hibernate-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HibernatePower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.HIBERNATE_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.hibernate-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HibernatePower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.HIBERNATE_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.hibernate-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HibernatePower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.HIBERNATE_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.hibernate-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HibernatePower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.HIBERNATE_POWER data.type"
+    },
+    {
+      "id": "non-card.power.hibernate-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HibernatePower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.HIBERNATE_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.hibernate-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HibernatePower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.HIBERNATE_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.hibernate-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HibernatePower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.HIBERNATE_POWER lifecycle.before-applied"
+    },
+    {
       "id": "non-card.power.high-voltage-power.data.allow-negative",
       "type": "MegaCrit.Sts2.Core.Models.Powers.HighVoltagePower",
       "method": "get_AllowNegative",
@@ -12800,6 +13064,48 @@
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.HOTFIX_POWER lifecycle.before-applied"
     },
     {
+      "id": "non-card.power.hyperbeam-focus-down-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HyperbeamFocusDownPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.HYPERBEAM_FOCUS_DOWN_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.hyperbeam-focus-down-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HyperbeamFocusDownPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.HYPERBEAM_FOCUS_DOWN_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.hyperbeam-focus-down-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HyperbeamFocusDownPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.HYPERBEAM_FOCUS_DOWN_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.hyperbeam-focus-down-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HyperbeamFocusDownPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.HYPERBEAM_FOCUS_DOWN_POWER data.type"
+    },
+    {
+      "id": "non-card.power.hyperbeam-focus-down-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HyperbeamFocusDownPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.HYPERBEAM_FOCUS_DOWN_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.hyperbeam-focus-down-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HyperbeamFocusDownPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.HYPERBEAM_FOCUS_DOWN_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.hyperbeam-focus-down-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.HyperbeamFocusDownPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.HYPERBEAM_FOCUS_DOWN_POWER lifecycle.before-applied"
+    },
+    {
       "id": "non-card.power.illusion-power.data.allow-negative",
       "type": "MegaCrit.Sts2.Core.Models.Powers.IllusionPower",
       "method": "get_AllowNegative",
@@ -12882,6 +13188,48 @@
       "type": "MegaCrit.Sts2.Core.Models.Powers.ImbalancedPower",
       "method": "BeforeApplied",
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.IMBALANCED_POWER lifecycle.before-applied"
+    },
+    {
+      "id": "non-card.power.imitation-learning-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ImitationLearningPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.IMITATION_LEARNING_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.imitation-learning-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ImitationLearningPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.IMITATION_LEARNING_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.imitation-learning-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ImitationLearningPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.IMITATION_LEARNING_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.imitation-learning-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ImitationLearningPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.IMITATION_LEARNING_POWER data.type"
+    },
+    {
+      "id": "non-card.power.imitation-learning-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ImitationLearningPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.IMITATION_LEARNING_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.imitation-learning-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ImitationLearningPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.IMITATION_LEARNING_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.imitation-learning-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.ImitationLearningPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.IMITATION_LEARNING_POWER lifecycle.before-applied"
     },
     {
       "id": "non-card.power.improvement-power.data.allow-negative",
@@ -13976,6 +14324,48 @@
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.MOCK_GAIN_BLOCK_ON_ATTACK_POWER lifecycle.before-applied"
     },
     {
+      "id": "non-card.power.mock-gated-turn-start-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockGatedTurnStartPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.MOCK_GATED_TURN_START_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.mock-gated-turn-start-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockGatedTurnStartPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.MOCK_GATED_TURN_START_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.mock-gated-turn-start-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockGatedTurnStartPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.MOCK_GATED_TURN_START_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.mock-gated-turn-start-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockGatedTurnStartPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.MOCK_GATED_TURN_START_POWER data.type"
+    },
+    {
+      "id": "non-card.power.mock-gated-turn-start-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockGatedTurnStartPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.MOCK_GATED_TURN_START_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.mock-gated-turn-start-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockGatedTurnStartPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.MOCK_GATED_TURN_START_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.mock-gated-turn-start-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockGatedTurnStartPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.MOCK_GATED_TURN_START_POWER lifecycle.before-applied"
+    },
+    {
       "id": "non-card.power.mock-invincible-on-death-power.data.allow-negative",
       "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockInvincibleOnDeathPower",
       "method": "get_AllowNegative",
@@ -14184,6 +14574,48 @@
       "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockPreventDeathPower",
       "method": "BeforeApplied",
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.MOCK_PREVENT_DEATH_POWER lifecycle.before-applied"
+    },
+    {
+      "id": "non-card.power.mock-record-card-changed-piles-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockRecordCardChangedPilesPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.MOCK_RECORD_CARD_CHANGED_PILES_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.mock-record-card-changed-piles-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockRecordCardChangedPilesPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.MOCK_RECORD_CARD_CHANGED_PILES_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.mock-record-card-changed-piles-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockRecordCardChangedPilesPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.MOCK_RECORD_CARD_CHANGED_PILES_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.mock-record-card-changed-piles-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockRecordCardChangedPilesPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.MOCK_RECORD_CARD_CHANGED_PILES_POWER data.type"
+    },
+    {
+      "id": "non-card.power.mock-record-card-changed-piles-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockRecordCardChangedPilesPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.MOCK_RECORD_CARD_CHANGED_PILES_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.mock-record-card-changed-piles-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockRecordCardChangedPilesPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.MOCK_RECORD_CARD_CHANGED_PILES_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.mock-record-card-changed-piles-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.Mocks.MockRecordCardChangedPilesPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.MOCK_RECORD_CARD_CHANGED_PILES_POWER lifecycle.before-applied"
     },
     {
       "id": "non-card.power.mock-remove-drawn-cards-from-combat-power.data.allow-negative",
@@ -14984,6 +15416,48 @@
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.OBLIVION_POWER lifecycle.before-applied"
     },
     {
+      "id": "non-card.power.one-for-all-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.OneForAllPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.ONE_FOR_ALL_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.one-for-all-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.OneForAllPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.ONE_FOR_ALL_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.one-for-all-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.OneForAllPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.ONE_FOR_ALL_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.one-for-all-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.OneForAllPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.ONE_FOR_ALL_POWER data.type"
+    },
+    {
+      "id": "non-card.power.one-for-all-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.OneForAllPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.ONE_FOR_ALL_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.one-for-all-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.OneForAllPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.ONE_FOR_ALL_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.one-for-all-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.OneForAllPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.ONE_FOR_ALL_POWER lifecycle.before-applied"
+    },
+    {
       "id": "non-card.power.one-two-punch-power.data.allow-negative",
       "type": "MegaCrit.Sts2.Core.Models.Powers.OneTwoPunchPower",
       "method": "get_AllowNegative",
@@ -15066,48 +15540,6 @@
       "type": "MegaCrit.Sts2.Core.Models.Powers.OrbitPower",
       "method": "BeforeApplied",
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.ORBIT_POWER lifecycle.before-applied"
-    },
-    {
-      "id": "non-card.power.outbreak-power.data.allow-negative",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.OutbreakPower",
-      "method": "get_AllowNegative",
-      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.OUTBREAK_POWER data.allow-negative"
-    },
-    {
-      "id": "non-card.power.outbreak-power.data.scales-in-multiplayer",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.OutbreakPower",
-      "method": "get_ShouldScaleInMultiplayer",
-      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.OUTBREAK_POWER data.scales-in-multiplayer"
-    },
-    {
-      "id": "non-card.power.outbreak-power.data.stack-type",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.OutbreakPower",
-      "method": "get_StackType",
-      "signature_label": "pinned {declaring_type}.get_StackType for POWER.OUTBREAK_POWER data.stack-type"
-    },
-    {
-      "id": "non-card.power.outbreak-power.data.type",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.OutbreakPower",
-      "method": "get_Type",
-      "signature_label": "pinned {declaring_type}.get_Type for POWER.OUTBREAK_POWER data.type"
-    },
-    {
-      "id": "non-card.power.outbreak-power.lifecycle.after-applied",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.OutbreakPower",
-      "method": "AfterApplied",
-      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.OUTBREAK_POWER lifecycle.after-applied"
-    },
-    {
-      "id": "non-card.power.outbreak-power.lifecycle.after-removed",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.OutbreakPower",
-      "method": "AfterRemoved",
-      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.OUTBREAK_POWER lifecycle.after-removed"
-    },
-    {
-      "id": "non-card.power.outbreak-power.lifecycle.before-applied",
-      "type": "MegaCrit.Sts2.Core.Models.Powers.OutbreakPower",
-      "method": "BeforeApplied",
-      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.OUTBREAK_POWER lifecycle.before-applied"
     },
     {
       "id": "non-card.power.pagestorm-power.data.allow-negative",
@@ -17504,6 +17936,48 @@
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.SOAR_POWER lifecycle.before-applied"
     },
     {
+      "id": "non-card.power.soulbound-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.SoulboundPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.SOULBOUND_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.soulbound-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.SoulboundPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.SOULBOUND_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.soulbound-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.SoulboundPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.SOULBOUND_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.soulbound-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.SoulboundPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.SOULBOUND_POWER data.type"
+    },
+    {
+      "id": "non-card.power.soulbound-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.SoulboundPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.SOULBOUND_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.soulbound-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.SoulboundPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.SOULBOUND_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.soulbound-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.SoulboundPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.SOULBOUND_POWER lifecycle.before-applied"
+    },
+    {
       "id": "non-card.power.spectrum-shift-power.data.allow-negative",
       "type": "MegaCrit.Sts2.Core.Models.Powers.SpectrumShiftPower",
       "method": "get_AllowNegative",
@@ -19140,6 +19614,48 @@
       "type": "MegaCrit.Sts2.Core.Models.Powers.TyrannyPower",
       "method": "BeforeApplied",
       "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.TYRANNY_POWER lifecycle.before-applied"
+    },
+    {
+      "id": "non-card.power.underworld-power.data.allow-negative",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.UnderworldPower",
+      "method": "get_AllowNegative",
+      "signature_label": "pinned {declaring_type}.get_AllowNegative for POWER.UNDERWORLD_POWER data.allow-negative"
+    },
+    {
+      "id": "non-card.power.underworld-power.data.scales-in-multiplayer",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.UnderworldPower",
+      "method": "get_ShouldScaleInMultiplayer",
+      "signature_label": "pinned {declaring_type}.get_ShouldScaleInMultiplayer for POWER.UNDERWORLD_POWER data.scales-in-multiplayer"
+    },
+    {
+      "id": "non-card.power.underworld-power.data.stack-type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.UnderworldPower",
+      "method": "get_StackType",
+      "signature_label": "pinned {declaring_type}.get_StackType for POWER.UNDERWORLD_POWER data.stack-type"
+    },
+    {
+      "id": "non-card.power.underworld-power.data.type",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.UnderworldPower",
+      "method": "get_Type",
+      "signature_label": "pinned {declaring_type}.get_Type for POWER.UNDERWORLD_POWER data.type"
+    },
+    {
+      "id": "non-card.power.underworld-power.lifecycle.after-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.UnderworldPower",
+      "method": "AfterApplied",
+      "signature_label": "pinned {declaring_type}.AfterApplied for POWER.UNDERWORLD_POWER lifecycle.after-applied"
+    },
+    {
+      "id": "non-card.power.underworld-power.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.UnderworldPower",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for POWER.UNDERWORLD_POWER lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.power.underworld-power.lifecycle.before-applied",
+      "type": "MegaCrit.Sts2.Core.Models.Powers.UnderworldPower",
+      "method": "BeforeApplied",
+      "signature_label": "pinned {declaring_type}.BeforeApplied for POWER.UNDERWORLD_POWER lifecycle.before-applied"
     },
     {
       "id": "non-card.power.unmovable-power.data.allow-negative",
@@ -20832,6 +21348,24 @@
       "type": "MegaCrit.Sts2.Core.Models.Relics.DollysMirror",
       "method": "AfterRemoved",
       "signature_label": "pinned {declaring_type}.AfterRemoved for RELIC.DOLLYS_MIRROR lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.relic.dowsing-rod.data.rarity",
+      "type": "MegaCrit.Sts2.Core.Models.Relics.DowsingRod",
+      "method": "get_Rarity",
+      "signature_label": "pinned {declaring_type}.get_Rarity for RELIC.DOWSING_ROD data.rarity"
+    },
+    {
+      "id": "non-card.relic.dowsing-rod.lifecycle.after-obtained",
+      "type": "MegaCrit.Sts2.Core.Models.Relics.DowsingRod",
+      "method": "AfterObtained",
+      "signature_label": "pinned {declaring_type}.AfterObtained for RELIC.DOWSING_ROD lifecycle.after-obtained"
+    },
+    {
+      "id": "non-card.relic.dowsing-rod.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Relics.DowsingRod",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for RELIC.DOWSING_ROD lifecycle.after-removed"
     },
     {
       "id": "non-card.relic.dragon-fruit.data.rarity",
@@ -22560,6 +23094,24 @@
       "type": "MegaCrit.Sts2.Core.Models.Relics.NeowsBones",
       "method": "AfterRemoved",
       "signature_label": "pinned {declaring_type}.AfterRemoved for RELIC.NEOWS_BONES lifecycle.after-removed"
+    },
+    {
+      "id": "non-card.relic.neows-sacrifice.data.rarity",
+      "type": "MegaCrit.Sts2.Core.Models.Relics.NeowsSacrifice",
+      "method": "get_Rarity",
+      "signature_label": "pinned {declaring_type}.get_Rarity for RELIC.NEOWS_SACRIFICE data.rarity"
+    },
+    {
+      "id": "non-card.relic.neows-sacrifice.lifecycle.after-obtained",
+      "type": "MegaCrit.Sts2.Core.Models.Relics.NeowsSacrifice",
+      "method": "AfterObtained",
+      "signature_label": "pinned {declaring_type}.AfterObtained for RELIC.NEOWS_SACRIFICE lifecycle.after-obtained"
+    },
+    {
+      "id": "non-card.relic.neows-sacrifice.lifecycle.after-removed",
+      "type": "MegaCrit.Sts2.Core.Models.Relics.NeowsSacrifice",
+      "method": "AfterRemoved",
+      "signature_label": "pinned {declaring_type}.AfterRemoved for RELIC.NEOWS_SACRIFICE lifecycle.after-removed"
     },
     {
       "id": "non-card.relic.neows-talisman.data.rarity",

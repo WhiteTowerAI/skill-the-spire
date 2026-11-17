@@ -9,7 +9,7 @@ unresolved. Do not load it merely because every Card happens to contain a number
 Separate the basis for every claim:
 
 1. user-provided measurements or human playtest observations;
-2. exact pinned `0.107.1` values from a checked vanilla analog;
+2. exact pinned `0.111.1` values from a checked vanilla analog;
 3. a transparent calculation with named assumptions; or
 4. an open creative hypothesis that still needs evidence.
 

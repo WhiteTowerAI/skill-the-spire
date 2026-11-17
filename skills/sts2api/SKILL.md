@@ -14,8 +14,8 @@ A narrow reference tool: answer only what the caller asked and read one file at 
 
 ## Pinned profile
 
-Generated Mods target RitsuLib `0.6.7` on STS2 stable `0.107.1` (compat `0.107.1`, profile
-`ritsulib-0.6.7-sts2-0.107.1`). `scaffold.py`, `ritsu_profile.py`, and `build.py` own the profile,
+Generated Mods target RitsuLib `0.6.14` on STS2 stable `0.111.1` (compat `0.111.0`, profile
+`ritsulib-0.6.14-sts2-0.111.1`). `scaffold.py`, `ritsu_profile.py`, and `build.py` own the profile,
 the runtime module layout, and the identity the load marker reports; recipes never regenerate
 them. Public types keep their `STS2RitsuLib.*` namespaces across RitsuLib's split modules.
 RitsuLib is the only adapter: never add BaseLib or another framework dependency, copy another

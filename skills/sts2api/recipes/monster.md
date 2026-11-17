@@ -210,7 +210,7 @@ private async Task Peck(IReadOnlyList<Creature> targets)
     // CORRECT — vanilla SingleAttackMoveMonster pattern:
     await DamageCmd.Attack(6m).FromMonster(this).Execute(null);
 
-    // WRONG — .Targeting() is the CARD pattern (DamageCmd.Attack(...).FromCard(this).Targeting(...)).
+    // WRONG — .Targeting() is the CARD pattern (DamageCmd.Attack(...).FromCard(this, cardPlay).Targeting(...)).
     // On a monster it HANGS mid-move: the enemy turn never completes and the player's turn
     // never resumes ("play phase not resumed after enemy turn").
 }
@@ -219,9 +219,10 @@ private async Task Peck(IReadOnlyList<Creature> targets)
 This is the top Monster failure mode; the Card recipe's `.Targeting()` does not transfer.
 
 **Multiplayer** needs no Monster code. That untargeted attack hits every player, as vanilla
-attacks do. The host scales the Monster on its own: Max HP and powered move Block (`ValueProp.Move`)
-by `players x 1.1` in Act 1, `x 1.2` in Act 2, and `x 1.2` (`x 1.3` for a boss) in Act 3, and a
-self-applied Power by the same factor only when it sets `ShouldScaleInMultiplayer`
+attacks do. The host scales the Monster on its own: Max HP by `players x 1.1` in Act 1, `x 1.2` in
+Act 2, and `x 1.2` (`x 1.3` for a boss) in Act 3; powered move Block (`ValueProp.Move`) by exactly
+`players` for a party of two and by the same `players x 1.1`-`1.3` factor for three or more; and a
+self-applied Power by the HP factor only when it sets `ShouldScaleInMultiplayer`
 (`recipes/power.md` § Multiplayer). A scenario that asserts Max HP or Block computes the
 expected value from `t.State.Players.Count`; `t.EnemyTurn` already reports only what reached
 the acting player.
@@ -369,7 +370,7 @@ public sealed class <CustomBuff> : ModPowerTemplate
     public override PowerStackType StackType => PowerStackType.Counter;
 
     public override decimal ModifyDamageAdditive(Creature? target, decimal amount,
-        ValueProp props, Creature? dealer, CardModel? cardSource)
+        ValueProp props, Creature? dealer, CardModel? cardSource, CardPlay? cardPlay)
         => Owner == dealer && props.IsPoweredAttack() ? Amount : 0m;
 }
 ```
@@ -385,7 +386,8 @@ run-scope hooks never reach it, and Build rejects them. Its own body is `Creatur
 
 ```csharp
 public override decimal ModifyDamageMultiplicative(
-    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource)
+    Creature? target, decimal amount, ValueProp props, Creature? dealer, CardModel? cardSource,
+    CardPlay? cardPlay)
 {
     if (target != Creature) return 1m;            // SPEC `subject`: damage I receive
     if (!props.IsPoweredAttack()) return 1m;      // SPEC `condition`
@@ -551,7 +553,7 @@ plan.Encounter<<Name>Encounter>("<name>_cycle_and_branches", async t =>
     // t.Do runs it on every multiplayer peer (selftest-harness.md § Multiplayer Tier 2).
     int woundedHp = Math.Max(1, mob.MaxHp / 2 - 1);
     await t.Do(owner => CreatureCmd.Damage(new ThrowingPlayerChoiceContext(), mob, mob.CurrentHp - woundedHp,
-        ValueProp.Unblockable | ValueProp.Unpowered, owner.Creature, null), "wound for branch");
+        ValueProp.Unblockable | ValueProp.Unpowered, owner.Creature), "wound for branch");
     t.Proof(mob.CurrentHp == woundedHp, $"branch setup hp expected={woundedHp} observed={mob.CurrentHp}");
 
     // Traverse the cycle again. The stacked buff must change later attack damage.

@@ -97,7 +97,8 @@ precise token/args before relying on one you haven't seen used:**
 
 These enums are shared across element types; each recipe picks from them rather than
 redefining. Namespaces in `MegaCrit.Sts2.Core.Entities.*`. Values below are the full
-sets read from the decompile (STS2 v0.107.1 — a game update could add members):
+sets read from the decompile (STS2 v0.111.1, unchanged since v0.107.1; a game update could add
+members):
 
 - **`TargetType`** (`Entities.Cards`, shared by cards AND potions): `None, Self,
   AnyEnemy, AllEnemies, RandomEnemy, AnyPlayer, AnyAlly, AllAllies, TargetedNoCreature,

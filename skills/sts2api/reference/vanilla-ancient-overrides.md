@@ -19,7 +19,7 @@ accept ordered custom pages and consequences. The catalog route is
 
 The exact pinned Ancient targets are `Darv`, `DeprecatedAncientEvent`, `Neow`, `Nonupeipe`,
 `Orobas`, `Pael`, `Tanx`, `Tezcatara`, and `Vakuu`. `TheArchitect` is an ordinary
-`EventModel` in `0.107.1`, despite the current upstream tutorial example, so the manifest
+`EventModel` in `0.111.1`, despite the current upstream tutorial example, so the manifest
 must reject it as an Ancient target.
 
 ## Supported semantic vocabulary
