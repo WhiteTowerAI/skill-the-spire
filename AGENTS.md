@@ -41,6 +41,7 @@ override checks. Do not turn them into general Markdown, runtime, visual, or evi
   `plugin.json` sources. Keep the `version` in both equal.
 - `.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`: hand-maintained
   marketplace manifests. Both point at `./skills`.
+- `.github/workflows/ci.yml`: the CI checks that run without the game.
 
 Top-level `skills/` is the one generated payload and the plugin root for both Codex and Claude
 Code; the publisher copies their `plugin.json` files into `skills/.codex-plugin/` and
@@ -146,6 +147,12 @@ $env:PYTHONUTF8='1'
 python -m unittest discover -s games/sts2/tools/tests -p 'test_*.py'
 git diff --check
 ```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and every push to
+`main`, on Windows: the unit tests above, `git diff --check` over the change, and a payload check
+that reruns `publish.sh --force` and fails when `skills/` differs from what it generates. CI has
+no game or RitsuLib, so it never replaces Build, Tier 1, Tier 2, headed review, or the catalog
+freshness checks.
 
 Before release, install the plugin from this checkout on the maintainer's machine and invoke the
 skill once: in Claude Code with `claude plugin marketplace add <repo>` and

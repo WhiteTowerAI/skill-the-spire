@@ -46,5 +46,17 @@ class PayloadLayoutTests(unittest.TestCase):
         self.assertTrue(Path(path.strip()).is_relative_to(self.root))
 
 
+class PluginManifestTests(unittest.TestCase):
+    def test_both_plugins_ship_the_same_version(self) -> None:
+        import json
+
+        publish = TOOLS_DIR.parents[2] / "scripts" / "publish"
+        versions = {
+            name: json.loads((publish / name).read_text(encoding="utf-8"))["version"]
+            for name in ("claude-plugin.json", "codex-plugin.json")
+        }
+        self.assertEqual(1, len(set(versions.values())), versions)
+
+
 if __name__ == "__main__":
     unittest.main()
