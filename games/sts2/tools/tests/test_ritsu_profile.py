@@ -311,7 +311,8 @@ class RitsuProfileTests(unittest.TestCase):
 
     def test_runtime_discovery_reuses_official_workshop_item(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            steamapps = Path(tmp) / "steamapps"
+            # resolve(): runner temp dirs can be 8.3 short paths, and discovery resolves.
+            steamapps = Path(tmp).resolve() / "steamapps"
             game = steamapps / "common" / "Slay the Spire 2"
             mods = game / "mods"
             workshop = (
@@ -468,7 +469,8 @@ class RitsuProfileTests(unittest.TestCase):
 
     def test_workshop_runtime_wins_only_with_a_strictly_greater_version(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            steamapps = Path(tmp) / "steamapps"
+            # resolve(): runner temp dirs can be 8.3 short paths, and discovery resolves.
+            steamapps = Path(tmp).resolve() / "steamapps"
             game = steamapps / "common" / "Slay the Spire 2"
             mods = game / "mods"
             local = mods / PROFILE.runtime_mod_id

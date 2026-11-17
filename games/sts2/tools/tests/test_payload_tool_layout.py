@@ -16,7 +16,8 @@ SOURCE_SKILLS = TOOLS_DIR.parent / "skills"
 class PayloadLayoutTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp.name) / "skills"
+        # resolve(): runner temp dirs can be 8.3 short paths, and the tool resolves __file__.
+        self.root = Path(self.temp.name).resolve() / "skills"
         self.scripts = self.root / "modmaker" / "scripts"
         catalogs = self.root / "sts2api" / "reference" / "catalogs"
         catalogs.mkdir(parents=True)
